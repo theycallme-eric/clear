@@ -1,30 +1,21 @@
 # CLEAR Rebuild — Requirements v0.4 Change Set
 
 > **Status:** proposal, for review before any schema is written
-> **Revision 2 (2026-08-24):** §8 rewritten — exercise metadata derives from existing columns rather than being authored across 173 movements. `META-01` withdrawn. The fitness-reviewer dependency is removed, not worked around.
-> **Scope:** data invariants · generation contract · duration rules · exercise metadata · user constraints
+> **Revision 3 (2026-08-24):** duration reduced from an engine to a plausibility guardrail. Intensity normalization narrowed to an ownership model. All duration metadata removed — `DATA-04` withdrawn. Invariants I1 and I3 simplified to state outcomes rather than mechanisms. Acceptance checks reframed as obligations on the forthcoming schema rather than claims about this document.
+> **Scope:** data invariants · generation contract · structured prescriptions · duration guardrail · user constraints
 > **Deliberately excludes:** SQL. No tables, columns, indexes, or policies. Those follow once this is agreed.
-> **Inputs:** the generation review, the Workout Intelligence System Map, the second-pass reduction, and two defects verified in the current codebase.
 
 ---
 
 ## 1. Why this change set exists
 
-Two verified defects, not two opinions. Both are reproducible in the current code, and both are the kind that produce *plausible wrong answers* rather than visible failures.
-
-### D5 — Duration validation is circular
-
-`validateWorkout()` compares `workout.estimated_duration_mins` against the requested duration. That field is **asserted by Claude**. Nothing sums the prescribed work.
-
-A session containing ninety minutes of sets, reps and rest passes validation by claiming forty-five. The duration check produces confidence without producing verification.
-
-**Fix requires:** computable prescriptions (§5), a deterministic duration engine (§6), and removing the model's authority over the total.
+Two defects verified in the current codebase. Both produce *plausible wrong answers* rather than visible failures.
 
 ### D6 — Swapped exercises are never persisted
 
-Verified path through the current code:
+Verified path:
 
-1. Generation succeeds → `saveGeneratedWorkout()` writes the **original** prescription to the database.
+1. Generation succeeds → `saveGeneratedWorkout()` writes the **original** prescription.
 2. The user swaps an exercise in Review → `useExerciseSwap` mutates **React state only**. No write.
 3. `handleStartWorkout()` records a timestamp and navigates. **No write.**
 4. The user performs the swapped workout.
@@ -32,231 +23,218 @@ Verified path through the current code:
 
 The only post-save writes to `exercises` are `weight_logged` and `exercise_notes` at completion.
 
-**So: swap Deadlift for Romanian Deadlift, log 3×8 at 185, and the database records 3×8 at 185 *on Deadlift*.**
+**Swap Deadlift for Romanian Deadlift, log 3×8 at 185, and the database records 3×8 at 185 on Deadlift.**
 
-This is silent data corruption in exactly the table progressive overload will read. OVR-01's load anchors would compute deadlift capacity from RDL sets and never know. It is also the precise failure the prescribed/revised/performed model exists to prevent — which makes the three-state model a **correctness requirement**, not an architectural preference.
+Silent corruption of the table progressive overload will read. This makes the prescribed / revised / performed distinction a **correctness requirement**, not an architectural preference.
+
+### D5 — Duration validation is tautological
+
+`validateWorkout()` compares `workout.estimated_duration_mins` — a value **Claude asserts** — against the requested duration. The prompt tells Claude "45 minutes"; Claude writes 45; the validator confirms 45 ≈ 45.
+
+The check cannot fail. It is not loose validation — it is zero validation wearing a tolerance.
+
+**The fix is independence, not precision.** Any estimate the backend computes for itself is strictly better than a number the model was told the answer to. §7 is deliberately crude.
 
 ---
 
 ## 2. Data invariants
 
-The schema must satisfy these. They are testable, and they are what the acceptance checks reduce to.
-
 | # | Invariant |
 |---|---|
-| **I1** | A prescription is never mutated after generation. Revisions create new versions carrying lineage to what they replaced. |
+| **I1** | The originally generated prescription remains **reconstructable**. Replacements and regenerations retain lineage to what they replaced. *The schema chooses the mechanism — revision records, snapshots, replacement references — whichever is simplest.* |
 | **I2** | Three states are independently reconstructable for any workout: **as generated**, **as intended at start**, **as performed**. |
-| **I3** | Absence is typed. A missing value carries a reason — `not_recorded`, `skipped`, `not_applicable`. **Zero is a value, never an absence.** |
+| **I3** | Execution items carry a status (`not_started` · `completed` · `skipped`). Actual values may be null. **Zero is a valid recorded value.** Prescription modality determines when a field is not applicable. **A null actual never means zero and never means skipped.** |
 | **I4** | Execution data attaches to the exercise the user actually performed. It never migrates to a substitute and is never orphaned by one. |
-| **I5** | Derived values never overwrite observations, and can cite the observations that produced them. |
 | **I6** | Later preference or working-weight changes affect future generation only. Historical records are immutable. |
-| **I7** | Every generated artifact records the versions that produced it: prompt, output schema, exercise library, validator. |
 
-**I3 in practice.** A logged set with no weight is not a set at zero. An unlogged exercise is not a skipped exercise. A workout with no logs at all is not a workout that didn't happen. Every downstream confidence calculation depends on this distinction being in the data rather than inferred.
+**I1 states an outcome, not an architecture.** Whole-workout versioning is one way to satisfy it and probably not the simplest.
 
-**I4 in practice.** This is D6 stated as a rule. When a substitution happens, the performed work belongs to the substitute — and the record shows both what was proposed and what replaced it.
+**I3 replaces a per-field reason code with a per-item status.** A skipped exercise is a status, not three nulls with an annotation. An unlogged weight on a completed set is simply null, and null is never read as zero.
+
+### Proportionate, not elaborate
+
+**I5 (derived values cite their sources)** and **I7 (version stamping)** remain the right direction, implemented in proportion to demonstrated need.
+
+**Minimum now:** generated workouts retain the **prompt version** and the **generation-contract version**. `workout_sessions.prompt_version` already exists, so this is a small extension.
+
+**Not now:** versioning the exercise library and the validator. Add when something demonstrably needs to ask what the library looked like at generation time.
 
 ---
 
 ## 3. The three states, precisely
 
-Boundaries matter more than the concept, because most real interactions are ambiguous until you name them.
-
 | Interaction | State it writes | Notes |
 |---|---|---|
-| Generation produces a workout | **prescribed** | Immutable from this moment |
-| Exercise swap in Review | **revised** | New version + lineage. **Exists today, currently lost** |
+| Generation produces a workout | **prescribed** | The baseline everything else references |
+| Exercise swap in Review | **revised** | Lineage to what it replaced. **Exists today, currently lost — this is D6** |
 | Section regeneration | **revised** | Lineage at section granularity |
-| Full regeneration before start | **revised** | New prescription, lineage to parent; unaffected revisions preserved |
-| Pre-start sets/reps edit (REV-04) | **revised** | Feature not built; schema must not preclude it |
+| Full regeneration before start | **revised** | Lineage to parent; unaffected revisions preserved |
+| Pre-start sets/reps edit (REV-04) | **revised** | Feature not built; the schema must not preclude it |
 | Different reps or weight entered while training | **performed** | Not an edit. The plan stood; the body did something else |
-| Field left empty during training | **not recorded** | Never zero, never a skip |
-| Exercise explicitly skipped | **performed: skipped** | A real observation, distinct from silence |
+| Field left empty during training | **null** | Never zero, never a skip |
+| Exercise explicitly skipped | **status: skipped** | A real observation, distinct from silence |
 
-The distinction that matters most is the last three. **Changing reps mid-workout is not editing the plan** — it is recording what happened. Conflating them is how a system convinces itself the user is progressing when they are actually deviating.
+The last three carry the most weight. **Changing reps mid-workout is not editing the plan** — it is recording what happened. Conflating them is how a system convinces itself you are progressing when you are deviating.
 
 ---
 
 ## 4. Generation output contract v4.1
 
-Changes to what Claude returns. Version bump because it breaks the current shape.
-
-**Claude keeps:** exercise selection from a supplied candidate set · section composition and ordering · pairings and groupings · concise overview and section rationale · coaching emphasis for the day's anchor.
+**Claude keeps:** exercise selection from a supplied candidate set · section composition and ordering · pairings and groupings · concise overview and section rationale · coaching emphasis for the day's focus.
 
 **Claude loses:**
-- **Duration authority.** No `estimated_duration_mins`. Computed (§6).
-- **Factual metadata.** No exercise `name`, no `equipment` display strings, no canonical cues. Hydrated from the catalog by ID. The model referencing a fact it cannot verify is how facts drift.
-- **Free-form `reps`.** Replaced by a structured prescription (§5).
-- **Intensity interpretation.** Receives a resolved profile (§7) rather than a 1–10 number to interpret.
+- **Duration authority.** Its estimate may still be returned as diagnostic information, but it is not consulted for validation.
+- **Factual metadata.** No exercise `name`, no equipment display strings, no canonical cues or regressions. Hydrated from the catalog by ID. A model reproducing facts it cannot verify is how facts drift — and it is output tokens spent on data you already have.
+- **Free-form `reps`.** Replaced by a structured prescription (§6).
 
-**Claude gains:** a bounded candidate set per section, so eligibility is settled before composition rather than requested in prose · an explicit `session_function` and `anchor_relationship` per exercise (splitting today's overloaded single field) · a resolved intensity profile with hard ceilings.
+**Claude gains:** a bounded candidate set per section, so eligibility is settled before composition rather than requested in prose · explicit `session_function` and `anchor_relationship` per exercise, splitting today's single overloaded field.
 
-**Consequence:** most of the prompt's ~380 lines describing *rules to follow* become *constraints already applied to the input*. The prompt gets shorter and the guarantees get stronger, because a rule enforced by candidate filtering cannot be forgotten by a model.
+**Consequence:** rules currently described to the model in prose become constraints already applied to its input. The prompt gets shorter, the candidate list gets smaller, and a rule enforced by filtering cannot be forgotten.
 
 ---
 
-## 5. Structured prescriptions
+## 5. Requested versus effective inputs
 
-The single change that unblocks duration computation, progression, and validation. Today `exercises.reps` is TEXT holding at least four data types — `"8"`, `"30 sec"`, `"AMRAP"`, `"15-12-9-6-3"`.
+Both are retained on every generation. When a rule clamps or interprets an input — goal constraining an intensity range, duration trimming work — the requested value and the effective value are both recorded.
 
-A prescription must express, in computable form:
+This is what makes an adjustment visible rather than mysterious, and it is the minimum needed to debug a generation six weeks later.
 
-- **Modality** — repetitions, time, distance, rounds, or mixed
+---
+
+## 6. Structured prescriptions
+
+**Approved because they support:** reliable execution renderers · timers · prescribed-versus-performed comparison · partial logging · progression · a basic duration plausibility check.
+
+Today `exercises.reps` is TEXT holding at least four data types — `"8"`, `"30 sec"`, `"AMRAP"`, `"15-12-9-6-3"`. Every consumer parses strings and guesses.
+
+A prescription expresses, as discriminated data:
+
+- **Modality** — repetitions · time · distance · rounds. Determines which fields apply and which are not applicable.
 - **Sets or rounds** — count
-- **Work per set** — reps, or duration, or distance, depending on modality
-- **Rep scheme** — fixed, or an explicit per-set sequence for ladders and pyramids
-- **Load guidance** — as a band or a reference (percentage, RIR, bodyweight, "same as last time"), never a bare number the model invented
+- **Work per set** — reps, duration, or distance, per modality
+- **Rep scheme** — fixed, or an explicit ordered sequence for ladders and pyramids
+- **Load guidance** — a band or reference (percentage, RIR, bodyweight, "same as last time"), never a bare number the model invented
 - **Rest** — between sets, and separately between rounds
-- **Tempo** — where prescribed
-- **Timer contract** — none, count-up, countdown, interval, or per-minute, with the parameters each requires
+- **Tempo** — structured or display-oriented. **Not consumed by duration in this implementation.**
+- **Timer contract** — none · count-up · countdown · interval · per-minute, with each one's parameters
 - **Interval role** — for schemes where a secondary movement fills the gap between rungs
 
-**Ladders are the test case.** `"15-12-9-6-3"` must survive as five ordered work targets, because the ladder renderer needs them individually, duration needs their sum, and progression needs to know which rung was reached.
+**Ladders are the test case.** `"15-12-9-6-3"` survives as five ordered targets, because the renderer needs them individually and progression needs to know which rung was reached. Note this removes string parsing rather than adding it.
+
+**This does not imply every repetition converts to an exact number of seconds.** Structured prescriptions exist for execution, logging, and comparison. Duration is a beneficiary, not the justification.
 
 ---
 
-## 6. Duration calculation
+## 7. Duration plausibility check
 
-Deterministic, in code, from the structured prescription. Claude's opinion is not an input.
+**Purpose: reject workouts that clearly cannot fit. Not predict completion time.**
 
-**Per exercise:**
+The backend computes a rough estimate independently of Claude. Crude on purpose — the bar it has to clear is a check that currently always passes.
 
-| Structure | Duration |
+| Component | Rule |
 |---|---|
-| standard | `sets × (work_time + rest_seconds)` |
-| superset | `rounds × (work_A + work_B + rest_after_pair)` |
-| circuit | `rounds × (Σ work + intra_transitions) + (rounds − 1) × round_rest` |
-| emom | `minutes × 60` — fixed by definition |
-| amrap | `minutes × 60` — fixed by definition |
-| for_time | `min(time_cap, estimated_work_time)` |
+| Standard work | fixed **30–45 second allowance per set** |
+| Inter-set rest | `(sets − 1) × rest_seconds` — no rest after the final set |
+| Superset / circuit rest | shared rest counted **once per completed round** |
+| EMOM · AMRAP | declared duration |
+| For Time | **the full time cap** — the user may need all of it |
+| Transitions | a small fixed allowance per exercise or section |
+| Tolerance | **~15–20%**, generous by design |
 
-**`work_time`** comes from modality: a duration prescription supplies it directly; a rep prescription computes `reps × seconds_per_rep`, adjusted when tempo is specified.
+**Explicitly not doing:** parsing tempo · seconds-per-rep classification · equipment-based transition tables · per-exercise duration overrides · a separate duration service.
 
-**Transitions** come from each exercise's setup class (§8) — the cost of loading a barbell is not the cost of picking up a kettlebell, and across a full session that difference is minutes.
+**Acceptance test:** a workout whose prescribed work and required rest clearly cannot fit the selected duration is rejected or trimmed. That is the whole job.
 
-**Section duration** = Σ exercise durations + inter-exercise transitions.
-**Workout duration** = Σ section durations + inter-section transitions.
-
-**Validation** compares *computed* against *requested*, ±10%. Failing that is a hard rejection, and the failure names which section overran — which makes it actionable rather than a retry in the dark.
-
-**Open:** `seconds_per_rep` defaults. Needs a fitness-domain answer (§11), not an engineering guess.
+**On tuning from real data:** `workout_sessions.duration_mins` records actual elapsed time, and `workout_sections` already carries `started_at` and `completed_at` — so a persistent overrun can be traced to a *section*. It cannot be attributed to a specific exercise without finer timing than the product captures. Any future calibration should adjust the global allowance, not manufacture per-exercise precision from data that cannot support it.
 
 ---
 
-## 7. Intensity normalization
+## 8. Intensity — ownership, not normalization
 
-The user-facing slider stays 1–10. Confirmed: a second dial pushes backend complexity onto someone walking into a gym.
+The user-facing control stays **1–10**. A second dial pushes backend complexity onto someone walking into a gym.
 
-Internally, `intensity + goal + duration + history + constraints` resolves — deterministically, in code — into a bounded profile:
+The earlier six-dimensional deterministic profile is **withdrawn from v0.4**. It promised technical-tier and impact ceilings enforced against catalog metadata that §9 defers — a rule that cannot be enforced is not a rule.
 
-- **Session effort** — target RPE band
-- **Volume** — working-set range
-- **Density** — work-to-rest ratio band
-- **Maximum technical tier** — foundational · intermediate · advanced
-- **Impact allowance** — low · moderate · high
-- **Resistance guidance** — %1RM or RIR band
+Instead, a clear division of what governs what:
 
-**This is the fix for compounding.** Today intensity 9 simultaneously selects the hardest movements, the heaviest loads, the most sets, the lowest reps and the tightest caps — five multiplications of "hard" that nothing notices. Resolved dimensions can be **capped independently**: a user with a persistent low-impact constraint gets intensity 9 as heavy-and-dense-but-low-impact, rather than everything maxed at once.
-
-Both requested and effective values are retained, so an adjustment is visible rather than mysterious.
-
-**Open:** the actual mapping values. Fitness-domain input (§11).
-
----
-
-## 8. Exercise metadata — derived, not authored
-
-**Revised.** The earlier version of this section proposed five new attributes and an authoring
-workstream across 173 movements. That was solving a problem the codebase doesn't have.
-
-### What duration actually needs
-
-The duration engine (§6) needs two numbers per exercise:
-
-| Input | Source | Why it works |
-|---|---|---|
-| **Seconds per rep** | `exercise_role` — already populated | A compound lift rep is slower than an accessory rep, which is slower than a conditioning rep. One default per role. |
-| **Transition time** | `default_equipment` — already populated | Loading a barbell costs more than picking up a kettlebell. One default per equipment type. |
-
-**Modality** — reps vs time vs distance — is not a per-exercise attribute at all. It is a property
-of the *prescription*, and §5 makes it explicit there. A plank prescribed for 30 seconds and a plank
-prescribed for 3 sets of 20 breaths differ in modality while being the same exercise.
-
-**Net new authoring: zero.** Two lookup tables of roughly seven and six entries, derived from columns
-that already exist.
-
-### How the numbers get right
-
-Ship the engine with role- and equipment-based defaults. Compare computed duration against actual
-elapsed time — `workout_sessions.duration_mins` already records it. Where the error is consistent,
-fix that role or that specific exercise.
-
-This is the opposite of the authoring workstream: **evidence first, exceptions second.** If barbell
-deadlifts consistently overrun their estimate, fix deadlifts. Do not pre-classify 173 movements on
-speculation to avoid a problem that may only affect four of them.
-
-A per-exercise override column exists for the exceptions. It starts empty.
-
-### Deferred, with revival conditions
-
-| Attribute | Deferred because | Revive when |
-|---|---|---|
-| `impact_category` | Only consumed by an impact constraint (§9), and no user has set one | A user sets an impact constraint and generation ignores it |
-| `technical_demand` | Only feeds a soft composition preference the model can already make from its own knowledge | Generated sessions show a pattern of misplaced technical work that prompt guidance cannot fix |
-
-Neither is load-bearing for D5, D6, or the three-state model. Both were proposed for a safety layer
-that requires fitness-domain review to author responsibly — and deferring them removes that
-dependency entirely rather than working around it.
-
-### What this changes elsewhere
-
-`META-01` is withdrawn. The metadata-authoring workstream does not exist. `DATA-04` shrinks from
-"five attributes plus governance" to "two derivation tables plus an override column."
-
-## 9. User-authored constraints
-
-Replaces structured limitation modelling. **CLEAR does not model injuries.**
-
-A constraint is something the user explicitly chose:
-
-| Field | Values |
+| Input | Governs |
 |---|---|
-| Scope | exercise · movement pattern · equipment · impact |
-| Action | **exclude** (hard, deterministic) · **avoid** (ranking penalty) · **prefer not** (soft) |
-| Duration | this session · persistent |
-| Note | free text — context only |
+| **Intensity** | Intended session effort |
+| **Goal** | Load, rep, rest, and density character |
+| **Duration** | How much work fits |
+| **Experience** | Soft technical-complexity guidance |
+| **Explicit constraints** | Deterministic exclusions, where catalog data supports enforcement |
+| **History** | Repetition avoidance and future loading context |
 
-**The rule that keeps this safe: no constraint is ever inferred from free text.** "My left shoulder has been bothering me" is acknowledged, may make composition more conservative, and may prompt the user to add a constraint. It never *becomes* one silently.
+**Requested and effective intensity are both retained** when goal rules clamp or adjust it (§5).
 
-This keeps CLEAR on the "respect what the user told us" side of a line it should not cross — and it is also the honest position, since inferring exclusions from described symptoms is clinical reasoning without clinical accountability.
+This still addresses the compounding problem the review identified — intensity no longer silently multiplies load, volume, density, complexity, and impact at once, because those now have distinct owners. It does so without inventing mappings or depending on metadata that does not exist.
 
-Free text remains valuable as context for composition. It is simply never load-bearing for safety.
+The multidimensional profile remains a plausible future direction. It is not an M1 requirement until its mappings and supporting metadata are defined.
 
 ---
 
-## 10. Requirement impact
+## 9. Exercise metadata
+
+**No new per-exercise metadata is required.**
+
+The duration check in §7 uses fixed allowances held as **code constants**, plus `rest_seconds` and `sets`, which the prescription already carries. Nothing needs a table.
+
+Explicitly withdrawn: role-speed tables · equipment-transition tables · per-exercise duration overrides · the metadata-authoring workstream.
+
+**Still deferred:** `impact_category` and `technical_demand`. Both existed for a safety layer requiring fitness-domain review to author responsibly. Deferring them removes that dependency rather than working around it.
+
+Revival conditions: impact returns when an impact constraint exists *and* the catalog can enforce it; technical demand returns if generated sessions show a pattern of misplaced technical work that prompt guidance cannot fix.
+
+---
+
+## 10. User-authored constraints
+
+CLEAR does not model injuries.
+
+**Supported initially** — the three enforceable against existing catalog data:
+
+| Scope | Enforced by |
+|---|---|
+| **Exercise** | direct ID exclusion |
+| **Movement pattern** | existing anchor / component tagging |
+| **Equipment** | existing `equipment_options` |
+
+Each constraint carries an action (**exclude** — hard and deterministic · **avoid** — ranking penalty · **prefer not** — soft), a duration (**this session** · **persistent**), and an optional note.
+
+**No impact constraint** until the catalog carries enough impact data to enforce it. Offering a constraint the system cannot honor is worse than not offering it.
+
+### Free text
+
+Free text may influence Claude's composition as **best-effort context**. It does not create a persistent or deterministic exclusion.
+
+CLEAR does not diagnose injuries or silently convert symptom descriptions into stored rules. Claude may read "left shoulder has been bothering me" and compose conservatively — that is useful, and it is not presented as a safety mechanism. A deterministic exclusion comes from an explicit user selection, always.
+
+---
+
+## 11. Requirement impact
 
 ### New
 
 | ID | Scope | Milestone |
 |---|---|---|
-| `DATA-04` | Duration derivation: seconds-per-rep by role, transition time by equipment, per-exercise override | M0 |
-| `DATA-05` | User-authored constraints: scope, action, duration, note | M0 |
-| `GEN-06` | Deterministic duration engine + validation on computed totals | M1 |
-| `GEN-07` | Intensity normalization into the bounded profile | M1 |
+| `DATA-05` | User-authored constraints: exercise, movement pattern, equipment | M0 |
+| `GEN-06` | Duration plausibility check, allowances as code constants | M1 |
+
+`DATA-04` (duration metadata) is **withdrawn**. `GEN-07` (intensity normalization) is **withdrawn** — §8 is an ownership model, not a subsystem.
 
 ### Substantially revised
 
 | ID | Change |
 |---|---|
-| `DATA-01` | Three-state model, typed absence, revision lineage, version stamping. This is the rewrite. |
+| `DATA-01` | Three-state model, item status, lineage, prompt and contract version stamping |
 | `CORE-03` | Schemas for structured prescriptions — every modality, every timer contract, ladders as ordered targets |
-| `GEN-02` | Output contract v4.1: no duration, no invented facts, bounded candidates, resolved profile |
+| `GEN-02` | Output contract v4.1: no duration authority, no invented facts, bounded candidates |
 | `SES-01` | Persists all three states; **acceptance must include the D6 reproduction as a regression test** |
 | `REV-02`, `REV-03` | Swaps create revisions with lineage rather than mutating in place |
 | `EXE-02`, `EXE-03`, `EXE-04` | Renderers consume structured prescriptions instead of parsing strings |
 | `EXE-05` | Rest timing from structured rest rather than inference |
-| `OVR-01` | `reps_prescribed` now exists properly; rep-completion becomes computable rather than parsed |
+| `OVR-01` | Prescribed reps become computable rather than parsed |
 | `DATA-03` | Types regenerate against the new schema |
 
 ### Unaffected
@@ -265,48 +243,46 @@ The entire ENV trunk, the DS trunk, AUTH, CORE-01/02/04, HOME, HIST, SET, FAV, P
 
 ---
 
-## 11. Open decisions
+## 12. Scope
 
-Ordered by how much they block.
+### Required now
 
-1. ~~Who reviews the exercise metadata?~~ **Resolved by §8.** No attribute remaining in the schema
-   requires fitness-domain review. Duration derives from existing columns and is corrected by measured
-   error; the two attributes that needed a reviewer are deferred. The safety mechanism is user-authored
-   exclusions, where the user is the authority on their own body.
-2. **Anchor taxonomy** *(decide before DATA-01)* — `anchor_type` holds movement patterns
-   (`squat`/`hinge`/`press`/`pull`), body regions (`upper_body`/`lower_body`/`full_body`), and a
-   modality (`power`) in one enum, used for both sessions and exercises. Splitting into session
-   **focus** and exercise **movement pattern** makes coverage balancing and `suggest_anchor` precise,
-   and removes a prose translation step from the prompt. No UI change. Recommended.
-3. **Intensity mapping values** — the numbers behind the six dimensions in §7. Tunable after the
-   schema lands; does not block it.
-4. **After-start regeneration** — what is editable once a workout begins, and what locks. Still unresolved from the map.
-5. **Global working-weight change scope** — one exercise, a movement family, an equipment variant, or all future prescriptions.
-6. **REV-04 promotion** — the schema supports pre-start editing; whether it is built in M2 stays a product-priority call.
-7. **Regeneration telemetry** — record how many times a workout was regenerated before starting, and optionally what was discarded. It is the only honest generation-quality signal obtainable without asking the user. Cheap now, invisible later.
+1. Fix D6 — preserve prescribed, revised, and performed
+2. Performance logs attach to the exercise actually performed
+3. Structured prescriptions with discriminated modalities
+4. Lightweight duration plausibility calculation
+5. Persist requested and effective generation inputs
+6. Version the prompt and generation contract
+7. Explicit exercise, movement-pattern, and equipment exclusions
+8. Update execution renderers and regression tests for the new contract
+
+Item 8 is the largest work item and the easiest to underestimate — every structure renderer changes.
+
+### Open decisions
+
+- **Anchor taxonomy** — `anchor_type` holds movement patterns, body regions, and a modality in one enum used for both sessions and exercises. Splitting session **focus** from exercise **movement pattern** makes coverage balancing and `suggest_anchor` precise and removes a prose translation step from the prompt. No UI change; exercises are already tagged. *Recommended, cheaper now than later.*
+- **REV-04 promotion** — the schema supports pre-start editing; whether it ships in M2 is a product-priority call
+- **After-start regeneration** — what is editable once a workout begins, and what locks
+- **Global working-weight change scope** — one exercise, a movement family, an equipment variant, or all future prescriptions
+
+### Deferred
+
+Seconds-per-rep metadata · equipment-transition tables · per-exercise duration overrides · precise duration calibration · full six-dimensional intensity normalization · deterministic technical and impact ceilings · impact constraints without catalog coverage · derived athlete state beyond OVR-01 · wearables · advanced regeneration analytics · quality scoring · calendar programming · any clinical ontology.
 
 ---
 
-## 12. Deferred — confirmed
+## 13. Obligations on the forthcoming schema
 
-Derived athlete state beyond OVR-01's load anchors · quality scoring · session blueprint and candidate ranking as *stored* artifacts (they are code, not schema) · wearables and readiness signals · analytics beyond basic events · calendar programming · any clinical ontology.
+This document contains no schema, so it cannot claim these are satisfied. **The schema and generation-contract proposals must demonstrate how they meet them.**
 
----
+- Reconstruct what was prescribed, what was revised, and what was performed
+- Store a partial log without treating null as zero or as a skip
+- Preserve unaffected revisions and execution data through regeneration
+- Attach execution data to the exercise actually performed, through substitution
+- Compute a duration estimate independently of Claude, sufficient to reject implausible workouts
+- Deterministically exclude constrained exercises, patterns, and equipment before composition
+- Retain requested and effective generation inputs
+- Retain prompt and generation-contract versions on every generated workout
+- Support one Postgres deployment without artificial boundaries
 
-## 13. What this buys
-
-Against the map's acceptance checks:
-
-- Reconstruct prescribed / revised / performed — **yes**, via I1–I2
-- Store a partial log without treating missing as zero — **yes**, via I3
-- Preserve edits and execution through regeneration — **yes**, via I1 + I4
-- Calculate and validate duration from structured prescriptions — **yes**, §5 + §6
-- Deterministically exclude invalid exercises before composition — **yes**, §8 + §9, gated on coverage
-- Cite the observations behind a recommendation — **yes**, via I5
-- Distinguish raw history from derived state — **yes**, via I5
-- Version prompts, schemas, metadata, validators — **yes**, via I7
-- One Postgres deployment, no artificial boundaries — **yes**
-- Add a readiness source later without redesign — **yes**; it enters as evidence, not as a core dependency
-- Trace every rule to its enforcing layer — **yes**, §4 draws that line explicitly
-
-And it fixes the two defects that are corrupting data today.
+Claims about citing observations for future recommendations, adding readiness integrations without redesign, and full rule traceability are **deferred until a schema demonstrates them.** They are not asserted here.
