@@ -235,10 +235,51 @@ Every component in every state, live theme switching. Excluded from production b
 
 ---
 
-## 6. Open questions
+## 6. Resolved decisions
 
-1. **Quick Start with no history** — nothing to reuse. Fall back to profile defaults, or hide the action until one workout exists?
-2. **Mid-workout navigation away** (History from Workout) — currently impossible. Deliberate, or a gap?
-3. **Session Detail from a favorite restart** — the restarted session is new; does the favorite's completion history link back to each session, and is that surfaced anywhere in M2?
-4. **Rest-day marking from anywhere**, or only Home?
-5. **Onboarding re-entry** — can a user re-run onboarding from Settings, or is it strictly first-run?
+Answered 2026-08-24. Each is now enforced by a requirement, not just recorded here.
+
+### Quick Start is hidden until history exists → **HOME-01**
+Not disabled, not falling back to profile defaults — absent. A first-run Home has one action, and it
+is Generate. The affordance appears once there is something to reuse.
+
+### The Workout screen is a focus mode → **EXE-01**
+While a session is active there is **no in-app navigation out of it** except completing or
+abandoning. No History, no Settings, no Home. Browser back triggers the abandon confirm.
+
+The reasoning is state safety as much as focus: every route reachable mid-workout is a chance to
+strand a session in an ambiguous state. Removing the exits removes the whole class of bug.
+
+**The trap is on navigation, not on the user.** Closing the tab, backgrounding the phone, or losing
+the connection all persist state and surface resumption on Home. Deep-linking to another route with
+an active session prompts to resume or abandon rather than silently orphaning it.
+
+*Nav-graph consequence:* Workout has exactly two exits — `→ Summary` and `→ Home (abandon)`.
+
+### Repeated favorites are separate sessions, threaded by a comparison card → **FAV-02**
+Each completion is its own workout session with its own logs. The favorite is the thread between
+them, and the comparison surface makes the delta obvious — faster or slower, more or fewer rounds,
+heavier or lighter. Competitive framing is suppressed during a deload (OVR-04); the history still
+shows, the "beat your time" language doesn't.
+
+### Rest days are marked from Home only → **HOME-02**
+One place, one affordance.
+
+### Onboarding is strictly first-run → **SET-01**
+Every choice it collects is editable in Settings — experience, goal, sections, limitations,
+locations, equipment. Onboarding is never re-entered.
+
+---
+
+## 7. Noted for the generation review
+
+Not a screen decision, but it surfaced here and belongs with the generation work.
+
+**Regeneration count is an unused quality signal.** When a workout is regenerated from Review, the
+discarded one leaves no trace. But "regenerated three times before starting" is the app being told,
+precisely, that generation failed to produce something worth doing — and it is the only honest
+signal of generation quality the product can collect without asking.
+
+Nothing currently records it. Worth deciding deliberately during the schema pass: capture the count
+(and optionally what was discarded), or explicitly decide not to. Cheap to add now, invisible to
+add later.

@@ -25,3 +25,13 @@ four named failures from the old app, each mapped to the requirements that kill 
   what a deload is or why the app would suggest one.
 - **Independence:** every cited spec copied into `specs/`. No requirement sends anyone to the
   archived repo. The single remaining external read is the exercise library export (data, not code).
+
+## v0.3.1 — 2026-08-24
+IA decisions folded back into requirements. 204 → 211 acceptance criteria.
+- **HOME-01** — Quick Start hidden until history exists. Not disabled, not defaulted: absent.
+- **EXE-01** — Workout is a focus mode. No in-app navigation out of an active session except
+  completing or abandoning; browser back triggers the abandon confirm. Leaving the *app* is still
+  fine — the trap is on navigation, not the user. Rationale is state safety as much as focus.
+- **FAV-02** — Comparison surface across completions of the same favorite. Each completion stays
+  its own session; the favorite is the thread. Competitive framing suppressed during a deload.
+- **SET-01** — Every onboarding choice editable in Settings; onboarding strictly first-run.

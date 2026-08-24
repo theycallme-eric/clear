@@ -491,6 +491,9 @@ Section-by-section progression, prev/next navigation, progress tracker, global s
 - [ ] Global timer is wall-clock based — correct after backgrounding the tab/phone
 - [ ] Navigation works across all sections; progress bar reflects section statuses
 - [ ] Abandon confirms, persists partial state, and feeds HOME-01 resumption
+- [ ] **Workout is a focus mode.** While a session is active there is no in-app navigation out of it except completing or abandoning — no nav to History, Settings, or Home. Browser back triggers the abandon confirm rather than leaving
+- [ ] Navigating directly to another route with an active session (deep link, restored tab) prompts to resume or abandon rather than silently stranding the session
+- [ ] Leaving the *app* is still allowed — closing the tab or backgrounding the phone persists state and surfaces resumption on Home. The trap is on in-app navigation, not on the user
 - [ ] Section header shows structure-type identity per the master clarity spec
 
 ### EXE-02 — Standard + superset renderers, set logging
@@ -579,6 +582,7 @@ The daily entry point: Generate + Quick Start actions, recent 3 workouts, incomp
 **Acceptance:**
 - [ ] Incomplete session → resumption prompt → resumes execution at the right position
 - [ ] Quick Start generates immediately using the last session's goal/anchor/intensity/location
+- [ ] Quick Start is **hidden entirely until at least one completed workout exists** — never shown disabled, never shown falling back to defaults
 - [ ] Recent 3 link to history detail
 - [ ] Week strip renders workout/rest/upcoming states from data
 
@@ -624,6 +628,8 @@ Per the v2 spec: personal bests (min completion time for For Time, max rounds fo
 - [ ] PB updates only when the new result beats the stored best; PB badge on the favorite
 - [ ] Repeating a favorite pre-fills each exercise with last-completion weights
 - [ ] Completion history lists date + headline result per run
+- [ ] **Comparison surface across completions of the same favorite** — this run against previous runs, with the delta made obvious (time faster/slower, rounds up/down, weight moved). Each completion remains its own session; the card is the thread between them
+- [ ] Comparison suppresses competitive framing during a deload (per OVR-04) — show the history, drop the "beat your time" language
 - [ ] Spec'd v2 behaviors all present or explicitly deferred with a note
 
 ### HOME-02 — Streak engine + rest days
@@ -660,6 +666,7 @@ Hub with: goal preset, enabled sections (structure customization), limitations t
 - [ ] Theme flips live, persists across reload, and covers every screen
 - [ ] Sign out clears caches and lands on Welcome
 - [ ] Section toggles respect goal constraints (e.g. active recovery's fixed sections)
+- [ ] **Every choice made during onboarding is editable here** — experience, goal, sections, limitations, locations, equipment. Onboarding is strictly first-run and is never re-entered
 
 ### SET-02 — Locations + equipment management
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
