@@ -1,5 +1,7 @@
 # CLEAR — Generation Contract v4.1
 
+> **Status:** proposal, revision 2
+> **Revision 2:** output nests exercises under blocks · `rounds` removed as a modality · targets discriminated (fixed / range / sequence) · validation and duration operate on blocks.
 > **Status:** proposal, for review
 > **Implements:** `CHANGE_SET_v0.4.md` rev 3 §4 · `DATA_MODEL.md` §6
 > **Replaces:** prompt v4.0.0 and the current `generate-workout` handler contract
@@ -141,43 +143,55 @@ Candidates are grouped by section, carry only what composition needs, and never 
   "title": "string",
   "overview": "string",
   "sections": [{
-    "section_type": "primary_lift",
+    "section_type": "conditioning",
     "section_title": "string",
     "section_notes": "string | null",
-    "exercises": [{
-      "exercise_id": "deadlift",          // MUST be from this section's candidates
-      "equipment": "barbell",             // MUST be from that candidate's usable_equipment
 
-      "session_function": "primary",      // prep|primary|accessory|balance|core|conditioning|recovery
-      "anchor_relationship": "direct",    // direct|complementary|neutral
-
-      "modality": "reps",                 // reps|time|distance|rounds
-      "sets": 4,
-      "work_targets": [5],                // ordered; [15,12,9,6,3] for a ladder
-      "rep_scheme": "fixed",
-      "rest_seconds": 150,
+    "blocks": [{
+      "structure_type": "amrap",        // standard|superset|circuit|emom|amrap|for_time
+      "rounds": null,                   // fixed rounds; null when open-ended
+      "timer_type": "countdown",        // none|count_up|countdown|interval|per_minute
+      "timer_seconds": 720,             // required for emom|amrap|for_time
       "round_rest_seconds": null,
-      "tempo": null,
+      "rep_scheme": "fixed",
+      "block_notes": "string | null",
 
-      "load_type": "percent_1rm",         // percent_1rm|rir|bodyweight|prior_session|absolute|none
-      "load_value": 80,
+      "exercises": [{
+        "exercise_id": "kb-swing",      // MUST be from this section's candidates
+        "equipment": "kettlebell",      // MUST be from that candidate's usable_equipment
 
-      "structure": {
-        "type": "standard",               // standard|superset|circuit|emom|amrap|for_time
-        "group_id": null,                 // required for every non-standard type
-        "timer_type": "none",             // none|count_up|countdown|interval|per_minute
-        "timer_seconds": null
-      },
-      "is_interval_exercise": false
+        "session_function": "conditioning", // prep|primary|accessory|balance|core|conditioning|recovery
+        "anchor_relationship": "complementary", // direct|complementary|neutral
+
+        "modality": "reps",             // reps|time|distance  — NOT rounds
+        "sets": null,                   // null inside open-ended blocks
+        "target_kind": "fixed",         // fixed|range|sequence
+        "target_value": 15,             // fixed
+        "target_min": null,             // range
+        "target_max": null,             // range
+        "target_sequence": null,        // sequence: [15,12,9,6,3]
+        "per_side": false,
+        "distance_unit": null,          // required when modality = distance
+        "rest_seconds": null,
+        "tempo": null,
+
+        "load_type": "absolute",        // percent_1rm|rir|bodyweight|prior_session|absolute|none
+        "load_value": 24,
+        "is_interval_exercise": false
+      }]
     }]
   }],
-  "estimated_duration_mins": 46           // DIAGNOSTIC ONLY — never validated against
+  "estimated_duration_mins": 46         // DIAGNOSTIC ONLY — never validated against
 }
 ```
 
 **Removed from v4.0:** `name` · `regression` · `effort_percent` (folded into `load_type`/`load_value`) · free-form `reps` string.
 
-**The single largest change** is `reps` becoming `modality` + `work_targets[]`. `"15-12-9-6-3"` arrives as `[15,12,9,6,3]` — five ordered targets. The ladder renderer indexes them, the duration check sums them, progression reads which rung was reached. Nothing parses a string.
+**Two structural changes.**
+
+**Exercises nest under blocks.** Structure properties — type, rounds, timer, round rest — belong to the block, so members of a circuit cannot disagree about the clock. It also means a conditioning section can hold an EMOM *and* an AMRAP, which the old section-keyed model could not record.
+
+**Targets are discriminated.** `"15-12-9-6-3"` arrives as `target_kind: "sequence"` with `target_sequence: [15,12,9,6,3]`. An `8–10` rep range arrives as `target_kind: "range"`. An integer array alone could not tell those apart. `per_side` handles unilateral work; `distance_unit` handles distance. **`rounds` is not a modality** — an exercise inside an AMRAP still prescribes reps or time per round; the block is what repeats.
 
 **`estimated_duration_mins` survives as diagnostic.** Comparing Claude's estimate to the computed one is a free signal about whether the model understands the time cost of what it composed. It is never authoritative.
 
@@ -194,9 +208,9 @@ Candidates are grouped by section, carry only what composition needs, and never 
 | 1 | Every `exercise_id` is in **that section's candidate set** — stricter than "in the library" |
 | 2 | Every `equipment` is in that candidate's `usable_equipment` |
 | 3 | Every `section_type` is enabled for the user |
-| 4 | `work_targets` present and non-empty unless `modality = 'rounds'` |
-| 5 | Non-standard structures carry a `group_id`, shared correctly across members |
-| 6 | `emom`/`amrap`/`for_time` carry `timer_seconds` |
+| 4 | Target shape matches `target_kind` — exactly the right fields populated |
+| 5 | `distance_unit` present when `modality = 'distance'` |
+| 6 | Blocks of type `emom`/`amrap`/`for_time` carry `timer_seconds`; `circuit` carries `rounds` |
 | 7 | `load_value` present unless `load_type` ∈ {bodyweight, prior_session, none} |
 | 8 | **Computed duration within tolerance** (§7) |
 
@@ -215,20 +229,16 @@ These are stored on the session as a quality record. They are the observability 
 Purpose: reject workouts that clearly cannot fit. Not predict completion time.
 
 ```
-per exercise:
-  standard   → sets × WORK_PER_SET + (sets − 1) × rest_seconds
-  superset   → handled at group level
-  circuit    → handled at group level
+per block:
+  standard   → Σ members: sets × WORK_PER_SET + (sets − 1) × rest_seconds
+  superset   → rounds × Σ(member work) + (rounds − 1) × round_rest_seconds
+  circuit    → rounds × Σ(member work) + (rounds − 1) × round_rest_seconds
   emom       → timer_seconds
   amrap      → timer_seconds
   for_time   → timer_seconds            (the full cap — the user may need all of it)
 
-per group (superset / circuit):
-  rounds × (Σ member work) + (rounds − 1) × round_rest_seconds
-  shared rest counted once per round, not per member
-
 per section:
-  Σ exercises + Σ groups + (exercise_count × TRANSITION)
+  Σ blocks + (exercise_count × TRANSITION)
 
 per workout:
   Σ sections + (section_count × TRANSITION)
@@ -237,9 +247,11 @@ constants:  WORK_PER_SET ≈ 30–45s      TRANSITION ≈ small fixed allowance
 tolerance:  ~15–20%
 ```
 
+Shared rest is counted once per round because it lives on the block. That is the normalization fix doing real work — under the old shape, rest duplicated across three circuit members could be summed three times.
+
 Constants live in the `GEN-06` module. **No metadata table, no per-exercise override, no tempo parsing, no seconds-per-rep classification.**
 
-**On failure:** report which *section* overran and by how much, so the retry prompt is specific rather than a blind re-roll.
+**On failure:** report which *block* overran and by how much, so the retry prompt is specific rather than a blind re-roll.
 
 **Why crude is enough.** Today `validateWorkout` compares `estimated_duration_mins` — a number Claude was told the answer to — against the request. The check cannot fail. Any independent computation is strictly better; the bar is zero.
 
@@ -295,7 +307,7 @@ This contract is `4.1.0`. Prompt version bumps to `5.0.0` — the library sectio
 ## 12. Open
 
 1. **Candidate floor per section** — 8 is a guess. Tune against the real library once sections are queried.
-2. **Soft-constraint ranking** — `avoid` and `prefer_not` currently reach Claude as a list. A real ranking layer is deferred.
-3. **`work_targets` for `rounds` modality** — AMRAP prescribes work per round with rounds open-ended. Resolve alongside `EXE-04`.
+2. **Soft-constraint ranking** — `avoid` and `prefer_not` reach Claude as a list; deterministic ranking is deferred, and the UI exposes `exclude` only until it exists.
+3. ~~`work_targets` for `rounds` modality~~ — **resolved.** Rounds belong to the block; exercises prescribe reps, time, or distance per round.
 4. **Retry budget** — one retry retained. Whether a duration failure should trim rather than regenerate is worth testing; trimming is cheaper and often correct.
 5. **Quality record storage** — §6 soft checks need somewhere to live. A column on the session is probably enough; a table is probably premature.
