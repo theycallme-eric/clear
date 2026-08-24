@@ -1,8 +1,9 @@
 # CLEAR Rebuild — Requirements Specification
 
-**Version:** 0.2 DRAFT — for Eric's review
+**Version:** 0.3 DRAFT — for Eric's review
 **Date:** 2026-08-24
-**0.2:** Progressive-overload spec landed (`OVR-01_Progressive_Overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
+**0.3:** Eric's first review pass applied. Design-system requirements gated on the incoming Claude Design export. CORE-04 added (app-wide loading/empty/error contract). OVR-04 rewritten in plain language. **Independence:** every cited spec now lives in this workspace — the rebuild never reads the archived repo.
+**0.2:** Progressive-overload spec landed (`specs/OVR-01_progressive-overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
 **Scope:** Ground-up rebuild of CLEAR. Full parity with the existing app plus spec'd planned features, sequenced M0–M3.
 
 ---
@@ -36,7 +37,9 @@ One- or two-sentence summary.
 **Acceptance:** the issue's checklist. Verifiable, not vibes.
 ```
 
-**Carry-over** tells the implementing agent how to treat the old codebase (archived `clear-app` repo, read-only): **keep** = use the artifact as-is · **port** = copy with mechanical adaptation · **rebuild** = re-implement fresh, old code is reference only · **new** = no precedent exists.
+**Carry-over** describes how much prior art exists **in this workspace** for the requirement: **keep** = use the artifact as-is · **port** = adapt an existing spec or asset · **rebuild** = re-implement fresh, prior art is orientation only · **new** = no precedent exists.
+
+> **Independence rule.** The rebuild is self-contained. Every spec, asset, prompt, and token file it needs lives in this workspace under `specs/` or `design/`. **No requirement sends anyone to the archived `clear-app` repository.** If something is missing here, that is a bug in this document — say so rather than reaching backward. Duplication is the intended cost.
 
 **Dependency semantics:** "Depends on" means *must be merged before this issue starts* — not "related to." Dependencies only point backward (earlier or same milestone). Milestones group work for humans; **the graph is what schedules it.**
 
@@ -72,9 +75,9 @@ DS-05…07 may land during M1 — the M0 gate requires only DS-01…04. The grap
 
 | Input | Feeds | If absent |
 |---|---|---|
-| Claude Design (Pencil) export zip | DS-01 token source; DS-03…06 visual reference | Fall back to `design-system/tokens/*.json` + `VISUAL_LANGUAGE_RULES.md` from the old repo — DS-01 is built to re-run when the zip lands |
-| Old repo `clear-app` (archived, read-only) | Every `port`/`rebuild` carry-over | — |
-| Old Supabase project access | DATA-02 exercise library export | Blocker for DATA-02 only |
+| Claude Design (Pencil) export zip | DS-01 token source; DS-03…06 visual reference. **Gates DS-01, DS-02, DS-06** | Fall back to `design/tokens/_fallback-from-old-repo/` + `specs/design/visual-language-rules.md` — but see the gate note below |
+| `specs/` in this workspace | Every `port`/`rebuild` carry-over — all cited specs live here | Missing spec = defect in this doc |
+| Old Supabase project access | DATA-02 exercise library export — **the one remaining external read**, and it is data, not code | Blocker for DATA-02 only |
 | Coworker's DAG repo link | Format reference for generated DAG.md | Non-blocking |
 
 ---
@@ -211,6 +214,20 @@ Kills the unvalidated half of D2. Zod schemas for every payload that crosses a b
 - [ ] Client and edge import the same schema source — no duplicated definitions
 - [ ] Types are inferred from schemas (`z.infer`), not written twice
 
+### CORE-04 — App-wide state contract
+**Layer:** state · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** CORE-01
+
+Answers a question the rest of this document was leaving implicit: *what does the user see when something fails, is slow, or has no data?* Every data-driven view must define four states — **loading, empty, error, populated** — and a top-level error boundary must exist so a render crash never produces a blank screen.
+
+**Acceptance:**
+- [ ] A documented four-state contract every view implements: loading / empty / error / populated. No view is allowed to render nothing
+- [ ] Top-level error boundary catches render crashes and shows a recoverable screen with a reload action — never a white page, never a raw stack trace
+- [ ] Error views render an `AppError` (CORE-01): plain-language message, `requestId` when present, and a retry that actually re-runs the failed operation
+- [ ] Empty is distinguishable from loading and from error — three different screens, never a spinner that silently means "nothing here"
+- [ ] Slow operations show progress after a threshold rather than appearing frozen
+- [ ] A test simulates each state for at least one representative view
+
 ### AUTH-01 — Session context
 **Layer:** state · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01, DATA-03
@@ -255,19 +272,24 @@ Kills the other half of D1. Profile and locations are independent React Query qu
 ### DS-01 — Token pipeline
 **Layer:** design · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01
-**Spec:** Pencil export zip (external input); fallback `design-system/tokens/*.json`
+**Spec:** Claude Design export (external input); interim `design/tokens/_fallback-from-old-repo/`
 
-Build step: token JSON → generated CSS custom properties for both themes (orange, blue). Hand-editing the generated CSS is impossible-by-convention; the export is the source.
+> ⚠️ **GATED — review before building.** The theme model is changing: there will be **several themes**, not two, and the orange/blue swap is no longer the relationship it was. Theme count, names, and semantics come from the export. Do not finalize token structure until the export has landed and been reviewed together. The build step below is written to be theme-count agnostic on purpose.
+
+Build step: token JSON → generated CSS custom properties, one file per theme. Hand-editing generated CSS is impossible-by-convention; the export is the source.
 
 **Acceptance:**
-- [ ] `npm run gen:tokens` emits both theme files deterministically
+- [ ] `npm run gen:tokens` emits one CSS file per theme found in the export, deterministically — **no hardcoded theme list**; adding a theme to the export adds a file with no code change
 - [ ] Primitives, semantic layer, typography, spacing, and effects tokens all covered
-- [ ] Swapping in a new export zip regenerates without manual edits
+- [ ] Swapping in a new export regenerates without manual edits
 - [ ] Generated files carry a do-not-edit header
+- [ ] Theme selection mechanism (attribute, class, or root swap) documented and agreed before DS-02 consumes it
 
 ### DS-02 — Global styles + typography
 **Layer:** design · **Milestone:** M0 · **Carry-over:** port
 **Depends on:** DS-01
+
+> ⚠️ **GATED with DS-01.** The design system has been tweaked since these class names were captured. Review the export against this ramp before finalizing — type roles or scale steps may have moved.
 
 Reset, page background, self-hosted fonts (Rajdhani, Oxanium, Space Grotesk), and the full utility class ramp (`.text-heading-*`, `.text-paragraph-*`, `.text-cta-*`, `.text-label-*`, `.text-time-*`, `.text-tab-*`).
 
@@ -279,7 +301,7 @@ Reset, page background, self-hosted fonts (Rajdhani, Oxanium, Space Grotesk), an
 ### DS-03 — Chamfer primitives + buttons
 **Layer:** design · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** DS-02
-**Spec:** `VISUAL_LANGUAGE_RULES.md`, `chamfered-component.md`
+**Spec:** `specs/design/visual-language-rules.md`, `specs/design/chamfered-component.md`
 
 The signature: ChamferedFrame/Card via clip-path with border + emissive variants, plus CTAButton and ActionButton.
 
@@ -287,7 +309,7 @@ The signature: ChamferedFrame/Card via clip-path with border + emissive variants
 - [ ] Chamfers render clean at all sizes and border widths — no clip artifacts
 - [ ] Button states (default/hover/active/disabled) use tokens only
 - [ ] The 1s frame color transition (the system's one easing exception) applies to frame color and nothing else
-- [ ] Both themes verified in the gallery
+- [ ] Every theme from the export verified in the gallery
 
 ### DS-04 — Form controls
 **Layer:** design · **Milestone:** M0 · **Carry-over:** rebuild
@@ -298,7 +320,7 @@ Input, Textarea, Checkbox, RadioButton, IntensitySlider (1–10), FilterDropdown
 **Acceptance:**
 - [ ] All controls keyboard-operable; slider works with arrow keys
 - [ ] Touch targets ≥44px
-- [ ] Error/disabled states themed via tokens in both themes
+- [ ] Error/disabled states themed via tokens across every theme
 - [ ] Green = selection/confirmation semantics respected
 
 ### DS-05 — Feedback components
@@ -316,7 +338,9 @@ ChamferedToast, ConfirmationModal, BottomSheet, EmptyState, ErrorState, skeleton
 ### DS-06 — Atmosphere layer
 **Layer:** design · **Milestone:** M1 · **Carry-over:** port
 **Depends on:** DS-02
-**Spec:** `VISUAL_LANGUAGE_RULES.md`
+**Spec:** `specs/design/visual-language-rules.md`
+
+> ⚠️ **Affected by the design-system update.** Atmosphere effects are theme-coupled; re-read the export before building.
 
 Scanlines, grain overlay, glow-emissive text, pulse/micro-flicker, stagger reveal. Motion doctrine enforced: linear or stepped timing only, 150–200ms, no decorative motion.
 
@@ -335,7 +359,7 @@ Scanlines, grain overlay, glow-emissive text, pulse/micro-flicker, stagger revea
 **Acceptance:**
 - [ ] Dev-only route, excluded from production bundles
 - [ ] Every component from DS-03…06 present in all states as they land
-- [ ] Theme toggle flips the entire gallery live
+- [ ] Theme switcher cycles every available theme, live, across the whole gallery
 
 ---
 
@@ -358,7 +382,7 @@ The shared shell for all AI functions: auth verification, zod request parsing, C
 ### GEN-02 — Workout generation: prompt v3 + validation pipeline
 **Layer:** api · **Milestone:** M1 · **Carry-over:** port
 **Depends on:** GEN-01, DATA-02, CORE-03
-**Spec:** `Clear_-_Workout_Generation_Prompt_v3.md`, `Clear_-_Workout_Anatomy_Spec.md`
+**Spec:** `specs/generation/generation-prompt-v3-notes.md`, `specs/generation/workout-anatomy.md`
 
 Port the v3 system prompt and user-prompt construction (profile, limitations, recent history, library, weekly muscle coverage). Response validated against the CORE-03 schema plus domain checks (exercise IDs exist, equipment available, sections enabled, duration ±10%); one retry with clarification, then a typed failure.
 
@@ -384,7 +408,7 @@ React Query mutation with pending / success / typed-error states. Kills D2's sil
 ### GEN-04 — Generation screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-03, DS-04, AUTH-03
-**Spec:** `Clear_-_Workout_Generation_Prompt_v3.md` Part 2 (goal selector delta)
+**Spec:** `specs/generation/generation-prompt-v3-notes.md` Part 2 (goal selector delta)
 
 Inputs: goal selector (first, no default, per v3 delta), intensity slider with goal-driven clamp cascade, anchor, location/equipment override, time target (default 45), optional notes.
 
@@ -397,9 +421,11 @@ Inputs: goal selector (first, no default, per v3 delta), intensity slider with g
 ### GEN-05 — Loading screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** port
 **Depends on:** GEN-03, DS-06
-**Spec:** `clear-loading-screen-prototype (1).html`, `SESSION_PLAN_loading_screens.md`
+**Spec:** `specs/screens/loading-screen-prototype.html`, `specs/screens/loading-screens.md`
 
 Port the loading screen prototype: atmosphere, staged status copy, cancel.
+
+> ⚠️ **Flagged for the design-system update** — the prototype predates the tweaks; re-check against the export before building.
 
 **Acceptance:**
 - [ ] Visible for the full mutation; stale results ignored after cancel/unmount
@@ -432,7 +458,7 @@ Pre-workout briefing: sections and exercises, estimated duration, intensity/anch
 ### REV-02 — Section/exercise swap function
 **Layer:** api · **Milestone:** M1 · **Carry-over:** port
 **Depends on:** GEN-02
-**Spec:** `Clear_-_Exercise_Swap_Spec.md`
+**Spec:** `specs/generation/exercise-swap.md`
 
 `generate-section` on the GEN-01 envelope: regenerate a single exercise or a whole structure block within its slot's constraints.
 
@@ -444,7 +470,7 @@ Pre-workout briefing: sections and exercises, estimated duration, intensity/anch
 ### REV-03 — Swap UI: history, undo, nudge
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** REV-01, REV-02
-**Spec:** `Clear_-_Exercise_Swap_Spec.md`, `SESSION_PLAN_exercise_swap.md`
+**Spec:** `specs/generation/exercise-swap.md`, `specs/generation/exercise-swap-plan.md`
 
 Per-slot swap with up-to-3 history and undo; unit swap for blocks; nudge to regenerate the whole workout after a slot's third swap.
 
@@ -457,7 +483,7 @@ Per-slot swap with up-to-3 history and undo; unit swap for blocks; nudge to rege
 ### EXE-01 — Workout shell
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** SES-01, DS-03, DS-05
-**Spec:** `SESSION_PLAN_master_structure_clarity.md`
+**Spec:** `specs/structures/master-structure-clarity.md`
 
 Section-by-section progression, prev/next navigation, progress tracker, global session timer, exit/abandon with confirm.
 
@@ -470,7 +496,7 @@ Section-by-section progression, prev/next navigation, progress tracker, global s
 ### EXE-02 — Standard + superset renderers, set logging
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** EXE-01, DS-04
-**Spec:** `SESSION_PLAN_superset_circuit_clarity.md`
+**Spec:** `specs/structures/superset-circuit-clarity.md`
 
 Sets × reps execution with per-set logging (weight, reps, RPE, warmup flag) writing `exercise_set_logs` live, and last-time prefill via `get_last_set_data`. Supersets: A/B pairing, rest after the pair.
 
@@ -483,7 +509,7 @@ Sets × reps execution with per-set logging (weight, reps, RPE, warmup flag) wri
 ### EXE-03 — Circuit + EMOM renderers
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** EXE-01
-**Spec:** `SESSION_PLAN_emom_clarity.md`, `SESSION_PLAN_superset_circuit_clarity.md`, `QUICK_FIX_amrap_round_label.md`
+**Spec:** `specs/structures/emom-clarity.md`, `specs/structures/superset-circuit-clarity.md`, `specs/structures/quickfix-amrap-round-label.md`
 
 Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minute indicators, active/inactive highlighting, ODD/EVEN MIN labels for alternating EMOMs.
 
@@ -496,7 +522,7 @@ Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minut
 ### EXE-04 — AMRAP + For Time + ladder renderers
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** EXE-01
-**Spec:** `SESSION_PLAN_amrap_logging.md`, `SESSION_PLAN_ladder_for_time.md`, `QUICK_FIX_ladder_rung_label.md`
+**Spec:** `specs/structures/amrap-logging.md`, `specs/structures/ladder-for-time.md`, `specs/structures/quickfix-ladder-rung-label.md`
 
 The restructure specs built in: rep scheme shown once; ladder rung selector on cap-hit; distinct completion paths (finished under cap vs cap reached); AMRAP partial-round capture. Outcomes write `structure_results`.
 
@@ -565,7 +591,7 @@ The gate: the old app is fully retired. Everything it did, this does — plus th
 ### ONB-01 — Onboarding flow
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
 **Depends on:** AUTH-03, DS-04
-**Spec:** `Clear_-_Onboarding__Wireframe_.md`
+**Spec:** `specs/screens/onboarding-wireframe.md`
 
 Multi-step first-run: experience level, goal preset, location + equipment, section preferences, limitations — committed atomically via `complete_onboarding`. (M2 deliberately: DATA-02's dev-seeded profile makes the M1 loop usable first; onboarding is required before anyone else touches the app.)
 
@@ -590,7 +616,7 @@ Save a completed workout as a named template (snapshot), favorites tab on Home, 
 ### FAV-02 — Favorites v2: progression + personal bests
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** new
 **Depends on:** FAV-01, EXE-04
-**Spec:** `Clear_-_Favorites_Spec_v2.md`
+**Spec:** `specs/favorites-v2.md`
 
 Per the v2 spec: personal bests (min completion time for For Time, max rounds for AMRAP), "last time" weight display on repeats, completion history per favorite.
 
@@ -661,12 +687,12 @@ Manifest, chamfered icon set, theme color, iOS meta, and a minimal service worke
 
 ## 10. M3 — Planned medium-term
 
-**Promoted — issue-ready.** The progressive-overload stub got its spec session (`OVR-01_Progressive_Overload.md`, 2026-08-24) and is now four session-sized requirements, per that spec's own slice order. Unit ambiguity — the spec's "blocks everything" flag — is resolved by DATA-01: `weight_unit` per set log plus a profile default, in the baseline schema.
+**Promoted — issue-ready.** The progressive-overload stub got its spec session (`specs/OVR-01_progressive-overload.md`, 2026-08-24) and is now four session-sized requirements, per that spec's own slice order. Unit ambiguity — the spec's "blocks everything" flag — is resolved by DATA-01: `weight_unit` per set log plus a profile default, in the baseline schema.
 
 ### OVR-01 — Load anchors + progression rules (standard sets)
 **Layer:** state · **Milestone:** M3 · **Carry-over:** new
 **Depends on:** EXE-02, REV-01
-**Spec:** `OVR-01_Progressive_Overload.md` (§1–2, §5, slice a)
+**Spec:** `specs/OVR-01_progressive-overload.md` (§1–2, §5, slice a)
 
 e1RM load anchors computed from set logs; RPE-driven next-prescription rules; sparse/stale handling; weight suggestion with "why this number" on Review. The spec's ~80%-of-value slice.
 
@@ -681,7 +707,7 @@ e1RM load anchors computed from set logs; RPE-driven next-prescription rules; sp
 ### OVR-02 — Generation integration (prompt v3.2)
 **Layer:** api · **Milestone:** M3 · **Carry-over:** new
 **Depends on:** OVR-01, GEN-02
-**Spec:** `OVR-01_Progressive_Overload.md` (Generation Impact, slice b)
+**Spec:** `specs/OVR-01_progressive-overload.md` (Generation Impact, slice b)
 
 The AI never does arithmetic: code injects a TRAINING HISTORY block pre-generation, code fills suggested weights post-generation.
 
@@ -695,7 +721,7 @@ The AI never does arithmetic: code injects a TRAINING HISTORY block pre-generati
 ### OVR-03 — Timed-format progression
 **Layer:** ui · **Milestone:** M3 · **Carry-over:** new
 **Depends on:** OVR-01, EXE-04
-**Spec:** `OVR-01_Progressive_Overload.md` (§3, slice c)
+**Spec:** `specs/OVR-01_progressive-overload.md` (§3, slice c)
 
 Normalized conditioning scores, like-for-like comparison only on identical repeats, and the density nudge for freshly generated conditioning.
 
@@ -708,15 +734,19 @@ Normalized conditioning scores, like-for-like comparison only on identical repea
 ### OVR-04 — Deload detection + override
 **Layer:** state · **Milestone:** M3 · **Carry-over:** new
 **Depends on:** OVR-01, OVR-02, GEN-04
-**Spec:** `OVR-01_Progressive_Overload.md` (§4, slice d)
+**Spec:** `specs/OVR-01_progressive-overload.md` (§4, slice d)
 
-Triggers, not vibes — and never auto-applied.
+**In plain language:** the app notices when you have been grinding — same weights, everything feeling like a 9 or 10, reps starting to slip — and suggests taking a lighter week before you stall out or get hurt. A *deload* is that lighter week: same movements, ~15% less weight, ~40% fewer sets, capped effort. Not a rest day.
+
+It is only ever a **suggestion**. A banner on the Generate screen says why ("your last 3 squat sessions stalled at RPE 9+"), and you either take it or dismiss it. It never quietly changes your workout — an app that reduces your weights without asking is one you stop trusting.
+
+Six conditions can raise the suggestion: a lift stalling while feeling maximal, a lift going backward, everything feeling hard for a week straight, too many hard sessions with no easy ones, missed reps piling up, and a six-week calendar backstop.
 
 **Acceptance:**
-- [ ] Triggers D1–D6 as pure tested functions; movement-scoped vs full deload distinguished
-- [ ] Generate-screen banner states the reason; Apply clamps intensity and adds the directive; "Not today" snoozes 3 sessions and logs the override
-- [ ] Never auto-applies; intensity ≥8 on a flagged day confirms once, then honors the user
-- [ ] Deload sessions tagged `is_deload` and excluded from anchor updates
+- [ ] Triggers D1–D6 implemented as pure tested functions; a single-lift stall suggests a deload for that movement only, whole-session signals suggest a full one
+- [ ] Banner states the specific reason in one line; **Apply** clamps intensity and passes the directive to generation; **Not today** dismisses for 3 sessions and records the override
+- [ ] Never auto-applies. Choosing a hard intensity on a flagged day confirms once, then does what you asked
+- [ ] Deload sessions are tagged and excluded from load-anchor updates — a deliberately light day is not evidence you got weaker
 
 ### Remaining stubs — spec needed before issues are cut
 
@@ -741,9 +771,11 @@ These are not issues — they are review criteria on **every** issue, enforced b
 
 **Security.** RLS on every user table — verified in DATA-01 and re-verified when tables change. Only the anon key ships client-side; `ANTHROPIC_API_KEY` lives exclusively in Supabase secrets. No headers, tokens, or emails in any log line (CORE-02 is the mechanism; the constraint is universal). Every edge call authenticated.
 
+**Every view implements CORE-04.** Loading, empty, error, populated — all four, on every data-driven view. A view that can render nothing is an incomplete requirement, regardless of what its own acceptance criteria say.
+
 **Quality.** TypeScript strict; no `any` at module boundaries. Zod validation at every I/O boundary — network, storage, AI output. Requirement acceptance criteria are the issue's definition of done; an issue closes only with its checklist checked and CI green.
 
-**Design.** Token references only — a hardcoded hex, px spacing, or font name is a review-blocking defect. Chamfered corners, never rounded. Motion doctrine per DS-06. Both themes on every screen.
+**Design.** Token references only — a hardcoded hex, px spacing, or font name is a review-blocking defect. Chamfered corners, never rounded. Motion doctrine per DS-06. Every theme works on every screen.
 
 **Voice.** Terse, imperative, gym-literate. Stenciled labels ("INT. 7"), earned celebration only, zero guilt/pressure/gamification language.
 
