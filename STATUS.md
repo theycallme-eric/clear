@@ -16,7 +16,15 @@ All six are addressed in v0.3.
 - The schema pass will rewrite DATA-01…03
 - The incoming generation review is expected to have **large impact** on the schema and GEN-*
 
-### 2. Database model pass — **Claude** · next, awaiting the generation review
+### 2. Database model + generation contract — **DONE** (2026-08-24)
+`specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`.
+Change set v0.4 rev 3 agreed after two outside review rounds.
+
+**Not yet applied to REQUIREMENTS.md.** The change set and both specs describe changes; the
+requirements file is still v0.3.1. Folding v0.4 in is the next step and must happen before tickets
+are cut, or the issues will encode the pre-change design.
+
+### 2b. Historical note — schema pass origin
 Eric expects the ChatGPT generation review to land with **large schema impact**, and is building
 systems around preserving generation quality. Sequencing note: start the pass, treat those findings
 as a first-class input rather than a later revision.
