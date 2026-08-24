@@ -74,8 +74,23 @@ The method isn't finished being invented — no tickets cut, no build session ru
 documents predictions; written after the first pass it documents what happened.
 `journal/` is collecting the raw material.
 
-### 8. GitHub — **Eric** · paused deliberately
-New repo not created, issues not cut. Unpauses when requirements are approved.
+### 8. GitHub — **Eric** · ready to run
+Requirements are approved at v0.4 and the issue scripts are generated and dry-run tested.
+
+```sh
+gh repo create theycallme-eric/clear --private --description "CLEAR — AI workout generator"
+cd github
+./01-setup-repo.sh       theycallme-eric/clear
+./02-create-issues.sh    theycallme-eric/clear
+./03-wire-dependencies.sh theycallme-eric/clear
+```
+
+Needs `gh` 2.94.0+ for the dependency flags. Produces 53 issues, 11 labels, 4 milestones,
+102 native blocked-by relationships. All three scripts are re-runnable.
+
+Ready queue afterward: `gh issue list --search "is:open -is:blocked"` — one issue at the
+start, **ENV-01**, the single root of the graph.
+
 Decided: this workspace becomes the repo's `docs/`.
 
 ---

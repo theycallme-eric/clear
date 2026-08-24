@@ -1,0 +1,16 @@
+> **PWA-01** · Layer `infra` · Milestone `M2` · Carry-over `new`
+
+Manifest, chamfered icon set, theme color, iOS meta, and a minimal service worker (app-shell caching only — no data offline; that's OFF-01/M3).
+
+## Acceptance
+
+- [ ] Lighthouse installability passes; add-to-home-screen works on iOS standalone (no Safari chrome)
+- [ ] New deploys activate on next load — no stale-shell trap
+- [ ] Service worker caches shell only; API responses are never cached
+
+---
+
+**Depends on:** ENV-03, DS-02
+**Blocks:** —
+
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>
