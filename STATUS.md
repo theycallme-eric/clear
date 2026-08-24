@@ -7,14 +7,23 @@ Living doc. Updated when a thread opens, moves, or closes.
 
 ## Blocking the critical path
 
-### 1. Requirements review — **Eric** · ~12% done
-6 of 51 reviewed (DS-01, DS-02, DS-06, GEN-03, GEN-05, OVR-04). 45 untouched.
-This is what gates ticket creation, the DAG, and the first build session.
-→ [Review artifact](https://claude.ai/code/artifact/908ad21f-21be-4aeb-b948-59a417754a55) · "Copy review notes" → paste to Claude
+### 1. Requirements — **APPROVED** (v0.3, 2026-08-24)
+All 51 reviewed. The six sent with notes were the only ones with issues; the rest were approved.
+All six are addressed in v0.3.
 
-**Do not review DATA-01, DATA-02, DATA-03 yet** — the schema pass will rewrite them.
+**Expected to change**, and that's fine — approval is a checkpoint, not a freeze:
+- IA work (below) may add `Screen:` references and adjust UI requirements
+- The schema pass will rewrite DATA-01…03
+- The incoming generation review is expected to have **large impact** on the schema and GEN-*
 
-### 2. Database model pass — **Claude** · proposed, not started
+### 2. Database model pass — **Claude** · next, awaiting the generation review
+Eric expects the ChatGPT generation review to land with **large schema impact**, and is building
+systems around preserving generation quality. Sequencing note: start the pass, treat those findings
+as a first-class input rather than a later revision.
+
+**Standing instruction from Eric:** while in the schema, revisit the **stubbed M3 requirements** too
+— if any need changing, now is the cheap moment, before anything is built on them.
+
 DATA-01 is the root of the dependency graph and currently reads "port the old schema's end state,"
 which is the most old-work-dependent requirement in the doc. Real findings already: `reps` is TEXT
 holding four data types, `anchor_type` mixes three taxonomies, streak is six columns of stored
@@ -39,10 +48,11 @@ Findings may touch the schema — treat as additive revision, don't wait on it.
 
 ## Queued, correctly not started
 
-### 5. IA / interaction diagram — **Claude** · buildable now
-Screens, routes, flows, states, transitions. Independent of visual design.
-Fixes the composition gap: requirements specify *behavior*, DS specifies *components*, nothing
-specifies which components compose which screen.
+### 5. IA / interaction diagram — **DONE** (2026-08-24)
+`specs/IA.md` + [navigable reference](https://claude.ai/code/artifact/77f48f0e-dd76-401b-8a6c-a2fa8485a774).
+14 screens with route, guard, entry/exit, CORE-04 states, component tree, owning requirements.
+Establishes the **component vocabulary** and the rule: anything not in it is a new DS requirement,
+never an inline one-off. Five open questions at the end need Eric's answers.
 
 ### 6. Atomic component inventory — **Claude** · gated on the design export
 The component vocabulary with variants, states, and token bindings. Prevents agents inventing
@@ -89,9 +99,8 @@ Figma is the design source of truth. All three are wrong, and every new conversa
 
 ## Recommended order
 
-1. **Schema pass** (Claude) — unblocked, highest cost-of-being-wrong, and makes Eric's review of
-   the DATA requirements worth doing instead of wasted
-2. **Requirements review** (Eric) — in parallel, skipping DATA-*
-3. **IA diagram** (Claude) — after the schema pass; data model informs screen composition
-4. **Design export arrives** → DS gates lift → atomic inventory
-5. **Requirements v1.0 locked** → GitHub → issues → DAG
+1. ~~IA diagram~~ — **done**
+2. **Generation review lands** (Eric → Claude) — expected to reshape the schema and GEN-*
+3. **Schema pass** (Claude) — folding in those findings; also revisits the M3 stubs
+4. **Design export arrives** → DS gates lift → atomic component inventory
+5. **Requirements v1.0** → GitHub → issues → DAG
