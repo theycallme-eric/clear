@@ -35,3 +35,31 @@ IA decisions folded back into requirements. 204 → 211 acceptance criteria.
 - **FAV-02** — Comparison surface across completions of the same favorite. Each completion stays
   its own session; the favorite is the thread. Competitive framing suppressed during a deload.
 - **SET-01** — Every onboarding choice editable in Settings; onboarding strictly first-run.
+
+## v0.4 — 2026-08-24
+**Two verified defects and three outside review rounds folded in.** 51 → 53 requirements,
+211 → 257 acceptance criteria.
+
+**New defects in the register:**
+- **D5** — duration validation is tautological. The validator compares a number Claude was told the
+  answer to against the request. It cannot fail.
+- **D6** — swapped exercises are never persisted. Set logs attach to exercises never performed.
+  Silent corruption of the table progressive overload will read.
+
+**New requirements:** `DATA-05` (user-authored constraints) · `GEN-06` (duration plausibility check).
+
+**Substantially revised:** `DATA-01` (blocks, discriminated prescriptions, temporal lineage, typed
+absence) · `DATA-02` (taxonomy equivalence verification before dropping the old table) ·
+`CORE-03` (contract v4.1 schemas mirroring database CHECK constraints) · `GEN-02` (eligibility
+resolves in SQL before composition) · `SES-01` (three-state persistence; the D6 reproduction is now
+a required regression test) · `REV-02`/`REV-03` (swaps create revisions with lineage) ·
+`EXE-02`–`EXE-05` (render from structured prescriptions and blocks) · `FAV-01` (snapshot
+versioning) · `HOME-02` (streak derived, never stored) · `HOME-03` (pattern-level staleness) ·
+`OVR-01` (rep completion computed, not parsed).
+
+**Added to the document itself:** a glossary of the terms v0.4 introduces, a specification index
+mapping every spec to the requirements it serves, and version history.
+
+**Withdrawn before issue:** `DATA-04`, `GEN-07`, `META-01` — proposed during review, cut when the
+duration engine reduced to a guardrail and metadata proved unnecessary. Hence the ID gap between
+`DATA-03` and `DATA-05`.

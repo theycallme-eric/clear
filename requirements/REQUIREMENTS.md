@@ -1,8 +1,17 @@
 # CLEAR Rebuild — Requirements Specification
 
-**Version:** 0.3 DRAFT — for Eric's review
+**Version:** 0.4 — approved direction, specs attached
 **Date:** 2026-08-24
-**0.3:** Eric's first review pass applied. Design-system requirements gated on the incoming Claude Design export. CORE-04 added (app-wide loading/empty/error contract). OVR-04 rewritten in plain language. **Independence:** every cited spec now lives in this workspace — the rebuild never reads the archived repo.
+
+**Version history**
+
+| Ver | Change |
+|---|---|
+| 0.1 | Initial draft. 46 requirements across M0–M2, 9 M3 stubs. Defect register D1–D4 established. |
+| 0.2 | Progressive-overload spec landed; OVR stub promoted to four requirements. The spec reached back and changed M0 — weight-unit ambiguity resolved in the baseline schema. |
+| 0.3 | First review pass. DS-01/02/06 and GEN-05 gated on the Claude Design export. CORE-04 added. OVR-04 rewritten in plain language. **Independence:** every cited spec copied into this workspace; the rebuild never reads the archived repo. |
+| 0.3.1 | IA decisions folded in — Workout becomes a focus mode, Quick Start hides until history exists, favorite completions get a comparison surface, onboarding is strictly first-run. |
+| **0.4** | **Two verified defects (D5, D6) and three outside review rounds.** Structured prescriptions, first-class blocks, three-state model with temporal lineage, duration plausibility guardrail, user-authored constraints, staged taxonomy migration. Detail lives in `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`. `DATA-04`, `GEN-07`, and `META-01` were proposed during review and withdrawn before issue — hence the gap between `DATA-03` and `DATA-05`. |
 **0.2:** Progressive-overload spec landed (`specs/OVR-01_progressive-overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
 **Scope:** Ground-up rebuild of CLEAR. Full parity with the existing app plus spec'd planned features, sequenced M0–M3.
 
@@ -45,7 +54,48 @@ One- or two-sentence summary.
 
 ---
 
-## 3. Defect register — why this rebuild exists
+## 3. Glossary
+
+Terms this document uses precisely. Where a definition has a mechanism, it lives in `specs/DATA_MODEL.md`.
+
+| Term | Meaning |
+|---|---|
+| **Prescribed** | What generation originally produced. Immutable once written. |
+| **Revised** | What the user intended after review — a swap, a section regeneration, a pre-start edit. Carries lineage to what it replaced. |
+| **Performed** | What was actually done: execution status, optional set logs, block results. Not the same as "revised." |
+| **Block** | A group of exercises sharing a structure — a superset, circuit, EMOM, AMRAP, For Time, or a run of independent standard exercises. Rounds, timers, and shared rest belong to the block, not its members. |
+| **Slot** | A stable position in a workout across revisions. Swapping an exercise creates a new row in the same slot. |
+| **Session focus** | What a workout is *about* — upper body, lower body, full body, power. What the user picks on the generation screen. |
+| **Movement pattern** | What an exercise *is* — squat, hinge, press, pull, unilateral, power, conditioning. Derived from `component_movements`. |
+| **Modality** | How an exercise's work is measured: reps, time, or distance. **Not** rounds — rounds belong to the block. |
+| **Target** | The prescribed work per set, discriminated as fixed (`8`), range (`8–10`), or sequence (`15-12-9-6-3`). |
+| **Candidate set** | The exercises a section is *allowed* to use, resolved by query before Claude composes. Claude cannot select outside it. |
+| **Hard check** | Deterministic validation that rejects. Mirrors a database constraint. |
+| **Soft check** | A quality signal that is recorded and never gates. A soft rule that rejects is a hard rule with a soft name. |
+| **Typed absence** | A null actual value means *not recorded* — never zero, never skipped. Skipped is an explicit status. |
+
+---
+
+## 4. Specification index
+
+Requirements state *what* and *how it's verified*. Specs carry the detail. Every spec lives in this workspace — nothing points at the archived repo.
+
+| Spec | Covers | Requirements |
+|---|---|---|
+| `specs/DATA_MODEL.md` | Schema: blocks, three-state lineage, structured prescriptions, constraints, taxonomy migration | DATA-01…05, SES-01, REV-02/03, EXE-02…05, FAV-01, HOME-02/03 |
+| `specs/generation/GENERATION_CONTRACT.md` | Pipeline, candidate retrieval, output shape v4.1, validation split, duration algorithm | GEN-01…06, CORE-03, REV-02 |
+| `specs/IA.md` | 14 screen contracts, component vocabulary, navigation | every UI requirement |
+| `specs/OVR-01_progressive-overload.md` | Load anchors, RPE rules, deload triggers | OVR-01…04 |
+| `specs/structures/*.md` | EMOM, ladder/For Time, AMRAP, superset/circuit clarity | EXE-02…04 |
+| `specs/design/*.md` | Visual language, chamfer components, UI component spec | DS-01…07 |
+| `specs/screens/*.md` | Onboarding wireframe, loading screens | ONB-01, GEN-05 |
+| `specs/favorites-v2.md` | Personal bests, completion history, comparison | FAV-01/02 |
+| `specs/generation/exercise-swap.md` | Swap scope, history, undo | REV-02/03 |
+| `requirements/CHANGE_SET_v0.4.md` | The reasoning behind v0.4 — invariants, what was withdrawn and why | — |
+
+---
+
+## 5. Defect register — why this rebuild exists
 
 Four specific failures killed the old app's momentum. Each is designed out by named requirements, and those requirements' acceptance criteria are written to prove the defect is dead.
 
@@ -55,15 +105,17 @@ Four specific failures killed the old app's momentum. Each is designed out by na
 | D2 | Generation failures fell back to a **mock workout** with a toast — the app appeared to work while broken. No schema validation anywhere; errors were strings; no request IDs to trace client → server | CORE-01, CORE-03, GEN-01, GEN-03 |
 | D3 | `generate-workout` logged every request header — bearer tokens written into Supabase logs | CORE-02, GEN-01 |
 | D4 | Sitting down to work meant debugging infrastructure: Docker not running, Supabase project paused, connection stack traces instead of explanations | ENV-04, ENV-05, DATA-02 |
+| D5 | **Duration validation is tautological.** `validateWorkout()` compares `estimated_duration_mins` — a value Claude asserts — against the requested duration. The prompt tells Claude "45 minutes"; Claude writes 45; the check confirms 45 ≈ 45. It cannot fail | GEN-06, CORE-03 |
+| D6 | **Swapped exercises are never persisted.** Generation saves the original; the swap mutates React state only; `handleStartWorkout` writes nothing. Set logs attach to rows describing exercises never performed — swap Deadlift for RDL, log 3×8 at 185, and the database records it *on Deadlift* | DATA-01, SES-01, REV-02, REV-03 |
 
 ---
 
-## 4. Milestones & gates
+## 6. Milestones & gates
 
 | Milestone | Theme | Gate — done when |
 |---|---|---|
-| **M0** | Foundation | CI blocks bad merges; push to main deploys; fresh clone → running app in ≤3 commands with no Docker; new Supabase project seeded; auth works end-to-end on a deployed URL; DS-01…04 landed |
-| **M1** | Core loop | Eric does a real workout on his phone: generate → review → execute → log sets → see it in history. Every structure type renders clearly |
+| **M0** | Foundation | CI blocks bad merges; push to main deploys; fresh clone → running app in ≤3 commands with no Docker; new Supabase project seeded **with taxonomy equivalence verified**; auth works end-to-end on a deployed URL; DS-01…04 landed |
+| **M1** | Core loop | Eric does a real workout on his phone: generate → review → execute → log sets → see it in history. Every structure type renders clearly, **and the D6 regression test passes** |
 | **M2** | Parity + planned near-term | Old app fully retired — nothing it does that the new app doesn't. Favorites v2, streaks, settings, onboarding, installable PWA |
 | **M3** | Planned medium-term | Feature-by-feature; each stub gets a spec before issues are cut |
 
@@ -71,7 +123,7 @@ DS-05…07 may land during M1 — the M0 gate requires only DS-01…04. The grap
 
 ---
 
-## 5. External inputs
+## 7. External inputs
 
 | Input | Feeds | If absent |
 |---|---|---|
@@ -82,7 +134,7 @@ DS-05…07 may land during M1 — the M0 gate requires only DS-01…04. The grap
 
 ---
 
-## 6. M0 — Foundation
+## 8. M0 — Foundation
 
 ### ENV-01 — Repository scaffold
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
@@ -143,30 +195,44 @@ Scheduled GitHub Action pings the database twice weekly so the free-tier project
 - [ ] README notes the action and when to remove it
 
 ### DATA-01 — Baseline schema
-**Layer:** data · **Milestone:** M0 · **Carry-over:** port
+**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01
+**Spec:** `specs/DATA_MODEL.md`
 
-One clean migration authored from the old schema's end state (33 migrations squashed): all tables, enums, RLS policies, and RPCs (`complete_onboarding`, `save_generated_workout`, `suggest_anchor`, `get_last_set_data`). Applied to a **new** Supabase project.
+The full baseline, authored against the data model spec rather than ported from the old migrations. Four domains in one Postgres database: catalog, user baseline, workout, execution. Applied to a **new** Supabase project.
+
+The structural changes that make D6 impossible and the three-state model real: **blocks** as a first-class level between sections and exercises · **discriminated prescriptions** (modality, target kind, per-side, distance unit) replacing a TEXT `reps` column that held four data types · **temporal lineage** (`slot_id`, `created_at`, `superseded_at`) with revision and execution status kept separate · **typed absence** — a null actual never means zero or skipped.
 
 **Acceptance:**
 - [ ] Single migration creates the full schema on an empty project
 - [ ] RLS verified: authenticated user A cannot read or write user B's rows on any user table
-- [ ] `exercise_definitions` and related library tables are read-only to clients
-- [ ] All four RPCs execute against seeded fixtures
-- [ ] Migration file is commented by domain (profiles / sessions / library / favorites)
-- [ ] Progression-ready from day one (per OVR spec): `weight_unit` on set logs **plus** a profile-level default unit; `weight_suggested` on exercises; `reps_prescribed` on set logs; `perceived_effort`, `partial_reps`, `minutes_completed` on structure_results; `is_deload` on sessions. Columns only — the features arrive in M3
+- [ ] Catalog tables are read-only to clients
+- [ ] Structure attributes live on `workout_blocks` — **no exercise carries a timer, round count, or shared rest**, so members of a block cannot disagree
+- [ ] `block_results` is keyed to a block, not a section — a conditioning section holding an EMOM *and* an AMRAP records both
+- [ ] Target CHECK constraints reject a malformed prescription: `{8,10}` as a range and as a two-rung sequence are distinguishable
+- [ ] `UNIQUE (replaces_id)` prevents branching lineage; `revision_status` and `execution_status` are independent columns
+- [ ] Set logs support reps, duration, and distance with units — not reps alone
+- [ ] `weight_unit` on every set-log row plus a profile default; a changed default never reinterprets history
+- [ ] Four unambiguous duration fields on the session: requested, effective target, computed, actual
+- [ ] Migration commented by domain
 
-### DATA-02 — Exercise library export + seed
+### DATA-02 — Exercise library seed + taxonomy verification
 **Layer:** data · **Milestone:** M0 · **Carry-over:** keep
 **Depends on:** DATA-01
+**Spec:** `specs/DATA_MODEL.md` §3
 
-Export `exercise_definitions`, `exercise_anchors`, `exercise_muscle_groups` from the old project; idempotent seed script loads them into the new one. A dev-only flag also seeds Eric's profile + default location so the M1 loop is usable before onboarding exists (ONB-01 is M2).
+Export the catalog from the old project and seed the new one. **Plus the taxonomy equivalence check** — the anchor split is a separate staged migration, and this is where it is proven safe before the old structures are dropped.
+
+A dev-only flag seeds Eric's profile + default location so the M1 loop is usable before onboarding exists (ONB-01 is M2).
 
 **Acceptance:**
-- [ ] Row counts match the old project (200+ exercises with metadata intact)
+- [ ] Row counts match the old project — **173 exercises** with `component_movements` and `exercise_role` intact
 - [ ] Seed is idempotent — running twice changes nothing
+- [ ] Pattern-bearing rows migrate from `exercise_anchors` into `exercise_pattern_weights`; region rows (`upper_body`, `lower_body`, `full_body`) are dropped deliberately, not silently
+- [ ] **Equivalence verified before the old table is dropped:** candidate sets and focus suggestions compared derived-vs-original across all four focuses, false positives inspected, lost primary/secondary distinctions listed
+- [ ] `exercise_anchors` and `anchor_type` dropped only after that comparison passes
 - [ ] `--dev` flag seeds a complete profile + one location; without it, no user data
-- [ ] Export artifacts (CSV/SQL) committed so the seed is reproducible without old-project access
+- [ ] Export artifacts committed so the seed is reproducible without old-project access
 
 ### DATA-03 — Generated types + typed client
 **Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
@@ -175,9 +241,24 @@ Export `exercise_definitions`, `exercise_anchors`, `exercise_muscle_groups` from
 `supabase gen types` output committed with a regen script; thin typed client in `lib/supabase.ts`. No `any` escapes the data layer.
 
 **Acceptance:**
-- [ ] `npm run gen:types` regenerates types; drift fails CI note in DEVELOPMENT.md
+- [ ] `npm run gen:types` regenerates types against the new enums (`session_focus`, `movement_pattern`, `target_kind`, `revision_status`, `execution_status`, `distance_unit`); drift fails CI note in DEVELOPMENT.md
 - [ ] Client exports typed table/RPC helpers only — no raw untyped calls elsewhere in `src/`
 - [ ] A sample typed query and RPC call compile and run in a test
+
+### DATA-05 — User-authored constraints
+**Layer:** data · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** DATA-01
+**Spec:** `specs/DATA_MODEL.md` §5
+
+Explicit exclusions the user sets for themselves. **CLEAR does not model injuries** — three scopes, all enforceable against catalog data that already exists.
+
+**Acceptance:**
+- [ ] Three scopes supported: exercise, movement pattern, equipment. **No impact scope** until the catalog can enforce it
+- [ ] `exclude` filters deterministically in the eligibility query, before Claude composes
+- [ ] `applies_to_session_id` enforced — a session-scoped exclusion **does not** apply to later sessions
+- [ ] Equipment exclusion removes only the excluded option; an exercise usable with dumbbells survives a barbell exclusion, and the candidate passed to Claude offers dumbbells only
+- [ ] Free text is stored and never parsed — no constraint is ever inferred from a note
+- [ ] `avoid` and `prefer_not` persist and reach Claude as context; **the UI exposes `exclude` only** until a ranking layer consumes them
 
 ### CORE-01 — Error taxonomy + request IDs
 **Layer:** state · **Milestone:** M0 · **Carry-over:** new
@@ -205,14 +286,20 @@ Kills D3 at the tooling level. Leveled logger with scoped children for client an
 ### CORE-03 — Boundary schemas (zod)
 **Layer:** state · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01, DATA-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §5
 
-Kills the unvalidated half of D2. Zod schemas for every payload that crosses a boundary: `GeneratedWorkout` (all six structure types, all seven rep schemes), generation request/response envelopes, `Profile`, `Location`. One source file consumed by both client and edge functions.
+Kills the unvalidated half of D2. Zod schemas for every payload that crosses a boundary, mirroring the database's CHECK constraints so **anything that validates can be persisted** — failing at the boundary beats failing at the INSERT.
+
+Covers the generation output contract v4.1 (blocks, discriminated targets, timer contracts), request/response envelopes, `Profile`, `Location`, and `user_constraints`. One source file consumed by client and edge functions alike.
 
 **Acceptance:**
-- [ ] A real prompt-v3 sample workout round-trips the `GeneratedWorkout` schema
+- [ ] A real contract-v4.1 sample round-trips, including a ladder (`target_kind: sequence`), a rep range, a per-side prescription, and a distance prescription
+- [ ] Discriminated union on `target_kind` rejects a payload with the wrong fields populated
+- [ ] `modality` accepts reps, time, distance — and **rejects `rounds`**, which belongs to the block
+- [ ] Timed block types without `timer_seconds` are rejected; `circuit` without `rounds` is rejected
 - [ ] An invalid sample fails with path-level issues (which field, why)
 - [ ] Client and edge import the same schema source — no duplicated definitions
-- [ ] Types are inferred from schemas (`z.infer`), not written twice
+- [ ] Types are inferred (`z.infer`), never written twice
 
 ### CORE-04 — App-wide state contract
 **Layer:** state · **Milestone:** M0 · **Carry-over:** new
@@ -267,7 +354,7 @@ Kills the other half of D1. Profile and locations are independent React Query qu
 
 ---
 
-## 7. Design system (DS trunk — M0 gate covers DS-01…04)
+## 9. Design system (DS trunk — M0 gate covers DS-01…04)
 
 ### DS-01 — Token pipeline
 **Layer:** design · **Milestone:** M0 · **Carry-over:** new
@@ -363,7 +450,7 @@ Scanlines, grain overlay, glow-emissive text, pulse/micro-flicker, stagger revea
 
 ---
 
-## 8. M1 — Core loop
+## 10. M1 — Core loop
 
 The gate: a real workout, on a phone, end to end. Generation quality and execution clarity are both first-class here — the clarity specs are *in* these requirements, not queued behind them.
 
@@ -379,19 +466,26 @@ The shared shell for all AI functions: auth verification, zod request parsing, C
 - [ ] A test asserts the words `authorization`/`apikey` never appear in log output
 - [ ] Envelope is a reusable module — `generate-section` (REV-02) adopts it unchanged
 
-### GEN-02 — Workout generation: prompt v3 + validation pipeline
-**Layer:** api · **Milestone:** M1 · **Carry-over:** port
+### GEN-02 — Workout generation: contract v4.1
+**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-01, DATA-02, CORE-03
-**Spec:** `specs/generation/generation-prompt-v3-notes.md`, `specs/generation/workout-anatomy.md`
+**Spec:** `specs/generation/GENERATION_CONTRACT.md`
 
-Port the v3 system prompt and user-prompt construction (profile, limitations, recent history, library, weekly muscle coverage). Response validated against the CORE-03 schema plus domain checks (exercise IDs exist, equipment available, sections enabled, duration ±10%); one retry with clarification, then a typed failure.
+The pipeline becomes resolve → retrieve → **compose** → validate → hydrate → persist. Claude occupies exactly one step, the one requiring judgment; everything on either side is deterministic.
+
+Eligibility resolves in SQL **before** the prompt is built, so rules currently described in prose become constraints applied to Claude's input. It cannot select an ineligible exercise because it never sees one.
 
 **Acceptance:**
-- [ ] One live run per goal preset returns a schema-valid workout honoring section scaling rules
-- [ ] Recorded invalid-response fixture triggers retry, then typed `generation` error — never a partial result
-- [ ] Intensity model respected: content scales, section presence doesn't (goal's job)
-- [ ] `prompt_version` stamped on every response and persisted with the session
+- [ ] Candidate retrieval runs per section: focus→pattern join, equipment intersection, user exclusions, section eligibility. `usable_equipment` computed per candidate so Claude only sees equipment it may choose
+- [ ] One live run per goal preset returns a contract-valid workout honoring section scaling
+- [ ] Claude **cannot** return an exercise or equipment outside the candidate set — validated, and structurally unlikely since candidates are all it receives
+- [ ] Facts hydrated by ID after validation: name, equipment display names, cues, regression. Claude returns none of them
+- [ ] Claude returns no authoritative duration; its estimate is stored as diagnostic only
+- [ ] Hard checks mirror the schema's CHECK constraints; soft checks (ratios, warmup coverage, variety, repetition) are recorded and **never gate**
+- [ ] Recorded invalid-response fixture triggers one retry, then a typed `generation` error — never a partial result
 - [ ] Active-recovery preset produces warmup/mobility/cooldown only, intensity clamped 1–3
+- [ ] `prompt_version` and `contract_version` stamped on every session
+- [ ] Prompt is measurably shorter — the library dump and the enforceable rules are gone
 
 ### GEN-03 — Generation client state
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
@@ -432,17 +526,40 @@ Port the loading screen prototype: atmosphere, staged status copy, cancel.
 - [ ] Status copy is terse-imperative per voice rules
 - [ ] Motion rules hold (linear/stepped only)
 
-### SES-01 — Session lifecycle + persistence
-**Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DATA-01, DATA-03, CORE-03, AUTH-03
+### GEN-06 — Duration plausibility check
+**Layer:** api · **Milestone:** M1 · **Carry-over:** new
+**Depends on:** GEN-02, CORE-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §7
 
-The workout state machine: accept → `save_generated_workout` (atomic) → active (section status transitions, `started_at`) → complete (`completed_at`, duration, basic streak increment) — plus incomplete-session detection for resumption.
+Closes D5. The backend computes a rough duration estimate from the structured prescription, independently of Claude. **Purpose: reject workouts that clearly cannot fit — not predict completion time.**
+
+Crude on purpose. Today's check compares a number Claude was told the answer to against the request, so it cannot fail; any independent computation is strictly better.
 
 **Acceptance:**
-- [ ] Accepting persists the full structure — verified across sessions/sections/exercises rows including structure JSON
-- [ ] Hard refresh mid-workout → session resumable at the correct section with logged sets intact
-- [ ] Completion writes `completed_at` and increments the basic streak counter (full streak rules are HOME-02)
-- [ ] Machine transitions unit-tested (not_started → active → completed/skipped; abandon path)
+- [ ] Estimate computed from blocks and prescriptions — Claude's `estimated_duration_mins` is **never** consulted for validation
+- [ ] Allowances are **code constants**: fixed work-per-set, fixed transition. No metadata table, no per-exercise override, no tempo parsing
+- [ ] Per-block rules: standard sums members; superset and circuit count shared rest **once per round**; EMOM and AMRAP use declared duration; For Time budgets the **full cap**
+- [ ] Tolerance ~15–20%, generous by design
+- [ ] A workout whose prescribed work and required rest clearly cannot fit is rejected or trimmed
+- [ ] Failure names the **block** that overran and by how much, so the retry is specific rather than a blind re-roll
+- [ ] `computed_duration_mins` persisted alongside Claude's estimate, so the two can be compared later
+
+### SES-01 — Session lifecycle + three-state persistence
+**Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** DATA-01, DATA-03, CORE-03, AUTH-03
+**Spec:** `specs/DATA_MODEL.md` §7
+
+The workout state machine, and the requirement that closes D6. Accept → persist atomically → active → complete, with prescribed, revised, and performed all independently reconstructable.
+
+**Acceptance:**
+- [ ] **D6 regression test:** generate a workout, swap an exercise in review, start, log sets, complete. Assert the set logs attach to the *substitute* and the original is still reconstructable with lineage. This test must exist and must fail against the old behavior
+- [ ] Accepting persists the full structure — sessions, sections, blocks, exercises
+- [ ] A swap inserts a new row in the same `slot_id` with `replaces_id` set; the superseded row keeps its own `execution_status`
+- [ ] "As intended at start" resolves temporally — rows active at `started_at`, not merely active now
+- [ ] "As performed" includes skipped exercises with no logs, block results, and partially-logged exercises — not a bare join to set logs
+- [ ] Hard refresh mid-workout → resumable at the correct section with logged sets intact
+- [ ] Completion writes `completed_at` and `actual_duration_mins`; **the streak function returns the correct value afterward** (streak is derived from sessions, not stored — see HOME-02)
+- [ ] Machine transitions unit-tested, including the abandon path
 
 ### REV-01 — Review screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
@@ -456,15 +573,16 @@ Pre-workout briefing: sections and exercises, estimated duration, intensity/anch
 - [ ] Estimated duration shown and consistent with the ±10% target
 
 ### REV-02 — Section/exercise swap function
-**Layer:** api · **Milestone:** M1 · **Carry-over:** port
+**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-02
-**Spec:** `specs/generation/exercise-swap.md`
+**Spec:** `specs/generation/exercise-swap.md`, `specs/generation/GENERATION_CONTRACT.md`
 
-`generate-section` on the GEN-01 envelope: regenerate a single exercise or a whole structure block within its slot's constraints.
+Single-slot regeneration on the same contract as GEN-02 — the same candidate retrieval, the same validation, narrower scope.
 
 **Acceptance:**
-- [ ] Single swap returns a valid exercise honoring section type, equipment, and anchor constraints
-- [ ] Unit swap regenerates a whole superset/EMOM/AMRAP block as a unit
+- [ ] A swap draws from the same candidate query as generation, scoped to the slot's section and constraints
+- [ ] Unit swap regenerates a whole block as a unit, preserving the block's structure and timer
+- [ ] The result is persisted as a revision with lineage — **never a mutation in place** (D6)
 - [ ] Envelope guarantees inherited: typed errors, requestId echo, no header logging
 
 ### REV-03 — Swap UI: history, undo, nudge
@@ -479,6 +597,7 @@ Per-slot swap with up-to-3 history and undo; unit swap for blocks; nudge to rege
 - [ ] Unit swap replaces the block atomically in review state
 - [ ] Third swap on a slot surfaces the regenerate nudge
 - [ ] Swap errors use ErrorState — review content never silently changes
+- [ ] Every accepted swap is persisted as a revision with lineage before the workout starts (D6)
 
 ### EXE-01 — Workout shell
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
@@ -501,13 +620,15 @@ Section-by-section progression, prev/next navigation, progress tracker, global s
 **Depends on:** EXE-01, DS-04
 **Spec:** `specs/structures/superset-circuit-clarity.md`
 
-Sets × reps execution with per-set logging (weight, reps, RPE, warmup flag) writing `exercise_set_logs` live, and last-time prefill via `get_last_set_data`. Supersets: A/B pairing, rest after the pair.
+Standard and superset blocks. Per-set logging (weight, reps, RPE, warmup flag) writing `exercise_set_logs` live, and last-time prefill from prior sessions.
 
 **Acceptance:**
+- [ ] Renders from the **structured prescription** — no string parsing anywhere
+- [ ] Each target kind displays correctly: fixed (`8`), range (`8–10`), sequence (`15-12-9-6-3` as ordered rungs), per-side, and distance with its unit
 - [ ] Each logged set is a row written at log time — not batched at workout end
+- [ ] Logs the modality actually prescribed: reps, duration, or distance
 - [ ] Prefill shows previous weight/reps when history exists
-- [ ] Superset alternation labeled clearly; rest prescribed after both movements
-- [ ] Rep schemes beyond `fixed` display the correct per-set target
+- [ ] Superset alternation labeled clearly; rest comes from the **block**, prescribed after both movements
 
 ### EXE-03 — Circuit + EMOM renderers
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
@@ -517,9 +638,12 @@ Sets × reps execution with per-set logging (weight, reps, RPE, warmup flag) wri
 Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minute indicators, active/inactive highlighting, ODD/EVEN MIN labels for alternating EMOMs.
 
 **Acceptance:**
+- [ ] Renders from the block: rounds, timer type, timer seconds, and shared rest all read from `workout_blocks`
 - [ ] EMOM minute boundary visibly flips active work; remainder reads as rest
 - [ ] Alternating EMOMs label ODD/EVEN MIN per spec
 - [ ] Circuit tracks current round and position within it; round advance is one tap
+- [ ] Shared rest is honored **once per round**, not once per exercise
+- [ ] Outcome writes `block_results` — `minutes_completed` for EMOM, `rounds_completed` for circuits
 - [ ] Timed structure state survives refresh (via SES-01)
 
 ### EXE-04 — AMRAP + For Time + ladder renderers
@@ -527,13 +651,15 @@ Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minut
 **Depends on:** EXE-01
 **Spec:** `specs/structures/amrap-logging.md`, `specs/structures/ladder-for-time.md`, `specs/structures/quickfix-ladder-rung-label.md`
 
-The restructure specs built in: rep scheme shown once; ladder rung selector on cap-hit; distinct completion paths (finished under cap vs cap reached); AMRAP partial-round capture. Outcomes write `structure_results`.
+The restructure specs built in: rep scheme shown once; ladder rung selector on cap-hit; distinct completion paths (finished under cap vs cap reached); AMRAP partial-round capture. Outcomes write `block_results`.
 
 **Acceptance:**
+- [ ] Ladder rungs render from `target_sequence` as ordered targets — the renderer indexes them, nothing parses a string
 - [ ] For Time: finish-under-cap and cap-reached paths both reachable, visually distinct
 - [ ] Cap-hit on a ladder prompts rung selection; `highest_rung` persisted
-- [ ] AMRAP logs completed rounds + partial position; `rounds_completed` persisted
-- [ ] `structure_results` row correct for each outcome (`completion_time_seconds`, `completed_under_cap`, `rep_scheme`)
+- [ ] AMRAP logs completed rounds + partial round reps
+- [ ] `block_results` row correct for each outcome: `elapsed_seconds` and `completed_under_cap` for For Time, `rounds_completed` and `partial_round_reps` for AMRAP
+- [ ] Section perceived effort (1–10) captured at block completion
 - [ ] Red/urgency styling only near time cap — per color doctrine
 - [ ] Section completion also captures perceived effort (1–10), AMRAP partial reps, and EMOM minutes completed — DATA-01 provides the columns; this builds OVR-03's history from day one
 
@@ -544,7 +670,7 @@ The restructure specs built in: rep scheme shown once; ladder rung selector on c
 Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable per-exercise panel: coaching cues, regression suggestion, notes.
 
 **Acceptance:**
-- [ ] Rest auto-starts after set completion when the structure prescribes rest; skip and extend work
+- [ ] Rest auto-starts after set completion when the prescription specifies it — read from `rest_seconds` on the exercise, or `round_rest_seconds` on the block; skip and extend work
 - [ ] Cues and regression pulled from the library definition
 - [ ] Exercise notes persist to the exercise row
 - [ ] Timer accurate after backgrounding (wall-clock)
@@ -588,7 +714,7 @@ The daily entry point: Generate + Quick Start actions, recent 3 workouts, incomp
 
 ---
 
-## 9. M2 — Parity + planned near-term
+## 11. M2 — Parity + planned near-term
 
 The gate: the old app is fully retired. Everything it did, this does — plus the near-term specs (favorites v2) that were designed but never shipped.
 
@@ -615,7 +741,8 @@ Save a completed workout as a named template (snapshot), favorites tab on Home, 
 - [ ] Restart reproduces the workout exactly from `workout_snapshot` — no regeneration
 - [ ] Completing a restarted favorite writes `saved_workout_completions` and bumps `times_completed`
 - [ ] Favorites tab lists with anchor/intensity/duration metadata; unfavorite works
-- [ ] Snapshot validates against the CORE-03 schema on restore (schema drift surfaces loudly)
+- [ ] Snapshot carries `snapshot_contract_version`, validated against the schema for **that** version before restore
+- [ ] A favorite predating a breaking contract change surfaces a clear message rather than failing obscurely
 
 ### FAV-02 — Favorites v2: progression + personal bests
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** new
@@ -642,16 +769,18 @@ Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marki
 - [ ] Streak rules implemented as pure functions with unit tests covering: continue, break, pause, resume, rest-day allowance
 - [ ] Mark Rest Day works from Home with reason capture
 - [ ] Week strip states (workout/rest/upcoming) match the engine's output
-- [ ] SES-01's basic increment replaced by engine — one source of truth
+- [ ] Streak is **derived from `workout_sessions`**, never stored — the six profile columns do not exist, so there is nothing to drift
+- [ ] Backdating or deleting a session changes the streak correctly with no repair step
 
 ### HOME-03 — Suggested anchor + intensity
 **Layer:** state · **Milestone:** M2 · **Carry-over:** port
 **Depends on:** HOME-01, GEN-04
 
-Surface `suggest_anchor` (least-recently-trained) plus an intensity suggestion from recent history; prefill the generation screen, dismissible.
+Surface `suggest_session_focus` (least-recently-trained) plus an intensity suggestion from recent history; prefill the generation screen, dismissible.
 
 **Acceptance:**
-- [ ] Suggestion matches the RPC's least-recent-anchor logic against fixture history
+- [ ] Suggestion matches least-recent-focus logic against fixture history
+- [ ] Pattern-level staleness available — *"no hinge in 11 days"*, not only *"no lower body"*
 - [ ] Tapping the suggestion opens generation prefilled; dismissing it leaves defaults
 - [ ] No suggestion shown with insufficient history (empty state, not a guess)
 
@@ -692,7 +821,7 @@ Manifest, chamfered icon set, theme color, iOS meta, and a minimal service worke
 
 ---
 
-## 10. M3 — Planned medium-term
+## 12. M3 — Planned medium-term
 
 **Promoted — issue-ready.** The progressive-overload stub got its spec session (`specs/OVR-01_progressive-overload.md`, 2026-08-24) and is now four session-sized requirements, per that spec's own slice order. Unit ambiguity — the spec's "blocks everything" flag — is resolved by DATA-01: `weight_unit` per set log plus a profile default, in the baseline schema.
 
@@ -708,10 +837,11 @@ e1RM load anchors computed from set logs; RPE-driven next-prescription rules; sp
 - [ ] Suggested weight = inverted anchor → rounded to equipment increment → clamped to 110% of the 8-week logged max
 - [ ] The RPE rule table implemented as pure functions with unit tests covering every row (incl. overshoot and first-set ≥9)
 - [ ] Sparse/stale ladder enforced: 0/1/2/3+ session confidence tiers; 3/6/12-week decay; >12 weeks discards the anchor
+- [ ] Rep completion is **computed**, not parsed — a set log joins to its immutable prescription row for the prescribed target
 - [ ] Review shows suggestion + session-count confidence + tappable "why this number"; per-session override never rewrites the anchor
 - [ ] Bodyweight movements excluded from load anchors — rep progression only
 
-### OVR-02 — Generation integration (prompt v3.2)
+### OVR-02 — Generation integration (prompt bump)
 **Layer:** api · **Milestone:** M3 · **Carry-over:** new
 **Depends on:** OVR-01, GEN-02
 **Spec:** `specs/OVR-01_progressive-overload.md` (Generation Impact, slice b)
@@ -723,7 +853,7 @@ The AI never does arithmetic: code injects a TRAINING HISTORY block pre-generati
 - [ ] Prompt forbids the model from computing weights; post-generation fill writes `weight_suggested`; model-narrated weights in cues are caught by validation
 - [ ] `deload` / `re_entry` directives change set counts and cue language per spec
 - [ ] Spec open-question 6 decided and recorded (anchor numbers in prompt vs labels-only) — implementation matches the decision
-- [ ] `prompt_version` = 3.2.0
+- [ ] `prompt_version` bumped; `contract_version` unchanged unless the output shape moves
 
 ### OVR-03 — Timed-format progression
 **Layer:** ui · **Milestone:** M3 · **Carry-over:** new
@@ -770,13 +900,17 @@ Six conditions can raise the suggestion: a lift stalling while feeling maximal, 
 
 ---
 
-## 11. Standing constraints (non-functional requirements)
+## 13. Standing constraints (non-functional requirements)
 
 These are not issues — they are review criteria on **every** issue, enforced by CI where mechanical and by review checklist where not.
 
 **Performance.** Generation p50 ≤ 30s end-to-end with visible progress; hard ceiling 60s before a typed timeout error. Route transitions within motion rules (150–200ms). Initial JS bundle ≤ 300KB gzipped.
 
 **Security.** RLS on every user table — verified in DATA-01 and re-verified when tables change. Only the anon key ships client-side; `ANTHROPIC_API_KEY` lives exclusively in Supabase secrets. No headers, tokens, or emails in any log line (CORE-02 is the mechanism; the constraint is universal). Every edge call authenticated.
+
+**Data invariants.** Prescriptions are immutable; revisions carry lineage. Prescribed, revised, and performed stay independently reconstructable. A null actual means *not recorded* — never zero, never skipped. Execution attaches to the exercise actually performed. Later preference changes affect future generation only; history is immutable. Every generated workout records its prompt and contract version. Detail in `specs/DATA_MODEL.md` §1.
+
+**Hard checks reject; soft checks record.** A validation rule that gates must be deterministic and must mirror a database constraint. A quality signal that cannot be enforced is recorded and surfaced, never used to reject — a soft rule that rejects is a hard rule with a soft name.
 
 **Every view implements CORE-04.** Loading, empty, error, populated — all four, on every data-driven view. A view that can render nothing is an incomplete requirement, regardless of what its own acceptance criteria say.
 
@@ -790,7 +924,7 @@ These are not issues — they are review criteria on **every** issue, enforced b
 
 ---
 
-## 12. Traceability: requirement → issue → DAG
+## 14. Traceability: requirement → issue → DAG
 
 The contract that keeps the three artifacts identical:
 
