@@ -1,6 +1,7 @@
 # CLEAR Rebuild — Requirements v0.4 Change Set
 
 > **Status:** proposal, for review before any schema is written
+> **Revision 2 (2026-08-24):** §8 rewritten — exercise metadata derives from existing columns rather than being authored across 173 movements. `META-01` withdrawn. The fitness-reviewer dependency is removed, not worked around.
 > **Scope:** data invariants · generation contract · duration rules · exercise metadata · user constraints
 > **Deliberately excludes:** SQL. No tables, columns, indexes, or policies. Those follow once this is agreed.
 > **Inputs:** the generation review, the Workout Intelligence System Map, the second-pass reduction, and two defects verified in the current codebase.
@@ -163,33 +164,54 @@ Both requested and effective values are retained, so an adjustment is visible ra
 
 ---
 
-## 8. Exercise metadata — minimal set
+## 8. Exercise metadata — derived, not authored
 
-Five attributes, not the eleven originally proposed. Reduced because populating them accurately across ~140–200 exercises is the real cost, and a wrong attribute is worse than a missing one.
+**Revised.** The earlier version of this section proposed five new attributes and an authoring
+workstream across 173 movements. That was solving a problem the codebase doesn't have.
 
-| Attribute | Values | Enables |
+### What duration actually needs
+
+The duration engine (§6) needs two numbers per exercise:
+
+| Input | Source | Why it works |
 |---|---|---|
-| `prescription_modality` | reps · time · distance · rounds · mixed | Structured prescriptions, duration |
-| `technical_tier` | foundational · intermediate · advanced | Complexity ceiling by intensity; keeping technical lifts out of deep fatigue |
-| `impact_category` | low · moderate · high | Impact allowance; user impact constraints |
-| `setup_class` | low · medium · high | Transition time in duration |
-| *(existing)* `component_movements`, `progression`, `regression` | — | Warmup coverage, substitution |
+| **Seconds per rep** | `exercise_role` — already populated | A compound lift rep is slower than an accessory rep, which is slower than a conditioning rep. One default per role. |
+| **Transition time** | `default_equipment` — already populated | Loading a barbell costs more than picking up a kettlebell. One default per equipment type. |
 
-**Explicitly not stored:** `fatigue_sensitivity`. Fatigue is a function of load, reps, sets, density, order and the athlete — not a property of an exercise. It belongs in workload logic, computed per prescription.
+**Modality** — reps vs time vs distance — is not a per-exercise attribute at all. It is a property
+of the *prescription*, and §5 makes it explicit there. A plank prescribed for 30 seconds and a plank
+prescribed for 3 sets of 20 breaths differ in modality while being the same exercise.
 
-### The authoring workstream
+**Net new authoring: zero.** Two lookup tables of roughly seven and six entries, derived from columns
+that already exist.
 
-Named work, not an invisible prerequisite.
+### How the numbers get right
 
-1. Claude drafts classifications in batches with stated reasoning.
-2. A human with fitness-domain knowledge reviews and approves.
-3. Each attribute stores value, source (`draft` / `reviewed`), reviewer, timestamp, and metadata version.
-4. **`unknown` is a permitted value.** Manufacturing certainty is the failure mode to avoid.
-5. **An eligibility rule may only depend on an attribute whose reviewed coverage exceeds a threshold.** The safety layer switches on progressively, per attribute, as coverage becomes trustworthy.
+Ship the engine with role- and equipment-based defaults. Compare computed duration against actual
+elapsed time — `workout_sessions.duration_mins` already records it. Where the error is consistent,
+fix that role or that specific exercise.
 
-Point 5 is what makes this shippable. The schema can land before the data is complete, and every rule states its own readiness.
+This is the opposite of the authoring workstream: **evidence first, exceptions second.** If barbell
+deadlifts consistently overrun their estimate, fix deadlifts. Do not pre-classify 173 movements on
+speculation to avoid a problem that may only affect four of them.
 
----
+A per-exercise override column exists for the exceptions. It starts empty.
+
+### Deferred, with revival conditions
+
+| Attribute | Deferred because | Revive when |
+|---|---|---|
+| `impact_category` | Only consumed by an impact constraint (§9), and no user has set one | A user sets an impact constraint and generation ignores it |
+| `technical_demand` | Only feeds a soft composition preference the model can already make from its own knowledge | Generated sessions show a pattern of misplaced technical work that prompt guidance cannot fix |
+
+Neither is load-bearing for D5, D6, or the three-state model. Both were proposed for a safety layer
+that requires fitness-domain review to author responsibly — and deferring them removes that
+dependency entirely rather than working around it.
+
+### What this changes elsewhere
+
+`META-01` is withdrawn. The metadata-authoring workstream does not exist. `DATA-04` shrinks from
+"five attributes plus governance" to "two derivation tables plus an override column."
 
 ## 9. User-authored constraints
 
@@ -218,11 +240,10 @@ Free text remains valuable as context for composition. It is simply never load-b
 
 | ID | Scope | Milestone |
 |---|---|---|
-| `DATA-04` | Exercise metadata: five attributes, governance fields, coverage gating | M0 |
+| `DATA-04` | Duration derivation: seconds-per-rep by role, transition time by equipment, per-exercise override | M0 |
 | `DATA-05` | User-authored constraints: scope, action, duration, note | M0 |
 | `GEN-06` | Deterministic duration engine + validation on computed totals | M1 |
 | `GEN-07` | Intensity normalization into the bounded profile | M1 |
-| `META-01` | Metadata authoring workstream — batches, review, coverage tracking | M0, parallel |
 
 ### Substantially revised
 
@@ -248,12 +269,21 @@ The entire ENV trunk, the DS trunk, AUTH, CORE-01/02/04, HOME, HIST, SET, FAV, P
 
 Ordered by how much they block.
 
-1. **Who reviews the exercise metadata?** *(blocking)* — A human fitness-domain owner must be accountable for safety-relevant attributes. **If no qualified reviewer is available, CLEAR should limit itself to factual metadata and explicit user exclusions rather than claiming a safety layer it cannot stand behind.** That is a product-positioning decision as much as a technical one, and it determines whether §8's rules ship at all.
-2. **`seconds_per_rep` defaults and the intensity mapping values** — fitness-domain input, not engineering guesses.
-3. **After-start regeneration** — what is editable once a workout begins, and what locks. Still unresolved from the map.
-4. **Global working-weight change scope** — one exercise, a movement family, an equipment variant, or all future prescriptions.
-5. **REV-04 promotion** — the schema supports pre-start editing; whether it is built in M2 stays a product-priority call.
-6. **Regeneration telemetry** — record how many times a workout was regenerated before starting, and optionally what was discarded. It is the only honest generation-quality signal obtainable without asking the user. Cheap now, invisible later.
+1. ~~Who reviews the exercise metadata?~~ **Resolved by §8.** No attribute remaining in the schema
+   requires fitness-domain review. Duration derives from existing columns and is corrected by measured
+   error; the two attributes that needed a reviewer are deferred. The safety mechanism is user-authored
+   exclusions, where the user is the authority on their own body.
+2. **Anchor taxonomy** *(decide before DATA-01)* — `anchor_type` holds movement patterns
+   (`squat`/`hinge`/`press`/`pull`), body regions (`upper_body`/`lower_body`/`full_body`), and a
+   modality (`power`) in one enum, used for both sessions and exercises. Splitting into session
+   **focus** and exercise **movement pattern** makes coverage balancing and `suggest_anchor` precise,
+   and removes a prose translation step from the prompt. No UI change. Recommended.
+3. **Intensity mapping values** — the numbers behind the six dimensions in §7. Tunable after the
+   schema lands; does not block it.
+4. **After-start regeneration** — what is editable once a workout begins, and what locks. Still unresolved from the map.
+5. **Global working-weight change scope** — one exercise, a movement family, an equipment variant, or all future prescriptions.
+6. **REV-04 promotion** — the schema supports pre-start editing; whether it is built in M2 stays a product-priority call.
+7. **Regeneration telemetry** — record how many times a workout was regenerated before starting, and optionally what was discarded. It is the only honest generation-quality signal obtainable without asking the user. Cheap now, invisible later.
 
 ---
 
