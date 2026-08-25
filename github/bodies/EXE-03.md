@@ -1,11 +1,10 @@
 > **EXE-03** · Layer `ui` · Milestone `M1` · Carry-over `rebuild`
 
-Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minute indicators, active/inactive highlighting, ODD/EVEN MIN labels for alternating EMOMs.
-
 **Spec:** `specs/structures/emom-clarity.md`, `specs/structures/superset-circuit-clarity.md`, `specs/structures/quickfix-amrap-round-label.md`
 
-## Acceptance
+Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minute indicators, active/inactive highlighting, ODD/EVEN MIN labels for alternating EMOMs.
 
+## Acceptance
 - [ ] Renders from the block: rounds, timer type, timer seconds, and shared rest all read from `workout_blocks`
 - [ ] EMOM minute boundary visibly flips active work; remainder reads as rest
 - [ ] Alternating EMOMs label ODD/EVEN MIN per spec
@@ -19,4 +18,4 @@ Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minut
 **Depends on:** EXE-01
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

@@ -1,11 +1,10 @@
 > **DATA-05** · Layer `data` · Milestone `M0` · Carry-over `new`
 
-Explicit exclusions the user sets for themselves. **CLEAR does not model injuries** — three scopes, all enforceable against catalog data that already exists.
-
 **Spec:** `specs/DATA_MODEL.md` §5
 
-## Acceptance
+Explicit exclusions the user sets for themselves. **CLEAR does not model injuries** — three scopes, all enforceable against catalog data that already exists.
 
+## Acceptance
 - [ ] Three scopes supported: exercise, movement pattern, equipment. **No impact scope** until the catalog can enforce it
 - [ ] `exclude` filters deterministically in the eligibility query, before Claude composes
 - [ ] `applies_to_session_id` enforced — a session-scoped exclusion **does not** apply to later sessions
@@ -15,7 +14,7 @@ Explicit exclusions the user sets for themselves. **CLEAR does not model injurie
 
 ---
 
-**Depends on:** DATA-01
+**Depends on:** DATA-01b
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

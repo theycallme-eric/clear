@@ -1,11 +1,10 @@
 > **REV-02** · Layer `api` · Milestone `M1` · Carry-over `rebuild`
 
-Single-slot regeneration on the same contract as GEN-02 — the same candidate retrieval, the same validation, narrower scope.
-
 **Spec:** `specs/generation/exercise-swap.md`, `specs/generation/GENERATION_CONTRACT.md`
 
-## Acceptance
+Single-slot regeneration on the same contract as GEN-02 — the same candidate retrieval, the same validation, narrower scope.
 
+## Acceptance
 - [ ] A swap draws from the same candidate query as generation, scoped to the slot's section and constraints
 - [ ] Unit swap regenerates a whole block as a unit, preserving the block's structure and timer
 - [ ] The result is persisted as a revision with lineage — **never a mutation in place** (D6)
@@ -13,7 +12,7 @@ Single-slot regeneration on the same contract as GEN-02 — the same candidate r
 
 ---
 
-**Depends on:** GEN-02
-**Blocks:** REV-03
+**Depends on:** GEN-02c
+**Blocks:** REV-03, EXE-06
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

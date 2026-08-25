@@ -1,9 +1,10 @@
 > **CORE-04** · Layer `state` · Milestone `M0` · Carry-over `new`
 
+**Spec:** `specs/IA.md` §5 cross-cutting — the four-state contract is realized per screen
+
 Answers a question the rest of this document was leaving implicit: *what does the user see when something fails, is slow, or has no data?* Every data-driven view must define four states — **loading, empty, error, populated** — and a top-level error boundary must exist so a render crash never produces a blank screen.
 
 ## Acceptance
-
 - [ ] A documented four-state contract every view implements: loading / empty / error / populated. No view is allowed to render nothing
 - [ ] Top-level error boundary catches render crashes and shows a recoverable screen with a reload action — never a white page, never a raw stack trace
 - [ ] Error views render an `AppError` (CORE-01): plain-language message, `requestId` when present, and a retry that actually re-runs the failed operation
@@ -16,4 +17,4 @@ Answers a question the rest of this document was leaving implicit: *what does th
 **Depends on:** CORE-01
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

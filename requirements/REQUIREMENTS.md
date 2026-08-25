@@ -1,8 +1,8 @@
 # CLEAR Rebuild — Requirements Specification
 
-**Version:** 0.5 — design system folded in, backlog resolved
+**Version:** 0.6 — sized, tested, and accessible
 **Date:** 2026-08-25
-**Requirements:** 55 · **Defects:** D1–D7
+**Requirements:** 71 · **Defects:** D1–D7
 
 **Version history**
 
@@ -13,7 +13,8 @@
 | 0.3 | First review pass. DS-01/02/06 and GEN-05 gated on the Claude Design export. CORE-04 added. OVR-04 rewritten in plain language. **Independence:** every cited spec copied into this workspace; the rebuild never reads the archived repo. |
 | 0.3.1 | IA decisions folded in — Workout becomes a focus mode, Quick Start hides until history exists, favorite completions get a comparison surface, onboarding is strictly first-run. |
 | 0.4 | **Two verified defects (D5, D6) and three outside review rounds.** Structured prescriptions, first-class blocks, three-state model with temporal lineage, duration plausibility guardrail, user-authored constraints, staged taxonomy migration. Detail lives in `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`. `DATA-04`, `GEN-07`, and `META-01` were proposed during review and withdrawn before issue — hence the gap between `DATA-03` and `DATA-05`. |
-| **0.5** | **`clear-design-system@0.5.0` landed and §9 was rewritten against it.** The export ships a component library, not tokens — DS-03 deleted, DS-01/02/05/06 rescoped from *build* to *integrate*, DS-07 shrunk, **DS-08** (adherence gate in CI) added. GEN-05 and SET-01 rescoped. **D7 registered** (set logs written live with no failure handling) and closed by **EXE-07**. **All eight backlog stubs resolved** — five cut, two promoted (EXE-06, EXE-07), one folded into DATA-02; reasoning in `requirements/DEFERRED.md`. Substrate contract: `specs/design/ATOMIC.md`. |
+| 0.5 | **`clear-design-system@0.5.0` landed and §9 was rewritten against it.** The export ships a component library, not tokens — DS-03 deleted, DS-01/02/05/06 rescoped from *build* to *integrate*, DS-07 shrunk, **DS-08** (adherence gate in CI) added. GEN-05 and SET-01 rescoped. **D7 registered** (set logs written live with no failure handling) and closed by **EXE-07**. **All eight backlog stubs resolved** — five cut, two promoted (EXE-06, EXE-07), one folded into DATA-02; reasoning in `requirements/DEFERRED.md`. Substrate contract: `specs/design/ATOMIC.md`. |
+| **0.6** | **Sizing rule applied.** Six oversized requirements split into sub-requirements with disjoint dependents — DATA-01 by schema domain, GEN-02 by pipeline stage, SES-01 by lifecycle / reconstruction / streak, EXE-04 by structure type, OVR-01 by anchors / rules / surface, DS-04 by control. Every split had to name the dependent it unblocks. **ENV-06 / ENV-07** add the test architecture (component harness; E2E on mobile viewports, test-user provisioning, seed/reset, RLS as a standing test). **CORE-05** adds the accessibility contract — the cross-screen mechanisms the design system cannot know about — plus a standing review constraint. `scripts/gen-issues.py` now generates the issue scripts and bodies from this file and validates the graph; the scripts are no longer hand-maintained. |
 **0.2:** Progressive-overload spec landed (`specs/OVR-01_progressive-overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
 **Scope:** Ground-up rebuild of CLEAR. Full parity with the existing app plus spec'd planned features, sequenced M0–M3.
 
@@ -25,7 +26,11 @@ This document is the source of truth for what the rebuild must do. It is structu
 
 **Sizing rule:** every requirement must be **independently mergeable and independently verifiable** — its acceptance criteria can be checked without another requirement landing first. That is the criterion, not elapsed time; time estimates on agent work are noise.
 
-Several requirements bundle separable work and are split into sub-issues before publishing (`--parent`), because an oversized node causes **false serialization** — a dependent waiting on parts of a parent it does not actually need. The graph must not lie about the plan.
+An oversized node causes **false serialization** — a dependent waiting on parts of a parent it does not actually need. The graph must not lie about the plan.
+
+**Applied in v0.6.** Six requirements were split: `DATA-01`, `GEN-02`, `SES-01`, `EXE-04`, `OVR-01`, `DS-04`. Each split had to earn itself by naming the dependent it unblocks — DATA-02 waiting on execution tables it never reads, GEN-06 waiting on a model call it has nothing to do with, HOME-01 waiting on a whole session lifecycle when it needs one streak query. Splitting for tidiness alone is how a backlog grows without the plan improving.
+
+The children are **peers, not sub-issues.** A parent tracking issue with no acceptance criteria of its own never closes and would surface in `is:open -is:blocked` as work that is not work. The sub-requirement IDs (`DATA-01a`…) carry the traceability that hierarchy would have; shared context and any criteria applying to all of them are reproduced in each child's body by `scripts/gen-issues.py`.
 
 **A structural decision that shapes everything below:** parity features **absorb** their spec'd improvements instead of being built old-then-patched. The EMOM clarity, ladder/for-time restructure, and AMRAP logging specs are baked into the M1 execution renderers. Generation ports prompt **v3**, not v2. Favorites builds toward the v2 spec. We never build the confusing version first.
 
@@ -165,6 +170,7 @@ GitHub Actions on every PR: typecheck, lint, test, build. Branch protection make
 - [ ] A PR containing a type error cannot be merged
 - [ ] A clean PR shows all four checks green in <5 min
 - [ ] CI also greps and fails on raw `console.*` usage in `src/` (see CORE-02)
+- [ ] CI runs `python3 scripts/gen-issues.py --check` against the docs and fails on a dangling dependency or a cycle — the requirements graph is verified by the same pipeline as the code
 
 ### ENV-03 — Deploy pipeline
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** port
@@ -181,7 +187,7 @@ Vercel: preview deploy per PR, production on push to `main`. SPA rewrites so eve
 
 ### ENV-04 — Dev environment: one command, legible failures
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
-**Depends on:** ENV-01, DATA-01
+**Depends on:** ENV-01, DATA-01b
 **Spec:** — self-contained; acceptance criteria are the full specification
 
 Kills D4. Development runs against the hosted Supabase project — Docker appears nowhere in the loop. `npm run dev` preflights the database and explains problems in English.
@@ -194,7 +200,7 @@ Kills D4. Development runs against the hosted Supabase project — Docker appear
 
 ### ENV-05 — Supabase keep-alive
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
-**Depends on:** ENV-02, DATA-01
+**Depends on:** ENV-02, DATA-01a
 **Spec:** — self-contained; acceptance criteria are the full specification
 
 Scheduled GitHub Action pings the database twice weekly so the free-tier project never pauses. Delete if the project moves to a paid plan.
@@ -204,31 +210,111 @@ Scheduled GitHub Action pings the database twice weekly so the free-tier project
 - [ ] Ping is a harmless read (no writes, no auth secrets in logs)
 - [ ] README notes the action and when to remove it
 
-### DATA-01 — Baseline schema
-**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
+### ENV-06 — Test harness
+**Layer:** infra · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01
-**Spec:** `specs/DATA_MODEL.md`
+**Spec:** — self-contained; acceptance criteria are the full specification
 
-The full baseline, authored against the data model spec rather than ported from the old migrations. Four domains in one Postgres database: catalog, user baseline, workout, execution. Applied to a **new** Supabase project.
-
-The structural changes that make D6 impossible and the three-state model real: **blocks** as a first-class level between sections and exercises · **discriminated prescriptions** (modality, target kind, per-side, distance unit) replacing a TEXT `reps` column that held four data types · **temporal lineage** (`slot_id`, `created_at`, `superseded_at`) with revision and execution status kept separate · **typed absence** — a null actual never means zero or skipped.
+ENV-01 installs Vitest. This makes it a harness someone can actually write a component test in, and makes an untested component a visible fact rather than an assumption.
 
 **Acceptance:**
-- [ ] Single migration creates the full schema on an empty project
-- [ ] RLS verified: authenticated user A cannot read or write user B's rows on any user table
-- [ ] Catalog tables are read-only to clients
-- [ ] Structure attributes live on `workout_blocks` — **no exercise carries a timer, round count, or shared rest**, so members of a block cannot disagree
-- [ ] `block_results` is keyed to a block, not a section — a conditioning section holding an EMOM *and* an AMRAP records both
-- [ ] Target CHECK constraints reject a malformed prescription: `{8,10}` as a range and as a two-rung sequence are distinguishable
-- [ ] `UNIQUE (replaces_id)` prevents branching lineage; `revision_status` and `execution_status` are independent columns
-- [ ] Set logs support reps, duration, and distance with units — not reps alone
-- [ ] `weight_unit` on every set-log row plus a profile default; a changed default never reinterprets history
+- [ ] React Testing Library configured with jsdom; a real component test renders, queries by accessible role, and asserts on user-visible output — not implementation details
+- [ ] `npm test` runs unit + component tests in CI and locally with identical results
+- [ ] Test utilities live in one place: a render helper that mounts the app's providers, and factory functions for domain fixtures. **A test that hand-builds a session object is a bug in the harness**
+- [ ] Coverage reported, not gated — a number nobody can game, on a wall where it is visible
+- [ ] `@testing-library/user-event` is the interaction API; no synthetic `fireEvent` on new tests
+- [ ] `vitest --watch` is documented in DEVELOPMENT.md as the working loop
+
+### ENV-07 — E2E harness + test data lifecycle
+**Layer:** infra · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** ENV-06, ENV-02, DATA-02, AUTH-01
+**Spec:** — self-contained; acceptance criteria are the full specification
+
+The part that is genuinely hard, and the reason it is a separate requirement: an end-to-end test of CLEAR needs an authenticated user, a seeded library, and a database it can reset — and the auth flow is a one-time code sent by email.
+
+**Mobile viewport is the default, not a variant.** ~80% of use is a phone at a gym; a suite that only proves the desktop layout works is testing a minority case.
+
+**Acceptance:**
+- [ ] Playwright configured; **the default project is a mobile viewport** (390×844, touch, coarse pointer). Desktop is an additional project, not the baseline
+- [ ] Test users provision without a human reading an inbox — Supabase admin API creates a confirmed user and mints a session directly, so the OTP screen is exercised in its own focused test rather than in every flow
+- [ ] Seed and reset are one command each and are idempotent; a failed run never leaves the next one poisoned
+- [ ] **RLS is a standing test, not a one-time check.** DATA-01 proves the policies once at authoring time; this suite re-proves them on every PR — user A authenticated, user B's rows, every user table, read and write, expecting zero rows and a denial
+- [ ] `axe-core` runs against every screen the suite visits and fails on violations (see CORE-05)
+- [ ] The suite runs in CI on every PR against a preview deploy, and locally against the dev server, with no test-only branches in `src/`
+- [ ] A failing E2E test produces a trace and a screenshot, not just a stack
+
+### DATA-01 — Baseline schema *(split: DATA-01a…d)*
+
+The full baseline, authored against `specs/DATA_MODEL.md` rather than ported from the old migrations, applied to a **new** Supabase project. Four domains, four migrations, four issues.
+
+**Why it splits.** DATA-02 seeds the exercise library and touches the catalog only; as one node it waited on execution tables it never reads. The migrations apply in order — that is a property of foreign keys, not of the tickets — but a dependent should wait for the domain it uses, not for all four.
+
+The structural changes that make D6 impossible and the three-state model real are distributed across the domains below: **blocks** as a first-class level (c) · **discriminated prescriptions** replacing a TEXT `reps` column that held four data types (c) · **temporal lineage** with revision and execution status kept separate (c) · **typed absence** (d).
+
+**Applies to all four:** single migration each, commented, idempotent on an empty project; RLS verified at authoring time — user A cannot read or write user B's rows on any user table — and re-verified continuously by ENV-07.
+
+### DATA-01a — Schema: catalog domain
+**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
+**Depends on:** ENV-01
+**Spec:** `specs/DATA_MODEL.md` §3
+
+Exercise definitions, `component_movements`, the component→pattern map, equipment, and the derived `exercise_patterns` view. Read-only to clients — this is where that convention is established.
+
+**Acceptance:**
+- [ ] `exercise_definitions` carries `component_movements` and `exercise_role`; `component_pattern_map` is a real table, not a CASE expression
+- [ ] `exercise_patterns` view derives movement pattern from components — **zero re-tagging**, and a new component is one row, not a migration
+- [ ] `session_focus` and `movement_pattern` exist as enums, and the focus→patterns mapping is data
+- [ ] Catalog tables are readable by any authenticated user and writable by none
+- [ ] `exercise_pattern_weights` exists to receive DATA-02's migrated weighting; `exercise_anchors` is **not** created — it is a thing being retired, not rebuilt
+
+### DATA-01b — Schema: user baseline domain
+**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
+**Depends on:** DATA-01a
+**Spec:** `specs/DATA_MODEL.md` §2
+
+Profiles, locations, location equipment, enabled sections, and the profile's `weight_unit` default.
+
+**Acceptance:**
+- [ ] A profile row is created on first authenticated visit and never partially written — the D1 failure mode has no schema to live in
+- [ ] Locations carry an equipment tier and an explicit equipment list; exactly one default per user, enforced by constraint rather than convention
+- [ ] `weight_unit` default lives on the profile; **changing it never reinterprets history** — the unit is stamped per set log in DATA-01d
+- [ ] RLS: a user reads and writes only their own profile, locations and equipment. Proven with a second user, not asserted
+
+### DATA-01c — Schema: workout domain
+**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
+**Depends on:** DATA-01b
+**Spec:** `specs/DATA_MODEL.md` §4, §6
+
+Sessions, sections, **blocks**, and exercises — the prescription side, and the domain where D6 is designed out.
+
+**Acceptance:**
+- [ ] `workout_blocks` exists between sections and exercises and **owns every structure attribute** — `structure_type`, `rounds`, timer, `round_rest_seconds`, `rep_scheme`. No exercise carries a timer or a round count, so members of a block cannot disagree
+- [ ] CHECK constraints enforce the structure's own rules: a timed structure has a clock, a fixed-round structure has rounds
+- [ ] Prescriptions are discriminated: `modality` (reps/time/distance) × `target_kind` (fixed/range/sequence), plus `per_side` and `distance_unit`. **`{8,10}` as a range and as a two-rung sequence are distinguishable**, and a malformed combination is rejected by the database
+- [ ] Lineage: `slot_id` threads a slot's history, `replaces_id` points at what was superseded, `UNIQUE (replaces_id)` prevents branching
+- [ ] `revision_status` and `execution_status` are **independent columns** — a superseded exercise keeps its own execution state
 - [ ] Four unambiguous duration fields on the session: requested, effective target, computed, actual
-- [ ] Migration commented by domain
+- [ ] `prompt_version` and `contract_version` columns exist on the session
+
+### DATA-01d — Schema: execution domain
+**Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
+**Depends on:** DATA-01c
+**Spec:** `specs/DATA_MODEL.md` §5
+
+Set logs and block results — the performed side, and the home of typed absence.
+
+**Acceptance:**
+- [ ] Set logs support reps, duration **and** distance with units — not reps alone
+- [ ] `weight_unit` on **every** set-log row, stamped at write time
+- [ ] **A null actual means *not recorded*.** It is never zero and never skipped; skipped is a status, zero is a measurement. The columns and constraints make the three distinguishable without a comment explaining which is which
+- [ ] `block_results` is keyed to a **block**, not a section — a conditioning section holding an EMOM *and* an AMRAP records both
+- [ ] `block_results` holds every timed outcome: `elapsed_seconds`, `completed_under_cap`, `rounds_completed`, `partial_round_reps`, `highest_rung`, `minutes_completed`, and perceived effort
+- [ ] A set log references the exercise row **actually performed**, and the FK makes attaching it to a superseded prescription impossible
+- [ ] Set logs carry a client-generated id so EXE-07's retry is idempotent by construction
 
 ### DATA-02 — Exercise library seed + taxonomy verification
 **Layer:** data · **Milestone:** M0 · **Carry-over:** keep
-**Depends on:** DATA-01
+**Depends on:** DATA-01a
 **Spec:** `specs/DATA_MODEL.md` §3
 
 Export the catalog from the old project and seed the new one. **Plus the taxonomy equivalence check** — the anchor split is a separate staged migration, and this is where it is proven safe before the old structures are dropped.
@@ -247,7 +333,7 @@ A dev-only flag seeds Eric's profile + default location so the M1 loop is usable
 
 ### DATA-03 — Generated types + typed client
 **Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
-**Depends on:** ENV-01, DATA-01
+**Depends on:** ENV-01, DATA-01d
 **Spec:** `specs/DATA_MODEL.md` §10 enums
 
 `supabase gen types` output committed with a regen script; thin typed client in `lib/supabase.ts`. No `any` escapes the data layer.
@@ -259,7 +345,7 @@ A dev-only flag seeds Eric's profile + default location so the M1 loop is usable
 
 ### DATA-05 — User-authored constraints
 **Layer:** data · **Milestone:** M0 · **Carry-over:** new
-**Depends on:** DATA-01
+**Depends on:** DATA-01b
 **Spec:** `specs/DATA_MODEL.md` §5
 
 Explicit exclusions the user sets for themselves. **CLEAR does not model injuries** — three scopes, all enforceable against catalog data that already exists.
@@ -330,6 +416,26 @@ Answers a question the rest of this document was leaving implicit: *what does th
 - [ ] Slow operations show progress after a threshold rather than appearing frozen
 - [ ] A test simulates each state for at least one representative view
 
+### CORE-05 — Accessibility contract
+**Layer:** state · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** ENV-01, DS-01
+**Spec:** `specs/design/ATOMIC.md` §9 · export `docs/patterns.md`
+
+The design system already guarantees the component layer — visible focus on everything, selection carrying a tick rather than colour alone, native inputs so form participation and arrow keys are the platform's, announcements scaled to severity, ≥40px touch targets, contrast measured against rasterized pixels rather than asserted. **None of that is re-implemented here.**
+
+What the export cannot know is anything that spans screens. That is this requirement: the small set of shared mechanisms every screen then uses, built once, before the first screen ships.
+
+**Acceptance:**
+- [ ] **Route-change focus.** On navigation, focus moves to the new screen's `<h1>` (or its main landmark) and the route is announced once via a polite live region. A keyboard user who navigates does not land back at the browser chrome, and a screen-reader user is told where they are
+- [ ] **Skip link** to main content, visible on focus, first in the tab order
+- [ ] **One `<h1>` per screen and no skipped levels.** A heading component takes its level from context so a section cannot silently render an `<h4>` under an `<h2>`; the E2E suite asserts the outline on every screen it visits
+- [ ] **Landmarks:** one `<main>`, `AppHeader` renders the `<header>`, and any nav is a `<nav>` with an accessible name
+- [ ] **Form-error focus.** On submit failure, focus moves to the first invalid control (export pattern 1). This is one shared submit helper, not a per-form habit
+- [ ] **`prefers-reduced-motion` end state.** Every app-composed animation renders its final state immediately rather than being skipped mid-way — nothing waits on an animation to become interactive, and nothing disappears because its animation was disabled
+- [ ] **`axe-core` wired into the E2E suite** (ENV-07) and failing the build on violations. Automated checks catch roughly a third of real problems; they are the floor, not the ceiling
+- [ ] `lang` on `<html>`, a per-screen `<title>`, and a viewport meta that does not block zoom
+- [ ] DEVELOPMENT.md documents the keyboard-only pass and the screen-reader pass as part of reviewing a UI issue
+
 ### AUTH-01 — Session context
 **Layer:** state · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01, DATA-03
@@ -346,7 +452,7 @@ Kills half of D1. A minimal provider over `supabase.auth.onAuthStateChange` expo
 
 ### AUTH-02 — Welcome + OTP login screens
 **Layer:** ui · **Milestone:** M0 · **Carry-over:** rebuild
-**Depends on:** AUTH-01, DS-04
+**Depends on:** AUTH-01, DS-01
 **Spec:** `specs/IA.md` — OTP Login screen contract
 
 Email OTP request and verify flow per the design system. Typed error states; resend with cooldown.
@@ -452,30 +558,50 @@ sizes), `Button` (four variants × three sizes, loading, icon, icon-only), `Icon
 (mandatory accessible name), `.clr-chamfer`, `.clr-card`, `.clr-btn`. Dependents rewired
 to DS-01 and DS-04.
 
-### DS-04 — App-composed controls
+### DS-04 — App-composed controls *(split: DS-04a…c)*
+**Spec:** `specs/design/ATOMIC.md` §11
+
+The three parts CLEAR needs that `clear-design-system@0.5.0` does not ship. Each is a **composition** of shipped tokens and classes, not a new visual idea.
+
+**Why it splits.** Their dependents are disjoint. Card is on nearly every screen; Select is on History alone; CollapsibleSection is on Review and Workout. Bundled, HOME-01 waits on a filter control it never renders.
+
+**Applies to all three:** built from the tokens and classes in ATOMIC.md; passes the adherence lint at `error` (DS-08); ≥44px touch targets on coarse pointers; present in the gallery in every state across all four skins; introduces **no new token**.
+
+### DS-04a — Card
 **Layer:** design · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** DS-01
-**Spec:** `specs/design/ATOMIC.md` §11
-**Sizing:** oversized — **split into sub-issues before publishing.** Card, Select and
-CollapsibleSection have disjoint dependents; bundling them makes HOME-01 wait on a filter
-control it never renders.
 
-The three parts CLEAR needs that 0.5.0 does not ship. Each is a **composition** of shipped
-tokens and classes, not a new visual idea.
-
-- **DS-04a · Card** — `.clr-card` ships as CSS only. Wrap it as a React component: accent
-  bar + chamfered body, `barWidth` for the 8/12px variants.
-- **DS-04b · Select** — absent from the export entirely. Needed for history and library
-  filtering.
-- **DS-04c · CollapsibleSection** — workout section disclosure.
+`.clr-card` ships as CSS — accent bar plus chamfered body. This is the React wrapper.
 
 **Acceptance:**
-- [ ] `Card` composes `.clr-card__bar` + `.clr-card__body`; introduces **no new token**
-- [ ] `Select` is a real `<select>` styled to CLEAR, with `FormField`'s label/helper/error aria wiring
-- [ ] `CollapsibleSection` uses the disclosure pattern with `aria-expanded` and a keyboard-operable trigger; content is not removed from the accessibility tree while collapsed
-- [ ] All three pass the adherence lint at `error` (DS-08)
-- [ ] All three render in the gallery in every state across all four skins
-- [ ] Touch targets ≥44px on coarse pointers
+- [ ] Composes `.clr-card__bar` + `.clr-card__body`; the bar owns the left edge and the body carries the chamfer
+- [ ] `barWidth` selects the 8px and 12px variants via `--accent-bar-width` / `-lg` — no hardcoded width
+- [ ] Accepts `className` and spreads native attributes, matching the export's component conventions
+- [ ] A card containing a heading does not impose a heading level (CORE-05)
+
+### DS-04b — Select
+**Layer:** design · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** DS-01
+
+Absent from the export entirely. Needed for history and library filtering.
+
+**Acceptance:**
+- [ ] A **real `<select>`** styled to CLEAR — keyboard behaviour, type-ahead, and the platform's mobile picker come free and are not reimplemented
+- [ ] Label, helper and error wiring through `FormField`, matching `Input`'s aria contract
+- [ ] Sharp corners, 2px structure border, surface brightens on focus — visually a sibling of `Input`, not a foreign control
+- [ ] The native dropdown is left alone; no custom listbox
+
+### DS-04c — CollapsibleSection
+**Layer:** design · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** DS-01
+
+Workout and review section disclosure.
+
+**Acceptance:**
+- [ ] Disclosure pattern with `aria-expanded` on a keyboard-operable trigger
+- [ ] **Collapsed content stays in the accessibility tree's document order** — collapsed is not removed, so find-in-page and a screen reader's linear read still work
+- [ ] The expand/collapse transition uses the motion vocabulary and is inert under `prefers-reduced-motion`
+- [ ] Nested disclosure is possible without the inner trigger stealing the outer one's toggle
 
 ### DS-05 — Toast host and error surfaces
 **Layer:** design · **Milestone:** M1 · **Carry-over:** new
@@ -524,7 +650,7 @@ proves it on a real phone.
 
 ### DS-07 — Gallery
 **Layer:** design · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DS-04
+**Depends on:** DS-04a, DS-04b, DS-04c
 **Spec:** `specs/design/ATOMIC.md`
 
 The visual review surface — screens get approved rendered, not drawn. The export already
@@ -562,7 +688,7 @@ The gate: a real workout, on a phone, end to end. Generation quality and executi
 
 ### GEN-01 — Edge function envelope
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DATA-01, CORE-01, CORE-03
+**Depends on:** DATA-01c, CORE-01, CORE-03
 **Spec:** `specs/generation/GENERATION_CONTRACT.md` §9 errors
 
 The shared shell for all AI functions: auth verification, zod request parsing, CORS, typed error responses `{ code, message, requestId }`, structured logging. Kills D3 at the function level.
@@ -573,30 +699,61 @@ The shared shell for all AI functions: auth verification, zod request parsing, C
 - [ ] A test asserts the words `authorization`/`apikey` never appear in log output
 - [ ] Envelope is a reusable module — `generate-section` (REV-02) adopts it unchanged
 
-### GEN-02 — Workout generation: contract v4.1
-**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** GEN-01, DATA-02, CORE-03
-**Spec:** `specs/generation/GENERATION_CONTRACT.md`
+### GEN-02 — Workout generation: contract v4.1 *(split: GEN-02a…c)*
 
 The pipeline becomes resolve → retrieve → **compose** → validate → hydrate → persist. Claude occupies exactly one step, the one requiring judgment; everything on either side is deterministic.
 
-Eligibility resolves in SQL **before** the prompt is built, so rules currently described in prose become constraints applied to Claude's input. It cannot select an ineligible exercise because it never sees one.
+**Why it splits.** GEN-06 checks duration plausibility — a validation rule. As one node it waited on prompt authoring and a live Claude call it has nothing to do with. Retrieval is also pure SQL and testable against the seeded library with no model in the loop at all, which makes it the piece most worth landing first.
+
+### GEN-02a — Candidate resolution + retrieval
+**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** DATA-02, DATA-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §2–3
+
+Eligibility resolves in SQL **before** any prompt exists. Rules currently written as prose become constraints applied to Claude's input, so it cannot select an ineligible exercise because it never sees one.
 
 **Acceptance:**
-- [ ] Candidate retrieval runs per section: focus→pattern join, equipment intersection, user exclusions, section eligibility. `usable_equipment` computed per candidate so Claude only sees equipment it may choose
-- [ ] One live run per goal preset returns a contract-valid workout honoring section scaling
-- [ ] Claude **cannot** return an exercise or equipment outside the candidate set — validated, and structurally unlikely since candidates are all it receives
-- [ ] Facts hydrated by ID after validation: name, equipment display names, cues, regression. Claude returns none of them
-- [ ] Claude returns no authoritative duration; its estimate is stored as diagnostic only
-- [ ] Hard checks mirror the schema's CHECK constraints; soft checks (ratios, warmup coverage, variety, repetition) are recorded and **never gate**
-- [ ] Recorded invalid-response fixture triggers one retry, then a typed `generation` error — never a partial result
-- [ ] Active-recovery preset produces warmup/mobility/cooldown only, intensity clamped 1–3
+- [ ] Candidate retrieval runs per section: focus→pattern join via `exercise_patterns`, equipment intersection with the resolved location, user exclusions, section eligibility
+- [ ] `usable_equipment` computed per candidate, so a candidate arrives with the equipment it may actually be performed with
+- [ ] Runs as SQL with **no model call** — testable, deterministic, and fast enough to be inside the request rather than cached around it
+- [ ] Every goal preset produces a non-empty candidate set for a realistically-equipped location, and an empty set is a typed error rather than an empty workout
+- [ ] Active recovery resolves to warmup/mobility/cooldown candidates only
+
+### GEN-02b — Prompt composition + model call
+**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** GEN-02a, GEN-01, CORE-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §4–5
+
+Assemble the prompt from resolved candidates, call Claude, retry once on a malformed response.
+
+**Acceptance:**
+- [ ] The prompt contains the candidate set and the structural contract — **not** the exercise library and not rules already enforced upstream
+- [ ] Prompt is measurably shorter than the old app's, and the measurement is recorded
+- [ ] Claude returns structure and selection only — **no names, no equipment display strings, no cues, no regressions**, and no authoritative duration
+- [ ] A recorded invalid-response fixture triggers exactly one retry, then a typed `generation` error — **never a partial result and never a mock workout** (D2)
+- [ ] Intensity clamped 1–3 for active recovery before the prompt is built, not after
+- [ ] `ANTHROPIC_API_KEY` is read from Supabase secrets and appears in no log line (CORE-02)
+
+### GEN-02c — Validation, hydration, persistence
+**Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** GEN-02b, DATA-01d
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §6–8
+
+The deterministic half after the model: reject what the database would reject, record what cannot be enforced, fill in the facts, write it down.
+
+**Acceptance:**
+- [ ] **Hard checks mirror the schema's CHECK constraints** — every rule that gates has a constraint it corresponds to, and the correspondence is listed. A hard check with no matching constraint is a bug in one of the two
+- [ ] Claude **cannot** return an exercise or equipment outside the candidate set — validated explicitly, not merely made unlikely by the prompt
+- [ ] Soft checks (ratios, warmup coverage, variety, repetition) are **recorded and surfaced, never gating**. A soft rule that rejects is a hard rule with a soft name
+- [ ] Facts hydrated by ID **after** validation: name, equipment display names, cues, regression
+- [ ] Claude's duration estimate is stored as diagnostic only and is never read as authoritative (D5)
+- [ ] Persistence writes sessions → sections → blocks → exercises in one transaction; a failure leaves no partial workout
 - [ ] `prompt_version` and `contract_version` stamped on every session
-- [ ] Prompt is measurably shorter — the library dump and the enforceable rules are gone
+- [ ] One live run per goal preset returns a contract-valid workout honouring section scaling
 
 ### GEN-03 — Generation client state
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** GEN-02, CORE-03, AUTH-03
+**Depends on:** GEN-02c, CORE-03, AUTH-03
 **Spec:** `specs/generation/GENERATION_CONTRACT.md` §9 · `specs/IA.md` — Generate and Loading screen contracts
 
 React Query mutation with pending / success / typed-error states. Kills D2's silent fallback: there is no mock workout in this codebase.
@@ -609,7 +766,7 @@ React Query mutation with pending / success / typed-error states. Kills D2's sil
 
 ### GEN-04 — Generation screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** GEN-03, DS-04, AUTH-03
+**Depends on:** GEN-03, DS-04c, AUTH-03
 **Spec:** `specs/generation/generation-prompt-v3-notes.md` Part 2 (goal selector delta)
 
 Inputs: goal selector (first, no default, per v3 delta), intensity slider with goal-driven clamp cascade, anchor, location/equipment override, time target (default 45), optional notes.
@@ -644,7 +801,7 @@ cancel action, at `data-atmosphere="full"`.
 
 ### GEN-06 — Duration plausibility check
 **Layer:** api · **Milestone:** M1 · **Carry-over:** new
-**Depends on:** GEN-02, CORE-03
+**Depends on:** GEN-02c, CORE-03
 **Spec:** `specs/generation/GENERATION_CONTRACT.md` §7
 
 Closes D5. The backend computes a rough duration estimate from the structured prescription, independently of Claude. **Purpose: reject workouts that clearly cannot fit — not predict completion time.**
@@ -660,27 +817,57 @@ Crude on purpose. Today's check compares a number Claude was told the answer to 
 - [ ] Failure names the **block** that overran and by how much, so the retry is specific rather than a blind re-roll
 - [ ] `computed_duration_mins` persisted alongside Claude's estimate, so the two can be compared later
 
-### SES-01 — Session lifecycle + three-state persistence
+### SES-01 — Session lifecycle + three-state persistence *(split: SES-01a…c)*
+
+The workout state machine and the requirement that closes D6.
+
+**Why it splits.** Streak derivation was folded in here because it is a query over completed sessions — but HOME-01 and HOME-02 need *only* that query, and as one node they waited on the whole state machine, the resume path and the reconstruction queries. That is the clearest case of false serialization in the graph.
+
+### SES-01a — Session lifecycle + atomic persistence
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DATA-01, DATA-03, CORE-03, AUTH-03
+**Depends on:** DATA-01d, DATA-03, CORE-03, AUTH-03
 **Spec:** `specs/DATA_MODEL.md` §7
 
-The workout state machine, and the requirement that closes D6. Accept → persist atomically → active → complete, with prescribed, revised, and performed all independently reconstructable.
+Accept → persist atomically → active → complete, plus abandon and resume.
 
 **Acceptance:**
-- [ ] **D6 regression test:** generate a workout, swap an exercise in review, start, log sets, complete. Assert the set logs attach to the *substitute* and the original is still reconstructable with lineage. This test must exist and must fail against the old behavior
-- [ ] Accepting persists the full structure — sessions, sections, blocks, exercises
+- [ ] Accepting persists the **full** structure in one transaction — sessions, sections, blocks, exercises. A failure leaves nothing behind
 - [ ] A swap inserts a new row in the same `slot_id` with `replaces_id` set; the superseded row keeps its own `execution_status`
-- [ ] "As intended at start" resolves temporally — rows active at `started_at`, not merely active now
-- [ ] "As performed" includes skipped exercises with no logs, block results, and partially-logged exercises — not a bare join to set logs
 - [ ] Hard refresh mid-workout → resumable at the correct section with logged sets intact
 - [ ] Completion writes `completed_at` and `actual_duration_mins`
-- [ ] **Minimal streak derivation lands here:** consecutive days with a completed, streak-counting session, computed from `workout_sessions` — never stored. Pause states, rest-day allowances, and the week strip are HOME-02's extension of this same function, not a replacement for it
-- [ ] Machine transitions unit-tested, including the abandon path
+- [ ] Machine transitions unit-tested, **including the abandon path** — abandoning is a state, not a delete
+- [ ] Exactly one active session per user is possible; starting a second is a typed error, not a race
+
+### SES-01b — Three-state reconstruction + the D6 regression test
+**Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** SES-01a
+**Spec:** `specs/DATA_MODEL.md` §7
+
+The queries that make prescribed, revised and performed independently reconstructable — and the test that proves the old behaviour is gone.
+
+**Acceptance:**
+- [ ] **D6 regression test:** generate a workout, swap an exercise in review, start, log sets, complete. Assert the set logs attach to the *substitute* and the original is still reconstructable with lineage. **This test must exist and must fail against the old behaviour** — a test that passes both ways proves nothing
+- [ ] "As intended at start" resolves **temporally** — rows active at `started_at`, not merely active now. A swap made after starting does not rewrite what was intended
+- [ ] "As performed" includes skipped exercises with no logs, block results, and partially-logged exercises — **not a bare join to set logs**, which silently drops everything that was not done
+- [ ] The three reconstructions are three named functions with tests, not three variations someone assembles per screen
+
+### SES-01c — Streak derivation
+**Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** SES-01a
+**Spec:** `specs/DATA_MODEL.md` §7
+
+Consecutive days with a completed, streak-counting session, computed from `workout_sessions`. **Never stored** — the old app kept six columns of derived state and they drifted.
+
+**Acceptance:**
+- [ ] Streak is a pure function of session rows; **no streak column exists anywhere in the schema**
+- [ ] A deleted or abandoned session changes the streak with no repair step
+- [ ] Deload and active-recovery sessions count as training days
+- [ ] Timezone is the user's, resolved once — a session at 11pm and one at 1am are different days for the user, whatever UTC thinks
+- [ ] HOME-02's pause states, rest-day allowances and week strip **extend this function** rather than replacing it; the extension point is named in the code
 
 ### REV-01 — Review screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** GEN-03, DS-03, DS-05
+**Depends on:** GEN-03, DS-04a, DS-05
 **Spec:** `specs/IA.md` — Review screen contract; three entry paths
 
 Pre-workout briefing: sections and exercises, estimated duration, intensity/anchor/goal header, Start Workout, Regenerate (with discard confirm).
@@ -692,7 +879,7 @@ Pre-workout briefing: sections and exercises, estimated duration, intensity/anch
 
 ### REV-02 — Section/exercise swap function
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** GEN-02
+**Depends on:** GEN-02c
 **Spec:** `specs/generation/exercise-swap.md`, `specs/generation/GENERATION_CONTRACT.md`
 
 Single-slot regeneration on the same contract as GEN-02 — the same candidate retrieval, the same validation, narrower scope.
@@ -719,7 +906,7 @@ Per-slot swap with up-to-3 history and undo; unit swap for blocks; nudge to rege
 
 ### EXE-01 — Workout shell
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** SES-01, DS-03, DS-05
+**Depends on:** SES-01a, DS-04a, DS-05
 **Spec:** `specs/structures/master-structure-clarity.md`
 
 Section-by-section progression, prev/next navigation, progress tracker, global session timer, exit/abandon with confirm.
@@ -732,10 +919,11 @@ Section-by-section progression, prev/next navigation, progress tracker, global s
 - [ ] Navigating directly to another route with an active session (deep link, restored tab) prompts to resume or abandon rather than silently stranding the session
 - [ ] Leaving the *app* is still allowed — closing the tab or backgrounding the phone persists state and surfaces resumption on Home. The trap is on in-app navigation, not on the user
 - [ ] Section header shows structure-type identity per the master clarity spec
+- [ ] **The shell owns block completion**, and writes the `block_results` row for every structure type. Perceived effort (1–10) is captured here, once, at block completion — so EMOM, AMRAP, For Time and ladders record it through one path rather than each renderer growing its own. The renderers (EXE-03, EXE-04a…c) supply the structure-specific outcome fields; the shell writes the row. This is what OVR-03 reads, and it is collected from day one
 
 ### EXE-02 — Standard + superset renderers, set logging
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** EXE-01, DS-04
+**Depends on:** EXE-01, DS-04a
 **Spec:** `specs/structures/superset-circuit-clarity.md`
 
 Standard and superset blocks. Per-set logging (weight, reps, RPE, warmup flag) writing `exercise_set_logs` live, and last-time prefill from prior sessions.
@@ -764,22 +952,48 @@ Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minut
 - [ ] Outcome writes `block_results` — `minutes_completed` for EMOM, `rounds_completed` for circuits
 - [ ] Timed structure state survives refresh (via SES-01)
 
-### EXE-04 — AMRAP + For Time + ladder renderers
+### EXE-04 — AMRAP + For Time + ladder renderers *(split: EXE-04a…c)*
+
+The restructure specs built in. Three renderers, three structure types, no shared state between them — `SectionRenderer` dispatches and each one owns its own screen.
+
+**Why it splits.** This is the split the whole `SectionRenderer` architecture exists to enable. The old app handled six structure types in one 652-line component; keeping the three hardest in one ticket would rebuild that coupling in the graph instead of in the file. Each renderer is a separate agent, a separate PR, a separate review.
+
+**Shared, and deliberately not duplicated:** the `block_results` write and the perceived-effort capture belong to **EXE-01**, which owns block completion. Each renderer supplies its outcome fields; none of them writes the row.
+
+### EXE-04a — Ladder renderer + rung selection
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** EXE-01
-**Spec:** `specs/structures/amrap-logging.md`, `specs/structures/ladder-for-time.md`, `specs/structures/quickfix-ladder-rung-label.md`
-
-The restructure specs built in: rep scheme shown once; ladder rung selector on cap-hit; distinct completion paths (finished under cap vs cap reached); AMRAP partial-round capture. Outcomes write `block_results`.
+**Spec:** `specs/structures/ladder-for-time.md`, `specs/structures/quickfix-ladder-rung-label.md`
 
 **Acceptance:**
-- [ ] Ladder rungs render from `target_sequence` as ordered targets — the renderer indexes them, nothing parses a string
-- [ ] For Time: finish-under-cap and cap-reached paths both reachable, visually distinct
-- [ ] Cap-hit on a ladder prompts rung selection; `highest_rung` persisted
-- [ ] AMRAP logs completed rounds + partial round reps
-- [ ] `block_results` row correct for each outcome: `elapsed_seconds` and `completed_under_cap` for For Time, `rounds_completed` and `partial_round_reps` for AMRAP
-- [ ] Section perceived effort (1–10) captured at block completion
-- [ ] Red/urgency styling only near time cap — per color doctrine
-- [ ] Section completion also captures perceived effort (1–10), AMRAP partial reps, and EMOM minutes completed — DATA-01 provides the columns; this builds OVR-03's history from day one
+- [ ] Rungs render from `target_sequence` as ordered targets — **the renderer indexes an int array; nothing parses a string**
+- [ ] Rep scheme is shown once, at the block, not repeated per exercise
+- [ ] Rung labels follow the quickfix spec — a rung is identified by its target, not by its index
+- [ ] Cap-hit prompts rung selection; `highest_rung` is supplied to the block-completion write
+- [ ] Read-only and interactive rung states are visually distinct
+
+### EXE-04b — For Time renderer
+**Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** EXE-01
+**Spec:** `specs/structures/ladder-for-time.md`
+
+**Acceptance:**
+- [ ] Both completion paths reachable and **visually distinct**: finished under cap, and cap reached
+- [ ] `elapsed_seconds` and `completed_under_cap` supplied to the block-completion write
+- [ ] Finishing under cap stops the clock at the finish, not at the cap
+- [ ] Urgency styling appears **only** near the cap, per colour doctrine — red is time pressure here, and the label and pulse carry it too, never hue alone
+
+### EXE-04c — AMRAP renderer
+**Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
+**Depends on:** EXE-01
+**Spec:** `specs/structures/amrap-logging.md`, `specs/structures/quickfix-amrap-round-label.md`
+
+**Acceptance:**
+- [ ] Completed rounds increment without leaving the screen or opening a dialog — this is the highest-frequency interaction in the app
+- [ ] Partial-round reps captured at the cap, per the logging spec
+- [ ] Round labels follow the quickfix spec
+- [ ] `rounds_completed` and `partial_round_reps` supplied to the block-completion write
+- [ ] A partial round with zero reps is distinguishable from no partial round at all (typed absence, DATA-01d)
 
 ### EXE-05 — Rest timer + coaching panel
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
@@ -796,7 +1010,7 @@ Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable
 
 ### EXE-07 — Durable set logging
 **Layer:** state · **Milestone:** M1 · **Carry-over:** new
-**Depends on:** EXE-02, SES-01
+**Depends on:** EXE-02, SES-01a
 **Spec:** `specs/DATA_MODEL.md` §5 set logs
 
 Closes D7. A set the user physically performed must never be lost to a dead signal, and the
@@ -813,7 +1027,7 @@ app does not need to work offline. It needs one write path that does not lie.
 
 ### SUM-01 — Post-workout summary
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** SES-01, DS-04, DS-05
+**Depends on:** SES-01a, DS-04a, DS-05
 **Spec:** `specs/IA.md` — Summary screen contract
 
 Debrief: mood (1–5), session notes, duration, and streak. **No save-as-favorite CTA in M1** — FAV-01 adds the button and the behavior together in M2.
@@ -827,7 +1041,7 @@ Debrief: mood (1–5), session notes, duration, and streak. **No save-as-favorit
 
 ### HIST-01 — History list + detail
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DATA-03, AUTH-03, DS-03
+**Depends on:** DATA-03, AUTH-03, DS-04a
 **Spec:** `specs/IA.md` — History and Session Detail screen contracts
 
 Chronological history with rest days marked; detail view shows sections, exercises, logged sets, structure results, mood, and notes. Query layer built for reuse (HOME-01 consumes it).
@@ -840,7 +1054,7 @@ Chronological history with rest days marked; detail view shows sections, exercis
 
 ### HOME-01 — Home screen v1
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** HIST-01, SES-01, GEN-03, DS-03
+**Depends on:** HIST-01, SES-01c, GEN-03, DS-04a
 **Spec:** `specs/IA.md` — Home screen contract; all four states load-bearing
 
 The daily entry point: Generate + Quick Start actions, recent 3 workouts, incomplete-session resumption prompt, 7-day week strip (rendering session data; full streak logic is HOME-02).
@@ -860,7 +1074,7 @@ The gate: the old app is fully retired. Everything it did, this does — plus th
 
 ### ONB-01 — Onboarding flow
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
-**Depends on:** AUTH-03, DS-04
+**Depends on:** AUTH-03, DS-01
 **Spec:** `specs/screens/onboarding-wireframe.md`
 
 Multi-step first-run: experience level, goal preset, location + equipment, section preferences, limitations — committed atomically via `complete_onboarding`. (M2 deliberately: DATA-02's dev-seeded profile makes the M1 loop usable first; onboarding is required before anyone else touches the app.)
@@ -873,7 +1087,7 @@ Multi-step first-run: experience level, goal preset, location + equipment, secti
 
 ### FAV-01 — Favorites core
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
-**Depends on:** SUM-01, SES-01, HOME-01
+**Depends on:** SUM-01, SES-01b, HOME-01
 **Spec:** `specs/favorites-v2.md` · `specs/DATA_MODEL.md` §11 snapshot versioning · `specs/IA.md`
 
 Save a completed workout as a named template (snapshot), favorites tab on Home, one-tap restart that skips generation and lands in review with the snapshot. **Introduces the save-as-favorite CTA on the Summary screen** — the button and the behavior ship together.
@@ -887,7 +1101,7 @@ Save a completed workout as a named template (snapshot), favorites tab on Home, 
 
 ### FAV-02 — Favorites v2: progression + personal bests
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** new
-**Depends on:** FAV-01, EXE-04
+**Depends on:** FAV-01, EXE-04a, EXE-04b, EXE-04c
 **Spec:** `specs/favorites-v2.md`
 
 Per the v2 spec: personal bests (min completion time for For Time, max rounds for AMRAP), "last time" weight display on repeats, completion history per favorite.
@@ -902,7 +1116,7 @@ Per the v2 spec: personal bests (min completion time for For Time, max rounds fo
 
 ### HOME-02 — Streak engine + rest days
 **Layer:** state · **Milestone:** M2 · **Carry-over:** rebuild
-**Depends on:** HOME-01
+**Depends on:** HOME-01, SES-01c
 **Spec:** `specs/DATA_MODEL.md` §5 — streak derived, never stored
 
 Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marking with reasons (rest/injury/sick), pause states (injury/sick/vacation), consecutive-rest limits, and the week strip's three states driven by real logic.
@@ -911,7 +1125,7 @@ Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marki
 - [ ] Streak rules implemented as pure functions with unit tests covering: continue, break, pause, resume, rest-day allowance
 - [ ] Mark Rest Day works from Home with reason capture
 - [ ] Week strip states (workout/rest/upcoming) match the engine's output
-- [ ] **Extends** SES-01's minimal derivation rather than replacing it — one function, one source of truth, still never stored
+- [ ] **Extends** SES-01c's derivation rather than replacing it — one function, one source of truth, still never stored
 - [ ] Adds pause states (injury/sick/vacation), rest-day allowances, and consecutive-rest limits on top of the M1 consecutive-day count
 - [ ] Backdating or deleting a session changes the streak correctly with no repair step
 
@@ -930,7 +1144,7 @@ Surface `suggest_session_focus` (least-recently-trained) plus an intensity sugge
 
 ### SET-01 — Settings hub + preferences
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
-**Depends on:** AUTH-03, DS-04
+**Depends on:** AUTH-03, DS-04a
 **Spec:** `specs/IA.md` — Settings screen contract
 
 Hub with: goal preset, enabled sections (structure customization), limitations text, **skin selection**, sign out.
@@ -978,25 +1192,55 @@ Manifest, chamfered icon set, theme color, iOS meta, and a minimal service worke
 
 **Promoted — issue-ready.** The progressive-overload stub got its spec session (`specs/OVR-01_progressive-overload.md`, 2026-08-24) and is now four session-sized requirements, per that spec's own slice order. Unit ambiguity — the spec's "blocks everything" flag — is resolved by DATA-01: `weight_unit` per set log plus a profile default, in the baseline schema.
 
-### OVR-01 — Load anchors + progression rules (standard sets)
-**Layer:** state · **Milestone:** M3 · **Carry-over:** new
-**Depends on:** EXE-02, REV-01
-**Spec:** `specs/OVR-01_progressive-overload.md` (§1–2, §5, slice a)
+### OVR-01 — Load anchors + progression rules *(split: OVR-01a…c)*
 
-e1RM load anchors computed from set logs; RPE-driven next-prescription rules; sparse/stale handling; weight suggestion with "why this number" on Review. The spec's ~80%-of-value slice.
+The spec's ~80%-of-value slice: e1RM load anchors from set logs, RPE-driven next-prescription rules, sparse/stale handling, and the weight suggestion on Review.
+
+**Why it splits.** OVR-02 needs the rules; it does not need the Review surface. And the rule table is a set of pure functions with a test per row — the single most testable thing in the project, and the piece least helped by being bundled with UI.
+
+### OVR-01a — Load anchors
+**Layer:** state · **Milestone:** M3 · **Carry-over:** new
+**Depends on:** EXE-02, SES-01b
+**Spec:** `specs/OVR-01_progressive-overload.md` §1
+
+The anchor table and its computation. No prescriptions are changed by this issue — it only learns.
 
 **Acceptance:**
-- [ ] `load_anchors` table recomputed on session completion — working sets only; active-recovery and deload sessions excluded
-- [ ] Suggested weight = inverted anchor → rounded to equipment increment → clamped to 110% of the 8-week logged max
-- [ ] The RPE rule table implemented as pure functions with unit tests covering every row (incl. overshoot and first-set ≥9)
-- [ ] Sparse/stale ladder enforced: 0/1/2/3+ session confidence tiers; 3/6/12-week decay; >12 weeks discards the anchor
-- [ ] Rep completion is **computed**, not parsed — a set log joins to its immutable prescription row for the prescribed target
-- [ ] Review shows suggestion + session-count confidence + tappable "why this number" `Dialog`; per-session override never rewrites the anchor
-- [ ] Bodyweight movements excluded from load anchors — rep progression only
+- [ ] `load_anchors` recomputed on session completion, **working sets only** — warmup sets never move an anchor
+- [ ] Active-recovery and deload sessions excluded; a deliberately light day is not evidence you got weaker
+- [ ] Rep completion is **computed, not parsed** — a set log joins to its immutable prescription row for the prescribed target
+- [ ] Bodyweight movements are excluded from load anchors entirely; they progress by reps
+- [ ] Recomputation is idempotent and derives from set logs — re-running against the same history produces the same anchors
+
+### OVR-01b — Progression rules
+**Layer:** state · **Milestone:** M3 · **Carry-over:** new
+**Depends on:** OVR-01a
+**Spec:** `specs/OVR-01_progressive-overload.md` §2, §5
+
+The RPE rule table and the confidence ladder, as pure functions.
+
+**Acceptance:**
+- [ ] **Every row of the RPE rule table has a unit test**, including overshoot and first-set ≥9. The table in the spec and the tests are the same list
+- [ ] Suggested weight = inverted anchor → rounded to the equipment increment → clamped to 110% of the 8-week logged max
+- [ ] Sparse/stale ladder enforced: 0/1/2/3+ session confidence tiers; 3/6/12-week decay; **>12 weeks discards the anchor** rather than trusting it quietly
+- [ ] Pure functions with no database access — the rules take history and return a suggestion, so they are testable without a session
+- [ ] A suggestion always carries its confidence tier; there is no unqualified number
+
+### OVR-01c — Review surface: suggestion + "why this number"
+**Layer:** ui · **Milestone:** M3 · **Carry-over:** new
+**Depends on:** OVR-01b, REV-01, DS-05
+**Spec:** `specs/OVR-01_progressive-overload.md` §3
+
+**Acceptance:**
+- [ ] Review shows the suggested weight and its session-count confidence per exercise
+- [ ] Tapping it opens a **`Dialog`** — last session's actual sets, the RPE recorded, and the rule that fired in plain language ("all reps at RPE 7.5 → +1 increment")
+- [ ] A per-session override changes this session only and **never rewrites the anchor**
+- [ ] Low confidence reads as low confidence in the interface, not as a number with a footnote
+- [ ] No suggestion is shown where there is no anchor — an absent suggestion is a state, not a zero
 
 ### OVR-02 — Generation integration (prompt bump)
 **Layer:** api · **Milestone:** M3 · **Carry-over:** new
-**Depends on:** OVR-01, GEN-02
+**Depends on:** OVR-01b, GEN-02b
 **Spec:** `specs/OVR-01_progressive-overload.md` (Generation Impact, slice b)
 
 The AI never does arithmetic: code injects a TRAINING HISTORY block pre-generation, code fills suggested weights post-generation.
@@ -1010,7 +1254,7 @@ The AI never does arithmetic: code injects a TRAINING HISTORY block pre-generati
 
 ### OVR-03 — Timed-format progression
 **Layer:** ui · **Milestone:** M3 · **Carry-over:** new
-**Depends on:** OVR-01, EXE-04
+**Depends on:** OVR-01b, EXE-04a, EXE-04b, EXE-04c
 **Spec:** `specs/OVR-01_progressive-overload.md` (§3, slice c)
 
 Normalized conditioning scores, like-for-like comparison only on identical repeats, and the density nudge for freshly generated conditioning.
@@ -1023,7 +1267,7 @@ Normalized conditioning scores, like-for-like comparison only on identical repea
 
 ### OVR-04 — Deload detection + override
 **Layer:** state · **Milestone:** M3 · **Carry-over:** new
-**Depends on:** OVR-01, OVR-02, GEN-04
+**Depends on:** OVR-01a, OVR-02, GEN-04
 **Spec:** `specs/OVR-01_progressive-overload.md` (§4, slice d)
 
 **In plain language:** the app notices when you have been grinding — same weights, everything feeling like a 9 or 10, reps starting to slip — and suggests taking a lighter week before you stall out or get hurt. A *deload* is that lighter week: same movements, ~15% less weight, ~40% fewer sets, capped effort. Not a rest day.
@@ -1099,7 +1343,15 @@ These are not issues — they are review criteria on **every** issue, enforced b
 
 **Voice.** Terse, imperative, gym-literate. Stenciled labels ("INT. 7"), earned celebration only, zero guilt/pressure/gamification language.
 
-**Mobile-first.** ~80% of use is a phone at a gym. Every screen designed at mobile width first; desktop is the adaptation.
+**Accessibility.** The component layer is guaranteed by the design system (`specs/design/ATOMIC.md` §9) and the cross-screen mechanisms by CORE-05. What remains is a review criterion on every UI issue, and it is not negotiable by deadline:
+
+- The screen is operable **keyboard-only**, in a sensible order, with focus visible at every stop.
+- Nothing conveys meaning by colour alone — selection carries a tick, severity carries a glyph, state carries text.
+- Every control has an accessible name that says what it does, not what it looks like.
+- `axe-core` passes. It catches about a third of real problems; passing it is the floor.
+- Anything announced is announced at the right volume — only failure is assertive.
+
+**Mobile-first.** ~80% of use is a phone at a gym. Every screen designed at mobile width first; desktop is the adaptation. Test suites default to a mobile viewport (ENV-07); a desktop-only suite is testing the minority case.
 
 ---
 
@@ -1107,7 +1359,9 @@ These are not issues — they are review criteria on **every** issue, enforced b
 
 The contract that keeps the three artifacts identical:
 
-**One requirement = one issue.** Title `[ID] Requirement title`; body = summary + Spec references + the acceptance checklist verbatim; labels = layer (`infra`/`data`/`api`/`state`/`ui`/`design`) ; GitHub Milestone = M0–M3.
+**One requirement = one issue.** Title `[ID] Requirement title`; body = summary + Spec references + the acceptance checklist verbatim; labels = layer (`infra`/`data`/`api`/`state`/`ui`/`design`); GitHub Milestone = M0–M3.
+
+**The issue scripts are generated, not written.** `scripts/gen-issues.py` parses this file and emits `github/02-create-issues.sh`, `github/03-wire-dependencies.sh`, and every `github/bodies/*.md`. It also validates the graph — unknown dependencies, cycles, the ready queue, widest fan-in and fan-out — and names body files whose requirement no longer exists. Run it after any edit here; `--check` validates without writing and exits non-zero on failure, which is what CI runs.
 
 **Dependencies are native.** Each `Depends on` ID becomes a GitHub `blocked-by` relation. Creation is two passes with `gh` (v2.94+): create all issues capturing ID→number, then wire relations with `gh issue edit --add-blocked-by`.
 
@@ -1115,7 +1369,7 @@ The contract that keeps the three artifacts identical:
 
 **The ready queue is a search.** Anything open and not `is:blocked` is available to pick up. That is how work gets chosen — by graph state, not by scrolling.
 
-**Source-of-truth handoff.** This document governs until issues are created. From that moment, GitHub is live truth and this file is the frozen baseline; scope changes happen on issues (and sub-issues for splits), not by editing history here.
+**Source-of-truth handoff.** This document governs until issues are created. From that moment, GitHub is live truth and this file is the frozen baseline; scope changes happen on issues, not by editing history here.
 
 **M3 rule.** Stubs are created as issues only after their spec exists; the spec doc gets linked in the issue body on creation.
 

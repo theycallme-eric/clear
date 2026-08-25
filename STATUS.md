@@ -7,10 +7,20 @@ Living doc. Updated when a thread opens, moves, or closes.
 
 ## Blocking the critical path
 
-### 1. Requirements — **v0.5.0** (2026-08-25)
-**55 requirements.** v0.5 folds in the design system: §9 rewritten, GEN-05 and SET-01 rescoped,
-D7 registered, the eight backlog stubs resolved. `requirements/DEFERRED.md` records what was cut
-and the specific signal that would reopen each one.
+### 1. Requirements — **v0.6** (2026-08-25)
+**71 requirements, 136 edges, no cycles.** v0.5 folded in the design system; v0.6 closed the three
+gaps the outside review found:
+
+- **Sizing.** Six oversized requirements split — DATA-01 by schema domain, GEN-02 by pipeline stage,
+  SES-01 by lifecycle / reconstruction / streak, EXE-04 by structure type, OVR-01 by anchors / rules
+  / surface, DS-04 by control. Each split names the dependent it unblocks; none was made for tidiness.
+- **Test architecture.** ENV-06 (component harness) and ENV-07 (E2E on mobile viewports, test-user
+  provisioning without an inbox, seed/reset, RLS as a standing test rather than a one-time check).
+- **Accessibility.** CORE-05 carries the cross-screen mechanisms the design system cannot know about —
+  route-change focus, skip link, heading outline, form-error focus, reduced-motion end states — plus a
+  standing review constraint on every UI issue.
+
+`requirements/DEFERRED.md` records what was cut and the signal that would reopen each one.
 
 **Approved at v0.3** (2026-08-24) —
 All 51 reviewed. The six sent with notes were the only ones with issues; the rest were approved.
@@ -91,7 +101,7 @@ alpha ladder · 332 tokens by kind · all 18 components with real prop APIs · t
 the seven workflow patterns · **the three gaps the export does not cover** (Card, Select,
 CollapsibleSection) · the adherence gate · 14 non-negotiables · 3 defects found in 0.5.0.
 
-### 7. DAG playbook + review-process doc — **Claude** · deferred by design
+### 7. DAG playbook + review-process doc — **Claude** · deferred by design (now the last open thread)
 The method isn't finished being invented — no tickets cut, no build session run. Written now it
 documents predictions; written after the first pass it documents what happened.
 `journal/` is collecting the raw material.
@@ -107,14 +117,20 @@ tickets by hand.
 
 ```sh
 gh repo create theycallme-eric/clear --private --description "CLEAR — AI workout generator"
+python3 scripts/gen-issues.py            # regenerate + validate
 cd github
 ./01-setup-repo.sh       theycallme-eric/clear
 ./02-create-issues.sh    theycallme-eric/clear
 ./03-wire-dependencies.sh theycallme-eric/clear
 ```
 
-Needs `gh` 2.94.0+ for the dependency flags. Produces **55 issues**, 11 labels, 4 milestones,
-**105** native blocked-by relationships. All three scripts are re-runnable.
+Needs `gh` 2.94.0+ for the dependency flags. Produces **71 issues**, 11 labels, 4 milestones,
+**136** native blocked-by relationships. All three scripts are re-runnable.
+
+**The scripts are now generated.** `scripts/gen-issues.py` parses REQUIREMENTS.md and emits both
+scripts plus all 71 bodies, and validates the graph on the way through — unknown dependencies,
+cycles, ready queue, widest fan-in and fan-out. `--check` is the CI form. Editing a script or a body
+by hand no longer means anything; edit the requirement.
 
 Ready queue afterward: `gh issue list --search "is:open -is:blocked"` — one issue at the
 start, **ENV-01**, the single root of the graph.
@@ -155,7 +171,5 @@ Figma is the design source of truth. All three are wrong, and every new conversa
 3. ~~Schema pass~~ — **done** (`specs/DATA_MODEL.md` rev 2)
 4. ~~Design export → DS gates lift → ATOMIC.md~~ — **done** (2026-08-25)
 5. ~~Two DS decisions~~ — **done** (2026-08-25): no sheets, fonts self-hosted
-6. **Remaining requirements work** (Claude) — the test-architecture requirement in M0,
-   accessibility acceptance criteria (now unblocked), and splitting the six oversized
-   requirements into sub-issues: DATA-01, GEN-02, SES-01, EXE-04, OVR-01, **DS-04**
-7. **Requirements v1.0** → GitHub → issues → DAG
+6. ~~Remaining requirements work~~ — **done** (2026-08-25): ENV-06/07, CORE-05, six splits
+7. **GitHub** (Eric) — nothing is blocking it. Run the three scripts.

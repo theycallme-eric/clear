@@ -1,0 +1,21 @@
+> **EXE-02** · Layer `ui` · Milestone `M1` · Carry-over `rebuild`
+
+Standard and superset blocks. Per-set logging (weight, reps, RPE, warmup flag) writing `exercise_set_logs` live, and last-time prefill from prior sessions.
+
+**Spec:** `specs/structures/superset-circuit-clarity.md`
+
+## Acceptance
+
+- [ ] Renders from the **structured prescription** — no string parsing anywhere
+- [ ] Each target kind displays correctly: fixed (`8`), range (`8–10`), sequence (`15-12-9-6-3` as ordered rungs), per-side, and distance with its unit
+- [ ] Each logged set is a row written at log time — not batched at workout end
+- [ ] Logs the modality actually prescribed: reps, duration, or distance
+- [ ] Prefill shows previous weight/reps when history exists
+- [ ] Superset alternation labeled clearly; rest comes from the **block**, prescribed after both movements
+
+---
+
+**Depends on:** EXE-01, DS-04
+**Blocks:** OVR-01
+
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — edit the requirement, not the issue.</sub>

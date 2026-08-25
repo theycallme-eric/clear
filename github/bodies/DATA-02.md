@@ -18,7 +18,7 @@ A dev-only flag seeds Eric's profile + default location so the M1 loop is usable
 
 ---
 
-**Depends on:** DATA-01
-**Blocks:** DATA-03, GEN-02, LIB surfaces
+**Depends on:** DATA-01a
+**Blocks:** ENV-07, GEN-02a
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.5 — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
