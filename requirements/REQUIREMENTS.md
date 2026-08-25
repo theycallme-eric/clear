@@ -21,7 +21,9 @@
 
 This document is the source of truth for what the rebuild must do. It is structured so that **every requirement becomes exactly one GitHub issue**, every `Depends on` line becomes a native GitHub `blocked-by` relation, and the DAG diagram is generated from GitHub — never hand-maintained. Nothing is re-typed or re-interpreted between spec, tickets, and diagram.
 
-**Sizing rule:** every requirement is scoped to one focused work session (~1–3 hours of implementation). If an agent finds one bigger mid-flight, it splits the issue into sub-issues (`--parent`) rather than expanding scope.
+**Sizing rule:** every requirement must be **independently mergeable and independently verifiable** — its acceptance criteria can be checked without another requirement landing first. That is the criterion, not elapsed time; time estimates on agent work are noise.
+
+Several requirements bundle separable work and are split into sub-issues before publishing (`--parent`), because an oversized node causes **false serialization** — a dependent waiting on parts of a parent it does not actually need. The graph must not lie about the plan.
 
 **A structural decision that shapes everything below:** parity features **absorb** their spec'd improvements instead of being built old-then-patched. The EMOM clarity, ladder/for-time restructure, and AMRAP logging specs are baked into the M1 execution renderers. Generation ports prompt **v3**, not v2. Favorites builds toward the v2 spec. We never build the confusing version first.
 
@@ -139,6 +141,7 @@ DS-05…07 may land during M1 — the M0 gate requires only DS-01…04. The grap
 ### ENV-01 — Repository scaffold
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** —
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 New repo `clear`. Vite + React 19 + TypeScript strict, ESLint, Vitest, router shell with 404, folder skeleton, README quickstart.
 
@@ -151,6 +154,7 @@ New repo `clear`. Vite + React 19 + TypeScript strict, ESLint, Vitest, router sh
 ### ENV-02 — CI pipeline
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 GitHub Actions on every PR: typecheck, lint, test, build. Branch protection makes green checks a merge requirement on `main`.
 
@@ -162,8 +166,9 @@ GitHub Actions on every PR: typecheck, lint, test, build. Branch protection make
 ### ENV-03 — Deploy pipeline
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** port
 **Depends on:** ENV-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
-Vercel: preview deploy per PR, production on push to `main`. SPA rewrites so deep links survive refresh. Port `vercel.json` conventions from the old repo.
+Vercel: preview deploy per PR, production on push to `main`. SPA rewrites so every route falls through to `index.html` and deep links survive a refresh — that rewrite is the whole convention; nothing needs to be consulted from the archived repo.
 
 **Acceptance:**
 - [ ] Every PR gets a working preview URL
@@ -174,6 +179,7 @@ Vercel: preview deploy per PR, production on push to `main`. SPA rewrites so dee
 ### ENV-04 — Dev environment: one command, legible failures
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01, DATA-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 Kills D4. Development runs against the hosted Supabase project — Docker appears nowhere in the loop. `npm run dev` preflights the database and explains problems in English.
 
@@ -186,6 +192,7 @@ Kills D4. Development runs against the hosted Supabase project — Docker appear
 ### ENV-05 — Supabase keep-alive
 **Layer:** infra · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-02, DATA-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 Scheduled GitHub Action pings the database twice weekly so the free-tier project never pauses. Delete if the project moves to a paid plan.
 
@@ -237,6 +244,7 @@ A dev-only flag seeds Eric's profile + default location so the M1 loop is usable
 ### DATA-03 — Generated types + typed client
 **Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01, DATA-01
+**Spec:** `specs/DATA_MODEL.md` §10 enums
 
 `supabase gen types` output committed with a regen script; thin typed client in `lib/supabase.ts`. No `any` escapes the data layer.
 
@@ -263,6 +271,7 @@ Explicit exclusions the user sets for themselves. **CLEAR does not model injurie
 ### CORE-01 — Error taxonomy + request IDs
 **Layer:** state · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 Kills the stringly-typed half of D2. A typed `AppError` union (auth / network / validation / generation / persistence), Result helpers, a request-ID generator attached to every edge-function call, and an error→user-message map.
 
@@ -275,6 +284,7 @@ Kills the stringly-typed half of D2. A typed `AppError` union (auth / network / 
 ### CORE-02 — Structured logger with redaction
 **Layer:** state · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01, CORE-01
+**Spec:** — self-contained; acceptance criteria are the full specification
 
 Kills D3 at the tooling level. Leveled logger with scoped children for client and edge runtimes. Redaction is structural: headers, tokens, and emails cannot be logged.
 
@@ -304,6 +314,7 @@ Covers the generation output contract v4.1 (blocks, discriminated targets, timer
 ### CORE-04 — App-wide state contract
 **Layer:** state · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** CORE-01
+**Spec:** `specs/IA.md` §5 cross-cutting — the four-state contract is realized per screen
 
 Answers a question the rest of this document was leaving implicit: *what does the user see when something fails, is slow, or has no data?* Every data-driven view must define four states — **loading, empty, error, populated** — and a top-level error boundary must exist so a render crash never produces a blank screen.
 
@@ -318,6 +329,7 @@ Answers a question the rest of this document was leaving implicit: *what does th
 ### AUTH-01 — Session context
 **Layer:** state · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** ENV-01, DATA-03
+**Spec:** `specs/DATA_MODEL.md` §5 profiles
 
 Kills half of D1. A minimal provider over `supabase.auth.onAuthStateChange` exposing `{ status, user, signOut }`. It fetches **nothing** — no profile, no locations, no timeouts, no locks.
 
@@ -331,6 +343,7 @@ Kills half of D1. A minimal provider over `supabase.auth.onAuthStateChange` expo
 ### AUTH-02 — Welcome + OTP login screens
 **Layer:** ui · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** AUTH-01, DS-04
+**Spec:** `specs/IA.md` — OTP Login screen contract
 
 Email OTP request and verify flow per the design system. Typed error states; resend with cooldown.
 
@@ -343,6 +356,7 @@ Email OTP request and verify flow per the design system. Typed error states; res
 ### AUTH-03 — Route guards + profile/locations queries
 **Layer:** state · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** AUTH-01, DATA-03, CORE-01, CORE-03
+**Spec:** `specs/IA.md` §1 guard semantics · §5 cross-cutting
 
 Kills the other half of D1. Profile and locations are independent React Query queries keyed by `user.id`. Guards (public-only / protected / onboarding-gate) read query state. A failed profile fetch renders an error with retry — it **never** impersonates a new user.
 
@@ -375,6 +389,7 @@ Build step: token JSON → generated CSS custom properties, one file per theme. 
 ### DS-02 — Global styles + typography
 **Layer:** design · **Milestone:** M0 · **Carry-over:** port
 **Depends on:** DS-01
+**Spec:** `specs/design/visual-language-rules.md` · design export (gated)
 
 > ⚠️ **GATED with DS-01.** The design system has been tweaked since these class names were captured. Review the export against this ramp before finalizing — type roles or scale steps may have moved.
 
@@ -401,6 +416,7 @@ The signature: ChamferedFrame/Card via clip-path with border + emissive variants
 ### DS-04 — Form controls
 **Layer:** design · **Milestone:** M0 · **Carry-over:** rebuild
 **Depends on:** DS-03
+**Spec:** `specs/design/ui-component-spec.md` · `specs/design/chamfered-component.md`
 
 Input, Textarea, Checkbox, RadioButton, IntensitySlider (1–10), FilterDropdown.
 
@@ -413,6 +429,7 @@ Input, Textarea, Checkbox, RadioButton, IntensitySlider (1–10), FilterDropdown
 ### DS-05 — Feedback components
 **Layer:** design · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** DS-03
+**Spec:** `specs/design/ui-component-spec.md` · `specs/IA.md` §3 layer 3
 
 ChamferedToast, ConfirmationModal, BottomSheet, EmptyState, ErrorState, skeleton/ScanLoader.
 
@@ -440,6 +457,7 @@ Scanlines, grain overlay, glow-emissive text, pulse/micro-flicker, stagger revea
 ### DS-07 — Component gallery
 **Layer:** design · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** DS-03, DS-04
+**Spec:** `specs/design/ui-component-spec.md` · `specs/IA.md` §3 component vocabulary
 
 `/dev/gallery`: every DS component in every state, live theme toggle. This is the visual review surface — screens get approved rendered, not drawn.
 
@@ -457,6 +475,7 @@ The gate: a real workout, on a phone, end to end. Generation quality and executi
 ### GEN-01 — Edge function envelope
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** DATA-01, CORE-01, CORE-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §9 errors
 
 The shared shell for all AI functions: auth verification, zod request parsing, CORS, typed error responses `{ code, message, requestId }`, structured logging. Kills D3 at the function level.
 
@@ -490,6 +509,7 @@ Eligibility resolves in SQL **before** the prompt is built, so rules currently d
 ### GEN-03 — Generation client state
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-02, CORE-03, AUTH-03
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §9 · `specs/IA.md` — Generate and Loading screen contracts
 
 React Query mutation with pending / success / typed-error states. Kills D2's silent fallback: there is no mock workout in this codebase.
 
@@ -540,7 +560,7 @@ Crude on purpose. Today's check compares a number Claude was told the answer to 
 - [ ] Allowances are **code constants**: fixed work-per-set, fixed transition. No metadata table, no per-exercise override, no tempo parsing
 - [ ] Per-block rules: standard sums members; superset and circuit count shared rest **once per round**; EMOM and AMRAP use declared duration; For Time budgets the **full cap**
 - [ ] Tolerance ~15–20%, generous by design
-- [ ] A workout whose prescribed work and required rest clearly cannot fit is rejected or trimmed
+- [ ] A workout whose prescribed work and required rest clearly cannot fit is **rejected**, triggering one targeted retry that names the overrunning block. **Not trimmed** — deciding what to cut is composition judgment, which belongs to the model, not the validator
 - [ ] Failure names the **block** that overran and by how much, so the retry is specific rather than a blind re-roll
 - [ ] `computed_duration_mins` persisted alongside Claude's estimate, so the two can be compared later
 
@@ -564,13 +584,14 @@ The workout state machine, and the requirement that closes D6. Accept → persis
 ### REV-01 — Review screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-03, DS-03, DS-05
+**Spec:** `specs/IA.md` — Review screen contract; three entry paths
 
 Pre-workout briefing: sections and exercises, estimated duration, intensity/anchor/goal header, Start Workout, Regenerate (with discard confirm).
 
 **Acceptance:**
 - [ ] Renders every structure type and rep scheme correctly from a schema-valid sample
 - [ ] Regenerate confirms before discarding; Start hands off to SES-01
-- [ ] Estimated duration shown and consistent with the ±10% target
+- [ ] Duration shown to the user is the **effective target** — the number generation was asked to hit. The computed plausibility estimate and Claude's diagnostic estimate are internal and never surfaced
 
 ### REV-02 — Section/exercise swap function
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
@@ -666,6 +687,7 @@ The restructure specs built in: rep scheme shown once; ladder rung selector on c
 ### EXE-05 — Rest timer + coaching panel
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** EXE-01, DS-05
+**Spec:** `specs/IA.md` — Workout screen contract · `specs/DATA_MODEL.md` §6 rest fields
 
 Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable per-exercise panel: coaching cues, regression suggestion, notes.
 
@@ -678,6 +700,7 @@ Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable
 ### SUM-01 — Post-workout summary
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** SES-01, DS-04, DS-05
+**Spec:** `specs/IA.md` — Summary screen contract
 
 Debrief: mood (1–5), session notes, duration + streak display, save-as-favorite CTA (wired fully in FAV-01), return home.
 
@@ -690,6 +713,7 @@ Debrief: mood (1–5), session notes, duration + streak display, save-as-favorit
 ### HIST-01 — History list + detail
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** DATA-03, AUTH-03, DS-03
+**Spec:** `specs/IA.md` — History and Session Detail screen contracts
 
 Chronological history with rest days marked; detail view shows sections, exercises, logged sets, structure results, mood, and notes. Query layer built for reuse (HOME-01 consumes it).
 
@@ -702,6 +726,7 @@ Chronological history with rest days marked; detail view shows sections, exercis
 ### HOME-01 — Home screen v1
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** HIST-01, SES-01, GEN-03, DS-03
+**Spec:** `specs/IA.md` — Home screen contract; all four states load-bearing
 
 The daily entry point: Generate + Quick Start actions, recent 3 workouts, incomplete-session resumption prompt, 7-day week strip (rendering session data; full streak logic is HOME-02).
 
@@ -734,6 +759,7 @@ Multi-step first-run: experience level, goal preset, location + equipment, secti
 ### FAV-01 — Favorites core
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
 **Depends on:** SUM-01, SES-01, HOME-01
+**Spec:** `specs/favorites-v2.md` · `specs/DATA_MODEL.md` §11 snapshot versioning · `specs/IA.md`
 
 Save a completed workout as a named template (snapshot), favorites tab on Home, one-tap restart that skips generation and lands in review with the snapshot.
 
@@ -762,6 +788,7 @@ Per the v2 spec: personal bests (min completion time for For Time, max rounds fo
 ### HOME-02 — Streak engine + rest days
 **Layer:** state · **Milestone:** M2 · **Carry-over:** rebuild
 **Depends on:** HOME-01
+**Spec:** `specs/DATA_MODEL.md` §5 — streak derived, never stored
 
 Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marking with reasons (rest/injury/sick), pause states (injury/sick/vacation), consecutive-rest limits, and the week strip's three states driven by real logic.
 
@@ -775,6 +802,7 @@ Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marki
 ### HOME-03 — Suggested anchor + intensity
 **Layer:** state · **Milestone:** M2 · **Carry-over:** port
 **Depends on:** HOME-01, GEN-04
+**Spec:** `specs/DATA_MODEL.md` §3 — pattern-level staleness
 
 Surface `suggest_session_focus` (least-recently-trained) plus an intensity suggestion from recent history; prefill the generation screen, dismissible.
 
@@ -787,8 +815,9 @@ Surface `suggest_session_focus` (least-recently-trained) plus an intensity sugge
 ### SET-01 — Settings hub + preferences
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
 **Depends on:** AUTH-03, DS-04
+**Spec:** `specs/IA.md` — Settings screen contract
 
-Hub with: goal preset, enabled sections (structure customization), limitations text, theme toggle (orange/blue, persisted), sign out.
+Hub with: goal preset, enabled sections (structure customization), limitations text, theme selection (persisted; the available themes come from the design export — nothing hardcodes a list), sign out.
 
 **Acceptance:**
 - [ ] Each change persists and is reflected in the next generation payload
@@ -800,6 +829,7 @@ Hub with: goal preset, enabled sections (structure customization), limitations t
 ### SET-02 — Locations + equipment management
 **Layer:** ui · **Milestone:** M2 · **Carry-over:** rebuild
 **Depends on:** SET-01
+**Spec:** `specs/IA.md` — Settings sub-views
 
 Locations CRUD: add/edit/delete, tier selection (minimal/home/building/full), equipment list editing, set-default.
 
@@ -811,6 +841,7 @@ Locations CRUD: add/edit/delete, tier selection (minimal/home/building/full), eq
 ### PWA-01 — Installable PWA
 **Layer:** infra · **Milestone:** M2 · **Carry-over:** new
 **Depends on:** ENV-03, DS-02
+**Spec:** `specs/IA.md` §5 cross-cutting
 
 Manifest, chamfered icon set, theme color, iOS meta, and a minimal service worker (app-shell caching only — no data offline; that's OFF-01/M3).
 

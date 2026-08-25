@@ -63,3 +63,20 @@ mapping every spec to the requirements it serves, and version history.
 **Withdrawn before issue:** `DATA-04`, `GEN-07`, `META-01` — proposed during review, cut when the
 duration engine reduced to a guardrail and metadata proved unnecessary. Hence the ID gap between
 `DATA-03` and `DATA-05`.
+
+## v0.4.1 — 2026-08-24
+Third review pass. Five mechanical contradictions resolved; three left as product decisions.
+
+- **Sizing rule replaced.** "~1–3 hours" was never true and was the wrong criterion. Now:
+  *independently mergeable and independently verifiable.* The real cost of an oversized node is
+  **false serialization** — a dependent waiting on parts of a parent it does not need.
+- **SET-01** no longer says "orange/blue toggle" — theme list comes from the export.
+- **ENV-03** no longer instructs porting from the archived repo; the SPA rewrite is stated inline.
+- **REV-01** shows the **effective target** duration. Computed and diagnostic estimates stay internal.
+- **GEN-06** rejects with one targeted retry. **Not trimmed** — deciding what to cut is composition
+  judgment and belongs to the model, not the validator.
+- **Spec coverage 24/53 → 53/53.** Nine self-contained requirements say so explicitly rather than
+  leaving the field absent, so a generated issue never looks like it lost a reference.
+
+**Open, awaiting product decisions:** streak scope in M1 · favorites CTA in M1 · onboarding milestone.
+**Open, pending the design export:** `specs/design/ATOMIC.md`, referenced by `specs/IA.md`.
