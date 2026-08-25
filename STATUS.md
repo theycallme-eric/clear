@@ -42,8 +42,17 @@ derived state, TEXT where the schema's own conventions use enums.
 
 ## Waiting on the outside world
 
-### 3. Claude Design export — **Eric** · not yet sent
-Gates DS-01, DS-02, DS-06, GEN-05 — and the atomic component inventory (below).
+### 3. Claude Design export — **Eric** · not yet sent · **THE largest open dependency**
+Directly gates DS-01, DS-02, DS-06, GEN-05. **Transitively gates 28 more** — 32 of 53
+requirements sit downstream of it, because the whole UI trunk descends from the token pipeline.
+
+Blocked by milestone: M0 ×5 · M1 ×15 · M2 ×8 · M3 ×4.
+
+**What is clear to build without it: 21 requirements** — the entire foundation and backend.
+All of ENV, all of CORE, all of DATA, AUTH-01/03, GEN-01/02/03/06, REV-02, SES-01.
+**Every one of the six verified defects is fixed inside that set**, which is why building can
+start before the export arrives.
+
 `./scripts/import-design.sh <zip>` is ready: unpacks, diffs against the last export, shows
 token-level changes.
 
@@ -62,7 +71,11 @@ Findings may touch the schema — treat as additive revision, don't wait on it.
 Establishes the **component vocabulary** and the rule: anything not in it is a new DS requirement,
 never an inline one-off. Five open questions at the end need Eric's answers.
 
-### 6. Atomic component inventory — **Claude** · gated on the design export
+### 6. Atomic component inventory (`specs/design/ATOMIC.md`) — **Claude** · gated on the design export
+**Does not exist yet.** `specs/IA.md` names it as its companion — IA gives the component
+vocabulary, ATOMIC defines each component's variants, states, and token bindings. Until it exists,
+a UI requirement tells an agent *which* components to use but not *what they look like in each
+state*. That gap is why the UI trunk should not start before the export lands.
 The component vocabulary with variants, states, and token bindings. Prevents agents inventing
 one-off UI per interaction.
 **Deliberately gated** — same reason DS-01/02/06 are. Building it against soon-to-change tokens
@@ -76,6 +89,12 @@ documents predictions; written after the first pass it documents what happened.
 
 ### 8. GitHub — **Eric** · ready to run
 Requirements are approved at v0.4 and the issue scripts are generated and dry-run tested.
+
+**Cutting issues now is correct even with the design export outstanding.** The four directly-gated
+requirements carry a `blocked:design-export` label, and the 28 downstream ones are blocked by the
+dependency graph itself — they will not appear in the ready queue until their prerequisites close.
+Issues regenerate from requirements, so an updated export means regenerating those bodies, not
+rewriting tickets by hand.
 
 ```sh
 gh repo create theycallme-eric/clear --private --description "CLEAR — AI workout generator"
