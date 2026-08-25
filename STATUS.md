@@ -58,10 +58,14 @@ critical path through them collapses — `DS-01→02→03→04` becomes a fan-ou
 
 Substrate contract: `specs/design/ATOMIC.md`. Read it before any DS or UI ticket.
 
-**Two decisions still open** — see ATOMIC.md §12:
-1. **BottomSheet** — real requirement, or a geometry variant of the shipped `Dialog`?
-2. **Fonts** — self-host (DS-02), or accept the Google Fonts CDN? *PWA-01 argues for self-hosting:
-   an installed PWA with CDN fonts cannot render correctly on a cold offline launch.*
+**Both open decisions taken** (2026-08-25) — recorded in ATOMIC.md §12:
+1. **No bottom sheets.** Every overlay is a `Dialog`, on native `<dialog>` so focus trap, Esc and
+   inertness are the platform's. The arrival a sheet would have given comes from the motion
+   vocabulary instead — trace on, materialize, hard-cut backdrop. `Dialog` ships with **no**
+   entrance motion, so composing it is real work and now sits in DS-05.
+2. **Fonts self-hosted**, on the render path, not offline. Four nested render-blocking hops
+   become one, via three Fontsource packages and an app-owned skin file — which is the export's
+   own documented path for a product ("a second app replaces THIS FILE ONLY").
 
 ### 4. Generation system review — **DONE** · folded in
 `specs/generation/GENERATION_REVIEW_PACKET.md` went out; two review rounds came back. The useful
@@ -97,7 +101,7 @@ Requirements are approved at v0.4 and the issue scripts are generated and dry-ru
 
 **The design-export gate is lifted** — no requirement carries `blocked:design-export` any more.
 Every DS body has been regenerated against v0.5.0, the eight backlog stubs are resolved (five cut,
-two promoted, one folded), and `needs:decision` marks the one requirement waiting on Eric (DS-02).
+two promoted, one folded), and no requirement is waiting on a decision.
 Issues regenerate from requirements, so a future export means regenerating bodies, not rewriting
 tickets by hand.
 
@@ -150,7 +154,7 @@ Figma is the design source of truth. All three are wrong, and every new conversa
 2. ~~Generation review~~ — **done**, folded into the contract spec
 3. ~~Schema pass~~ — **done** (`specs/DATA_MODEL.md` rev 2)
 4. ~~Design export → DS gates lift → ATOMIC.md~~ — **done** (2026-08-25)
-5. **Two DS decisions** (Eric) — BottomSheet, fonts. Neither blocks cutting issues.
+5. ~~Two DS decisions~~ — **done** (2026-08-25): no sheets, fonts self-hosted
 6. **Remaining requirements work** (Claude) — the test-architecture requirement in M0,
    accessibility acceptance criteria (now unblocked), and splitting the six oversized
    requirements into sub-issues: DATA-01, GEN-02, SES-01, EXE-04, OVR-01, **DS-04**

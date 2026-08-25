@@ -402,11 +402,13 @@ a second source of truth for colour would be the exact failure the system exists
 
 **Acceptance:**
 - [ ] `clear-design-system@0.5.0` vendored at `src/design-system/`, contents byte-identical to the export
-- [ ] `styles.css` imported exactly once, at the app root — no component imports CSS
+- [ ] `css/foundation.css`, `css/motion.css` and `css/skins.css` imported once at the app root, from the vendored folder, unmodified
+- [ ] **The skin is app-owned.** `src/styles/skin-clear.css` holds the seven role hexes and the three font families, per the export's own instruction that a product replaces this file only. The vendored `styles.css` and `css/skin-clear.css` are not loaded — that is what removes the Google Fonts `@import` without patching a vendored file (see DS-02)
+- [ ] No component imports CSS
 - [ ] `initSkin()` from `skin.js` runs in a blocking `<head>` script; no skin flash on first paint
 - [ ] A test asserts the exported `VERSION` equals the version recorded in `specs/design/ATOMIC.md` §1
 - [ ] Imports resolve from the public entry; a component-internal import fails lint (see DS-08)
-- [ ] `docs/UPGRADING-DESIGN-SYSTEM.md` documents the drop-in: replace the folder, re-run the adherence lint, re-run the version test, re-check the Contrast Audit card
+- [ ] `docs/UPGRADING-DESIGN-SYSTEM.md` documents the drop-in: replace the folder, **diff the export's `styles.css` against the app's import list so a newly-added layer is not silently dropped**, diff the export's `skin-clear.css` against the app-owned skin, re-run the adherence lint, re-run the version test, re-check the Contrast Audit card
 - [ ] **No file outside `src/design-system/` defines a colour, spacing, radius or font token**
 
 ### DS-02 — Self-host the three font families
@@ -414,26 +416,35 @@ a second source of truth for colour would be the exact failure the system exists
 **Depends on:** DS-01
 **Spec:** `specs/design/ATOMIC.md` §3.5
 
-> ⚠️ **DECISION REQUIRED before building.** The export pulls Rajdhani, Oxanium and Space
-> Grotesk from the Google Fonts CDN via `@import` in `skin-clear.css`. A CSS `@import` is a
-> render-blocking, *sequentially discovered* fetch: the browser must parse the stylesheet
-> before it learns the fonts exist. On a phone that is a visible delay on a font-heavy,
-> all-uppercase interface. If the CDN is accepted for the rebuild, **delete this
-> requirement** rather than deferring it.
->
-> **The deciding argument is PWA-01.** An installed PWA with CDN fonts cannot render
-> correctly offline — the first cold offline launch falls back to system-ui, and CLEAR's
-> entire identity is three typefaces. If PWA-01 stays in scope, this requirement is not
-> optional and the decision is already made.
+**Decided 2026-08-25 — self-host.** The reason is the render path, not offline support.
 
-Serve all three families from the app's own origin and remove the `@import`.
+The export loads fonts through nested CSS `@import`s, which the browser can only discover
+one hop at a time:
+
+```
+styles.css  →  @import css/skin-clear.css
+            →  @import fonts.googleapis.com/css2?…
+            →  @font-face src: fonts.gstatic.com/…woff2
+```
+
+Four sequential, render-blocking round trips before a single glyph draws. Until they finish,
+every uppercase Rajdhani and Oxanium surface in the app — labels, CTAs, timers, tabs, chips —
+renders in `system-ui` at a different width, and the whole interface reflows once when the real
+faces land. That is the cost, and it is paid on every cold load on a phone.
+
+Self-hosting collapses four hops to one, served from the app's own origin.
+
+Delivery is three Fontsource packages — `@fontsource/rajdhani`, `@fontsource/oxanium`,
+`@fontsource/space-grotesk` — which ship the woff2 files and the `@font-face` rules already
+written. Nothing is hand-downloaded and nothing is requested from the design system.
 
 **Acceptance:**
-- [ ] Three families served from the app origin; no request to `fonts.googleapis.com` or `fonts.gstatic.com` remains
-- [ ] Only the weights the app actually uses are shipped (Rajdhani 500/600/700 · Oxanium 400/500/600/700 · Space Grotesk 400/500/700), subset to Latin
+- [ ] Three families served from the app origin; **no request to `fonts.googleapis.com` or `fonts.gstatic.com` in a production network trace**
+- [ ] Only the weights the app uses are shipped — Rajdhani 500/600/700 · Oxanium 400/500/600/700 · Space Grotesk 400/500/700 — Latin subset
 - [ ] `<link rel="preload">` for the above-the-fold weights; `font-display: swap`
-- [ ] A real fallback stack per font role; no layout shift measurable on load
-- [ ] The override lives in a single app-owned file that re-points `--font-display` / `--font-data` / `--font-body` — `src/design-system/` is not edited
+- [ ] A real fallback stack per font role, metric-adjusted where it reduces shift; **cumulative layout shift from font swap measured, not assumed**
+- [ ] The `@font-face` rules live in the **app-owned** `src/styles/skin-clear.css` from DS-01; `src/design-system/` is not edited
+- [ ] Lighthouse reports no render-blocking font request
 
 ### DS-03 — *(deleted — shipped in the export)*
 `ChamferedFrame` (SVG double-width stroke + clip, `trace`, `scan`, `glow`, four chamfer
@@ -473,7 +484,14 @@ tokens and classes, not a new visual idea.
 
 The export ships a `Toast` *component*; queueing is application state, and it is the half
 the old app got wrong. `EmptyState`, `Dialog` and `ScanLoader` ship — this requirement is
-only the host and the `AppError` rendering contract.
+the host, the `AppError` rendering contract, and the dialog's entrance motion.
+
+> **No bottom sheets — decided 2026-08-25.** Every overlay in CLEAR is a `Dialog`. The one
+> place a sheet was specified (OVR-01's *why this number*) is a modal explanation, and
+> `Dialog` already gives it the platform's focus trap, Esc handling and background
+> inertness. What a sheet would have contributed — the sense of a panel arriving — comes
+> from the motion vocabulary instead. CLEAR bans rounded corners, so a sheet lost its
+> signature anyway.
 
 **Acceptance:**
 - [ ] One toast host mounted at the app root; **at most one toast visible**, a second queues
@@ -481,6 +499,11 @@ only the host and the `AppError` rendering contract.
 - [ ] `.clr-phosphor-out` runs before removal; no toast is unmounted mid-animation
 - [ ] Dismiss is keyboard-reachable and never yanks focus from what the user was doing
 - [ ] A success is never announced assertively — only `negative` is `role="alert"`
+- [ ] **Dialogs arrive with the system's motion, not a slide.** `Dialog` ships with no entrance animation — `showModal()` simply reveals it. The app wrapper composes the shipped vocabulary so a modal reads as a panel powering up: the chamfered frame **traces its border on** (`.clr-trace`), the contents **materialize** (`.clr-materialize`), and the backdrop **hard-cuts** (`.clr-cut-in`) rather than fading
+- [ ] Dismissal runs `.clr-phosphor-out` before unmount — the signal cuts, the coating keeps glowing
+- [ ] Dialog entrance is visibly distinct from a toast's arrival; a toast phosphors in, a dialog constructs itself
+- [ ] Timings are tokens, tuned in the gallery against the export's Motion Lab card — no hardcoded ms
+- [ ] Every dialog animation is inert under `prefers-reduced-motion`; the end state renders immediately and nothing waits on it
 
 ### DS-06 — Atmosphere assignment
 **Layer:** design · **Milestone:** M1 · **Carry-over:** port
@@ -968,7 +991,7 @@ e1RM load anchors computed from set logs; RPE-driven next-prescription rules; sp
 - [ ] The RPE rule table implemented as pure functions with unit tests covering every row (incl. overshoot and first-set ≥9)
 - [ ] Sparse/stale ladder enforced: 0/1/2/3+ session confidence tiers; 3/6/12-week decay; >12 weeks discards the anchor
 - [ ] Rep completion is **computed**, not parsed — a set log joins to its immutable prescription row for the prescribed target
-- [ ] Review shows suggestion + session-count confidence + tappable "why this number"; per-session override never rewrites the anchor
+- [ ] Review shows suggestion + session-count confidence + tappable "why this number" `Dialog`; per-session override never rewrites the anchor
 - [ ] Bodyweight movements excluded from load anchors — rep progression only
 
 ### OVR-02 — Generation integration (prompt bump)

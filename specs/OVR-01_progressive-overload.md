@@ -331,7 +331,7 @@ Prompt version bump: **v3.2.0**.
 |---|---|---|---|
 | 1 | **Generate** | Deload banner above intensity selector when triggered. Reason stated in one line. | `Apply` / `Not today` (3-session snooze) |
 | 2 | **Review** | Per exercise: `Suggested: 185 lb · ↑5 · 4 sessions`. Confidence shown as session count. Low confidence gets a distinct treatment (muted / dashed). | Tap to edit — overrides for this session only, does not rewrite the anchor |
-| 3 | **Review** | Tap the suggestion → "Why this number" sheet: last session's actual sets, RPE, and the rule that fired ("all reps at RPE 7.5 → +1 increment"). | — |
+| 3 | **Review** | Tap the suggestion → "Why this number" `Dialog`: last session's actual sets, RPE, and the rule that fired ("all reps at RPE 7.5 → +1 increment"). | — |
 | 4 | **Workout Mode** | `weight_suggested` pre-fills the first set's weight input. Per-set RPE input already exists. | Edit inline — this is the real log |
 | 5 | **Workout Mode** | Timed sections: new section-RPE input at completion, alongside rounds/time. Same control as set RPE. | — |
 | 6 | **Summary** | "What moved" — exercises where the anchor increased this session. First-time exercises: "Baseline set." | — |
@@ -361,7 +361,7 @@ This spec is 4–5 build sessions, not one.
 
 | Slice | Contents | Value |
 |---|---|---|
-| **OVR-01a** | `load_anchors` table, anchor math, §2 RPE rules, §5 sparse/stale rules, `weight_suggested`, Review screen suggestion + "why this number". Standard sets only. Unit resolution. | **~80% of the value.** Ship this first. |
+| **OVR-01a** | `load_anchors` table, anchor math, §2 RPE rules, §5 sparse/stale rules, `weight_suggested`, Review screen suggestion + "why this number" `Dialog`. Standard sets only. Unit resolution. | **~80% of the value.** Ship this first. |
 | **OVR-01b** | Prompt v3.2.0 — `TRAINING HISTORY` block, directive handling, post-generation weight fill. | Closes the loop with generation |
 | **OVR-01c** | §3 timed formats — new `structure_results` fields, section RPE capture, density nudge. | Conditioning progression |
 | **OVR-01d** | §4 deload detection, Generate-screen banner, override + snooze. | Long-run sustainability |

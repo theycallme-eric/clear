@@ -189,7 +189,7 @@ in. Importing from a component's internal path is a lint error; import from the 
 | **FormField** | `label` · `htmlFor` · `required` · `helperText` · `errorText` · `children` (element or render fn) | The same wiring for controls that don't have it built in — Chips, Sliders, ChoiceGroups, third-party. |
 | **IntensitySlider** | `value` · `min` · `max` · `step` · `onChange(value, e)` · `label` · `valueText` · `disabled` · `inputRef` | Real `<input type=range>`. Rectangular thumb 12×20px, readout is an associated `<output>`. `valueText` for "7 of 10, hard". |
 | **TabBar** / **TabPanel** | `tabs` · `active` · `onChange(index)` · `idBase` ‖ `idBase` · `index` · `active` | ARIA tabs pattern, automatic activation. Panel adds `.clr-tab-enter`. |
-| **Dialog** | `open` · `onClose` · `title` · `actions` · `critical` · `dismissOnBackdrop` | Native `<dialog>` + `showModal()` — focus trap, Esc, inertness are the platform's. `dismissOnBackdrop` defaults **false** on purpose. Safe action first in DOM order. |
+| **Dialog** | `open` · `onClose` · `title` · `actions` · `critical` · `dismissOnBackdrop` | Native `<dialog>` + `showModal()` — focus trap, Esc, inertness are the platform's. `dismissOnBackdrop` defaults **false** on purpose. Safe action first in DOM order. **Ships with no entrance motion** — the app wrapper adds it, see §11. |
 | **Toast** | `variant` info/positive/negative · `actionLabel` · `onAction` · `onDismiss` | Each variant carries a **glyph**, not just a border hue. Only `negative` is `role="alert"`. |
 | **ScanLoader** | `label` · `lines` · `value` · `max` · `status` ok/slow/failed | **There is no spinner in this system.** Polite live region + `aria-busy`. Pass `value`/`max` only when progress is real. |
 | **Progress** | `value` · `max` · `label` · `showValue` · `segments` | Stepped fill, never a smooth glide. Omit `value` for indeterminate. `segments` draws tick divisions. |
@@ -357,7 +357,7 @@ Everything above is inherited. Everything below is work the rebuild owns. These 
 | **Card as a React component** | `.clr-card` ships as CSS (bar + body); no JSX export. CLEAR uses cards on every screen. | DS-04 |
 | **Select / FilterDropdown** | Not in the export at all. History and library filtering need it. | DS-04 |
 | **Toast host / queue** | The export ships a Toast *component*, not a *manager*. "Toasts queue without overlap" is app state. | DS-05 |
-| **BottomSheet** | Not in the export. **Open question** — see §12. | DS-05 |
+| **Dialog entrance motion** | `showModal()` reveals the element with no animation; the vocabulary exists but `Dialog` does not use it. The wrapper composes `.clr-trace` + `.clr-materialize` + a hard-cut backdrop, and `.clr-phosphor-out` on dismiss. | DS-05 |
 | **Collapsible workout section** | Not in the export; app-specific disclosure. | DS-04 |
 | **Every Layer-4 domain component** | Correctly out of scope for a design system — `SectionRenderer`, `LadderRungs`, `WeekStreakDisplay` etc. compose from the primitives above. | EXE / HIST / HOME trunks |
 
@@ -366,17 +366,48 @@ lint (§13). A new part is a *composition*, not a new visual idea.
 
 ---
 
-## 12. Open questions
+## 12. Decisions taken
 
-1. **BottomSheet** — the export ships `Dialog` on native `<dialog>` with the platform's
-   focus trap. A bottom sheet is the same modal semantics with different geometry. Is the
-   sheet a real interaction requirement (exercise detail, swap picker) or a habit carried
-   over from the old app? If it is real, it is a *geometry variant of Dialog*, not a new
-   component.
+Both open questions were resolved 2026-08-25.
 
-2. **Font delivery** — `skin-clear.css` pulls all three families from the Google Fonts
-   CDN with `@import`, which is a render-blocking sequential fetch. DS-02 asked for
-   self-hosting. Keep self-hosting, or accept the CDN for the rebuild?
+### No bottom sheets
+
+**Every overlay in CLEAR is a `Dialog`.** A sheet and a dialog are the same interaction —
+content on top, background inert, Esc closes — differing only in geometry. `Dialog` is built
+on native `<dialog>` + `showModal()`, so the focus trap, Esc handling, background inertness
+and top-layer stacking are the platform's rather than hand-written; those are exactly the
+parts that ship subtly broken when reimplemented.
+
+Only one sheet was ever specified — OVR-01's *why this number* explanation on Review — and
+it is modal. CLEAR also bans rounded corners, so a sheet would have lost its most
+recognisable signature and arrived as a full-width chamfered panel.
+
+**What the sheet was really offering was arrival**, and that comes from the motion
+vocabulary instead: the frame traces itself on, the contents materialize, the backdrop
+hard-cuts. A panel powering up, not a drawer sliding. See §11 and DS-05.
+
+Reopen only for a **non-modal** panel — one the user can see and touch the screen around.
+That is a genuinely different interaction and would need its own requirement and its own
+reason.
+
+### Fonts are self-hosted
+
+The export's font delivery is four nested, render-blocking round trips:
+
+```
+styles.css → @import css/skin-clear.css → @import fonts.googleapis.com → fonts.gstatic.com
+```
+
+Until all four complete, every uppercase Rajdhani and Oxanium surface renders in `system-ui`
+at a different width and the interface reflows once. Self-hosting collapses that to one
+request from the app's own origin.
+
+This is **not** an offline argument. CLEAR does not need to work offline.
+
+The mechanism is the export's own instruction — *"a second app replaces THIS FILE ONLY: six
+role hexes and three font families"* — so the app owns `src/styles/skin-clear.css` and never
+loads the vendored `styles.css` or `css/skin-clear.css`. Nothing is patched and the version
+pin holds. Delivery is three Fontsource packages. See DS-01 and DS-02.
 
 ---
 

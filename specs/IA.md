@@ -129,7 +129,7 @@ per-screen attribute.
 | `EmptyState` | **ships** | factual title, one imperative action |
 | `LoadingSkeleton` · `LoadingScreen` · `FullscreenLoader` | `ScanLoader` | **three names, one component.** There is no spinner and no skeleton in this system |
 | `ConfirmationModal` | `Dialog critical` | native `<dialog>`; focus trap, Esc and inertness are the platform's |
-| `BottomSheet` | **open question** | see `specs/design/ATOMIC.md` §12 |
+| `BottomSheet` | **retired — use `Dialog`** | no sheets in CLEAR; the arrival comes from motion, not geometry. `specs/design/ATOMIC.md` §12 |
 | `ChamferedToast` | `Toast` | queueing is app state — **DS-05** |
 | — | `CollapsibleSection` | **DS-04c** — section disclosure |
 
@@ -227,7 +227,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **In:** Loading (fresh) · Review (regenerate) · Home/History (favorite restart) · **Out:** `/workout`, or back to Loading
 **Composition:** `AppLayout` › `PageHeader` + `WorkoutOverview` + `WorkoutSectionCard`(×n) › exercise rows + swap affordance + `CTAButton` + `ConfirmationModal`
 **States:** loading (favorite snapshot hydrating) · error (swap failed — **content never silently changes**) · populated. **Empty:** n/a — a workout with no sections is a validation failure, not an empty state.
-**Interactions:** expand section · swap one exercise · swap a whole block · undo swap (3 per slot) · regenerate-nudge after the third · start · regenerate with confirm. With OVR-01: per-exercise weight suggestion, confidence, and a "why this number" sheet.
+**Interactions:** expand section · swap one exercise · swap a whole block · undo swap (3 per slot) · regenerate-nudge after the third · start · regenerate with confirm. With OVR-01: per-exercise weight suggestion, confidence, and a "why this number" `Dialog`.
 
 ### Workout — `/workout` ★★
 **Atmosphere:** `operational` — glanceability at arm’s length

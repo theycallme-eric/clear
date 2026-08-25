@@ -37,7 +37,7 @@ create_issue "AUTH-01" "[AUTH-01] Session context" "M0" --label "layer:state" --
 create_issue "AUTH-02" "[AUTH-02] Welcome + OTP login screens" "M0" --label "layer:ui" --label "carry:rebuild"
 create_issue "AUTH-03" "[AUTH-03] Route guards + profile/locations queries" "M0" --label "layer:state" --label "carry:rebuild"
 create_issue "DS-01" "[DS-01] Vendor and mount the design system" "M0" --label "layer:design" --label "carry:new"
-create_issue "DS-02" "[DS-02] Self-host the three font families" "M0" --label "layer:design" --label "carry:port" --label "needs:decision"
+create_issue "DS-02" "[DS-02] Self-host the three font families" "M0" --label "layer:design" --label "carry:port"
 create_issue "DS-04" "[DS-04] App-composed controls" "M0" --label "layer:design" --label "carry:new" --label "needs:split"
 create_issue "DS-05" "[DS-05] Toast host and error surfaces" "M1" --label "layer:design" --label "carry:new"
 create_issue "DS-06" "[DS-06] Atmosphere assignment" "M1" --label "layer:design" --label "carry:port"
