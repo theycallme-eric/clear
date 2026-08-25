@@ -365,6 +365,7 @@ Kills the other half of D1. Profile and locations are independent React Query qu
 - [ ] Guard matrix tested: {unauthenticated, authenticated±onboarded, loading} × {public, protected, onboarding} routes
 - [ ] Profile and locations load independently; one failing does not block the other
 - [ ] Sign-out invalidates both queries; no refetch storms on token refresh
+- [ ] **Until ONB-01 exists (M2), an authenticated user without a completed profile sees a clear placeholder screen** — "account setup isn't built yet" with a sign-out action — never a redirect to a route that does not exist. Removed when ONB-01 lands
 
 ---
 
@@ -578,7 +579,8 @@ The workout state machine, and the requirement that closes D6. Accept → persis
 - [ ] "As intended at start" resolves temporally — rows active at `started_at`, not merely active now
 - [ ] "As performed" includes skipped exercises with no logs, block results, and partially-logged exercises — not a bare join to set logs
 - [ ] Hard refresh mid-workout → resumable at the correct section with logged sets intact
-- [ ] Completion writes `completed_at` and `actual_duration_mins`; **the streak function returns the correct value afterward** (streak is derived from sessions, not stored — see HOME-02)
+- [ ] Completion writes `completed_at` and `actual_duration_mins`
+- [ ] **Minimal streak derivation lands here:** consecutive days with a completed, streak-counting session, computed from `workout_sessions` — never stored. Pause states, rest-day allowances, and the week strip are HOME-02's extension of this same function, not a replacement for it
 - [ ] Machine transitions unit-tested, including the abandon path
 
 ### REV-01 — Review screen
@@ -702,12 +704,13 @@ Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable
 **Depends on:** SES-01, DS-04, DS-05
 **Spec:** `specs/IA.md` — Summary screen contract
 
-Debrief: mood (1–5), session notes, duration + streak display, save-as-favorite CTA (wired fully in FAV-01), return home.
+Debrief: mood (1–5), session notes, duration, and streak. **No save-as-favorite CTA in M1** — FAV-01 adds the button and the behavior together in M2.
 
 **Acceptance:**
 - [ ] Mood and notes persist to the session row
 - [ ] Copy follows earned-celebration voice — brief acknowledgment, straight to debrief
-- [ ] Streak display reflects the completion written by SES-01
+- [ ] Streak display reflects the minimal derivation from SES-01
+- [ ] **Nothing on this screen is non-functional.** No disabled affordance, no "coming soon" — the same principle that killed the mock-workout fallback
 - [ ] Only completed sessions reach this screen
 
 ### HIST-01 — History list + detail
@@ -761,7 +764,7 @@ Multi-step first-run: experience level, goal preset, location + equipment, secti
 **Depends on:** SUM-01, SES-01, HOME-01
 **Spec:** `specs/favorites-v2.md` · `specs/DATA_MODEL.md` §11 snapshot versioning · `specs/IA.md`
 
-Save a completed workout as a named template (snapshot), favorites tab on Home, one-tap restart that skips generation and lands in review with the snapshot.
+Save a completed workout as a named template (snapshot), favorites tab on Home, one-tap restart that skips generation and lands in review with the snapshot. **Introduces the save-as-favorite CTA on the Summary screen** — the button and the behavior ship together.
 
 **Acceptance:**
 - [ ] Restart reproduces the workout exactly from `workout_snapshot` — no regeneration
@@ -796,7 +799,8 @@ Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marki
 - [ ] Streak rules implemented as pure functions with unit tests covering: continue, break, pause, resume, rest-day allowance
 - [ ] Mark Rest Day works from Home with reason capture
 - [ ] Week strip states (workout/rest/upcoming) match the engine's output
-- [ ] Streak is **derived from `workout_sessions`**, never stored — the six profile columns do not exist, so there is nothing to drift
+- [ ] **Extends** SES-01's minimal derivation rather than replacing it — one function, one source of truth, still never stored
+- [ ] Adds pause states (injury/sick/vacation), rest-day allowances, and consecutive-rest limits on top of the M1 consecutive-day count
 - [ ] Backdating or deleting a session changes the streak correctly with no repair step
 
 ### HOME-03 — Suggested anchor + intensity

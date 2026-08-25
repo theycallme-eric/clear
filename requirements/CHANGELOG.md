@@ -80,3 +80,14 @@ Third review pass. Five mechanical contradictions resolved; three left as produc
 
 **Open, awaiting product decisions:** streak scope in M1 · favorites CTA in M1 · onboarding milestone.
 **Open, pending the design export:** `specs/design/ATOMIC.md`, referenced by `specs/IA.md`.
+
+**Three product decisions resolved (2026-08-24):**
+- **Onboarding stays M2**, with AUTH-03 gaining a placeholder for authenticated users without a
+  profile — a clear "setup isn't built yet" screen, never a redirect to a route that does not exist.
+  Removed when ONB-01 lands.
+- **Minimal streak derivation moves into SES-01 (M1)** — consecutive days with a completed session,
+  computed from `workout_sessions`. HOME-02 *extends* that same function with pause states and
+  rest-day rules rather than replacing it. One function, one source of truth.
+- **Save-as-favorite is removed from M1.** FAV-01 introduces the button and the behavior together.
+  SUM-01 gains an explicit criterion: nothing on that screen is non-functional — the same principle
+  that killed the mock-workout fallback.
