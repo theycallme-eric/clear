@@ -1,7 +1,8 @@
 # CLEAR Rebuild — Requirements Specification
 
-**Version:** 0.4 — approved direction, specs attached
-**Date:** 2026-08-24
+**Version:** 0.5 — design system folded in, backlog resolved
+**Date:** 2026-08-25
+**Requirements:** 55 · **Defects:** D1–D7
 
 **Version history**
 
@@ -11,7 +12,8 @@
 | 0.2 | Progressive-overload spec landed; OVR stub promoted to four requirements. The spec reached back and changed M0 — weight-unit ambiguity resolved in the baseline schema. |
 | 0.3 | First review pass. DS-01/02/06 and GEN-05 gated on the Claude Design export. CORE-04 added. OVR-04 rewritten in plain language. **Independence:** every cited spec copied into this workspace; the rebuild never reads the archived repo. |
 | 0.3.1 | IA decisions folded in — Workout becomes a focus mode, Quick Start hides until history exists, favorite completions get a comparison surface, onboarding is strictly first-run. |
-| **0.4** | **Two verified defects (D5, D6) and three outside review rounds.** Structured prescriptions, first-class blocks, three-state model with temporal lineage, duration plausibility guardrail, user-authored constraints, staged taxonomy migration. Detail lives in `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`. `DATA-04`, `GEN-07`, and `META-01` were proposed during review and withdrawn before issue — hence the gap between `DATA-03` and `DATA-05`. |
+| 0.4 | **Two verified defects (D5, D6) and three outside review rounds.** Structured prescriptions, first-class blocks, three-state model with temporal lineage, duration plausibility guardrail, user-authored constraints, staged taxonomy migration. Detail lives in `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`. `DATA-04`, `GEN-07`, and `META-01` were proposed during review and withdrawn before issue — hence the gap between `DATA-03` and `DATA-05`. |
+| **0.5** | **`clear-design-system@0.5.0` landed and §9 was rewritten against it.** The export ships a component library, not tokens — DS-03 deleted, DS-01/02/05/06 rescoped from *build* to *integrate*, DS-07 shrunk, **DS-08** (adherence gate in CI) added. GEN-05 and SET-01 rescoped. **D7 registered** (set logs written live with no failure handling) and closed by **EXE-07**. **All eight backlog stubs resolved** — five cut, two promoted (EXE-06, EXE-07), one folded into DATA-02; reasoning in `requirements/DEFERRED.md`. Substrate contract: `specs/design/ATOMIC.md`. |
 **0.2:** Progressive-overload spec landed (`specs/OVR-01_progressive-overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
 **Scope:** Ground-up rebuild of CLEAR. Full parity with the existing app plus spec'd planned features, sequenced M0–M3.
 
@@ -99,7 +101,7 @@ Requirements state *what* and *how it's verified*. Specs carry the detail. Every
 
 ## 5. Defect register — why this rebuild exists
 
-Four specific failures killed the old app's momentum. Each is designed out by named requirements, and those requirements' acceptance criteria are written to prove the defect is dead.
+Seven specific failures killed the old app's momentum. Each is designed out by named requirements, and those requirements' acceptance criteria are written to prove the defect is dead.
 
 | # | Defect (old app) | Killed by |
 |---|---|---|
@@ -109,6 +111,7 @@ Four specific failures killed the old app's momentum. Each is designed out by na
 | D4 | Sitting down to work meant debugging infrastructure: Docker not running, Supabase project paused, connection stack traces instead of explanations | ENV-04, ENV-05, DATA-02 |
 | D5 | **Duration validation is tautological.** `validateWorkout()` compares `estimated_duration_mins` — a value Claude asserts — against the requested duration. The prompt tells Claude "45 minutes"; Claude writes 45; the check confirms 45 ≈ 45. It cannot fail | GEN-06, CORE-03 |
 | D6 | **Swapped exercises are never persisted.** Generation saves the original; the swap mutates React state only; `handleStartWorkout` writes nothing. Set logs attach to rows describing exercises never performed — swap Deadlift for RDL, log 3×8 at 185, and the database records it *on Deadlift* | DATA-01, SES-01, REV-02, REV-03 |
+| D7 | **Set logs are written live with no failure handling.** Every set is a fire-and-forget write during the one activity that happens in basements and steel-framed gyms. A dropped request loses work the user physically did and cannot redo — and the UI shows the set as logged either way | EXE-07 |
 
 ---
 
@@ -240,6 +243,7 @@ A dev-only flag seeds Eric's profile + default location so the M1 loop is usable
 - [ ] `exercise_anchors` and `anchor_type` dropped only after that comparison passes
 - [ ] `--dev` flag seeds a complete profile + one location; without it, no user data
 - [ ] Export artifacts committed so the seed is reproducible without old-project access
+- [ ] **Coaching cues and regressions are nullable, and every surface renders correctly when they are absent** — the expandable panel, the review row, and the notes field each have a defined empty presentation. Absent is a real state, not a rendering accident (folds LIB-01: enriching cue *content* is ongoing writing, not a build ticket, and we have no professional to author it)
 
 ### DATA-03 — Generated types + typed client
 **Layer:** data · **Milestone:** M0 · **Carry-over:** rebuild
@@ -369,103 +373,163 @@ Kills the other half of D1. Profile and locations are independent React Query qu
 
 ---
 
-## 9. Design system (DS trunk — M0 gate covers DS-01…04)
+## 9. Design system (DS trunk — M0 gate covers DS-01, DS-02, DS-04, DS-08)
 
-### DS-01 — Token pipeline
+> **The gate is lifted.** `CLEAR Design System 0.5.0` landed 2026-08-25 and was reviewed
+> against this section. It is not a token export — it is a **complete, versioned component
+> library**: 18 React exports with typed props, 75 icons, four skins, a three-level
+> atmosphere axis, a full motion vocabulary, measured contrast, and a lint config that
+> mechanises design-system compliance.
+>
+> Everything the DS trunk previously proposed to *build*, it **ships**. This section is
+> rewritten from "build the design system" to "integrate it, and build only what it
+> doesn't cover." `specs/design/ATOMIC.md` is the substrate contract; read it before any
+> DS or UI ticket.
+>
+> **DS-03 (chamfer primitives + buttons) is deleted** — `ChamferedFrame`, `Button`,
+> `IconButton`, `.clr-chamfer`, `.clr-card` and `.clr-btn` all ship, with the chamfer
+> implemented two ways and the border geometry solved more exactly than the requirement
+> asked for. Its dependents move to DS-01 and DS-04.
+
+### DS-01 — Vendor and mount the design system
 **Layer:** design · **Milestone:** M0 · **Carry-over:** new
 **Depends on:** ENV-01
-**Spec:** Claude Design export (external input); interim `design/tokens/_fallback-from-old-repo/`
+**Spec:** `specs/design/ATOMIC.md` · `clear-design-system@0.5.0` (external input)
 
-> ⚠️ **GATED — review before building.** The theme model is changing: there will be **several themes**, not two, and the orange/blue swap is no longer the relationship it was. Theme count, names, and semantics come from the export. Do not finalize token structure until the export has landed and been reviewed together. The build step below is written to be theme-count agnostic on purpose.
-
-Build step: token JSON → generated CSS custom properties, one file per theme. Hand-editing generated CSS is impossible-by-convention; the export is the source.
+Vendor the export at a pinned version, mount its stylesheet and skin bootstrap, and make
+the pin verifiable. There is no token generator: the export **is** the CSS, and hand-authoring
+a second source of truth for colour would be the exact failure the system exists to prevent.
 
 **Acceptance:**
-- [ ] `npm run gen:tokens` emits one CSS file per theme found in the export, deterministically — **no hardcoded theme list**; adding a theme to the export adds a file with no code change
-- [ ] Primitives, semantic layer, typography, spacing, and effects tokens all covered
-- [ ] Swapping in a new export regenerates without manual edits
-- [ ] Generated files carry a do-not-edit header
-- [ ] Theme selection mechanism (attribute, class, or root swap) documented and agreed before DS-02 consumes it
+- [ ] `clear-design-system@0.5.0` vendored at `src/design-system/`, contents byte-identical to the export
+- [ ] `styles.css` imported exactly once, at the app root — no component imports CSS
+- [ ] `initSkin()` from `skin.js` runs in a blocking `<head>` script; no skin flash on first paint
+- [ ] A test asserts the exported `VERSION` equals the version recorded in `specs/design/ATOMIC.md` §1
+- [ ] Imports resolve from the public entry; a component-internal import fails lint (see DS-08)
+- [ ] `docs/UPGRADING-DESIGN-SYSTEM.md` documents the drop-in: replace the folder, re-run the adherence lint, re-run the version test, re-check the Contrast Audit card
+- [ ] **No file outside `src/design-system/` defines a colour, spacing, radius or font token**
 
-### DS-02 — Global styles + typography
+### DS-02 — Self-host the three font families
 **Layer:** design · **Milestone:** M0 · **Carry-over:** port
 **Depends on:** DS-01
-**Spec:** `specs/design/visual-language-rules.md` · design export (gated)
+**Spec:** `specs/design/ATOMIC.md` §3.5
 
-> ⚠️ **GATED with DS-01.** The design system has been tweaked since these class names were captured. Review the export against this ramp before finalizing — type roles or scale steps may have moved.
+> ⚠️ **DECISION REQUIRED before building.** The export pulls Rajdhani, Oxanium and Space
+> Grotesk from the Google Fonts CDN via `@import` in `skin-clear.css`. A CSS `@import` is a
+> render-blocking, *sequentially discovered* fetch: the browser must parse the stylesheet
+> before it learns the fonts exist. On a phone that is a visible delay on a font-heavy,
+> all-uppercase interface. If the CDN is accepted for the rebuild, **delete this
+> requirement** rather than deferring it.
+>
+> **The deciding argument is PWA-01.** An installed PWA with CDN fonts cannot render
+> correctly offline — the first cold offline launch falls back to system-ui, and CLEAR's
+> entire identity is three typefaces. If PWA-01 stays in scope, this requirement is not
+> optional and the decision is already made.
 
-Reset, page background, self-hosted fonts (Rajdhani, Oxanium, Space Grotesk), and the full utility class ramp (`.text-heading-*`, `.text-paragraph-*`, `.text-cta-*`, `.text-label-*`, `.text-time-*`, `.text-tab-*`).
-
-**Acceptance:**
-- [ ] Type ramp rendered in the gallery matches spec (weight, case, tracking per font role)
-- [ ] Fonts self-hosted with sane fallback stacks; no layout jank on load
-- [ ] All class names match the old system's naming so specs stay readable
-
-### DS-03 — Chamfer primitives + buttons
-**Layer:** design · **Milestone:** M0 · **Carry-over:** rebuild
-**Depends on:** DS-02
-**Spec:** `specs/design/visual-language-rules.md`, `specs/design/chamfered-component.md`
-
-The signature: ChamferedFrame/Card via clip-path with border + emissive variants, plus CTAButton and ActionButton.
+Serve all three families from the app's own origin and remove the `@import`.
 
 **Acceptance:**
-- [ ] Chamfers render clean at all sizes and border widths — no clip artifacts
-- [ ] Button states (default/hover/active/disabled) use tokens only
-- [ ] The 1s frame color transition (the system's one easing exception) applies to frame color and nothing else
-- [ ] Every theme from the export verified in the gallery
+- [ ] Three families served from the app origin; no request to `fonts.googleapis.com` or `fonts.gstatic.com` remains
+- [ ] Only the weights the app actually uses are shipped (Rajdhani 500/600/700 · Oxanium 400/500/600/700 · Space Grotesk 400/500/700), subset to Latin
+- [ ] `<link rel="preload">` for the above-the-fold weights; `font-display: swap`
+- [ ] A real fallback stack per font role; no layout shift measurable on load
+- [ ] The override lives in a single app-owned file that re-points `--font-display` / `--font-data` / `--font-body` — `src/design-system/` is not edited
 
-### DS-04 — Form controls
-**Layer:** design · **Milestone:** M0 · **Carry-over:** rebuild
-**Depends on:** DS-03
-**Spec:** `specs/design/ui-component-spec.md` · `specs/design/chamfered-component.md`
+### DS-03 — *(deleted — shipped in the export)*
+`ChamferedFrame` (SVG double-width stroke + clip, `trace`, `scan`, `glow`, four chamfer
+sizes), `Button` (four variants × three sizes, loading, icon, icon-only), `IconButton`
+(mandatory accessible name), `.clr-chamfer`, `.clr-card`, `.clr-btn`. Dependents rewired
+to DS-01 and DS-04.
 
-Input, Textarea, Checkbox, RadioButton, IntensitySlider (1–10), FilterDropdown.
+### DS-04 — App-composed controls
+**Layer:** design · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** DS-01
+**Spec:** `specs/design/ATOMIC.md` §11
+**Sizing:** oversized — **split into sub-issues before publishing.** Card, Select and
+CollapsibleSection have disjoint dependents; bundling them makes HOME-01 wait on a filter
+control it never renders.
+
+The three parts CLEAR needs that 0.5.0 does not ship. Each is a **composition** of shipped
+tokens and classes, not a new visual idea.
+
+- **DS-04a · Card** — `.clr-card` ships as CSS only. Wrap it as a React component: accent
+  bar + chamfered body, `barWidth` for the 8/12px variants.
+- **DS-04b · Select** — absent from the export entirely. Needed for history and library
+  filtering.
+- **DS-04c · CollapsibleSection** — workout section disclosure.
 
 **Acceptance:**
-- [ ] All controls keyboard-operable; slider works with arrow keys
-- [ ] Touch targets ≥44px
-- [ ] Error/disabled states themed via tokens across every theme
-- [ ] Green = selection/confirmation semantics respected
+- [ ] `Card` composes `.clr-card__bar` + `.clr-card__body`; introduces **no new token**
+- [ ] `Select` is a real `<select>` styled to CLEAR, with `FormField`'s label/helper/error aria wiring
+- [ ] `CollapsibleSection` uses the disclosure pattern with `aria-expanded` and a keyboard-operable trigger; content is not removed from the accessibility tree while collapsed
+- [ ] All three pass the adherence lint at `error` (DS-08)
+- [ ] All three render in the gallery in every state across all four skins
+- [ ] Touch targets ≥44px on coarse pointers
 
-### DS-05 — Feedback components
-**Layer:** design · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DS-03
-**Spec:** `specs/design/ui-component-spec.md` · `specs/IA.md` §3 layer 3
+### DS-05 — Toast host and error surfaces
+**Layer:** design · **Milestone:** M1 · **Carry-over:** new
+**Depends on:** DS-01
+**Spec:** `specs/design/ATOMIC.md` §5, §10 · export `docs/patterns.md` pattern 3
 
-ChamferedToast, ConfirmationModal, BottomSheet, EmptyState, ErrorState, skeleton/ScanLoader.
+The export ships a `Toast` *component*; queueing is application state, and it is the half
+the old app got wrong. `EmptyState`, `Dialog` and `ScanLoader` ship — this requirement is
+only the host and the `AppError` rendering contract.
 
 **Acceptance:**
-- [ ] ErrorState renders an `AppError`: user message + requestId + retry action
-- [ ] Toasts queue without overlap; modal traps focus
-- [ ] BottomSheet dismissible by button (gesture optional)
-- [ ] Loading components respect motion rules
+- [ ] One toast host mounted at the app root; **at most one toast visible**, a second queues
+- [ ] `AppError` renders as `Toast variant="negative"` when it interrupts, `EmptyState` when the whole screen failed — user message + requestId + exactly one retry action
+- [ ] `.clr-phosphor-out` runs before removal; no toast is unmounted mid-animation
+- [ ] Dismiss is keyboard-reachable and never yanks focus from what the user was doing
+- [ ] A success is never announced assertively — only `negative` is `role="alert"`
 
-### DS-06 — Atmosphere layer
+### DS-06 — Atmosphere assignment
 **Layer:** design · **Milestone:** M1 · **Carry-over:** port
-**Depends on:** DS-02
-**Spec:** `specs/design/visual-language-rules.md`
+**Depends on:** DS-01
+**Spec:** `specs/design/ATOMIC.md` §7.2 · `specs/IA.md` §4
 
-> ⚠️ **Affected by the design-system update.** Atmosphere effects are theme-coupled; re-read the export before building.
-
-Scanlines, grain overlay, glow-emissive text, pulse/micro-flicker, stagger reveal. Motion doctrine enforced: linear or stepped timing only, 150–200ms, no decorative motion.
+The five-layer ground, the grain and scanline overlays, every keyframe, the reduced-motion
+fallback and the three intensity levels all ship as `.clr-atmosphere` + `data-atmosphere`.
+What remains is **assignment**: every screen declares how loud its room is, and the app
+proves it on a real phone.
 
 **Acceptance:**
-- [ ] Grain + global scanlines are page-level only; component effects are opt-in props
-- [ ] A grep for easing curves finds only `linear`/`steps()` (plus the DS-03 heartbeat exception)
-- [ ] Stagger reveal is a reusable utility, not per-screen copy-paste
-- [ ] Effects hold 60fps on a mid-range phone
+- [ ] Every screen in `specs/IA.md` §4 sets `data-atmosphere` to its documented level; a test asserts each route renders with that value
+- [ ] The atmosphere layer mounts **once** at the app root, not per screen
+- [ ] All three levels hold 60fps on a mid-range Android phone, measured not assumed
+- [ ] `prefers-reduced-motion` renders the static fallback with no drift and no scan
+- [ ] A grep for easing curves outside `src/design-system/` finds only `linear` and `steps()`
 
-### DS-07 — Component gallery
+### DS-07 — Gallery
 **Layer:** design · **Milestone:** M1 · **Carry-over:** rebuild
-**Depends on:** DS-03, DS-04
-**Spec:** `specs/design/ui-component-spec.md` · `specs/IA.md` §3 component vocabulary
+**Depends on:** DS-04
+**Spec:** `specs/design/ATOMIC.md`
 
-`/dev/gallery`: every DS component in every state, live theme toggle. This is the visual review surface — screens get approved rendered, not drawn.
+The visual review surface — screens get approved rendered, not drawn. The export already
+ships 38 specimen cards, including Contrast Audit, Motion Lab, Skins, Atmosphere Modes and
+States Gallery. Serve them; do not recreate them.
 
 **Acceptance:**
-- [ ] Dev-only route, excluded from production bundles
-- [ ] Every component from DS-03…06 present in all states as they land
-- [ ] Theme switcher cycles every available theme, live, across the whole gallery
+- [ ] `/dev/gallery` is dev-only and excluded from production bundles
+- [ ] The export's 38 specimen cards served **unmodified** at `/dev/gallery/ds`
+- [ ] App-composed parts (DS-04, DS-05, and each atmosphere level) at `/dev/gallery/app`, in every state
+- [ ] Skin switcher cycles all four skins live via `setSkin()`; atmosphere switcher cycles all three levels
+- [ ] Adding a component to DS-04 or DS-05 without adding it to the gallery fails review
+
+### DS-08 — Adherence gate in CI
+**Layer:** design · **Milestone:** M0 · **Carry-over:** new
+**Depends on:** DS-01
+**Spec:** `specs/design/ATOMIC.md` §13 · export `_adherence.oxlintrc.json`
+
+The standing constraint — *a hardcoded hex, px spacing, or font name is a review-blocking
+defect* — becomes a failing build instead of a sentence in a document. The export ships the
+rule set; the rebuild raises it from `warn` to `error` and runs it.
+
+**Acceptance:**
+- [ ] oxlint runs in CI over `src/`, consuming `_adherence.oxlintrc.json` with every rule raised to `error`
+- [ ] `src/design-system/` is excluded — it is the source of the tokens, not a consumer
+- [ ] Fixture tests prove the gate bites: a raw hex, a raw px value, a non-system font, an unknown component prop, an out-of-range `variant`, and a component-internal import each fail the build
+- [ ] Runnable locally as `npm run lint:ds`, documented in the README
+- [ ] The gate is wired **before** the first screen ticket lands, so no screen is ever written against unenforced rules
 
 ---
 
@@ -536,16 +600,24 @@ Inputs: goal selector (first, no default, per v3 delta), intensity slider with g
 ### GEN-05 — Loading screen
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** port
 **Depends on:** GEN-03, DS-06
-**Spec:** `specs/screens/loading-screen-prototype.html`, `specs/screens/loading-screens.md`
+**Spec:** `specs/design/ATOMIC.md` §5, §10 · export `docs/patterns.md` pattern 2 · `specs/screens/loading-screens.md`
 
-Port the loading screen prototype: atmosphere, staged status copy, cancel.
+> **Rescoped by the design system.** `ScanLoader` ships — scan sweep, boot-staggered rows,
+> `status: ok | slow | failed`, a polite live region with `aria-busy`, `aria-hidden` log
+> lines, and a reduced-motion static state. The prototype at
+> `specs/screens/loading-screen-prototype.html` is now **reference for the copy sequence
+> only**; its markup and motion are superseded. Do not port bespoke loading markup.
 
-> ⚠️ **Flagged for the design-system update** — the prototype predates the tweaks; re-check against the export before building.
+Compose the generation loading screen from `ScanLoader` with the staged status copy and a
+cancel action, at `data-atmosphere="full"`.
 
 **Acceptance:**
+- [ ] Built from `ScanLoader`; no bespoke spinner, skeleton or loading markup anywhere in the app
 - [ ] Visible for the full mutation; stale results ignored after cancel/unmount
-- [ ] Status copy is terse-imperative per voice rules
-- [ ] Motion rules hold (linear/stepped only)
+- [ ] `status` reflects reality — `slow` at the documented threshold, `failed` on error; never decorative
+- [ ] No `value`/`max` passed unless progress is genuinely known
+- [ ] Status copy is terse-imperative per voice rules; the slow message states the fact and does not apologise or joke
+- [ ] Failure hands off to pattern 3 (recoverable failure) — a negative toast with exactly one retry action, never a dead end
 
 ### GEN-06 — Duration plausibility check
 **Layer:** api · **Milestone:** M1 · **Carry-over:** new
@@ -699,6 +771,23 @@ Rest countdown bar (auto-start where prescribed, skip, +time) and the expandable
 - [ ] Exercise notes persist to the exercise row
 - [ ] Timer accurate after backgrounding (wall-clock)
 
+### EXE-07 — Durable set logging
+**Layer:** state · **Milestone:** M1 · **Carry-over:** new
+**Depends on:** EXE-02, SES-01
+**Spec:** `specs/DATA_MODEL.md` §5 set logs
+
+Closes D7. A set the user physically performed must never be lost to a dead signal, and the
+UI must never claim a set is logged when it is not. **This is not offline support** — the
+app does not need to work offline. It needs one write path that does not lie.
+
+**Acceptance:**
+- [ ] Set writes go through a durable local queue first; the row is written locally, then flushed
+- [ ] The queue survives a reload, a backgrounded tab, and a killed app — a set logged at 6:02 is still there at 6:40
+- [ ] The UI distinguishes **logged** from **syncing** from **failed to sync**; a pending set is never drawn as confirmed
+- [ ] Flush is idempotent — a retried write does not create a duplicate set (client-generated id, not a server sequence)
+- [ ] On resuming a session, unflushed sets reconcile against the server without the user being asked to re-enter anything
+- [ ] Sustained failure surfaces once, factually, with the count of unsynced sets — not a toast per set
+
 ### SUM-01 — Post-workout summary
 **Layer:** ui · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** SES-01, DS-04, DS-05
@@ -821,11 +910,17 @@ Surface `suggest_session_focus` (least-recently-trained) plus an intensity sugge
 **Depends on:** AUTH-03, DS-04
 **Spec:** `specs/IA.md` — Settings screen contract
 
-Hub with: goal preset, enabled sections (structure customization), limitations text, theme selection (persisted; the available themes come from the design export — nothing hardcodes a list), sign out.
+Hub with: goal preset, enabled sections (structure customization), limitations text, **skin selection**, sign out.
+
+> **The skin picker is a wrapper, not an implementation.** `skin.js` ships the whole persistence contract: `localStorage['clear.skin']` → `prefers-contrast: more` → the app default, with an explicit user choice always winning — including choosing a colour skin while the OS asks for more contrast. Read the skin list from `SKINS`; do not hardcode one.
 
 **Acceptance:**
 - [ ] Each change persists and is reflected in the next generation payload
-- [ ] Theme flips live, persists across reload, and covers every screen
+- [ ] The picker lists every skin in `SKINS` — adding a skin to the export adds an option with no code change
+- [ ] Selection calls `setSkin()`, flips live across every screen, and survives reload
+- [ ] A "system" option calls `setSkin(null)`, restoring `prefers-contrast` following
+- [ ] Mono is labelled **enhanced contrast**, never "accessible" — the other three are not less accessible
+- [ ] The favicon matching the active skin is set (favicons cannot read tokens)
 - [ ] Sign out clears caches and lands on Welcome
 - [ ] Section toggles respect goal constraints (e.g. active recovery's fixed sections)
 - [ ] **Every choice made during onboarding is editable here** — experience, goal, sections, limitations, locations, equipment. Onboarding is strictly first-run and is never re-entered
@@ -920,18 +1015,44 @@ Six conditions can raise the suggestion: a lift stalling while feeling maximal, 
 - [ ] Never auto-applies. Choosing a hard intensity on a flagged day confirms once, then does what you asked
 - [ ] Deload sessions are tagged and excluded from load-anchor updates — a deliberately light day is not evidence you got weaker
 
-### Remaining stubs — spec needed before issues are cut
+### EXE-06 — Mid-workout exercise swap
+**Layer:** ui · **Milestone:** M3 · **Carry-over:** new
+**Depends on:** EXE-01, REV-02
+**Spec:** `specs/DATA_MODEL.md` §4 lineage · `specs/generation/exercise-swap.md`
 
-| ID | Scope | Likely depends on | Status |
-|---|---|---|---|
-| ORM-01 | 1RM testing mode — guided protocol + storage | EXE-02 | needs spec |
-| EXE-06 | Mid-workout exercise swap (during execution, not just review) | REV-02, EXE-01 | needs spec |
-| REV-04 | Inline sets/reps editing before starting | REV-01 | needs spec |
-| CHART-01 | Per-exercise progression charts (OVR spec defers this to its v2) | HIST-01, OVR-01 | needs spec |
-| OFF-01 | Offline support — cache + sync | SES-01, PWA-01 | needs spec |
-| LIB-01 | Coaching cues enrichment (library content pass) | DATA-02 | needs spec |
-| HIST-02 | History retention/pruning policy | HIST-01 | needs spec |
-| NAT-01 | Capacitor packaging / App Store distribution | PWA-01 | needs spec |
+The rack is taken, the shoulder is complaining, the plan changes at minute 12. Same
+append-and-supersede lineage REV-02 uses in review, applied during execution.
+
+**No new schema.** The three-state model already separates prescribed from revised from
+performed, and `slot_id` already threads a slot's history across substitutions.
+
+**Acceptance:**
+- [ ] Swapping mid-workout supersedes the active row and inserts the replacement in the same `slot_id`, with `replaces_id` set
+- [ ] **Sets already logged stay attached to the superseded row** — the session reconstructs as "3×8 Deadlift, then switched to RDL", never as if the whole slot had always been RDL
+- [ ] The swap candidate list respects the same equipment and limitation filters generation used, evaluated against the *current* location
+- [ ] Undo restores the prior exercise and re-activates it; already-logged sets are untouched by the undo
+- [ ] A swapped slot is excluded from load-anchor updates for the superseded exercise — you did not get weaker at deadlift, you stopped doing it
+
+### Backlog stubs — resolved 2026-08-25
+
+All eight stubs were worked through rather than carried. **Five cut, two promoted, one
+folded.** The reasoning for each cut is recorded in `requirements/DEFERRED.md` so the same
+idea does not return every three months without new evidence.
+
+| ID | Scope | Outcome |
+|---|---|---|
+| EXE-06 | Mid-workout exercise swap | **Promoted → M3.** Not a research question: `slot_id` + `replaces_id` + `revision_status` is already the mechanism REV-02 uses. This is the same lineage at a different moment. |
+| OFF-01 | Offline support — cache + sync | **Narrowed and promoted → EXE-07, M1.** Full offline sync is a project. The part that matters is that a logged set survives a dead signal — which is defect D7, not a feature. |
+| ORM-01 | 1RM testing mode | **Cut.** OVR-01 already derives working weights from logged performance. A tested 1RM adds a second, competing source of truth for the same number, plus injury risk we have no professional to sign off. |
+| REV-04 | Inline sets/reps editing before starting | **Cut, with a signal to watch.** The intensity slider is the sanctioned way to say "harder / easier". If users habitually want to edit reps, the generation is wrong and the fix is generation. |
+| CHART-01 | Per-exercise progression charts | **Cut.** A chart visualizes a number OVR-01 already states outright, and a smooth curve would be the first non-CLEAR shape in the app. The honest answer to "am I progressing" is a delta in text. |
+| HIST-02 | History retention/pruning policy | **Cut.** A scale problem for an app with no users. Nothing in the schema forecloses it — `created_at` and `superseded_at` are already there. |
+| NAT-01 | Capacitor packaging / App Store | **Cut from the graph.** PWA-01 keeps the door open. Native distribution is a separate project with its own account, review process and build pipeline; carrying it as an issue implies a plan that does not exist. |
+| LIB-01 | Coaching cues enrichment | **Folded into DATA-02.** Content work with no acceptance criteria and no fitness professional to author it. What the build actually needs is a floor: cues are nullable and every surface renders correctly when they are absent. |
+
+**M3 rule, unchanged:** a stub becomes an issue only after its spec exists. The difference
+is that the backlog no longer holds eight identical placeholders standing in for thinking
+that had not been done.
 
 ---
 

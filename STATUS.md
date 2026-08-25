@@ -7,7 +7,12 @@ Living doc. Updated when a thread opens, moves, or closes.
 
 ## Blocking the critical path
 
-### 1. Requirements — **APPROVED** (v0.3, 2026-08-24)
+### 1. Requirements — **v0.5.0** (2026-08-25)
+**55 requirements.** v0.5 folds in the design system: §9 rewritten, GEN-05 and SET-01 rescoped,
+D7 registered, the eight backlog stubs resolved. `requirements/DEFERRED.md` records what was cut
+and the specific signal that would reopen each one.
+
+**Approved at v0.3** (2026-08-24) —
 All 51 reviewed. The six sent with notes were the only ones with issues; the rest were approved.
 All six are addressed in v0.3.
 
@@ -20,9 +25,7 @@ All six are addressed in v0.3.
 `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`.
 Change set v0.4 rev 3 agreed after two outside review rounds.
 
-**Not yet applied to REQUIREMENTS.md.** The change set and both specs describe changes; the
-requirements file is still v0.3.1. Folding v0.4 in is the next step and must happen before tickets
-are cut, or the issues will encode the pre-change design.
+**Folded into REQUIREMENTS.md** at v0.4 and carried through v0.5.
 
 ### 2b. Historical note — schema pass origin
 Eric expects the ChatGPT generation review to land with **large schema impact**, and is building
@@ -42,24 +45,30 @@ derived state, TEXT where the schema's own conventions use enums.
 
 ## Waiting on the outside world
 
-### 3. Claude Design export — **Eric** · not yet sent · **THE largest open dependency**
-Directly gates DS-01, DS-02, DS-06, GEN-05. **Transitively gates 28 more** — 32 of 53
-requirements sit downstream of it, because the whole UI trunk descends from the token pipeline.
+### 3. Claude Design export — **LANDED** (v0.5.0, 2026-08-25) · **CLOSED**
+Reviewed and folded in. It is not a token export — it is a complete component library:
+18 React exports with typed props, 75 icons, four skins, a three-level atmosphere axis, a full
+motion vocabulary, measured contrast across 64 pairs, and a lint config that mechanises
+design-system compliance.
 
-Blocked by milestone: M0 ×5 · M1 ×15 · M2 ×8 · M3 ×4.
+**It shipped more than the DS trunk proposed to build.** DS-03 is deleted outright, DS-01/02/05/06
+are rescoped from *build* to *integrate*, DS-07 shrinks to serving 38 cards that already exist, and
+DS-08 (the adherence gate) is new work the export made possible. Net: 7 DS tickets → 7, but the
+critical path through them collapses — `DS-01→02→03→04` becomes a fan-out from DS-01.
 
-**What is clear to build without it: 21 requirements** — the entire foundation and backend.
-All of ENV, all of CORE, all of DATA, AUTH-01/03, GEN-01/02/03/06, REV-02, SES-01.
-**Every one of the six verified defects is fixed inside that set**, which is why building can
-start before the export arrives.
+Substrate contract: `specs/design/ATOMIC.md`. Read it before any DS or UI ticket.
 
-`./scripts/import-design.sh <zip>` is ready: unpacks, diffs against the last export, shows
-token-level changes.
+**Two decisions still open** — see ATOMIC.md §12:
+1. **BottomSheet** — real requirement, or a geometry variant of the shipped `Dialog`?
+2. **Fonts** — self-host (DS-02), or accept the Google Fonts CDN? *PWA-01 argues for self-hosting:
+   an installed PWA with CDN fonts cannot render correctly on a cold offline launch.*
 
-### 4. Generation system review — **third-party LLM** · packet delivered
-`specs/generation/GENERATION_REVIEW_PACKET.md` — self-contained, no attachments needed.
-Optional sharpener: `scripts/export-sample-workouts.sql` pulls 3 real workouts from Supabase.
-Findings may touch the schema — treat as additive revision, don't wait on it.
+### 4. Generation system review — **DONE** · folded in
+`specs/generation/GENERATION_REVIEW_PACKET.md` went out; two review rounds came back. The useful
+findings are in `GENERATION_CONTRACT.md` rev 2 and `DATA_MODEL.md` rev 2. The reductions that came
+out of it — duration engine → plausibility guardrail, 11 metadata attributes → 0, six-dimensional
+intensity profile → ownership model — are the reason those specs are shorter than the review asked
+for, not longer.
 
 ---
 
@@ -71,16 +80,12 @@ Findings may touch the schema — treat as additive revision, don't wait on it.
 Establishes the **component vocabulary** and the rule: anything not in it is a new DS requirement,
 never an inline one-off. Five open questions at the end need Eric's answers.
 
-### 6. Atomic component inventory (`specs/design/ATOMIC.md`) — **Claude** · gated on the design export
-**Does not exist yet.** `specs/IA.md` names it as its companion — IA gives the component
-vocabulary, ATOMIC defines each component's variants, states, and token bindings. Until it exists,
-a UI requirement tells an agent *which* components to use but not *what they look like in each
-state*. That gap is why the UI trunk should not start before the export lands.
-The component vocabulary with variants, states, and token bindings. Prevents agents inventing
-one-off UI per interaction.
-**Deliberately gated** — same reason DS-01/02/06 are. Building it against soon-to-change tokens
-means building it twice. `specs/design/ui-component-spec.md` (331 lines, from project knowledge)
-is the starting material.
+### 6. Atomic component inventory (`specs/design/ATOMIC.md`) — **DONE** (2026-08-25)
+433 lines. Provenance and version pin · the three-layer architecture · role slots, ramps and the
+alpha ladder · 332 tokens by kind · all 18 components with real prop APIs · the 75-glyph set ·
+`data-skin` and `data-atmosphere` · the motion vocabulary · inherited accessibility guarantees ·
+the seven workflow patterns · **the three gaps the export does not cover** (Card, Select,
+CollapsibleSection) · the adherence gate · 14 non-negotiables · 3 defects found in 0.5.0.
 
 ### 7. DAG playbook + review-process doc — **Claude** · deferred by design
 The method isn't finished being invented — no tickets cut, no build session run. Written now it
@@ -90,11 +95,11 @@ documents predictions; written after the first pass it documents what happened.
 ### 8. GitHub — **Eric** · ready to run
 Requirements are approved at v0.4 and the issue scripts are generated and dry-run tested.
 
-**Cutting issues now is correct even with the design export outstanding.** The four directly-gated
-requirements carry a `blocked:design-export` label, and the 28 downstream ones are blocked by the
-dependency graph itself — they will not appear in the ready queue until their prerequisites close.
-Issues regenerate from requirements, so an updated export means regenerating those bodies, not
-rewriting tickets by hand.
+**The design-export gate is lifted** — no requirement carries `blocked:design-export` any more.
+Every DS body has been regenerated against v0.5.0, the eight backlog stubs are resolved (five cut,
+two promoted, one folded), and `needs:decision` marks the one requirement waiting on Eric (DS-02).
+Issues regenerate from requirements, so a future export means regenerating bodies, not rewriting
+tickets by hand.
 
 ```sh
 gh repo create theycallme-eric/clear --private --description "CLEAR — AI workout generator"
@@ -104,8 +109,8 @@ cd github
 ./03-wire-dependencies.sh theycallme-eric/clear
 ```
 
-Needs `gh` 2.94.0+ for the dependency flags. Produces 53 issues, 11 labels, 4 milestones,
-102 native blocked-by relationships. All three scripts are re-runnable.
+Needs `gh` 2.94.0+ for the dependency flags. Produces **55 issues**, 11 labels, 4 milestones,
+**105** native blocked-by relationships. All three scripts are re-runnable.
 
 Ready queue afterward: `gh issue list --search "is:open -is:blocked"` — one issue at the
 start, **ENV-01**, the single root of the graph.
@@ -142,7 +147,11 @@ Figma is the design source of truth. All three are wrong, and every new conversa
 ## Recommended order
 
 1. ~~IA diagram~~ — **done**
-2. **Generation review lands** (Eric → Claude) — expected to reshape the schema and GEN-*
-3. **Schema pass** (Claude) — folding in those findings; also revisits the M3 stubs
-4. **Design export arrives** → DS gates lift → atomic component inventory
-5. **Requirements v1.0** → GitHub → issues → DAG
+2. ~~Generation review~~ — **done**, folded into the contract spec
+3. ~~Schema pass~~ — **done** (`specs/DATA_MODEL.md` rev 2)
+4. ~~Design export → DS gates lift → ATOMIC.md~~ — **done** (2026-08-25)
+5. **Two DS decisions** (Eric) — BottomSheet, fonts. Neither blocks cutting issues.
+6. **Remaining requirements work** (Claude) — the test-architecture requirement in M0,
+   accessibility acceptance criteria (now unblocked), and splitting the six oversized
+   requirements into sub-issues: DATA-01, GEN-02, SES-01, EXE-04, OVR-01, **DS-04**
+7. **Requirements v1.0** → GitHub → issues → DAG

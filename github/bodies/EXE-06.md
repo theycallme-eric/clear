@@ -1,21 +1,23 @@
-> **EXE-06** · **Backlog — not ready to build**
+> **EXE-06** · Layer `ui` · Milestone `M3` · Carry-over `new`
 
-Mid-workout exercise swap (during execution, not just review)
+**Spec:** `specs/DATA_MODEL.md` §4 lineage · `specs/generation/exercise-swap.md`
 
-## Why this is not issue-ready
+The rack is taken, the shoulder is complaining, the plan changes at minute 12. Same
+append-and-supersede lineage REV-02 uses in review, applied during execution.
 
-No spec exists yet. Writing acceptance criteria now would invent precision nobody has.
+**No new schema.** The three-state model already separates prescribed from revised from
+performed, and `slot_id` already threads a slot's history across substitutions.
 
-Progressive overload proved the cost of guessing: when it finally got a real spec, it surfaced a
-schema requirement (weight units) that would have been wrong if invented early — and would have
-shipped a broken baseline.
+## Acceptance
+- [ ] Swapping mid-workout supersedes the active row and inserts the replacement in the same `slot_id`, with `replaces_id` set
+- [ ] **Sets already logged stay attached to the superseded row** — the session reconstructs as "3×8 Deadlift, then switched to RDL", never as if the whole slot had always been RDL
+- [ ] The swap candidate list respects the same equipment and limitation filters generation used, evaluated against the *current* location
+- [ ] Undo restores the prior exercise and re-activates it; already-logged sets are untouched by the undo
+- [ ] A swapped slot is excluded from load-anchor updates for the superseded exercise — you did not get weaker at deadlift, you stopped doing it
 
-## To make this buildable
+---
 
-One research-and-spec session, the same treatment `specs/OVR-01_progressive-overload.md` got.
-That spec becomes this issue's `Spec:` reference, and this stub splits into requirements sized to
-merge independently.
+**Depends on:** EXE-01, REV-02
+**Blocks:** —
 
-**Do not start this issue.** Close it into requirements, don't implement it.
-
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.4 — backlog placeholder.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.5 — edit the requirement, not the issue.</sub>

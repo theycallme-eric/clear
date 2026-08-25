@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 02 — create all 53 issues. Re-runnable: skips anything already in issue-map.txt.
+# 02 — create all 55 issues. Re-runnable: skips anything already in issue-map.txt.
 set -euo pipefail
 REPO="${1:-}"
 [ -z "$REPO" ] && { echo "usage: ./02-create-issues.sh owner/repo" >&2; exit 1; }
@@ -36,13 +36,13 @@ create_issue "CORE-04" "[CORE-04] App-wide state contract" "M0" --label "layer:s
 create_issue "AUTH-01" "[AUTH-01] Session context" "M0" --label "layer:state" --label "carry:rebuild"
 create_issue "AUTH-02" "[AUTH-02] Welcome + OTP login screens" "M0" --label "layer:ui" --label "carry:rebuild"
 create_issue "AUTH-03" "[AUTH-03] Route guards + profile/locations queries" "M0" --label "layer:state" --label "carry:rebuild"
-create_issue "DS-01" "[DS-01] Token pipeline" "M0" --label "layer:design" --label "carry:new" --label "blocked:design-export"
-create_issue "DS-02" "[DS-02] Global styles + typography" "M0" --label "layer:design" --label "carry:port" --label "blocked:design-export"
-create_issue "DS-03" "[DS-03] Chamfer primitives + buttons" "M0" --label "layer:design" --label "carry:rebuild"
-create_issue "DS-04" "[DS-04] Form controls" "M0" --label "layer:design" --label "carry:rebuild"
-create_issue "DS-05" "[DS-05] Feedback components" "M1" --label "layer:design" --label "carry:rebuild"
-create_issue "DS-06" "[DS-06] Atmosphere layer" "M1" --label "layer:design" --label "carry:port" --label "blocked:design-export"
-create_issue "DS-07" "[DS-07] Component gallery" "M1" --label "layer:design" --label "carry:rebuild"
+create_issue "DS-01" "[DS-01] Vendor and mount the design system" "M0" --label "layer:design" --label "carry:new"
+create_issue "DS-02" "[DS-02] Self-host the three font families" "M0" --label "layer:design" --label "carry:port" --label "needs:decision"
+create_issue "DS-04" "[DS-04] App-composed controls" "M0" --label "layer:design" --label "carry:new" --label "needs:split"
+create_issue "DS-05" "[DS-05] Toast host and error surfaces" "M1" --label "layer:design" --label "carry:new"
+create_issue "DS-06" "[DS-06] Atmosphere assignment" "M1" --label "layer:design" --label "carry:port"
+create_issue "DS-07" "[DS-07] Gallery" "M1" --label "layer:design" --label "carry:rebuild"
+create_issue "DS-08" "[DS-08] Adherence gate in CI" "M0" --label "layer:design" --label "carry:new"
 create_issue "GEN-01" "[GEN-01] Edge function envelope" "M1" --label "layer:api" --label "carry:rebuild"
 create_issue "GEN-02" "[GEN-02] Workout generation: contract v4.1" "M1" --label "layer:api" --label "carry:rebuild"
 create_issue "GEN-03" "[GEN-03] Generation client state" "M1" --label "layer:state" --label "carry:rebuild"
@@ -58,6 +58,7 @@ create_issue "EXE-02" "[EXE-02] Standard + superset renderers, set logging" "M1"
 create_issue "EXE-03" "[EXE-03] Circuit + EMOM renderers" "M1" --label "layer:ui" --label "carry:rebuild"
 create_issue "EXE-04" "[EXE-04] AMRAP + For Time + ladder renderers" "M1" --label "layer:ui" --label "carry:rebuild"
 create_issue "EXE-05" "[EXE-05] Rest timer + coaching panel" "M1" --label "layer:ui" --label "carry:rebuild"
+create_issue "EXE-07" "[EXE-07] Durable set logging" "M1" --label "layer:state" --label "carry:new" --label "closes:D7"
 create_issue "SUM-01" "[SUM-01] Post-workout summary" "M1" --label "layer:ui" --label "carry:rebuild"
 create_issue "HIST-01" "[HIST-01] History list + detail" "M1" --label "layer:ui" --label "carry:rebuild"
 create_issue "HOME-01" "[HOME-01] Home screen v1" "M1" --label "layer:ui" --label "carry:rebuild"
@@ -73,16 +74,8 @@ create_issue "OVR-01" "[OVR-01] Load anchors + progression rules (standard sets)
 create_issue "OVR-02" "[OVR-02] Generation integration (prompt bump)" "M3" --label "layer:api" --label "carry:new"
 create_issue "OVR-03" "[OVR-03] Timed-format progression" "M3" --label "layer:ui" --label "carry:new"
 create_issue "OVR-04" "[OVR-04] Deload detection + override" "M3" --label "layer:state" --label "carry:new"
+create_issue "EXE-06" "[EXE-06] Mid-workout exercise swap" "M3" --label "layer:ui" --label "carry:new"
 
-echo "Backlog stubs (not ready to build)…"
-create_issue "ORM-01" "[ORM-01] 1RM testing mode" "M3" --label "needs-spec"
-create_issue "EXE-06" "[EXE-06] Mid-workout exercise swap (during execution, not just review)" "M3" --label "needs-spec"
-create_issue "REV-04" "[REV-04] Inline sets/reps editing before starting" "M3" --label "needs-spec"
-create_issue "CHART-01" "[CHART-01] Per-exercise progression charts (OVR spec defers this to its v2)" "M3" --label "needs-spec"
-create_issue "OFF-01" "[OFF-01] Offline support" "M3" --label "needs-spec"
-create_issue "LIB-01" "[LIB-01] Coaching cues enrichment (library content pass)" "M3" --label "needs-spec"
-create_issue "HIST-02" "[HIST-02] History retention/pruning policy" "M3" --label "needs-spec"
-create_issue "NAT-01" "[NAT-01] Capacitor packaging / App Store distribution" "M3" --label "needs-spec"
 
 echo
 echo "$(wc -l < "$MAP") issues mapped in $MAP"

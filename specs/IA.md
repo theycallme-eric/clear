@@ -81,21 +81,71 @@ graph TD
 
 ## 3. Component vocabulary
 
-Four layers. A screen composes from these; anything missing is a new DS requirement.
+**Read `specs/design/ATOMIC.md` first.** `clear-design-system@0.5.0` ships 18 React
+components, 75 icons and a set of `.clr-*` classes. This section maps the names this
+document has used since before the export landed onto what actually exists.
 
-### Layer 1 — Primitives (DS-03, DS-04)
-`ChamferedFrame` · `Card` · `CTAButton` · `ActionButton` · `Input` · `Textarea` · `Checkbox` · `RadioButton` · `IntensitySlider` · `Chip` · `FilterDropdown` · `FilterToggle`
+Four layers. A screen composes from these; anything missing is a new DS requirement —
+and after the export there are only **three** of those.
 
-### Layer 2 — Layout (DS-03)
-`AppLayout` · `AuthLayout` · `OnboardingLayout` · `WorkoutLayout` · `PageHeader` · `TabbedPanel`
+### Layer 1 — Primitives
 
-### Layer 3 — Feedback & status (DS-05)
-`ErrorState` · `EmptyState` · `LoadingSkeleton` · `LoadingScreen` · `FullscreenLoader` · `ConfirmationModal` · `BottomSheet` · `ChamferedToast`
+| IA name | Real | Notes |
+|---|---|---|
+| `ChamferedFrame` | **ships** | or the `.clr-chamfer` class, which is the default choice |
+| `Card` | **DS-04a** | `.clr-card` ships as CSS; the React wrapper does not |
+| `CTAButton` | `Button variant="primary"` | one per screen — that is what "primary" means |
+| `ActionButton` | `Button variant="secondary"` / `IconButton` | `IconButton` requires an accessible name |
+| `Input` | **ships** | label / helper / error aria wiring built in |
+| `Textarea` | `Input multiline` | there is no separate component |
+| `Checkbox` · `RadioButton` | **ship** | real native inputs; radios group by shared `name` |
+| `IntensitySlider` | **ships** | real `<input type=range>`, 1–10 via `min`/`max` |
+| `Chip` | **ships** | `aria-pressed` + a tick; selection is never colour-alone |
+| `FilterDropdown` | **DS-04b** `Select` | absent from the export |
+| `FilterToggle` | `ChoiceGroup multiple` | fieldset/legend semantics come free |
+| — | `FormField` | **new capability** — the same aria wiring for any control |
+| — | `Progress` | **new capability** — stepped, segmented, determinate or not |
+
+### Layer 2 — Layout
+
+**The four layouts collapse to one shell plus an attribute.** `AppLayout`, `AuthLayout`,
+`OnboardingLayout` and `WorkoutLayout` differed by how much atmosphere they carried and
+whether they showed a header. That is now `.clr-shell` + `.clr-shell__content` +
+`data-atmosphere` + optionally `AppHeader` — four components become one wrapper and a
+per-screen attribute.
+
+| IA name | Real |
+|---|---|
+| `AppLayout` · `AuthLayout` · `OnboardingLayout` · `WorkoutLayout` | `.clr-shell` + `data-atmosphere` (see §4) |
+| `PageHeader` | `AppHeader` — brand left, terse `meta` right, `actions` beside it |
+| `TabbedPanel` | `TabBar` + `TabPanel` — ARIA tabs pattern, roving tabindex, Home/End |
+| — | `.clr-stack` / `.clr-stack--tight` / `.clr-row` — spacing-token gaps |
+
+### Layer 3 — Feedback & status
+
+| IA name | Real | Notes |
+|---|---|---|
+| `ErrorState` | `EmptyState` (whole screen) + `Toast variant="negative"` (interruption) | see export pattern 3 |
+| `EmptyState` | **ships** | factual title, one imperative action |
+| `LoadingSkeleton` · `LoadingScreen` · `FullscreenLoader` | `ScanLoader` | **three names, one component.** There is no spinner and no skeleton in this system |
+| `ConfirmationModal` | `Dialog critical` | native `<dialog>`; focus trap, Esc and inertness are the platform's |
+| `BottomSheet` | **open question** | see `specs/design/ATOMIC.md` §12 |
+| `ChamferedToast` | `Toast` | queueing is app state — **DS-05** |
+| — | `CollapsibleSection` | **DS-04c** — section disclosure |
 
 Every one of these is a CORE-04 obligation. A screen that can render nothing is incomplete.
 
 ### Layer 4 — Domain components
-**Display:** `WorkoutListItem` · `FavoriteListItem` · `WeekStreakDisplay` · `MoodIcon` · `StructureResultBadge` · `WorkoutOverview` · `WorkoutSectionCard` · `ProgressTracker` · `TimerDisplay`
+
+These compose from the layers above and are correctly out of scope for a design system.
+
+**Display:** `WorkoutListItem` · `FavoriteListItem` · `WeekStreakDisplay` · `MoodIcon` ·
+`StructureResultBadge` · `WorkoutOverview` · `WorkoutSectionCard` · `ProgressTracker`
+
+`TimerDisplay`, `ScanLoader`, `ClearLogo` and the whole icon set moved **out** of this
+layer — they ship. `MoodIcon` composes the shipped `Frown` / `Meh` / `Smile` / `SmilePlus`
+/ `ThumbsUp` glyphs; `StructureResultBadge` composes `Circuit` / `Ladder` / `Superset` /
+`Stopwatch`; `WeekStreakDisplay` composes `Streak` and `Flame`. None needs new artwork.
 
 **Execution (the deepest tree in the app):**
 ```
@@ -106,28 +156,35 @@ SectionRenderer          ← dispatches on structure_type
 ├── LadderRenderer       ← ladder rep schemes
 │   └── LadderRungs      ← rung selector; read-only vs interactive
 └── TimedRenderer        ← EMOM / AMRAP / For Time
-    ├── SectionTimer
+    ├── SectionTimer     ← composes TimerDisplay
     └── LadderRungs
 RestTimerBar · GlobalTimer · WorkoutNavigation · ExerciseNotes
 ```
 
-**This tree is the rebuild's central architectural bet.** The old app collapsed most of it into one 652-line component handling six structure types and seven rep schemes. Splitting the dispatch (`SectionRenderer`) from the renderers is what makes EXE-02, EXE-03, and EXE-04 three independent, parallel tickets instead of three edits to one file.
+**This tree is the rebuild's central architectural bet.** The old app collapsed most of it
+into one 652-line component handling six structure types and seven rep schemes. Splitting
+the dispatch (`SectionRenderer`) from the renderers is what makes EXE-02, EXE-03 and EXE-04
+three independent, parallel tickets instead of three edits to one file.
 
-**Decorative:** `ClearLogo` · `CornerAngle` · `ScanLoader` · `AnimatedBackground` — all DS-06, all opt-in.
+**Decorative:** all shipped — `ClearLogo`, `.clr-atmosphere`, and the motion vocabulary in
+`motion.css`. `CornerAngle` and `AnimatedBackground` are retired names; the atmosphere is
+one class and one attribute.
 
 ---
 
 ## 4. Screens
 
-Each entry is a build contract. **States** are the CORE-04 four; where a state is marked *n/a* the reason is given.
+Each entry is a build contract. **States** are the CORE-04 four; where a state is marked *n/a* the reason is given. **Atmosphere** is the `data-atmosphere` level from `specs/design/ATOMIC.md` §7.2 — DS-06 asserts every route renders with the value recorded here.
 
 ### Welcome — `/welcome`
+**Atmosphere:** `full` — brand moment
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** cold open, sign-out · **Out:** `/login`
 **Composition:** `AuthLayout` › `ClearLogo` + `CTAButton`
 **States:** populated only — static screen, no data fetch.
 
 ### OTP Login — `/login`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** Welcome · **Out:** `/onboarding` (new) or `/` (returning)
 **Composition:** `AuthLayout` › `PageHeader` + `Card` › `Input` + `CTAButton`
@@ -135,6 +192,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** request code · enter code · resend with cooldown countdown.
 
 ### Onboarding — `/onboarding`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** authed + not onboarded · **Requirements:** ONB-01 · **Spec:** `specs/screens/onboarding-wireframe.md`
 **In:** first verified login · **Out:** `/` on atomic commit
 **Composition:** `OnboardingLayout` › `PageHeader` + `Card` › `RadioButton` · `Chip` · `Textarea` · `CTAButton`
@@ -142,6 +200,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** step forward/back preserving entries · experience · goal · location + equipment · sections · limitations.
 
 ### Home — `/` ★
+**Atmosphere:** `full` — brand moment
 **Guard:** protected · **Requirements:** HOME-01, HOME-02, HOME-03
 **In:** login, onboarding, any screen's back/done · **Out:** everywhere
 **Composition:** `AppLayout` › `PageHeader` + `WeekStreakDisplay` + `Card`(×2 quick actions) + `TabbedPanel` › `WorkoutListItem` · `FavoriteListItem` + `ConfirmationModal`
@@ -149,6 +208,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** Generate · Quick Start (reuses last config, skips `/generate`) · resume incomplete session · mark rest day · switch History/Favorites tab · open a workout · accept or dismiss a deload suggestion (OVR-04).
 
 ### Generate — `/generate`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected · **Requirements:** GEN-04, OVR-04
 **In:** Home · **Out:** Loading → Review
 **Composition:** `AppLayout` › `PageHeader` + `Card` › goal selector · `IntensitySlider` · anchor selector · `LocationAccordion` · `OptionalFields` (`Input`, `Textarea`) + `CTAButton`
@@ -156,11 +216,13 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** select goal → **clamps the intensity range** · select anchor · override location · time target · notes · generate. Deload banner above the intensity selector when triggered.
 
 ### Loading — transient, no route
+**Atmosphere:** `full` — brand moment
 **Requirements:** GEN-05 · **Spec:** `specs/screens/loading-screens.md`
-**Composition:** `FullscreenLoader` › `ScanLoader` + staged status copy + cancel
+**Composition:** `.clr-shell` › `ScanLoader` + staged status copy + cancel `Button`
 **States:** loading is the whole screen. Cancel returns to Generate; stale results are discarded after unmount.
 
 ### Review — `/review` ★
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected + workout in state · **Requirements:** REV-01, REV-03, OVR-01
 **In:** Loading (fresh) · Review (regenerate) · Home/History (favorite restart) · **Out:** `/workout`, or back to Loading
 **Composition:** `AppLayout` › `PageHeader` + `WorkoutOverview` + `WorkoutSectionCard`(×n) › exercise rows + swap affordance + `CTAButton` + `ConfirmationModal`
@@ -168,6 +230,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** expand section · swap one exercise · swap a whole block · undo swap (3 per slot) · regenerate-nudge after the third · start · regenerate with confirm. With OVR-01: per-exercise weight suggestion, confidence, and a "why this number" sheet.
 
 ### Workout — `/workout` ★★
+**Atmosphere:** `operational` — glanceability at arm’s length
 **Guard:** protected + active session · **Requirements:** EXE-01…05, OVR-03 · **Specs:** `specs/structures/*`
 **In:** Review, Home (resume) · **Out:** `/summary`, or abandon → Home
 **Composition:**
@@ -185,6 +248,7 @@ WorkoutLayout
 **This screen carries the most interaction surface in the app and is why the rebuild exists.**
 
 ### Summary — `/summary`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected + completed session · **Requirements:** SUM-01, FAV-01
 **In:** Workout completion · **Out:** Home
 **Composition:** `AppLayout` › `PageHeader` + `Card` › `MoodIcon`(×5) + `Textarea` + `WeekStreakDisplay` + `CTAButton`(×2)
@@ -192,6 +256,7 @@ WorkoutLayout
 **Interactions:** mood 1–5 · session notes · save as favorite · done.
 
 ### History — `/history`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected · **Requirements:** HIST-01, FAV-01
 **In:** Home · **Out:** `/history/:id`, `/review` (favorite restart)
 **Composition:** `AppLayout` › `PageHeader` + `TabbedPanel` › `FilterDropdown` · `FilterToggle` + `WorkoutListItem` · `FavoriteListItem` + `EmptyState`
@@ -199,6 +264,7 @@ WorkoutLayout
 **Interactions:** switch tab · filter by anchor/goal/intensity · open detail · restart favorite · unfavorite.
 
 ### Session Detail — `/history/:id`
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected · **Requirements:** HIST-01
 **In:** History, Home recents · **Out:** back, or `/review` (restart)
 **Composition:** `AppLayout` › `PageHeader` + `Card` › section blocks › logged sets + `StructureResultBadge` + `MoodIcon`
@@ -206,17 +272,19 @@ WorkoutLayout
 **Interactions:** expand section · view logged sets · view structure result · restart · save as favorite.
 
 ### Settings — `/settings` (+ 4 sub-views)
+**Atmosphere:** `quiet` — reading and input
 **Guard:** protected · **Requirements:** SET-01, SET-02
 **In:** Home · **Out:** Home, sub-views
 **Composition:** `AppLayout` › `PageHeader` + `Card` rows → `SettingsHub` | `LocationSettings` | `StructureSettings` | `LimitationsSettings`
 **States:** loading · error (save failed — **optimistic update rolls back**) · populated. **Empty:** locations can be empty; every other view always has content.
-**Interactions:** goal preset · enabled sections · limitations · theme selection (**several themes — DS-01 gated**) · location CRUD · equipment tier · set default · sign out.
+**Interactions:** goal preset · enabled sections · limitations · skin selection (**four skins; `skin.js` owns persistence — never hardcode the list**) · location CRUD · equipment tier · set default · sign out.
 
 ### Component Gallery — `/dev/gallery`
 **Guard:** dev only · **Requirements:** DS-07
-Every component in every state, live theme switching. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
+The export's 38 specimen cards served unmodified at `/dev/gallery/ds`, plus every app-composed part at `/dev/gallery/app`. Live skin **and** atmosphere switching. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
 
 ### Not Found — `*`
+**Atmosphere:** `full` — brand moment
 **Requirements:** ENV-01 · `AppLayout` › `EmptyState` + `CTAButton` home.
 
 ---
