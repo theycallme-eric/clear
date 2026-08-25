@@ -74,6 +74,16 @@ create_issue "OVR-02" "[OVR-02] Generation integration (prompt bump)" "M3" --lab
 create_issue "OVR-03" "[OVR-03] Timed-format progression" "M3" --label "layer:ui" --label "carry:new"
 create_issue "OVR-04" "[OVR-04] Deload detection + override" "M3" --label "layer:state" --label "carry:new"
 
+echo "Backlog stubs (not ready to build)…"
+create_issue "ORM-01" "[ORM-01] 1RM testing mode" "M3" --label "needs-spec"
+create_issue "EXE-06" "[EXE-06] Mid-workout exercise swap (during execution, not just review)" "M3" --label "needs-spec"
+create_issue "REV-04" "[REV-04] Inline sets/reps editing before starting" "M3" --label "needs-spec"
+create_issue "CHART-01" "[CHART-01] Per-exercise progression charts (OVR spec defers this to its v2)" "M3" --label "needs-spec"
+create_issue "OFF-01" "[OFF-01] Offline support" "M3" --label "needs-spec"
+create_issue "LIB-01" "[LIB-01] Coaching cues enrichment (library content pass)" "M3" --label "needs-spec"
+create_issue "HIST-02" "[HIST-02] History retention/pruning policy" "M3" --label "needs-spec"
+create_issue "NAT-01" "[NAT-01] Capacitor packaging / App Store distribution" "M3" --label "needs-spec"
+
 echo
 echo "$(wc -l < "$MAP") issues mapped in $MAP"
 echo "Next: ./03-wire-dependencies.sh $REPO"

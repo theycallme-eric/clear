@@ -1,7 +1,7 @@
 # Issue creation — CLEAR rebuild
 
-Turns `requirements/REQUIREMENTS.md` v0.4 into 53 GitHub issues with 102 native
-dependency relationships.
+Turns `requirements/REQUIREMENTS.md` v0.4 into 61 GitHub issues with 102 native
+dependency relationships — 53 buildable requirements plus 8 backlog stubs.
 
 Nothing here touches your machine's state beyond `gh`. Every script is safe to re-run.
 
@@ -42,11 +42,17 @@ Roughly two minutes total, mostly API round-trips.
 
 ## What you get
 
-**53 issues**, titled `[ENV-01] Repository scaffold`, each carrying its summary, spec
-reference, and full acceptance checklist.
+**53 buildable issues**, titled `[ENV-01] Repository scaffold`, each carrying its summary,
+spec reference, and full acceptance checklist.
 
-**11 labels** — `layer:infra|data|api|state|ui|design`, `carry:new|rebuild|port|keep`, and
-`blocked:design-export` on the four requirements waiting on the Claude Design export.
+**8 backlog stubs** labeled `needs-spec` — 1RM mode, mid-workout swap, inline editing,
+progression charts, offline, cues enrichment, retention, Capacitor. They carry no acceptance
+criteria because none exist yet; each needs a spec session first. They live in GitHub so future
+work isn't stranded in a markdown file nobody opens.
+
+**12 labels** — `layer:infra|data|api|state|ui|design`, `carry:new|rebuild|port|keep`,
+`blocked:design-export` on the four requirements waiting on the Claude Design export, and
+`needs-spec` on the backlog stubs.
 
 **4 milestones** — M0 Foundation, M1 Core loop, M2 Parity, M3 Progressive overload.
 

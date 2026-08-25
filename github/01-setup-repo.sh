@@ -28,6 +28,7 @@ gh label create "carry:keep" --color 99DD39 --description "Prior art: keep" --fo
 gh label create "carry:new" --color A368FF --description "Prior art: new" --force
 gh label create "carry:port" --color 00A9F4 --description "Prior art: port" --force
 gh label create "carry:rebuild" --color F87823 --description "Prior art: rebuild" --force
+gh label create "needs-spec" --color 6E7681 --description "Backlog — write a spec before building" --force
 gh label create "blocked:design-export" --color CD1958 --description "Waiting on the Claude Design export" --force
 
 echo "Milestones…"
