@@ -101,25 +101,10 @@ alpha ladder · 332 tokens by kind · all 18 components with real prop APIs · t
 the seven workflow patterns · **the three gaps the export does not cover** (Card, Select,
 CollapsibleSection) · the adherence gate · 14 non-negotiables · 3 defects found in 0.5.0.
 
-### 7. DAG playbook — **DONE** (2026-08-25)
-`process/AGENT_PLAYBOOK.md` + `DAG.md` + `scripts/gen-dag.py`.
-
-**Corrected a misfiling.** This was parked as retrospective method documentation — "written now
-it documents predictions." That was wrong about what it is. The DAG is what *directs* the agents,
-so the playbook is an operational artifact and has to exist before the build, not after it.
-
-The playbook covers: how the ready queue picks work and how to tie-break (milestone → fan-out →
-critical path), what an agent reads and in what order, one-issue-one-branch scope discipline, what
-CI enforces vs what Eric reviews, **what to do when a requirement turns out to be wrong** (comment
-and move on — never widen scope, never edit the frozen baseline), and how parallel agents avoid
-collisions the graph has no opinion about.
-
-`DAG.md` is generated and works **before** GitHub exists: critical path (15 steps), the wave shape
-(1 → 6 → 13 → …), highest-leverage ranking, and a per-milestone Mermaid graph coloured by layer.
-`--live` overlays open/closed from `gh` once issues are cut.
-
-ENV-01 now also seeds `PROJECT_MAP.md` — the playbook has agents read it from issue two onward, so
-it cannot not exist.
+### 7. DAG playbook + review-process doc — **Claude** · deferred by design (now the last open thread)
+The method isn't finished being invented — no tickets cut, no build session run. Written now it
+documents predictions; written after the first pass it documents what happened.
+`journal/` is collecting the raw material.
 
 ### 8. GitHub — **Eric** · ready to run
 Requirements are approved at v0.4 and the issue scripts are generated and dry-run tested.
