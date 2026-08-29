@@ -13,7 +13,7 @@ Companions: `docs/DAG.md` (the graph), `docs/requirements/REQUIREMENTS.md` (the 
 ## 1. The loop
 
 ```
-  gh issue list --search "is:open -is:blocked"     ← the ready queue IS the backlog
+  python3 scripts/dag-ready.py                      ← verified + ranked ready queue
               │
               ▼
   pick one  ──────►  read: issue body → its Spec refs → PROJECT_MAP → ATOMIC (if UI)
@@ -33,13 +33,18 @@ construction — an issue appears in it exactly when everything it depends on ha
 ## 2. Picking work
 
 ```sh
-gh issue list --search "is:open -is:blocked" --json number,title,labels,milestone
+python3 scripts/dag-ready.py
 ```
 
-At the start that returns exactly one issue: **ENV-01**. After it closes, six. After the
-next wave, thirteen. `docs/DAG.md` has the full shape.
+The frozen v0.7 graph started with exactly one issue, **ENV-01**, then released six after it closed.
+Post-baseline follow-up issues may add ready process work; the live command, not a number in this
+document, is authoritative. `docs/DAG.md` has the frozen product-graph shape.
 
-When several are ready, in order:
+The command cross-checks GitHub's native `is:open -is:blocked` result against dependency nodes with
+only **open** blockers counted. This matters because GitHub's raw blocker total also includes closed
+issues. It also marks a ready issue as in progress when an open PR closes it.
+
+When several are available, it ranks them in order:
 
 1. **Lower milestone first.** M0 before M1. The milestones are a real sequence, not a
    grouping — M1 assumes M0's foundation exists.
@@ -58,8 +63,9 @@ disagrees, the graph is right and the intuition is wrong — go read what it is 
 An agent that reads too much wastes context; one that reads too little invents things that
 already exist. The order is deliberate:
 
-1. **The issue body.** The acceptance checklist is the definition of done — not a
-   suggestion, not a starting point. It is copied verbatim from the requirement.
+1. **The issue body and comments.** The acceptance checklist is the definition of done — not a
+   suggestion or starting point. Comments can contain owner decisions made after the frozen
+   baseline, so reading the body alone is insufficient.
 2. **Its `Spec:` references.** Every spec lives in this workspace. Nothing points at the
    archived repo.
 3. **`PROJECT_MAP.md`** — how the codebase is currently arranged. Read before writing a

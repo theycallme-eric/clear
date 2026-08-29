@@ -9,8 +9,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "dag:ready": "python3 scripts/dag-ready.py",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:dag": "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
     "test:watch": "vitest"
   },
   "dependencies": {
