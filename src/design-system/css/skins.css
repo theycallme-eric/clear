@@ -1,0 +1,139 @@
+/* =============================================================================
+   SKINS — the family.
+
+   One file, four identities. Set data-skin on <html>:
+
+     <html data-skin="vapour">
+
+   A skin is SEVEN declarations: five role hues, a base and an ink. Nothing else.
+   Every ramp (-100…-900) and alpha ladder (-a050…-a800) is derived in
+   foundation.css from those values, and because the attribute and the
+   derivations both land on <html>, they recompute for free.
+
+   That is also why data-skin belongs on <html> and nowhere else. On a subtree
+   the hue overrides apply but the derived ramps do not — they were already
+   resolved at :root and are merely inherited.
+
+   CLEAR is the default and needs no attribute; the selector exists so a picker
+   can name it.
+
+   To start a product on one of these, lift its block into its own file and drop
+   the attribute selector. Five hues and three fonts is the whole contract.
+
+   Every interaction hue here has been checked against the Alpha Behaviour card:
+   it must still read as itself at 40–60% over near-black. Structure hues are
+   exempt — they only ever appear at full strength as borders, or at 10% as a
+   whisper, never in the middle where identity breaks down.
+   ============================================================================= */
+
+[data-skin="clear"] {
+  --skin-name: 'CLEAR'; /* @kind other */
+}
+
+/* -----------------------------------------------------------------------------
+   VAPOUR — purple structure, teal interaction
+   Cooler and more synthetic. Ground pushed toward the teal. Positive is a bright
+   cyan-blue, kept clear of the teal by lightness rather than hue.
+   ----------------------------------------------------------------------------- */
+[data-skin="vapour"] {
+  --skin-name: 'Vapour'; /* @kind other */
+  --structure: #B47DFF;
+  --interaction: #00E5C7;
+  --info: #FDE74C;
+  --selection: #00C6FF;
+  --urgency: #FF3A20;
+  --base: #0A1413;
+  --ink: #F1F1F1;
+}
+
+/* -----------------------------------------------------------------------------
+   SIGNAL — yellow-green structure, magenta interaction
+   The hardest to live with, and the one place chartreuse works: as structure it
+   is only ever a full-strength border or a 10% whisper, so it never has to
+   survive the darkening that would turn it olive as an interaction colour.
+
+   Negative leans orange rather than red: a pink-leaning red would collide with
+   the magenta interaction hue, and the two roles must never be confusable.
+   ----------------------------------------------------------------------------- */
+[data-skin="signal"] {
+  --skin-name: 'Signal'; /* @kind other */
+  --structure: #C6FF2E;
+  --interaction: #FF2EA6;
+  --info: #7A5CFF;
+  --selection: #00E06A;
+  --urgency: #FF5C1F;
+  --base: #150A12;
+  --ink: #F1F1F1;
+}
+
+/* -----------------------------------------------------------------------------
+   MONO — enhanced contrast. Five greys, one lightness step per role.
+
+   NOT "the accessible skin", and the distinction matters. Accessibility lives in
+   the component layer — focus indicators, native controls, live regions, touch
+   targets, the tabs and radiogroup patterns, non-colour cues — and applies to
+   all four skins equally. Mono is a CONTRAST PREFERENCE, the same class of thing
+   as prefers-reduced-motion. Calling it the accessible skin would imply the
+   other three are not, which is both untrue (they meet AA) and harmful, because
+   it invites someone to treat the baseline as optional.
+
+   Roles cannot separate by hue here, so they separate by VALUE, ordered by how
+   much attention each one is entitled to:
+
+     info         #3A3A3A   atmospheric only, never asks for attention
+     structure    #6A6A6A   frames and containers, recede
+     interaction  #8E8E8E   what you can touch
+     selection    #D4D4D4   what you chose
+     urgency      #FFFFFF   demands attention now
+
+   Every text pair clears WCAG AAA (7:1 normal, 4.5:1 large) on this ground —
+   see the Contrast Audit card, which measures it live rather than quoting it.
+   The interaction hex can sit mid-ladder because every --text-* token mixes 22%
+   with the white ink, so label colour stays near-white regardless; the hex
+   governs surfaces and borders, not text.
+
+   What value alone cannot carry, geometry does. Toast severity uses a glyph
+   (shared with every skin — it also helps red-green deficiency on Vapour and
+   Signal), and selection carries a tick.
+   ----------------------------------------------------------------------------- */
+[data-skin="mono"] {
+  --skin-name: 'Mono'; /* @kind other */
+  --structure: #6A6A6A;
+  --interaction: #8E8E8E;
+  --info: #3A3A3A;
+  --selection: #D4D4D4;
+  --urgency: #FFFFFF;
+  --base: #0A0A0A;
+  --ink: #FFFFFF;
+
+  /* Mono's info sits at the BOTTOM of the value ladder — it is the rung that
+     never asks for attention. That is right for atmosphere and wrong for a
+     toast border, which measures 1.74:1 against the ground and effectively
+     vanishes. With no hue to carry "informational", mono falls back to the
+     structure rung (3.66:1) and lets the glyph do the semantic work. */
+  --surface-toast-info: var(--structure-a100);
+  --border-toast-info: var(--structure-500);
+  --icon-toast-info: var(--structure-300);
+
+  /* Two secondary-text tokens need more weight to clear 7:1 on this ground.
+     Scoped HERE rather than raised globally, because Mono exists so the colour
+     skins do not have to compromise toward its target — they meet AA at their
+     own values and keep their intended alpha character. */
+  --text-empty-body: color-mix(in srgb, var(--interaction-100) 72%, transparent);
+  --text-tab-inactive: color-mix(in oklab, var(--ink) 66%, var(--base));
+}
+
+/* -----------------------------------------------------------------------------
+   MONO · GEOMETRIC COMPENSATION
+
+   One place where value genuinely cannot do the work: the timer's resting and
+   low states sit 0.02 L apart in surface, because both are a light grey at a
+   low alpha over the same near-black ground. Pushing them apart by value would
+   mean re-mapping the alpha relationships, which this system does not do.
+
+   So the low state doubles its border instead — the same mechanism focus uses,
+   for the same reason: a width change survives where a tone change does not.
+   Scoped to mono because the colour skins already separate these by hue.
+   ----------------------------------------------------------------------------- */
+[data-skin="mono"] .clr-chamfer--timer-low::after { background: var(--urgency); }
+[data-skin="mono"] .clr-chamfer--timer-low::before { inset: calc(var(--border-width) * 2); }

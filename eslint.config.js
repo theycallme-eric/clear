@@ -5,7 +5,8 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'docs/design/exports'] },
+  // Vendored design-system is linted at source; excluding to preserve byte-identical copy
+  { ignores: ['dist', 'coverage', 'docs/design/exports', 'src/design-system'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

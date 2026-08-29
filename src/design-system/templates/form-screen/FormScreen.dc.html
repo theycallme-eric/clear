@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Form Screen" description="Inputs, chips, slider and a primary action — the standard data-entry screen" -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div class="clr-atmosphere clr-atmosphere--fixed">
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span>
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span>
+  <span class="clr-atmosphere__overlay"></span>
+  <span class="clr-atmosphere__scan"></span>
+</div>
+<div class="clr-shell">
+  <div class="clr-shell__content clr-stack" style="max-width:560px">
+    <h2>Generate Workout</h2>
+    <div class="clr-stack clr-stack--tight">
+      <span class="label">Goal</span>
+      <div class="clr-row" style="flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ goals }}" as="g" hint-placeholder-count="4">
+          <x-import component-from-global-scope="CLEARDesignSystem_4ee044.Chip" dc-props="{{ g.props }}" hint-size="90px,33px">{{ g.name }}</x-import>
+        </sc-for>
+      </div>
+    </div>
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.IntensitySlider" dc-props="{{ sliderProps }}" hint-size="100%,24px"></x-import>
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.Input" label="Time available" placeholder="45 minutes, hard stop at 6." hint-size="100%,58px"></x-import>
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.Input" label="Limitations" multiline="{{ true }}" placeholder="Bad left shoulder from years ago. Overhead press feels sketchy sometimes." hint-size="100%,96px"></x-import>
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.Checkbox" dc-props="{{ restProps }}" hint-size="160px,24px"></x-import>
+    <button class="clr-chamfer clr-chamfer--md clr-btn clr-btn--primary" onClick="{{ generate }}" style="width:100%;padding:14px 0;font-size:16px;margin-top:8px">Generate</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { goal: 0, intensity: 7, rest: false };
+  renderVals() {
+    const names = ['Strength', 'Cardio', 'Mobility', 'Mixed'];
+    return {
+      goals: names.map((name, i) => ({ name, props: { selected: this.state.goal === i, onClick: () => this.setState({ goal: i }) } })),
+      sliderProps: { value: this.state.intensity, label: 'Int.', onChange: (v) => this.setState({ intensity: v }) },
+      restProps: { checked: this.state.rest, label: 'Mark rest day', onChange: (v) => this.setState({ rest: v }) },
+      generate: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>

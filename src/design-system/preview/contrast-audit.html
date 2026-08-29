@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Foundation" name="Contrast Audit" subtitle="Measured live from resolved tokens · all four skins · fails loudly" viewport="760x520" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg)}
+.pg{padding:14px 18px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;color:color-mix(in srgb, var(--text-paragraph) 60%, transparent);line-height:1.45;margin:2px 0 11px;max-width:690px}
+.verdict{display:flex;align-items:center;gap:8px;padding:7px 10px;margin-bottom:10px}
+.vt{font-family:var(--font-data);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.vd{font-family:var(--font-body);font-size:9.5px;color:color-mix(in srgb, var(--text-paragraph) 68%, transparent)}
+table{border-collapse:collapse;width:100%;font-family:var(--font-data);font-size:8.5px}
+th{text-align:left;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400);padding:3px 8px 4px 0;border-bottom:2px solid var(--structure-a300);white-space:nowrap}
+th.n,td.n{text-align:right;padding-right:10px}
+td{padding:3px 8px 3px 0;color:var(--text-card-label);border-bottom:1px solid var(--structure-a100);white-space:nowrap}
+td.n{font-weight:700}
+td.pass{color:var(--text-timer)}
+td.fail{color:var(--text-negative)}
+tr.failrow td{background:var(--surface-toast-negative)}
+.sw{display:inline-block;width:9px;height:9px;vertical-align:-1px;margin-right:4px;border:1px solid rgba(255,255,255,.25)}
+.foot{font-family:var(--font-body);font-size:9px;color:color-mix(in srgb, var(--text-paragraph) 50%, transparent);line-height:1.5;margin-top:9px;max-width:700px}
+code{font-family:var(--font-data);font-size:8.5px}
+</style></head><body><div class="pg">
+  <div class="ttl">Contrast Audit</div>
+  <div class="sub">Every published ratio, measured at load from the tokens as they currently resolve — not quoted from a table. Each pair is composited the way the browser paints it (opaque ground, translucent surface over it, text over that) and read back as pixels, because <code>color-mix(in oklab, …)</code> and sRGB arithmetic differ by enough to cross a threshold. Change a token and this card tells you what broke.</div>
+  <div id="verdict" class="verdict clr-chamfer clr-chamfer--sm"><span class="vt">Measuring…</span></div>
+  <div id="out"></div>
+  <div class="foot">Thresholds: <strong>7:1</strong> normal text and <strong>4.5:1</strong> large (≥24px) for AAA, which only Mono claims; <strong>4.5</strong> / <strong>3</strong> for AA, the target for the three colour skins. Disabled text is exempt under WCAG and is not audited. Atmospheric and decorative layers are deliberately not held to a threshold.</div>
+</div>
+<script>
+/* Composite exactly as the browser paints: fill the ground opaque, paint the
+   translucent surface over it, then the text over that, and read the pixel.
+   fillStyle normalizes these tokens to color(srgb …/a) and oklab(…) rather than
+   rgba, so arithmetic on the declarations is not a substitute for rasterizing. */
+const cv = document.createElement('canvas');
+cv.width = cv.height = 1;
+const ctx = cv.getContext('2d', { willReadFrequently: true });
+const root = document.documentElement;
+const tok = (n) => getComputedStyle(root).getPropertyValue(n).trim();
+
+function paint(layers) {
+  ctx.clearRect(0, 0, 1, 1);
+  for (const c of layers) {
+    if (!c) continue;
+    ctx.fillStyle = '#000';
+    ctx.fillStyle = c;
+    ctx.fillRect(0, 0, 1, 1);
+  }
+  const d = ctx.getImageData(0, 0, 1, 1).data;
+  return [d[0], d[1], d[2]];
+}
+const lin = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+const lum = ([r, g, b]) => { const [x, y, z] = [r, g, b].map((v) => lin(v / 255)); return 0.2126 * x + 0.7152 * y + 0.0722 * z; };
+const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const hex = ([r, g, b]) => '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+
+/* Each pair names its surface stack bottom-up, so a translucent tint is
+   measured over the ground it actually sits on rather than in isolation. */
+const PAIRS = [
+  ['Card body',        ['--bg', '--surface-card'],        '--text-paragraph',      'normal'],
+  ['Card header',      ['--bg', '--surface-card'],        '--text-card-header',    'normal'],
+  ['Card label',       ['--bg', '--surface-card'],        '--text-card-label',     'normal'],
+  ['CTA primary',      ['--bg', '--surface-cta-primary'], '--text-cta',            'normal'],
+  ['CTA secondary',    ['--bg', '--surface-cta-secondary'],'--text-cta',           'normal'],
+  ['Selected',         ['--bg', '--surface-selected'],    '--text-selected',       'normal'],
+  ['Unselected',       ['--bg', '--surface-unselected'],  '--text-unselected',     'normal'],
+  ['Input',            ['--bg', '--surface-input'],       '--text-input',          'normal'],
+  ['Tab active',       ['--bg'],                          '--text-tab-active',     'normal'],
+  ['Tab inactive',     ['--bg'],                          '--text-tab-inactive',   'normal'],
+  ['Empty title',      ['--bg', '--surface-empty'],       '--text-empty-title',    'normal'],
+  ['Empty body',       ['--bg', '--surface-empty'],       '--text-empty-body',     'normal'],
+  ['Scan line',        ['--bg', '--surface-card'],        '--text-scan-line',      'normal'],
+  ['Toast negative',   ['--bg', '--surface-toast-negative'],'--text-negative',     'normal'],
+  ['Timer rest',       ['--bg', '--surface-timer'],       '--text-timer',          'large'],
+  ['Timer low',        ['--bg', '--surface-timer-low'],   '--text-timer-low',      'large'],
+];
+const SKINS = [
+  ['clear',  'CLEAR',  'AA',  '#F87823'],
+  ['vapour', 'Vapour', 'AA',  '#B47DFF'],
+  ['signal', 'Signal', 'AA',  '#C6FF2E'],
+  ['mono',   'Mono',   'AAA', '#8E8E8E'],
+];
+const NEED = { AA: { normal: 4.5, large: 3 }, AAA: { normal: 7, large: 4.5 } };
+
+const prevSkin = root.getAttribute('data-skin');
+const results = [];
+for (const [id, label, target, dot] of SKINS) {
+  root.setAttribute('data-skin', id);
+  // Force a style flush so the tokens below are this skin's, not the last one's.
+  void getComputedStyle(root).getPropertyValue('--base');
+  for (const [name, surfaceStack, textVar, size] of PAIRS) {
+    const surface = paint(surfaceStack.map(tok));
+    const text = paint([...surfaceStack.map(tok), tok(textVar)]);
+    const r = ratio(text, surface);
+    const need = NEED[target][size];
+    results.push({ skin: label, dot, target, name, size, r, need, pass: r >= need, surface, text });
+  }
+}
+prevSkin ? root.setAttribute('data-skin', prevSkin) : root.removeAttribute('data-skin');
+
+const fails = results.filter((x) => !x.pass);
+const v = document.getElementById('verdict');
+v.style.setProperty('--surface', fails.length ? 'var(--surface-toast-negative)' : 'var(--surface-toast-positive)');
+v.style.setProperty('--brd', fails.length ? 'var(--border-toast-negative)' : 'var(--border-toast-positive)');
+v.innerHTML =
+  '<span class="vt" style="color:' + (fails.length ? 'var(--text-negative)' : 'var(--text-timer)') + '">' +
+  (fails.length ? fails.length + ' failing' : 'All ' + results.length + ' pass') + '</span>' +
+  '<span class="vd">' +
+  (fails.length
+    ? fails.map((f) => f.skin + ' · ' + f.name + ' ' + f.r.toFixed(2) + ' < ' + f.need).join(' · ')
+    : SKINS.map((s) => s[1] + ' ' + s[2]).join(' · ') + ' — tightest ' +
+      results.reduce((m, x) => Math.min(m, x.r / x.need), 99).toFixed(2) + '× its threshold') +
+  '</span>';
+
+/* Failures first: an audit nobody scrolls is an audit nobody reads. */
+const ordered = [...fails, ...results.filter((x) => x.pass)];
+let html = '<table><tr><th>Skin</th><th>Pair</th><th>Text</th><th>Surface</th><th class="n">Ratio</th><th class="n">Need</th><th></th></tr>';
+for (const x of ordered) {
+  html += '<tr' + (x.pass ? '' : ' class="failrow"') + '>' +
+    '<td><span class="sw" style="background:' + x.dot + '"></span>' + x.skin + '</td>' +
+    '<td>' + x.name + (x.size === 'large' ? ' <span style="opacity:.5">lg</span>' : '') + '</td>' +
+    '<td><span class="sw" style="background:' + hex(x.text) + '"></span>' + hex(x.text) + '</td>' +
+    '<td><span class="sw" style="background:' + hex(x.surface) + '"></span>' + hex(x.surface) + '</td>' +
+    '<td class="n ' + (x.pass ? 'pass' : 'fail') + '">' + x.r.toFixed(2) + '</td>' +
+    '<td class="n">' + x.need + '</td>' +
+    '<td class="' + (x.pass ? 'pass' : 'fail') + '">' + (x.pass ? '' : 'FAIL') + '</td></tr>';
+}
+document.getElementById('out').innerHTML = html + '</table>';
+</script>
+</body></html>

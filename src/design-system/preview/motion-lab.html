@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Motion" name="Motion Lab" subtitle="Fire every effect on real components · tune duration and step count live" viewport="700x460" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 20px;box-sizing:border-box;height:460px;display:flex;flex-direction:column;gap:12px}
+.hdr{display:flex;justify-content:space-between;align-items:baseline}
+.ttl{font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--text-header)}
+.sub{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--structure-300)}
+.triggers{display:flex;flex-wrap:wrap;gap:6px}
+.clr-btn{font-size:9.5px;letter-spacing:.08em;padding:7px 11px}
+.stage{flex:1;min-height:0;display:flex;gap:12px}
+.left{flex:1.25;min-width:0;display:flex;flex-direction:column;gap:10px}
+.right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+.panel{padding:11px 13px;box-sizing:border-box}
+.clr-card__body{display:flex;flex-direction:column;justify-content:flex-start}
+.lbl{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--structure-300);margin-bottom:4px}
+.h{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-card-header)}
+.p{font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,.6);line-height:1.35;margin-top:3px}
+.readout{font-family:var(--font-data);font-size:38px;font-weight:700;letter-spacing:.04em;color:var(--text-timer);line-height:1;display:flex;gap:1px}
+.readout span{display:inline-block}
+.rows{display:flex;flex-direction:column;gap:5px}
+.rw{display:flex;justify-content:space-between;align-items:center;padding:6px 9px;background:var(--structure-a100);border-left:2px solid var(--structure-500);font-family:var(--font-data);font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--structure-100)}
+.rw i{font-style:normal;color:var(--selection-400)}
+.ctrls{display:flex;gap:14px;align-items:center;padding-top:2px}
+.ctrl{flex:1;display:flex;flex-direction:column;gap:3px}
+.ctrl label{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400);display:flex;justify-content:space-between}
+.ctrl label b{color:var(--interaction-300)}
+input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--structure-a300);border:none;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:16px;background:var(--interaction-500);border:none;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:10px;height:16px;background:var(--interaction-500);border:none;border-radius:0;cursor:pointer}
+</style>
+</head><body>
+<div class="card" id="root">
+  <div class="hdr"><div class="ttl">Motion Lab</div><div class="sub" id="last">IDLE</div></div>
+  <div class="triggers">
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="scan">Scan sweep</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="glitch">Glitch</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="signal">Signal loss</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="boot">Boot stagger</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="tumble">Tumble</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="phosphor">Phosphor decay</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="crtoff">CRT off</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="interlace">Interlace</button>
+    <button class="clr-chamfer clr-chamfer--sm clr-btn" data-fx="trace">Trace</button>
+  </div>
+  <div class="stage">
+    <div class="left">
+      <div class="clr-card" id="subject" style="flex:1">
+        <div class="clr-card__bar pulse-micro"></div>
+        <div class="clr-card__body panel clr-chamfer clr-chamfer--open-left clr-chamfer--lg">
+          <span class="clr-scan-band"></span>
+          <div class="lbl">SUBJECT · CARD</div>
+          <div class="h">Chamfered panel</div>
+          <div class="p">Every effect fires on this card, the readout, and the row stack — the three shapes the system actually ships.</div>
+        </div>
+      </div>
+      <div class="rows clr-boot" id="rows">
+        <div class="rw">Sector 01 <i>NOMINAL</i></div>
+        <div class="rw">Sector 02 <i>NOMINAL</i></div>
+        <div class="rw">Sector 03 <i>NOMINAL</i></div>
+      </div>
+    </div>
+    <div class="right">
+      <div class="panel clr-chamfer clr-chamfer--cta clr-chamfer--lg" id="readoutPanel" style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <span class="clr-scan-band clr-scan-band--cta"></span>
+        <div class="lbl" style="color:var(--interaction-300)">READOUT</div>
+        <div class="readout" id="readout"></div>
+      </div>
+      <div class="ctrls">
+        <div class="ctrl"><label>Duration <b id="dv">200ms</b></label><input type="range" id="dur" min="60" max="800" step="20" value="200"></div>
+        <div class="ctrl"><label>Steps <b id="sv">6</b></label><input type="range" id="stp" min="1" max="24" step="1" value="6"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const root=document.getElementById('root'),subject=document.getElementById('subject'),rows=document.getElementById('rows'),
+readout=document.getElementById('readout'),readoutPanel=document.getElementById('readoutPanel'),last=document.getElementById('last');
+const dur=document.getElementById('dur'),stp=document.getElementById('stp'),dv=document.getElementById('dv'),sv=document.getElementById('sv');
+const sync=()=>{root.style.setProperty('--dur-base',dur.value+'ms');root.style.setProperty('--dur-fast',dur.value+'ms');
+root.style.setProperty('--dur-cut',dur.value+'ms');root.style.setProperty('--dur-slow',(dur.value*2)+'ms');
+['2','3','4','6','8','12','16','24'].forEach(k=>root.style.setProperty('--step-'+k,'steps('+stp.value+', end)'));
+dv.textContent=dur.value+'ms';sv.textContent=stp.value};
+dur.oninput=stp.oninput=sync;sync();
+let val=1408;
+const paint=(tumble)=>{readout.innerHTML='';String(val).padStart(4,'0').split('').forEach((d,i)=>{const s=document.createElement('span');
+s.textContent=d;if(tumble){s.className='clr-tumble';s.style.animationDelay=(i*30)+'ms'}readout.appendChild(s)})};
+paint(false);
+const fire=(el,cls,ms)=>{el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);
+setTimeout(()=>el.classList.remove(cls),ms||1200)};
+const fx={
+ scan:()=>{subject.classList.toggle('clr-scan');readoutPanel.classList.toggle('clr-scan')},
+ glitch:()=>{fire(subject,'clr-glitch',600);fire(readoutPanel,'clr-glitch',600)},
+ signal:()=>{fire(root,'clr-signal-loss',800)},
+ boot:()=>{rows.classList.remove('clr-boot');void rows.offsetWidth;rows.classList.add('clr-boot')},
+ tumble:()=>{val=Math.floor(Math.random()*9999);paint(true)},
+ phosphor:()=>{fire(subject,'clr-phosphor-out',600);setTimeout(()=>fire(subject,'clr-phosphor-in',600),320)},
+ crtoff:()=>{fire(subject,'clr-crt-off',600);setTimeout(()=>fire(subject,'clr-phosphor-in',600),420)},
+ interlace:()=>{fire(subject,'clr-interlace',500);fire(rows,'clr-interlace',500);fire(readoutPanel,'clr-interlace',500)},
+ trace:()=>{fire(subject,'clr-trace',1200);fire(readoutPanel,'clr-trace',1200)}
+};
+document.querySelectorAll('button[data-fx]').forEach(b=>b.onclick=()=>{
+ const k=b.dataset.fx;fx[k]();last.textContent=k.toUpperCase()+' · '+dur.value+'MS · STEPS('+stp.value+')';
+ if(k==='scan'){b.classList.toggle('is-on')}else{b.classList.add('is-on');setTimeout(()=>b.classList.remove('is-on'),300)}});
+</script>
+</body></html>

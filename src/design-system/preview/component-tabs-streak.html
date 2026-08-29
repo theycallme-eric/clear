@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Components — Tabs & Streak Bar" subtitle="Underline tabs + progress ticks" viewport="700x170" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+  .card{padding:18px 22px;box-sizing:border-box;color:var(--fg)}
+  .tabs{display:flex;gap:0;border-bottom:1px solid var(--color-orange-alpha-300);margin-bottom:12px}
+  .tab{font-family:var(--font-label);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:12px;padding:10px 16px;color:rgba(255,255,255,0.5);border-bottom:2px solid transparent;cursor:pointer;margin-bottom:-1px}
+  .tab.active{color:var(--color-blue-100);border-bottom-color:var(--color-orange-500)}
+  .bar{height:6px;background:var(--color-orange-alpha-200);position:relative;margin-bottom:8px}
+  .bar .fill{position:absolute;top:0;left:0;height:100%;background:var(--color-orange-500);width:65%;box-shadow:0 0 8px var(--color-orange-alpha-600)}
+  .bar .ticks{position:absolute;inset:0;display:flex}
+  .bar .ticks span{flex:1;border-right:1px solid var(--color-neutral-900)}
+  .bar .ticks span:last-child{border:none}
+  .meta{display:flex;justify-content:space-between;font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--color-orange-300)}
+</style>
+</head><body><div class="card">
+<div class="tabs">
+  <span class="tab active">OVERVIEW</span>
+  <span class="tab">HISTORY</span>
+  <span class="tab">STATS</span>
+</div>
+<div class="bar"><div class="fill"></div><div class="ticks"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div></div>
+<div class="meta"><span>WEEK 4 · 4 / 7</span><span>STREAK ACTIVE</span></div>
+</div></body></html>

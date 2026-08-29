@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="TimerDisplay" subtitle="Green at rest · red under 10s · digits tumble" viewport="700x150" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 22px;box-sizing:border-box;height:150px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}</style></head>
+<body><div class="card" id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+
+if(NS.TimerDisplay){function D(){const [s,setS]=React.useState(75);
+ React.useEffect(()=>{const t=setInterval(()=>setS(v=>v>0?v-1:75),1000);return()=>clearInterval(t)},[]);
+ return e(React.Fragment,null,
+  e(NS.TimerDisplay,{seconds:s}),
+  e(NS.TimerDisplay,{seconds:Math.max(0,s-67)}),
+  e(NS.TimerDisplay,{seconds:s,size:'lg'}));}
+ ReactDOM.createRoot(m).render(e(D));}
+</script></body></html>

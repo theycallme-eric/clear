@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Button" subtitle="Primary / secondary / quiet / critical · loading, icon, icon-only" viewport="700x180" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 22px;box-sizing:border-box;height:180px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}</style></head>
+<body><div class="card" id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+if(NS.Button&&NS.IconButton){
+ ReactDOM.createRoot(m).render(e(React.Fragment,null,
+  e('div',{className:'row'},
+   e(NS.Button,{variant:'primary'},'Initiate'),
+   e(NS.Button,null,'Cancel'),
+   e(NS.Button,{variant:'quiet'},'Skip'),
+   e(NS.Button,{variant:'critical'},'Abandon')),
+  e('div',{className:'row'},
+   e(NS.Button,{variant:'primary',loading:true},'Generating'),
+   e(NS.Button,{variant:'primary',disabled:true},'Locked'),
+   e(NS.Button,{icon:NS.Play?e(NS.Play,{size:14}):null},'Start'),
+   e(NS.IconButton,{label:'Settings',icon:NS.Sliders?e(NS.Sliders,{size:16}):null}),
+   e(NS.IconButton,{label:'Delete',variant:'critical',icon:NS.Trash?e(NS.Trash,{size:16}):null}))));}
+else{m.innerHTML='<span class="fb" style="color:var(--urgency)">Bundle is stale — reload</span>'}
+</script></body></html>
