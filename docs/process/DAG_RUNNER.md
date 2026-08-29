@@ -26,6 +26,11 @@ review gate unless Eric establishes an explicit protected auto-merge policy.
 5. Take the recommendation unless the user named another **available ready** issue. If the command
    refuses to recommend work, fix or report the graph/query problem; do not choose by intuition.
 
+Before launching a long or unattended run, record the coding tool/vendor, exact model, visible or
+headless execution mode, starting issue, allowed authority, merge policy, and how the user can
+observe progress. Default to a user-visible interactive session. A headless session is acceptable
+only when its lack of an attachable transcript is stated before launch.
+
 ## Load one issue
 
 1. Read the issue **and its comments**. Comments can contain owner decisions made after the frozen
@@ -53,13 +58,21 @@ review gate unless Eric establishes an explicit protected auto-merge policy.
 2. Commit and push the issue branch.
 3. Open one pull request whose body contains `Closes #N`, the acceptance evidence, verification
    results, and any human checks still needed.
-4. Do not mark criteria complete without evidence. Do not close the issue manually; the merge does it.
-5. Do not auto-merge by default. A user must explicitly authorize an auto-merge policy, and CI must
+4. Monitor the pull request checks to a terminal result. A pushed branch is not a completed issue.
+   If CI fails, repair it within the approved scope or record the requirement conflict on the issue
+   with evidence and a recommendation before moving to independent work. Never leave a red PR
+   unexplained or report local checks as though they were the complete GitHub job.
+5. Do not mark criteria complete without evidence. Do not close the issue manually; the merge does it.
+6. Do not auto-merge by default. A user must explicitly authorize an auto-merge policy, and CI must
    already protect the branch before an agent may use it.
-6. In **single-issue mode**, hand off the pull request and stop.
-7. In **runway mode**, once the branch is clean and pushed, return to synchronized `main`, rerun the
-   ready command, and take another available issue that does not depend on the unmerged work. Continue
-   until no available issue remains or a gate needs the user.
+7. In **single-issue mode**, hand off the pull request and stop.
+8. In **runway mode**, once the branch is clean, pushed, and its live CI result is known, return to
+   synchronized `main`, rerun the ready command, and take another available issue that does not depend
+   on the unmerged work. Continue until no available issue remains or a gate needs the user.
+
+At each handoff state four facts: what exists, what is actually running, what is blocked and why,
+and the next action with its owner. Do not call a queue, instruction file, or idle session an
+automation that is actively watching external state.
 
 ## Stop gates
 
