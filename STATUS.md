@@ -7,6 +7,51 @@ Living doc. Updated when a thread opens, moves, or closes.
 
 ## Blocking the critical path
 
+### 0. ⚠️ FOUR GAPS — close these BEFORE cutting issues
+Found by a readiness audit on 2026-08-25, after everything below was already done.
+
+**Order matters and it is the opposite of the obvious one.** Once `02-create-issues.sh` runs,
+GitHub is live truth and REQUIREMENTS.md freezes (§14). Closing these afterwards means
+hand-editing issues on GitHub; closing them first means regenerating from one source. Nothing
+here needs the build to have started.
+
+**1 · The screen designs exist and the build has been told to ignore them.** *(cheapest, biggest risk)*
+`ui_kits/app/` in the design system is a working, pixel-faithful recreation of **six screens** —
+Boot, Home, Generate, Workout Ready, Active Workout, Debrief — 868 lines of real JSX. ATOMIC.md
+calls it *"a worked example, not a library surface,"* which an agent reads as *do not look here*.
+An agent building HOME-01 would compose from primitives without knowing a designed Home exists.
+**Fix:** a `Visual reference:` line on every IA screen contract naming its kit screen or template,
+and ATOMIC.md corrected. The six screens with no direct kit equivalent are all recombinations —
+OTP Login and Settings from `templates/form-screen`, History from Home's card list + TabBar,
+Session Detail from Review's section cards, Not Found from `EmptyState`.
+
+**2 · The v4.1 generation prompt does not exist.** *(highest quality risk)*
+`specs/generation/generation-prompt-v3-notes.md` holds ~350 lines of real system prompt — section
+templates by goal, rest ranges, set counts, superset pairing, warm-up progression, pattern
+balancing. That is the accumulated thinking about what makes a good workout, and it is still
+correct. But its **architecture** is superseded: v4.1 pre-resolves candidates, drops the library
+dump, and has Claude return no names. Nobody has written that down, so GEN-02b's agent either
+reinvents the composition rules or ports v3 wholesale and drags the library dump back in.
+**Fix:** author `specs/generation/PROMPT_v4.md` — v3's composition rules on the v4.1 architecture.
+
+**3 · Motion choreography is unmapped.**
+`motion.css` has the vocabulary, ATOMIC.md §8 documents it, DS-06 assigns atmosphere per screen.
+But nothing says which effect fires where — whether the Home card list boot-staggers, whether
+route changes use `.route-enter-*`, whether the timer tumbles every second or only on change.
+**Fix:** a `Motion:` line beside `Atmosphere:` in each IA screen contract.
+
+**4 · No worked example.** The schema and contract are abstract end to end.
+**Fix:** trace one workout: request → candidates → what Claude returns → the rows written →
+what each of the three reconstructions gives back.
+
+**Also open:** whether the two promoted stubs (EXE-06, EXE-07) want real specs rather than
+requirement-level acceptance criteria. Eric to say.
+
+**What the audit found clean:** all 62 file references across REQUIREMENTS / IA / ATOMIC /
+playbook / CLAUDE.md resolve (only `PROJECT_MAP.md` is absent, and ENV-01 creates it) · the schema
+is 575 lines of real DDL, not a sketch · the eight backlog stubs were genuinely worked through —
+see `requirements/DEFERRED.md`.
+
 ### 1. Requirements — **v0.6** (2026-08-25)
 **71 requirements, 136 edges, no cycles.** v0.5 folded in the design system; v0.6 closed the three
 gaps the outside review found:
@@ -121,7 +166,10 @@ collisions the graph has no opinion about.
 ENV-01 now also seeds `PROJECT_MAP.md` — the playbook has agents read it from issue two onward, so
 it cannot not exist.
 
-### 8. GitHub — **Eric** · ready to run
+### 8. GitHub — **Eric** · scripts ready, but WAIT for thread 0
+**Do not run these yet.** The scripts work and the graph validates; the reason to wait is the
+source-of-truth handoff, not a defect. Closing the four gaps first is a regeneration; closing them
+after is 71 hand-edits.
 Requirements are approved at v0.4 and the issue scripts are generated and dry-run tested.
 
 **The design-export gate is lifted** — no requirement carries `blocked:design-export` any more.
@@ -161,7 +209,18 @@ Decided: this workspace becomes the repo's `docs/`.
 it sits: the project instructions still say Antigravity builds the app, the stack is Tailwind, and
 Figma is the design source of truth. All three are wrong, and every new conversation inherits them.
 
-### 10. `_to_delete/` on disk — **Eric** · one folder to delete
+### 10. `git` lock stuck in this repo — **Eric** · one command
+`.git/index.lock` regenerates on every commit and the Cowork sandbox cannot delete files, so
+Claude can no longer commit here. `CLAUDE.md` and this update are on disk but **uncommitted**.
+
+```sh
+cd ~/Documents/Projects/clear-rebuild
+rm -f .git/index.lock
+rm -rf .git/_stale
+git add -A && git commit -m "CLAUDE.md, readiness audit, journal"
+```
+
+### 11. `_to_delete/` on disk — **Eric** · one folder to delete
 `~/Documents/Projects/Clear/_to_delete/` — emptied, renamed, safe to remove.
 
 ---
@@ -187,4 +246,5 @@ Figma is the design source of truth. All three are wrong, and every new conversa
 4. ~~Design export → DS gates lift → ATOMIC.md~~ — **done** (2026-08-25)
 5. ~~Two DS decisions~~ — **done** (2026-08-25): no sheets, fonts self-hosted
 6. ~~Remaining requirements work~~ — **done** (2026-08-25): ENV-06/07, CORE-05, six splits
-7. **GitHub** (Eric) — nothing is blocking it. Run the three scripts.
+7. **Close the four gaps** (Claude) — see thread 0. `gh` is NOT next.
+8. **GitHub** (Eric) — the three scripts, once the gaps are closed.
