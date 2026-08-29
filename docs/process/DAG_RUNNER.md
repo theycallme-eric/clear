@@ -3,6 +3,18 @@
 This is the canonical operating loop for a coding agent working CLEAR. Claude Code and Codex have
 thin project-local skills that point here so the behavior does not drift between tools.
 
+## Default autonomy
+
+Once Eric selects an approved, dependency-ready issue—or asks the runner to select one—the issue's
+acceptance criteria authorize the normal implementation loop. Proceed without asking again for each
+reversible step: create the branch, edit in scope, install locked dependencies, run checks, update the
+journal and issue, commit, push, and open the pull request. A tool may still display a platform
+permission prompt, but that is not a new product decision.
+
+Ask Eric only at a stop gate below. In particular, do not turn synchronization, ordinary GitHub
+reads/writes, or “which ready issue is next?” into repeated handoffs. Pull-request merge remains a
+review gate unless Eric establishes an explicit protected auto-merge policy.
+
 ## Start
 
 1. Read `CLAUDE.md` or `AGENTS.md`, `PROJECT_MAP.md`, and this document.
