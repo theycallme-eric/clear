@@ -5,7 +5,7 @@
 #   ./scripts/import-design.sh ~/Downloads/clear-design.zip 2026-09-01-buttons
 #
 # Zips don't diff. Their contents do — HTML artboards, JSON tokens, SVG.
-# So every export is unpacked into design/exports/<version>/ and committed.
+# So every export is unpacked into docs/design/exports/<version>/ and committed.
 # Git then does the version control, and this script surfaces the diff.
 set -euo pipefail
 
@@ -14,10 +14,10 @@ ZIP="${1:?usage: import-design.sh <export.zip> [version-label]}"
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VER="${2:-$(date +%Y-%m-%d-%H%M)}"
-DEST="$ROOT/design/exports/$VER"
+DEST="$ROOT/docs/design/exports/$VER"
 [ -e "$DEST" ] && { echo "Version '$VER' already exists. Pick another label." >&2; exit 1; }
 
-PREV="$(ls -1 "$ROOT/design/exports" 2>/dev/null | sort | tail -1 || true)"
+PREV="$(ls -1 "$ROOT/docs/design/exports" 2>/dev/null | sort | tail -1 || true)"
 
 mkdir -p "$DEST"
 unzip -q "$ZIP" -d "$DEST"
@@ -28,15 +28,15 @@ if [ "$(find "$DEST" -mindepth 1 -maxdepth 1 | wc -l)" -eq 1 ] && [ -d "$INNER" 
   rmdir "$INNER" 2>/dev/null || true
 fi
 
-echo "Imported → design/exports/$VER"
+echo "Imported → docs/design/exports/$VER"
 echo "  $(find "$DEST" -type f | wc -l | tr -d ' ') files"
 
 # Mirror token JSON to design/tokens/ — the highest-signal diff, and DS-01's input
 TOK="$(find "$DEST" -type d -name '_ds' -o -type d -name 'tokens' | head -1 || true)"
 if [ -n "$TOK" ]; then
-  rm -rf "$ROOT/design/tokens.incoming"
-  cp -R "$TOK" "$ROOT/design/tokens.incoming"
-  echo "  tokens found → design/tokens.incoming/"
+  rm -rf "$ROOT/docs/design/tokens.incoming"
+  cp -R "$TOK" "$ROOT/docs/design/tokens.incoming"
+  echo "  tokens found → docs/design/tokens.incoming/"
 fi
 
 if [ -z "$PREV" ]; then
@@ -45,7 +45,7 @@ if [ -z "$PREV" ]; then
 else
   echo ""
   echo "=== CHANGED SINCE $PREV ==="
-  A="$ROOT/design/exports/$PREV"; B="$DEST"
+  A="$ROOT/docs/design/exports/$PREV"; B="$DEST"
   diff -rq "$A" "$B" 2>/dev/null | sed \
     -e 's|^Files .*/'"$PREV"'/\(.*\) and .*differ$|  MODIFIED  \1|' \
     -e 's|^Only in '"$A"'[/]*\(.*\): \(.*\)$|  REMOVED   \1/\2|' \
@@ -70,5 +70,5 @@ fi
 echo ""
 echo "Next:"
 echo "  1. Review the diff above"
-echo "  2. Add a dated entry to design/CHANGELOG.md saying what changed and why"
-echo "  3. git add design && git commit -m \"design: import $VER\""
+echo "  2. Add a dated entry to docs/design/CHANGELOG.md saying what changed and why"
+echo "  3. git add docs/design && git commit -m \"design: import $VER\""

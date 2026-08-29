@@ -15,12 +15,13 @@ Also validates the graph: unknown dependencies, cycles, and the ready queue.
 import re, sys, os, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-REQ  = ROOT / "requirements" / "REQUIREMENTS.md"
-GH   = ROOT / "github"
+DOCS = ROOT / "docs"
+REQ  = DOCS / "requirements" / "REQUIREMENTS.md"
+GH   = DOCS / "github"
 BOD  = GH / "bodies"
 
 VERSION = "v0.7"
-FOOTER  = (f"<sub>Generated from `requirements/REQUIREMENTS.md` {VERSION} by "
+FOOTER  = (f"<sub>Generated from `docs/requirements/REQUIREMENTS.md` {VERSION} by "
            f"`scripts/gen-issues.py` — edit the requirement, not the issue.</sub>")
 
 HEAD = re.compile(r'^### ([A-Z][A-Z0-9]*-\d+[a-z]?) — (.+?)\s*$')

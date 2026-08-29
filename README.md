@@ -1,59 +1,30 @@
-# CLEAR rebuild
+# CLEAR
 
-Planning and control plane for the ground-up CLEAR workout app rebuild: approved requirements,
-deep specs, the versioned design system, the dependency graph, and the process that directs build
-agents. Application code begins with `ENV-01`; this repository deliberately starts with the plan.
+AI-powered workout generator. The application shell is React 19, TypeScript strict, and Vite;
+the approved requirements, specs, design export, and dependency graph live under `docs/`.
 
-**Repository:** `theycallme-eric/clear` (private)
-
-**Baseline:** requirements v0.7 · 71 issues · 136 dependency edges · no cycles
-
-**First ready issue:** `ENV-01`
-
-## Start here
-
-1. `CLAUDE.md` — repository instructions.
-2. `process/AGENT_PLAYBOOK.md` — how work is selected, scoped, reviewed, and merged.
-3. The assigned GitHub issue — the live unit of work after migration.
-4. The issue's referenced specs, then `PROJECT_MAP.md`, `specs/design/ATOMIC.md` for UI work,
-   and the relevant screen contract in `specs/IA.md`.
-
-## Repository map
-
-| Path | Purpose |
-|---|---|
-| `requirements/REQUIREMENTS.md` | Frozen v0.7 issue baseline; one requirement per GitHub issue |
-| `specs/` | Product, data, generation, screen, and structure contracts |
-| `design/exports/clear-design-system-0.5.0/` | Approved unpacked design-system artifact |
-| `design/CHANGELOG.md` | Design import history and rationale |
-| `DAG.md` | Generated dependency graph and critical-path analysis |
-| `process/AGENT_PLAYBOOK.md` | Operational build loop |
-| `github/` | Re-runnable label, milestone, issue, and dependency migration scripts |
-| `journal/` | Dated decisions and audit notes |
-| `reference/` | Preserved historical material; read-only orientation, never a dependency |
-
-## Source-of-truth handoff
-
-Before issue migration, `requirements/REQUIREMENTS.md` is authoritative. After migration, GitHub
-issues are the live build truth and v0.7 remains the frozen baseline. If implementation proves a
-requirement wrong, comment on its issue and open a deliberate follow-up; do not silently widen the
-current ticket or edit the baseline to conceal the change.
-
-## Graph checks
+## Start in three commands
 
 ```sh
-python3 scripts/gen-issues.py --check
-python3 scripts/gen-dag.py
+npm install
+npm run dev
+npm test
 ```
 
-Expected baseline: 71 requirements, 136 edges, no cycles, and only `ENV-01` ready.
+The development server prints its local URL. The root route renders the app shell and unknown
+routes render the 404 fallback.
 
-## Product direction
+## Validate before pushing
 
-The M1 gate is the complete phone-sized loop:
+```sh
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
 
-`Home → Generate → Loading → Review → Workout → Summary → Home`
+No CSS framework or component library is used. `DS-01` will vendor the approved public design
+system into `src/design-system/`; until then the shell intentionally uses browser-default styling.
 
-Installability is `PWA-01` in M2 after the deployed shell and design substrate exist. It adds the
-manifest, icons, theme metadata, iOS metadata, and a minimal shell service worker. True offline
-data and generation are intentionally separate M3 work.
+Read [PROJECT_MAP.md](PROJECT_MAP.md) before adding a file and
+[docs/process/AGENT_PLAYBOOK.md](docs/process/AGENT_PLAYBOOK.md) before selecting work.
