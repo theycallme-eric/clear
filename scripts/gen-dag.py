@@ -3,17 +3,18 @@
 Generate DAG.md — the dependency graph the build works from.
 
 Two modes:
-  python3 scripts/gen-dag.py          from requirements/REQUIREMENTS.md (works before GitHub exists)
+  python3 scripts/gen-dag.py          from docs/requirements/REQUIREMENTS.md (works before GitHub exists)
   python3 scripts/gen-dag.py --live   from `gh issue list --json`, adding open/closed state
 
-The live mode needs github/issue-map.txt and gh auth. Everything else is offline.
+The live mode needs docs/github/issue-map.txt and gh auth. Everything else is offline.
 """
 import re, sys, json, subprocess, pathlib, collections
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-REQ  = ROOT / "requirements" / "REQUIREMENTS.md"
-OUT  = ROOT / "DAG.md"
-MAP  = ROOT / "github" / "issue-map.txt"
+DOCS = ROOT / "docs"
+REQ  = DOCS / "requirements" / "REQUIREMENTS.md"
+OUT  = DOCS / "DAG.md"
+MAP  = DOCS / "github" / "issue-map.txt"
 
 HEAD = re.compile(r'^### ([A-Z][A-Z0-9]*-\d+[a-z]?) — (.+?)\s*$')
 META = re.compile(r'^\*\*Layer:\*\*\s*(\S+)\s*·\s*\*\*Milestone:\*\*\s*(\S+)')
@@ -132,7 +133,7 @@ def main():
 
     doc = []
     doc.append("# DAG — the build order\n")
-    doc.append("**Generated** by `scripts/gen-dag.py` from `requirements/REQUIREMENTS.md`. "
+    doc.append("**Generated** by `scripts/gen-dag.py` from `docs/requirements/REQUIREMENTS.md`. "
                "Hand edits are meaningless; the next run overwrites them.\n")
     if state:
         closed = sum(1 for v in state.values() if v == "CLOSED")

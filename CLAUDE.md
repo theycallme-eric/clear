@@ -77,3 +77,11 @@ green CI with unchecked boxes means the criteria were not the criteria.
 
 Update `PROJECT_MAP.md` when the architecture changes — a new directory, a new boundary, a new
 data flow. Not for every file.
+
+## Process journal
+
+For every material work session, update `docs/journal/YYYY-MM-DD.md` at meaningful checkpoints
+and before handoff. Record failures and causes, corrections, exact verification results, unresolved
+questions, and the next safe action—not only the successful final state. Follow the always-loaded
+rule in `.claude/rules/process-journal.md` and the full policy in the agent playbook §10. Never put
+secrets, tokens, one-time codes, private email contents, or personal data in the journal.

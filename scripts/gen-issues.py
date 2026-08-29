@@ -12,15 +12,16 @@ Also validates the graph: unknown dependencies, cycles, and the ready queue.
   python3 scripts/gen-issues.py            # generate + validate
   python3 scripts/gen-issues.py --check    # validate only, non-zero exit on failure
 """
-import re, sys, os, pathlib
+import re, sys, os, pathlib, shlex
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-REQ  = ROOT / "requirements" / "REQUIREMENTS.md"
-GH   = ROOT / "github"
+DOCS = ROOT / "docs"
+REQ  = DOCS / "requirements" / "REQUIREMENTS.md"
+GH   = DOCS / "github"
 BOD  = GH / "bodies"
 
 VERSION = "v0.7"
-FOOTER  = (f"<sub>Generated from `requirements/REQUIREMENTS.md` {VERSION} by "
+FOOTER  = (f"<sub>Generated from `docs/requirements/REQUIREMENTS.md` {VERSION} by "
            f"`scripts/gen-issues.py` — edit the requirement, not the issue.</sub>")
 
 HEAD = re.compile(r'^### ([A-Z][A-Z0-9]*-\d+[a-z]?) — (.+?)\s*$')
@@ -158,12 +159,20 @@ create_issue() {{
   echo "  $rid → #$num"
 }}
 
-echo "Creating issues in $REPO…"
+echo "Creating issues in ${{REPO}}…"
 """)
         for rid in order:
             r = reqs[rid]
-            f.write(f'create_issue "{rid}" "[{rid}] {r["title"]}" "{r["milestone"]}"'
-                    f' --label "layer:{r["layer"]}" --label "carry:{r["carry"]}"\n')
+            args = [
+                rid,
+                f'[{rid}] {r["title"]}',
+                r["milestone"],
+                "--label",
+                f'layer:{r["layer"]}',
+                "--label",
+                f'carry:{r["carry"]}',
+            ]
+            f.write("create_issue " + " ".join(shlex.quote(arg) for arg in args) + "\n")
         f.write(f'\necho "Done. {len(order)} issues. Map in $MAP."\n')
     os.chmod(GH / "02-create-issues.sh", 0o755)
 
@@ -195,7 +204,7 @@ wire() {{
   fi
 }}
 
-echo "Wiring dependencies in $REPO…"
+echo "Wiring dependencies in ${{REPO}}…"
 """)
         for child, parent in edges:
             f.write(f'wire "{child}" "{parent}"\n')
