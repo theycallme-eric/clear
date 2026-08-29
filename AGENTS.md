@@ -4,6 +4,10 @@ Before material work, read `docs/process/AGENT_PLAYBOOK.md` and `PROJECT_MAP.md`
 the GitHub ready queue; use one issue, one branch, and one pull request. Do not implement a blocked
 issue or silently widen an issue's scope.
 
+Run `python3 scripts/dag-ready.py` instead of choosing from the issue list manually. When the user
+asks to run the DAG, automate the build, work unattended, or continue the rebuild, use the project
+skill `clear-dag-runner` and its canonical loop in `docs/process/DAG_RUNNER.md`.
+
 ## Process journal
 
 For every material work session, maintain `docs/journal/YYYY-MM-DD.md` at meaningful checkpoints

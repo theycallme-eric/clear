@@ -13,11 +13,14 @@ background reading.
 Work comes from the ready queue, never from scrolling the issue list:
 
 ```sh
-gh issue list --search "is:open -is:blocked"
+python3 scripts/dag-ready.py
 ```
 
-An issue appears there exactly when everything it depends on has closed. Take one — lowest
-milestone first, then whichever unblocks the most (`docs/DAG.md` § *Highest leverage*).
+The command cross-checks GitHub's native ready search, excludes issues already in an open PR, and
+ranks what remains. Take its recommendation unless Eric named another available ready issue.
+
+When Eric asks to run the DAG, automate the build, work unattended, or run for a while, use the
+project skill `clear-dag-runner`. Its canonical loop is `docs/process/DAG_RUNNER.md`.
 
 **Never work an issue that is not in the ready queue.** If it looks ready but the queue
 disagrees, the graph is right — go read what it is blocked by.
@@ -26,8 +29,8 @@ disagrees, the graph is right — go read what it is blocked by.
 
 ## What to read, in this order
 
-1. **The issue body.** Its acceptance checklist is the definition of done — not a starting
-   point, not a suggestion.
+1. **The issue body and comments.** Its acceptance checklist is the definition of done; comments
+   can contain later owner decisions — neither is a suggestion.
 2. **Its `Spec:` references.** All under `docs/`. Nothing points outside this repo.
 3. **`PROJECT_MAP.md`** — how the codebase is arranged, so a new file lands where this
    project puts that kind of file.
