@@ -181,3 +181,24 @@ requirements file is the frozen baseline. Scope changes happen on issues.
 That handoff is the one moment to be careful about: once `02-create-issues.sh` has run,
 editing a requirement and regenerating does **not** update the issues that already exist.
 Change the issue.
+
+---
+
+## 10. Keep a process journal
+
+Material work sessions append to `docs/journal/YYYY-MM-DD.md`. The journal is the reviewable
+record of how the build happened; commits and issue comments show *what* changed but usually
+lose the failed attempts and course corrections that explain *why*.
+
+Record:
+
+- the intended outcome and the issue/branch involved;
+- what changed locally and what changed on GitHub or another external service;
+- failures, misleading signals, and the actual cause;
+- corrections made, including any script or process change that prevents a repeat;
+- verification performed and its exact result;
+- unresolved questions, assumptions, and the next safe action.
+
+Keep secrets, one-time codes, tokens, email contents, and personal data out of the journal.
+Prefer facts over a minute-by-minute transcript. When a verification method is wrong, record
+the bad reading and the corrected method so a later agent does not repeat it.

@@ -24,7 +24,7 @@ wire() {
   fi
 }
 
-echo "Wiring dependencies in $REPO…"
+echo "Wiring dependencies in ${REPO}…"
 wire "ENV-02" "ENV-01"
 wire "ENV-03" "ENV-01"
 wire "ENV-04" "ENV-01"
