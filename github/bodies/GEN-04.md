@@ -15,4 +15,4 @@ Inputs: goal selector (first, no default, per v3 delta), intensity slider with g
 **Depends on:** GEN-03, DS-04c, AUTH-03
 **Blocks:** HOME-03, OVR-04
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

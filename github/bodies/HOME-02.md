@@ -17,4 +17,4 @@ Full streak rules as pure, tested functions: `counts_for_streak`, rest-day marki
 **Depends on:** HOME-01, SES-01c
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

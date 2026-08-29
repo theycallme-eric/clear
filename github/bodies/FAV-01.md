@@ -16,4 +16,4 @@ Save a completed workout as a named template (snapshot), favorites tab on Home, 
 **Depends on:** SUM-01, SES-01b, HOME-01
 **Blocks:** FAV-02
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

@@ -18,4 +18,4 @@ The anchor table and its computation. No prescriptions are changed by this issue
 **Depends on:** EXE-02, SES-01b
 **Blocks:** OVR-01b, OVR-04
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

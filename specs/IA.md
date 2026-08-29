@@ -178,6 +178,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Welcome — `/welcome`
 **Atmosphere:** `full` — brand moment
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `BootScreen`; `design/exports/clear-design-system-0.5.0/templates/boot-sequence/BootSequence.dc.html`
+**Motion:** `ClearLogo` enters once with the boot sequence; subtitle and CTA use `.clr-boot`. Do not manufacture a loading delay.
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** cold open, sign-out · **Out:** `/login`
 **Composition:** `AuthLayout` › `ClearLogo` + `CTAButton`
@@ -185,6 +187,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### OTP Login — `/login`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/templates/form-screen/FormScreen.dc.html`
+**Motion:** `.route-enter-forward` from Welcome and `.route-enter-back` on return; request/verify state swaps use `.clr-interlace`, while validation errors appear without entrance animation.
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** Welcome · **Out:** `/onboarding` (new) or `/` (returning)
 **Composition:** `AuthLayout` › `PageHeader` + `Card` › `Input` + `CTAButton`
@@ -193,6 +197,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Onboarding — `/onboarding`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/templates/form-screen/FormScreen.dc.html`; `specs/screens/onboarding-wireframe.md`
+**Motion:** Steps use `.route-enter-forward` / `.route-enter-back`; selection changes use the controls' baked state motion. Never replay a full-screen boot between steps.
 **Guard:** authed + not onboarded · **Requirements:** ONB-01 · **Spec:** `specs/screens/onboarding-wireframe.md`
 **In:** first verified login · **Out:** `/` on atomic commit
 **Composition:** `OnboardingLayout` › `PageHeader` + `Card` › `RadioButton` · `Chip` · `Textarea` · `CTAButton`
@@ -201,6 +207,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Home — `/` ★
 **Atmosphere:** `full` — brand moment
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `HomeScreen`
+**Motion:** Initial populated cards may stagger with `.clr-boot`; tab changes use `.clr-tab-enter`; streak digit changes use `.clr-tumble`. Refetches do not replay the page entrance.
 **Guard:** protected · **Requirements:** HOME-01, HOME-02, HOME-03
 **In:** login, onboarding, any screen's back/done · **Out:** everywhere
 **Composition:** `AppLayout` › `PageHeader` + `WeekStreakDisplay` + `Card`(×2 quick actions) + `TabbedPanel` › `WorkoutListItem` · `FavoriteListItem` + `ConfirmationModal`
@@ -209,6 +217,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Generate — `/generate`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `GenerateScreen`
+**Motion:** `.route-enter-forward` from Home and `.route-enter-back` on return; field and selection feedback stays inside the shipped controls. Validation never moves the whole form.
 **Guard:** protected · **Requirements:** GEN-04, OVR-04
 **In:** Home · **Out:** Loading → Review
 **Composition:** `AppLayout` › `PageHeader` + `Card` › goal selector · `IntensitySlider` · anchor selector · `LocationAccordion` · `OptionalFields` (`Input`, `Textarea`) + `CTAButton`
@@ -217,12 +227,16 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Loading — transient, no route
 **Atmosphere:** `full` — brand moment
+**Visual reference:** `design/exports/clear-design-system-0.5.0/templates/boot-sequence/BootSequence.dc.html`; `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `BootScreen`
+**Motion:** `ScanLoader` owns scan/tick motion; cancel exits with `.clr-phosphor-out`, success hands off with `.route-enter-up`. Progress reflects real stages and never pads latency.
 **Requirements:** GEN-05 · **Spec:** `specs/screens/loading-screens.md`
 **Composition:** `.clr-shell` › `ScanLoader` + staged status copy + cancel `Button`
 **States:** loading is the whole screen. Cancel returns to Generate; stale results are discarded after unmount.
 
 ### Review — `/review` ★
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen`
+**Motion:** `.route-enter-up` from generation and `.route-enter-back` to Generate; a swapped row uses `.clr-interlace`. Dialogs trace/materialize on and phosphor out per DS-05; unchanged rows do not move.
 **Guard:** protected + workout in state · **Requirements:** REV-01, REV-03, OVR-01
 **In:** Loading (fresh) · Review (regenerate) · Home/History (favorite restart) · **Out:** `/workout`, or back to Loading
 **Composition:** `AppLayout` › `PageHeader` + `WorkoutOverview` + `WorkoutSectionCard`(×n) › exercise rows + swap affordance + `CTAButton` + `ConfirmationModal`
@@ -231,6 +245,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 
 ### Workout — `/workout` ★★
 **Atmosphere:** `operational` — glanceability at arm’s length
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `ActiveWorkoutScreen`
+**Motion:** `.route-enter-up` enters focus mode and `.route-enter-down` exits it. Timer digits use `.clr-tumble` only when their displayed value changes; no list/route motion fires while a set is being logged. The final ten seconds may use the TimerDisplay urgency pulse.
 **Guard:** protected + active session · **Requirements:** EXE-01…05, OVR-03 · **Specs:** `specs/structures/*`
 **In:** Review, Home (resume) · **Out:** `/summary`, or abandon → Home
 **Composition:**
@@ -249,6 +265,8 @@ WorkoutLayout
 
 ### Summary — `/summary`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `DebriefScreen`
+**Motion:** `.route-enter-down` from Workout; result cards may `.clr-boot` once and a changed streak uses `.clr-tumble`. Save retries do not replay the entrance.
 **Guard:** protected + completed session · **Requirements:** SUM-01, FAV-01
 **In:** Workout completion · **Out:** Home
 **Composition:** `AppLayout` › `PageHeader` + `Card` › `MoodIcon`(×5) + `Textarea` + `WeekStreakDisplay` + `CTAButton`(×2)
@@ -257,6 +275,8 @@ WorkoutLayout
 
 ### History — `/history`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `HomeScreen` card-list treatment + shipped `TabBar`
+**Motion:** Route forward/back follows navigation direction; tabs use `.clr-tab-enter`; the populated list may `.clr-boot` only on its first reveal, never on filter/refetch updates.
 **Guard:** protected · **Requirements:** HIST-01, FAV-01
 **In:** Home · **Out:** `/history/:id`, `/review` (favorite restart)
 **Composition:** `AppLayout` › `PageHeader` + `TabbedPanel` › `FilterDropdown` · `FilterToggle` + `WorkoutListItem` · `FavoriteListItem` + `EmptyState`
@@ -265,6 +285,8 @@ WorkoutLayout
 
 ### Session Detail — `/history/:id`
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen` section-card treatment
+**Motion:** Route forward/back follows navigation direction; newly disclosed section content uses `.clr-materialize`. Logged values themselves do not animate.
 **Guard:** protected · **Requirements:** HIST-01
 **In:** History, Home recents · **Out:** back, or `/review` (restart)
 **Composition:** `AppLayout` › `PageHeader` + `Card` › section blocks › logged sets + `StructureResultBadge` + `MoodIcon`
@@ -273,6 +295,8 @@ WorkoutLayout
 
 ### Settings — `/settings` (+ 4 sub-views)
 **Atmosphere:** `quiet` — reading and input
+**Visual reference:** `design/exports/clear-design-system-0.5.0/templates/form-screen/FormScreen.dc.html`
+**Motion:** Hub/sub-view transitions use `.route-enter-forward` / `.route-enter-back`; successful inline saves use `.clr-interlace` or the shipped Toast motion, never a page reload entrance.
 **Guard:** protected · **Requirements:** SET-01, SET-02
 **In:** Home · **Out:** Home, sub-views
 **Composition:** `AppLayout` › `PageHeader` + `Card` rows → `SettingsHub` | `LocationSettings` | `StructureSettings` | `LimitationsSettings`
@@ -280,11 +304,16 @@ WorkoutLayout
 **Interactions:** goal preset · enabled sections · limitations · skin selection (**four skins; `skin.js` owns persistence — never hardcode the list**) · location CRUD · equipment tier · set default · sign out.
 
 ### Component Gallery — `/dev/gallery`
+**Atmosphere:** `quiet` — review surface
+**Visual reference:** `design/exports/clear-design-system-0.5.0/preview/`, `design/exports/clear-design-system-0.5.0/components/*/card.html`, and the export's 38 specimen cards
+**Motion:** Route uses `.route-enter-fade`; specimens stay still until the reviewer explicitly triggers their motion preview so simultaneous effects never obscure inspection.
 **Guard:** dev only · **Requirements:** DS-07
 The export's 38 specimen cards served unmodified at `/dev/gallery/ds`, plus every app-composed part at `/dev/gallery/app`. Live skin **and** atmosphere switching. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
 
 ### Not Found — `*`
 **Atmosphere:** `full` — brand moment
+**Visual reference:** `design/exports/clear-design-system-0.5.0/components/EmptyState/EmptyState.jsx`
+**Motion:** `.route-enter-fade` with `.clr-materialize` on the EmptyState; the home CTA keeps only its baked interaction motion.
 **Requirements:** ENV-01 · `AppLayout` › `EmptyState` + `CTAButton` home.
 
 ---

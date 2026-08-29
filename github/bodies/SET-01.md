@@ -22,4 +22,4 @@ Hub with: goal preset, enabled sections (structure customization), limitations t
 **Depends on:** AUTH-03, DS-04a
 **Blocks:** SET-02
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

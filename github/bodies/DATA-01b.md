@@ -19,4 +19,4 @@ Profiles, locations, location equipment, enabled sections, and the profile's `we
 **Depends on:** DATA-01a
 **Blocks:** ENV-04, DATA-01c, DATA-05
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

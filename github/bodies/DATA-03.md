@@ -14,4 +14,4 @@
 **Depends on:** ENV-01, DATA-01d
 **Blocks:** CORE-03, AUTH-01, AUTH-03, GEN-02a, SES-01a, HIST-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

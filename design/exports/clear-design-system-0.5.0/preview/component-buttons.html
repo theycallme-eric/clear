@@ -1,0 +1,23 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+  .card{padding:18px 22px;box-sizing:border-box;color:var(--fg);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .cta{display:inline-block;cursor:pointer;border:none;padding:2px;clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);transition:all 200ms}
+  .cta-inner{font-family:var(--font-label);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:14px;padding:12px 22px;clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);transition:all 200ms}
+  .cta.primary{background:var(--border-cta-primary)}
+  .cta.primary .cta-inner{background:linear-gradient(var(--surface-cta-primary),var(--surface-cta-primary)),var(--color-neutral-900);color:var(--text-cta)}
+  .cta.primary:hover .cta-inner{background:linear-gradient(var(--surface-cta-primary-hover),var(--surface-cta-primary-hover)),var(--color-neutral-900)}
+  .cta.secondary{background:var(--border-cta-secondary)}
+  .cta.secondary .cta-inner{background:linear-gradient(var(--surface-cta-secondary),var(--surface-cta-secondary)),var(--color-neutral-900);color:var(--color-blue-300)}
+  .cta.secondary:hover .cta-inner{background:linear-gradient(var(--surface-cta-secondary-hover),var(--surface-cta-secondary-hover)),var(--color-neutral-900)}
+  .cta.disabled{background:var(--border-disabled);cursor:not-allowed}
+  .cta.disabled .cta-inner{background:linear-gradient(var(--surface-disabled),var(--surface-disabled)),var(--color-neutral-900);color:var(--text-disabled)}
+  .lbl{font-family:var(--font-label);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);margin-top:6px;text-align:center}
+  .g{display:flex;flex-direction:column;align-items:center}
+</style>
+</head><body><div class="card">
+  <div class="g"><button class="cta primary"><span class="cta-inner" style="display:block">INITIATE WORKOUT</span></button><div class="lbl">PRIMARY · DEFAULT</div></div>
+  <div class="g"><button class="cta secondary"><span class="cta-inner" style="display:block">REGENERATE</span></button><div class="lbl">SECONDARY</div></div>
+  <div class="g"><button class="cta disabled"><span class="cta-inner" style="display:block">GENERATING…</span></button><div class="lbl">DISABLED</div></div>
+</div></body></html>

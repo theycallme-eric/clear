@@ -17,4 +17,4 @@ Workout and review section disclosure.
 **Depends on:** DS-01
 **Blocks:** DS-07, GEN-04
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

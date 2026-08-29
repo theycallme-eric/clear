@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Colors — Semantic" subtitle="Selection, urgency, info · per skin, and never carried by hue alone" viewport="700x360" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:14px 18px;box-sizing:border-box;height:360px;display:flex;flex-direction:column;gap:9px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 62%, transparent);max-width:660px}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px;margin-bottom:6px}
+.note{font-family:var(--font-body);font-size:9px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 52%, transparent)}
+code{font-family:var(--font-data);font-size:8.5px}
+.cols{display:flex;gap:8px}
+.col{flex:1;padding:8px 10px;background:var(--structure-a050);border-top:2px solid var(--structure-500)}
+.col.s{border-top-color:var(--selection)}
+.col.u{border-top-color:var(--urgency)}
+.col.i{border-top-color:var(--info)}
+.rn{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.col.s .rn{color:var(--selection-400)}
+.col.u .rn{color:var(--text-negative)}
+.col.i .rn{color:var(--info-300)}
+.rd{font-family:var(--font-body);font-size:9px;line-height:1.4;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent);margin-top:3px}
+.srow{display:flex;align-items:center;gap:9px;padding:5px 9px;border:1px solid rgba(255,255,255,.09);border-bottom:0}
+.srow:last-of-type{border-bottom:1px solid rgba(255,255,255,.09)}
+.sn{width:52px;flex:0 0 52px;font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#fff}
+.pair{display:flex;align-items:center;gap:5px;flex:1}
+.pair i{width:14px;height:14px;flex:0 0 14px}
+.pair b{font-family:var(--font-data);font-size:7.5px;font-weight:700;color:rgba(255,255,255,.7)}
+.hd2{display:flex;gap:9px;padding:0 9px 3px;font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--neutral-400)}
+.hd2 span:first-child{width:52px;flex:0 0 52px}
+.hd2 span{flex:1}
+.glyphs{display:flex;gap:12px;align-items:center;padding:6px 9px;background:var(--structure-a050)}
+.g{display:flex;align-items:center;gap:5px;font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-card-label)}
+</style></head><body><div class="pg"><div class="ttl">Colors — Semantic</div>
+<div class="sub">Three system roles, each varying by skin. They are not "green, red and purple" — those are CLEAR's hues, and reading them that way breaks in every other skin.</div>
+<div class="cols">
+  <div class="col s"><div class="rn">Selection</div><div class="rd">You chose this. Also the timer at rest.</div></div>
+  <div class="col u"><div class="rn">Urgency</div><div class="rd">Demands attention now — time pressure <em>or</em> failure.</div></div>
+  <div class="col i"><div class="rn">Info</div><div class="rd">Neutral information. Atmosphere, and the info toast.</div></div>
+</div>
+<div>
+  <div class="hd2"><span>Skin</span><span>Selection</span><span>Urgency</span><span>Info</span></div>
+  
+<div class="srow" style="background:#171717">
+  <span class="sn">CLEAR</span>
+  <span class="pair"><i style="background:#99DD39"></i><b>#99DD39</b></span>
+  <span class="pair"><i style="background:#CD1958"></i><b>#CD1958</b></span>
+  <span class="pair"><i style="background:#A368FF"></i><b>#A368FF</b></span>
+</div>
+<div class="srow" style="background:#0A1413">
+  <span class="sn">Vapour</span>
+  <span class="pair"><i style="background:#00C6FF"></i><b>#00C6FF</b></span>
+  <span class="pair"><i style="background:#FF3A20"></i><b>#FF3A20</b></span>
+  <span class="pair"><i style="background:#FDE74C"></i><b>#FDE74C</b></span>
+</div>
+<div class="srow" style="background:#150A12">
+  <span class="sn">Signal</span>
+  <span class="pair"><i style="background:#00E06A"></i><b>#00E06A</b></span>
+  <span class="pair"><i style="background:#FF5C1F"></i><b>#FF5C1F</b></span>
+  <span class="pair"><i style="background:#7A5CFF"></i><b>#7A5CFF</b></span>
+</div>
+<div class="srow" style="background:#0A0A0A">
+  <span class="sn">Mono</span>
+  <span class="pair"><i style="background:#D4D4D4"></i><b>#D4D4D4</b></span>
+  <span class="pair"><i style="background:#FFFFFF"></i><b>#FFFFFF</b></span>
+  <span class="pair"><i style="background:#3A3A3A"></i><b>#3A3A3A</b></span>
+</div>
+</div>
+<div class="glyphs">
+  <span class="g"><svg viewBox="0 0 24 24" width="12" height="12" style="fill:var(--structure-300)"><path fill-rule="evenodd" d="M2 2h20v20H2V2zm8.75 5h2.5v2.5h-2.5V7zm0 4.5h2.5V17h-2.5v-5.5z"/></svg>Info</span>
+  <span class="g"><svg viewBox="0 0 24 24" width="12" height="12" style="fill:var(--selection-400)"><path d="M9.6 20.4 2.4 13.2l3.4-3.4 3.8 3.8L18.2 3l3.4 3.4z"/></svg>Positive</span>
+  <span class="g"><svg viewBox="0 0 24 24" width="12" height="12" style="fill:var(--text-negative)"><path fill-rule="evenodd" d="M12 2.5 23 21.5H1L12 2.5zm-1.3 7 .4 6h1.8l.4-6h-2.6zm.05 7.5V19.5h2.5V17h-2.5z"/></svg>Negative</span>
+  <span class="note" style="flex:1">Severity never rests on hue: each carries a distinct glyph, so it survives Mono and red-green deficiency alike.</span>
+</div>
+<div class="note"><strong>Urgency covers failure as well as time pressure.</strong> Distinguish a nine-second timer from a failed sync with text, icon and placement — never with a second red. A candidate hue for any of these must pass the <strong>Alpha Behaviour</strong> card: selection and urgency live at 60% over near-black and must still read as themselves. Info is exempt, being full-strength only.</div></div></body></html>

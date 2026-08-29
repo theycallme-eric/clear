@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Foundation" name="Skins" subtitle="Four identities, one system · data-skin on <html>" viewport="700x360" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+:root{--atmosphere-blur:56px;--atmosphere-opacity:.26;--atmosphere-dim:.55}
+.card{position:relative;z-index:1;padding:15px 20px;box-sizing:border-box;height:360px;display:flex;flex-direction:column;gap:10px}
+.hdr{display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header);white-space:nowrap}
+.sub{font-family:var(--font-body);font-size:9.5px;color:rgba(255,255,255,.55);line-height:1.35;text-align:right}
+.skins{display:flex;gap:5px;flex-wrap:wrap}
+.skins button{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 9px;background:transparent;border:2px solid var(--neutral-500);color:var(--neutral-400);cursor:pointer;display:flex;align-items:center;gap:5px;transition:border-color 150ms linear,color 150ms linear}
+.skins button.on{border-color:var(--structure-500);color:var(--structure-100);background:var(--structure-a150)}
+.dot{width:7px;height:7px;display:inline-block}
+.demo{flex:1;min-height:0;display:flex;gap:10px}
+.clr-card{flex:1.35;min-width:0}
+.clr-card__body{display:flex;flex-direction:column;justify-content:center}
+.lbl{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--structure-300);margin-bottom:4px}
+.h{font-family:var(--font-display);font-size:17px;font-weight:700;text-transform:uppercase;color:var(--text-card-header);line-height:1.05}
+.p{font-family:var(--font-body);font-size:9.5px;color:rgba(255,255,255,.6);line-height:1.4;margin-top:3px}
+.side{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.cta{padding:10px 12px;box-sizing:border-box;font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-cta);text-align:center}
+.chips{display:flex;gap:6px}
+.chip{flex:1;padding:6px 0;text-align:center;font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chip.sel{background:var(--surface-selected);border:2px solid var(--border-selected);color:var(--text-selected)}
+.chip.un{background:var(--surface-unselected);border:2px solid var(--border-unselected);color:var(--text-unselected)}
+.timer{padding:9px 12px;box-sizing:border-box;text-align:center;font-family:var(--font-data);font-size:16px;font-weight:700;letter-spacing:.06em;color:var(--text-timer)}
+.legend{display:flex;gap:0;height:17px}
+.sw{flex:1;position:relative}
+.sw b{position:absolute;left:3px;bottom:2px;font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.05em;color:rgba(0,0,0,.62)}
+.foot{display:flex;justify-content:space-between;align-items:center}
+.code{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.05em;color:var(--neutral-400)}
+</style>
+</head><body>
+<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>
+<div class="card">
+  <div class="hdr">
+    <div class="ttl">Skins</div>
+    <div class="sub">Five hues define a product. Shape, spacing, type, density and motion are identical in all four — Mono included.</div>
+  </div>
+  <div class="skins" id="skins">
+    <button class="on" data-skin="clear"><i class="dot" style="background:#F87823"></i><i class="dot" style="background:#00A9F4"></i>Clear</button>
+    <button data-skin="vapour"><i class="dot" style="background:#B47DFF"></i><i class="dot" style="background:#00E5C7"></i>Vapour</button>
+    <button data-skin="signal"><i class="dot" style="background:#C6FF2E"></i><i class="dot" style="background:#FF2EA6"></i>Signal</button>
+    <button data-skin="mono"><i class="dot" style="background:#6A6A6A"></i><i class="dot" style="background:#D4D4D4"></i>Mono</button>
+  </div>
+  <div class="demo">
+    <div class="clr-card">
+      <div class="clr-card__bar pulse-micro"></div>
+      <div class="clr-card__body clr-chamfer clr-chamfer--open-left clr-chamfer--lg">
+        <div class="lbl">SESSION 04 · 42 MIN</div>
+        <div class="h">Lower push</div>
+        <div class="p">Structure builds the frame. Interaction is the only thing you can touch. Nothing below the colour layer knows which product it is running in.</div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="cta clr-chamfer clr-chamfer--cta clr-chamfer--md">Initiate</div>
+      <div class="chips"><div class="chip sel">Strength</div><div class="chip un">Cardio</div></div>
+      <div class="timer clr-chamfer clr-chamfer--timer clr-chamfer--md">04:12</div>
+    </div>
+  </div>
+  <div class="legend">
+    <div class="sw" style="background:var(--structure)"><b>STRUCTURE</b></div>
+    <div class="sw" style="background:var(--interaction)"><b>INTERACTION</b></div>
+    <div class="sw" style="background:var(--info)"><b>NEUTRAL</b></div>
+    <div class="sw" style="background:var(--selection)"><b>POSITIVE</b></div>
+    <div class="sw" style="background:var(--urgency)"><b>NEGATIVE</b></div>
+  </div>
+  <div class="foot">
+    <span class="code" id="code">&lt;html data-skin="clear"&gt;</span>
+    </div>
+</div>
+<script>
+const rootEl=document.documentElement,code=document.getElementById('code');
+document.querySelectorAll('#skins button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#skins button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  rootEl.setAttribute('data-skin',b.dataset.skin);
+  code.textContent='<html data-skin="'+b.dataset.skin+'">';
+});
+rootEl.setAttribute('data-skin','clear');
+</script>
+</body></html>

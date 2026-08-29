@@ -16,4 +16,4 @@ Kills half of D1. A minimal provider over `supabase.auth.onAuthStateChange` expo
 **Depends on:** ENV-01, DATA-03
 **Blocks:** ENV-07, AUTH-02, AUTH-03
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

@@ -18,4 +18,4 @@ Circuits (3+ exercises × rounds) and EMOM with the clarity spec built in: minut
 **Depends on:** EXE-01
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

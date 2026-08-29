@@ -18,4 +18,4 @@ Consecutive days with a completed, streak-counting session, computed from `worko
 **Depends on:** SES-01a
 **Blocks:** HOME-01, HOME-02
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

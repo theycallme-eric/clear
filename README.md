@@ -1,60 +1,59 @@
-# Clear — Rebuild Workspace
+# CLEAR rebuild
 
-Everything that isn't code. Requirements, specs, design exports, process, and notes.
-Version-tracked with local git from day one — no remote required.
+Planning and control plane for the ground-up CLEAR workout app rebuild: approved requirements,
+deep specs, the versioned design system, the dependency graph, and the process that directs build
+agents. Application code begins with `ENV-01`; this repository deliberately starts with the plan.
 
-## Where things live
+**Repository:** `theycallme-eric/clear` (private)
 
-| Folder | Holds | Status |
-|---|---|---|
-| `requirements/` | `REQUIREMENTS.md` — the spec. 50 requirements, 197 acceptance criteria. | **v0.2, in review** |
-| `specs/` | Deep specs for individual features. One per feature, written before its tickets are cut. | 1 written, 8 pending |
-| `design/exports/` | Every Claude Design export, unpacked and dated. Never store the zip — store its contents. | awaiting first |
-| `design/tokens/` | Current token JSON. The input to DS-01's build step. | awaiting first |
-| `process/` | How we work. Repeatable methods, not project content. | in progress |
-| `journal/` | Dated notes. Decisions, dead ends, why things changed. | started |
-| `reference/` | Old-app material worth keeping. Read-only, never edited. | 7 files |
-| `scripts/` | Small tools. Currently: design export import + diff. | 1 |
+**Baseline:** requirements v0.7 · 71 issues · 136 dependency edges · no cycles
 
-## Current state
+**First ready issue:** `ENV-01`
 
-**Requirements v0.2 is awaiting review.** That's the only thing blocking everything else —
-tickets, the DAG, and the first build session all wait on approval.
+## Start here
 
-Review surface: the requirements are published as an interactive artifact with per-requirement
-approve / flag / note, and a copy-out for review notes.
+1. `CLAUDE.md` — repository instructions.
+2. `process/AGENT_PLAYBOOK.md` — how work is selected, scoped, reviewed, and merged.
+3. The assigned GitHub issue — the live unit of work after migration.
+4. The issue's referenced specs, then `PROJECT_MAP.md`, `specs/design/ATOMIC.md` for UI work,
+   and the relevant screen contract in `specs/IA.md`.
 
-## The rules that keep this from rotting
+## Repository map
 
-1. **One source of truth per thing.** `requirements/REQUIREMENTS.md` is the spec. Not a copy in
-   a chat, not a version in project knowledge. If it's here, it's current.
-2. **Specs precede tickets.** A stub becomes issue-ready only after a spec exists in `specs/`.
-   Progressive overload proved why: writing its details early would have produced the wrong
-   database schema.
-3. **Design exports are unpacked, never stored as zips.** Zips can't be diffed. See below.
-4. **Decisions get journaled the day they're made.** The reasoning is worth more than the outcome
-   and evaporates fastest.
+| Path | Purpose |
+|---|---|
+| `requirements/REQUIREMENTS.md` | Frozen v0.7 issue baseline; one requirement per GitHub issue |
+| `specs/` | Product, data, generation, screen, and structure contracts |
+| `design/exports/clear-design-system-0.5.0/` | Approved unpacked design-system artifact |
+| `design/CHANGELOG.md` | Design import history and rationale |
+| `DAG.md` | Generated dependency graph and critical-path analysis |
+| `process/AGENT_PLAYBOOK.md` | Operational build loop |
+| `github/` | Re-runnable label, milestone, issue, and dependency migration scripts |
+| `journal/` | Dated decisions and audit notes |
+| `reference/` | Preserved historical material; read-only orientation, never a dependency |
 
-## Design system versioning
+## Source-of-truth handoff
 
-The design system lives in Claude Design. Each export lands here as an unpacked, dated folder:
+Before issue migration, `requirements/REQUIREMENTS.md` is authoritative. After migration, GitHub
+issues are the live build truth and v0.7 remains the frozen baseline. If implementation proves a
+requirement wrong, comment on its issue and open a deliberate follow-up; do not silently widen the
+current ticket or edit the baseline to conceal the change.
 
+## Graph checks
+
+```sh
+python3 scripts/gen-issues.py --check
+python3 scripts/gen-dag.py
 ```
-./scripts/import-design.sh ~/Downloads/clear-design.zip
-```
 
-The script unpacks it, mirrors the token JSON, and prints exactly what changed since the last
-export — file-level adds/removes/modifications, plus line-level diffs of every token value.
-Then commit it. Git holds the history; the script tells you what to look at.
+Expected baseline: 71 requirements, 136 edges, no cycles, and only `ENV-01` ready.
 
-This works because a Claude Design export is entirely text under the hood — HTML artboards,
-JSON tokens, SVG. All of it diffs cleanly once it's out of the archive.
+## Product direction
 
-**Why this matters beyond convenience:** DS-01 in the requirements builds generated CSS from
-token JSON. Deterministic input, deterministic output — so a token change produces a reviewable
-CSS diff. "What changed in the design" becomes a question with an exact answer.
+The M1 gate is the complete phone-sized loop:
 
-## Git
+`Home → Generate → Loading → Review → Workout → Summary → Home`
 
-Local only. No remote yet, by design — GitHub is paused until requirements are approved.
-Everything is already being versioned; adding a remote later is one command.
+Installability is `PWA-01` in M2 after the deployed shell and design substrate exist. It adds the
+manifest, icons, theme metadata, iOS metadata, and a minimal shell service worker. True offline
+data and generation are intentionally separate M3 work.

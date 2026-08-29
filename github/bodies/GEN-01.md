@@ -15,4 +15,4 @@ The shared shell for all AI functions: auth verification, zod request parsing, C
 **Depends on:** DATA-01c, CORE-01, CORE-03
 **Blocks:** GEN-02b
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

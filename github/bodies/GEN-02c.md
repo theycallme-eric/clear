@@ -2,7 +2,7 @@
 
 > **Part of GEN-02.** GEN-06 checks duration plausibility — a validation rule. As one node it waited on prompt authoring and a live Claude call it has nothing to do with. Retrieval is also pure SQL and testable against the seeded library with no model in the loop at all, which makes it the piece most worth landing first.
 
-**Spec:** `specs/generation/GENERATION_CONTRACT.md` §6–8
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §6–8 · `specs/generation/WORKED_EXAMPLE.md`
 
 The deterministic half after the model: reject what the database would reject, record what cannot be enforced, fill in the facts, write it down.
 
@@ -21,4 +21,4 @@ The deterministic half after the model: reject what the database would reject, r
 **Depends on:** GEN-02b, DATA-01d
 **Blocks:** GEN-03, GEN-06, REV-02
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

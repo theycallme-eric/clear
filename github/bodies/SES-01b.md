@@ -2,7 +2,7 @@
 
 > **Part of SES-01.** Streak derivation was folded in here because it is a query over completed sessions — but HOME-01 and HOME-02 need *only* that query, and as one node they waited on the whole state machine, the resume path and the reconstruction queries. That is the clearest case of false serialization in the graph.
 
-**Spec:** `specs/DATA_MODEL.md` §7
+**Spec:** `specs/DATA_MODEL.md` §7 · `specs/generation/WORKED_EXAMPLE.md`
 
 The queries that make prescribed, revised and performed independently reconstructable — and the test that proves the old behaviour is gone.
 
@@ -17,4 +17,4 @@ The queries that make prescribed, revised and performed independently reconstruc
 **Depends on:** SES-01a
 **Blocks:** FAV-01, OVR-01a
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

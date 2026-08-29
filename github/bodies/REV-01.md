@@ -14,4 +14,4 @@ Pre-workout briefing: sections and exercises, estimated duration, intensity/anch
 **Depends on:** GEN-03, DS-04a, DS-05
 **Blocks:** REV-03, OVR-01c
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

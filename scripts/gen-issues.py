@@ -19,7 +19,7 @@ REQ  = ROOT / "requirements" / "REQUIREMENTS.md"
 GH   = ROOT / "github"
 BOD  = GH / "bodies"
 
-VERSION = "v0.6"
+VERSION = "v0.7"
 FOOTER  = (f"<sub>Generated from `requirements/REQUIREMENTS.md` {VERSION} by "
            f"`scripts/gen-issues.py` — edit the requirement, not the issue.</sub>")
 
@@ -38,6 +38,16 @@ def parse():
     for k, (i, rid, title) in enumerate(heads):
         end = heads[k + 1][0] if k + 1 < len(heads) else len(lines)
         block = lines[i + 1:end]
+
+        # A requirement can be the final ### heading in the document. In that case,
+        # stop at the next top-level section instead of absorbing the appendices into
+        # its issue body (EXE-06 exposed this when it was the last live requirement).
+        for j, line in enumerate(block):
+            if line.startswith("## ") or (line.startswith("### ") and not HEAD.match(line)):
+                block = block[:j]
+                break
+        while block and (not block[-1].strip() or block[-1].strip() == "---"):
+            block.pop()
 
         if "(deleted" in title:
             continue

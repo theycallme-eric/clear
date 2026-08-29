@@ -34,8 +34,13 @@ from it without reading 4MB of source on every ticket.
 4. the `.clr-*` CSS classes
 5. the `data-skin` and `data-atmosphere` attributes
 
-Ramp math, internal file layout and the specimen cards are **internal**. Do not read
-from them, do not depend on them, do not copy out of them.
+Ramp math and internal file layout are **internal**. Do not depend on them or copy
+implementation details out of them. The specimen cards, templates, and
+`ui_kits/app/` are different: they are **mandatory visual references** named by each
+screen contract in `specs/IA.md`. Inspect them to preserve composition, hierarchy,
+density, and motion intent, but never import them as production modules or treat
+their internal markup as a public API. Production code composes only from the public
+entry, declared `.clr-*` classes, tokens, and app-owned domain components.
 
 > **Independence note.** The design system was extracted *from* the old repo, but it is
 > now self-contained and self-describing — no repo access required, per its own README.

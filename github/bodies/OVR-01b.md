@@ -18,4 +18,4 @@ The RPE rule table and the confidence ladder, as pure functions.
 **Depends on:** OVR-01a
 **Blocks:** OVR-01c, OVR-02, OVR-03
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

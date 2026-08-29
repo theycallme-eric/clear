@@ -13,13 +13,7 @@ The daily entry point: Generate + Quick Start actions, recent 3 workouts, incomp
 
 ---
 
-## 11. M2 — Parity + planned near-term
-
-The gate: the old app is fully retired. Everything it did, this does — plus the near-term specs (favorites v2) that were designed but never shipped.
-
----
-
 **Depends on:** HIST-01, SES-01c, GEN-03, DS-04a
 **Blocks:** FAV-01, HOME-02, HOME-03
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

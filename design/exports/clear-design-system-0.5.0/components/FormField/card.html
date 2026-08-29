@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="FormField" subtitle="Label + helper + error scaffolding for any control" viewport="700x180" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 22px;box-sizing:border-box;height:180px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}</style></head>
+<body><div class="card" id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+if(NS.FormField&&NS.IntensitySlider){function D(){const [v,setV]=React.useState(7);
+ return e(React.Fragment,null,
+  e(NS.FormField,{label:'Intensity',helperText:'1 is a walk, 10 is a max effort.',style:{flex:1,minWidth:230}},
+   e(NS.IntensitySlider,{value:v,onChange:setV,label:'Int.'})),
+  e(NS.FormField,{label:'Session length',required:true,errorText:'Must be 10–120',style:{flex:1,minWidth:230}},
+   e(NS.Input,{defaultValue:'400',invalid:true})));}
+ ReactDOM.createRoot(m).render(e(D));}
+else{m.innerHTML='<span class="fb" style="color:var(--urgency)">Bundle is stale — reload</span>'}
+</script></body></html>

@@ -16,4 +16,4 @@ Per-slot swap with up-to-3 history and undo; unit swap for blocks; nudge to rege
 **Depends on:** REV-01, REV-02
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

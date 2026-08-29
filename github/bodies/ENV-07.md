@@ -20,4 +20,4 @@ The part that is genuinely hard, and the reason it is a separate requirement: an
 **Depends on:** ENV-06, ENV-02, DATA-02, AUTH-01
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

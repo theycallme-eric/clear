@@ -15,4 +15,4 @@ Chronological history with rest days marked; detail view shows sections, exercis
 **Depends on:** DATA-03, AUTH-03, DS-04a
 **Blocks:** HOME-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

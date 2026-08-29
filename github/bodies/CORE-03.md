@@ -20,4 +20,4 @@ Covers the generation output contract v4.1 (blocks, discriminated targets, timer
 **Depends on:** ENV-01, DATA-03
 **Blocks:** AUTH-03, GEN-01, GEN-02b, GEN-03, GEN-06, SES-01a
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

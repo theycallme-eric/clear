@@ -17,4 +17,4 @@ Per the v2 spec: personal bests (min completion time for For Time, max rounds fo
 **Depends on:** FAV-01, EXE-04a, EXE-04b, EXE-04c
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

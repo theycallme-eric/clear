@@ -1,7 +1,7 @@
 # CLEAR Rebuild — Requirements Specification
 
-**Version:** 0.6 — sized, tested, and accessible
-**Date:** 2026-08-25
+**Version:** 0.7 — issue-ready baseline
+**Date:** 2026-08-29
 **Requirements:** 71 · **Defects:** D1–D7
 
 **Version history**
@@ -15,6 +15,7 @@
 | 0.4 | **Two verified defects (D5, D6) and three outside review rounds.** Structured prescriptions, first-class blocks, three-state model with temporal lineage, duration plausibility guardrail, user-authored constraints, staged taxonomy migration. Detail lives in `specs/DATA_MODEL.md` and `specs/generation/GENERATION_CONTRACT.md`. `DATA-04`, `GEN-07`, and `META-01` were proposed during review and withdrawn before issue — hence the gap between `DATA-03` and `DATA-05`. |
 | 0.5 | **`clear-design-system@0.5.0` landed and §9 was rewritten against it.** The export ships a component library, not tokens — DS-03 deleted, DS-01/02/05/06 rescoped from *build* to *integrate*, DS-07 shrunk, **DS-08** (adherence gate in CI) added. GEN-05 and SET-01 rescoped. **D7 registered** (set logs written live with no failure handling) and closed by **EXE-07**. **All eight backlog stubs resolved** — five cut, two promoted (EXE-06, EXE-07), one folded into DATA-02; reasoning in `requirements/DEFERRED.md`. Substrate contract: `specs/design/ATOMIC.md`. |
 | **0.6** | **Sizing rule applied.** Six oversized requirements split into sub-requirements with disjoint dependents — DATA-01 by schema domain, GEN-02 by pipeline stage, SES-01 by lifecycle / reconstruction / streak, EXE-04 by structure type, OVR-01 by anchors / rules / surface, DS-04 by control. Every split had to name the dependent it unblocks. **ENV-06 / ENV-07** add the test architecture (component harness; E2E on mobile viewports, test-user provisioning, seed/reset, RLS as a standing test). **CORE-05** adds the accessibility contract — the cross-screen mechanisms the design system cannot know about — plus a standing review constraint. `scripts/gen-issues.py` now generates the issue scripts and bodies from this file and validates the graph; the scripts are no longer hand-maintained. |
+| **0.7** | **Issue-ready baseline.** Imported the approved design-system artifact, mapped every screen to a visual reference and motion choreography, ported the v3 coaching rules onto the v4.1 generation architecture in `PROMPT_v4.md`, and added a request-to-reconstruction worked example. Issue generation now stops at appendix boundaries so the final ticket cannot absorb unrelated prose. |
 **0.2:** Progressive-overload spec landed (`specs/OVR-01_progressive-overload.md`) → OVR stub promoted to four full requirements (OVR-01…04); DATA-01 and EXE-04 patched so the schema and logging are progression-ready from day one.
 **Scope:** Ground-up rebuild of CLEAR. Full parity with the existing app plus spec'd planned features, sequenced M0–M3.
 
@@ -724,7 +725,7 @@ Eligibility resolves in SQL **before** any prompt exists. Rules currently writte
 ### GEN-02b — Prompt composition + model call
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-02a, GEN-01, CORE-03
-**Spec:** `specs/generation/GENERATION_CONTRACT.md` §4–5
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §4–5 · `specs/generation/PROMPT_v4.md`
 
 Assemble the prompt from resolved candidates, call Claude, retry once on a malformed response.
 
@@ -739,7 +740,7 @@ Assemble the prompt from resolved candidates, call Claude, retry once on a malfo
 ### GEN-02c — Validation, hydration, persistence
 **Layer:** api · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** GEN-02b, DATA-01d
-**Spec:** `specs/generation/GENERATION_CONTRACT.md` §6–8
+**Spec:** `specs/generation/GENERATION_CONTRACT.md` §6–8 · `specs/generation/WORKED_EXAMPLE.md`
 
 The deterministic half after the model: reject what the database would reject, record what cannot be enforced, fill in the facts, write it down.
 
@@ -828,7 +829,7 @@ The workout state machine and the requirement that closes D6.
 ### SES-01a — Session lifecycle + atomic persistence
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** DATA-01d, DATA-03, CORE-03, AUTH-03
-**Spec:** `specs/DATA_MODEL.md` §7
+**Spec:** `specs/DATA_MODEL.md` §7 · `specs/generation/WORKED_EXAMPLE.md`
 
 Accept → persist atomically → active → complete, plus abandon and resume.
 
@@ -843,7 +844,7 @@ Accept → persist atomically → active → complete, plus abandon and resume.
 ### SES-01b — Three-state reconstruction + the D6 regression test
 **Layer:** state · **Milestone:** M1 · **Carry-over:** rebuild
 **Depends on:** SES-01a
-**Spec:** `specs/DATA_MODEL.md` §7
+**Spec:** `specs/DATA_MODEL.md` §7 · `specs/generation/WORKED_EXAMPLE.md`
 
 The queries that make prescribed, revised and performed independently reconstructable — and the test that proves the old behaviour is gone.
 

@@ -15,4 +15,4 @@ Single-slot regeneration on the same contract as GEN-02 — the same candidate r
 **Depends on:** GEN-02c
 **Blocks:** REV-03, EXE-06
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

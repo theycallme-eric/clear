@@ -15,4 +15,4 @@ Multi-step first-run: experience level, goal preset, location + equipment, secti
 **Depends on:** AUTH-03, DS-01
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

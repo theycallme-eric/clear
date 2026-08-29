@@ -14,4 +14,4 @@ Scheduled GitHub Action pings the database twice weekly so the free-tier project
 **Depends on:** ENV-02, DATA-01a
 **Blocks:** —
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

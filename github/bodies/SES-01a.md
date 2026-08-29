@@ -2,7 +2,7 @@
 
 > **Part of SES-01.** Streak derivation was folded in here because it is a query over completed sessions — but HOME-01 and HOME-02 need *only* that query, and as one node they waited on the whole state machine, the resume path and the reconstruction queries. That is the clearest case of false serialization in the graph.
 
-**Spec:** `specs/DATA_MODEL.md` §7
+**Spec:** `specs/DATA_MODEL.md` §7 · `specs/generation/WORKED_EXAMPLE.md`
 
 Accept → persist atomically → active → complete, plus abandon and resume.
 
@@ -19,4 +19,4 @@ Accept → persist atomically → active → complete, plus abandon and resume.
 **Depends on:** DATA-01d, DATA-03, CORE-03, AUTH-03
 **Blocks:** SES-01b, SES-01c, EXE-01, EXE-07, SUM-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

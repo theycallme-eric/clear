@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Shape" name="ChamferedFrame" subtitle="The signature shape · React component + .clr-chamfer class" viewport="700x300" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:18px 22px;box-sizing:border-box;height:300px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:14px;align-items:stretch;flex:1;min-height:0}
+.lbl{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:var(--tracking-data-wide);text-transform:uppercase;color:var(--structure-300);margin-bottom:5px}
+.h{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-card-header);line-height:1.1}
+.p{font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,0.6);line-height:1.35;margin-top:3px}
+.cell{flex:1;min-width:0;padding:11px 13px;box-sizing:border-box}
+.sizes{display:flex;gap:10px;flex:1.15;min-width:0}
+.sz{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;padding:9px 10px;box-sizing:border-box}
+.sz .n{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--structure-100)}
+#mount{flex:1;min-width:0;display:flex}
+.note{font-family:var(--font-data);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-400)}
+</style>
+</head><body>
+<div class="card">
+  <div class="row">
+    <div id="mount"></div>
+    <div class="cell clr-chamfer clr-chamfer--lg">
+      <div class="lbl">CSS · .clr-chamfer</div>
+      <div class="h">Portable</div>
+      <div class="p">One class, no wrapper, no JS. The border lives on the element; the surface on <code>::before</code> inset by the border width.</div>
+    </div>
+  </div>
+  <div class="sizes">
+    <div class="sz clr-chamfer clr-chamfer--sm"><span class="n">SM · 8</span></div>
+    <div class="sz clr-chamfer clr-chamfer--md"><span class="n">MD · 12</span></div>
+    <div class="sz clr-chamfer clr-chamfer--lg"><span class="n">LG · 24</span></div>
+    <div class="sz clr-chamfer clr-chamfer--xl"><span class="n">XL · 32</span></div>
+    <div class="sz clr-chamfer clr-chamfer--cta"><span class="n">CTA</span></div>
+    <div class="sz clr-chamfer clr-chamfer--selected"><span class="n" style="color:var(--selection-900)">SELECTED</span></div>
+  </div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const { ChamferedFrame } = window.CLEARDesignSystem_4ee044 || {};
+const e = React.createElement;
+const mount = document.getElementById('mount');
+if (ChamferedFrame) {
+  ReactDOM.createRoot(mount).render(
+    e(ChamferedFrame, { cornerSize: 'lg', scan: true, glow: true, hasLeftBorder: true, style: { flex: 1 } },
+      e('div', { style: { padding: '11px 13px' } },
+        e('div', { className: 'lbl' }, 'REACT · <ChamferedFrame>'),
+        e('div', { className: 'h' }, 'Pixel-perfect'),
+        e('div', { className: 'p' }, 'SVG double-width stroke, clipped. Mitred corners, uniform border on the diagonal. Traces on, drifts colour over 1s.')
+      )
+    )
+  );
+} else {
+  mount.className = 'cell clr-chamfer clr-chamfer--lg';
+  mount.innerHTML = '<div><div class="lbl">REACT · &lt;ChamferedFrame&gt;</div><div class="h">Pixel-perfect</div><div class="p">SVG double-width stroke, clipped. Mitred corners, uniform border on the diagonal. Traces on, drifts colour over 1s.</div></div>';
+}
+</script>
+</body></html>

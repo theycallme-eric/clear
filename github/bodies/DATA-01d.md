@@ -22,4 +22,4 @@ Set logs and block results — the performed side, and the home of typed absence
 **Depends on:** DATA-01c
 **Blocks:** DATA-03, GEN-02c, SES-01a
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

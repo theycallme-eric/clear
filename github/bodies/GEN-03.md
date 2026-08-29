@@ -15,4 +15,4 @@ React Query mutation with pending / success / typed-error states. Kills D2's sil
 **Depends on:** GEN-02c, CORE-03, AUTH-03
 **Blocks:** GEN-04, GEN-05, REV-01, HOME-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Components — Slider & Mood" subtitle="Intensity slider + 4-mood selector" viewport="700x170" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+  .card{padding:18px 22px;box-sizing:border-box;color:var(--fg);display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .slider{width:240px;position:relative;padding:18px 0}
+  .track{height:2px;background:var(--color-orange-alpha-300)}
+  .fill{position:absolute;top:50%;left:0;height:2px;background:var(--color-orange-500);box-shadow:0 0 8px var(--color-orange-alpha-600)}
+  .thumb{position:absolute;top:50%;width:18px;height:18px;background:var(--color-orange-500);border:2px solid #fff;transform:translate(-50%,-50%);box-shadow:0 0 10px var(--color-orange-alpha-600)}
+  .ticks{display:flex;justify-content:space-between;margin-top:6px;font-family:var(--font-label);font-size:9px;font-weight:700;color:rgba(255,255,255,0.55);letter-spacing:0.05em}
+  .mood{display:flex;gap:10px}
+  .m{width:40px;height:40px;border:2px solid var(--color-orange-500);display:flex;align-items:center;justify-content:center;color:var(--color-orange-300)}
+  .m.sel{background:var(--color-green-alpha-600);border-color:var(--color-green-500);color:var(--color-green-900)}
+  .m svg{width:22px;height:22px}
+  .lbl{font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-orange-300);margin-bottom:8px}
+  .g{display:flex;flex-direction:column}
+</style>
+</head><body><div class="card">
+  <div class="g">
+    <div class="lbl">INTENSITY · 7 / 10</div>
+    <div class="slider">
+      <div class="track"></div>
+      <div class="fill" style="width:70%"></div>
+      <div class="thumb" style="left:70%"></div>
+      <div class="ticks"><span>1</span><span>3</span><span>5</span><span>7</span><span>9</span></div>
+    </div>
+  </div>
+  <div class="g">
+    <div class="lbl">HOW DO YOU FEEL?</div>
+    <div class="mood">
+      <div class="m"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15s1.5 2 4 2 4-2 4-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" transform="rotate(180 12 16)"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/></svg></div>
+      <div class="m"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 15h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/></svg></div>
+      <div class="m sel"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 14s1.5 2 4 2 4-2 4-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/></svg></div>
+      <div class="m"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 14s2 3 4 3 4-3 4-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/></svg></div>
+    </div>
+  </div>
+</div></body></html>

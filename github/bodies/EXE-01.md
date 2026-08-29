@@ -19,4 +19,4 @@ Section-by-section progression, prev/next navigation, progress tracker, global s
 **Depends on:** SES-01a, DS-04a, DS-05
 **Blocks:** EXE-02, EXE-03, EXE-04a, EXE-04b, EXE-04c, EXE-05, EXE-06
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

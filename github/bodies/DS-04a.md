@@ -17,4 +17,4 @@
 **Depends on:** DS-01
 **Blocks:** DS-07, REV-01, EXE-01, EXE-02, SUM-01, HIST-01, HOME-01, SET-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>

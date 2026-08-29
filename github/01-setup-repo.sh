@@ -29,8 +29,6 @@ gh label create "carry:new" --color A368FF --description "Prior art: new" --forc
 gh label create "carry:port" --color 00A9F4 --description "Prior art: port" --force
 gh label create "carry:rebuild" --color F87823 --description "Prior art: rebuild" --force
 gh label create "needs-spec" --color 6E7681 --description "Backlog — write a spec before building" --force
-gh label create "blocked:design-export" --color CD1958 --description "Waiting on the Claude Design export" --force
-
 echo "Milestones…"
 gh api "repos/$REPO/milestones" -f title="M0" -f description="Foundation — CI, deploy, schema, auth, dev environment, design tokens" >/dev/null 2>&1 || echo "  M0 already exists"
 gh api "repos/$REPO/milestones" -f title="M1" -f description="Core loop — generate, review, execute, log, history" >/dev/null 2>&1 || echo "  M1 already exists"

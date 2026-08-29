@@ -15,4 +15,4 @@ Kills the stringly-typed half of D2. A typed `AppError` union (auth / network / 
 **Depends on:** ENV-01
 **Blocks:** CORE-02, CORE-04, AUTH-03, GEN-01
 
-<sub>Generated from `requirements/REQUIREMENTS.md` v0.6 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
+<sub>Generated from `requirements/REQUIREMENTS.md` v0.7 by `scripts/gen-issues.py` — edit the requirement, not the issue.</sub>
