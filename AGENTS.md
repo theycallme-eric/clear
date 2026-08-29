@@ -8,6 +8,9 @@ Run `python3 scripts/dag-ready.py` instead of choosing from the issue list manua
 asks to run the DAG, automate the build, work unattended, or continue the rebuild, use the project
 skill `clear-dag-runner` and its canonical loop in `docs/process/DAG_RUNNER.md`.
 
+An approved ready issue authorizes routine implementation through a tested, pushed pull request.
+Do not repeatedly ask for permission to branch, edit, verify, commit, push, or open that PR.
+
 ## Process journal
 
 For every material work session, maintain `docs/journal/YYYY-MM-DD.md` at meaningful checkpoints

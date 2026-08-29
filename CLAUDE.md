@@ -22,6 +22,9 @@ ranks what remains. Take its recommendation unless Eric named another available 
 When Eric asks to run the DAG, automate the build, work unattended, or run for a while, use the
 project skill `clear-dag-runner`. Its canonical loop is `docs/process/DAG_RUNNER.md`.
 
+Selecting an approved ready issue authorizes its normal branch-to-PR implementation loop. Do not ask
+Eric to re-approve routine repository actions; pause only at the runner's explicit stop gates.
+
 **Never work an issue that is not in the ready queue.** If it looks ready but the queue
 disagrees, the graph is right — go read what it is blocked by.
 
