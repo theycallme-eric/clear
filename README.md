@@ -28,3 +28,7 @@ system into `src/design-system/`; until then the shell intentionally uses browse
 
 Read [PROJECT_MAP.md](PROJECT_MAP.md) before adding a file and
 [docs/process/AGENT_PLAYBOOK.md](docs/process/AGENT_PLAYBOOK.md) before selecting work.
+
+For the reconciled build sequence, current state, backend/key gates, and the distinction between an
+installable shell and a useful PWA, read
+[docs/process/IMPLEMENTATION_PLAN.md](docs/process/IMPLEMENTATION_PLAN.md).
