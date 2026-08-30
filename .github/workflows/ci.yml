@@ -38,13 +38,15 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      - name: Reject raw console usage
+      - name: Reject raw console usage in app-owned source
         shell: bash
         run: |
-          if grep -R -n -E \
-            --include='*.js' --include='*.jsx' --include='*.ts' --include='*.tsx' \
-            'console\.[[:alnum:]_$]+[[:space:]]*\(' src; then
-            echo 'Raw console.* usage is not allowed in src/' >&2
+          # DS-01 vendors a byte-identical, versioned export. Enforce this policy on
+          # CLEAR-owned source without rewriting the immutable vendor subtree.
+          if git grep -n -E \
+            'console\.[[:alnum:]_$]+[[:space:]]*\(' -- \
+            'src/**' ':(exclude)src/design-system/**'; then
+            echo 'Raw console.* usage is not allowed in app-owned src/' >&2
             exit 1
           fi
       - name: Verify requirements graph

@@ -7,7 +7,8 @@
     <title>CLEAR</title>
     <script>
       // Inline skin initialization — must run before first paint.
-      // This is a minimal extract from skin.js; the full module loads later.
+      // This is the synchronous selection step from skin.js; the module below
+      // runs initSkin() in <head> to attach the preference-change listener.
       (function() {
         var SKINS = ['clear', 'vapour', 'signal', 'mono'];
         var KEY = 'clear.skin';
@@ -23,6 +24,10 @@
         var skin = storedSkin() || (prefersMoreContrast() ? 'mono' : 'clear');
         document.documentElement.setAttribute('data-skin', skin);
       })();
+    </script>
+    <script type="module">
+      import { initSkin } from '/src/design-system/skin.js'
+      initSkin()
     </script>
   </head>
   <body>

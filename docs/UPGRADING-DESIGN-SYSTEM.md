@@ -45,6 +45,11 @@ If the export added new tokens or changed values:
 - Update changed values in the app-owned skin
 - **Never copy the @import line** — font delivery is handled by DS-02
 
+Also compare `skin.js` selection behavior with the synchronous bootstrap in `index.html`. The
+bootstrap sets the initial attribute before paint; the following head module calls `initSkin()` to
+attach the preference-change listener. If the export changes its resolution contract, update the
+bootstrap and its integration test together.
+
 ### 4. Update the version pin in ATOMIC.md
 
 Edit `docs/specs/design/ATOMIC.md` §1 to reflect the new version in the table:
@@ -56,7 +61,7 @@ Edit `docs/specs/design/ATOMIC.md` §1 to reflect the new version in the table:
 ### 5. Run the version test
 
 ```sh
-npm test -- src/design-system/version.test.ts
+npm test -- src/test/design-system-version.test.ts
 ```
 
 This asserts the exported `VERSION` constant equals the version in ATOMIC.md and
@@ -85,6 +90,7 @@ If you changed a colour token, this is where regressions appear.
 - [ ] `src/design-system/` replaced with new export (byte-identical)
 - [ ] New CSS layers (if any) added to `src/main.tsx` imports
 - [ ] `src/styles/skin-clear.css` updated to match new export's tokens
+- [ ] `index.html` bootstrap still matches `skin.js` selection behavior
 - [ ] Version pin updated in `docs/specs/design/ATOMIC.md` §1
 - [ ] `npm test` passes (version test)
 - [ ] `npm run lint` passes (adherence lint)
