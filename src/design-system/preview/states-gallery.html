@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="States Gallery" subtitle="Every interactive part × every state · skin and stress switchable" viewport="760x620" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg)}
+.pg{padding:14px 18px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;color:rgba(255,255,255,.55);line-height:1.4;margin:2px 0 10px;max-width:660px}
+.bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+.bar button{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:5px 8px;background:transparent;border:2px solid var(--neutral-500);color:var(--neutral-400);cursor:pointer}
+.bar button.on{border-color:var(--structure-500);color:var(--structure-100);background:var(--structure-a150)}
+.bar .sep{width:1px;background:var(--structure-a300);margin:0 3px}
+.sec{margin-bottom:11px}
+.sh{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:3px;margin-bottom:8px}
+.states{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.cell{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sn{font-family:var(--font-data);font-size:6.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--neutral-400)}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}
+body[data-narrow="1"] .states .cell{max-width:104px}
+body[data-narrow="1"] .states .cell>*:not(.sn){overflow:hidden}
+</style>
+</head><body>
+<div class="pg">
+  <div class="ttl">States Gallery</div>
+  <div class="sub">Every interactive public component, rendered from the compiled bundle — not redrawn. Focus cells are forced on so the keyboard state is visible without tabbing. Toggle skin, reduced motion, narrow containers and long labels to stress the same markup.</div>
+  <div class="bar" id="bar">
+    <button class="on" data-skin="clear">Clear</button>
+    <button data-skin="vapour">Vapour</button>
+    <button data-skin="signal">Signal</button>
+    <span class="sep"></span>
+    <button data-t="narrow">Narrow</button>
+    <button data-t="long">Long labels</button>
+    <button data-t="rm">Reduced motion</button>
+    <button data-t="zoom">200% zoom</button>
+  </div>
+  <div id="gallery"><span class="fb">Bundle compiling… reload in a moment</span></div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<script>
+const NS = window.CLEARDesignSystem_4ee044 || {};
+const e = React.createElement;
+const root = document.getElementById('gallery');
+
+/* Guard on parts added in 0.3, so a stale bundle shows the fallback instead of
+   rendering a half-empty sheet. */
+if (!NS.Button || !NS.ChoiceGroup || !NS.Progress) {
+  root.innerHTML = '<span class="fb" style="color:var(--urgency)">Bundle is stale — reload to load the 0.3 components</span>';
+} else {
+  function Cell({ name, children }) {
+    return e('div', { className: 'cell' }, e('span', { className: 'sn' }, name), children);
+  }
+  function Sec({ title, children }) {
+    return e('div', { className: 'sec' }, e('div', { className: 'sh' }, title), e('div', { className: 'states' }, children));
+  }
+
+  function Gallery({ long }) {
+    /* Derived from props, not a global — a prop change is what tells React the
+       tree is dirty. Reading window.__long here would bail out instead. */
+    const L = (s) => (long ? s + ' — extended label that must wrap or clip without breaking the control' : s);
+    const [chip, setChip] = React.useState(true);
+    const [cb, setCb] = React.useState(true);
+    const [rb, setRb] = React.useState('a');
+    const [sl, setSl] = React.useState(7);
+    const [tab, setTab] = React.useState(0);
+    const [cg, setCg] = React.useState('strength');
+    const [dlg, setDlg] = React.useState(false);
+
+    return e(React.Fragment, null,
+      e(Sec, { title: 'Button · variants × states' },
+        e(Cell, { name: 'Primary' }, e(NS.Button, { variant: 'primary' }, L('Initiate'))),
+        e(Cell, { name: 'Secondary' }, e(NS.Button, null, L('Cancel'))),
+        e(Cell, { name: 'Quiet' }, e(NS.Button, { variant: 'quiet' }, L('Skip'))),
+        e(Cell, { name: 'Critical' }, e(NS.Button, { variant: 'critical' }, L('Abandon'))),
+        e(Cell, { name: 'Loading' }, e(NS.Button, { variant: 'primary', loading: true }, 'Generating')),
+        e(Cell, { name: 'Disabled' }, e(NS.Button, { variant: 'primary', disabled: true }, 'Locked')),
+        e(Cell, { name: 'Icon + label' }, e(NS.Button, { icon: e(NS.Play, { size: 14 }) }, 'Start')),
+        e(Cell, { name: 'Icon only' }, e(NS.IconButton, { label: 'Settings', icon: e(NS.Sliders, { size: 16 }) })),
+        e(Cell, { name: 'Focus' }, e(NS.Button, { variant: 'primary', className: 'force-focus' }, 'Focused')),
+      ),
+      e(Sec, { title: 'Chip · selection carries a tick, not only colour' },
+        e(Cell, { name: 'Selected' }, e(NS.Chip, { selected: chip, onClick: () => setChip(!chip) }, L('Strength'))),
+        e(Cell, { name: 'Unselected' }, e(NS.Chip, { selected: false }, L('Cardio'))),
+        e(Cell, { name: 'Disabled' }, e(NS.Chip, { disabled: true }, 'Locked')),
+        e(Cell, { name: 'Focus' }, e(NS.Chip, { selected: true, className: 'force-focus' }, 'Focused')),
+      ),
+      e(Sec, { title: 'Checkbox / Radio · native inputs' },
+        e(Cell, { name: 'Checked' }, e(NS.Checkbox, { checked: cb, onChange: setCb, label: L('Warm-up') })),
+        e(Cell, { name: 'Unchecked' }, e(NS.Checkbox, { checked: false, label: 'Cool-down' })),
+        e(Cell, { name: 'Indeterminate' }, e(NS.Checkbox, { checked: false, indeterminate: true, label: 'Partial' })),
+        e(Cell, { name: 'Required' }, e(NS.Checkbox, { required: true, label: 'Consent' })),
+        e(Cell, { name: 'Disabled' }, e(NS.Checkbox, { disabled: true, label: 'Locked' })),
+        e(Cell, { name: 'Radio group' }, e('div', { style: { display: 'flex', gap: 10 } },
+          e(NS.RadioButton, { name: 'loc', value: 'a', checked: rb === 'a', onChange: setRb, label: 'Gym' }),
+          e(NS.RadioButton, { name: 'loc', value: 'b', checked: rb === 'b', onChange: setRb, label: 'Home' }))),
+      ),
+      e(Sec, { title: 'Input · helper, error, read-only' },
+        e(Cell, { name: 'Default' }, e(NS.Input, { label: 'Callsign', placeholder: 'What should the system call you?', style: { width: 190 } })),
+        e(Cell, { name: 'Helper' }, e(NS.Input, { label: 'Time', helperText: 'Minutes, hard stop included.', style: { width: 190 } })),
+        e(Cell, { name: 'Error' }, e(NS.Input, { label: 'Time', errorText: 'Must be 10–120', defaultValue: '400', style: { width: 190 } })),
+        e(Cell, { name: 'Read-only' }, e(NS.Input, { label: 'Plan', readOnly: true, defaultValue: 'Lower push', style: { width: 190 } })),
+        e(Cell, { name: 'Disabled' }, e(NS.Input, { label: 'Locked', disabled: true, defaultValue: '—', style: { width: 190 } })),
+      ),
+      e(Sec, { title: 'Slider · Progress · Timer' },
+        e(Cell, { name: 'Slider' }, e(NS.IntensitySlider, { value: sl, onChange: setSl, style: { width: 190 } })),
+        e(Cell, { name: 'Disabled' }, e(NS.IntensitySlider, { value: 5, disabled: true, label: 'Locked', style: { width: 170 } })),
+        e(Cell, { name: 'Determinate' }, e(NS.Progress, { value: 3, max: 5, label: 'Section', showValue: true, segments: 5, style: { width: 170 } })),
+        e(Cell, { name: 'Indeterminate' }, e(NS.Progress, { label: 'Generating', style: { width: 170 } })),
+        e(Cell, { name: 'Timer' }, e(NS.TimerDisplay, { seconds: 75 })),
+        e(Cell, { name: 'Timer low' }, e(NS.TimerDisplay, { seconds: 8 })),
+      ),
+      e(Sec, { title: 'ChoiceGroup · TabBar' },
+        e(Cell, { name: 'Single select' }, e(NS.ChoiceGroup, {
+          legend: 'Goal', value: cg, onChange: setCg,
+          options: [{ value: 'strength', label: L('Strength') }, { value: 'cardio', label: 'Cardio' }, { value: 'mob', label: 'Mobility', disabled: true }],
+          style: { maxWidth: 320 } })),
+        e(Cell, { name: 'Tabs + panel' }, e('div', { style: { width: 260 } },
+          e(NS.TabBar, { idBase: 'g', tabs: ['Today', 'History', { label: 'Locked', disabled: true }], active: tab, onChange: setTab }),
+          e(NS.TabPanel, { idBase: 'g', index: tab, active: tab, style: { paddingTop: 8, fontFamily: 'var(--font-body)', fontSize: 10, color: 'rgba(255,255,255,.6)' } },
+            ['Session summary and streak.', 'Past sessions, most recent first.', ''][tab]))),
+      ),
+      e(Sec, { title: 'Toast · EmptyState · ScanLoader · Dialog' },
+        e(Cell, { name: 'Info' }, e(NS.Toast, { onDismiss: () => {}, style: { width: 210 } }, 'Session saved.')),
+        e(Cell, { name: 'Positive' }, e(NS.Toast, { variant: 'positive', actionLabel: 'View', style: { width: 210 } }, 'Streak extended.')),
+        e(Cell, { name: 'Negative · alert' }, e(NS.Toast, { variant: 'negative', actionLabel: 'Retry', onDismiss: () => {}, style: { width: 210 } }, 'Sync failed.')),
+        e(Cell, { name: 'ScanLoader' }, e(NS.ScanLoader, { label: 'Generating', value: 3, max: 4, lines: ['Profile · loaded', 'Equipment · barbell'], style: { width: 210 } })),
+        e(Cell, { name: 'EmptyState' }, e(NS.EmptyState, { title: 'No sessions logged', message: 'Generate a workout and it will appear here.', actionLabel: 'Generate', style: { width: 210 } })),
+        e(Cell, { name: 'Dialog' }, e('div', null,
+          e(NS.Button, { variant: 'critical', onClick: () => setDlg(true) }, 'Abandon…'),
+          e(NS.Dialog, { open: dlg, critical: true, title: 'Abandon workout?', onClose: () => setDlg(false),
+            actions: e(React.Fragment, null,
+              e(NS.Button, { onClick: () => setDlg(false) }, 'Keep going'),
+              e(NS.Button, { variant: 'critical', onClick: () => setDlg(false) }, 'Abandon')) },
+            'Three sections are logged. Abandoning discards the rest of this session — logged sets are kept.'))),
+      ),
+    );
+  }
+  const reactRoot = ReactDOM.createRoot(root);
+  let long = false;
+  const render = () => reactRoot.render(e(Gallery, { long }));
+  render();
+
+  /* Skin is a root-level product setting, so it is set on <html> — the ramps
+     are derived at :root and would not recompute on a subtree. */
+  const rootEl = document.documentElement;
+  const bar = document.getElementById('bar');
+  bar.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button');
+    if (!b) return;
+    if (b.dataset.skin) {
+      bar.querySelectorAll('[data-skin]').forEach((x) => x.classList.remove('on'));
+      b.classList.add('on');
+      rootEl.setAttribute('data-skin', b.dataset.skin);
+      return;
+    }
+    const t = b.dataset.t;
+    b.classList.toggle('on');
+    const on = b.classList.contains('on');
+    if (t === 'narrow') document.body.dataset.narrow = on ? '1' : '';
+    if (t === 'long') { long = on; render(); }
+    if (t === 'rm') document.documentElement.classList.toggle('force-reduced-motion', on);
+    if (t === 'zoom') document.querySelector('.pg').style.zoom = on ? 2 : '';
+  });
+}
+</script>
+<style>
+/* Force the keyboard state on for review — the same rules :focus-visible uses. */
+.force-focus { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: var(--focus-ring-offset); }
+.clr-chamfer.force-focus { outline: none; }
+.clr-chamfer.force-focus::after { background: var(--focus-ring); }
+.clr-chamfer.force-focus::before { inset: calc(var(--border-width) * 2); }
+.force-reduced-motion * { animation: none !important; transition: none !important; }
+</style>
+</body></html>

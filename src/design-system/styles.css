@@ -1,0 +1,17 @@
+/* =============================================================================
+   CLEAR DESIGN SYSTEM — entry point
+   Load this one file. Three layers, in order:
+
+     foundation.css  the bones — shape, spacing, type scale, role tokens.
+                     Names no colour. Portable to any product.
+     motion.css      the movement vocabulary. Mechanical, stepped, linear.
+     skin-clear.css  CLEAR's identity — six hexes, three fonts.
+                     To build a different tool on these bones, swap this file.
+     skins.css       The rest of the family, switched with data-skin on <html>.
+
+   ============================================================================= */
+
+@import './css/foundation.css';
+@import './css/motion.css';
+@import './css/skin-clear.css';
+@import './css/skins.css';

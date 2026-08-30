@@ -81,6 +81,13 @@ finding.** Report it.
 **Every acceptance box checked AND CI green.** Both. A checked box with red CI is not done;
 green CI with unchecked boxes means the criteria were not the criteria.
 
+Immediately before final verification or handoff, fetch current `origin/main` and integrate it into
+the issue branch. Rebase only unpublished work; for a pushed branch or open PR, merge `main` and never
+force-push. Rerun acceptance and repository checks on that combined final tree, then monitor GitHub
+to a terminal result and take a fresh mergeability/check snapshot. Earlier green results do not make
+a newer head commit ready. If another PR merged a shared journal, status, or map file, repeat this
+gate and preserve both histories.
+
 Update `PROJECT_MAP.md` when the architecture changes — a new directory, a new boundary, a new
 data flow. Not for every file.
 

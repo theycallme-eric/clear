@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Brand" name="Brand — Logo" subtitle="The real <ClearLogo> component · scanline follows the skin" viewport="700x210" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 22px;box-sizing:border-box;height:210px;display:flex;flex-direction:column;gap:12px}
+.skins{display:flex;gap:5px}
+.skins button{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:5px 9px;background:transparent;border:2px solid var(--neutral-500);color:var(--neutral-400);cursor:pointer}
+.skins button.on{border-color:var(--structure-500);color:var(--structure-100);background:var(--structure-a150)}
+.row{flex:1;display:flex;align-items:center;gap:36px}
+.lbl{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400);margin-bottom:8px}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}
+.note{font-family:var(--font-body);font-size:9.5px;color:rgba(255,255,255,.5)}
+</style></head><body>
+<div class="card">
+  <div class="skins" id="skins">
+    <button class="on" data-skin="clear">Clear</button>
+    <button data-skin="vapour">Vapour</button>
+    <button data-skin="signal">Signal</button>
+  </div>
+  <div class="row" id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+  <div class="note">Wordmark and icon mark from the compiled bundle — the scanline and icon border read the structure role, so brand marks recolour with the skin. Favicons can't read CSS: use assets/favicon.svg, favicon-vapour.svg or favicon-signal.svg to match.</div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+document.querySelectorAll('#skins button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('#skins button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+ document.documentElement.setAttribute('data-skin',b.dataset.skin);});
+if(NS.ClearLogo){function D(){const [k,setK]=React.useState(0);
+ return e(React.Fragment,null,
+  e('div',null,e('div',{className:'lbl'},'Wordmark'),e(NS.ClearLogo,{size:'lg',boot:true,key:k})),
+  e('div',null,e('div',{className:'lbl'},'Icon mark'),e(NS.ClearLogo,{variant:'icon',size:'lg'})),
+  e('button',{onClick:()=>setK(k+1),style:{fontFamily:'var(--font-data)',fontSize:'9px',fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',padding:'6px 10px',background:'var(--surface-cta-secondary)',border:'2px solid var(--border-cta-secondary)',color:'var(--text-cta)',cursor:'pointer'}},'Replay boot'));}
+ ReactDOM.createRoot(m).render(e(D));}
+</script>
+</body></html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Boot Sequence" description="Full-screen boot: logo scan-in, staggered system checks, then a single CTA" -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div class="clr-atmosphere clr-atmosphere--fixed">
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span>
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span>
+  <span class="clr-atmosphere__overlay"></span>
+  <span class="clr-atmosphere__scan"></span>
+</div>
+<div class="clr-shell" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;padding:24px;max-width:420px;width:100%;box-sizing:border-box">
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.ClearLogo" size="lg" boot="{{ true }}" hint-size="220px,58px"></x-import>
+    <sc-if value="{{ checking }}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="CLEARDesignSystem_4ee044.ScanLoader" dc-props="{{ loaderProps }}" hint-size="100%,150px" style="width:100%"></x-import>
+    </sc-if>
+    <sc-if value="{{ failed }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:12px;width:100%" role="alert">
+        <div style="font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-critical);text-align:center">System check failed</div>
+        <p style="margin:0;font-size:14px;line-height:16px;text-align:center;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent)">Could not read session history. Your data is intact.</p>
+        <button class="clr-chamfer clr-chamfer--md clr-btn clr-btn--primary" onClick="{{ retry }}" style="width:100%;padding:14px 0;font-size:16px">Retry</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ awaitingConsent }}" hint-placeholder-val="{{ false }}">
+      <div class="clr-boot" style="display:flex;flex-direction:column;gap:12px;width:100%">
+        <div style="font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-timer);text-align:center">All systems nominal</div>
+        <p style="margin:0;font-size:14px;line-height:16px;text-align:center;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent)">Training mode logs every set to your history.</p>
+        <button class="clr-chamfer clr-chamfer--md clr-btn clr-btn--primary" onClick="{{ enter }}" style="width:100%;padding:14px 0;font-size:16px">Begin session</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ entered }}" hint-placeholder-val="{{ false }}">
+      <div class="clr-boot" style="display:flex;flex-direction:column;gap:8px;width:100%;text-align:center">
+        <div style="font-family:var(--font-display);font-size:22px;font-weight:700;text-transform:uppercase;color:var(--text-header)">Today</div>
+        <p style="margin:0;font-size:14px;line-height:16px;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent)">Boot continued on its own — no key press was required.</p>
+      </div>
+    </sc-if>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button onClick="{{ setAuto }}" class="clr-chamfer clr-chamfer--sm clr-btn" style="font-size:11px;padding:6px 10px">Auto-continue</button>
+      <button onClick="{{ setConsent }}" class="clr-chamfer clr-chamfer--sm clr-btn" style="font-size:11px;padding:6px 10px">Consent gate</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+// Boot reflects REAL initialization. It never manufactures delay for branding:
+// the sequence is as long as the work is, and when the work is done the app
+// continues on its own. The Enter action exists only in the `consent` mode,
+// where it represents an actual decision rather than a gate.
+//
+// `simulateWork` stands in for the host app's real init promise. Replace it with
+// your own — do not replace it with a timer.
+class Component extends DCLogic {
+  state = { done: 0, status: 'ok', mode: 'auto', entered: false };
+
+  steps = [
+    'Profile · loaded',
+    'Session history · 42 entries',
+    'Equipment · barbell, bands',
+    'Constraints · left shoulder',
+  ];
+
+  componentDidMount() { this.run(); }
+  componentWillUnmount() { this.cancelled = true; }
+
+  // Stand-in for real init. Each step resolves when its work is done.
+  simulateWork(i) {
+    return new Promise((res) => setTimeout(res, [120, 260, 180, 140][i] ?? 150));
+  }
+
+  async run() {
+    this.setState({ done: 0, status: 'ok' });
+    // If init outruns the budget, say so factually rather than hiding it.
+    this.slowTimer = setTimeout(() => {
+      if (!this.cancelled && this.state.status === 'ok' && this.state.done < this.steps.length) {
+        this.setState({ status: 'slow' });
+      }
+    }, 4000);
+    for (let i = 0; i < this.steps.length; i++) {
+      try {
+        await this.simulateWork(i);
+      } catch (e) {
+        clearTimeout(this.slowTimer);
+        if (!this.cancelled) this.setState({ status: 'failed' });
+        return;
+      }
+      if (this.cancelled) return;
+      this.setState({ done: i + 1 });
+    }
+    clearTimeout(this.slowTimer);
+    // Work finished: continue automatically. Reduced-motion users are never
+    // held for the length of an animation, because nothing waits on one.
+    if (this.state.mode === 'auto') this.setState({ entered: true });
+  }
+
+  renderVals() {
+    const { done, status, mode, entered } = this.state;
+    const total = this.steps.length;
+    const complete = done >= total;
+    return {
+      checking: !complete && status !== 'failed',
+      failed: status === 'failed',
+      // Only shown when Enter means consent or a mode transition — never as a
+      // gate in front of an app that is already ready.
+      awaitingConsent: complete && mode === 'consent' && !entered,
+      entered,
+      loaderProps: {
+        label: status === 'slow' ? 'System check · taking longer than usual' : 'System check',
+        lines: this.steps.slice(0, done),
+        value: done,
+        max: total,
+        status,
+      },
+      retry: () => this.run(),
+      enter: () => this.setState({ entered: true }),
+      setAuto: () => this.setState({ mode: 'auto' }),
+      setConsent: () => this.setState({ mode: 'consent', entered: false }),
+      autoOn: mode === 'auto',
+      consentOn: mode === 'consent',
+    };
+  }
+}
+</script>
+</body>
+</html>

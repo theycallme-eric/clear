@@ -1,0 +1,687 @@
+/* =============================================================================
+   FOUNDATION — the bones. Hue-agnostic.
+   Nothing in this file names a colour. Every colour is a ROLE fed by a skin
+   file (see css/skin-clear.css). Swap the skin, keep the system.
+   ============================================================================= */
+
+:root {
+  /* ===========================================================================
+     ROLE SLOTS — a skin sets these six values. Everything else derives.
+     =========================================================================== */
+  --structure: #F87823;   /* frames, borders, labels — things that ARE */
+  --interaction: #00A9F4; /* CTAs, links, tappables — things that ACT */
+  --selection: #99DD39;   /* "you chose this" — role-independent */
+  --urgency: #CD1958;     /* demands attention NOW — time pressure or failure */
+  --info: #A368FF;        /* neutral information — atmosphere and info states */
+  --base: #171717;        /* the dark ground everything is emissive against */
+  --ink: #F1F1F1;
+
+  /* ===========================================================================
+     DERIVED RAMPS — a skin may pin these to exact brand hexes instead.
+     Tints climb toward the ink, shades fall toward the base.
+
+     The scale is exactly 100 · 300 · 400 · 500 · 600 · 900. There is no 200,
+     700 or 800 — six steps cover every use in the system and adding more
+     invites arbitrary choices. A reference to a missing step falls back
+     silently, so use only these six.
+     =========================================================================== */
+  --structure-100: color-mix(in oklab, var(--structure) 22%, var(--ink));
+  --structure-300: color-mix(in oklab, var(--structure) 58%, var(--ink));
+  --structure-400: color-mix(in oklab, var(--structure) 80%, var(--ink));
+  --structure-500: var(--structure);
+  --structure-600: color-mix(in oklab, var(--structure) 78%, var(--base));
+  --structure-900: color-mix(in oklab, var(--structure) 20%, var(--base));
+
+  --interaction-100: color-mix(in oklab, var(--interaction) 22%, var(--ink));
+  --interaction-300: color-mix(in oklab, var(--interaction) 58%, var(--ink));
+  --interaction-400: color-mix(in oklab, var(--interaction) 80%, var(--ink));
+  --interaction-500: var(--interaction);
+  --interaction-600: color-mix(in oklab, var(--interaction) 78%, var(--base));
+  --interaction-900: color-mix(in oklab, var(--interaction) 20%, var(--base));
+
+  /* Alpha ladder — the emissive mechanism. Colour over dark, never flat fill. */
+  --structure-a050: rgb(from var(--structure) r g b / 0.05);
+  --structure-a100: rgb(from var(--structure) r g b / 0.10);
+  --structure-a150: rgb(from var(--structure) r g b / 0.15);
+  --structure-a200: rgb(from var(--structure) r g b / 0.20);
+  --structure-a300: rgb(from var(--structure) r g b / 0.30);
+  --structure-a400: rgb(from var(--structure) r g b / 0.40);
+  --structure-a500: rgb(from var(--structure) r g b / 0.50);
+  --structure-a600: rgb(from var(--structure) r g b / 0.60);
+  --structure-a800: rgb(from var(--structure) r g b / 0.80);
+
+  --interaction-a050: rgb(from var(--interaction) r g b / 0.05);
+  --interaction-a100: rgb(from var(--interaction) r g b / 0.10);
+  --interaction-a150: rgb(from var(--interaction) r g b / 0.15);
+  --interaction-a200: rgb(from var(--interaction) r g b / 0.20);
+  --interaction-a300: rgb(from var(--interaction) r g b / 0.30);
+  --interaction-a400: rgb(from var(--interaction) r g b / 0.40);
+  --interaction-a500: rgb(from var(--interaction) r g b / 0.50);
+  --interaction-a600: rgb(from var(--interaction) r g b / 0.60);
+  --interaction-a800: rgb(from var(--interaction) r g b / 0.80);
+
+  /* Selection, urgency and info get the same treatment as the two main roles.
+     Before 0.3 these were partial — urgency had two alpha steps, info had none,
+     so a skin could not put its neutral hue on a surface without inlining
+     rgb(from …). Every role now carries a full ladder and a full ramp. */
+  --selection-a050: rgb(from var(--selection) r g b / 0.05);
+  --selection-a100: rgb(from var(--selection) r g b / 0.10);
+  --selection-a150: rgb(from var(--selection) r g b / 0.15);
+  --selection-a200: rgb(from var(--selection) r g b / 0.20);
+  --selection-a300: rgb(from var(--selection) r g b / 0.30);
+  --selection-a400: rgb(from var(--selection) r g b / 0.40);
+  --selection-a500: rgb(from var(--selection) r g b / 0.50);
+  --selection-a600: rgb(from var(--selection) r g b / 0.60);
+  --selection-a800: rgb(from var(--selection) r g b / 0.80);
+  --selection-100: color-mix(in oklab, var(--selection) 22%, var(--ink));
+  --selection-300: color-mix(in oklab, var(--selection) 58%, var(--ink));
+  --selection-400: color-mix(in oklab, var(--selection) 80%, var(--ink));
+  --selection-600: color-mix(in oklab, var(--selection) 78%, var(--base));
+  --selection-900: color-mix(in oklab, var(--selection) 20%, var(--base));
+  --selection-500: var(--selection);
+
+  --urgency-a050: rgb(from var(--urgency) r g b / 0.05);
+  --urgency-a100: rgb(from var(--urgency) r g b / 0.10);
+  --urgency-a150: rgb(from var(--urgency) r g b / 0.15);
+  --urgency-a200: rgb(from var(--urgency) r g b / 0.20);
+  --urgency-a300: rgb(from var(--urgency) r g b / 0.30);
+  --urgency-a400: rgb(from var(--urgency) r g b / 0.40);
+  --urgency-a500: rgb(from var(--urgency) r g b / 0.50);
+  --urgency-a600: rgb(from var(--urgency) r g b / 0.60);
+  --urgency-a800: rgb(from var(--urgency) r g b / 0.80);
+  --urgency-100: color-mix(in oklab, var(--urgency) 22%, var(--ink));
+  --urgency-300: color-mix(in oklab, var(--urgency) 58%, var(--ink));
+  --urgency-400: color-mix(in oklab, var(--urgency) 80%, var(--ink));
+  --urgency-600: color-mix(in oklab, var(--urgency) 78%, var(--base));
+  --urgency-900: color-mix(in oklab, var(--urgency) 20%, var(--base));
+  --urgency-500: var(--urgency);
+
+  --info-a050: rgb(from var(--info) r g b / 0.05);
+  --info-a100: rgb(from var(--info) r g b / 0.10);
+  --info-a150: rgb(from var(--info) r g b / 0.15);
+  --info-a200: rgb(from var(--info) r g b / 0.20);
+  --info-a300: rgb(from var(--info) r g b / 0.30);
+  --info-a400: rgb(from var(--info) r g b / 0.40);
+  --info-a500: rgb(from var(--info) r g b / 0.50);
+  --info-a600: rgb(from var(--info) r g b / 0.60);
+  --info-a800: rgb(from var(--info) r g b / 0.80);
+  --info-100: color-mix(in oklab, var(--info) 22%, var(--ink));
+  --info-300: color-mix(in oklab, var(--info) 58%, var(--ink));
+  --info-400: color-mix(in oklab, var(--info) 80%, var(--ink));
+  --info-600: color-mix(in oklab, var(--info) 78%, var(--base));
+  --info-900: color-mix(in oklab, var(--info) 20%, var(--base));
+  --info-500: var(--info);
+
+  /* Neutrals — grey is grey in every skin. */
+  --neutral-50: #F1F1F1;
+  --neutral-100: #E3E3E3;
+  --neutral-400: #8E8E90;
+  --neutral-500: #727274;
+  --neutral-800: #2E2E2E;
+  --neutral-900: #171717;
+  --neutral-a100: rgba(114, 114, 116, 0.10);
+  --neutral-a200: rgba(114, 114, 116, 0.20);
+  --neutral-a300: rgba(114, 114, 116, 0.30);
+
+  /* ===========================================================================
+     SPACING — 4px base.
+     =========================================================================== */
+  --spacing-0: 0px;
+  --spacing-25: 1px;
+  --spacing-50: 2px;
+  --spacing-100: 4px;
+  --spacing-200: 8px;
+  --spacing-300: 12px;
+  --spacing-400: 16px;
+  --spacing-500: 20px;
+  --spacing-600: 24px;
+  --spacing-700: 32px;
+  --spacing-800: 40px;
+  --spacing-1000: 48px;
+  --spacing-1200: 64px;
+  --spacing-1300: 96px;
+  --spacing-1400: 128px;
+
+  /* ===========================================================================
+     SHAPE — radius zero, chamfer is the signature.
+     =========================================================================== */
+  --atmosphere-blur: 64px;
+  --atmosphere-opacity: 0.30; /* @kind other */
+  --atmosphere-dim: 0.50; /* @kind other */
+  --atmosphere-grain: 0.05; /* @kind other */
+  --atmosphere-scan: 0.04; /* @kind other */
+
+  --radius: 0px;
+  --radius-logo: 16px; /* @kind radius */      /* the one documented exception */
+  --chamfer-sm: 8px;
+  --chamfer-md: 12px;
+  --chamfer-lg: 24px;
+  --chamfer-xl: 32px;
+  --border-width: 2px;
+  --accent-bar-width: 8px;
+  --accent-bar-width-lg: 12px;
+
+  /* Atmosphere — how much weather is in the room. */
+  --atmosphere-blur: 80px;
+  --atmosphere-opacity: 0.4; /* @kind other */
+  --atmosphere-dim: 0.45; /* @kind other */
+
+  /* ===========================================================================
+     TYPE — three font ROLES. A skin assigns the families.
+     display = headings · data = labels/CTAs/readouts · body = prose
+     =========================================================================== */
+  --font-display: system-ui, sans-serif;
+  --font-data: ui-monospace, monospace;
+  --font-body: system-ui, sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --tracking-display: 0.02em;
+  --tracking-data: 0.05em;
+  --tracking-data-wide: 0.08em;
+  --tracking-wordmark: 0.18em;
+
+  --heading-h1-size: 32px;   --heading-h1-line-height: 40px;
+  --heading-h2-size: 28px;   --heading-h2-line-height: 32px;
+  --heading-h3-size: 24px;   --heading-h3-line-height: 28px;
+  --heading-h4-size: 22px;   --heading-h4-line-height: 28px;
+  --heading-h5-size: 20px;   --heading-h5-line-height: 24px;
+  --heading-h6-size: 20px;   --heading-h6-line-height: 24px;
+
+  --label-xs-size: 12px;  --label-xs-line-height: 14px;
+  --label-sm-size: 14px;  --label-sm-line-height: 16px;
+  --label-md-size: 16px;  --label-md-line-height: 20px;
+  --label-lg-size: 20px;  --label-lg-line-height: 24px;
+  --label-xl-size: 24px;  --label-xl-line-height: 28px;
+
+  --paragraph-xs-size: 12px; --paragraph-xs-line-height: 14px;
+  --paragraph-sm-size: 14px; --paragraph-sm-line-height: 16px;
+  --paragraph-md-size: 16px; --paragraph-md-line-height: 20px;
+  --paragraph-lg-size: 20px; --paragraph-lg-line-height: 24px;
+  --paragraph-xl-size: 24px; --paragraph-xl-line-height: 28px;
+
+  /* ===========================================================================
+     SEMANTIC TOKENS — what components actually consume.
+     Structure builds. Interaction acts. Selection confirms.
+     =========================================================================== */
+  --bg: var(--base);
+  --fg: var(--ink);
+  --text-color: #FFFFFF;
+
+  --surface-card: var(--structure-a100);
+  --surface-card-accent: var(--structure-a400);
+  --surface-cta-primary: var(--interaction-a400);
+  --surface-cta-primary-hover: var(--interaction-a600);
+  --surface-cta-primary-accent: var(--interaction-a600);
+  --surface-cta-secondary: var(--interaction-a050);
+  --surface-cta-secondary-hover: var(--interaction-a200);
+  --surface-input: var(--structure-a100);
+  --surface-input-active: var(--structure-a200);
+  /* Selected controls: strong surface + dark text. 60% surface with a 20% text
+     mix measured 2.93:1 before 0.3 — below AA for the small uppercase labels
+     that sit on it. Glow does not count toward contrast. */
+  --surface-selected: var(--selection-a800);
+  --surface-unselected: var(--structure-a100);
+  /* Readouts invert the pairing: quiet surface, bright text. Timer digits are
+     24–40px, so the 3:1 large-text threshold applies, but this clears 7:1
+     anyway. Low-time stays the more aggressive state through hue and the
+     micro-pulse, not through a louder surface. */
+  --surface-timer: var(--selection-a150);
+  --surface-timer-low: var(--urgency-a200);
+  --surface-track: var(--structure-a300);
+  --surface-thumb: var(--interaction-500);
+  --surface-tab-rail: var(--structure-a300);
+  --surface-empty: var(--structure-a050);
+  /* The info role, as the name says. This read from --structure until 0.5.1,
+     which put an orange frame on an informational toast in CLEAR and made the
+     info hue decorative-only by accident rather than by decision. */
+  --surface-toast-info: var(--info-a100);
+  --surface-toast-positive: var(--selection-a200);
+  --surface-toast-negative: var(--urgency-a150);
+  --surface-disabled: var(--neutral-a300);
+  --surface-overlay: rgb(from var(--base) r g b / 0.8);
+
+  --border-card: var(--structure-500);
+  --border-cta-primary: var(--interaction-500);
+  --border-cta-primary-hover: var(--interaction-400);
+  --border-cta-secondary: var(--interaction-500);
+  --border-selected: var(--selection);
+  --border-unselected: var(--structure-500);
+  --border-input: var(--structure-a500);
+  --border-timer: var(--selection);
+  --border-timer-low: var(--urgency);
+  --border-tab-rail: var(--structure-a300);
+  --border-tab-active: var(--interaction-500);
+  --border-empty: var(--structure-a500);
+  --border-toast-info: var(--info-500);
+  --border-toast-positive: var(--selection-500);
+  --border-toast-negative: var(--urgency-500);
+  --border-disabled: var(--neutral-400);
+
+  --text-header: var(--interaction-100);
+  --text-card-header: var(--interaction-300);
+  --text-paragraph: var(--interaction-100);
+  --text-card-label: var(--structure-100);
+  --text-cta: var(--interaction-100);
+  --text-on-cta: var(--structure-100);
+  --text-selected: color-mix(in oklab, var(--selection) 12%, var(--base));
+  --text-unselected: var(--structure-100);
+  --text-timer: color-mix(in oklab, var(--selection) 92%, var(--ink));
+  --text-timer-low: color-mix(in oklab, var(--urgency) 92%, var(--ink));
+  --text-input: var(--interaction-100);
+  --text-tab-active: var(--interaction-100);
+  --text-tab-inactive: color-mix(in oklab, var(--ink) 62%, var(--base));
+  --text-empty-title: var(--interaction-300);
+  --text-empty-body: color-mix(in srgb, var(--interaction-100) 65%, transparent);
+  --text-scan-line: var(--structure-300);
+  --text-negative: color-mix(in oklab, var(--urgency) 75%, var(--ink));
+  --text-disabled: var(--neutral-400);
+
+  --icon-empty: var(--structure-300);
+  /* Severity glyphs. Semantic, not primitives: Mono re-points its info toast at
+     the structure rung, and the glyph has to follow the frame it sits in. */
+  --icon-toast-info: var(--info-300);
+  --icon-toast-positive: var(--selection-400);
+  --icon-toast-negative: var(--text-negative);
+  --icon-cta: var(--interaction-500);
+  --icon-on-cta: var(--structure-500);
+  --icon-selected: var(--selection-900);
+  --icon-unselected: var(--structure-100);
+}
+
+/* =============================================================================
+   ELEMENT STYLES
+   ============================================================================= */
+
+/* Border-box everywhere. Every sizing value in this system — the 40px touch
+   minimums, the 64px toast row, .clr-shell__content's max-width — was written
+   assuming padding sits INSIDE the declared size. Without this the browser's
+   content-box default adds padding on top, so a "40px" control renders at 56
+   and a "64px" toast at 88. The system already takes ownership of bare elements
+   (body, headings, p, label), so owning the box model is the same posture, and
+   it replaces the per-rule box-sizing patches that were papering over it. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body { background: var(--bg); color: var(--text-paragraph); font-family: var(--font-body); font-weight: var(--font-weight-medium); -webkit-font-smoothing: antialiased; }
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, h6 { font-family: var(--font-display); font-weight: var(--font-weight-bold); text-transform: uppercase; color: var(--text-header); margin: 0; }
+h1, .h1 { font-size: var(--heading-h1-size); line-height: var(--heading-h1-line-height); letter-spacing: var(--tracking-display); }
+h2, .h2 { font-size: var(--heading-h2-size); line-height: var(--heading-h2-line-height); letter-spacing: var(--tracking-display); }
+h3, .h3 { font-size: var(--heading-h3-size); line-height: var(--heading-h3-line-height); }
+h4, .h4 { font-size: var(--heading-h4-size); line-height: var(--heading-h4-line-height); color: var(--text-card-header); }
+h5, h6 { font-size: var(--heading-h5-size); line-height: var(--heading-h5-line-height); }
+
+p { font-family: var(--font-body); font-size: var(--paragraph-md-size); line-height: var(--paragraph-md-line-height); font-weight: var(--font-weight-medium); color: var(--text-paragraph); }
+
+.label, label { font-family: var(--font-data); font-size: var(--label-sm-size); line-height: var(--label-sm-line-height); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-data); color: var(--text-card-label); }
+.cta { font-family: var(--font-data); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-data); }
+.mono, code { font-family: var(--font-data); font-weight: var(--font-weight-medium); }
+em, i { font-style: italic; color: color-mix(in srgb, currentColor 75%, transparent); }
+
+a { color: var(--interaction-300); text-decoration: none; border-bottom: 1px solid var(--interaction-a500); transition: color var(--dur-fast, 150ms) linear, border-color var(--dur-fast, 150ms) linear; }
+a:hover { color: var(--interaction-100); border-bottom-color: var(--interaction-500); }
+
+/* =============================================================================
+   CHAMFER — the signature shape, as one portable class.
+   Border colour lives on the element, surface on ::before inset by the border
+   width. A 45° cut inset by `bw` shortens the leg by bw·(√2−1) ≈ 0.414·bw.
+   ============================================================================= */
+.clr-chamfer {
+  --c: var(--chamfer-md);
+  --bw: var(--border-width);
+  --surface: var(--surface-card);
+  --brd: var(--border-card);
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%);
+}
+/* Border layer, then surface layer — both behind content, so bare text nodes
+   need no wrapper element. isolation:isolate keeps the negative z-indexes in. */
+.clr-chamfer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--brd);
+  transition: background var(--dur-atmos, 1s) ease;
+}
+.clr-chamfer::before {
+  content: '';
+  position: absolute;
+  inset: var(--bw);
+  z-index: -1;
+  /* The tint is composited over the dark ground, not over the border colour
+     underneath it — that is what keeps a 10% surface reading as 10%. */
+  background: linear-gradient(var(--surface), var(--surface)), var(--ground, var(--base));
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--c) - var(--bw) * 0.414)), calc(100% - (var(--c) - var(--bw) * 0.414)) 100%, 0 100%);
+  transition: background var(--dur-atmos, 1s) ease;
+}
+
+/* No left border — the accent bar owns that edge (see .clr-card) */
+.clr-chamfer--open-left::before { inset: var(--bw) var(--bw) var(--bw) 0; }
+
+/* Size variants set clip-path directly rather than redeclaring --c, so the
+   variant selectors carry no custom properties. Inner leg = c − 0.414·bw. */
+.clr-chamfer--sm { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%); }
+.clr-chamfer--sm::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7.17px), calc(100% - 7.17px) 100%, 0 100%); }
+.clr-chamfer--md { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
+.clr-chamfer--md::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 11.17px), calc(100% - 11.17px) 100%, 0 100%); }
+.clr-chamfer--lg { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 24px), calc(100% - 24px) 100%, 0 100%); }
+.clr-chamfer--lg::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 23.17px), calc(100% - 23.17px) 100%, 0 100%); }
+.clr-chamfer--xl { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 32px), calc(100% - 32px) 100%, 0 100%); }
+.clr-chamfer--xl::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 31.17px), calc(100% - 31.17px) 100%, 0 100%); }
+
+/* Role variants paint the two layers directly, for the same reason. */
+.clr-chamfer--cta::before { background: linear-gradient(var(--surface-cta-primary), var(--surface-cta-primary)), var(--ground, var(--base)); }
+.clr-chamfer--cta::after { background: var(--border-cta-primary); }
+.clr-chamfer--selected::before { background: linear-gradient(var(--surface-selected), var(--surface-selected)), var(--ground, var(--base)); }
+.clr-chamfer--selected::after { background: var(--border-selected); }
+.clr-chamfer--timer::before { background: linear-gradient(var(--surface-timer), var(--surface-timer)), var(--ground, var(--base)); }
+.clr-chamfer--timer::after { background: var(--border-timer); }
+.clr-chamfer--timer-low::before { background: linear-gradient(var(--surface-timer-low), var(--surface-timer-low)), var(--ground, var(--base)); }
+.clr-chamfer--timer-low::after { background: var(--border-timer-low); }
+
+/* =============================================================================
+   CARD — accent bar + chamfered body, composed.
+   The bar is a fully bordered element, so its right edge reads as a bright
+   divider against the body. The body draws no left border of its own.
+   ============================================================================= */
+.clr-card { display: flex; align-items: stretch; }
+.clr-card__bar { flex: 0 0 var(--accent-bar-width); background: linear-gradient(var(--surface-card-accent), var(--surface-card-accent)), var(--ground, var(--base)); border: var(--border-width) solid var(--border-card); }
+.clr-card__bar--lg { flex-basis: var(--accent-bar-width-lg); }
+.clr-card__body { flex: 1; min-width: 0; padding: var(--spacing-300) var(--spacing-400); }
+
+/* =============================================================================
+   BUTTON — chamfered, interaction-coloured. Compose with .clr-chamfer:
+   <button class="clr-chamfer clr-chamfer--sm clr-btn">Initiate</button>
+   ============================================================================= */
+.clr-btn {
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-data-wide);
+  color: var(--text-cta);
+  background: transparent;
+  border: 0;
+  padding: var(--spacing-200) var(--spacing-300);
+  cursor: pointer;
+  transition: color var(--dur-base, 200ms) linear;
+}
+.clr-btn::before { background: linear-gradient(var(--surface-cta-secondary), var(--surface-cta-secondary)), var(--ground, var(--base)); }
+.clr-btn::after { background: var(--border-cta-secondary); }
+.clr-btn:hover::before { background: linear-gradient(var(--surface-cta-secondary-hover), var(--surface-cta-secondary-hover)), var(--ground, var(--base)); }
+.clr-btn:hover::after { background: var(--border-cta-primary-hover); }
+.clr-btn--primary::before { background: linear-gradient(var(--surface-cta-primary), var(--surface-cta-primary)), var(--ground, var(--base)); }
+.clr-btn--primary::after { background: var(--border-cta-primary); }
+.clr-btn--primary:hover::before { background: linear-gradient(var(--surface-cta-primary-hover), var(--surface-cta-primary-hover)), var(--ground, var(--base)); }
+.clr-btn[aria-pressed="true"]::before, .clr-btn.is-on::before { background: linear-gradient(var(--surface-selected), var(--surface-selected)), var(--ground, var(--base)); }
+.clr-btn[aria-pressed="true"]::after, .clr-btn.is-on::after { background: var(--border-selected); }
+.clr-btn[aria-pressed="true"], .clr-btn.is-on { color: var(--text-selected); }
+.clr-btn:disabled { cursor: not-allowed; color: var(--text-disabled); }
+.clr-btn:disabled::before { background: linear-gradient(var(--surface-disabled), var(--surface-disabled)), var(--ground, var(--base)); }
+.clr-btn:disabled::after { background: var(--border-disabled); }
+
+/* =============================================================================
+   CHECKBOX / RADIO — a real native input, visually hidden, with a drawn box.
+   The input keeps focus, keyboard, form participation and the indeterminate
+   property; the box is decoration driven by :checked and :focus-visible.
+   ============================================================================= */
+.clr-check { position: relative; display: inline-flex; align-items: center; gap: var(--spacing-200); }
+.clr-check input {
+  position: absolute;
+  /* Sized and placed over the box rather than 1px-hidden, so the real hit area
+     is the 40px target and coarse pointers land on the input itself. */
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 40px; height: 40px; margin: 0;
+  opacity: 0; cursor: pointer; z-index: 1;
+}
+@media (pointer: coarse) { .clr-check input { width: 44px; height: 44px; } }
+.clr-check:has(> input:first-child) { padding-left: 0; }
+.clr-check input:disabled { cursor: not-allowed; }
+.clr-check__box {
+  position: relative;
+  flex: 0 0 auto;
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-input);
+  border: var(--border-width) solid var(--border-input);
+  transition: background var(--dur-state) var(--ease-mech), border-color var(--dur-state) var(--ease-mech);
+}
+.clr-check__tick, .clr-check__pip, .clr-check__dash { opacity: 0; }
+.clr-check__tick { width: 12px; height: 12px; fill: var(--icon-selected); }
+.clr-check__pip { width: 8px; height: 8px; background: var(--icon-selected); }
+.clr-check__dash { position: absolute; width: 10px; height: var(--border-width); background: var(--icon-selected); }
+.clr-check input:checked ~ .clr-check__box {
+  background: var(--surface-selected);
+  border-color: var(--border-selected);
+}
+.clr-check input:checked ~ .clr-check__box .clr-check__tick,
+.clr-check input:checked ~ .clr-check__box .clr-check__pip { opacity: 1; }
+.clr-check input:indeterminate ~ .clr-check__box {
+  background: var(--surface-selected);
+  border-color: var(--border-selected);
+}
+.clr-check input:indeterminate ~ .clr-check__box .clr-check__dash { opacity: 1; }
+.clr-check input:indeterminate ~ .clr-check__box .clr-check__tick { opacity: 0; }
+.clr-check input:disabled ~ .clr-check__box {
+  background: var(--surface-disabled);
+  border-color: var(--border-disabled);
+}
+.clr-check input:focus-visible ~ .clr-check__box {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+.clr-check__label {
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-card-label);
+  cursor: pointer;
+}
+.clr-check input:disabled ~ .clr-check__label { color: var(--text-disabled); cursor: not-allowed; }
+
+/* =============================================================================
+   DIALOG — the element is the full-viewport top-layer box; the panel inside is
+   what looks like a dialog. Border and padding are cleared so the chamfered
+   child owns the whole appearance, and the backdrop stays flat (no blur — this
+   system has no soft focus anywhere).
+   ============================================================================= */
+.clr-dialog { border: 0; padding: 0; background: transparent; max-width: none; max-height: none; color: inherit; }
+.clr-dialog::backdrop { background: var(--surface-overlay, rgb(0 0 0 / 0.8)); }
+
+/* =============================================================================
+   FOCUS — visible by default, on every interactive thing.
+
+   Two mechanisms, because chamfered elements clip their own outline away:
+
+   · Unclipped controls get a real outline, offset so it reads against the dark
+     ground.
+   · Chamfered elements express focus as a DOUBLED border in the focus hue. The
+     width change is the point — a colour change alone is not a focus indicator,
+     and it would be invisible to anyone who cannot separate the two hues.
+
+   The ring is a near-white tint of the interaction role: unmistakable on all
+   three skins, still skin-tinted rather than generic browser blue.
+   ============================================================================= */
+:root {
+  --focus-ring: var(--interaction-100);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+select:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
+[role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Chamfered: doubled border, focus hue. Also fires when a focusable child is
+   focused, so a frame wrapping a native control still shows the state.
+   The layers are painted directly rather than through --bw / --brd, so this
+   selector declares no custom properties of its own. */
+.clr-chamfer:focus-visible,
+.clr-chamfer:has(:focus-visible) { outline: none; }
+.clr-chamfer:focus-visible::after,
+.clr-chamfer:has(:focus-visible)::after { background: var(--focus-ring); }
+.clr-chamfer:focus-visible::before,
+.clr-chamfer:has(:focus-visible)::before { inset: calc(var(--border-width) * 2); }
+
+/* Range thumbs need their own selectors — they are not the focused element. */
+.clr-slider:focus-visible { outline: none; }
+.clr-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring); }
+.clr-slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring); }
+
+/* Forced-colors / high-contrast: hand geometry back to the OS. Surfaces and
+   tints carry no meaning there, so borders must come from system colours. */
+@media (forced-colors: active) {
+  .clr-chamfer::after { background: CanvasText; }
+  .clr-chamfer::before { background: Canvas; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+  [role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
+    outline: var(--focus-ring-width) solid Highlight;
+  }
+  .clr-atmosphere { display: none; }
+}
+
+/* =============================================================================
+   TOUCH TARGETS — visible control stays compact, hit area grows to ≥ 40px.
+   A centred pseudo-element rather than padding, so layout does not shift.
+   ============================================================================= */
+.clr-hit { position: relative; }
+.clr-hit::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 40px);
+  height: max(100%, 40px);
+  transform: translate(-50%, -50%);
+}
+@media (pointer: coarse) {
+  .clr-hit::after { width: max(100%, 44px); height: max(100%, 44px); }
+}
+
+/* =============================================================================
+   FORM CONTROLS — pseudo-element styling that cannot be expressed inline.
+   These live here rather than being injected by a component at render time:
+   a component that appends a <style> tag is unusable in SSR and racy in tests.
+   ============================================================================= */
+.clr-input::placeholder { color: color-mix(in srgb, var(--text-input) 45%, transparent); font-style: italic; }
+
+.clr-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: var(--surface-track); outline: none; cursor: pointer; border: none; }
+.clr-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 20px; background: var(--surface-thumb); border: none; cursor: pointer; }
+.clr-slider::-moz-range-thumb { width: 12px; height: 20px; background: var(--surface-thumb); border: none; border-radius: 0; cursor: pointer; }
+.clr-slider:disabled { cursor: not-allowed; background: var(--surface-disabled); }
+.clr-slider:disabled::-webkit-slider-thumb { background: var(--border-disabled); }
+.clr-slider:disabled::-moz-range-thumb { background: var(--border-disabled); }
+
+
+/* =============================================================================
+   ATMOSPHERE INTENSITY — one system, three levels of loudness.
+
+   The blobs, grain and scanlines are the same layers in every mode; only their
+   intensity changes. Set data-atmosphere on any container:
+
+     <main data-atmosphere="quiet">
+
+   full        boot, brand moments, empty states, marketing. The default.
+   quiet       forms, settings, history, long reading. The background stops
+               competing with text; grain and scanlines nearly vanish.
+   operational active workouts, timers, set logging. Glanceability first —
+               atmosphere present enough to still be CLEAR, quiet enough that a
+               control is never ambiguous at arm's length mid-set.
+
+   Chosen per SCREEN, not per app. A settings screen inside a full-atmosphere
+   product should still be quiet.
+   ============================================================================= */
+[data-atmosphere="full"] {
+  --atmosphere-blur: 64px;
+  --atmosphere-opacity: 0.30; /* @kind other */
+  --atmosphere-dim: 0.50; /* @kind other */
+  --atmosphere-grain: 0.05; /* @kind other */
+  --atmosphere-scan: 0.04; /* @kind other */
+}
+[data-atmosphere="quiet"] {
+  --atmosphere-blur: 104px;
+  --atmosphere-opacity: 0.10; /* @kind other */
+  --atmosphere-dim: 0.82; /* @kind other */
+  --atmosphere-grain: 0.015; /* @kind other */
+  --atmosphere-scan: 0.008; /* @kind other */
+}
+[data-atmosphere="operational"] {
+  --atmosphere-blur: 88px;
+  --atmosphere-opacity: 0.06; /* @kind other */
+  --atmosphere-dim: 0.90; /* @kind other */
+  --atmosphere-grain: 0.01; /* @kind other */
+  --atmosphere-scan: 0; /* @kind other */
+}
+
+/* =============================================================================
+   LAYOUT — the cockpit. Narrow content on wide screens; the app is an
+   instrument panel, not a dashboard. Breakpoints: 768 / 834 / 1440.
+   ============================================================================= */
+.clr-shell { position: relative; min-height: 100vh; }
+.clr-shell__content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: var(--spacing-500) var(--spacing-400) var(--spacing-800); }
+@media (min-width: 1440px) { .clr-shell__content { max-width: 960px; } }
+.clr-stack { display: flex; flex-direction: column; gap: var(--spacing-400); }
+.clr-stack--tight { gap: var(--spacing-200); }
+.clr-row { display: flex; align-items: center; gap: var(--spacing-300); }
+.clr-atmosphere--fixed { position: fixed; }
+
+/* =============================================================================
+   ATMOSPHERE — the five-layer ground everything sits on.
+   Blob colours come from the role layer, so the space a product lives in
+   changes with its skin. Never a flat background.
+
+   <div class="clr-atmosphere">
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span>
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span>
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span>
+     <span class="clr-atmosphere__overlay"></span>
+     <span class="clr-atmosphere__scan"></span>
+   </div>
+   ============================================================================= */
+.clr-atmosphere { position: absolute; inset: 0; overflow: hidden; z-index: 0; background: var(--base); }
+.clr-atmosphere__blob { position: absolute; border-radius: 50%; filter: blur(var(--atmosphere-blur)); opacity: var(--atmosphere-opacity); }
+.clr-atmosphere__blob--structure { background: var(--structure); width: 62%; aspect-ratio: 1; top: -26%; left: -12%; }
+.clr-atmosphere__blob--interaction { background: var(--interaction); width: 54%; aspect-ratio: 1; bottom: -28%; right: -8%; }
+.clr-atmosphere__blob--info { background: var(--info); width: 34%; aspect-ratio: 1; top: 34%; left: 38%; opacity: calc(var(--atmosphere-opacity) * 0.55); }
+.clr-atmosphere__blob--selection { background: var(--selection); width: 28%; aspect-ratio: 1; top: 6%; right: 24%; opacity: calc(var(--atmosphere-opacity) * 0.45); }
+.clr-atmosphere__blob--dark { background: var(--base); width: 60%; aspect-ratio: 1; bottom: -18%; left: 16%; opacity: 0.7; }
+.clr-atmosphere__overlay { position: absolute; inset: 0; z-index: 1; background: rgb(from var(--base) r g b / var(--atmosphere-dim)); }
+.clr-atmosphere__scan { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgb(255 255 255 / var(--atmosphere-scan, 0.04)) 2px, rgb(255 255 255 / var(--atmosphere-scan, 0.04)) 4px); }
+
+/* =============================================================================
+   ATMOSPHERE
+   ============================================================================= */
+.glow-emissive { text-shadow: 0 0 6px color-mix(in srgb, currentColor 25%, transparent); }
+.text-shadow-glow { text-shadow: 0 0 10px currentColor; }
+.glow-box { box-shadow: 0 0 12px rgb(from var(--brd, var(--structure)) r g b / 0.25); }
+
+.scanlines-overlay { position: relative; }
+.scanlines-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.12;
+  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.08) 2px, rgba(255,255,255,0.08) 4px);
+}
+
+.grain-overlay { position: relative; }
+.grain-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}

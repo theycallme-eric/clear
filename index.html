@@ -5,6 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="CLEAR workout generator" />
     <title>CLEAR</title>
+    <script>
+      // Inline skin initialization — must run before first paint.
+      // This is the synchronous selection step from skin.js; the module below
+      // runs initSkin() in <head> to attach the preference-change listener.
+      (function() {
+        var SKINS = ['clear', 'vapour', 'signal', 'mono'];
+        var KEY = 'clear.skin';
+        function storedSkin() {
+          try {
+            var v = localStorage.getItem(KEY);
+            return SKINS.indexOf(v) !== -1 ? v : null;
+          } catch (e) { return null; }
+        }
+        function prefersMoreContrast() {
+          return typeof matchMedia === 'function' && matchMedia('(prefers-contrast: more)').matches;
+        }
+        var skin = storedSkin() || (prefersMoreContrast() ? 'mono' : 'clear');
+        document.documentElement.setAttribute('data-skin', skin);
+      })();
+    </script>
+    <script type="module">
+      import { initSkin } from '/src/design-system/skin.js'
+      initSkin()
+    </script>
   </head>
   <body>
     <div id="root"></div>

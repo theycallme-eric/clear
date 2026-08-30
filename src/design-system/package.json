@@ -1,0 +1,37 @@
+{
+  "name": "clear-design-system",
+  "version": "0.5.0",
+  "description": "CLEAR — a low-tech sci-fi design system. Angular geometry, chamfered frames, mechanical motion, four skins.",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./styles.css": "./styles.css",
+    "./bundle": "./_ds_bundle.js"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "styles.css",
+    "css",
+    "components",
+    "assets"
+  ],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    }
+  },
+  "sideEffects": [
+    "*.css"
+  ]
+}
