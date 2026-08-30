@@ -54,21 +54,36 @@ only when its lack of an attachable transcript is stated before launch.
 
 ## Publish and continue
 
-1. Review the complete diff and confirm every acceptance box is demonstrably satisfied.
-2. Commit and push the issue branch.
-3. Open one pull request whose body contains `Closes #N`, the acceptance evidence, verification
-   results, and any human checks still needed.
-4. Monitor the pull request checks to a terminal result. A pushed branch is not a completed issue.
+1. Immediately before final verification or handoff, fetch current `origin/main` and integrate it
+   into the issue branch. Rebase only unpublished local work; once a branch is pushed or has an open
+   pull request, merge current `main` into it and never force-push. Resolve ordinary text conflicts by
+   preserving both intents. If the behaviors conflict, treat that as a graph or requirement defect.
+2. Rerun the issue's acceptance checks and every relevant repository gate against the **combined
+   final tree**. Earlier green results from before synchronization are not final evidence. Recheck
+   explicit invariants such as byte-identical vendor directories after all tests and support files
+   are in their final locations.
+3. Review the complete diff and confirm every acceptance box is demonstrably satisfied.
+4. Commit and push the issue branch.
+5. Open or update one pull request whose body contains `Closes #N`, the acceptance evidence,
+   verification results, and any human checks still needed.
+6. Monitor the pull request checks to a terminal result. A pushed branch is not a completed issue.
    If CI fails, repair it within the approved scope or record the requirement conflict on the issue
    with evidence and a recommendation before moving to independent work. Never leave a red PR
    unexplained or report local checks as though they were the complete GitHub job.
-5. Do not mark criteria complete without evidence. Do not close the issue manually; the merge does it.
-6. Do not auto-merge by default. A user must explicitly authorize an auto-merge policy, and CI must
+7. Take a fresh GitHub status snapshot after checks finish. "Ready" means the current head commit is
+   mergeable, required checks are green, and active review threads are triaged—not merely that an
+   earlier commit passed.
+8. Do not mark criteria complete without evidence. Do not close the issue manually; the merge does it.
+9. Do not auto-merge by default. A user must explicitly authorize an auto-merge policy, and CI must
    already protect the branch before an agent may use it.
-7. In **single-issue mode**, hand off the pull request and stop.
-8. In **runway mode**, once the branch is clean, pushed, and its live CI result is known, return to
+10. In **single-issue mode**, hand off the pull request and stop.
+11. In **runway mode**, once the branch is clean, pushed, and its live CI result is known, return to
    synchronized `main`, rerun the ready command, and take another available issue that does not depend
    on the unmerged work. Continue until no available issue remains or a gate needs the user.
+
+Shared coordination files such as the daily journal, status document, and project map are merge
+hotspots even when two issues are dependency-independent. If another pull request that touches one
+of those files merges first, repeat steps 1–7 before handing off the remaining pull request.
 
 At each handoff state four facts: what exists, what is actually running, what is blocked and why,
 and the next action with its owner. Do not call a queue, instruction file, or idle session an

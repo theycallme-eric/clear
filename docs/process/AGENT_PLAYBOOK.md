@@ -143,12 +143,18 @@ is cheap. Discovering three weeks later that four agents each guessed differentl
 The graph guarantees **dependency** order. It does not guarantee **file** disjointness —
 two ready issues can touch the same file, and the graph has no opinion about that.
 
-- One issue per agent. Rebase on `main` before opening the PR; CI is the arbiter.
+- One issue per agent. Synchronize at the start **and again immediately before final verification**.
+  Rebase only unpublished work; merge current `main` into a pushed/open PR branch and never
+  force-push. CI is the arbiter only after it runs on that synchronized final tree.
 - Issues in the same trunk collide more often than issues across trunks. Wave 3 offers
   thirteen issues across five layers — spreading agents across `DS-*`, `DATA-*`, `CORE-*`
   and `ENV-*` collides far less than putting three agents on `DS-*`.
 - A merge conflict is normal. **A conflict that cannot be resolved without changing the
   other issue's behaviour is a graph error** — report it (§6) rather than picking a winner.
+- Journals, status files, and project maps are coordination hotspots. Dependency-independent PRs may
+  still conflict there. When one such PR merges, resynchronize every remaining PR that touched the
+  same file, preserve both histories, rerun its acceptance checks, and watch its new GitHub checks to
+  a terminal result before calling it ready.
 
 ---
 
