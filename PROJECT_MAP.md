@@ -11,7 +11,9 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `src/design-system/` | Vendored public design surface | integrating a versioned export in DS-01; never for app-owned components |
 | `src/test/` | Shared test setup | adding test-only configuration or helpers |
 | `docs/` | Frozen baseline and deep specs | recording product/design/process knowledge, not runtime code |
+| `docs/backend/` | REQ-008 backend gate: live inventory, dispositions, rollback, post-cutover checks, and read-only evidence from the previous app | recording reused-Supabase-project audit state; never runtime code |
 | `scripts/` | Repository automation | adding a deterministic local or CI maintenance command |
+| `scripts/backend-audit/` | Read-only inventory and snapshot tooling for the reused Supabase project (`npm run backend:prereqs` / `backend:inventory` / `backend:snapshot`) | adding audit/snapshot capture steps; never mutation |
 | `.github/workflows/` | GitHub pull-request automation | adding a required repository check or deployment workflow |
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |

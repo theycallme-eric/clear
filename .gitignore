@@ -6,3 +6,5 @@ coverage/
 !.env.example
 *.local
 .DS_Store
+# Full live-database dumps may contain personal test rows — never committed (REQ-008).
+backups/
