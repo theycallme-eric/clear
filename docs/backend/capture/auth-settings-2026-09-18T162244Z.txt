@@ -1,0 +1,28 @@
+Source: authenticated Supabase dashboard (configuration only; no user records or secret values)
+Captured: 2026-09-18T16:22:44Z
+Project: qxckevxniacktaqecypl
+
+URL configuration:
+- Site URL: https://clear-app-1111.vercel.app
+- Redirect URLs: https://clear-app-1111.vercel.app/reset-password
+
+Sign-up and providers:
+- New-user sign-up: enabled
+- Manual identity linking: disabled
+- Anonymous sign-in: disabled
+- Email confirmation before first sign-in: disabled
+- Email provider: enabled
+- Phone, SAML, Web3, and all listed third-party OAuth providers: disabled
+
+Email security:
+- Secure email change: enabled
+- Secure password change: disabled
+- Require current password when updating: disabled
+- Leaked-password prevention: disabled (plan-limited)
+- Minimum password length: 6
+- Additional password requirements: none selected
+- Email OTP expiration: 3600 seconds
+- Email OTP length: 8 digits
+
+Delivery:
+- Custom SMTP: disabled

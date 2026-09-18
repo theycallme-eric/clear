@@ -23,7 +23,7 @@ preserved before any reset.
 | `exercise_definitions` | **Transform** | Authoritative catalog content (names, equipment, cues, progressions, components, roles) carries into the DATA-01 catalog schema via sanitized export with taxonomy-equivalence proof; the physical table itself is superseded. |
 | `exercise_anchors` | **Transform** | Anchor taxonomy (incl. the 13 explicit secondary mappings) carries into the staged taxonomy tables with ranking preserved (`DATA_MODEL.md` §3). |
 | `exercise_muscle_groups` | **Transform** | 488 committed muscle mappings with primary/synergist/stabilizer roles carry into the new mapping tables. |
-| `movement_patterns` (if present live) | **Transform → Retire** | Pattern/anchor data needed for pattern weights and taxonomy equivalence is captured in the snapshot; the table (already dropped at evidence head by `00030`) is then removed. |
+| `movement_patterns` (27 live rows) | **Transform → Retire** | Pattern/anchor data needed for pattern weights and taxonomy equivalence is captured in the snapshot; the table is live because migration `00030` was never deployed, then is removed by the rebuild. |
 | `profiles` | **Replace** | New-model `profiles` + `user_constraints` supersede it. Rows are disposable test data — never migrated. |
 | `locations` | **Replace** | Equipment/location concept re-modeled; rows are personal test data, not migrated. |
 | `workout_sessions` | **Replace** | Superseded by new sessions model with lineage/status; rows not migrated. |
@@ -77,26 +77,26 @@ preserved before any reset.
 
 | Surface | Disposition | Rationale |
 |---|---|---|
-| `generate-workout` | **Replace** | Prompt 5.0.0 / generation contract 4.1.0 supersede prompt 4.0.0; behavioral evidence vendored at `docs/backend/evidence/previous-functions/`. |
-| `generate-section` | **Replace** | Superseded by the new swap/replace design (exercise-swap spec). |
+| `generate-workout` (only deployed function; legacy JWT verification off) | **Replace** | Prompt 5.0.0 / generation contract 4.1.0 supersede prompt 4.0.0; behavioral evidence vendored at `docs/backend/evidence/previous-functions/`. |
+| `generate-section` (repository evidence only; not deployed live) | **Retire** | Superseded by the new swap/replace design; there is no live function to preserve or replace. |
 
 ## 7. Catalog datasets
 
 | Surface | Disposition | Rationale |
 |---|---|---|
-| Exercise catalog rows (140 committed / 173 expected live) | **Transform** | The preservation target. Live export, row-by-row reconciliation of the 33-row difference, sanitized committed artifact (DATA-02). |
-| Component-movement + exercise-role tags | **Transform** | Workout-anatomy reference content; preserved verbatim into the new schema. |
-| Muscle-group mappings | **Transform** | Preserved with roles. |
-| Anchor/pattern relationships | **Transform** | Preserved into staged taxonomy with ranking. |
+| Exercise catalog rows (140 committed / 140 live) | **Transform** | The preservation target is the captured 140-row live export. The unsupported 173-row expectation is retired only when the owner approves this disposition. |
+| Component-movement + exercise-role tags (not live) | **Transform** | Workout-anatomy reference content exists in migration `00031`, which was never deployed; carry the reviewed reference tags into the new schema rather than treating them as live data. |
+| Muscle-group mappings (488 live rows) | **Transform** | Preserved with roles from the live snapshot. |
+| Anchor/pattern relationships (150 anchor links + 27 legacy patterns) | **Transform** | Preserved from the live snapshot into staged taxonomy with ranking. |
 | Structure/workout-anatomy reference content | **Transform** | Carried per `docs/specs/structures` and the workout-anatomy spec. |
 
 ## 8. Auth
 
 | Surface | Disposition | Rationale |
 |---|---|---|
-| Auth **user population** | **Retire** | Owner decision: disposable test users; the rebuilt product starts with new users. Never exported. |
+| Auth **user population** (8 live test users) | **Retire** | Owner decision: disposable test users; the rebuilt product starts with new users. Never migrated. |
 | Email OTP sign-in mechanism | **Preserve** | Same mechanism in the rebuild (AUTH issues). |
-| Site URL + redirect allow-list | **Transform** | Updated to the new deployment URLs; old localhost/client URLs removed. |
+| Site URL + redirect allow-list | **Transform** | Replace the live old-client URL (`clear-app-1111.vercel.app` plus `/reset-password`) with reviewed new-platform deployment URLs. |
 | Rate limits, token rotation settings | **Preserve** | Keep unless post-cutover checks demand change. |
 | SMS/OAuth/MFA providers (all disabled) | **Preserve** | Remain disabled. |
 
@@ -113,7 +113,7 @@ preserved before any reset.
 
 ## 10. Approval record
 
-**Status: PROPOSED — awaiting owner approval.**
+**Status: LIVE-CAPTURED AND PROPOSED — awaiting owner approval.**
 
 This disposition set is derived entirely from the owner decisions of 2026-09-07 and the reviewed
 REQ-008 requirement; no new judgment calls were introduced. Approval must be recorded before any
@@ -123,8 +123,8 @@ live mutation:
 - **How:** comment `Dispositions approved as of <commit sha>` on issue #80 (or check this box in a
   reviewed PR touching this file): 
   - [ ] **Owner approval recorded** — date: ______, commit: ______
-- **Precondition for approval:** `docs/backend/live-inventory.md` §5 live capture completed, and
-  any deviations reflected here first.
+- **Precondition for approval:** satisfied — `docs/backend/live-inventory.md` §5 is captured and
+  deviations are reflected here. A second off-machine dump copy remains mandatory before mutation.
 - **Effect:** TASK-009 through TASK-013 (DATA issues) may begin mutating the live project. Until
   then they may only author and dry-run changes.
 

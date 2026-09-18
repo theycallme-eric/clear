@@ -131,35 +131,51 @@ justify replace/transform dispositions, not schema reuse.
 ## 4. The 140-versus-173 exercise count
 
 - Committed evidence reconstructs **140** final exercise definitions (145 inserted, consolidated
-  by `00011`), all 140 tagged with `component_movements` and `exercise_role` by `00031`.
-- The legacy DATA-02 acceptance criterion expects **173** live exercises.
-- Neither number is canonical until the live count from §5 exists. The reconciliation rule
-  (`docs/process/CATALOG_MIGRATION_SCOPE.md`) stands: export the live catalog, reconcile the
-  difference row-by-row, and do not silently lower the expectation to 140.
+  by `00011`).
+- The read-only live count is also **140**. The legacy DATA-02 expectation of 173 is not present in
+  the live project and has no row-level source in the archived migrations.
+- The proposed preservation set is therefore the 140-row live export captured below. Retiring the
+  unsupported 173-row expectation is an explicit owner-approval item, not a silent reduction.
+- The live project stops at migration `00029`, so the 140 rows do **not** yet have the
+  `component_movements` and `exercise_role` columns introduced by `00031`. Those tags remain
+  rebuild reference evidence, not live catalog fields.
 
-## 5. Live capture — status: **PENDING**
+## 5. Live capture — status: **CAPTURED; OWNER APPROVAL PENDING**
 
-> **This section is the gate.** Run these from an environment holding PRE-003/PRE-004/PRE-007
-> (verify with `npm run backend:prereqs`), then record results here and check the boxes.
-> This attempt's execution environment denied all network/database commands (see
-> `docs/journal/2026-09-18.md`), so capture could not run here; every command below is committed
-> and rehearsable as-is.
+> **This section is the gate.** The read-only capture and recoverable snapshot completed on
+> 2026-09-18. No live mutation occurred. The gate remains closed until the owner approves
+> `docs/backend/dispositions.md` and stores the full dump in a second, off-machine location.
 
-- [ ] `npm run backend:prereqs` — PRE-003/PRE-004 present
-- [ ] `npm run backend:inventory` — read-only inventory written to `docs/backend/capture/`
-- [ ] `npm run backend:snapshot` — schema + catalog snapshot committed under
-      `docs/backend/snapshot/<stamp>/`; full dump in `backups/` (gitignored) with verified TOC,
-      second copy stored off-machine
-- [ ] Applied-migration list compared with the 31 evidence migrations — are `00030`/`00031` live?
-- [ ] Live `exercise_definitions` count recorded here: ______ (140 / 173 / other) and reconciled
-      per §4
-- [ ] Deployed Edge Function list + secret **names** captured (no values)
-- [ ] Auth dashboard settings recorded (site URL, redirect URLs, email OTP, SMTP, providers)
-- [ ] Deviations from §2 listed below and reflected in `docs/backend/dispositions.md`
+- [x] `npm run backend:prereqs` — PRE-003/PRE-004 present; PRE-007 authenticated
+- [x] Read-only SQL inventory captured in
+      `docs/backend/capture/inventory-2026-09-18T162244Z.txt`
+- [x] Schema + catalog snapshot captured under
+      `docs/backend/snapshot/2026-09-18T162821Z/`
+- [x] Full custom-format dump created outside Git with a verified table of contents; dump SHA-256
+      `8b78950e943d2064dc7341e4a66daa2669aca32d7dcc3cf5e84c275035578206`
+- [ ] Store a second copy of the full dump off-machine before any live mutation
+- [x] Applied migrations compared with evidence: live stops at `00029`; `00030`/`00031` are absent
+- [x] Exact live catalog counts recorded: 140 definitions, 150 anchor links, 488 muscle mappings,
+      and 27 legacy movement-pattern rows
+- [x] Deployed Edge Function and secret-name inventory captured (dashboard fallback; no values)
+- [x] Auth dashboard settings captured (URLs, providers, email OTP, and SMTP)
+- [x] Deviations from §2 reflected in `docs/backend/dispositions.md`
 
 ### Deviations found
 
-*None recorded yet — fill in after capture.*
+1. Live migration history ends at `00029`; migrations `00030` and `00031` are not deployed.
+2. The live catalog contains 140 exercise definitions, not the previously expected 173.
+3. `movement_patterns` remains live with 27 rows. `exercise_definitions` lacks
+   `component_movements` and `exercise_role`, consistent with the missing migrations.
+4. One Edge Function is deployed: `generate-workout`; legacy JWT verification is off.
+   `generate-section` exists only in repository evidence and is not deployed live.
+5. Auth still targets the previous client at `https://clear-app-1111.vercel.app` with one
+   `/reset-password` redirect. Email is the only enabled provider, email confirmation is off,
+   OTPs are 8 digits / 3600 seconds, and custom SMTP is off.
+6. The auth population is eight test users. No personal rows or auth identities are preservation
+   targets.
+7. The Supabase CLI management call stalled after the SQL capture; function/settings metadata was
+   captured from the authenticated dashboard and recorded in timestamped files instead.
 
 ## 6. Companion documents
 

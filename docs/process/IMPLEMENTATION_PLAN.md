@@ -145,7 +145,7 @@ dependent edges between them.
 | Lane | Ordered work | Outcome | Human gate |
 |---|---|---|---|
 | Data spine | DATA-01a → DATA-01b → DATA-01c → DATA-01d → DATA-03 | New schema, generated types, typed client | Link the reused Supabase project; REQ-008 disposition approval before mutation |
-| Catalog | DATA-01a → DATA-02 | Sanitized exercise/reference seed with taxonomy proof | Read the reused project's live catalog to reconcile 140 vs 173 rows |
+| Catalog | DATA-01a → DATA-02 | Sanitized 140-exercise/reference seed with taxonomy proof | Owner approval of the captured preservation set |
 | Design | DS-01 → DS-02 + DS-04a/b/c + DS-08 | Fonts, three missing wrappers, enforceable design rules | Approve DS-01 conflict first |
 | Reliability | CORE-01 → CORE-02 + CORE-04; DS-01 → CORE-05 | Safe logs, four-state UI contract, accessibility harness | None expected |
 | Infrastructure | ENV-03 + ENV-06; then ENV-04/05/07 as their data/auth prerequisites land | Deploys, component tests, legible dev startup, keep-alive, E2E | Vercel/Supabase authorization and test secret |
@@ -238,9 +238,11 @@ feature capability, not copying prior user rows.
 
 ## 5. Backend and data decision
 
-The rebuild uses a **new Supabase backend**, not the old app's user database in place.
+The rebuild uses the **existing Supabase project as infrastructure for a newly implemented CLEAR
+platform**. It does not iterate on the previous client or preserve compatibility with its physical
+schema. The REQ-008 snapshot and owner-approved dispositions are the boundary between the two.
 
-Reuse from the old project is limited to non-personal catalog/reference data:
+Reuse from the live project is limited to non-personal catalog/reference data:
 
 - exercise IDs, names, equipment options, section eligibility, and primary-lift eligibility;
 - coaching cues, regressions/progressions, component movements, roles, muscles, and pattern anchors;
@@ -249,9 +251,10 @@ Reuse from the old project is limited to non-personal catalog/reference data:
 Do not copy auth users, profiles, locations, preferences, generated/completed workouts, set logs,
 streaks, history, favorites, tokens, contact data, or any other personal activity.
 
-Committed old migrations reconstruct 140 final exercises. DATA-02 expects 173 from the old live
-catalog. That 33-row difference is a named gate: export only the live catalog, sanitize it, reconcile
-the difference, and keep the acceptance count unless Eric deliberately amends the live issue.
+The 2026-09-18 live capture proves 140 exercise definitions, matching the committed reconstruction;
+the prior 173-row expectation has no live source. DATA-02 consumes the committed 140-row snapshot
+and related taxonomy exports. Retiring the unsupported 173 count remains an explicit owner-approval
+item in `docs/backend/dispositions.md`, not an inferred or silent requirements change.
 
 ## 6. Accounts, authorizations, and key timing
 
@@ -263,7 +266,7 @@ schema files, or most test work. Keys enter only at their owning issue.
 | ENV-03 | Audit/confirm the already-connected Vercel project and production deployment | Vercel project settings/CLI | No token in repository or chat |
 | DATA-01a | Link the reused live Supabase project when migrations need a real target; REQ-008 dispositions must be approved before any mutation | Supabase project/CLI | Login remains in Supabase's auth mechanism |
 | DATA-02 | Permit read-only access to the live catalog | Reused Supabase project (same project; previous app's data) | Export catalog tables only; no user rows |
-| DATA-03 | Supply new project URL and public anon key | Gitignored local env + Vercel env values | Anon key may ship to browser; never service role |
+| DATA-03 | Supply reused project URL and public anon key | Gitignored local env + Vercel env values | Anon key may ship to browser; never service role |
 | ENV-07 | Store test lifecycle/service-role credential | GitHub/Vercel/Supabase secret store as designed | Never browser code, chat, journal, or logs |
 | AUTH-02/03 | Confirm deployed OTP redirect URLs and auth behavior | Supabase Auth dashboard | No email contents or codes recorded |
 | GEN-02b | Store `ANTHROPIC_API_KEY` | Supabase Edge Function secrets | Never client-side, Vercel browser bundle, chat, or Git |
@@ -310,8 +313,9 @@ These are not reasons to redesign the project. They are named so an agent does n
 
 1. **DS-01 vs ENV-02:** byte-identical vendor source conflicts with blanket raw-console scanning.
    Recommended decision is the narrow vendor exclusion described above.
-2. **Catalog count:** committed old migrations yield 140 final exercises; DATA-02 expects 173 live
-   exercises. Old live catalog access is required to reconcile, not to start the schema.
+2. **Catalog count:** committed migrations and the 2026-09-18 live capture both yield 140 final
+   exercises. The prior 173-row expectation is unsupported and awaits explicit owner retirement in
+   the REQ-008 disposition approval.
 3. **Vercel state:** previews already deploy successfully although ENV-03 is open. ENV-03 should
    audit and complete production/deep-link/env behavior, not create a duplicate project blindly.
 4. **Stale `docs/STATUS.md`:** it still says the repo is private and issue migration is pending. This
@@ -434,8 +438,9 @@ Review these in order; each decision has a default recommendation.
    correctly. Recommended: merge.
 3. **DS-01 PR #76:** after the approved fix and a monitored green CI run, review and merge.
 4. **Next work frontier:** start DATA-01a first, with ENV-03 and ENV-06 safe in parallel.
-5. **Supabase:** create/link a new project when DATA-01a reaches the real-project gate. Do not reuse
-   old user tables. No Anthropic key is needed yet.
+5. **Supabase:** link the reused project when DATA-01a reaches the real-project gate. Implement the
+   new schema only after REQ-008 approval; do not carry forward old user rows. No new project and no
+   additional Anthropic key are needed.
 6. **Agent mode:** use a visible Claude terminal. Recommended: keep manual merges for the next
    foundation batch, then decide whether protected auto-merge is worth the reduced supervision.
 7. **PWA priority:** decide whether to take PWA-01 as soon as ENV-03 and DS-02 release it, knowing it

@@ -30,11 +30,16 @@ SELECT 'exercise_definitions' AS dataset, count(*) FROM exercise_definitions
 UNION ALL SELECT 'exercise_anchors', count(*) FROM exercise_anchors
 UNION ALL SELECT 'exercise_muscle_groups', count(*) FROM exercise_muscle_groups;
 
-\echo '=== exercise_definitions taxonomy completeness ==='
-SELECT count(*) AS total,
-       count(*) FILTER (WHERE component_movements IS NOT NULL) AS with_components,
-       count(*) FILTER (WHERE exercise_role IS NOT NULL) AS with_role
-FROM exercise_definitions;
+\echo '=== exercise_definitions taxonomy-column presence ==='
+-- The live project may legitimately predate migrations that introduced these
+-- columns. Inventory their presence without referencing a missing column and
+-- aborting the remainder of the read-only audit.
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_schema = 'public'
+  AND table_name = 'exercise_definitions'
+  AND column_name IN ('component_movements', 'exercise_role')
+ORDER BY column_name;
 
 \echo '=== views (public) ==='
 SELECT table_name FROM information_schema.views
