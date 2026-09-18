@@ -40,8 +40,10 @@ reconciliation) is documentation work and does not change the 71-node product gr
 
 ### What does not exist today
 
-- No new Supabase project is connected, no migrations have run against it, and no browser Supabase
-  client exists.
+- The backend target is the **reused** live Supabase project (`qxckevxniacktaqecypl`) from the
+  previous CLEAR application. No rebuild migrations have run against it, no browser Supabase client
+  exists, and the REQ-008 backend gate (`docs/backend/dispositions.md`) must be owner-approved
+  before any live mutation.
 - No authentication, exercise catalog, generation edge function, Anthropic call, workout screens,
   session persistence, history, manifest, or service worker exists in runtime code.
 - No coding agent is currently running. The DAG runner selects and instructs work; it is not a
@@ -142,8 +144,8 @@ dependent edges between them.
 
 | Lane | Ordered work | Outcome | Human gate |
 |---|---|---|---|
-| Data spine | DATA-01a → DATA-01b → DATA-01c → DATA-01d → DATA-03 | New schema, generated types, typed client | Create/link the new Supabase project |
-| Catalog | DATA-01a → DATA-02 | Sanitized exercise/reference seed with taxonomy proof | Read old live catalog to reconcile 140 vs 173 rows |
+| Data spine | DATA-01a → DATA-01b → DATA-01c → DATA-01d → DATA-03 | New schema, generated types, typed client | Link the reused Supabase project; REQ-008 disposition approval before mutation |
+| Catalog | DATA-01a → DATA-02 | Sanitized exercise/reference seed with taxonomy proof | Read the reused project's live catalog to reconcile 140 vs 173 rows |
 | Design | DS-01 → DS-02 + DS-04a/b/c + DS-08 | Fonts, three missing wrappers, enforceable design rules | Approve DS-01 conflict first |
 | Reliability | CORE-01 → CORE-02 + CORE-04; DS-01 → CORE-05 | Safe logs, four-state UI contract, accessibility harness | None expected |
 | Infrastructure | ENV-03 + ENV-06; then ENV-04/05/07 as their data/auth prerequisites land | Deploys, component tests, legible dev startup, keep-alive, E2E | Vercel/Supabase authorization and test secret |
@@ -259,8 +261,8 @@ schema files, or most test work. Keys enter only at their owning issue.
 | Earliest issue | External action | Destination | Exposure rule |
 |---|---|---|---|
 | ENV-03 | Audit/confirm the already-connected Vercel project and production deployment | Vercel project settings/CLI | No token in repository or chat |
-| DATA-01a | Create or link the new Supabase project when migrations need a real target | Supabase project/CLI | Login remains in Supabase's auth mechanism |
-| DATA-02 | Permit read-only access to the old live catalog | Old Supabase project | Export catalog tables only; no user rows |
+| DATA-01a | Link the reused live Supabase project when migrations need a real target; REQ-008 dispositions must be approved before any mutation | Supabase project/CLI | Login remains in Supabase's auth mechanism |
+| DATA-02 | Permit read-only access to the live catalog | Reused Supabase project (same project; previous app's data) | Export catalog tables only; no user rows |
 | DATA-03 | Supply new project URL and public anon key | Gitignored local env + Vercel env values | Anon key may ship to browser; never service role |
 | ENV-07 | Store test lifecycle/service-role credential | GitHub/Vercel/Supabase secret store as designed | Never browser code, chat, journal, or logs |
 | AUTH-02/03 | Confirm deployed OTP redirect URLs and auth behavior | Supabase Auth dashboard | No email contents or codes recorded |

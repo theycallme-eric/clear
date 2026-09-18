@@ -5,8 +5,9 @@ import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  // Vendored design-system is linted at source; excluding to preserve byte-identical copy
-  { ignores: ['dist', 'coverage', 'docs/design/exports', 'src/design-system'] },
+  // Vendored design-system is linted at source; excluding to preserve byte-identical copy.
+  // docs/backend/evidence holds read-only Deno/SQL evidence copied from the previous app (REQ-008).
+  { ignores: ['dist', 'coverage', 'docs/design/exports', 'docs/backend/evidence', 'src/design-system'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],

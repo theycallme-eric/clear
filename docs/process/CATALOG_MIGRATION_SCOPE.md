@@ -3,6 +3,11 @@
 Owner decision recorded 2026-08-29: the rebuild keeps reusable workout catalog/reference data from
 the old CLEAR database and starts user history fresh.
 
+Owner decision recorded 2026-09-07 (REQ-008): the "old CLEAR database" **is** the reused live
+Supabase project (`qxckevxniacktaqecypl`) — the rebuild runs on the same project, so the catalog
+export reads from it in place rather than from a separate old project. The REQ-008 gate
+(`docs/backend/dispositions.md`) must be owner-approved before any live mutation.
+
 ## Include
 
 - exercise IDs and display names;
