@@ -113,21 +113,22 @@ preserved before any reset.
 
 ## 10. Approval record
 
-**Status: LIVE-CAPTURED AND PROPOSED — awaiting owner approval.**
+**Status: APPROVED by Eric on 2026-09-18 for live-capture commit `39fe013`.**
 
 This disposition set is derived entirely from the owner decisions of 2026-09-07 and the reviewed
 REQ-008 requirement; no new judgment calls were introduced. Approval must be recorded before any
 live mutation:
 
 - **Who:** Eric (repository owner).
-- **How:** comment `Dispositions approved as of <commit sha>` on issue #80 (or check this box in a
-  reviewed PR touching this file): 
-  - [ ] **Owner approval recorded** — date: ______, commit: ______
-- **Precondition for approval:** satisfied — `docs/backend/live-inventory.md` §5 is captured and
-  deviations are reflected here. A second off-machine dump copy remains mandatory before mutation.
-- **Effect:** TASK-009 through TASK-013 (DATA issues) may begin mutating the live project. Until
-  then they may only author and dry-run changes.
+- **How:** [issue #80 approval comment](https://github.com/theycallme-eric/clear/issues/80#issuecomment-5733156801).
+  - [x] **Owner approval recorded** — 2026-09-18, capture commit `39fe013`
+- **Approval scope:** reuse the existing project for the new platform; preserve/transform the
+  captured 140-row catalog and taxonomy references; retire the unsupported 173-row expectation,
+  eight test auth accounts, and personal/test rows; replace the old physical schema and deployed
+  generation function; transform old-client auth URLs during cutover.
+- **Remaining precondition:** store a second copy of the verified full dump off-machine.
+- **Effect:** TASK-009 through TASK-013 may author and dry-run changes now. They may mutate the live
+  project only after the off-machine-copy checkbox in `docs/backend/live-inventory.md` is checked.
 
-If live capture contradicts a disposition above (for example, a live surface not listed here),
-the contradiction is a blocking owner question per the evidence-authority order — do not resolve
-it silently.
+If later evidence contradicts a disposition above, the contradiction is a blocking owner question
+per the evidence-authority order — do not resolve it silently.

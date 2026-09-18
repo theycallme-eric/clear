@@ -140,11 +140,11 @@ justify replace/transform dispositions, not schema reuse.
   `component_movements` and `exercise_role` columns introduced by `00031`. Those tags remain
   rebuild reference evidence, not live catalog fields.
 
-## 5. Live capture — status: **CAPTURED; OWNER APPROVAL PENDING**
+## 5. Live capture — status: **CAPTURED AND OWNER-APPROVED; OFF-MACHINE COPY PENDING**
 
 > **This section is the gate.** The read-only capture and recoverable snapshot completed on
-> 2026-09-18. No live mutation occurred. The gate remains closed until the owner approves
-> `docs/backend/dispositions.md` and stores the full dump in a second, off-machine location.
+> 2026-09-18. No live mutation occurred. The owner approved the dispositions on issue #80. The
+> mutation gate remains closed until the full dump is stored in a second, off-machine location.
 
 - [x] `npm run backend:prereqs` — PRE-003/PRE-004 present; PRE-007 authenticated
 - [x] Read-only SQL inventory captured in
