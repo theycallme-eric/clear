@@ -12,6 +12,7 @@
     "dag:ready": "python3 scripts/dag-ready.py",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:dag": "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

@@ -26,4 +26,11 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Test files and shared test utilities never participate in fast refresh
+    files: ['src/test/**', 'src/**/*.test.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 )
