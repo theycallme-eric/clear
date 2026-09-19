@@ -11,7 +11,7 @@ export default defineConfig({
     coverage: {
       // Reported, not gated: no thresholds, ever.
       provider: 'v8',
-      include: ['src/**'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/design-system/**', // vendored; covered at source, not here
         'src/test/**',

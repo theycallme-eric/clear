@@ -30,10 +30,8 @@ the same command CI runs, so local and CI results are identical.
   hand-builds a domain object is a bug in the harness — extend the factory
   instead.
 - **Interactions use `@testing-library/user-event`**; no synthetic
-  `fireEvent` in new tests. (The package is declared policy but not yet
-  installed — add it with
-  `npm install --save-dev --save-exact @testing-library/user-event`
-  the first time a test needs an interaction.)
+  `fireEvent` in new tests. Start each interaction test with
+  `const user = userEvent.setup()` and use the returned user instance.
 
 ### Coverage
 
@@ -42,6 +40,5 @@ npm run test:coverage
 ```
 
 Coverage is reported, never gated: no thresholds, just a visible number.
-The provider package is not yet installed; the first run will ask for
-`npm install --save-dev --save-exact @vitest/coverage-v8`, after which the
-text summary prints and an HTML report lands in `coverage/`.
+The text summary prints in the terminal and an HTML report lands in
+`coverage/`.

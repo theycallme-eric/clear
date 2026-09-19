@@ -4,6 +4,7 @@
  * user-visible output, and build domain objects through factories.
  */
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { Checkbox } from '../design-system/index'
@@ -12,12 +13,17 @@ import { makeAppError } from './factories'
 import { renderWithProviders } from './render'
 
 describe('example component test', () => {
-  it('renders and exposes user-visible output through accessible roles', () => {
+  it('renders and responds through accessible, user-visible controls', async () => {
+    const user = userEvent.setup()
     renderWithProviders(<Checkbox label="Include warm-up" defaultChecked />)
 
     const checkbox = screen.getByRole('checkbox', { name: 'Include warm-up' })
     expect(checkbox).toBeChecked()
     expect(screen.getByText('Include warm-up')).toBeVisible()
+
+    await user.click(checkbox)
+
+    expect(checkbox).not.toBeChecked()
   })
 
   it('builds domain fixtures through factories, never by hand', () => {
