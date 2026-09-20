@@ -152,6 +152,55 @@ describe('dismissal — phosphor-out before the platform close', () => {
   })
 })
 
+describe('reduced motion — the end state, immediately', () => {
+  /** Report the room as motion-averse; the CSS then runs no animation at all. */
+  function prefersReducedMotion() {
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: query.includes('prefers-reduced-motion'),
+          media: query,
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    )
+  }
+
+  it('opens and closes without scheduling anything to wait on', () => {
+    prefersReducedMotion()
+    vi.useFakeTimers()
+    try {
+      const view = renderWithProviders(
+        <AppDialog open onClose={() => {}} title="Why this number" actions={<button>Close</button>}>
+          Body copy
+        </AppDialog>,
+      )
+
+      // Open: the whole end state is on screen and operable on this tick.
+      expect(getDialog().open).toBe(true)
+      expect(screen.getByText('Body copy')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+      expect(vi.getTimerCount()).toBe(0)
+
+      view.rerender(
+        <AppDialog open={false} onClose={() => {}} title="Why this number" actions={<button>Close</button>}>
+          Body copy
+        </AppDialog>,
+      )
+
+      // Closed: no exit animation runs, so nothing defers the close.
+      expect(getDialog().open).toBe(false)
+      expect(vi.getTimerCount()).toBe(0)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
 describe('platform contract preserved', () => {
   it('renders a real <dialog> with the shipped chamfered panel and title', () => {
     renderWithProviders(
