@@ -14,7 +14,6 @@ import { describe, expect, it } from 'vitest'
 
 const APP_SOURCE = 'src'
 const VENDORED = join('src', 'design-system')
-const SELF = join('src', 'test', 'easing-vocabulary.test.ts')
 const SCANNED_EXTENSIONS = ['.ts', '.tsx', '.css']
 
 /** Anything that is not `linear`, `steps()` or a token that resolves to them. */
@@ -24,7 +23,9 @@ function appOwnedFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const path = join(directory, entry.name)
 
-    if (path === VENDORED || path === SELF) {
+    // Test assertions necessarily name the forbidden curves they guard against;
+    // this check covers code and styles that ship to users.
+    if (path === VENDORED || entry.name.includes('.test.')) {
       return []
     }
 
