@@ -1,0 +1,28 @@
+id,created_at,name,category,anchor,description
+conditioning-carry,2026-01-21 17:47:31.281621+00,Loaded Carry,full_body,surprise,Carrying movements
+conditioning-locomotion,2026-01-21 04:20:14.697239+00,Locomotion,full_body,surprise,Running and moving patterns
+conditioning-plyometric,2026-01-21 04:20:14.697239+00,Plyometric,full_body,surprise,Jumping and explosive movements
+core-anti-rotation,2026-01-21 04:20:14.697239+00,Anti-Rotation,core,surprise,Resisting rotation
+core-flexion,2026-01-21 04:20:14.697239+00,Core Flexion,core,surprise,Spinal flexion movements
+core-rotation,2026-01-21 17:47:31.281621+00,Core Rotation,core,surprise,Rotational core movements
+core-stability,2026-01-21 04:20:14.697239+00,Core Stability,core,surprise,Isometric core holds
+hinge-deadlift,2026-01-21 04:20:14.697239+00,Deadlift,lower_body,hinge,Hip-hinge pulling from floor
+hinge-extension,2026-01-21 17:47:31.281621+00,Back Extension,lower_body,hinge,Spinal extension movements
+hinge-hip-thrust,2026-01-21 04:20:14.697239+00,Hip Thrust,lower_body,hinge,Hip extension movements
+hinge-swing,2026-01-21 04:20:14.697239+00,Swing,lower_body,hinge,Ballistic hip-hinge movements
+mobility-stretch,2026-01-21 17:47:31.281621+00,Stretch,full_body,surprise,Static and dynamic stretches
+power-clean,2026-01-21 04:20:14.697239+00,Clean,full_body,power,Olympic clean variations
+power-jerk,2026-01-21 17:47:31.281621+00,Jerk,full_body,power,Jerk variations
+power-snatch,2026-01-21 04:20:14.697239+00,Snatch,full_body,power,Snatch variations
+power-thruster,2026-01-21 04:20:14.697239+00,Thruster,full_body,power,Squat to press combination
+press-accessory,2026-01-21 04:20:14.697239+00,Press Accessory,upper_body,press,Isolation pressing movements
+press-horizontal,2026-01-21 04:20:14.697239+00,Horizontal Press,upper_body,press,Pressing away from torso
+press-isolation,2026-01-21 17:47:31.281621+00,Press Isolation,upper_body,press,Single-joint pressing movements
+press-vertical,2026-01-21 04:20:14.697239+00,Vertical Press,upper_body,press,Pressing overhead
+pull-accessory,2026-01-21 04:20:14.697239+00,Pull Accessory,upper_body,pull,Isolation pulling movements
+pull-horizontal,2026-01-21 04:20:14.697239+00,Horizontal Pull,upper_body,pull,Rowing movements
+pull-isolation,2026-01-21 17:47:31.281621+00,Pull Isolation,upper_body,pull,Single-joint pulling movements
+pull-vertical,2026-01-21 04:20:14.697239+00,Vertical Pull,upper_body,pull,Pulling from overhead
+squat-bilateral,2026-01-21 04:20:14.697239+00,Bilateral Squat,lower_body,squat,Two-legged squatting movements
+squat-machine,2026-01-21 17:47:31.281621+00,Machine Squat,lower_body,squat,Machine-based squat movements
+squat-unilateral,2026-01-21 04:20:14.697239+00,Unilateral Squat,lower_body,squat,Single-leg squat variations

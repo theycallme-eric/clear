@@ -1,0 +1,197 @@
+BEGIN
+=== server version ===
+                                      version                                       
+------------------------------------------------------------------------------------
+ PostgreSQL 17.6 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 13.2.0, 64-bit
+(1 row)
+
+=== applied migrations (supabase bookkeeping) ===
+ version |              name               
+---------+---------------------------------
+ 00001   | create_enums
+ 00002   | create_profiles
+ 00003   | create_locations
+ 00004   | create_workout_sessions
+ 00005   | create_workout_sections
+ 00006   | create_exercise_library
+ 00007   | create_exercises
+ 00008   | create_rls_policies
+ 00009   | seed_exercise_library
+ 00010   | expand_exercise_library
+ 00011   | consolidate_exercises
+ 00012   | add_structure_results
+ 00013   | add_section_status
+ 00014   | unique_location_names
+ 00015   | allow_multiple_workouts_per_day
+ 00016   | exercise_anchors_junction
+ 00017   | complete_onboarding_rpc
+ 00018   | save_workout_rpc
+ 00019   | rls_index_optimizations
+ 00020   | update_goal_preset_enum
+ 00021   | save_workout_add_goal
+ 00022   | drop_unique_section_type
+ 00023   | save_workout_return_uuids
+ 00024   | create_saved_workouts
+ 00025   | add_exercise_structure
+ 00026   | exercise_muscle_groups
+ 00027   | suggest_anchor_rpc
+ 00028   | exercise_set_logs
+ 00029   | get_last_set_data_rpc
+(29 rows)
+
+=== tables (public) ===
+        table_name         | rls_enabled | comment 
+---------------------------+-------------+---------
+ exercise_anchors          | t           | 
+ exercise_definitions      | t           | 
+ exercise_muscle_groups    | t           | 
+ exercise_set_logs         | t           | 
+ exercises                 | t           | 
+ locations                 | t           | 
+ movement_patterns         | t           | 
+ profiles                  | t           | 
+ saved_workout_completions | t           | 
+ saved_workouts            | t           | 
+ structure_results         | t           | 
+ workout_sections          | t           | 
+ workout_sessions          | t           | 
+(13 rows)
+
+=== per-table row counts (public) ===
+        table_name         | approx_rows 
+---------------------------+-------------
+ exercise_anchors          |           0
+ exercise_definitions      |           0
+ exercise_muscle_groups    |           0
+ exercise_set_logs         |           0
+ exercises                 |           0
+ locations                 |           0
+ movement_patterns         |           0
+ profiles                  |           0
+ saved_workout_completions |           0
+ saved_workouts            |           0
+ structure_results         |           0
+ workout_sections          |           0
+ workout_sessions          |           0
+(13 rows)
+
+=== exact catalog counts (the 140-vs-173 question) ===
+        dataset         | count 
+------------------------+-------
+ exercise_definitions   |   140
+ exercise_anchors       |   150
+ exercise_muscle_groups |   488
+(3 rows)
+
+=== exercise_definitions taxonomy-column presence ===
+ column_name | data_type 
+-------------+-----------
+(0 rows)
+
+=== views (public) ===
+            table_name             
+-----------------------------------
+ exercise_definitions_with_anchors
+ exercises_with_context
+(2 rows)
+
+=== enums and values ===
+      enum_name      |                                                  values                                                   
+---------------------+-----------------------------------------------------------------------------------------------------------
+ anchor_type         | {squat,hinge,press,pull,power,surprise,upper_body,lower_body,full_body}
+ equipment_tier      | {minimal,home,building,full}
+ experience_level    | {new,some,confident}
+ goal_preset         | {strength,balanced,conditioning,quick,hypertrophy,active_recovery}
+ movement_category   | {lower_body,upper_body,core,full_body}
+ rest_day_reason     | {rest,injury,sick}
+ section_status      | {not_started,completed,skipped}
+ section_type        | {warmup,mobility,primary_lift,accessory,skill_power,carries,core,stability_balance,conditioning,cooldown}
+ streak_pause_reason | {injury,sick,vacation}
+ streak_status       | {active,paused}
+(10 rows)
+
+=== functions / RPCs (public) ===
+         function_name          |                                                                                                arguments                                                                                                | security 
+--------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------
+ complete_onboarding            | p_user_id uuid, p_location_name text, p_location_tier equipment_tier, p_equipment text[], p_experience_level experience_level, p_goal_preset goal_preset, p_sections section_type[], p_limitations text | definer
+ ensure_single_default_location |                                                                                                                                                                                                         | invoker
+ get_last_set_data              | p_user_id uuid, p_exercise_definition_ids text[]                                                                                                                                                        | definer
+ handle_new_user                |                                                                                                                                                                                                         | definer
+ save_generated_workout         | p_user_id uuid, p_location_id uuid, p_date date, p_anchor anchor_type, p_intensity smallint, p_sections jsonb, p_time_target_mins smallint, p_prompt_version text, p_goal_preset goal_preset            | definer
+ suggest_anchor                 | p_user_id uuid                                                                                                                                                                                          | definer
+ update_updated_at_column       |                                                                                                                                                                                                         | invoker
+(7 rows)
+
+=== RLS policies ===
+ schemaname |         tablename         |                    policyname                     |  cmd   |      roles      
+------------+---------------------------+---------------------------------------------------+--------+-----------------
+ public     | exercise_anchors          | Exercise anchors are viewable by everyone         | SELECT | {public}
+ public     | exercise_definitions      | Authenticated users can view exercise definitions | SELECT | {authenticated}
+ public     | exercise_muscle_groups    | Exercise muscle groups are viewable by everyone   | SELECT | {public}
+ public     | exercise_set_logs         | Users can delete their own set logs               | DELETE | {public}
+ public     | exercise_set_logs         | Users can insert their own set logs               | INSERT | {public}
+ public     | exercise_set_logs         | Users can update their own set logs               | UPDATE | {public}
+ public     | exercise_set_logs         | Users can view their own set logs                 | SELECT | {public}
+ public     | exercises                 | Users can create own exercises                    | INSERT | {public}
+ public     | exercises                 | Users can delete own exercises                    | DELETE | {public}
+ public     | exercises                 | Users can update own exercises                    | UPDATE | {public}
+ public     | exercises                 | Users can view own exercises                      | SELECT | {public}
+ public     | locations                 | Users can create own locations                    | INSERT | {public}
+ public     | locations                 | Users can delete own locations                    | DELETE | {public}
+ public     | locations                 | Users can update own locations                    | UPDATE | {public}
+ public     | locations                 | Users can view own locations                      | SELECT | {public}
+ public     | movement_patterns         | Authenticated users can view movement patterns    | SELECT | {authenticated}
+ public     | profiles                  | Users can update own profile                      | UPDATE | {public}
+ public     | profiles                  | Users can view own profile                        | SELECT | {public}
+ public     | saved_workout_completions | Users can create own completion records           | INSERT | {public}
+ public     | saved_workout_completions | Users can delete own completion records           | DELETE | {public}
+ public     | saved_workout_completions | Users can view own completion records             | SELECT | {public}
+ public     | saved_workouts            | Users can create own saved workouts               | INSERT | {public}
+ public     | saved_workouts            | Users can delete own saved workouts               | DELETE | {public}
+ public     | saved_workouts            | Users can update own saved workouts               | UPDATE | {public}
+ public     | saved_workouts            | Users can view own saved workouts                 | SELECT | {public}
+ public     | structure_results         | Users can insert own structure results            | INSERT | {public}
+ public     | structure_results         | Users can update own structure results            | UPDATE | {public}
+ public     | structure_results         | Users can view own structure results              | SELECT | {public}
+ public     | workout_sections          | Users can create own sections                     | INSERT | {public}
+ public     | workout_sections          | Users can delete own sections                     | DELETE | {public}
+ public     | workout_sections          | Users can update own sections                     | UPDATE | {public}
+ public     | workout_sections          | Users can view own sections                       | SELECT | {public}
+ public     | workout_sessions          | Users can create own sessions                     | INSERT | {public}
+ public     | workout_sessions          | Users can delete own sessions                     | DELETE | {public}
+ public     | workout_sessions          | Users can update own sessions                     | UPDATE | {public}
+ public     | workout_sessions          | Users can view own sessions                       | SELECT | {public}
+(36 rows)
+
+=== triggers (public + auth) ===
+ event_object_schema |  event_object_table  |              trigger_name              | action_timing |    events     
+---------------------+----------------------+----------------------------------------+---------------+---------------
+ auth                | users                | on_auth_user_created                   | AFTER         | INSERT
+ public              | exercise_definitions | update_exercise_definitions_updated_at | BEFORE        | UPDATE
+ public              | exercises            | update_exercises_updated_at            | BEFORE        | UPDATE
+ public              | locations            | enforce_single_default_location        | BEFORE        | INSERT,UPDATE
+ public              | locations            | update_locations_updated_at            | BEFORE        | UPDATE
+ public              | profiles             | update_profiles_updated_at             | BEFORE        | UPDATE
+ public              | saved_workouts       | update_saved_workouts_updated_at       | BEFORE        | UPDATE
+ public              | workout_sections     | update_workout_sections_updated_at     | BEFORE        | UPDATE
+ public              | workout_sessions     | update_workout_sessions_updated_at     | BEFORE        | UPDATE
+(9 rows)
+
+=== installed extensions ===
+      extname       | extversion 
+--------------------+------------
+ pg_stat_statements | 1.11
+ pgcrypto           | 1.3
+ plpgsql            | 1.0
+ supabase_vault     | 0.3.1
+ uuid-ossp          | 1.1
+(5 rows)
+
+=== auth population size (count only — no personal data) ===
+ auth_users 
+------------
+          8
+(1 row)
+
+=== inventory complete (read-only) ===
+ROLLBACK
