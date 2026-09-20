@@ -20,11 +20,12 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
 
-Current flow is only `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx
-→ src/app/RootLayout.tsx`; the boundary is the CORE-04 crash catch above the router. `RootLayout`
-is the pathless layout route every screen renders inside: it mounts the DS-06 atmosphere once and
-sets `data-atmosphere` from `src/app/atmosphere.ts`, the transcription of `docs/specs/IA.md` §4.
-A screen never mounts an atmosphere of its own. Data-driven views render their state
-through the shared four-state contract (`src/state/view-state.ts` + `src/ui/view-state.tsx`, see
+Current flow is `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx →
+RootLayout → AppChrome → screens`. The CORE-04 boundary sits above the router. `RootLayout` mounts
+the DS-06 atmosphere once and sets `data-atmosphere` from `src/app/atmosphere.ts`; a screen never
+mounts an atmosphere of its own. `AppChrome` owns the skip link, route-change focus, and polite route
+announcer. Every screen renders inside the `Screen` primitive, which owns the `<main>` landmark, the
+single `<h1>`, and the document title (CORE-05). Data-driven views use the shared four-state contract
+(`src/state/view-state.ts` + `src/ui/view-state.tsx`, documented in
 `docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land. No
 backend client exists yet.

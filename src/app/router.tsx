@@ -4,6 +4,7 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 
+import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
@@ -13,8 +14,13 @@ export const routes: RouteObject[] = [
   {
     element: <RootLayout />,
     children: [
-      { path: '/', element: <AppShell /> },
-      { path: '*', element: <NotFound /> },
+      {
+        element: <AppChrome />,
+        children: [
+          { path: '/', element: <AppShell /> },
+          { path: '*', element: <NotFound /> },
+        ],
+      },
     ],
   },
 ]
