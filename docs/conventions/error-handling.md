@@ -88,6 +88,24 @@ Use `throw createError()` for **unexpected** failures:
 - Invariant violations
 - Unrecoverable states
 
+## Where an AppError is shown
+
+One renderer per surface — which one depends on how much of the screen the failure took.
+
+| The failure | Surface | Component |
+|---|---|---|
+| The whole screen failed to load | `EmptyState` in an urgency frame | `ErrorView` (`src/ui/view-state.tsx`) |
+| It interrupts a screen that still stands | `Toast variant="negative"` on the root host | `showErrorToast` (`src/state/toasts.ts`) |
+| It blocks the flow until the user acts | `Dialog`, critical frame | `ErrorDialog` (`src/ui/blocking-dialog.tsx`) |
+
+All three show the same three things: the user-safe message, the `requestId` when present, and
+**exactly one** retry action that re-runs the failed operation. Severity carries a glyph
+(`AlertTriangle`), never colour alone.
+
+Confirmations are the other blocking surface: `ConfirmDialog`, same file, safe action first.
+**There are no bottom sheets** — every overlay in CLEAR is a `Dialog` (ATOMIC §12), and it arrives
+with the dialog entrance motion in `src/styles/app-motion.css`.
+
 ## Review checklist
 
 When reviewing code that handles errors, check:
