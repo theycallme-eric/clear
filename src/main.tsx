@@ -8,6 +8,7 @@ import './design-system/css/motion.css'
 import './styles/skin-clear.css'
 import './design-system/css/skins.css'
 
+import { ErrorBoundary } from './app/ErrorBoundary'
 import { appRouter } from './app/router'
 
 const rootElement = document.getElementById('root')
@@ -18,6 +19,9 @@ if (rootElement === null) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <RouterProvider router={appRouter} />
+    {/* CORE-04: a render crash anywhere below shows a recoverable screen */}
+    <ErrorBoundary>
+      <RouterProvider router={appRouter} />
+    </ErrorBoundary>
   </StrictMode>,
 )

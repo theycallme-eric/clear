@@ -18,5 +18,8 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
 
-Current flow is only `index.html → src/main.tsx → src/app/router.tsx`. Data and state boundaries are
-stubs until their DAG issues land. No backend client exists yet.
+Current flow is only `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx`;
+the boundary is the CORE-04 crash catch above the router. Data-driven views render their state
+through the shared four-state contract (`src/state/view-state.ts` + `src/ui/view-state.tsx`, see
+`docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land. No
+backend client exists yet.

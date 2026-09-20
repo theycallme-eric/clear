@@ -7,10 +7,16 @@ import { render, type RenderResult } from '@testing-library/react'
 import { StrictMode, type ReactElement, type ReactNode } from 'react'
 import { MemoryRouter, RouterProvider } from 'react-router-dom'
 
+import { ErrorBoundary } from '../app/ErrorBoundary'
 import { createTestRouter } from '../app/router'
 
 function AppProviders({ children }: { children: ReactNode }) {
-  return <StrictMode>{children}</StrictMode>
+  return (
+    <StrictMode>
+      {/* Same CORE-04 boundary main.tsx mounts, so tests see real crash behavior */}
+      <ErrorBoundary>{children}</ErrorBoundary>
+    </StrictMode>
+  )
 }
 
 /**
