@@ -1,0 +1,63 @@
+/* =============================================================================
+   CORE-05 — app-owned accessibility mechanisms.
+   Everything here spans screens: the skip link, the visually-hidden utility
+   the route announcer uses, and the reduced-motion end-state guarantee for
+   app-composed animation. Tokens only; no raw hex, px, or font names.
+   ============================================================================= */
+
+/* Present for assistive tech, absent from the visual layout (live region). */
+.a11y-hidden {
+  position: absolute;
+  width: var(--spacing-25);
+  height: var(--spacing-25);
+  margin: calc(-1 * var(--spacing-25));
+  padding: var(--spacing-0);
+  border: none;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* First in tab order; visually hidden until it has focus. */
+.skip-link {
+  position: absolute;
+  top: var(--spacing-200);
+  left: var(--spacing-200);
+  z-index: 10;
+  padding: var(--spacing-200) var(--spacing-400);
+  background: var(--surface-cta-primary);
+  color: var(--text-on-cta);
+  font-family: var(--font-label);
+  font-size: var(--label-sm-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.skip-link:not(:focus) {
+  width: var(--spacing-25);
+  height: var(--spacing-25);
+  margin: calc(-1 * var(--spacing-25));
+  padding: var(--spacing-0);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Reduced motion means the end state renders immediately — never a skipped
+   animation that leaves content invisible or blocks interactivity. Durations
+   collapse instead of `animation: none` so fill states still resolve; the
+   vendored motion.css handles the design system's own vocabulary. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

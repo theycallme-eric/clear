@@ -1,8 +1,9 @@
+import { Screen } from './Screen'
+
 export function AppShell() {
   return (
-    <main>
-      <h1>CLEAR</h1>
+    <Screen title="CLEAR">
       <p>Workout generation is being rebuilt.</p>
-    </main>
+    </Screen>
   )
 }

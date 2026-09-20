@@ -18,5 +18,8 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
 
-Current flow is only `index.html → src/main.tsx → src/app/router.tsx`. Data and state boundaries are
-stubs until their DAG issues land. No backend client exists yet.
+Current flow is `index.html → src/main.tsx → src/app/router.tsx → AppChrome → screens`. `AppChrome`
+is the root layout route and owns everything that spans screens (skip link, route-change focus, the
+polite route announcer); every screen renders inside the `Screen` primitive, which owns the `<main>`
+landmark, the single `<h1>`, and the document title (CORE-05). Data and state boundaries are stubs
+until their DAG issues land. No backend client exists yet.
