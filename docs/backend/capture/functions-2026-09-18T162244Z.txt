@@ -1,0 +1,8 @@
+Source: authenticated Supabase dashboard (CLI management call stalled)
+Captured: 2026-09-18T16:22:44Z
+Project: qxckevxniacktaqecypl
+
+Functions total: 1
+- generate-workout
+  - Updated: approximately 7 months before capture
+  - Verify JWT with legacy secret: OFF

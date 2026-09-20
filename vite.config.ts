@@ -8,5 +8,17 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['src/design-system/_source/**'],
     setupFiles: './src/test/setup.ts',
+    coverage: {
+      // Reported, not gated: no thresholds, ever.
+      provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/design-system/**', // vendored; covered at source, not here
+        'src/test/**',
+        'src/**/*.test.{ts,tsx}',
+        'src/main.tsx',
+      ],
+      reporter: ['text', 'html', 'lcov'],
+    },
   },
 })

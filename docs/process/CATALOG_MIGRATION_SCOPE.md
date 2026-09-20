@@ -3,6 +3,11 @@
 Owner decision recorded 2026-08-29: the rebuild keeps reusable workout catalog/reference data from
 the old CLEAR database and starts user history fresh.
 
+Owner decision recorded 2026-09-07 (REQ-008): the "old CLEAR database" **is** the reused live
+Supabase project (`qxckevxniacktaqecypl`) — the rebuild runs on the same project, so the catalog
+export reads from it in place rather than from a separate old project. The REQ-008 gate
+(`docs/backend/dispositions.md`) must be owner-approved before any live mutation.
+
 ## Include
 
 - exercise IDs and display names;
@@ -35,7 +40,8 @@ Static audit of its migrations found:
 - primary anchors are derived from the old pattern relationship and 13 secondary anchor mappings are
   explicitly added.
 
-The live DATA-02 acceptance criterion expects 173 exercises. Therefore the committed old repository
-is a reproducible starting point, but not proof of the old live database's final contents. DATA-02
-must export/read the old live catalog, reconcile the 33-row difference, and commit a sanitized
-catalog-only artifact. It may not silently lower the expectation to 140 or export user tables.
+The 2026-09-18 read-only live capture proves that the reused project contains the same 140 exercise
+definitions, plus 150 anchor links, 488 muscle mappings, and 27 legacy movement-pattern rows. No
+173-row live source exists. DATA-02 must use the committed snapshot as its input, preserve all 140
+definitions and related reference rows, and retire the unsupported 173-row expectation only with
+owner approval of `docs/backend/dispositions.md`. It must never export user tables.
