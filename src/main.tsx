@@ -8,6 +8,8 @@ import './design-system/css/motion.css'
 import './styles/skin-clear.css'
 import './design-system/css/skins.css'
 import './styles/app-motion.css'
+// DS-06 atmosphere override; must follow the design-system motion layer.
+import './styles/atmosphere.css'
 
 import { ErrorBoundary } from './app/ErrorBoundary'
 import { appRouter } from './app/router'

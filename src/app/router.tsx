@@ -6,10 +6,17 @@ import {
 
 import { AppShell } from './AppShell'
 import { NotFound } from './NotFound'
+import { RootLayout } from './RootLayout'
 
+// A pathless layout route, so DS-06's atmosphere mounts once above every screen.
 export const routes: RouteObject[] = [
-  { path: '/', element: <AppShell /> },
-  { path: '*', element: <NotFound /> },
+  {
+    element: <RootLayout />,
+    children: [
+      { path: '/', element: <AppShell /> },
+      { path: '*', element: <NotFound /> },
+    ],
+  },
 ]
 
 export const appRouter = createBrowserRouter(routes)

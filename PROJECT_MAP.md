@@ -20,8 +20,11 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
 
-Current flow is only `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx`;
-the boundary is the CORE-04 crash catch above the router. Data-driven views render their state
+Current flow is only `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx
+→ src/app/RootLayout.tsx`; the boundary is the CORE-04 crash catch above the router. `RootLayout`
+is the pathless layout route every screen renders inside: it mounts the DS-06 atmosphere once and
+sets `data-atmosphere` from `src/app/atmosphere.ts`, the transcription of `docs/specs/IA.md` §4.
+A screen never mounts an atmosphere of its own. Data-driven views render their state
 through the shared four-state contract (`src/state/view-state.ts` + `src/ui/view-state.tsx`, see
 `docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land. No
 backend client exists yet.
