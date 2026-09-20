@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Foundation" name="Responsive Constraints — DS-001 · DS-007" subtitle="Peer destinations stay reachable · Input shrinks instead of overflowing · measured, all four skins" viewport="760x620" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:14px 18px;box-sizing:border-box;height:620px;display:flex;flex-direction:column;gap:10px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb,var(--text-paragraph) 62%,transparent);max-width:700px}
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:7px 10px;background:var(--structure-a050);border-left:2px solid var(--structure-500)}
+.grp{display:flex;align-items:center;gap:6px}
+.grp>span{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.bar button{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer;min-height:24px}
+.bar button.on{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+input[type=range]{width:150px;accent-color:var(--interaction-500)}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px;margin-bottom:8px;display:flex;justify-content:space-between}
+.sh em{font-style:normal;color:color-mix(in srgb,var(--text-paragraph) 62%,transparent);letter-spacing:.04em;text-transform:none;font-size:8.5px}
+.stage{border:var(--border-width) dashed var(--structure-a300);padding:10px;box-sizing:border-box;overflow:hidden}
+.cap{font-family:var(--font-body);font-size:9px;line-height:1.4;color:color-mix(in srgb,var(--text-paragraph) 55%,transparent);margin-top:6px}
+.rd{display:flex;gap:16px;flex-wrap:wrap;font-family:var(--font-data);font-size:8px;letter-spacing:.04em;padding:6px 10px;background:var(--structure-a050)}
+.rd b{font-weight:700;color:var(--text-card-label)}
+.ok{color:var(--selection-400)}
+.bad{color:var(--text-negative)}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}
+</style></head><body><div class="pg">
+<div class="ttl">Responsive Constraints</div>
+<div class="sub">Two confirmed foundational gaps, fixed and measured here. <b>DS-001</b>: peer destinations stay reachable when the width cannot hold them. <b>DS-007</b>: a text field shrinks to the space it is given instead of forcing its parent wide. Drag the width down and watch both — nothing below is opt-in.</div>
+<div class="bar">
+  <div class="grp"><span>Skin</span><span id="skins"></span></div>
+  <div class="grp"><span>Container</span><input id="w" type="range" min="240" max="720" value="720"><span id="wv" style="color:var(--text-paragraph)">720px</span></div>
+</div>
+<div id="root"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<div class="rd" id="readout"></div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+<script>
+const NS = window.CLEARDesignSystem_4ee044 || {};
+const e = React.createElement;
+const root = document.getElementById('root');
+
+/* Skin switcher — every claim on this card has to hold in all four. */
+const SKINS = ['clear', 'vapour', 'signal', 'mono'];
+const host = document.getElementById('skins');
+host.innerHTML = '';
+SKINS.forEach((s, i) => {
+  const b = document.createElement('button');
+  b.textContent = s;
+  b.className = i === 0 ? 'on' : '';
+  b.onclick = () => {
+    [...host.children].forEach((x) => x.classList.remove('on'));
+    b.classList.add('on');
+    document.documentElement.setAttribute('data-skin', s);
+  };
+  host.appendChild(b);
+});
+
+if (NS.TabBar && NS.Input && NS.Button) {
+  const Sec = ({ title, note, children }) =>
+    e('div', null,
+      e('div', { className: 'sh' }, e('span', null, title), note ? e('em', null, note) : null),
+      children);
+
+  function Demo({ width }) {
+    const [t1, setT1] = React.useState(0);
+    const [t2, setT2] = React.useState(0);
+    const [q, setQ] = React.useState('');
+    const stage = { width, maxWidth: '100%' };
+
+    return e(React.Fragment, null,
+      e(Sec, { title: 'DS-001 · peer destinations', note: 'same TabBar, same tabs contract' },
+        e('div', { style: { display: 'flex', gap: 14, flexWrap: 'wrap' } },
+          e('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            e('div', { className: 'stage' },
+              e(NS.TabBar, { idBase: 'short', tabs: ['Overview', 'Sections', 'History'], active: t1, onChange: setT1 })),
+            e('div', { className: 'cap' }, 'Three destinations. Everything fits, so the rail stays inert — no cue, no scrollbar, nothing to notice.')),
+          e('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            e('div', { className: 'stage', id: 'pressure' },
+              e(NS.TabBar, { idBase: 'long', tabs: ['Overview', 'Sections', 'History', 'Records', 'Recovery', 'Plan', 'Settings'], active: t2, onChange: setT2 })),
+            e('div', { className: 'cap' }, 'Seven, under pressure. Arrow keys still move tab to tab, and selecting one off-screen reveals it. Tab into the set and press → to watch the rail follow.')))),
+
+      e(Sec, { title: 'DS-007 · constrained Input', note: 'flex row and grid track' },
+        e('div', { className: 'stage', style: stage, id: 'inputstage' },
+          e('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-end' } },
+            e(NS.Input, { label: 'Note', placeholder: 'What happened in that set?', value: q, onChange: setQ, style: { flex: 1 } }),
+            e(NS.Button, { variant: 'primary' }, 'Log')),
+          e('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,2fr) minmax(0,1fr)', gap: 8, marginTop: 10 } },
+            e(NS.Input, { label: 'Exercise', placeholder: 'Back squat' }),
+            e(NS.Input, { label: 'Load', placeholder: '90kg', errorText: 'Required' }))),
+        e('div', { className: 'cap' }, 'A flex row with a fixed-width button, and a 2fr/1fr grid. The fields take the width they are given — 40px height, focus ring, label, validation and placeholder all intact. No ', e('code', null, 'min-width: 0'), ' at the call site.')));
+  }
+
+  /* Mount into a container React does not already own. The preview host can
+     evaluate this block more than once (including a cached earlier copy of it),
+     and a second createRoot on the same node warns and orphans the first tree.
+     Swapping in a fresh node makes each execution self-consistent and lets the
+     last one win, rather than relying on a flag the other copy never set. */
+  let mountEl = root;
+  if (Object.keys(mountEl).some((k) => k.startsWith('__reactContainer'))) {
+    const fresh = mountEl.cloneNode(false);
+    mountEl.replaceWith(fresh);
+    mountEl = fresh;
+  }
+  const reactRoot = ReactDOM.createRoot(mountEl);
+  const slider = document.getElementById('w');
+  const wv = document.getElementById('wv');
+  const readout = document.getElementById('readout');
+
+  /* Measured, not asserted: the page either overflows horizontally or it does
+     not, and that is a number the document can report on itself. */
+  const measure = () => {
+    const d = document.documentElement;
+    const pageOver = d.scrollWidth - d.clientWidth;
+    const st = document.getElementById('inputstage');
+    const inputOver = st ? st.scrollWidth - st.clientWidth : 0;
+    const pr = document.getElementById('pressure');    const rail = pr && pr.querySelector('.clr-rail__scroller');
+    const scrollable = rail ? rail.scrollWidth > rail.clientWidth + 1 : false;
+    const cell = (label, val, good) =>
+      `<span><b>${label}</b> <span class="${good ? 'ok' : 'bad'}">${val}</span></span>`;
+    readout.innerHTML =
+      cell('page h-overflow', pageOver <= 0 ? 'none' : pageOver + 'px', pageOver <= 0) +
+      cell('input row overflow', inputOver <= 0 ? 'none' : inputOver + 'px', inputOver <= 0) +
+      `<span><b>rail engaged</b> <span class="ok">${scrollable ? 'yes — cues live' : 'no — everything fits'}</span></span>` +
+      `<span><b>skin</b> <span class="ok">${document.documentElement.getAttribute('data-skin') || 'clear'}</span></span>`;
+  };
+
+  const render = () => {
+    reactRoot.render(e(Demo, { width: Number(slider.value) }));
+    wv.textContent = slider.value + 'px';
+    requestAnimationFrame(() => requestAnimationFrame(measure));
+  };
+  slider.addEventListener('input', render);
+  host.addEventListener('click', () => requestAnimationFrame(measure));
+  render();
+}
+</script>
+</body></html>

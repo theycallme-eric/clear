@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Foundation" name="Alpha Behaviour" subtitle="Which hues survive 10–60% over near-black · the test any new skin hue must pass" viewport="700x360" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:15px 20px;box-sizing:border-box;height:360px;display:flex;flex-direction:column;gap:9px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.intro{font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,.6);line-height:1.4;max-width:620px}
+.hdr{display:grid;grid-template-columns:118px repeat(4,1fr) 96px;gap:5px;font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400)}
+.row{display:grid;grid-template-columns:118px repeat(4,1fr) 96px;gap:5px;align-items:center}
+.nm{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--structure-100);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sw{height:26px;position:relative}
+.sw b{position:absolute;left:3px;bottom:2px;font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.03em;color:rgba(255,255,255,.55)}
+.sw.lite b{color:rgba(0,0,0,.55)}
+.vd{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:right}
+.ok{color:var(--selection)}.no{color:var(--urgency)}.bench{color:var(--neutral-400)}
+.rule{font-family:var(--font-body);font-size:10px;line-height:1.4;color:rgba(255,255,255,.72);border-left:2px solid var(--structure-500);padding-left:9px;margin-top:2px}
+.rule b{color:var(--structure-100);font-weight:700}
+</style>
+</head><body><div class="card">
+  <div class="ttl">Alpha Behaviour</div>
+  <div class="intro">Every surface in the system is its hue at 10–60% over near-black. A hue only belongs in a skin if it still reads as itself once darkened. Chroma survives that darkening almost identically for every hue — what differs is whether the darkened result still has the same <em>name</em>.</div>
+  <div class="hdr"><span>Hue</span><span>Full</span><span>10% \u00b7 surface</span><span>40% \u00b7 CTA</span><span>60% \u00b7 active</span><span>Verdict</span></div>
+  <div class="row"><span class="nm">Orange \u00b7 CLEAR</span>
+    <div class="sw" style="background:#F87823"><b>F87823</b></div>
+    <div class="sw" style="background:#2E231A"><b>2E231A</b></div>
+    <div class="sw" style="background:#713E1C"><b>713E1C</b></div>
+    <div class="sw" style="background:#9E511E"><b>9E511E</b></div>
+    <span class="vd bench">Benchmark</span></div>
+  <div class="row"><span class="nm">Blue \u00b7 CLEAR</span>
+    <div class="sw" style="background:#00A9F4"><b>00A9F4</b></div>
+    <div class="sw" style="background:#152B33"><b>152B33</b></div>
+    <div class="sw" style="background:#0E516F"><b>0E516F</b></div>
+    <div class="sw" style="background:#096F9C"><b>096F9C</b></div>
+    <span class="vd bench">Benchmark</span></div>
+  <div class="row"><span class="nm">Violet</span>
+    <div class="sw" style="background:#6A5CF0"><b>6A5CF0</b></div>
+    <div class="sw" style="background:#20212C"><b>20212C</b></div>
+    <div class="sw" style="background:#38336E"><b>38336E</b></div>
+    <div class="sw" style="background:#494099"><b>494099</b></div>
+    <span class="vd ok">Holds</span></div>
+  <div class="row"><span class="nm">Emerald</span>
+    <div class="sw" style="background:#24E36B"><b>24E36B</b></div>
+    <div class="sw" style="background:#193523"><b>193523</b></div>
+    <div class="sw" style="background:#1C6939"><b>1C6939</b></div>
+    <div class="sw" style="background:#1F9149"><b>1F9149</b></div>
+    <span class="vd ok">Holds</span></div>
+  <div class="row"><span class="nm">Mint</span>
+    <div class="sw" style="background:#2BF5C4"><b>2BF5C4</b></div>
+    <div class="sw" style="background:#19372F"><b>19372F</b></div>
+    <div class="sw" style="background:#1F705C"><b>1F705C</b></div>
+    <div class="sw" style="background:#239C7F"><b>239C7F</b></div>
+    <span class="vd ok">Holds</span></div>
+  <div class="row"><span class="nm">Chartreuse</span>
+    <div class="sw lite" style="background:#BCFF1F"><b>BCFF1F</b></div>
+    <div class="sw" style="background:#2A3A1A"><b>2A3A1A</b></div>
+    <div class="sw" style="background:#59741A"><b>59741A</b></div>
+    <div class="sw" style="background:#7AA21C"><b>7AA21C</b></div>
+    <span class="vd no">Goes olive</span></div>
+  <div class="rule">The failure is not brightness, it is <b>naming</b>. Chartreuse is only chartreuse at high lightness \u2014 darkened it becomes olive, a different colour with different associations. Violet, emerald, mint and CLEAR's own blue are recognisable across the whole lightness range, so they tint without changing identity. <b>Structure hues are exempt</b>: they appear at full strength as borders and at 10% as a whisper, never in the middle. It is the interaction role, which lives at 40\u201360%, that must survive.</div>
+</div></body></html>

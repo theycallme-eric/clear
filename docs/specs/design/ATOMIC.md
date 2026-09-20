@@ -1,6 +1,6 @@
 # ATOMIC.md — the component and token substrate
 
-**Status:** revision 1 · pinned to `clear-design-system@0.5.0`
+**Status:** revision 2 · pinned to `clear-design-system@0.6.0`
 **Companion to:** `docs/specs/IA.md` (which screens exist and what they do)
 **Companion to:** `docs/specs/design/visual-language-rules.md` (why the system looks like this)
 
@@ -19,7 +19,8 @@ from it without reading 4MB of source on every ticket.
 | Field | Value |
 |---|---|
 | Package | `clear-design-system` |
-| Version | `0.5.0` |
+| Version | `0.6.0` |
+| Archive SHA-256 | `213bc2e82fc88ff134232d02163bb91de2d1e5a81ce01fce611ed48fc053cae7` |
 | Peer dependency | `react >= 18` |
 | Public entry | `index.js` / `index.d.ts` |
 | Style entry | `styles.css` — **load exactly this one file** |
@@ -47,6 +48,43 @@ entry, declared `.clr-*` classes, tokens, and app-owned domain components.
 > Vendoring it into the rebuild carries no dependency on `clear-app`. This is the one
 > sanctioned line of descent from the old codebase, and it descends through an artifact,
 > not through code.
+
+### 1a. What changed cumulatively in 0.5.1 / 0.5.2 / 0.6.0
+
+The 0.6.0 drop supersedes the completed 0.5.0 vendor. Its public-surface deltas,
+per the vendored `CHANGELOG.md` and `CLEAR-0.6.0-RECONCILIATION-REPORT.md`:
+
+- **Global border-box correction (0.5.1).** `foundation.css` now applies
+  `box-sizing: border-box` globally; padded/bordered elements no longer overflow their
+  declared widths. Intended Button, Chip, Input, Toast, and shell dimensions are preserved.
+- **Coherent frame/input state colors (0.5.2).** ChamferedFrame and Input state
+  (focus/invalid) borders and fills draw from the same semantic token set, so state
+  color is coherent across frames and fields.
+- **`OverflowRail` (0.6.0, closes DS-001).** New public component exported from the
+  entry point: a horizontal overflow rail with edge affordances. Import it from the
+  public entry only, never from `components/OverflowRail/` internals.
+- **Responsive `TabBar` (0.6.0, closes DS-007).** The tablist owns overflow: direct
+  children participate in tablist semantics and the active item reveals itself into
+  view. Do not wrap it in a second scroll container or reimplement reveal locally.
+- **Constrained `Input` (0.6.0, closes DS-007).** Inputs shrink within constrained
+  layouts (`min-width` released) and expose invalid-state tokens. Remove any local
+  sizing workaround; a second sizing mechanism is a regression.
+- **New tokens** introduced by the above (rail edge, input/frame state) join the
+  semantic token contract; obsolete specimen cards (`component-slider-mood.html`,
+  `component-tabs-streak.html`) were removed and responsive/contrast specimens
+  (`responsive-constraints.html`, `frame-roles.html`, updated `contrast-audit.html`)
+  added for the gallery.
+
+**Known upstream discrepancy, deliberately not patched:** the `index.d.ts` prose
+header still reads "Version 0.5.0". The declared `VERSION` constant, the vendored
+`package.json`, and this pin all agree on `0.6.0`; the vendored artifact stays
+byte-identical to the owner-supplied archive, so the stale prose header is recorded
+here instead of edited.
+
+**Still deferred (product-local until separately approved):** DS-002–DS-006, DS-008
+(contained/pinned scrolling), and DS-009 (text-action overrides) remain open register
+entries. The 0.6.0 upgrade does not resolve them; any product-local handling stays in
+app code, not the vendored tree.
 
 ---
 
@@ -151,7 +189,11 @@ audit.
 **Design analogy:** ramps are the raw colour styles; semantic tokens are the *named*
 styles that get applied to layers. You rename the named style once.
 
-`--surface-*` (23) · `--border-*` (16) · `--text-*` (19) · `--icon-*` (8)
+`--surface-*` (39) · `--border-*` (24) · `--text-*` (20) · `--icon-*` (8) — counts as of
+0.6.0, which added the rail cue set (`--surface-rail-cue` / `--border-rail-cue` /
+`--text-rail-cue`), `--border-tab-rail`, and the input invalid pair
+(`--surface-input-invalid` / `--border-input-invalid`), plus motion tokens
+`--dur-disrupt` and `--dur-boot-reveal`.
 
 Selected examples, to show the shape of the mapping:
 
@@ -176,7 +218,7 @@ Glow never counts toward contrast.
 
 ---
 
-## 5. Components — the shipped 18
+## 5. Components — the shipped 19
 
 Every one is `<Name>.jsx` + `<Name>.d.ts`, exported from `index.js`, with motion baked
 in. Importing from a component's internal path is a lint error; import from the entry.
@@ -190,10 +232,11 @@ in. Importing from a component's internal path is a lint error; import from the 
 | **ChoiceGroup** | `legend` · `options` · `value` · `onChange` · `multiple` · `required` · `errorText` · `name` | Real `fieldset`/`legend`. Single-select = full radiogroup pattern (one tab stop, arrows, Home/End). Multi-select = independent toggles, each tabbable. |
 | **Checkbox** | `checked` · `defaultChecked` · `indeterminate` · `disabled` · `required` · `onChange(checked, e)` · `label` · `inputRef` | Real `<input type=checkbox>`. Sharp 20px box, ≥40px hit area. |
 | **RadioButton** | `checked` · `disabled` · `required` · `onChange(value, e)` · `label` · `name` · `inputRef` | Real `<input type=radio>`. Shared `name` gives native arrow-keys + roving tabindex free. **No circles** — square with a solid inner square. |
-| **Input** | `label` · `value` · `onChange(value, e)` · `placeholder` · `multiline` · `rows` · `disabled` · `readOnly` · `required` · `invalid` · `helperText` · `errorText` · `inputRef` | `multiline` renders a textarea — there is no separate Textarea. Label/helper/error aria wiring built in. |
+| **Input** | `label` · `value` · `onChange(value, e)` · `placeholder` · `multiline` · `rows` · `disabled` · `readOnly` · `required` · `invalid` · `helperText` · `errorText` · `inputRef` | `multiline` renders a textarea — there is no separate Textarea. Label/helper/error aria wiring built in. *0.6.0:* shrinks inside constrained layouts (intrinsic `min-width` released) and draws invalid state from `--border-input-invalid` / `--surface-input-invalid`; remove any local `min-width: 0` override reaching into its internals. |
 | **FormField** | `label` · `htmlFor` · `required` · `helperText` · `errorText` · `children` (element or render fn) | The same wiring for controls that don't have it built in — Chips, Sliders, ChoiceGroups, third-party. |
 | **IntensitySlider** | `value` · `min` · `max` · `step` · `onChange(value, e)` · `label` · `valueText` · `disabled` · `inputRef` | Real `<input type=range>`. Rectangular thumb 12×20px, readout is an associated `<output>`. `valueText` for "7 of 10, hard". |
-| **TabBar** / **TabPanel** | `tabs` · `active` · `onChange(index)` · `idBase` ‖ `idBase` · `index` · `active` | ARIA tabs pattern, automatic activation. Panel adds `.clr-tab-enter`. |
+| **OverflowRail** | `activeIndex` · `gap` · `revealPadding` · `trackProps` | *New in 0.6.0.* Contained horizontal scrolling with edge cues and active-item reveal. Behaviour only, no role of its own — semantics go on `trackProps`. Always on: inert while content fits, engaged under width pressure, no prop to enable. Adds no tab stop. |
+| **TabBar** / **TabPanel** | `tabs` · `active` · `onChange(index)` · `idBase` ‖ `idBase` · `index` · `active` | ARIA tabs pattern, automatic activation. Panel adds `.clr-tab-enter`. *0.6.0:* composes `OverflowRail`; the tablist rides on the rail track so `role="tab"` children stay its immediate descendants, and the active tab reveals itself into view. Never wrap it in a second scroll container. |
 | **Dialog** | `open` · `onClose` · `title` · `actions` · `critical` · `dismissOnBackdrop` | Native `<dialog>` + `showModal()` — focus trap, Esc, inertness are the platform's. `dismissOnBackdrop` defaults **false** on purpose. Safe action first in DOM order. **Ships with no entrance motion** — the app wrapper adds it, see §11. |
 | **Toast** | `variant` info/positive/negative · `actionLabel` · `onAction` · `onDismiss` | Each variant carries a **glyph**, not just a border hue. Only `negative` is `role="alert"`. |
 | **ScanLoader** | `label` · `lines` · `value` · `max` · `status` ok/slow/failed | **There is no spinner in this system.** Polite live region + `aria-busy`. Pass `value`/`max` only when progress is real. |
@@ -336,7 +379,7 @@ and the `prefers-reduced-motion` end-state for any app-composed animation.
 
 ## 10. Workflow patterns
 
-`docs/design/exports/clear-design-system-0.5.0/docs/patterns.md` defines seven patterns — components, states,
+`docs/design/exports/clear-design-system-0.6.0/docs/patterns.md` defines seven patterns — components, states,
 accessibility, atmosphere level, and copy — that screens implement rather than reinvent:
 
 1. **Data-entry form** — `quiet` · empty → filled → validating → invalid → submitting → submitted
@@ -352,7 +395,12 @@ is why GEN-03's "what happens when it fails" question is already answered: patte
 
 ---
 
-## 11. Gaps — what CLEAR needs that 0.5.0 does not ship
+## 11. Gaps — what CLEAR needs that 0.6.0 does not ship
+
+0.6.0 closed the two overflow gaps (DS-001 tab reachability via `OverflowRail`, DS-007
+constrained `TabBar`/`Input` sizing). DS-008 contained/pinned scrolling and DS-009
+text-action overrides were **deferred, not resolved** — any handling stays product-local
+until separately approved upstream.
 
 Everything above is inherited. Everything below is work the rebuild owns. These are the
 *only* legitimate new component requirements; anything else means composing what exists.
@@ -456,14 +504,16 @@ A one-screen summary. Violating any of these is a review-blocking defect.
 
 ---
 
-## 15. Defects found in 0.5.0
+## 15. Defects found in 0.5.0 — status at 0.6.0
 
 Recorded so they are not mistaken for our own bugs, and so an upgrade can check them.
+Checked against the 0.6.0 drop:
 
-| # | Where | What |
-|---|---|---|
-| DS-a | `css/foundation.css` | `--atmosphere-blur`, `--atmosphere-opacity` and `--atmosphere-dim` are declared **twice** in the same `:root` block with different values (`64px/0.30/0.50`, then `80px/0.4/0.45`). The second wins; the README's stated defaults are therefore ambiguous. |
-| DS-b | `CHANGELOG.md` | The consumer contract names `data-theme` as a stable attribute. No such attribute exists anywhere in the CSS. |
-| DS-c | `README.md` index table | Describes `css/skins.css` as "Vapour, Magnesium, Sodium, Signal". Magnesium and Sodium were cut and Mono added; the body of the same README documents the real family correctly. |
+| # | Where | What | 0.6.0 status |
+|---|---|---|---|
+| DS-a | `css/foundation.css` | `--atmosphere-blur`, `--atmosphere-opacity` and `--atmosphere-dim` are declared **twice** in the same `:root` block with different values (`64px/0.30/0.50`, then `80px/0.4/0.45`). The second wins; the README's stated defaults are therefore ambiguous. | **Persists** verbatim. |
+| DS-b | `CHANGELOG.md` | The consumer contract names `data-theme` as a stable attribute. 0.6.0 removed the `data-theme` swap/blue axis entirely, yet the contract header still lists it. | **Mutated**: attribute removed, contract prose stale. |
+| DS-c | `README.md` index table | Described `css/skins.css` as "Vapour, Magnesium, Sodium, Signal". | **Fixed** — now reads "Vapour, Signal, Mono". |
+| DS-d | `index.d.ts` | The prose header still reads "Version 0.5.0". The declared `VERSION` constant, `package.json`, and this pin all agree on `0.6.0`. | New in 0.6.0. Documented here; the vendored artifact stays byte-identical, so it is **not** patched locally. |
 
 None are blocking. Report upstream on the next design-system pass.

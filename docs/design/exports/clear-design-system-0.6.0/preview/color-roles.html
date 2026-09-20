@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Colors — Roles" subtitle="Structure and interaction are ROLES, not hues · what each resolves to per skin" viewport="700x300" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:14px 18px;box-sizing:border-box;height:300px;display:flex;flex-direction:column;gap:9px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 62%, transparent);max-width:660px}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px;margin-bottom:6px}
+.note{font-family:var(--font-body);font-size:9px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 52%, transparent)}
+code{font-family:var(--font-data);font-size:8.5px}
+.cols{display:flex;gap:11px}
+.col{flex:1;padding:9px 11px;background:var(--structure-a050);border-left:2px solid var(--structure-500)}
+.col.b{border-left-color:var(--interaction-500)}
+.rn{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--structure-300)}
+.col.b .rn{color:var(--interaction-300)}
+.rd{font-family:var(--font-body);font-size:9.5px;line-height:1.4;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent);margin-top:3px}
+.srow{display:flex;align-items:center;gap:10px;padding:5px 9px;border:1px solid rgba(255,255,255,.09);border-bottom:0}
+.srow:last-of-type{border-bottom:1px solid rgba(255,255,255,.09)}
+.sn{width:52px;flex:0 0 52px;font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#fff}
+.pair{display:flex;align-items:center;gap:5px;width:112px}
+.pair i{width:15px;height:15px;flex:0 0 15px}
+.pair b{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.03em;color:rgba(255,255,255,.72)}
+.hd2{display:flex;gap:10px;padding:0 9px 3px;font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--neutral-400)}
+.hd2 span:first-child{width:52px;flex:0 0 52px}
+.hd2 span{width:112px}
+</style></head><body><div class="pg"><div class="ttl">Colors — Roles</div>
+<div class="sub">The system has two primary roles, and they are roles rather than colours: <strong>structure</strong> is orange in CLEAR, purple in Vapour, chartreuse in Signal and grey in Mono. Naming them by hue is the fastest way to write code that only works in one skin.</div>
+<div class="cols">
+  <div class="col"><div class="rn">Structure</div><div class="rd">Cards, strokes, surfaces, borders, accent bars, labels. Everything that frames content.</div></div>
+  <div class="col b"><div class="rn">Interaction</div><div class="rd">CTAs, tappable icons, links, headings. Everything the user acts on, or the system announces.</div></div>
+</div>
+<div>
+  <div class="sh">What the two roles resolve to</div>
+  <div class="hd2"><span>Skin</span><span>Structure</span><span>Interaction</span></div>
+  
+<div class="srow" style="background:#171717">
+  <span class="sn">CLEAR</span>
+  <span class="pair"><i style="background:#F87823"></i><b>#F87823</b></span>
+  <span class="pair"><i style="background:#00A9F4"></i><b>#00A9F4</b></span>
+</div>
+<div class="srow" style="background:#0A1413">
+  <span class="sn">Vapour</span>
+  <span class="pair"><i style="background:#B47DFF"></i><b>#B47DFF</b></span>
+  <span class="pair"><i style="background:#00E5C7"></i><b>#00E5C7</b></span>
+</div>
+<div class="srow" style="background:#150A12">
+  <span class="sn">Signal</span>
+  <span class="pair"><i style="background:#C6FF2E"></i><b>#C6FF2E</b></span>
+  <span class="pair"><i style="background:#FF2EA6"></i><b>#FF2EA6</b></span>
+</div>
+<div class="srow" style="background:#0A0A0A">
+  <span class="sn">Mono</span>
+  <span class="pair"><i style="background:#6A6A6A"></i><b>#6A6A6A</b></span>
+  <span class="pair"><i style="background:#8E8E8E"></i><b>#8E8E8E</b></span>
+</div>
+</div>
+<div class="note">A skin sets these two hues and five more values; every ramp and alpha step derives from them. Which is why the two roles are the whole contract — get the pairing right and the rest of the palette follows.<br>The pairing is not symmetric. <strong>Structure</strong> appears at full strength or at 10%, never in between; <strong>interaction</strong> lives at 40–60% over near-black, where a hue can lose its identity. That is why a hue can work as structure and fail as interaction — Signal's chartreuse goes olive at 40% — and why the <strong>Alpha Behaviour</strong> card tests interaction hues but exempts structure.</div></div></body></html>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#171717"></rect>
+  <text x="600" y="340" font-family="Oxanium, system-ui, sans-serif" font-size="140" font-weight="700" fill="#F1F1F1" text-anchor="middle" letter-spacing="24">CLEAR</text>
+  <text x="600" y="410" font-family="Oxanium, monospace" font-size="22" fill="#8E8E90" text-anchor="middle" letter-spacing="6">STRENGTH TRAINING, SIMPLIFIED.</text>
+  <rect x="500" y="440" width="200" height="3" fill="#F87823"></rect>
+</svg>

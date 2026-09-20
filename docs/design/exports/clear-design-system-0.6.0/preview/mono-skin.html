@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Foundation" name="Mono — Enhanced Contrast" subtitle="A contrast preference, not \"the accessible skin\" · every pair AAA" viewport="760x440" --><html data-skin="mono"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:15px 20px;box-sizing:border-box;height:440px;display:flex;flex-direction:column;gap:10px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;color:color-mix(in srgb, var(--text-paragraph) 60%, transparent);line-height:1.45;max-width:700px}
+.ladder{display:flex;gap:0;height:38px}
+.rung{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:4px 6px;box-sizing:border-box}
+.rn{font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.rh{font-family:var(--font-data);font-size:6.5px;font-weight:700;letter-spacing:.03em;opacity:.75}
+.cols{display:flex;gap:12px;flex:1;min-height:0}
+.left{flex:1.15;display:flex;flex-direction:column;gap:7px;min-width:0}
+.right{flex:1;display:flex;flex-direction:column;gap:5px;min-width:0}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px}
+.grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn{padding:7px 12px;font-family:var(--font-data);font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-cta)}
+.chip{display:flex;align-items:center;gap:4px;padding:5px 8px;font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.chip.on{color:var(--text-selected)}
+.chip.off{color:var(--text-unselected)}
+.tm{padding:5px 9px;font-family:var(--font-data);font-size:15px;font-weight:700;letter-spacing:.05em;text-align:center}
+.tm.rest{color:var(--text-timer)}
+.tm.low{color:var(--text-timer-low)}
+.ts{display:flex;align-items:center;gap:6px;padding:5px 8px;font-family:var(--font-body);font-size:9.5px;color:var(--fg)}
+.ts svg{flex:0 0 auto}
+.lbl{font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-card-label);margin-bottom:2px}
+.hd{font-family:var(--font-display);font-size:13px;font-weight:700;text-transform:uppercase;color:var(--text-card-header);line-height:1}
+.bd{font-family:var(--font-body);font-size:9.5px;line-height:1.35;color:color-mix(in srgb, var(--text-paragraph) 72%, transparent);margin:3px 0 0}
+table{border-collapse:collapse;width:100%;font-family:var(--font-data);font-size:7.5px}
+th{text-align:left;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--neutral-400);padding:2px 5px 3px 0;border-bottom:1px solid var(--structure-a300)}
+td{padding:2px 5px 2px 0;color:var(--text-card-label);border-bottom:1px solid var(--structure-a100)}
+td.r{color:var(--text-timer);font-weight:700}
+.note{font-family:var(--font-body);font-size:9px;color:color-mix(in srgb, var(--text-paragraph) 52%, transparent);line-height:1.45}
+</style></head><body><div class="pg">
+  <div class="ttl">Mono — enhanced contrast</div>
+  <div class="sub">Not "the accessible skin" — accessibility is the baseline in every skin. Mono is a contrast preference, like reduced motion. A fourth skin through the same five role slots, so geometry, spacing, type, density and motion are untouched: chamfers and stenciled type carry the identity with no hue at all. Roles cannot separate by hue here, so they separate by value, ordered by how much attention each is entitled to.</div>
+
+  <div class="ladder">
+    <div class="rung" style="background:#3A3A3A"><span class="rn" style="color:#FFF">Info</span><span class="rh" style="color:#FFF">#3A3A3A</span></div>
+    <div class="rung" style="background:#6A6A6A"><span class="rn" style="color:#FFF">Structure</span><span class="rh" style="color:#FFF">#6A6A6A</span></div>
+    <div class="rung" style="background:#8E8E8E"><span class="rn" style="color:#FFF">Interaction</span><span class="rh" style="color:#FFF">#8E8E8E</span></div>
+    <div class="rung" style="background:#D4D4D4"><span class="rn" style="color:#0A0A0A">Selection</span><span class="rh" style="color:#0A0A0A">#D4D4D4</span></div>
+    <div class="rung" style="background:#FFFFFF"><span class="rn" style="color:#0A0A0A">Urgency</span><span class="rh" style="color:#0A0A0A">#FFFFFF</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="left">
+      <div class="sh">The same components, no hue</div>
+      <div class="clr-card">
+        <div class="clr-card__bar"></div>
+        <div class="clr-card__body clr-chamfer clr-chamfer--open-left clr-chamfer--sm">
+          <div class="lbl">Session 09 · 42 min · Int. 7</div>
+          <div class="hd">Lower Push</div>
+          <p class="bd">Squat focus. Barbell, bands. Left shoulder respected.</p>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="btn clr-chamfer clr-chamfer--sm clr-chamfer--cta">Initiate</div>
+        <div class="chip on clr-chamfer clr-chamfer--sm clr-chamfer--selected"><svg viewBox="0 0 24 24" width="8" height="8"><path fill="currentColor" d="M9.6 20.4 2.4 13.2l3.4-3.4 3.8 3.8L18.2 3l3.4 3.4z"/></svg>Strength</div>
+        <div class="chip off clr-chamfer clr-chamfer--sm">Cardio</div>
+      </div>
+      <div class="grp">
+        <div class="tm rest clr-chamfer clr-chamfer--sm clr-chamfer--timer">01:30</div>
+        <div class="tm low clr-chamfer clr-chamfer--sm clr-chamfer--timer-low pulse-micro">00:08</div>
+        <span class="note" style="flex:1;min-width:90px">Low-time leans on the pulse: its surface sits only 0.02 L above the resting state.</span>
+      </div>
+      <div class="sh">Severity by glyph, not hue</div>
+      <div class="ts clr-chamfer clr-chamfer--sm" style="--surface:var(--surface-toast-info);--brd:var(--border-toast-info)">
+        <svg viewBox="0 0 24 24" width="13" height="13" style="fill:var(--structure-300)"><path fill-rule="evenodd" d="M2 2h20v20H2V2zm8.75 5h2.5v2.5h-2.5V7zm0 4.5h2.5V17h-2.5v-5.5z"/></svg>Session saved.
+      </div>
+      <div class="ts clr-chamfer clr-chamfer--sm" style="--surface:var(--surface-toast-positive);--brd:var(--border-toast-positive)">
+        <svg viewBox="0 0 24 24" width="13" height="13" style="fill:var(--selection-400)"><path d="M9.6 20.4 2.4 13.2l3.4-3.4 3.8 3.8L18.2 3l3.4 3.4z"/></svg>Week streak extended.
+      </div>
+      <div class="ts clr-chamfer clr-chamfer--sm" style="--surface:var(--surface-toast-negative);--brd:var(--border-toast-negative)">
+        <svg viewBox="0 0 24 24" width="13" height="13" style="fill:var(--text-negative)"><path fill-rule="evenodd" d="M12 2.5 23 21.5H1L12 2.5zm-1.3 7 .4 6h1.8l.4-6h-2.6zm.05 7.5V19.5h2.5V17h-2.5z"/></svg>Sync failed.
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="sh">Measured · AAA · rasterized</div>
+      <table>
+        <tr><th>Pair</th><th>Ratio</th><th>Need</th></tr>
+        <tr><td>Card body</td><td class="r">14.6</td><td>7</td></tr>
+        <tr><td>Card header</td><td class="r">9.7</td><td>7</td></tr>
+        <tr><td>Card label</td><td class="r">13.4</td><td>7</td></tr>
+        <tr><td>CTA label</td><td class="r">8.4</td><td>7</td></tr>
+        <tr><td>Selected label</td><td class="r">7.4</td><td>7</td></tr>
+        <tr><td>Unselected label</td><td class="r">13.4</td><td>7</td></tr>
+        <tr><td>Input text</td><td class="r">14.6</td><td>7</td></tr>
+        <tr><td>Tab active</td><td class="r">15.7</td><td>7</td></tr>
+        <tr><td>Tab inactive</td><td class="r">7.7</td><td>7</td></tr>
+        <tr><td>Timer rest</td><td class="r">10.2</td><td>4.5</td></tr>
+        <tr><td>Timer low</td><td class="r">11.2</td><td>4.5</td></tr>
+      </table>
+      <div class="note">Ratios are read back from rasterized pixels, not token arithmetic — an oklab mix and an sRGB mix at the same percentage differ enough to cross a threshold. The interaction hex can sit mid-ladder because every <code>--text-*</code> token mixes 22% with the white ink, so label colour lands near-white regardless and the hex governs surfaces and borders, not text.</div>
+    </div>
+  </div>
+</div></body></html>

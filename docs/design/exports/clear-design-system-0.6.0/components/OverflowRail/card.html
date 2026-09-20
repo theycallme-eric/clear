@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="OverflowRail" subtitle="Peer items stay reachable under width pressure · hard edge rule + stepped chevron" viewport="700x180" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:16px 22px;box-sizing:border-box;height:180px;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.lbl{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.note{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb,var(--text-paragraph) 60%,transparent)}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.06em;text-transform:uppercase}
+.box{width:330px;max-width:100%}</style></head>
+<body><div class="card"><div id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<div class="note">Behaviour only — no tab or navigation meaning. The cue is a hard structural rule plus a stepped chevron, shown only where content continues. Never a fade.</div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+if(NS.OverflowRail&&NS.TabBar){function D(){const [t,setT]=React.useState(0);
+ const tabs=['Overview','Sections','History','Records','Recovery','Plan','Settings'];
+ return e('div',{className:'box'},
+  e('div',{className:'lbl',style:{marginBottom:6}},'Seven destinations, 330px'),
+  e(NS.TabBar,{idBase:'rail-card',tabs:tabs,active:t,onChange:setT}));}
+ (m.__clrRoot||(m.__clrRoot=ReactDOM.createRoot(m))).render(e(D));}
+</script></body></html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Spacing" name="Spacing — Shadows & Glow" subtitle="Emissive glow, not depth" viewport="700x160" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+  .card{padding:16px 22px;box-sizing:border-box;color:var(--fg);display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .demo{padding:12px 18px;background:var(--color-blue-alpha-400);border:2px solid var(--color-blue-500);color:var(--color-blue-100);font-family:var(--font-label);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;font-size:13px}
+  .demo.glow{box-shadow:0 0 20px var(--color-blue-alpha-400)}
+  .demo.text-glow{text-shadow:0 0 8px var(--color-blue-400),0 0 18px var(--color-blue-alpha-400)}
+  .demo.timer-glow{color:var(--color-green-400);border-color:var(--color-green-500);background:var(--color-green-alpha-400);text-shadow:0 0 10px var(--color-green-400)}
+  .lbl{font-family:var(--font-label);font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.55);margin-top:6px;text-align:center}
+  .group{display:flex;flex-direction:column;align-items:center}
+</style>
+</head><body><div class="card">
+  <div class="group"><div class="demo">FLAT</div><div class="lbl">DEFAULT · NO SHADOW</div></div>
+  <div class="group"><div class="demo glow">BOX GLOW</div><div class="lbl">BOX-SHADOW · α400 · 20PX</div></div>
+  <div class="group"><div class="demo text-glow">TEXT GLOW</div><div class="lbl">TEXT-SHADOW · EMISSIVE</div></div>
+  <div class="group"><div class="demo timer-glow">02:45</div><div class="lbl">TIMER · STRONG GLOW</div></div>
+</div></body></html>

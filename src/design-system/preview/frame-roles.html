@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Colors — Frame Roles" subtitle="A frame's border and surface come from one role · border full, surface at 10%" viewport="700x430" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:13px 18px;box-sizing:border-box;height:430px;display:flex;flex-direction:column;gap:9px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 62%, transparent);max-width:660px}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px;margin-bottom:7px}
+code{font-family:var(--font-data);font-size:8.5px;color:var(--text-card-label)}
+.roles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.fr{padding:9px 10px 10px;min-height:80px;display:flex;flex-direction:column;gap:4px}
+.rn{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#fff}
+.rd{font-family:var(--font-body);font-size:8.5px;line-height:1.4;color:var(--text-paragraph)}
+.tk{font-family:var(--font-data);font-size:7.5px;letter-spacing:.03em;color:color-mix(in oklab, var(--neutral-100) 70%, var(--base));margin-top:auto}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ex{display:flex;flex-direction:column;gap:5px}
+.tag{display:flex;align-items:center;gap:5px;font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.tag.do{color:var(--selection-400)}
+.tag.no{color:var(--text-negative)}
+.tag i{width:9px;height:9px;flex:0 0 9px}
+.ex .fr{min-height:58px;padding-bottom:8px}
+.mz{font-family:var(--font-data);font-size:7.5px;letter-spacing:.03em;margin-top:auto;color:color-mix(in oklab, var(--neutral-100) 70%, var(--base))}
+/* Butted strip: no gaps, so adjacent tints are judged by their shared edge
+   rather than from memory across a gutter. At 10% over near-black the hue
+   break is small, and that is exactly the point — it is why the rule needs a
+   token rather than a designer's eye. */
+.strip{display:grid;grid-template-columns:repeat(5,1fr)}
+.sw{height:44px;display:flex;flex-direction:column;justify-content:flex-end;padding:5px 7px;gap:1px}
+.sw b{font-family:var(--font-data);font-size:7px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#fff}
+.sw span{font-family:var(--font-data);font-size:6.5px;letter-spacing:.02em;color:color-mix(in oklab, var(--neutral-100) 72%, var(--base))}
+.rule{display:flex;gap:14px;padding:7px 10px;background:var(--structure-a050);border-left:2px solid var(--structure-500);margin-top:auto}
+.rule div{flex:1;font-family:var(--font-body);font-size:8.5px;line-height:1.45;color:var(--text-paragraph)}
+.rule b{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-card-label);display:block;margin-bottom:2px}
+</style></head><body><div class="pg">
+<div class="ttl">Colors — Frame Roles</div>
+<div class="sub">A frame paints two layers, and they must speak for the same role: border at full strength, surface at the 10% rung of that role over <code>--base</code>. State the role once — <code>role="urgency"</code> on <code>ChamferedFrame</code>, or <code>.clr-chamfer--urgency</code> — and both layers follow.</div>
+
+<div class="roles">
+  <div class="clr-chamfer clr-chamfer--sm clr-chamfer--structure fr">
+    <div class="rn">Structure</div><div class="rd">Panels, cards, the default frame.</div><div class="tk">frame-structure</div>
+  </div>
+  <div class="clr-chamfer clr-chamfer--sm clr-chamfer--interaction fr">
+    <div class="rn">Interaction</div><div class="rd">Things that act on a tap.</div><div class="tk">frame-interaction</div>
+  </div>
+  <div class="clr-chamfer clr-chamfer--sm clr-chamfer--selection fr">
+    <div class="rn">Selection</div><div class="rd">Confirmation, and the timer at rest.</div><div class="tk">frame-selection</div>
+  </div>
+  <div class="clr-chamfer clr-chamfer--sm clr-chamfer--urgency fr">
+    <div class="rn">Urgency</div><div class="rd">Failures, and time running out.</div><div class="tk">frame-urgency</div>
+  </div>
+  <div class="clr-chamfer clr-chamfer--sm clr-chamfer--info fr">
+    <div class="rn">Info</div><div class="rd">Neutral information, nothing at stake.</div><div class="tk">frame-info</div>
+  </div>
+</div>
+
+<div class="strip">
+  <div class="sw" data-tint="--surface-frame-structure"><b>Structure</b><span data-measure="--surface-frame-structure"></span></div>
+  <div class="sw" data-tint="--surface-frame-interaction"><b>Interaction</b><span data-measure="--surface-frame-interaction"></span></div>
+  <div class="sw" data-tint="--surface-frame-selection"><b>Selection</b><span data-measure="--surface-frame-selection"></span></div>
+  <div class="sw" data-tint="--surface-frame-urgency"><b>Urgency</b><span data-measure="--surface-frame-urgency"></span></div>
+  <div class="sw" data-tint="--surface-frame-info"><b>Info</b><span data-measure="--surface-frame-info"></span></div>
+</div>
+
+<div>
+<div class="sh">The failure case — composites measured, not asserted</div>
+<div class="cmp">
+  <div class="ex">
+    <div class="tag do"><i style="background:var(--selection)"></i>Do — one role, both layers</div>
+    <div class="clr-chamfer clr-chamfer--sm clr-chamfer--urgency fr">
+      <div class="rn">Set failed</div>
+      <div class="mz">surface <span data-measure="--surface-frame-urgency"></span> · border <span data-measure="--border-frame-urgency" data-opaque></span></div>
+    </div>
+  </div>
+  <div class="ex">
+    <div class="tag no"><i style="background:var(--urgency)"></i>Don't — structure surface, urgency border</div>
+    <div class="clr-chamfer clr-chamfer--sm fr" style="--surface:var(--surface-frame-structure);--brd:var(--border-frame-urgency)">
+      <div class="rn">Set failed</div>
+      <div class="mz">surface <span data-measure="--surface-frame-structure"></span> · border <span data-measure="--border-frame-urgency" data-opaque></span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="rule">
+  <div><b>Still true</b>2–3 colours in view at once. A role frame is one of them — five on a screen is four too many. This card is a specimen, not a layout.</div>
+  <div><b>Also still true</b>Never colour alone. Toast severity carries a glyph, a selected chip a tick, an invalid field its error text. The frame role reinforces, never carries.</div>
+</div>
+</div>
+<script>
+/* Same technique as the Contrast Audit card: paint the token over the ground on
+   a 1×1 canvas and read the pixel back, rather than reimplementing alpha
+   compositing and colour-mix in JS. A translucent tint's real value is what the
+   browser produces over --base, so that is what gets printed. */
+(function () {
+  const root = document.documentElement;
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 1;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  const tok = (n) => getComputedStyle(root).getPropertyValue(n).trim();
+  const paint = (layers) => {
+    ctx.clearRect(0, 0, 1, 1);
+    for (const c of layers) {
+      if (!c) continue;
+      ctx.fillStyle = '#000';
+      ctx.fillStyle = c;
+      ctx.fillRect(0, 0, 1, 1);
+    }
+    const d = ctx.getImageData(0, 0, 1, 1).data;
+    return '#' + [d[0], d[1], d[2]].map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+  };
+  const base = tok('--base');
+  for (const el of document.querySelectorAll('[data-measure]')) {
+    const v = tok(el.dataset.measure);
+    el.textContent = paint(el.hasAttribute('data-opaque') ? [v] : [base, v]);
+  }
+  for (const el of document.querySelectorAll('[data-tint]')) {
+    el.style.background = 'linear-gradient(' + tok(el.dataset.tint) + ',' + tok(el.dataset.tint) + '),' + base;
+  }
+})();
+</script>
+</body></html>
