@@ -9,6 +9,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `src/state/` | Client state | adding a query hook, state machine, or cross-screen workflow |
 | `src/ui/` | App-owned presentation | adding a reusable domain component not supplied by the design system |
 | `src/design-system/` | Vendored public design surface | integrating a versioned export in DS-01; never for app-owned components |
+| `src/styles/` | App-owned CSS the export does not ship | composing the shipped motion vocabulary or skin; never new visual ideas or raw values |
 | `src/test/` | Shared test setup | adding test-only configuration or helpers |
 | `docs/` | Frozen baseline and deep specs | recording product/design/process knowledge, not runtime code |
 | `docs/backend/` | REQ-008 backend gate: live inventory, dispositions, rollback, post-cutover checks, and read-only evidence from the previous app | recording reused-Supabase-project audit state; never runtime code |

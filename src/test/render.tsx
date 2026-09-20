@@ -9,12 +9,17 @@ import { MemoryRouter, RouterProvider } from 'react-router-dom'
 
 import { ErrorBoundary } from '../app/ErrorBoundary'
 import { createTestRouter } from '../app/router'
+import { ToastHost } from '../ui/toast-host'
 
 function AppProviders({ children }: { children: ReactNode }) {
   return (
     <StrictMode>
       {/* Same CORE-04 boundary main.tsx mounts, so tests see real crash behavior */}
-      <ErrorBoundary>{children}</ErrorBoundary>
+      <ErrorBoundary>
+        {children}
+        {/* Same DS-05 root host main.tsx mounts, on the same root queue */}
+        <ToastHost />
+      </ErrorBoundary>
     </StrictMode>
   )
 }
