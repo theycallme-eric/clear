@@ -3,7 +3,11 @@
 // the project root, '../_ds/<folder>' one level down) — one line to edit.
 (() => {
   const base = '../..';
-  for (const p of ["css/foundation.css","css/motion.css","css/skin-clear.css","css/skins.css","styles.css"]) {
+  // styles.css ONLY — it @imports foundation, motion, skin-clear and skins in
+  // order. Listing the layers here as well parses each of them twice and
+  // doubles the cascade, which makes an override's winning rule hard to reason
+  // about. This file used to do exactly that, and consumers copied it.
+  for (const p of ["styles.css"]) {
     const l = document.createElement('link');
     l.rel = 'stylesheet'; l.href = base + '/' + p;
     document.head.appendChild(l);

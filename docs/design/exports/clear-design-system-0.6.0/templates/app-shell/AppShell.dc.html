@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="App Shell" description="Cockpit column with atmosphere, header, underline nav and a card list — the standard screen" -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<div class="clr-atmosphere clr-atmosphere--fixed">
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span>
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span>
+  <span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span>
+  <span class="clr-atmosphere__overlay"></span>
+  <span class="clr-atmosphere__scan"></span>
+</div>
+<div class="clr-shell">
+  <div class="clr-shell__content clr-stack">
+    <div class="clr-row" style="justify-content:space-between">
+      <x-import component-from-global-scope="CLEARDesignSystem_4ee044.ClearLogo" size="md" hint-size="120px,32px"></x-import>
+      <span style="font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--structure-300)">Week 04 · Day 2</span>
+    </div>
+    <x-import component-from-global-scope="CLEARDesignSystem_4ee044.TabBar" dc-props="{{ tabProps }}" hint-size="100%,36px"></x-import>
+    <h2 style="margin-top:8px">{{ screenTitle }}</h2>
+    <div class="clr-stack clr-stack--tight">
+      <sc-for list="{{ sessions }}" as="s" hint-placeholder-count="3">
+        <div class="clr-card">
+          <div class="clr-card__bar pulse-micro"></div>
+          <div class="clr-card__body clr-chamfer clr-chamfer--open-left clr-chamfer--md">
+            <div class="label" style="margin-bottom:4px">{{ s.meta }}</div>
+            <div style="font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-card-header);line-height:1.1">{{ s.title }}</div>
+            <p style="margin:4px 0 0;font-size:14px;line-height:16px;color:color-mix(in srgb, var(--text-paragraph) 70%, transparent)">{{ s.summary }}</p>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <button class="clr-chamfer clr-chamfer--md clr-btn clr-btn--primary" onClick="{{ initiate }}" style="width:100%;padding:14px 0;font-size:16px">Initiate Workout</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { tab: 0 };
+  renderVals() {
+    const tabs = ['Today', 'History', 'Profile'];
+    const all = [
+      [
+        { meta: 'SESSION 09 · 42 MIN · INT. 7', title: 'Lower Push', summary: 'Squat focus. Barbell, bands. Left shoulder respected.' },
+        { meta: 'OPTIONAL · 12 MIN', title: 'Mobility Block', summary: 'Hips and ankles. Low intensity.' },
+      ],
+      [
+        { meta: 'MON · COMPLETE', title: 'Upper Pull', summary: '38 min. Int. 6. All sections cleared.' },
+        { meta: 'SAT · COMPLETE', title: 'Conditioning', summary: '25 min. Int. 8. Timer-low twice.' },
+        { meta: 'THU · ABANDONED', title: 'Lower Push', summary: 'Stopped at section 2 of 4.' },
+      ],
+      [
+        { meta: 'EQUIPMENT', title: 'Garage Gym', summary: 'Barbell, bands, pull-up bar. No machines.' },
+      ],
+    ];
+    return {
+      screenTitle: ['Today', 'History', 'Profile'][this.state.tab],
+      sessions: all[this.state.tab],
+      tabProps: { tabs, active: this.state.tab, onChange: (i) => this.setState({ tab: i }) },
+      initiate: () => {},
+    };
+  }
+}
+</script>
+</body>
+</html>

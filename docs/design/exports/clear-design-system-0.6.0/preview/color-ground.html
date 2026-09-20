@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Colors" name="Colors — Ground" subtitle="Base and ink per skin · every surface is an alpha tint over the base" viewport="700x250" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.pg{padding:14px 18px;box-sizing:border-box;height:250px;display:flex;flex-direction:column;gap:9px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 62%, transparent);max-width:660px}
+.sh{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:2px;margin-bottom:6px}
+.note{font-family:var(--font-body);font-size:9px;line-height:1.45;color:color-mix(in srgb, var(--text-paragraph) 52%, transparent)}
+code{font-family:var(--font-data);font-size:8.5px}
+.grid{display:flex;gap:8px}
+.grow{flex:1;display:flex;flex-direction:column;gap:4px}
+.sn2{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--neutral-400)}
+.chip{display:flex;align-items:baseline;gap:5px;padding:7px 8px;font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.02em;border:1px solid rgba(255,255,255,.12)}
+.chip em{font-style:normal;color:inherit;font-size:6.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.6;margin-left:auto}
+.ramp{display:flex;outline:1px solid rgba(255,255,255,.14)}
+.rc{flex:1;padding:9px 7px;display:flex;flex-direction:column;gap:1px}
+.rc+.rc{border-left:1px solid rgba(255,255,255,.1)}
+.rc b{font-family:var(--font-data);font-size:8px;font-weight:700;letter-spacing:.05em}
+.rc span{font-family:var(--font-data);font-size:7px;opacity:.72}
+</style></head><body><div class="pg"><div class="ttl">Colors — Ground</div>
+<div class="sub">Each skin sets its own near-black base and near-white ink. The base is tinted toward that skin's interaction hue, which is why no two grounds are the same neutral — and why a hardcoded <code>#171717</code> is CLEAR's value, not the system's.</div>
+<div class="grid">
+<div class="grow">
+  <span class="sn2">CLEAR</span>
+  <span class="chip" style="background:#171717;color:#F1F1F1">#171717<em>base</em></span>
+  <span class="chip" style="background:#F1F1F1;color:#171717">#F1F1F1<em>ink</em></span>
+</div>
+<div class="grow">
+  <span class="sn2">Vapour</span>
+  <span class="chip" style="background:#0A1413;color:#F1F1F1">#0A1413<em>base</em></span>
+  <span class="chip" style="background:#F1F1F1;color:#0A1413">#F1F1F1<em>ink</em></span>
+</div>
+<div class="grow">
+  <span class="sn2">Signal</span>
+  <span class="chip" style="background:#150A12;color:#F1F1F1">#150A12<em>base</em></span>
+  <span class="chip" style="background:#F1F1F1;color:#150A12">#F1F1F1<em>ink</em></span>
+</div>
+<div class="grow">
+  <span class="sn2">Mono</span>
+  <span class="chip" style="background:#0A0A0A;color:#FFFFFF">#0A0A0A<em>base</em></span>
+  <span class="chip" style="background:#FFFFFF;color:#0A0A0A">#FFFFFF<em>ink</em></span>
+</div></div>
+<div>
+  <div class="sh">Neutral ramp · CLEAR shown</div>
+  <div class="ramp">
+    <div class="rc" style="background:#171717"><b style="color:#F1F1F1">900</b><span style="color:#F1F1F1">#171717</span></div>
+    <div class="rc" style="background:#2E2E2E"><b style="color:#F1F1F1">800</b><span style="color:#F1F1F1">#2E2E2E</span></div>
+    <div class="rc" style="background:#727274"><b style="color:#171717">500</b><span style="color:#171717">#727274</span></div>
+    <div class="rc" style="background:#8E8E90"><b style="color:#171717">400</b><span style="color:#171717">#8E8E90</span></div>
+    <div class="rc" style="background:#E3E3E3"><b style="color:#171717">100</b><span style="color:#171717">#E3E3E3</span></div>
+    <div class="rc" style="background:#F1F1F1"><b style="color:#171717">50</b><span style="color:#171717">#F1F1F1</span></div>
+  </div>
+</div>
+<div class="note">The background never goes lighter than 900, and every surface in the system is an alpha tint over it rather than a separate opaque colour — which is what makes a skin five hues instead of forty. Read <code>--base</code> and <code>--ink</code>, never the literals.</div></div></body></html>
