@@ -25,6 +25,15 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      // CORE-02: all logging goes through the structured logger's redacting sink
+      'no-console': 'error',
+    },
+  },
+  {
+    // The structured logger is the one sanctioned sink (CORE-02)
+    files: ['src/state/logger.ts'],
+    rules: {
+      'no-console': 'off',
     },
   },
   {
