@@ -23,10 +23,20 @@
   --base: #171717;
   --ink: #F1F1F1;
 
-  /* --- Fonts ------------------------------------------------------------- */
-  --font-display: 'Rajdhani', sans-serif;
-  --font-data: 'Oxanium', monospace;
-  --font-body: 'Space Grotesk', sans-serif;
+  /* --- Fonts (DS-02) -------------------------------------------------------
+     Each role names its CLEAR family first, then falls back to the same stack
+     the foundation declares for that role — so a role that has not loaded
+     degrades to the design system's own choice, not to the browser default.
+
+     The `@font-face` rules for the three families belong in THIS file, below.
+     They are not here yet: see the DS-02 delivery note at the foot of the
+     file. Nothing in this app requests fonts.googleapis.com or
+     fonts.gstatic.com — the vendored css/skin-clear.css that carries that
+     `@import` is not in the app's import graph (src/styles/fonts.test.ts).
+     ---------------------------------------------------------------------- */
+  --font-display: 'Rajdhani', system-ui, sans-serif;
+  --font-data: 'Oxanium', ui-monospace, monospace;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
 
   /* --- Legacy font aliases ----------------------------------------------- */
   --font-headings: var(--font-display);
@@ -167,3 +177,35 @@
     --heading-h3-size: 32px; --heading-h3-line-height: 40px;
   }
 }
+
+/* =============================================================================
+   DS-02 — SELF-HOSTED FONT FACES: NOT DELIVERED IN THIS WORKSPACE
+
+   The CDN half of DS-02 is done and enforced: no stylesheet the app loads, and
+   no markup it serves, reaches fonts.googleapis.com or fonts.gstatic.com, and
+   src/styles/fonts.test.ts fails if one ever does.
+
+   The self-hosted half — the woff2 files themselves — could not be added here.
+   It is delivered by three Fontsource packages, and this workspace has no
+   package registry: npm install, npm view and every direct network request are
+   refused by the sandbox (same wall TASK-030 hit with the oxlint binary). The
+   files are not in the design-system export either; its fonts/ directory ships
+   a README and no binaries. Adding the dependencies without installing them is
+   what failed the previous attempt: the @import resolves against node_modules,
+   so `npm run build` breaks. Unlike TASK-030 there is no substitute engine to
+   reach for — the font bytes ARE the deliverable — so the step is left undone
+   rather than faked.
+
+   To finish, in an environment with a registry:
+
+     npm install @fontsource/rajdhani @fontsource/oxanium @fontsource/space-grotesk
+
+   then import the Latin subsets of exactly the shipped weights at the top of
+   this file — Rajdhani 500/600/700, Oxanium 400/500/600/700, Space Grotesk
+   400/500/700 — e.g. `@import '@fontsource/rajdhani/latin-500.css';`. Those
+   packages declare font-display: swap already. Add <link rel="preload"> in
+   index.html for the above-the-fold weights only (display 700, data 700,
+   body 500), and measure the swap's layout shift before choosing any
+   size-adjust / ascent-override fallback metrics — DS-02 asks for measured
+   numbers, and there is nothing to measure against until the faces are here.
+   ============================================================================= */
