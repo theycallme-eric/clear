@@ -39,6 +39,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - name: Design-system adherence gate (DS-08)
+        run: npm run lint:ds
       - name: Reject raw console usage in app-owned source
         shell: bash
         run: |

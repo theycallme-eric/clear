@@ -14,6 +14,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `docs/backend/` | REQ-008 backend gate: live inventory, dispositions, rollback, post-cutover checks, and read-only evidence from the previous app | recording reused-Supabase-project audit state; never runtime code |
 | `scripts/` | Repository automation | adding a deterministic local or CI maintenance command |
 | `scripts/backend-audit/` | Read-only inventory and snapshot tooling for the reused Supabase project (`npm run backend:prereqs` / `backend:inventory` / `backend:snapshot`) | adding audit/snapshot capture steps; never mutation |
+| `scripts/adherence/` | The DS-08 adherence gate (`npm run lint:ds`) and its fixtures: the vendored rule set raised from `warn` to `error` | changing how design-system adherence is enforced; never for the rules themselves, which come from the export |
 | `.github/workflows/` | GitHub pull-request automation | adding a required repository check or deployment workflow |
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
