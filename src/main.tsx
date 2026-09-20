@@ -7,6 +7,8 @@ import './design-system/css/foundation.css'
 import './design-system/css/motion.css'
 import './styles/skin-clear.css'
 import './design-system/css/skins.css'
+// App-owned motion override; must follow motion.css to win (DS-06).
+import './styles/atmosphere.css'
 
 import { ErrorBoundary } from './app/ErrorBoundary'
 import { appRouter } from './app/router'
