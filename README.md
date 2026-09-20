@@ -48,6 +48,21 @@ Inline `eslint-disable` comments do not apply to this config. `scripts/adherence
 holds one deliberately broken file per violation; `src/test/adherence-gate.test.ts` fails if
 any of them stops being caught.
 
+## Fonts
+
+CLEAR's three families are Rajdhani (display), Oxanium (data) and Space Grotesk (body), and
+they are meant to be served from this app's own origin — the export's CDN delivery is four
+sequential, render-blocking round trips on every cold load. The app therefore loads the
+app-owned `src/styles/skin-clear.css` and never the vendored `css/skin-clear.css` that carries
+the Google Fonts `@import`. `src/styles/fonts.test.ts` fails if any stylesheet the entry point
+imports, or `index.html`, ever reaches `fonts.googleapis.com` or `fonts.gstatic.com` — a
+preconnect included.
+
+**The self-hosted faces are not in the tree yet.** They come from three Fontsource packages,
+and the workspace this was built in has no package registry. Until they are installed the
+three roles render in their fallback stacks. The exact remaining step is written at the foot
+of `src/styles/skin-clear.css`.
+
 No CSS framework or component library is used. `DS-01` will vendor the approved public design
 system into `src/design-system/`; until then the shell intentionally uses browser-default styling.
 
