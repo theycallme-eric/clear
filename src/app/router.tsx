@@ -7,13 +7,20 @@ import {
 import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
 import { NotFound } from './NotFound'
+import { RootLayout } from './RootLayout'
 
+// A pathless layout route, so DS-06's atmosphere mounts once above every screen.
 export const routes: RouteObject[] = [
   {
-    element: <AppChrome />,
+    element: <RootLayout />,
     children: [
-      { path: '/', element: <AppShell /> },
-      { path: '*', element: <NotFound /> },
+      {
+        element: <AppChrome />,
+        children: [
+          { path: '/', element: <AppShell /> },
+          { path: '*', element: <NotFound /> },
+        ],
+      },
     ],
   },
 ]

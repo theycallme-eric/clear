@@ -1,0 +1,15 @@
+/* =============================================================================
+   ATMOSPHERE — app-owned reduced-motion fallback (DS-06)
+
+   The export already stops the blob drift inside its own
+   `prefers-reduced-motion` media query. This rule states the same thing from
+   the attribute AtmosphereLayer sets, so the static fallback does not depend on
+   the media query and the JS-resolved preference agreeing at every instant —
+   they are read from the same signal, and this makes the DOM the record of it.
+
+   Nothing else here: intensity belongs to `data-atmosphere` in foundation.css.
+   ============================================================================= */
+
+.clr-atmosphere[data-static='true'] .clr-atmosphere__blob {
+  animation: none;
+}

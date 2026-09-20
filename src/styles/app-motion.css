@@ -1,0 +1,38 @@
+/* =============================================================================
+   APP MOTION — DS-05 dialog entrance (app-owned)
+
+   The vendored Dialog ships with no entrance animation — showModal() simply
+   reveals it. These rules compose the shipped vocabulary (keyframes and
+   duration tokens from css/motion.css) so a modal reads as a panel powering
+   up: the backdrop hard-cuts, the chamfered frame traces its border on, and
+   the contents materialize. Each declaration reuses the exact token pairing
+   of its shipped class, tuned against the export's Motion Lab card.
+
+   The trace runs on the chamfer's ::after border layer, never on the
+   .clr-chamfer element itself: the element's own clip-path draws the corner
+   notch, and an animation fill would replace it permanently.
+
+   Exit is the shipped .clr-phosphor-out class applied to the <dialog> by
+   src/ui/app-dialog.tsx — no rule needed here, and motion.css already makes
+   it inert under prefers-reduced-motion.
+   ============================================================================= */
+
+.clr-app-dialog-enter::backdrop {
+  animation: clr-cut-in var(--dur-cut) var(--step-2) both;
+}
+.clr-app-dialog-enter > .clr-chamfer::after {
+  animation: clr-trace var(--dur-slow) var(--step-24) both;
+}
+.clr-app-dialog-enter > .clr-chamfer > * {
+  animation: clr-materialize var(--dur-base) var(--step-3) both;
+}
+
+/* Motion is atmosphere, never information: the end state renders immediately
+   and nothing waits on it. */
+@media (prefers-reduced-motion: reduce) {
+  .clr-app-dialog-enter::backdrop,
+  .clr-app-dialog-enter > .clr-chamfer::after,
+  .clr-app-dialog-enter > .clr-chamfer > * {
+    animation: none !important;
+  }
+}
