@@ -1,0 +1,59 @@
+/* =============================================================================
+   COLLAPSIBLE SECTION — DS-04c app-composed disclosure (ATOMIC.md §11).
+
+   Collapse is the grid-rows trick: the region animates between 1fr and 0fr
+   and the inner wrapper clips overflow. The content is never display:none,
+   hidden, or unmounted, so it keeps its place in the accessibility tree's
+   document order — find-in-page and a screen reader's linear read still work.
+
+   Motion reads the semantic vocabulary (ATOMIC.md §8): --dur-enter on the way
+   open, --dur-exit on the way shut, stepped timing — mechanical, never smooth.
+   ============================================================================= */
+
+.clr-collapsible__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-200);
+  width: 100%;
+  padding: var(--spacing-200) 0;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  line-height: var(--label-sm-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-data-wide);
+  color: var(--text-card-label);
+}
+
+.clr-collapsible__glyph {
+  display: inline-flex;
+  flex: none;
+}
+
+.clr-collapsible__region {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--dur-enter) var(--step-4);
+}
+
+.clr-collapsible__region[data-expanded='false'] {
+  grid-template-rows: 0fr;
+  transition-duration: var(--dur-exit);
+}
+
+.clr-collapsible__content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Motion is atmosphere, never information: the reduced-motion end-state is
+   the target state itself, arrived at as a hard cut. */
+@media (prefers-reduced-motion: reduce) {
+  .clr-collapsible__region {
+    transition: none;
+  }
+}
