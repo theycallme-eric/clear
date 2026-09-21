@@ -1,0 +1,3 @@
+-- Inherited history marker: 00029 get_last_set_data_rpc.
+-- Already applied to the reused live project; intentionally a no-op here.
+-- Why this file exists, and when it goes: supabase/migrations/README.md

@@ -1,0 +1,3 @@
+-- Inherited history marker: 00015 allow_multiple_workouts_per_day.
+-- Already applied to the reused live project; intentionally a no-op here.
+-- Why this file exists, and when it goes: supabase/migrations/README.md
