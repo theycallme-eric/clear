@@ -1,0 +1,136 @@
+/* =============================================================================
+   DS-07 — the gallery's own layout. Dev only.
+
+   This file lands in no production bundle: it is reached solely through the
+   `import.meta.env.DEV` branch in `src/app/router.tsx`, and
+   `prod-exclusion.test.ts` asserts the `clr-dev-gallery` prefix appears in no
+   built asset.
+
+   Layout only. The gallery introduces no visual idea of its own — every value
+   here is a token, the corner radius stays 0, and a specimen is framed rather
+   than restyled.
+   ============================================================================= */
+
+/* Reclaims the cockpit column's horizontal padding: a review surface wants the
+   width, and a specimen card declares its own. */
+.clr-dev-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-700);
+  margin-inline: calc(-1 * var(--spacing-400));
+}
+
+/* ── Chrome: the switchers and the section links ─────────────────────────── */
+
+.clr-dev-gallery__chrome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-600);
+  align-items: flex-start;
+  padding: var(--spacing-400);
+  border: var(--border-width) solid var(--border-card);
+  background: var(--surface-card);
+}
+
+.clr-dev-gallery__nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-300);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Sections ───────────────────────────────────────────────────────────── */
+
+.clr-dev-gallery__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-500);
+}
+
+.clr-dev-gallery__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+}
+
+.clr-dev-gallery__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-500);
+  align-items: flex-start;
+}
+
+.clr-dev-gallery__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+  padding: var(--spacing-400);
+  border: var(--border-width) solid var(--border-card);
+  background: var(--surface-card);
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* A card's own metadata: the file it came from, the state it is in. */
+.clr-dev-gallery__meta {
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-paragraph);
+  margin: 0;
+}
+
+.clr-dev-gallery__row {
+  flex-wrap: wrap;
+}
+
+/* ── Served specimens ───────────────────────────────────────────────────── */
+
+/* The export's cards are fixed-size documents, so a narrow column must not
+   scale one under review. Reachability is `OverflowRail`'s job — the shipped
+   mechanism for exactly this, never a second scroll container around it. */
+.clr-dev-gallery__frame {
+  display: block;
+  border: var(--border-width) solid var(--border-card);
+  background: var(--base);
+}
+
+/* ── App-composed specimens ─────────────────────────────────────────────── */
+
+.clr-dev-gallery__specimen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-width: 0;
+}
+
+.clr-dev-gallery__stage {
+  padding: var(--spacing-400);
+  border: var(--border-width) dashed var(--border-card);
+  min-width: 0;
+}
+
+/* DS-06's layer is viewport-fixed by design — one mount, every screen. Inside a
+   review frame it is re-anchored to the frame so the three levels can be
+   compared side by side. The component itself is untouched. */
+.clr-dev-gallery__atmosphere {
+  position: relative;
+  min-height: var(--spacing-1400);
+  overflow: hidden;
+}
+
+.clr-dev-gallery__atmosphere .clr-atmosphere--fixed {
+  position: absolute;
+}
+
+.clr-dev-gallery__atmosphere-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  align-items: flex-start;
+  padding: var(--spacing-400);
+}
