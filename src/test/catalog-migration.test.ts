@@ -66,11 +66,23 @@ const createsTable = (table: string) =>
 
 describe('catalog migration — shape (DATA-01a)', () => {
   it('is a single migration for the domain', () => {
-    const rebuildMigrations = migrationFiles.filter((name) =>
-      /^\d{14}_/.test(name),
-    )
+    // Later domains add their own files to this directory (DATA-01b onwards),
+    // so the invariant is not "one rebuild migration" — it is that the catalog
+    // domain is defined in one place and never extended by a second file.
+    const definingCatalogTables = migrationFiles
+      .filter((name) => /^\d{14}_/.test(name))
+      .filter((name) => {
+        const sql = read(`supabase/migrations/${name}`)
 
-    expect(rebuildMigrations).toEqual([CATALOG_MIGRATION])
+        return CATALOG_TABLES.some((table) =>
+          new RegExp(
+            `create table (if not exists )?public\\.${table}\\b`,
+            'i',
+          ).test(sql),
+        )
+      })
+
+    expect(definingCatalogTables).toEqual([CATALOG_MIGRATION])
   })
 
   it('creates every catalog table', () => {
@@ -378,10 +390,17 @@ describe('inherited migration history (DATA-01a)', () => {
     ].map(([, version, name]) => `${version}_${name}`)
 
     expect(applied).toEqual(INHERITED)
-    expect(migrationFiles).toEqual([
-      ...INHERITED.map((stem) => `${stem}.sql`),
-      CATALOG_MIGRATION,
-    ])
+
+    const inheritedFiles = migrationFiles.filter((name) => /^\d{5}_/.test(name))
+    const rebuildFiles = migrationFiles.filter((name) => /^\d{14}_/.test(name))
+
+    expect(inheritedFiles).toEqual(INHERITED.map((stem) => `${stem}.sql`))
+    // Every file belongs to one series or the other. A stray .sql named
+    // outside both is one `db push` refuses to order.
+    expect([...inheritedFiles, ...rebuildFiles].sort()).toEqual(migrationFiles)
+    // The catalog leads the rebuild series: the user and workout domains
+    // reference enums it declares.
+    expect(rebuildFiles[0]).toBe(CATALOG_MIGRATION)
   })
 
   it('records each inherited version as a no-op, never as re-runnable SQL', () => {
