@@ -1,8 +1,89 @@
 # Development
 
-> The one-command fresh-clone flow and paused-project recovery land with ENV-04.
-> This file currently covers deployment (ENV-03), the test harness (ENV-06), and
-> the accessibility review passes (CORE-05).
+## Getting the app running
+
+Three commands from a fresh clone. There is no local database to install, start
+or reset: development runs against the **hosted Supabase project**, the same one
+the deployed app uses.
+
+```sh
+git clone git@github.com:theycallme-eric/clear.git && cd clear
+npm install
+cp .env.example .env     # then fill in the two values — see below
+npm run dev
+```
+
+### Filling in `.env`
+
+`.env.example` is the environment contract: names and placeholders only, safe to
+commit, and the list `npm run dev` checks against. Copying it gives you two
+variables to fill in, both from **Supabase dashboard → your project → Project
+Settings → API**:
+
+| Variable | Value |
+|---|---|
+| `VITE_SUPABASE_URL` | Project URL |
+| `VITE_SUPABASE_ANON_KEY` | the `anon` / `public` key — **never** the `service_role` key |
+
+Both are browser-safe by design: row-level security, not secrecy, is the
+boundary. `.gitignore` excludes every `.env*` file except the example, so a
+filled-in `.env` cannot be committed by accident. Vite also reads `.env.local`,
+`.env.development` and `.env.development.local` if you prefer to split them; the
+preflight reads the same set, in the same order.
+
+### What `npm run dev` does before Vite starts
+
+`npm run dev` is `scripts/dev-preflight/preflight.mjs` followed by `vite`, and
+the second half only runs if the first succeeds. The preflight exists to kill
+D4 — "sitting down to work meant debugging infrastructure" — by answering the
+two questions that actually go wrong, in English, before the dev server prints a
+URL that was never going to work:
+
+1. **Is every documented variable set to a real value?** A variable that is
+   missing, empty, or still holding its `.env.example` placeholder is named on
+   its own line, with what it is and where to get it. Nothing connects.
+2. **Is the project awake and does it know this key?** One authenticated request
+   to the project's PostgREST root — a pulse, not a query, so it works before
+   any schema exists. It times out after 8 seconds rather than hanging.
+
+Each failure prints a short explanation and exits non-zero. None of them prints
+a stack trace: a stack is where a morning disappears, the link is where it gets
+fixed.
+
+### When the project is paused
+
+Supabase pauses a free-tier project after about a week of inactivity. That is
+the common failure, and it looks like this:
+
+```
+CLEAR dev preflight — not starting
+
+  Supabase: project paused or unreachable — resume at https://supabase.com/dashboard/project/<ref>
+      Tried: https://<ref>.supabase.co · getaddrinfo ENOTFOUND <ref>.supabase.co
+```
+
+**Recovery:** open the link — it points at that project, not at the project
+list — and press **Restore**. Restoring takes about a minute; the dashboard says
+when it is done. Then run `npm run dev` again.
+
+If the project is *not* paused, the same message means the URL is not answering,
+so check `VITE_SUPABASE_URL` in `.env` against the dashboard.
+
+A project that answers but rejects the key gets a different message, because it
+is a different problem — usually the `service_role` key pasted where the `anon`
+key belongs, or a key rotated since you last copied it.
+
+`ENV-05` keeps the project awake with a scheduled ping, so this should be rare;
+the recovery is documented because "rare" is not "never".
+
+### Everyday commands
+
+| Command | Does |
+|---|---|
+| `npm run dev` | preflight, then Vite with hot reload |
+| `npm test` / `npm run test:watch` | the Vitest suite, once / on save |
+| `npm run lint` · `npm run lint:ds` | ESLint · the DS-08 adherence gate |
+| `npm run build` | `tsc --noEmit` then the production build |
 
 ## Deployment
 
@@ -39,11 +120,8 @@ than remembered.
 ### Environment variables
 
 `.env.example` is the list. It holds names and placeholders only; `.gitignore`
-excludes every other `.env*` file so that one stays safe to commit.
-
-```sh
-cp .env.example .env.local   # then fill in the values
-```
+excludes every other `.env*` file so that one stays safe to commit. Locally you
+copy it to `.env` — see *Getting the app running* above.
 
 In Vercel the same names go under **Project Settings → Environment Variables**,
 and they must be set for **Preview** as well as **Production** — a variable
