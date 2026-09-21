@@ -1,0 +1,26 @@
+# Supabase CLI configuration (DATA-01a).
+#
+# `project_id` distinguishes local containers on this host; it is NOT the remote
+# project ref. The reused live project (`docs/backend/dispositions.md` §9) is
+# reached by `supabase link --project-ref …` or `--db-url`, both of which keep
+# their values outside Git. No secret belongs in this file.
+#
+# Authoring and dry runs only until the off-machine-backup checkbox in
+# `docs/backend/live-inventory.md` is checked. `supabase db push` without
+# `--dry-run` is TASK-072's job, not this one's.
+project_id = "clear"
+
+[db]
+# The live project reports PostgreSQL 17.6
+# (`docs/backend/capture/inventory-2026-09-18T162244Z.txt`), so a local shadow
+# database validates against the same major version the migration will meet.
+major_version = 17
+
+[db.migrations]
+enabled = true
+schema_paths = []
+
+[db.seed]
+# DATA-02 owns catalog seeding. This migration creates structure only.
+enabled = false
+sql_paths = []
