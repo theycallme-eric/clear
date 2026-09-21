@@ -1,0 +1,141 @@
+# ENV-05 — Supabase keep-alive.
+#
+# The Supabase project runs on the free plan, which pauses a project after
+# seven days without activity. A paused project is not a slow project: the
+# first person back gets connection stack traces instead of an app (D4). This
+# workflow exists solely to keep that from happening.
+#
+# DELETE THIS FILE the day the project moves to a paid plan, along with the two
+# repository secrets it reads. It buys nothing there, and a scheduled job that
+# no longer has a reason is the kind of thing nobody dares remove later.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # Mondays and Thursdays at 06:23 UTC. Twice weekly puts at most four days
+    # between pings, so a single skipped run — GitHub drops scheduled runs on a
+    # busy runner fleet — still lands well inside the seven-day window. The
+    # off-the-hour minute avoids the congestion every `0 * * * *` job creates.
+    - cron: '23 6 * * 1,4'
+  # Manual dispatch, so "is the project awake?" is answerable on demand rather
+  # than only on Mondays and Thursdays.
+  workflow_dispatch:
+
+# Read-only, and nothing in this job reads the repository either.
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keep-alive
+  # A queued ping is still a ping; cancelling it would defeat the point.
+  cancel-in-progress: false
+
+env:
+  # The PostgREST root, requested with the project's anon key.
+  #
+  # Why the root rather than a table: the rebuilt schema deliberately grants
+  # `anon` nothing — DATA-01a revokes all privileges and writes SELECT policies
+  # `to authenticated` only — so every table read this workflow could make with
+  # a browser-safe key answers "permission denied", and would keep answering it
+  # as tables come and go through DATA-01b/c/d. The root is the one authenticated
+  # read whose success is unambiguous: 200 with a key, 401 without one, and no
+  # dependency on a table name that the migrations are still moving.
+  #
+  # If a later requirement grants `anon` a readable surface, point this at it —
+  # `/rest/v1/<table>?select=<column>&limit=1` — and nothing else here changes.
+  SUPABASE_PING_PATH: /rest/v1/
+
+jobs:
+  ping:
+    name: Ping Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read the Supabase REST API with the anon key
+        id: ping
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          # Browser-safe by design: row-level security, not secrecy, is the
+          # boundary (.env.example). The service-role key has no business in a
+          # job whose whole purpose is to read nothing.
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "::error title=Keep-alive not configured::Set the repository secrets SUPABASE_URL and SUPABASE_ANON_KEY."
+            exit 1
+          fi
+
+          # Both credentials travel in headers read from the environment, never
+          # on the command line where a process listing would carry them, and
+          # the response body goes to /dev/null so nothing the API returns can
+          # land in the run log. Only the status code is printed.
+          curl_exit=0
+          http_status="$(
+            curl \
+              --silent --show-error \
+              --request GET \
+              --header "apikey: ${SUPABASE_ANON_KEY}" \
+              --header "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+              --max-time 30 \
+              --retry 3 --retry-delay 10 --retry-all-errors \
+              --output /dev/null \
+              --write-out '%{http_code}' \
+              "${SUPABASE_URL%/}${SUPABASE_PING_PATH}"
+          )" || curl_exit=$?
+
+          echo "http_status=${http_status}" >> "$GITHUB_OUTPUT"
+          echo "curl_exit=${curl_exit}" >> "$GITHUB_OUTPUT"
+          echo "HTTP ${http_status} (curl exit ${curl_exit})"
+
+          if [ "${curl_exit}" -ne 0 ] || [ "${http_status}" != "200" ]; then
+            exit 1
+          fi
+
+      # Failure visibility. A scheduled job nobody watches is only useful if a
+      # red run says what broke and what to do, in the place the notification
+      # links to.
+      - name: Summarise the result
+        if: always()
+        shell: bash
+        env:
+          PING_OUTCOME: ${{ steps.ping.outcome }}
+          PING_STATUS: ${{ steps.ping.outputs.http_status }}
+          CURL_EXIT: ${{ steps.ping.outputs.curl_exit }}
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Supabase keep-alive"
+            echo
+            echo "| | |"
+            echo "| --- | --- |"
+            echo "| Request | \`GET ${SUPABASE_PING_PATH}\` — read only, anon key |"
+            echo "| HTTP status | \`${PING_STATUS:-none}\` |"
+            echo "| curl exit | \`${CURL_EXIT:-none}\` |"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${PING_OUTCOME:-}" = "success" ]; then
+            echo "The project answered. It will not pause before the next run." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          {
+            echo "**The ping failed.** In order of likelihood:"
+            echo
+            echo "1. **The project is paused or unreachable.** Resume it from the Supabase"
+            echo "   dashboard, then re-run this workflow to confirm."
+            echo "2. **The anon key was rotated** (\`401\`). Update the \`SUPABASE_ANON_KEY\`"
+            echo "   repository secret."
+            echo "3. **\`SUPABASE_URL\` is wrong or the secret is unset** (\`404\`, or a curl exit"
+            echo "   with no status)."
+            echo
+            echo "If the project has moved to a paid plan, delete this workflow instead of"
+            echo "fixing it — see the note in README.md."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "::error title=Supabase keep-alive failed::HTTP ${PING_STATUS:-none} (curl exit ${CURL_EXIT:-none}). The project may be paused — see the run summary."
+          exit 1
