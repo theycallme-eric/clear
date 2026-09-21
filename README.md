@@ -7,15 +7,21 @@ the approved requirements, specs, design export, and dependency graph live under
 
 ```sh
 npm install
+cp .env.example .env     # then fill in the two Supabase values
 npm run dev
-npm test
 ```
+
+Development runs against the hosted Supabase project — there is no local database to install or
+start. `.env.example` lists every variable a run or a deploy needs; both values come from the
+Supabase dashboard under Project Settings → API.
+
+`npm run dev` preflights before Vite starts: a variable that is missing or still holding its
+placeholder is named on its own line, and a paused project prints the link that resumes it. No
+stack traces. [DEVELOPMENT.md](DEVELOPMENT.md#getting-the-app-running) has the full flow and the
+paused-project recovery.
 
 The development server prints its local URL. The root route renders the app shell and unknown
 routes render the 404 fallback.
-
-`.env.example` lists every variable a run or a deploy needs — copy it to `.env.local` and fill
-it in. Nothing in the shell requires one yet, so the three commands above work on a bare clone.
 
 ## Deploys
 
