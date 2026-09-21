@@ -15,6 +15,7 @@
     "dag:ready": "python3 scripts/dag-ready.py",
     "lint": "eslint .",
     "lint:ds": "eslint --no-config-lookup --config eslint.ds.config.js src",
+    "seed": "node scripts/catalog-seed/seed.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:dag": "python3 -m unittest discover -s scripts/tests -p 'test_*.py'",
