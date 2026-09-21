@@ -13,9 +13,11 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `src/test/` | Shared test setup | adding test-only configuration or helpers |
 | `docs/` | Frozen baseline and deep specs | recording product/design/process knowledge, not runtime code |
 | `docs/backend/` | REQ-008 backend gate: live inventory, dispositions, rollback, post-cutover checks, and read-only evidence from the previous app | recording reused-Supabase-project audit state; never runtime code |
+| `public/` | Files served verbatim at the origin root: the web app manifest, the scalable icon, and the PWA-01 service worker | a browser or platform must fetch it by a fixed URL, unhashed — never for anything the bundle can import |
 | `supabase/` | The Supabase CLI's project root: `config.toml` and the migration series | changing how the CLI reaches the project; never application code |
 | `supabase/migrations/` | Schema as SQL, one migration per domain, applied in order by foreign key. Also holds the reused project's inherited history as no-op markers — see its README | adding or amending a schema domain; never seeds, which are DATA-02's |
 | `scripts/` | Repository automation | adding a deterministic local or CI maintenance command |
+| `scripts/generate-pwa-icons.mjs` | The PWA-01 icon renderer and its Vite plugin: the chamfered mark drawn to PNG at build time, served from memory in dev | changing the installed-app icon; it sits outside `src/` because the two skin hexes a PNG cannot read as tokens would fail the DS-08 gate there |
 | `scripts/backend-audit/` | Read-only inventory and snapshot tooling for the reused Supabase project (`npm run backend:prereqs` / `backend:inventory` / `backend:snapshot`) | adding audit/snapshot capture steps; never mutation |
 | `scripts/adherence/` | The DS-08 adherence gate (`npm run lint:ds`) and its fixtures: the vendored rule set raised from `warn` to `error` | changing how design-system adherence is enforced; never for the rules themselves, which come from the export |
 | `.github/workflows/` | GitHub pull-request automation | adding a required repository check or deployment workflow |
@@ -33,6 +35,10 @@ single `<h1>`, and the document title (CORE-05). Data-driven views use the share
 (`src/state/view-state.ts` + `src/ui/view-state.tsx`, documented in
 `docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land. No
 backend client exists yet.
+
+Alongside that flow, `src/main.tsx` registers `public/sw.js` after render (PWA-01). The worker
+caches the app shell only — document network-first, fingerprinted assets cache-first — and every
+API response is left to the network, because offline data is OFF-01 in M3.
 
 The database is a second, independent flow: `supabase/migrations/` → the reused Supabase project.
 DATA-01a adds the catalog domain — exercise definitions, the component→pattern map, muscle

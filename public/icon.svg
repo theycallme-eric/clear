@@ -1,0 +1,15 @@
+<!-- PWA-01 — the CLEAR mark, scalable. Same geometry as the rasters in
+     scripts/generate-pwa-icons.mjs: a chamfered badge (.clr-chamfer cuts the
+     bottom-right corner) carrying a C drawn from orthogonal and 45° edges
+     only. The export's own favicon.svg sets the C in Oxanium and rounds its
+     corners with rx="6"; a favicon cannot load a webfont, and corner radius is
+     0 in this system, so the mark is geometry here. Colours are the CLEAR skin
+     --base and --structure; an SVG served as a file reads no stylesheet. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>CLEAR</title>
+  <path fill="#171717" d="M0 0 H32 V28 L28 32 H0 Z" />
+  <path
+    fill="#F87823"
+    d="M10 10 H20.5 L22 11.5 V13 H13 V19 H22 V20.5 L20.5 22 H10 Z"
+  />
+</svg>

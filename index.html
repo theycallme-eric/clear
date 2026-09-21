@@ -7,6 +7,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="CLEAR workout generator" />
     <title>CLEAR</title>
+
+    <!-- PWA-01 — installable shell. The manifest carries the install identity;
+         these tags carry what iOS reads instead of it. `theme-color` is the
+         CLEAR skin's --base: a manifest and a meta tag read no CSS token, so
+         the value is restated from src/styles/skin-clear.css and checked
+         against it in src/test/pwa-manifest.test.ts. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#171717" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <!-- iOS ignores the manifest's icons and reads this one; it also cannot
+         read SVG here, which is why the build renders a PNG. -->
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="CLEAR" />
+    <!-- The status bar takes the app's own background rather than a Safari
+         chrome bar, which is the visible half of "no Safari chrome". -->
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <script>
       // Inline skin initialization — must run before first paint.
       // This is the synchronous selection step from skin.js; the module below

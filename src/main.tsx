@@ -15,6 +15,7 @@ import './styles/a11y.css'
 
 import { ErrorBoundary } from './app/ErrorBoundary'
 import { appRouter } from './app/router'
+import { registerServiceWorker } from './app/service-worker'
 import { ToastHost } from './ui/toast-host'
 
 const rootElement = document.getElementById('root')
@@ -33,3 +34,7 @@ createRoot(rootElement).render(
     </ErrorBoundary>
   </StrictMode>,
 )
+
+// PWA-01: after the render call, never before it — the shell installs behind
+// the first paint, and a browser that refuses a worker changes nothing here.
+registerServiceWorker()
