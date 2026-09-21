@@ -14,6 +14,17 @@ npm test
 The development server prints its local URL. The root route renders the app shell and unknown
 routes render the 404 fallback.
 
+`.env.example` lists every variable a run or a deploy needs — copy it to `.env.local` and fill
+it in. Nothing in the shell requires one yet, so the three commands above work on a bare clone.
+
+## Deploys
+
+Vercel deploys every pull request to its own preview URL and every push to `main` to production,
+with no manual step. `vercel.json` holds the build contract and the SPA rewrite that lets a deep
+link such as `/history` survive a refresh. See
+[DEVELOPMENT.md](DEVELOPMENT.md#deployment) for the environment-variable contract and why the
+rewrite exists.
+
 ## Validate before pushing
 
 ```sh
