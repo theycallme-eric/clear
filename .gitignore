@@ -8,3 +8,8 @@ coverage/
 .DS_Store
 # Full live-database dumps may contain personal test rows — never committed (REQ-008).
 backups/
+# Supabase CLI scratch: the linked project ref, branch state, and local stack
+# artefacts. `supabase/config.toml` and `supabase/migrations/` are committed.
+supabase/.temp/
+supabase/.branches/
+supabase/logs/
