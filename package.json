@@ -7,7 +7,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/dev-preflight/preflight.mjs && vite",
     "backend:inventory": "bash scripts/backend-audit/inventory.sh",
     "backend:prereqs": "node scripts/backend-audit/check-prereqs.mjs",
     "backend:snapshot": "bash scripts/backend-audit/snapshot.sh",
