@@ -17,6 +17,12 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   `scope`, the mapping to and from the generated row, and the four calls that use it. The transport
   is `supabase.ts`'s; what lives here is the meaning. Nothing in this directory throws a string, and
   no `any` escapes it.
+- `auth.ts` (AUTH-01) — the session, and only the session. The one place in `src/` that calls
+  GoTrue: restore from storage, exchange an expired refresh token on demand, revoke on sign-out. It
+  owns no clock (nothing is scheduled) and no profile (a user id and an email, nothing more), it
+  answers `Result<…, AppError>` like everything else here, and it reports a refresh that could not
+  be delivered as `RESTORE_FAILED` rather than as a sign-out — the D1 distinction. AUTH-02's verify
+  call turns its payload into a session with `sessionFromPayload` and hands it to `setSession`.
 - `constraint-selectors.ts` (DATA-05) — pure reads over a constraint set the server returned.
   Deterministic filtering is SQL's (`constraints_in_force`, `usable_equipment`); these mirror it for
   rendering, and where they disagree with the database, the database is right.
