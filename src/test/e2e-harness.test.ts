@@ -115,6 +115,53 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     })
   })
 
+  it('is a workflow GitHub will pick up at all', () => {
+    // A file GitHub cannot parse never runs, and it says so on the Actions tab
+    // rather than in the pull request that broke it.
+    expect(workflow).not.toContain('\t')
+    const jobs = workflow.slice(workflow.indexOf('\njobs:'))
+
+    expect(
+      [...jobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
+    ).toEqual(['rls-standing', 'preview-e2e', 'backend-e2e'])
+  })
+
+  it('re-proves row-level security on every pull request (REQ-007)', () => {
+    const rlsJob = workflow.slice(
+      workflow.indexOf('  rls-standing:'),
+      workflow.indexOf('  preview-e2e:'),
+    )
+
+    expect(workflow).toContain('pull_request:')
+    expect(rlsJob).toContain("github.event_name == 'pull_request'")
+    expect(rlsJob).toContain('npx playwright test e2e/rls.spec.ts')
+    expect(rlsJob).toContain(
+      'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
+    )
+    // A fork receives no secret, so the job must skip rather than fail.
+    expect(rlsJob).toContain(
+      'github.event.pull_request.head.repo.full_name == github.repository',
+    )
+    // And it waits for the reused project to actually hold this schema —
+    // TASK-072's gate. Unset is skipped, which is the safe default.
+    expect(rlsJob).toContain("vars.E2E_LIVE_SCHEMA_READY == 'true'")
+  })
+
+  it('gives each pull request its own namespace, and clears it after', () => {
+    const rlsJob = workflow.slice(
+      workflow.indexOf('  rls-standing:'),
+      workflow.indexOf('  preview-e2e:'),
+    )
+
+    expect(rlsJob).toContain(
+      'E2E_NAMESPACE: pr-${{ github.event.pull_request.number }}',
+    )
+    // Before, with the sweep of namespaces nobody will address again; and
+    // after, whatever the outcome.
+    expect(rlsJob).toContain('npm run e2e:reset -- --stale')
+    expect(rlsJob).toMatch(/if: always\(\)\n\s+run: npm run e2e:reset/)
+  })
+
   it('runs privileged OTP and RLS checks only from trusted main', () => {
     const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
 
