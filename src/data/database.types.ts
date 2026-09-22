@@ -12,6 +12,7 @@
  *   supabase/migrations/20260921000002_user_constraints.sql
  *   supabase/migrations/20260921000002_workout_domain.sql
  *   supabase/migrations/20260921000003_execution_domain.sql
+ *   supabase/migrations/20260921000004_generation_candidates.sql
  */
 
 export type Json =
@@ -597,6 +598,40 @@ export type Database = {
           p_session_id?: string | null
         }
         Returns: Database['public']['Tables']['user_constraints']['Row'][]
+      }
+      generation_candidate_sets: {
+        Args: {
+          p_user_id: string
+          p_focus: Database['public']['Enums']['session_focus']
+          p_location_id?: string | null
+          p_session_id?: string | null
+          p_floor?: number | null
+        }
+        Returns: { section: Database['public']['Enums']['section_type']; relaxed: boolean; candidates: Json }[]
+      }
+      generation_candidates: {
+        Args: {
+          p_user_id: string
+          p_focus: Database['public']['Enums']['session_focus']
+          p_section: Database['public']['Enums']['section_type']
+          p_available_equipment: string[]
+          p_session_id?: string | null
+          p_relax_patterns?: boolean | null
+        }
+        Returns: { exercise_id: string; name: string; movement_patterns: Database['public']['Enums']['movement_pattern'][]; primary_patterns: Database['public']['Enums']['movement_pattern'][]; exercise_role: Database['public']['Enums']['exercise_role']; component_movements: string[]; muscles: Json; can_be_primary: boolean; usable_equipment: string[] }[]
+      }
+      generation_equipment: {
+        Args: {
+          p_user_id: string
+          p_location_id?: string | null
+        }
+        Returns: string[]
+      }
+      generation_sections: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: Database['public']['Enums']['section_type'][]
       }
       usable_equipment: {
         Args: {

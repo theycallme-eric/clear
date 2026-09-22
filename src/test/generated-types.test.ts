@@ -97,6 +97,31 @@ describe('the generated types are current (DATA-03)', () => {
     // It returns `trigger`: nothing can call it over PostgREST.
     expect(contents).not.toContain('set_updated_at')
   })
+
+  it('writes out the columns a RETURNS TABLE declares (GEN-02a)', () => {
+    const { schema } = build()
+    const candidates = schema.functions.find(
+      (fn) => fn.name === 'generation_candidates',
+    )
+
+    // The alternative is `Json`, and a candidate typed as `Json` would let
+    // GEN-02b read a field this schema does not have.
+    expect(candidates?.returns).toBe('table')
+    expect(candidates?.columns?.map((column) => column.name)).toEqual([
+      'exercise_id',
+      'name',
+      'movement_patterns',
+      'primary_patterns',
+      'exercise_role',
+      'component_movements',
+      'muscles',
+      'can_be_primary',
+      'usable_equipment',
+    ])
+    expect(build().contents).toContain(
+      "movement_patterns: Database['public']['Enums']['movement_pattern'][]",
+    )
+  })
 })
 
 describe('the drift check is wired where it will be run (DATA-03)', () => {
@@ -129,6 +154,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000002_user_constraints.sql',
       '20260921000002_workout_domain.sql',
       '20260921000003_execution_domain.sql',
+      '20260921000004_generation_candidates.sql',
     ])
   })
 
