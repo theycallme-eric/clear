@@ -53,4 +53,21 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    // ENV-07's E2E harness runs in Node, not a browser: it drives one. It also
+    // never participates in fast refresh, and its `use(...)` fixtures export
+    // functions rather than components by design.
+    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    languageOptions: {
+      // Both: the file runs in Node, but a `page.evaluate` callback in it is
+      // serialised and run in the browser.
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      // Playwright names a fixture's "hand it to the test" callback `use`,
+      // which the hooks rule reads as React's `use`. There is no React here.
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
 )
