@@ -1,0 +1,113 @@
+name: E2E
+
+# ENV-07: the suite runs against the pull request's *preview deployment*, not a
+# server this job started. Testing a deploy is what makes a green run mean "the
+# thing a reviewer can open works"; testing a local build would only mean "the
+# code compiles", which `Build` already says.
+#
+# `deployment_status` is how that is expressed without a third-party action or
+# a polling loop: Vercel's Git integration publishes one when a deployment
+# finishes, and it carries the URL. That preview lane receives no privileged
+# credential. The separate `push` lane runs the live backend/RLS checks only
+# from reviewed code after it reaches `main`.
+on:
+  deployment_status:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.event_name }}-${{ github.ref || github.event.deployment_status.environment_url }}
+  cancel-in-progress: true
+
+jobs:
+  preview-e2e:
+    name: Preview E2E (mobile + desktop)
+    # Only a successful preview. This job runs pull-request code, so it must
+    # never receive the service-role key or mutate the shared test namespace.
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Preview'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Browsers only, and only the ones the two projects use.
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run the suite against the preview deployment
+        env:
+          E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          # Dedicated and revocable. This opens only protected Clear previews;
+          # it is not a Vercel account token and grants no Supabase access.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: npm run e2e
+
+      # The requirement's second artefact requirement: a failure leaves a trace
+      # and a screenshot, downloadable from the run, not a stack in a log.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  backend-e2e:
+    name: Trusted backend E2E (OTP + RLS)
+    # The service-role key is available only to code already reviewed and
+    # merged to main. Pull-request/deployment code never enters this job.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Reset the deterministic E2E namespace
+        run: npm run e2e:reset
+
+      - name: Prove OTP and row-level security against the reused test project
+        run: >-
+          npx playwright test e2e/auth-otp.spec.ts e2e/rls.spec.ts
+          --project=mobile
+
+      - name: Leave the deterministic E2E namespace clean
+        if: always()
+        run: npm run e2e:reset
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-backend-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

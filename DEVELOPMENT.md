@@ -82,6 +82,8 @@ the recovery is documented because "rare" is not "never".
 |---|---|
 | `npm run dev` | preflight, then Vite with hot reload |
 | `npm test` / `npm run test:watch` | the Vitest suite, once / on save |
+| `npm run e2e` | the Playwright suite — phone viewport first (see `e2e/README.md`) |
+| `npm run e2e:seed` · `npm run e2e:reset` | the E2E test-data lifecycle, one command each |
 | `npm run lint` · `npm run lint:ds` | ESLint · the DS-08 adherence gate |
 | `npm run gen:types` | regenerate `src/data/database.types.ts` from the migrations |
 | `npm run build` | `tsc --noEmit` then the production build |
@@ -257,3 +259,23 @@ npm run test:coverage
 Coverage is reported, never gated: no thresholds, just a visible number.
 The text summary prints in the terminal and an HTML report lands in
 `coverage/`.
+
+### End to end
+
+```sh
+npm run e2e
+```
+
+Playwright, against a running app. With no `E2E_BASE_URL` it starts the dev
+server itself, so this works from a clean checkout; CI sets that variable to the
+pull request's Vercel preview deployment and the suite starts nothing.
+
+**The default project is a phone** — 390×844, touch, coarse pointer. Desktop is
+a second project, not the baseline. Everything else the suite does, and the two
+lifecycle commands, is in **`e2e/README.md`**: read it before adding a spec.
+
+Two things are worth knowing up front. There is no `page.goto` in a spec — the
+`visit` fixture navigates *and* runs `axe-core`, so a screen cannot be reached
+without being scanned. And the backend specs skip, with the reason printed, when
+the three Supabase variables are not set: no credential is required to run the
+suite, only to run all of it.
