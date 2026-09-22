@@ -6,6 +6,9 @@ Client state machines, query hooks, and cross-screen state coordination belong h
 
 - `errors.ts` (CORE-01) — the `AppError` union, the `Result` helpers, and the request-ID generator.
 - `logger.ts` (CORE-02) — the one sanctioned logging sink, redacting by construction.
+- `schemas.ts` (CORE-03) — the runtime-neutral boundary contract for generation envelopes,
+  contract 4.1.0 output, and the row shapes `src/data/` reads. A future edge function must import
+  this same source rather than restating the schemas in Deno.
 - `toasts.ts` (DS-05) — the root toast queue; `src/ui/toast-host.tsx` renders it.
 - `view-state.ts` (CORE-04) — the four-state contract every data-driven view implements.
 - `auth-context.ts` / `auth-provider.tsx` (AUTH-01) — the session context. The context file holds
