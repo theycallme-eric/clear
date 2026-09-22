@@ -68,6 +68,15 @@ once, on the session, and every level below inherits it by walking up rather tha
 row carrying the same `slot_id` and supersedes the old one, which is why a set log (DATA-01d) can
 join back to the exercise that was actually performed.
 
+DATA-01d adds the performed side — `exercise_set_logs` and `block_results` — under the same
+owner-only convention, and closes that sentence: a set log's foreign key names the prescription's
+id **and** its revision status, so a log can only be attached to a row that is active when it is
+written. Results hang off a block rather than a section, so a conditioning section holding an EMOM
+and an AMRAP records both. Null, zero and skipped stay three different observations: no actual
+column has a default, every one of them admits zero, and a skip is `execution_status` one level up.
+Reading it back is `session_performed`, a `SECURITY INVOKER` view — "as performed" is a view rather
+than a join, because set logs alone cannot show a skipped exercise or a block's own outcome.
+
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and
 `usable_equipment(user, options, available, session)`. Both are `SECURITY INVOKER`, so owner-only RLS
