@@ -117,3 +117,15 @@ DATA-02 fills those tables. `npm run seed` reads two committed files — the rea
 taxonomy equivalence, and writes `supabase/seed/` plus `docs/backend/taxonomy-equivalence.md`. That
 is the whole flow: files in, files out, no connection. Applying the result to the reused project is
 TASK-072, behind the same gate.
+
+GEN-02a is the first thing to read that seeded catalog, and it is a boundary worth naming: workout
+generation begins in SQL. `20260921000004_generation_candidates.sql` resolves the request's sections
+(`generation_sections` — the profile's toggles, except active recovery, which is warmup/mobility/
+cooldown and overrides them), resolves its equipment (`generation_equipment` — the default location's
+`location_equipment`, never `locations.tier`), and retrieves the eligible exercises per section
+(`generation_candidates`, GENERATION_CONTRACT §3) with DATA-05's `usable_equipment` computed per
+candidate. `generation_candidate_sets` composes the three into one round trip and applies §3's
+per-section floor, recording a relaxation rather than widening quietly. Nothing in that path calls a
+model, and GEN-02b cannot select an ineligible exercise because the prompt it builds never contains
+one. `src/data/candidates.ts` is the only reader: it maps the payload, and turns a section that
+resolved to nothing into `GENERATION_NO_CANDIDATES` instead of an empty workout.
