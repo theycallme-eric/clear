@@ -236,6 +236,20 @@ export function emitTypes(schema, sources) {
 }
 
 function returnType(fn, enums) {
+  // `RETURNS TABLE (…)`: the columns are declared in the signature, so the row
+  // is written out rather than widened to `Json`. Every column is
+  // non-nullable here — a set-returning function declares no NOT NULL, and
+  // guessing one from the body is not something this generator can do — so the
+  // caller validating the payload (CORE-03) remains the boundary that decides.
+  if (fn.returns === 'table') {
+    const columns = (fn.columns ?? []).map(
+      (column) =>
+        `${key(column.name)}: ${tsType(column.pgType, enums, `${fn.name}() returns ${column.name}`)}`,
+    )
+
+    return `{ ${columns.join('; ')} }[]`
+  }
+
   const setof = /^setof (?:public\.)?([a-z0-9_]+)$/.exec(fn.returns)
   if (setof !== null) {
     return `Database['public']['Tables'][${quoted(setof[1])}]['Row'][]`
