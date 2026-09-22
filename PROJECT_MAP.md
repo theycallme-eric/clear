@@ -36,8 +36,10 @@ mounts an atmosphere of its own. `AppChrome` owns the skip link, route-change fo
 announcer. Every screen renders inside the `Screen` primitive, which owns the `<main>` landmark, the
 single `<h1>`, and the document title (CORE-05). Data-driven views use the shared four-state contract
 (`src/state/view-state.ts` + `src/ui/view-state.tsx`, documented in
-`docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land. No
-backend client exists yet.
+`docs/conventions/state-contract.md`). Data boundaries are stubs until their DAG issues land, with
+one exception: `src/data/constraints.ts` (DATA-05) reaches PostgREST directly, because the shared
+typed client is DATA-03's and waits on DATA-01d. It takes its `fetch`, returns `Result<…, AppError>`,
+and collapses into that client when it lands.
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
@@ -56,6 +58,13 @@ by authenticated users and writable only by the service role, and that is the co
 later catalog table follows. Nothing in `src/` reads them yet; DATA-03 adds the typed client.
 Migrations are authored and dry-run only until the off-machine-backup gate in
 `docs/backend/live-inventory.md` clears.
+
+DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
+functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and
+`usable_equipment(user, options, available, session)`. Both are `SECURITY INVOKER`, so owner-only RLS
+still decides what a caller sees. GEN-01's eligibility query composes them; `src/data/constraints.ts`
+calls the first of them over PostgREST, and `src/data/constraint-selectors.ts` reads the returned set
+without deciding anything the database has not already decided.
 
 DATA-02 fills those tables. `npm run seed` reads two committed files — the read-only capture under
 `docs/backend/snapshot/` and the reviewed workout-anatomy tags in `docs/backend/evidence/` — proves
