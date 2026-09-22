@@ -9,7 +9,7 @@ import { act, render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { renderApp } from '../test/render'
+import { AppProviders, renderApp } from '../test/render'
 import { routes } from './router'
 import {
   DEFAULT_ATMOSPHERE,
@@ -128,7 +128,13 @@ describe('atmosphere rendering', () => {
 
   it('changes level on navigation without remounting the layer', async () => {
     const router = createMemoryRouter(routes, { initialEntries: ['/workout'] })
-    const { container } = render(<RouterProvider router={router} />)
+    // `/login` is a real screen now (AUTH-02) and reads the session, so this
+    // router needs the same providers `renderApp` mounts.
+    const { container } = render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
     const layer = container.querySelector('.clr-atmosphere')
 
     expect(container.querySelector('.clr-shell')).toHaveAttribute(

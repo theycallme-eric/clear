@@ -13,9 +13,12 @@ import './styles/app-motion.css'
 import './styles/atmosphere.css'
 import './styles/a11y.css'
 
+import { appAuthClients } from './app/auth-client'
 import { ErrorBoundary } from './app/ErrorBoundary'
 import { appRouter } from './app/router'
 import { registerServiceWorker } from './app/service-worker'
+import { AuthProvider } from './state/auth-provider'
+import { SignInClientsContext } from './state/sign-in-context'
 import { ToastHost } from './ui/toast-host'
 
 const rootElement = document.getElementById('root')
@@ -24,11 +27,21 @@ if (rootElement === null) {
   throw new Error('CLEAR root element was not found')
 }
 
+// AUTH-01's session client and AUTH-02's OTP client, built once from the
+// environment. The sign-in screen must hand its verified session to the same
+// client the provider subscribed to, so both come from one place.
+const { auth, otp } = appAuthClients()
+
 createRoot(rootElement).render(
   <StrictMode>
     {/* CORE-04: a render crash anywhere below shows a recoverable screen */}
     <ErrorBoundary>
-      <RouterProvider router={appRouter} />
+      {/* AUTH-01: the session, above the router so every screen can read it */}
+      <AuthProvider client={auth}>
+        <SignInClientsContext value={{ auth, otp }}>
+          <RouterProvider router={appRouter} />
+        </SignInClientsContext>
+      </AuthProvider>
       {/* DS-05: the one toast host — every screen's toasts queue through it */}
       <ToastHost />
     </ErrorBoundary>
