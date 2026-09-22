@@ -6,7 +6,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 |---|---|---|
 | `src/app/` | App composition and routing | adding a route, screen, or route-level boundary |
 | `src/data/` | External data and persistence | talking to Supabase, the catalog, or another backend |
-| `src/state/` | Client state | adding a query hook, state machine, or cross-screen workflow |
+| `src/state/` | Client state, and the cross-process contracts it is parsed from | adding a query hook, state machine, cross-screen workflow, or the schema a payload crossing a boundary is validated by |
 | `src/ui/` | App-owned presentation | adding a reusable domain component not supplied by the design system |
 | `src/design-system/` | Vendored public design surface | integrating a versioned export in DS-01; never for app-owned components |
 | `src/styles/` | App-owned CSS the export does not ship | composing the shipped motion vocabulary or skin; never new visual ideas or raw values |
@@ -44,6 +44,16 @@ above it — `src/data/constraints.ts` (DATA-05) is the first — owns its domai
 mapping and no longer its own transport. The client takes an injected `fetch` and returns
 `Result<…, AppError>`; nothing in `src/` builds a PostgREST URL of its own, and
 `src/test/generated-types.test.ts` fails if something starts to.
+
+Alongside that typed transport sits the other half of the same guarantee, and it is one file rather
+than a directory: `src/state/schemas.ts` (CORE-03) is where every payload that crosses a process
+boundary is parsed — the generation request and response envelopes, contract 4.1.0's output, and the
+`profiles`, `locations` and `user_constraints` rows. Its checks mirror the migrations' CHECK
+constraints, so anything that validates at the boundary is something the database can hold, and its
+types are `z.infer` of the schemas rather than a second declaration of them. It imports only `zod`,
+the generated types, and the CORE-01 error taxonomy — no React, no DOM — so a Deno edge function
+imports this same file instead of restating the contract, and `src/state/schemas.test.ts` fails if a
+second zod schema appears anywhere in `src/` or `supabase/functions/`.
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s

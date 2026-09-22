@@ -26,7 +26,8 @@
   "dependencies": {
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-router-dom": "7.18.3"
+    "react-router-dom": "7.18.3",
+    "zod": "4.5.2"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
