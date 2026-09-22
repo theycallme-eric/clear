@@ -52,6 +52,9 @@ jobs:
       - name: Run the suite against the preview deployment
         env:
           E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          # Dedicated and revocable. This opens only protected Clear previews;
+          # it is not a Vercel account token and grants no Supabase access.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npm run e2e
 
       # The requirement's second artefact requirement: a failure leaves a trace

@@ -58,6 +58,17 @@ repository secrets, resets the two-user namespace before it starts, runs only
 This keeps the service-role credential out of unmerged code without giving up
 the standing live policy check.
 
+### Protected Vercel previews
+
+Vercel Authentication protects preview deployments before Clear itself loads.
+The preview job receives one separate repository secret,
+`VERCEL_AUTOMATION_BYPASS_SECRET`, and Playwright sends it as Vercel's
+documented `x-vercel-protection-bypass` header plus the bypass-cookie request.
+It grants automated HTTP access to this project's protected previews only: it
+is not a Vercel account token and it grants no Supabase access. The value is
+dedicated and revocable. If it is missing in preview CI, the harness fails
+before opening a browser instead of testing Vercel's login page by mistake.
+
 ## Test users, without an inbox
 
 CLEAR signs in with a one-time code sent by email, which no test can read. The

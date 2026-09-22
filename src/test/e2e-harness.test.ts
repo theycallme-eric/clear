@@ -2,7 +2,10 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import playwrightConfig, { MOBILE_VIEWPORT } from '../../playwright.config'
+import playwrightConfig, {
+  MOBILE_VIEWPORT,
+  vercelProtectionHeaders,
+} from '../../playwright.config'
 
 /**
  * ENV-07 — the harness's own acceptance criteria, asserted on the files that
@@ -98,7 +101,18 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
 
     expect(previewJob).not.toContain('SUPABASE_SERVICE_ROLE_KEY')
     expect(previewJob).not.toContain('npm run e2e:reset')
+    expect(previewJob).toContain(
+      'VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}',
+    )
     expect(previewJob).toContain('npm run e2e')
+  })
+
+  it('uses the documented Vercel headers only when a bypass is supplied', () => {
+    expect(vercelProtectionHeaders(undefined)).toBeUndefined()
+    expect(vercelProtectionHeaders('test-only-value')).toEqual({
+      'x-vercel-protection-bypass': 'test-only-value',
+      'x-vercel-set-bypass-cookie': 'true',
+    })
   })
 
   it('runs privileged OTP and RLS checks only from trusted main', () => {
@@ -107,6 +121,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob).toContain("github.event_name == 'push'")
     expect(backendJob).toContain("github.ref == 'refs/heads/main'")
     expect(backendJob).toContain('SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}')
+    expect(backendJob).not.toContain('VERCEL_AUTOMATION_BYPASS_SECRET')
     expect(backendJob).toContain('e2e/auth-otp.spec.ts e2e/rls.spec.ts')
     expect(backendJob.match(/npm run e2e:reset/g)).toHaveLength(2)
   })

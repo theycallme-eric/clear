@@ -23,6 +23,31 @@ import { LOCAL_BASE_URL, readE2eEnv } from './scripts/e2e/env.mjs'
 
 const e2e = readE2eEnv()
 
+/**
+ * Vercel protects preview deployments with its login interstitial. CI receives
+ * one revocable, project-scoped automation value and sends it only as the two
+ * headers Vercel documents. Local runs and the trusted backend lane do not
+ * need it, so the browser remains unchanged when the value is absent.
+ */
+export function vercelProtectionHeaders(secret: string | undefined) {
+  return secret
+    ? {
+        'x-vercel-protection-bypass': secret,
+        'x-vercel-set-bypass-cookie': 'true',
+      }
+    : undefined
+}
+
+const protectionHeaders = vercelProtectionHeaders(
+  process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+)
+
+if (process.env.CI && e2e.usesExternalTarget && !protectionHeaders) {
+  throw new Error(
+    'VERCEL_AUTOMATION_BYPASS_SECRET is required for protected preview E2E',
+  )
+}
+
 /** The requirement's viewport, written as the numbers it states. */
 export const MOBILE_VIEWPORT = { width: 390, height: 844 }
 
@@ -44,6 +69,7 @@ export default defineConfig({
 
   use: {
     baseURL: e2e.baseURL,
+    ...(protectionHeaders ? { extraHTTPHeaders: protectionHeaders } : {}),
     // The two artefacts the requirement names, kept for failures only.
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
