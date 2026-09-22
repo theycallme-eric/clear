@@ -59,6 +59,15 @@ later catalog table follows. Nothing in `src/` reads them yet; DATA-03 adds the 
 Migrations are authored and dry-run only until the off-machine-backup gate in
 `docs/backend/live-inventory.md` clears.
 
+DATA-01b and DATA-01c add the two user-owned domains, and their convention is the mirror of the
+catalog's: the owner reads and writes, nobody else sees the rows exist. The workout domain is four
+levels — session → section → **block** → exercise — and the block is the new one: it owns every
+structure attribute, so members of a circuit cannot disagree about the clock. Ownership is stored
+once, on the session, and every level below inherits it by walking up rather than copying a
+`user_id` that could disagree with its parent. Prescription rows are immutable: a swap inserts a
+row carrying the same `slot_id` and supersedes the old one, which is why a set log (DATA-01d) can
+join back to the exercise that was actually performed.
+
 DATA-05 adds the one user-owned table with a reader in `src/`: `user_constraints`, plus the two SQL
 functions that give its rows a deterministic meaning — `constraints_in_force(user, session)` and
 `usable_equipment(user, options, available, session)`. Both are `SECURITY INVOKER`, so owner-only RLS
