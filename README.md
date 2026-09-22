@@ -31,6 +31,21 @@ link such as `/history` survive a refresh. See
 [DEVELOPMENT.md](DEVELOPMENT.md#deployment) for the environment-variable contract and why the
 rewrite exists.
 
+## Keeping Supabase awake
+
+The Supabase project is on the free plan, which pauses it after seven days without activity —
+and a paused project greets the next person with connection errors rather than an app.
+`.github/workflows/keep-alive.yml` prevents that: every Monday and Thursday it makes one
+authenticated read against the project's REST API with the browser-safe anon key, discards the
+response, and fails loudly if the project does not answer. It writes nothing, and the run
+summary on a red run names the likely cause — paused project, rotated key, or unset secret.
+
+It needs two repository secrets, `SUPABASE_URL` and `SUPABASE_ANON_KEY`, and it can be run on
+demand from the Actions tab.
+
+**Delete the workflow and both secrets the day the project moves to a paid plan.** Paid projects
+do not pause, and a scheduled job with no remaining reason is one nobody later dares remove.
+
 ## Validate before pushing
 
 ```sh
