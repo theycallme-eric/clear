@@ -83,7 +83,9 @@ const REBUILD_MIGRATION = /^\d{14}_[a-z0-9_]+\.sql$/
  * @typedef {object} SchemaFunction
  * @property {string} name
  * @property {FunctionArg[]} args
- * @property {string} returns   As written, e.g. `setof public.user_constraints`.
+ * @property {string} returns   As written, e.g. `setof public.user_constraints`,
+ *                              or `table` when the function declares columns.
+ * @property {FunctionArg[]} [columns]  Those columns, for a RETURNS TABLE.
  */
 
 /**
@@ -266,10 +268,20 @@ export function readSchema() {
       const createFunction = CREATE_FUNCTION.exec(statement)
       if (createFunction !== null) {
         const [, name, args, returns] = createFunction
+        const declared = returns.trim().toLowerCase()
+        // `RETURNS TABLE (…)` declares its own columns, so they are read the
+        // same way arguments are: the row a caller receives is as typed as a
+        // table's, and GEN-02a's candidate is that row rather than `Json`.
+        const table = /^table ?\(/.exec(declared)
+
         functions.set(name, {
           name,
           args: parseArgs(name, args),
-          returns: returns.trim().toLowerCase(),
+          returns: table === null ? declared : 'table',
+          columns:
+            table === null
+              ? undefined
+              : parseArgs(name, balanced(declared, declared.indexOf('('))),
         })
       }
     }

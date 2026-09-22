@@ -98,8 +98,32 @@ still decides what a caller sees. GEN-01's eligibility query composes them; `src
 calls the first of them over PostgREST, and `src/data/constraint-selectors.ts` reads the returned set
 without deciding anything the database has not already decided.
 
+AUTH-01 adds a third flow, beside PostgREST rather than through it: the session.
+`src/data/auth.ts` is the only thing in `src/` that speaks to GoTrue — it restores a stored session
+on load, exchanges an expired refresh token when somebody asks for a token, and tells its
+subscribers what happened as a typed event. Nothing schedules anything: there is no refresh timer,
+so a token is only ever exchanged because a caller wanted one. `src/state/auth-context.ts` turns
+those events into `{ status, user, error }` and `src/state/auth-provider.tsx` is the React half —
+subscribe, reduce, render, and nothing else. The split that matters is the one D1 got wrong: a
+refresh *refused* by GoTrue ends the session, while a refresh that never arrived leaves the stored
+session alone and surfaces as `status: 'error'`, which no guard may read as a new user. The provider
+is not mounted in the app tree yet — the sign-in screen is AUTH-02's and the guards that consume
+`status` are AUTH-03's.
+
 DATA-02 fills those tables. `npm run seed` reads two committed files — the read-only capture under
 `docs/backend/snapshot/` and the reviewed workout-anatomy tags in `docs/backend/evidence/` — proves
 taxonomy equivalence, and writes `supabase/seed/` plus `docs/backend/taxonomy-equivalence.md`. That
 is the whole flow: files in, files out, no connection. Applying the result to the reused project is
 TASK-072, behind the same gate.
+
+GEN-02a is the first thing to read that seeded catalog, and it is a boundary worth naming: workout
+generation begins in SQL. `20260921000004_generation_candidates.sql` resolves the request's sections
+(`generation_sections` — the profile's toggles, except active recovery, which is warmup/mobility/
+cooldown and overrides them), resolves its equipment (`generation_equipment` — the default location's
+`location_equipment`, never `locations.tier`), and retrieves the eligible exercises per section
+(`generation_candidates`, GENERATION_CONTRACT §3) with DATA-05's `usable_equipment` computed per
+candidate. `generation_candidate_sets` composes the three into one round trip and applies §3's
+per-section floor, recording a relaxation rather than widening quietly. Nothing in that path calls a
+model, and GEN-02b cannot select an ineligible exercise because the prompt it builds never contains
+one. `src/data/candidates.ts` is the only reader: it maps the payload, and turns a section that
+resolved to nothing into `GENERATION_NO_CANDIDATES` instead of an empty workout.

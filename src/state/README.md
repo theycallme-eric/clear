@@ -2,7 +2,18 @@
 
 Client state machines, query hooks, and cross-screen state coordination belong here.
 
-`schemas.ts` (CORE-03) is the exception that proves the boundary: it is not client state but the
-contract client state is parsed from. Every payload crossing a process boundary — the generation
-envelopes, contract 4.1.0's output, and the row shapes `src/data/` reads — is validated there and
-nowhere else, and an edge function imports that same file rather than restating it in Deno.
+## What is here now
+
+- `errors.ts` (CORE-01) — the `AppError` union, the `Result` helpers, and the request-ID generator.
+- `logger.ts` (CORE-02) — the one sanctioned logging sink, redacting by construction.
+- `schemas.ts` (CORE-03) — the runtime-neutral boundary contract for generation envelopes,
+  contract 4.1.0 output, and the row shapes `src/data/` reads. A future edge function must import
+  this same source rather than restating the schemas in Deno.
+- `toasts.ts` (DS-05) — the root toast queue; `src/ui/toast-host.tsx` renders it.
+- `view-state.ts` (CORE-04) — the four-state contract every data-driven view implements.
+- `auth-context.ts` / `auth-provider.tsx` (AUTH-01) — the session context. The context file holds
+  the vocabulary (`status`, `user`, `error`, `signOut`) and the pure reducer over `src/data/auth.ts`
+  events; the provider subscribes, reduces, and renders. Together they are under 80 lines of code,
+  with no ref, no timer, no lock, and no fetch of any kind — a token refresh is one `setState` and
+  cannot start a request. `status: 'error'` is the state D1 lacked: a session that could not be
+  revalidated is not an anonymous user, and nothing may route it to onboarding.

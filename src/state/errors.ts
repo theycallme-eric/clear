@@ -38,6 +38,13 @@ export const ErrorCode = {
 
   // Generation errors
   GENERATION_FAILED: 'GENERATION_FAILED',
+  /**
+   * GEN-02a. A required section resolved to nothing eligible — usually
+   * over-constrained equipment or exclusions, and never retryable as-is
+   * (GENERATION_CONTRACT §9). It exists so an over-constrained request fails
+   * visibly instead of generating a workout with an empty section in it.
+   */
+  GENERATION_NO_CANDIDATES: 'GENERATION_NO_CANDIDATES',
   GENERATION_TIMEOUT: 'GENERATION_TIMEOUT',
   GENERATION_INVALID_PARAMS: 'GENERATION_INVALID_PARAMS',
   GENERATION_MODEL_ERROR: 'GENERATION_MODEL_ERROR',
@@ -143,6 +150,8 @@ const errorMessages: Record<ErrorCode, string> = {
 
   // Generation
   [ErrorCode.GENERATION_FAILED]: 'Could not generate workout. Try again.',
+  [ErrorCode.GENERATION_NO_CANDIDATES]:
+    'No exercises match these options. Change equipment or exclusions.',
   [ErrorCode.GENERATION_TIMEOUT]:
     'Generation took too long. Try simpler options.',
   [ErrorCode.GENERATION_INVALID_PARAMS]: 'Invalid generation parameters.',
