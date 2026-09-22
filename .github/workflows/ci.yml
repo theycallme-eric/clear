@@ -54,6 +54,8 @@ jobs:
           fi
       - name: Verify requirements graph
         run: python3 scripts/gen-issues.py --check
+      - name: Generated Supabase types match the migrations (DATA-03)
+        run: npm run gen:types -- --check
 
   test:
     name: Test

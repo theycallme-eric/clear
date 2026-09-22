@@ -1,8 +1,140 @@
 # Development
 
-> The one-command fresh-clone flow and paused-project recovery land with ENV-04.
-> This file currently covers deployment (ENV-03), the test harness (ENV-06), and
-> the accessibility review passes (CORE-05).
+## Getting the app running
+
+Three commands from a fresh clone. There is no local database to install, start
+or reset: development runs against the **hosted Supabase project**, the same one
+the deployed app uses.
+
+```sh
+git clone git@github.com:theycallme-eric/clear.git && cd clear
+npm install
+cp .env.example .env     # then fill in the two values — see below
+npm run dev
+```
+
+### Filling in `.env`
+
+`.env.example` is the environment contract: names and placeholders only, safe to
+commit, and the list `npm run dev` checks against. Copying it gives you two
+variables to fill in, both from **Supabase dashboard → your project → Project
+Settings → API**:
+
+| Variable | Value |
+|---|---|
+| `VITE_SUPABASE_URL` | Project URL |
+| `VITE_SUPABASE_ANON_KEY` | the `anon` / `public` key — **never** the `service_role` key |
+
+Both are browser-safe by design: row-level security, not secrecy, is the
+boundary. `.gitignore` excludes every `.env*` file except the example, so a
+filled-in `.env` cannot be committed by accident. Vite also reads `.env.local`,
+`.env.development` and `.env.development.local` if you prefer to split them; the
+preflight reads the same set, in the same order.
+
+### What `npm run dev` does before Vite starts
+
+`npm run dev` is `scripts/dev-preflight/preflight.mjs` followed by `vite`, and
+the second half only runs if the first succeeds. The preflight exists to kill
+D4 — "sitting down to work meant debugging infrastructure" — by answering the
+two questions that actually go wrong, in English, before the dev server prints a
+URL that was never going to work:
+
+1. **Is every documented variable set to a real value?** A variable that is
+   missing, empty, or still holding its `.env.example` placeholder is named on
+   its own line, with what it is and where to get it. Nothing connects.
+2. **Is the project awake and does it know this key?** One authenticated request
+   to the project's PostgREST root — a pulse, not a query, so it works before
+   any schema exists. It times out after 8 seconds rather than hanging.
+
+Each failure prints a short explanation and exits non-zero. None of them prints
+a stack trace: a stack is where a morning disappears, the link is where it gets
+fixed.
+
+### When the project is paused
+
+Supabase pauses a free-tier project after about a week of inactivity. That is
+the common failure, and it looks like this:
+
+```
+CLEAR dev preflight — not starting
+
+  Supabase: project paused or unreachable — resume at https://supabase.com/dashboard/project/<ref>
+      Tried: https://<ref>.supabase.co · getaddrinfo ENOTFOUND <ref>.supabase.co
+```
+
+**Recovery:** open the link — it points at that project, not at the project
+list — and press **Restore**. Restoring takes about a minute; the dashboard says
+when it is done. Then run `npm run dev` again.
+
+If the project is *not* paused, the same message means the URL is not answering,
+so check `VITE_SUPABASE_URL` in `.env` against the dashboard.
+
+A project that answers but rejects the key gets a different message, because it
+is a different problem — usually the `service_role` key pasted where the `anon`
+key belongs, or a key rotated since you last copied it.
+
+`ENV-05` keeps the project awake with a scheduled ping, so this should be rare;
+the recovery is documented because "rare" is not "never".
+
+### Everyday commands
+
+| Command | Does |
+|---|---|
+| `npm run dev` | preflight, then Vite with hot reload |
+| `npm test` / `npm run test:watch` | the Vitest suite, once / on save |
+| `npm run e2e` | the Playwright suite — phone viewport first (see `e2e/README.md`) |
+| `npm run e2e:seed` · `npm run e2e:reset` | the E2E test-data lifecycle, one command each |
+| `npm run lint` · `npm run lint:ds` | ESLint · the DS-08 adherence gate |
+| `npm run gen:types` | regenerate `src/data/database.types.ts` from the migrations |
+| `npm run build` | `tsc --noEmit` then the production build |
+
+## The database, in TypeScript
+
+Everything in `src/` that reads or writes the database goes through the typed
+client in `src/data/supabase.ts`, and every type it uses comes from
+`src/data/database.types.ts`, which is **generated and must not be edited**.
+
+```sh
+npm run gen:types              # rewrite src/data/database.types.ts
+npm run gen:types -- --check   # prove it is current, writing nothing
+```
+
+Change a migration, run `npm run gen:types`, and commit the two together. The
+enums the rebuild introduced — `session_focus`, `movement_pattern`,
+`target_kind`, `revision_status`, `execution_status`, `distance_unit` — arrive
+this way and nowhere else; a hand-maintained copy of a vocabulary is the drift
+this command exists to prevent.
+
+### Drift fails CI
+
+`npm run gen:types -- --check` runs in the **Lint** job on every pull request,
+and `src/test/generated-types.test.ts` asks the same question in the **Test**
+job. Either one fails if the committed types are not byte-identical to what the
+migrations produce, with the same fix in both cases:
+
+```
+FAILED — src/data/database.types.ts is not what the migrations produce.
+
+The committed types and supabase/migrations/ have drifted apart.
+Run `npm run gen:types` and commit the result.
+```
+
+### Why it reads SQL rather than asking the project
+
+`supabase gen types` asks a running database what it holds. The reused project
+still holds the *previous* schema: `docs/backend/live-inventory.md` holds every
+push behind the off-machine-backup gate until `TASK-072`, so asking it today
+would generate types for the schema this rebuild replaces. The generator
+therefore reads the same migration SQL the CLI would apply — offline, opening no
+connection and reading no credential. `supabase/migrations/` is the source of
+truth for what the schema *is*; the live project is the source of truth for what
+has been *applied*, and those stay different questions until the gate clears.
+
+Two things it deliberately does not type: table relationships, because a join is
+spelled in the select string rather than inferred, and views, whose column types
+come from the planner rather than from their SQL text. Views are named in
+`ViewName` so that one added later fails the check instead of arriving
+unnoticed; the issue that first reads a view declares its row.
 
 ## Deployment
 
@@ -39,11 +171,8 @@ than remembered.
 ### Environment variables
 
 `.env.example` is the list. It holds names and placeholders only; `.gitignore`
-excludes every other `.env*` file so that one stays safe to commit.
-
-```sh
-cp .env.example .env.local   # then fill in the values
-```
+excludes every other `.env*` file so that one stays safe to commit. Locally you
+copy it to `.env` — see *Getting the app running* above.
 
 In Vercel the same names go under **Project Settings → Environment Variables**,
 and they must be set for **Preview** as well as **Production** — a variable
@@ -130,3 +259,23 @@ npm run test:coverage
 Coverage is reported, never gated: no thresholds, just a visible number.
 The text summary prints in the terminal and an HTML report lands in
 `coverage/`.
+
+### End to end
+
+```sh
+npm run e2e
+```
+
+Playwright, against a running app. With no `E2E_BASE_URL` it starts the dev
+server itself, so this works from a clean checkout; CI sets that variable to the
+pull request's Vercel preview deployment and the suite starts nothing.
+
+**The default project is a phone** — 390×844, touch, coarse pointer. Desktop is
+a second project, not the baseline. Everything else the suite does, and the two
+lifecycle commands, is in **`e2e/README.md`**: read it before adding a spec.
+
+Two things are worth knowing up front. There is no `page.goto` in a spec — the
+`visit` fixture navigates *and* runs `axe-core`, so a screen cannot be reached
+without being scanned. And the backend specs skip, with the reason printed, when
+the three Supabase variables are not set: no credential is required to run the
+suite, only to run all of it.

@@ -7,8 +7,10 @@ import {
 
 import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
+import { Login } from './Login'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
+import { Welcome } from './Welcome'
 
 /**
  * DS-07's gallery, in development only.
@@ -55,6 +57,10 @@ export const routes: RouteObject[] = [
         element: <AppChrome />,
         children: [
           { path: '/', element: <AppShell /> },
+          // AUTH-02's two public-only screens. Each carries its own guard for
+          // now; AUTH-03 lifts that to the route tree.
+          { path: '/welcome', element: <Welcome /> },
+          { path: '/login', element: <Login /> },
           ...devRoutes,
           { path: '*', element: <NotFound /> },
         ],

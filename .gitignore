@@ -1,6 +1,13 @@
 node_modules/
 dist/
 coverage/
+# ENV-07 E2E artefacts: the trace and screenshot a failed run keeps, and the
+# HTML report built from them. Diagnostics for the run that produced them —
+# never source, and a trace can contain a session token.
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 .env
 .env.*
 !.env.example
