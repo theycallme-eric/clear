@@ -40,7 +40,7 @@ export interface PostgrestDouble {
   /** Everything stored, RLS ignored — the test's view, not a caller's. */
   rows(): UserConstraintRow[]
   /** Every request the double answered, in order. */
-  requests(): { method: string; path: string }[]
+  requests(): { method: string; path: string; query: string }[]
 }
 
 const SCOPE_TARGET: Record<string, keyof UserConstraintRow> = {
@@ -54,7 +54,7 @@ export function createPostgrestDouble(
 ): PostgrestDouble {
   const base = new URL(`${options.url.replace(/\/+$/, '')}/rest/v1`)
   const table: UserConstraintRow[] = [...(options.rows ?? [])]
-  const seen: { method: string; path: string }[] = []
+  const seen: { method: string; path: string; query: string }[] = []
   let sequence = 0
 
   const fetchImpl: typeof globalThis.fetch = async (input, init) => {
@@ -62,7 +62,7 @@ export function createPostgrestDouble(
     const method = init?.method ?? 'GET'
     const path = url.pathname.slice(base.pathname.length)
 
-    seen.push({ method, path })
+    seen.push({ method, path, query: url.searchParams.toString() })
 
     const headers = new Headers(init?.headers)
     if (headers.get('apikey') !== options.anonKey) {
@@ -97,6 +97,15 @@ export function createPostgrestDouble(
     caller: string,
     headers: Headers,
   ): Response {
+    // PostgREST takes one object or an array of them, and answers an array
+    // either way. The shared client (DATA-03) always sends the array form.
+    if (Array.isArray(payload)) {
+      if (payload.length !== 1) {
+        return problem(400, 'PGRST102', 'this double inserts one row at a time')
+      }
+      return insert(payload[0], caller, headers)
+    }
+
     const row = payload as Partial<UserConstraintRow>
 
     if (
