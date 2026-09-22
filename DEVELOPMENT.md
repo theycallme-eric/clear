@@ -83,7 +83,56 @@ the recovery is documented because "rare" is not "never".
 | `npm run dev` | preflight, then Vite with hot reload |
 | `npm test` / `npm run test:watch` | the Vitest suite, once / on save |
 | `npm run lint` · `npm run lint:ds` | ESLint · the DS-08 adherence gate |
+| `npm run gen:types` | regenerate `src/data/database.types.ts` from the migrations |
 | `npm run build` | `tsc --noEmit` then the production build |
+
+## The database, in TypeScript
+
+Everything in `src/` that reads or writes the database goes through the typed
+client in `src/data/supabase.ts`, and every type it uses comes from
+`src/data/database.types.ts`, which is **generated and must not be edited**.
+
+```sh
+npm run gen:types              # rewrite src/data/database.types.ts
+npm run gen:types -- --check   # prove it is current, writing nothing
+```
+
+Change a migration, run `npm run gen:types`, and commit the two together. The
+enums the rebuild introduced — `session_focus`, `movement_pattern`,
+`target_kind`, `revision_status`, `execution_status`, `distance_unit` — arrive
+this way and nowhere else; a hand-maintained copy of a vocabulary is the drift
+this command exists to prevent.
+
+### Drift fails CI
+
+`npm run gen:types -- --check` runs in the **Lint** job on every pull request,
+and `src/test/generated-types.test.ts` asks the same question in the **Test**
+job. Either one fails if the committed types are not byte-identical to what the
+migrations produce, with the same fix in both cases:
+
+```
+FAILED — src/data/database.types.ts is not what the migrations produce.
+
+The committed types and supabase/migrations/ have drifted apart.
+Run `npm run gen:types` and commit the result.
+```
+
+### Why it reads SQL rather than asking the project
+
+`supabase gen types` asks a running database what it holds. The reused project
+still holds the *previous* schema: `docs/backend/live-inventory.md` holds every
+push behind the off-machine-backup gate until `TASK-072`, so asking it today
+would generate types for the schema this rebuild replaces. The generator
+therefore reads the same migration SQL the CLI would apply — offline, opening no
+connection and reading no credential. `supabase/migrations/` is the source of
+truth for what the schema *is*; the live project is the source of truth for what
+has been *applied*, and those stay different questions until the gate clears.
+
+Two things it deliberately does not type: table relationships, because a join is
+spelled in the select string rather than inferred, and views, whose column types
+come from the planner rather than from their SQL text. Views are named in
+`ViewName` so that one added later fails the check instead of arriving
+unnoticed; the issue that first reads a view declares its row.
 
 ## Deployment
 
