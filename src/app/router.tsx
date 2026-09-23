@@ -7,6 +7,7 @@ import {
 
 import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
+import { Protected, PublicOnly } from './guards'
 import { Login } from './Login'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
@@ -56,11 +57,38 @@ export const routes: RouteObject[] = [
       {
         element: <AppChrome />,
         children: [
-          { path: '/', element: <AppShell /> },
-          // AUTH-02's two public-only screens. Each carries its own guard for
-          // now; AUTH-03 lifts that to the route tree.
-          { path: '/welcome', element: <Welcome /> },
-          { path: '/login', element: <Login /> },
+          // AUTH-03 — the guard is the route's, not the screen's. IA.md §1
+          // calls that out explicitly: whether a visitor may see a screen is a
+          // property of the route they asked for, so a screen cannot forget to
+          // ask, and a reader can see the whole guard map in one place.
+          //
+          // `/onboarding` is absent on purpose. ONB-01 (M2) owns it, and until
+          // it exists `Protected` renders `AccountSetupPending` rather than
+          // redirecting anyone to a path that answers Not Found.
+          {
+            path: '/',
+            element: (
+              <Protected title="CLEAR">
+                <AppShell />
+              </Protected>
+            ),
+          },
+          {
+            path: '/welcome',
+            element: (
+              <PublicOnly title="Welcome">
+                <Welcome />
+              </PublicOnly>
+            ),
+          },
+          {
+            path: '/login',
+            element: (
+              <PublicOnly title="Sign in">
+                <Login />
+              </PublicOnly>
+            ),
+          },
           ...devRoutes,
           { path: '*', element: <NotFound /> },
         ],
