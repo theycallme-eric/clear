@@ -18,8 +18,9 @@
  *      attached to it rather than being a dead control.
  *
  * The four states (CORE-04), for a screen whose data is a form:
- *   · loading — the session restore, owned by `PublicOnly`, rendered as the
- *     shared `LoadingView`; and the in-flight submit, which is scoped to the
+ *   · loading — the session restore, owned by the route's `PublicOnly` guard
+ *     and rendered as the shared `LoadingView`; and the in-flight submit,
+ *     which is scoped to the
  *     control that started it (`Button loading` — the export's stepped
  *     indicator, aria-busy, activation blocked) rather than to the whole
  *     screen, because replacing a filled-in form with a loading panel loses
@@ -41,7 +42,6 @@ import { AlertCircle, AppHeader, Button, ClearLogo, Input } from '../design-syst
 import { useCountdown } from '../state/cooldown'
 import { useSignInClients } from '../state/sign-in-context'
 import { Card } from '../ui/card'
-import { PublicOnly } from './PublicOnly'
 import { Screen } from './Screen'
 
 /**
@@ -56,11 +56,7 @@ type Step = 'request' | 'verify'
 type Busy = 'sending' | 'verifying' | null
 
 export function Login() {
-  return (
-    <PublicOnly title="Sign in">
-      <LoginScreen />
-    </PublicOnly>
-  )
+  return <LoginScreen />
 }
 
 function LoginScreen() {
@@ -140,7 +136,7 @@ function LoginScreen() {
       }
 
       // The session goes to the client `AuthProvider` subscribed to; the
-      // provider flips to `authenticated` and `PublicOnly` leaves this screen.
+      // provider flips to `authenticated` and the route guard leaves this screen.
       auth.setSession(verified.value)
     })()
   }

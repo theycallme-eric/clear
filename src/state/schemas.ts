@@ -384,6 +384,13 @@ export const locationSchema = z.object({
 })
 
 /**
+ * What a `locations` read answers (AUTH-03). A user with no locations is a
+ * valid answer — an empty array, never a missing one — so the list is the
+ * parsed shape rather than something a caller assembles row by row.
+ */
+export const locationListSchema = z.array(locationSchema)
+
+/**
  * `user_constraints` (DATA-05 §2), discriminated on `scope`, which is how the
  * table's two target CHECKs — exactly one target, and it is the one the scope
  * names — become a shape rather than a runtime assertion. There is no
