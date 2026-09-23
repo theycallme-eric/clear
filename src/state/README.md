@@ -9,6 +9,13 @@ Client state machines, query hooks, and cross-screen state coordination belong h
 - `schemas.ts` (CORE-03) — the runtime-neutral boundary contract for generation envelopes,
   contract 4.1.0 output, and the row shapes `src/data/` reads. A future edge function must import
   this same source rather than restating the schemas in Deno.
+- `session-machine.ts` (SES-01a) — the session lifecycle as four states and three events,
+  pure. State is derived from the row's three timestamps, exactly as `session_state(...)` does in
+  SQL, so there is no status column and no client-side copy to fall out of step with it. Abandoning
+  is a state here for the same reason it is a column there: it is reachable from both non-terminal
+  states and it is terminal, which is what a delete would not have been. `resumePoint` is the other
+  half of a hard refresh — the first unfinished prescription and the set number the next log
+  carries, recomputed from what is written rather than remembered.
 - `toasts.ts` (DS-05) — the root toast queue; `src/ui/toast-host.tsx` renders it.
 - `view-state.ts` (CORE-04) — the four-state contract every data-driven view implements.
 - `auth-context.ts` / `auth-provider.tsx` (AUTH-01) — the session context. The context file holds

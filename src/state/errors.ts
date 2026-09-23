@@ -10,6 +10,7 @@
  * - NETWORK_*: Connectivity and transport failures
  * - VALIDATION_*: Input validation failures
  * - GENERATION_*: Workout generation failures
+ * - SESSION_*: Workout session lifecycle refusals
  * - PERSISTENCE_*: Data storage failures
  */
 
@@ -48,6 +49,23 @@ export const ErrorCode = {
   GENERATION_TIMEOUT: 'GENERATION_TIMEOUT',
   GENERATION_INVALID_PARAMS: 'GENERATION_INVALID_PARAMS',
   GENERATION_MODEL_ERROR: 'GENERATION_MODEL_ERROR',
+
+  // Session lifecycle errors
+  /**
+   * SES-01a. A user may have one session running at a time, and starting a
+   * second is refused rather than queued. It is its own code because the only
+   * useful response is about the *other* session — finish it or abandon it —
+   * and `PERSISTENCE_CONFLICT` ("refresh and try again") would send the user
+   * around a loop that cannot end.
+   */
+  SESSION_ALREADY_ACTIVE: 'SESSION_ALREADY_ACTIVE',
+  /**
+   * SES-01a. The transition is not one this state admits — completing a
+   * session that was never started, starting an abandoned one. Distinct from a
+   * validation failure: nothing about the request was malformed, it simply
+   * arrived after the state moved on.
+   */
+  SESSION_INVALID_TRANSITION: 'SESSION_INVALID_TRANSITION',
 
   // Persistence errors
   PERSISTENCE_NOT_FOUND: 'PERSISTENCE_NOT_FOUND',
@@ -156,6 +174,10 @@ const errorMessages: Record<ErrorCode, string> = {
     'Generation took too long. Try simpler options.',
   [ErrorCode.GENERATION_INVALID_PARAMS]: 'Invalid generation parameters.',
   [ErrorCode.GENERATION_MODEL_ERROR]: 'Generation service error. Try again.',
+
+  // Session
+  [ErrorCode.SESSION_ALREADY_ACTIVE]: 'A workout is already in progress.',
+  [ErrorCode.SESSION_INVALID_TRANSITION]: 'This workout has already moved on.',
 
   // Persistence
   [ErrorCode.PERSISTENCE_NOT_FOUND]: 'Not found.',
