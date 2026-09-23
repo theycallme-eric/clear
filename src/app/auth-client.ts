@@ -21,7 +21,8 @@ import {
 } from '../data/auth'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
-import { err, ok, type Result } from '../state/errors'
+import { createUserDataClient, type UserDataClient } from '../data/user-data'
+import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
 import { createLogger } from '../state/logger'
 
 const logger = createLogger({ scope: 'app.auth-client' })
@@ -62,9 +63,35 @@ function unconfiguredOtpClient(): OtpClient {
   }
 }
 
+/** AUTH-03's reads, for a build that cannot reach the project at all. */
+function unconfiguredUserDataClient(): UserDataClient {
+  const failure = () =>
+    err(
+      createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
+  return {
+    async profile() {
+      return failure()
+    },
+    async locations() {
+      return failure()
+    },
+  }
+}
+
 interface Clients {
   readonly auth: AuthClient
   readonly otp: OtpClient
+  /**
+   * AUTH-03's profile and locations reads. Built here rather than beside the
+   * query cache because it needs the same `auth` object the provider
+   * subscribed to — the access token it presents has to be the live one, and
+   * `auth.ts` is the only thing that knows when that token rotated.
+   */
+  readonly userData: UserDataClient
 }
 
 let clients: Clients | null = null
@@ -84,13 +111,20 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       code: config.error.code,
       details: config.error.details,
     })
-    clients = { auth: unconfiguredAuthClient(), otp: unconfiguredOtpClient() }
+    clients = {
+      auth: unconfiguredAuthClient(),
+      otp: unconfiguredOtpClient(),
+      userData: unconfiguredUserDataClient(),
+    }
     return clients
   }
 
+  const auth = createAuthClient(config.value)
+
   clients = {
-    auth: createAuthClient(config.value),
+    auth,
     otp: createOtpClient(config.value),
+    userData: createUserDataClient({ auth, supabase: config.value }),
   }
   return clients
 }
