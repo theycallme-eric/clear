@@ -66,6 +66,17 @@ describe('OTP login — requesting a code', () => {
     expect(otp.requests).toEqual([])
   })
 
+  it('puts the caret back on the address it refused (CORE-05)', async () => {
+    const user = userEvent.setup()
+    mount(createFakeOtpClient())
+
+    await user.type(emailField(), 'lifter@example')
+    // Submitted from the button, so focus is on the button, not the field.
+    await user.click(screen.getByRole('button', { name: 'Send code' }))
+
+    expect(emailField()).toHaveFocus()
+  })
+
   it('moves to the code step and says so politely', async () => {
     const user = userEvent.setup()
     const { otp } = mount(createFakeOtpClient())
@@ -138,6 +149,24 @@ describe('OTP login — verifying a code', () => {
     // The field that was wrong says so, and the user can try again in place.
     expect(codeField()).toHaveAttribute('aria-invalid', 'true')
     expect(otp.verifications).toEqual([{ email: EMAIL, code: '000000' }])
+  })
+
+  it('returns focus to the code the server rejected (CORE-05)', async () => {
+    const user = userEvent.setup()
+    mount(
+      createFakeOtpClient({
+        verifyCode: async () =>
+          err(otpError('invalid-code', { status: 401, errorCode: null })),
+      }),
+    )
+
+    await requestCode(user)
+    await user.type(codeField(), '000000')
+    await user.click(screen.getByRole('button', { name: 'Verify' }))
+
+    // A failure the server decided is still a submit failure: the caret goes
+    // back to the field that has to change, not to the alert or the button.
+    await waitFor(() => expect(codeField()).toHaveFocus())
   })
 
   it('distinguishes an expired code, and offers a new one', async () => {

@@ -18,8 +18,9 @@
  *      attached to it rather than being a dead control.
  *
  * The four states (CORE-04), for a screen whose data is a form:
- *   · loading — the session restore, owned by `PublicOnly`, rendered as the
- *     shared `LoadingView`; and the in-flight submit, which is scoped to the
+ *   · loading — the session restore, owned by the route's `PublicOnly` guard
+ *     and rendered as the shared `LoadingView`; and the in-flight submit,
+ *     which is scoped to the
  *     control that started it (`Button loading` — the export's stepped
  *     indicator, aria-busy, activation blocked) rather than to the whole
  *     screen, because replacing a filled-in form with a loading panel loses
@@ -33,7 +34,7 @@
  * remounts it and the animation runs once); validation and failure text sits
  * outside that subtree and appears with no entrance animation, per IA.md §4.
  */
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import type { OtpError } from '../data/otp'
 import { isCodeLike, isEmailLike, otpError } from '../data/otp'
@@ -41,7 +42,7 @@ import { AlertCircle, AppHeader, Button, ClearLogo, Input } from '../design-syst
 import { useCountdown } from '../state/cooldown'
 import { useSignInClients } from '../state/sign-in-context'
 import { Card } from '../ui/card'
-import { PublicOnly } from './PublicOnly'
+import { useInvalidFocus } from '../ui/formFocus'
 import { Screen } from './Screen'
 
 /**
@@ -56,11 +57,7 @@ type Step = 'request' | 'verify'
 type Busy = 'sending' | 'verifying' | null
 
 export function Login() {
-  return (
-    <PublicOnly title="Sign in">
-      <LoginScreen />
-    </PublicOnly>
-  )
+  return <LoginScreen />
 }
 
 function LoginScreen() {
@@ -76,13 +73,19 @@ function LoginScreen() {
 
   const codeRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
 
+  // CORE-05: both steps submit through the shared helper, so a rejected
+  // address or code puts the caret back on the field that was rejected —
+  // whether this screen refused it or the server did. One instance serves both
+  // steps: only one of the two forms is mounted at a time.
+  const onSubmit = useInvalidFocus()
+
   // The code has arrived somewhere else entirely; the least this screen can do
   // is have the caret waiting in the right field when the user comes back.
   useEffect(() => {
     if (step === 'verify') codeRef.current?.focus()
   }, [step])
 
-  async function sendCode(address: string) {
+  async function sendCode(address: string): Promise<boolean> {
     setBusy('sending')
     setError(null)
     const sent = await otp.requestCode(address)
@@ -96,22 +99,22 @@ function LoginScreen() {
       if (sent.error.failure === 'rate-limited') {
         cooldown.start(RESEND_COOLDOWN_SECONDS)
       }
-      return
+      return false
     }
 
     setNotice(`Code sent to ${address}. It expires in a few minutes.`)
     setStep('verify')
     cooldown.start(RESEND_COOLDOWN_SECONDS)
+    return true
   }
 
-  function onRequest(event: FormEvent) {
-    event.preventDefault()
+  function onRequest(): boolean | Promise<boolean> {
     const address = email.trim()
     if (!isEmailLike(address)) {
       setError(otpError('invalid-email'))
-      return
+      return false
     }
-    void sendCode(address)
+    return sendCode(address)
   }
 
   function onResend() {
@@ -120,15 +123,14 @@ function LoginScreen() {
     void sendCode(email.trim())
   }
 
-  function onVerify(event: FormEvent) {
-    event.preventDefault()
+  function onVerify(): boolean | Promise<boolean> {
     const digits = code.trim()
     if (!isCodeLike(digits)) {
       setError(otpError('invalid-code'))
-      return
+      return false
     }
 
-    void (async () => {
+    return (async () => {
       setBusy('verifying')
       setError(null)
       const verified = await otp.verifyCode(email.trim(), digits)
@@ -136,12 +138,13 @@ function LoginScreen() {
 
       if (!verified.ok) {
         setError(verified.error)
-        return
+        return false
       }
 
       // The session goes to the client `AuthProvider` subscribed to; the
-      // provider flips to `authenticated` and `PublicOnly` leaves this screen.
+      // provider flips to `authenticated` and the route guard leaves this screen.
       auth.setSession(verified.value)
+      return true
     })()
   }
 
@@ -189,7 +192,11 @@ function LoginScreen() {
 
             <div key={step} className="clr-interlace clr-stack">
               {step === 'request' ? (
-                <form className="clr-stack" onSubmit={onRequest} noValidate>
+                <form
+                  className="clr-stack"
+                  onSubmit={onSubmit(onRequest)}
+                  noValidate
+                >
                   <Input
                     label="Email"
                     type="email"
@@ -212,7 +219,11 @@ function LoginScreen() {
                   </Button>
                 </form>
               ) : (
-                <form className="clr-stack" onSubmit={onVerify} noValidate>
+                <form
+                  className="clr-stack"
+                  onSubmit={onSubmit(onVerify)}
+                  noValidate
+                >
                   <Input
                     label="Code"
                     type="text"

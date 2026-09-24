@@ -2,13 +2,17 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
-import { renderApp } from '../test/render'
+import { renderApp, signedIn } from '../test/render'
 
+// Every case here is about the chrome above the route, but it needs a route
+// under it that actually renders. `/` became protected with AUTH-03, so the
+// visitor has to be signed in or the screen these assertions describe is
+// `/welcome` instead of Home.
 describe('AppChrome (CORE-05)', () => {
   describe('skip link', () => {
     it('is first in tab order and visible only on focus', async () => {
       const user = userEvent.setup()
-      renderApp(['/'])
+      renderApp(['/'], signedIn())
 
       await user.tab()
 
@@ -20,7 +24,7 @@ describe('AppChrome (CORE-05)', () => {
 
     it('moves focus to the main landmark when activated', async () => {
       const user = userEvent.setup()
-      renderApp(['/'])
+      renderApp(['/'], signedIn())
 
       await user.tab()
       await user.keyboard('{Enter}')
@@ -31,7 +35,7 @@ describe('AppChrome (CORE-05)', () => {
 
   describe('route-change focus and announcement', () => {
     it('leaves focus and the live region alone on initial load', () => {
-      renderApp(['/'])
+      renderApp(['/'], signedIn())
 
       expect(document.body).toHaveFocus()
       expect(screen.getByRole('status')).toBeEmptyDOMElement()
@@ -39,7 +43,7 @@ describe('AppChrome (CORE-05)', () => {
 
     it('focuses the new h1 and announces the screen exactly once on navigation', async () => {
       const user = userEvent.setup()
-      renderApp(['/missing'])
+      renderApp(['/missing'], signedIn())
 
       expect(screen.getByRole('status')).toBeEmptyDOMElement()
 
@@ -56,7 +60,7 @@ describe('AppChrome (CORE-05)', () => {
 
     it('updates the document title on navigation', async () => {
       const user = userEvent.setup()
-      renderApp(['/missing'])
+      renderApp(['/missing'], signedIn())
 
       expect(document.title).toBe('Page not found · CLEAR')
 

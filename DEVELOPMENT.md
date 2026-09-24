@@ -187,9 +187,13 @@ ever grows a real-looking value or a `VITE_`-prefixed server secret.
 
 ## Reviewing a UI issue
 
-Automated checks (unit tests today, `axe-core` in the E2E suite once ENV-07
-lands) catch roughly a third of real accessibility problems. They are the
-floor. Reviewing any UI issue includes two manual passes:
+Automated checks — the unit suite, and `axe-core` against every screen the E2E
+suite visits — catch roughly a third of real accessibility problems. They are
+the floor, and they are not the review.
+
+**A UI issue is not reviewed until both passes below have been done and what
+they found is written in the pull request.** Green checks with neither pass
+recorded is an unreviewed change. Both are quick: a screen is a few minutes.
 
 ### The keyboard-only pass
 
@@ -202,7 +206,10 @@ Put the mouse away and drive the whole change with the keyboard.
   border, everything else its outline.
 - After navigating, focus lands on the new screen's `<h1>`, never back at the
   browser chrome.
-- Submitting an invalid form moves focus to the first invalid control.
+- Submitting an invalid form moves focus to the first invalid control — from
+  the shared helper (`useInvalidFocus` in `src/ui/formFocus.ts`), which is how
+  every form in the app submits. A form that re-implements this fails the unit
+  suite.
 - **Esc** closes any dialog and never confirms. Nothing traps focus except an
   open dialog.
 
@@ -219,6 +226,18 @@ VoiceOver (macOS: ⌘F5) is the reference. Walk the change end to end.
   invalid, expanded). Errors are read when they appear; only a destructive
   failure interrupts.
 - Nothing meaningful is conveyed by colour or position alone.
+
+### Reduced motion, while you are there
+
+Turn the preference on (macOS: **System Settings → Accessibility → Display →
+Reduce motion**; or in DevTools, *Rendering → Emulate CSS
+prefers-reduced-motion*) and load the change again.
+
+Everything must arrive **already finished**: no content missing because its
+entrance was silenced, and nothing that has to be waited out before it can be
+used. `e2e/reduced-motion.spec.ts` asserts this per screen and
+`src/styles/reduced-motion.test.ts` holds the stylesheets to it, but only a
+person notices the thing that is simply not there any more.
 
 ## Testing
 

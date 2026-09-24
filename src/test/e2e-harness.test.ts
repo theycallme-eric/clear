@@ -257,4 +257,39 @@ describe('axe-core runs against every screen the suite visits (CORE-05)', () => 
     expect(fixtures).toContain('await page.goto(path)')
     expect(fixtures).toContain('await checkA11y()')
   })
+
+  it('fails the run on a violation rather than reporting it', () => {
+    const fixtures = read('e2e/fixtures.ts')
+
+    // The attachment is for diagnosis; the assertion is what fails the build.
+    expect(fixtures).toContain('results.violations')
+    expect(fixtures).toMatch(/expect\([\s\S]*violations[\s\S]*\)\s*\.toEqual\(\[\]\)/)
+  })
+
+  /**
+   * The fixture guarantees that every *visited* screen is scanned. Nothing in
+   * the E2E suite can guarantee that every screen is visited — that is a fact
+   * about the route table, so it is checked here, against the route table.
+   */
+  it('visits every screen the router can render', () => {
+    const router = read('src/app/router.tsx')
+    const routes = [...router.matchAll(/path:\s*'([^']+)'/g)]
+      .map((match) => match[1])
+      // DS-07's gallery is development-only and is not a product screen.
+      .filter((path) => !path.startsWith('dev/'))
+
+    const screens = read('e2e/screens.ts')
+    const covered = [...screens.matchAll(/route:\s*'([^']+)'/g)].map(
+      (match) => match[1],
+    )
+
+    expect(routes.length).toBeGreaterThan(0)
+    expect([...covered].sort()).toEqual([...routes].sort())
+  })
+
+  it('walks that list from the specs rather than restating it', () => {
+    for (const spec of ['e2e/app-shell.spec.ts', 'e2e/reduced-motion.spec.ts']) {
+      expect(read(spec)).toContain("from './screens'")
+    }
+  })
 })

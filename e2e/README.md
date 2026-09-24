@@ -172,6 +172,19 @@ migration never enabled row-level security.
 There is no `page.goto` in any spec. The `visit` fixture navigates **and** runs
 `axe-core`, so a screen cannot be reached without being scanned, and
 `src/test/e2e-harness.test.ts` fails if a spec reaches for the bare navigation.
+A violation fails the run; the offending rules and nodes are attached to the
+report as JSON so the failure says *which*, not "expected 0, got 3".
+
+**Which screens get scanned is `screens.ts`.** It is the one list, walked by
+`app-shell.spec.ts` and `reduced-motion.spec.ts`, and the unit suite compares it
+against the route table in `src/app/router.tsx` — so a screen added to the app
+and not to that list fails CI before anyone has to remember it. Adding a screen
+is adding a line there.
+
+`reduced-motion.spec.ts` runs the same list with `prefers-reduced-motion: reduce`
+emulated and asserts the screen arrives already finished: nothing still
+animating, nothing blanked by a silenced entrance, nothing to wait out before
+the screen can be used (CORE-05).
 
 ## When something fails
 
