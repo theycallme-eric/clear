@@ -30,6 +30,12 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   shape, the parse of the `jsonb` candidate list, and the typed empty-set failure —
   `GENERATION_NO_CANDIDATES`, naming the sections that resolved to nothing. One RPC per request,
   and no model call anywhere in the path.
+- `streak.ts` (SES-01c) — the streak query: the completed sessions `streak_sessions(...)` returns,
+  newest first, and `src/state/streak.ts` derives the count from. It owns the three things between
+  the rows and the derivation — the time zone resolved once when the client is made, the cursor
+  that reads the page before when a run reaches the oldest row it was given, and the typed failure
+  that keeps a read which did not happen from rendering as a streak of zero. Nothing is cached and
+  nothing is written back; there is no streak column to write it to.
 - `constraint-selectors.ts` (DATA-05) — pure reads over a constraint set the server returned.
   Deterministic filtering is SQL's (`constraints_in_force`, `usable_equipment`); these mirror it for
   rendering, and where they disagree with the database, the database is right.

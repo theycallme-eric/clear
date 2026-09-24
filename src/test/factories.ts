@@ -12,6 +12,7 @@ import {
   type Prescription,
   type SessionAcceptance,
   type WorkoutBlock,
+  type WorkoutSessionRow,
 } from '../state/schemas'
 
 export function makeAppError(overrides: Partial<AppError> = {}): AppError {
@@ -98,6 +99,48 @@ export function makeGenerationOutput(
       },
     ],
     estimated_duration_mins: 45,
+    ...overrides,
+  }
+}
+
+/**
+ * A persisted `workout_sessions` row, completed. The defaults describe the
+ * ordinary case a streak is derived from (SES-01c); a test that needs a
+ * prescribed, active or abandoned session overrides the timestamps, which is
+ * the only thing that decides a session's state (SES-01a).
+ */
+export function makeSessionRow(
+  overrides: Partial<WorkoutSessionRow> = {},
+): WorkoutSessionRow {
+  const completedAt = overrides.completed_at ?? '2026-09-22T18:30:00.000Z'
+
+  return {
+    id: 'b0000001-0000-4000-8000-000000000000',
+    user_id: 'a0000001-0000-4000-8000-000000000000',
+    location_id: null,
+    created_at: '2026-09-22T17:00:00.000Z',
+    updated_at: '2026-09-22T17:00:00.000Z',
+    date: '2026-09-22',
+    title: 'Lower-body strength',
+    overview: null,
+    session_focus: 'lower_body',
+    goal_preset: null,
+    requested_duration_mins: 45,
+    effective_duration_target_mins: 45,
+    computed_duration_mins: null,
+    actual_duration_mins: 42,
+    requested_intensity: 7,
+    effective_intensity: 7,
+    adjustment_reason: null,
+    generation_notes: null,
+    prompt_version: 'p-1.0.0',
+    contract_version: CONTRACT_VERSION,
+    started_at: completedAt,
+    completed_at: completedAt,
+    abandoned_at: null,
+    mood: null,
+    session_notes: null,
+    counts_for_streak: true,
     ...overrides,
   }
 }
