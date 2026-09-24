@@ -246,6 +246,8 @@ describe('the seam outside the shell', () => {
             identity: { label: 'EMOM', detail: null, repScheme: null, glyph: 'Stopwatch' },
             status: 'not_started',
             exerciseCount: 1,
+            exercises: [],
+            roundRestSeconds: null,
           }}
           outcome={{}}
         />,

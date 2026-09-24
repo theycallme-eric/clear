@@ -39,6 +39,8 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
+import { SetLoggingProvider } from '../state/set-logging-provider'
+import { useProfileQuery } from '../state/user-queries'
 import type { AppError } from '../state/errors'
 import { isErr } from '../state/errors'
 import type { SessionSnapshot } from '../state/schemas'
@@ -192,6 +194,21 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     [progress.sections],
   )
 
+  /**
+   * Every active prescription in the session, which is what a logged set is
+   * attributed to. Taken from the same derivation as the blocks, so a set can
+   * only be written against an exercise the user is actually performing.
+   */
+  const exercises = useMemo(() => blocks.flatMap((block) => block.exercises), [blocks])
+
+  // The unit every set this session writes is stamped with. `weight_unit` is
+  // NOT NULL on the row and is the profile's *at write time*; with no profile
+  // in hand there is nothing to stamp, and the provider refuses the set rather
+  // than guessing between kilograms and pounds.
+  const profile = useProfileQuery()
+  const weightUnit =
+    profile.state.status === 'ready' ? (profile.state.data?.weight_unit ?? null) : null
+
   // Set synchronously, because the blocker is consulted during the navigation
   // this handler starts — a state flag would still be false when it is read.
   const leaving = useRef(false)
@@ -286,74 +303,85 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     // question and the `block_results` write belong to it, for every structure
     // type, and to no renderer inside it.
     <BlockCompletionProvider blocks={blocks} onFailure={setFailure}>
-      <AppHeader
-        meta={<GlobalTimer seconds={seconds} />}
-        actions={
-          <Button
-            variant="quiet"
-            icon={<LogOut />}
-            onClick={() => setAskedToExit(true)}
-          >
-            Abandon
-          </Button>
-        }
+      {/*
+        The other write execution produces, on the same terms: one path, one
+        row per set, written at log time, and the same error surface. A
+        renderer reaches it through `useSetLogging` and never sees the client.
+      */}
+      <SetLoggingProvider
+        exercises={exercises}
+        weightUnit={weightUnit}
+        onFailure={setFailure}
       >
-        <ClearLogo size="sm" />
-      </AppHeader>
+        <AppHeader
+          meta={<GlobalTimer seconds={seconds} />}
+          actions={
+            <Button
+              variant="quiet"
+              icon={<LogOut />}
+              onClick={() => setAskedToExit(true)}
+            >
+              Abandon
+            </Button>
+          }
+        >
+          <ClearLogo size="sm" />
+        </AppHeader>
 
-      <Screen title={SCREEN_TITLE}>
-        <div className="clr-stack">
-          <ProgressTracker
-            progress={progress}
-            currentIndex={index}
-            onSelect={section.setIndex}
+        <Screen title={SCREEN_TITLE}>
+          <div className="clr-stack">
+            <ProgressTracker
+              progress={progress}
+              currentIndex={index}
+              onSelect={section.setIndex}
+            />
+
+            {current === undefined ? null : (
+              <>
+                <SectionHeader
+                  section={current}
+                  position={index + 1}
+                  total={progress.total}
+                />
+                {current.blocks.map((block) => (
+                  <BlockSlot key={block.blockId} block={block} />
+                ))}
+              </>
+            )}
+
+            <WorkoutNavigation
+              canGoBack={canGoBack}
+              canGoForward={canGoForward}
+              onPrevious={() => section.setIndex(index - 1)}
+              onNext={() => section.setIndex(index + 1)}
+              onFinish={() => void finish()}
+              busy={ending}
+            />
+          </div>
+        </Screen>
+
+        <ConfirmDialog
+          open={exiting}
+          critical
+          title="Abandon workout?"
+          confirmLabel="Abandon"
+          cancelLabel="Keep going"
+          onConfirm={() => void confirmAbandon()}
+          onCancel={cancelExit}
+        >
+          Everything logged so far is kept, and the workout stops here. It stays on
+          Home, where you can see what you did.
+        </ConfirmDialog>
+
+        {failure !== null && (
+          <ErrorDialog
+            open
+            error={failure}
+            title="That didn’t save"
+            onDismiss={() => setFailure(null)}
           />
-
-          {current === undefined ? null : (
-            <>
-              <SectionHeader
-                section={current}
-                position={index + 1}
-                total={progress.total}
-              />
-              {current.blocks.map((block) => (
-                <BlockSlot key={block.blockId} block={block} />
-              ))}
-            </>
-          )}
-
-          <WorkoutNavigation
-            canGoBack={canGoBack}
-            canGoForward={canGoForward}
-            onPrevious={() => section.setIndex(index - 1)}
-            onNext={() => section.setIndex(index + 1)}
-            onFinish={() => void finish()}
-            busy={ending}
-          />
-        </div>
-      </Screen>
-
-      <ConfirmDialog
-        open={exiting}
-        critical
-        title="Abandon workout?"
-        confirmLabel="Abandon"
-        cancelLabel="Keep going"
-        onConfirm={() => void confirmAbandon()}
-        onCancel={cancelExit}
-      >
-        Everything logged so far is kept, and the workout stops here. It stays on
-        Home, where you can see what you did.
-      </ConfirmDialog>
-
-      {failure !== null && (
-        <ErrorDialog
-          open
-          error={failure}
-          title="That didn’t save"
-          onDismiss={() => setFailure(null)}
-        />
-      )}
+        )}
+      </SetLoggingProvider>
     </BlockCompletionProvider>
   )
 }
