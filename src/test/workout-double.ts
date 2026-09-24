@@ -11,6 +11,7 @@
  */
 import type {
   BlockResultRow,
+  ExerciseDefinitionRow,
   ExerciseSetLogRow,
   SessionSnapshot,
   WorkoutBlockRow,
@@ -20,7 +21,8 @@ import type {
 } from '../state/schemas'
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
-import { ok, type Result } from '../state/errors'
+import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
+import type { ExercisesClient } from '../data/exercises'
 import type { HistoryClient } from '../data/history'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
@@ -265,6 +267,13 @@ export interface WorkoutDoubleOptions {
   blockResults?: Partial<BlockResultsClient>
   history?: Partial<HistoryClient>
   setLogs?: Partial<SetLogsClient>
+  exercises?: Partial<ExercisesClient>
+  /**
+   * What the catalog answers, by slug (EXE-05). A slug that is not here answers
+   * `null` — the library has no definition for it — rather than throwing, so a
+   * test that is not about the coaching panel does not have to wire one.
+   */
+  definitions?: Readonly<Record<string, ExerciseDefinitionRow>>
 }
 
 export interface WorkoutDouble {
@@ -276,6 +285,26 @@ export interface WorkoutDouble {
   /** Session ids passed to `abandon` and `complete`. */
   abandoned(): string[]
   completed(): { sessionId: string; minutes?: number }[]
+  /** Every `exercise_notes` write the panel made, in order (EXE-05). */
+  savedNotes(): { exerciseId: string; notes: string | null }[]
+}
+
+/**
+ * A library definition, as `exercise_definitions` holds one. Cues and a
+ * regression by default, because that is the case the coaching panel is for;
+ * a test about the empty one overrides them.
+ */
+export function definitionFixture(
+  overrides: Partial<ExerciseDefinitionRow> = {},
+): ExerciseDefinitionRow {
+  return {
+    id: 'back-squat',
+    name: 'Back squat',
+    coaching_cues: ['Brace before you descend', 'Knees track over the toes'],
+    regression: 'Goblet squat',
+    progression: 'Pause squat',
+    ...overrides,
+  }
 }
 
 function blockResultRow(completion: BlockCompletion): BlockResultRow {
@@ -322,6 +351,7 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   const loggedSets: SetLogEntry[] = []
   const abandoned: string[] = []
   const completed: { sessionId: string; minutes?: number }[] = []
+  const savedNotes: { exerciseId: string; notes: string | null }[] = []
   const session = options.session === undefined ? snapshotFixture() : options.session
 
   const unsupported = <T>(name: string): Promise<Result<T>> => {
@@ -374,11 +404,46 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.setLogs,
   }
 
+  const exercises: ExercisesClient = {
+    async definition(exerciseId) {
+      return ok(options.definitions?.[exerciseId] ?? null)
+    },
+    async saveNotes(workoutExerciseId, notes) {
+      savedNotes.push({ exerciseId: workoutExerciseId, notes })
+
+      const stored = prescriptionIn(session, workoutExerciseId)
+      if (stored === undefined) {
+        // What the real client answers when the update matched nothing: a note
+        // on a prescription that is not in this session is not stored.
+        return err(
+          createError(ErrorCode.PERSISTENCE_WRITE_FAILED, {
+            details: { table: 'workout_exercises', exerciseId: workoutExerciseId },
+          }),
+        )
+      }
+
+      return ok({ ...stored, exercise_notes: notes })
+    },
+    ...options.exercises,
+  }
+
   return {
-    clients: { sessions, blockResults, history, setLogs },
+    clients: { sessions, blockResults, history, setLogs, exercises },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
+    savedNotes: () => [...savedNotes],
   }
+}
+
+/** The prescription row a session holds under this id, if it holds one. */
+function prescriptionIn(
+  snapshot: SessionSnapshot | null,
+  exerciseId: string,
+): WorkoutExerciseRow | undefined {
+  return snapshot?.sections
+    .flatMap((section) => section.blocks)
+    .flatMap((block) => block.exercises)
+    .find((entry) => entry.exercise.id === exerciseId)?.exercise
 }

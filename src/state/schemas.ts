@@ -708,6 +708,28 @@ export const blockResultRowSchema = z.object({
 })
 
 /**
+ * The coaching half of an `exercise_definitions` row (DATA-01a), as EXE-05's
+ * panel reads it.
+ *
+ * Four columns of the catalog's many, because they are the four the panel says:
+ * the library is the one place a cue or a regression is authored, and a screen
+ * that hydrated the rest of the row would be inviting a second copy of facts
+ * that already have an owner (GENERATION_CONTRACT §8).
+ *
+ * `coaching_cues` is `text[] NOT NULL DEFAULT '{}'`, so an empty array is a real
+ * answer — an exercise nobody has written cues for — and never a missing read.
+ * `regression` and `progression` are nullable for the same reason: the easier
+ * variant of a dead hang is not a thing the library claims to know.
+ */
+export const exerciseDefinitionRowSchema = z.object({
+  id: nonBlank,
+  name: nonBlank,
+  coaching_cues: z.array(z.string()),
+  regression: z.string().nullable(),
+  progression: z.string().nullable(),
+})
+
+/**
  * What `session_snapshot` answers: the session as it currently stands, with
  * the sets already logged against each active prescription. Nested rather than
  * four flat lists because the nesting is the structure — a block's members are
@@ -891,6 +913,7 @@ export type WorkoutBlockRow = z.infer<typeof workoutBlockRowSchema>
 export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
 export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
 export type BlockResultRow = z.infer<typeof blockResultRowSchema>
+export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
