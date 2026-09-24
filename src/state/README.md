@@ -16,6 +16,13 @@ Client state machines, query hooks, and cross-screen state coordination belong h
   states and it is terminal, which is what a delete would not have been. `resumePoint` is the other
   half of a hard refresh — the first unfinished prescription and the set number the next log
   carries, recomputed from what is written rather than remembered.
+- `streak.ts` (SES-01c) — consecutive training days, derived. A pure function of session rows and
+  an IANA zone: no column stores a streak, so a deleted or abandoned session changes the answer on
+  the next read with no repair step. The zone is resolved once into one formatter, and days are
+  walked as calendar dates rather than as 24-hour blocks, which is the same distinction one DST
+  boundary later. `StreakPolicy` is the named extension point — HOME-02's pause states and rest-day
+  allowances arrive as a different policy passed to this same function, never as a second
+  derivation beside it.
 - `toasts.ts` (DS-05) — the root toast queue; `src/ui/toast-host.tsx` renders it.
 - `view-state.ts` (CORE-04) — the four-state contract every data-driven view implements.
 - `auth-context.ts` / `auth-provider.tsx` (AUTH-01) — the session context. The context file holds

@@ -474,6 +474,42 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
           )
           return json(200, resumable === undefined ? null : snapshot(resumable.id, caller))
         }
+        case 'streak_sessions': {
+          // SES-01c's read, transcribed from
+          // `supabase/migrations/20260921000006_streak_sessions.sql`: this
+          // user's completed sessions, newest first, one exclusive page at a
+          // time. It counts nothing — `counts_for_streak` is returned for the
+          // client to apply, and RLS makes another user's id return nothing
+          // rather than something.
+          const before = args.p_before as string | null | undefined
+          const limit = Math.min(
+            Math.max(Number(args.p_limit ?? 200), 1),
+            1000,
+          )
+
+          const page = sessions
+            .filter(
+              (row) =>
+                row.user_id === args.p_user_id &&
+                row.user_id === caller &&
+                row.completed_at !== null &&
+                (before === null ||
+                  before === undefined ||
+                  Date.parse(String(row.completed_at)) < Date.parse(before)),
+            )
+            .sort(
+              (a, b) =>
+                Date.parse(String(b.completed_at)) - Date.parse(String(a.completed_at)),
+            )
+            .slice(0, limit)
+            .map((row) => ({
+              session_id: row.id,
+              completed_at: row.completed_at,
+              counts_for_streak: row.counts_for_streak,
+            }))
+
+          return json(200, page)
+        }
         case 'start_session':
           return json(200, transition(args.p_session_id as string, caller, 'start', args))
         case 'complete_session':
