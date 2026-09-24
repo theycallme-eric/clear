@@ -26,6 +26,7 @@ import {
   type AppError,
   type Result,
 } from '../state/errors'
+import type { AuthClient } from './auth'
 import type { Enums, Tables, TablesInsert } from './database.types'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
 
@@ -320,6 +321,67 @@ export function createUserConstraintsClient(
 
     async remove(id) {
       return db.from(TABLE).delete({ id })
+    },
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The app's client
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The same client, over the live session rather than a token captured once.
+ *
+ * `createUserConstraintsClient` takes a configuration that already holds an
+ * access token, which is right for a caller that has one and wrong for the app:
+ * `auth.ts` rotates the token, and a constraints read at boot may happen either
+ * side of an exchange. This is `workout.ts`'s arrangement applied to this
+ * table — the token is asked for per call, and the underlying client is built
+ * from closures and a string, so per-call construction costs nothing measurable
+ * and removes the class of bug where a screen holds a client older than the
+ * session it belongs to.
+ */
+export interface LiveUserConstraintsConfig {
+  /** Asked for the access token per call, so a rotated token is never stale. */
+  readonly auth: Pick<AuthClient, 'getSession'>
+  /** The project, minus the token this module supplies per call. */
+  readonly supabase: Omit<UserConstraintsClientConfig, 'accessToken'>
+}
+
+export function createLiveUserConstraintsClient({
+  auth,
+  supabase,
+}: LiveUserConstraintsConfig): UserConstraintsClient {
+  const clientFor = async (): Promise<Result<UserConstraintsClient>> => {
+    const session = await auth.getSession()
+    if (!session.ok) return session
+    if (session.value === null) {
+      return err(createError(ErrorCode.AUTH_UNAUTHENTICATED))
+    }
+    return ok(
+      createUserConstraintsClient({
+        ...supabase,
+        accessToken: session.value.accessToken,
+      }),
+    )
+  }
+
+  return {
+    async add(constraint) {
+      const client = await clientFor()
+      return client.ok ? client.value.add(constraint) : client
+    },
+    async list(userId) {
+      const client = await clientFor()
+      return client.ok ? client.value.list(userId) : client
+    },
+    async listInForce(userId, sessionId) {
+      const client = await clientFor()
+      return client.ok ? client.value.listInForce(userId, sessionId) : client
+    },
+    async remove(id) {
+      const client = await clientFor()
+      return client.ok ? client.value.remove(id) : client
     },
   }
 }

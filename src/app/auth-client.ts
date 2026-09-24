@@ -19,6 +19,10 @@ import {
   type AuthEvent,
   type AuthSession,
 } from '../data/auth'
+import {
+  createLiveUserConstraintsClient,
+  type UserConstraintsClient,
+} from '../data/constraints'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
 import { createSummaryClient, type SummaryClient } from '../data/summary'
@@ -113,6 +117,31 @@ function unconfiguredSummaryClient(): SummaryClient {
   }
 }
 
+/** DATA-05's reads and writes, for a build that cannot reach the project. */
+function unconfiguredUserConstraintsClient(): UserConstraintsClient {
+  const failure = () =>
+    err(
+      createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
+  return {
+    async add() {
+      return failure()
+    },
+    async list() {
+      return failure()
+    },
+    async listInForce() {
+      return failure()
+    },
+    async remove() {
+      return failure()
+    },
+  }
+}
+
 interface Clients {
   readonly auth: AuthClient
   readonly otp: OtpClient
@@ -135,6 +164,11 @@ interface Clients {
    * the live one, and a workout outlives several of them.
    */
   readonly workout: WorkoutClients
+  /**
+   * DATA-05's constraints, and REQ-057's fourth boot check. Built here for the
+   * same reason the others are: the token it presents has to be the live one.
+   */
+  readonly constraints: UserConstraintsClient
 }
 
 let clients: Clients | null = null
@@ -160,6 +194,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       userData: unconfiguredUserDataClient(),
       summary: unconfiguredSummaryClient(),
       workout: unconfiguredWorkoutClients(),
+      constraints: unconfiguredUserConstraintsClient(),
     }
     return clients
   }
@@ -172,6 +207,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     userData: createUserDataClient({ auth, supabase: config.value }),
     summary: createSummaryClient({ auth, supabase: config.value }),
     workout: createWorkoutClients({ auth, supabase: config.value }),
+    constraints: createLiveUserConstraintsClient({ auth, supabase: config.value }),
   }
   return clients
 }

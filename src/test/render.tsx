@@ -10,11 +10,13 @@ import { MemoryRouter, RouterProvider } from 'react-router-dom'
 import { ErrorBoundary } from '../app/ErrorBoundary'
 import { createTestRouter } from '../app/router'
 import type { AuthClient } from '../data/auth'
+import type { UserConstraintsClient } from '../data/constraints'
 import type { OtpClient } from '../data/otp'
 import type { SummaryClient } from '../data/summary'
 import type { UserDataClient } from '../data/user-data'
 import type { WorkoutClients } from '../data/workout'
 import { AuthProvider } from '../state/auth-provider'
+import { UserConstraintsContext } from '../state/constraint-queries'
 import { QueryClient, QueryClientContext } from '../state/query'
 import { SignInClientsContext } from '../state/sign-in-context'
 import { SummaryContext } from '../state/summary-queries'
@@ -26,6 +28,7 @@ import {
 import { WorkoutClientsContext } from '../state/workout-queries'
 import { ToastHost } from '../ui/toast-host'
 import { createFakeAuthClient, createFakeOtpClient, signedInEvent } from './auth-double'
+import { createFakeConstraintsClient } from './constraints-double'
 import { createFakeSummaryClient } from './summary-double'
 import {
   createFakeUserDataClient,
@@ -52,6 +55,8 @@ export interface ProviderOptions {
    * about the workout shell meets its deep-link prompt.
    */
   workout?: WorkoutClients
+  /** DATA-05's read, which REQ-057's boot check is bound to. Defaults to none. */
+  constraints?: UserConstraintsClient
 }
 
 /**
@@ -95,6 +100,7 @@ export function AppProviders({
   queryClient,
   summary,
   workout,
+  constraints,
 }: ProviderOptions & { children: ReactNode }) {
   // Memoised, not rebuilt per render: the cache *is* the query state, and a
   // fresh one on every render would reset every query the moment one resolved.
@@ -110,6 +116,10 @@ export function AppProviders({
     () => workout ?? createWorkoutDouble({ session: null }).clients,
     [workout],
   )
+  const constraintsClient = useMemo(
+    () => constraints ?? createFakeConstraintsClient(),
+    [constraints],
+  )
 
   return (
     <StrictMode>
@@ -124,7 +134,12 @@ export function AppProviders({
                 {/* Same EXE-01 clients main.tsx mounts */}
                 <WorkoutClientsContext value={workoutClients}>
                   {/* Same SUM-01 client main.tsx builds, over an injected double */}
-                  <SummaryContext value={summaryClient}>{children}</SummaryContext>
+                  <SummaryContext value={summaryClient}>
+                    {/* Same DATA-05 read main.tsx mounts, over an injected double */}
+                    <UserConstraintsContext value={constraintsClient}>
+                      {children}
+                    </UserConstraintsContext>
+                  </SummaryContext>
                 </WorkoutClientsContext>
               </SignInClientsContext>
             </UserDataContext>
