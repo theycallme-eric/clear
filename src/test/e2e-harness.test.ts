@@ -69,6 +69,7 @@ describe('a failure keeps a trace and a screenshot (ENV-07)', () => {
 
 describe('the suite runs locally and in CI (ENV-07)', () => {
   const workflow = read('.github/workflows/e2e.yml')
+  const rlsWorkflow = read('.github/workflows/rls-standing.yml')
 
   it('claims only `e2e/*.spec.ts`, leaving `src/**/*.test.ts` to Vitest', () => {
     expect(playwrightConfig.testDir).toBe('./e2e')
@@ -119,21 +120,24 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     // A file GitHub cannot parse never runs, and it says so on the Actions tab
     // rather than in the pull request that broke it.
     expect(workflow).not.toContain('\t')
+    expect(rlsWorkflow).not.toContain('\t')
     const jobs = workflow.slice(workflow.indexOf('\njobs:'))
+    const rlsJobs = rlsWorkflow.slice(rlsWorkflow.indexOf('\njobs:'))
 
     expect(
       [...jobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
-    ).toEqual(['rls-standing', 'preview-e2e', 'backend-e2e'])
+    ).toEqual(['preview-e2e', 'backend-e2e'])
+    expect(
+      [...rlsJobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
+    ).toEqual(['rls-standing'])
   })
 
   it('re-proves row-level security on every pull request (REQ-007)', () => {
-    const rlsJob = workflow.slice(
-      workflow.indexOf('  rls-standing:'),
-      workflow.indexOf('  preview-e2e:'),
-    )
+    const rlsJob = rlsWorkflow.slice(rlsWorkflow.indexOf('  rls-standing:'))
 
-    expect(workflow).toContain('pull_request:')
-    expect(rlsJob).toContain("github.event_name == 'pull_request'")
+    expect(rlsWorkflow).toContain('pull_request:')
+    expect(rlsWorkflow).not.toContain('deployment_status:')
+    expect(rlsWorkflow).not.toMatch(/^\s+push:$/m)
     expect(rlsJob).toContain('npx playwright test e2e/rls.spec.ts')
     expect(rlsJob).toContain(
       'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
@@ -148,10 +152,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
   })
 
   it('gives each pull request its own namespace, and clears it after', () => {
-    const rlsJob = workflow.slice(
-      workflow.indexOf('  rls-standing:'),
-      workflow.indexOf('  preview-e2e:'),
-    )
+    const rlsJob = rlsWorkflow.slice(rlsWorkflow.indexOf('  rls-standing:'))
 
     expect(rlsJob).toContain(
       'E2E_NAMESPACE: pr-${{ github.event.pull_request.number }}',

@@ -1,0 +1,96 @@
+name: Standing RLS
+
+# REQ-007: cross-user read and write denial on every user-owned table is
+# re-proved before a change can merge rather than after. This lane needs a
+# real database and the service-role key, so its scope is deliberately narrow:
+#
+#   * it runs only for a branch in this repository. A fork receives no secret
+#     from GitHub, so the job skips there while the schema-disposition audit
+#     still runs through `CI`;
+#   * it runs one spec file and starts no browser against untrusted origins;
+#   * each pull request gets its own namespace, so concurrent runs cannot
+#     delete each other's users;
+#   * it resets before and after, including failure, and sweeps namespaces
+#     abandoned by cancelled runs.
+#
+# This is separate from `e2e.yml` so a pull-request event cannot emit skipped
+# rows for the required deployment-triggered Preview E2E context.
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rls-standing-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  rls-standing:
+    name: Standing RLS matrix (mobile)
+    # Two conditions, and the second one is a dependency, not a preference.
+    #
+    #   * Branches in this repository only — see the header. A fork gets no
+    #     secret from GitHub, so there is nothing for this job to run with.
+    #   * `E2E_LIVE_SCHEMA_READY` is the repository variable TASK-072 sets when
+    #     it applies the rebuild's migrations to the reused project. Until
+    #     then the live schema is the previous application's, the fixtures
+    #     cannot be seeded into it, and this job would report a schema gap as
+    #     an RLS failure on every pull request. Unset means skipped, which is
+    #     the safe default; set it to `true` in the same change that pushes
+    #     the migrations, and the standing check starts gating merges with no
+    #     edit to this file.
+    #
+    # The credential-free half of the requirement does not wait for either:
+    # the disposition audit runs in `CI` and again inside this suite, on every
+    # pull request from anywhere.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.E2E_LIVE_SCHEMA_READY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Its own users and its own primary keys, derived from this number. Two
+      # pull requests can be tested at the same moment without either one's
+      # seed deleting the other's users mid-run.
+      E2E_NAMESPACE: pr-${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      # `--stale` also removes harness users abandoned by namespaces that will
+      # never run again — a cancelled job's pull request number does not come
+      # round twice, so nothing else knows their addresses.
+      - name: Start from a clean namespace, and clear abandoned ones
+        run: npm run e2e:reset -- --stale
+
+      - name: Prove cross-user read and write denial on every user table
+        run: npx playwright test e2e/rls.spec.ts --project=mobile
+
+      - name: Leave no persistent test data behind
+        if: always()
+        run: npm run e2e:reset
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-rls-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
