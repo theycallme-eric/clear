@@ -14,6 +14,7 @@
  *   supabase/migrations/20260921000003_execution_domain.sql
  *   supabase/migrations/20260921000004_generation_candidates.sql
  *   supabase/migrations/20260921000005_session_lifecycle.sql
+ *   supabase/migrations/20260921000006_streak_sessions.sql
  */
 
 export type Json =
@@ -693,6 +694,14 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      streak_sessions: {
+        Args: {
+          p_user_id: string
+          p_before?: string | null
+          p_limit?: number | null
+        }
+        Returns: { session_id: string; completed_at: string; counts_for_streak: boolean }[]
       }
       swap_session_exercise: {
         Args: {

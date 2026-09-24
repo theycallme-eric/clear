@@ -686,6 +686,24 @@ export const sessionSnapshotSchema = z.object({
 })
 
 /**
+ * A page of `streak_sessions(...)` (SES-01c): one completed session each, in
+ * the three columns a streak is derived from. `completed_at` is not nullable
+ * here where the row schema has it nullable, because the function's own
+ * `completed_at is not null` means a row that arrives without one is a
+ * malformed read rather than an unfinished session.
+ *
+ * No day, no count, no total: the shape says as plainly as a type can that
+ * the database was asked for sessions and not for a streak.
+ */
+export const streakSessionRowSchema = z.object({
+  session_id: z.uuid(),
+  completed_at: timestamp,
+  counts_for_streak: z.boolean(),
+})
+
+export const streakSessionPageSchema = z.array(streakSessionRowSchema)
+
+/**
  * Contract-only vocabulary, and the third exception to "no second vocabulary".
  * These are what the lifecycle functions answer with, and no column holds one:
  * a transition's outcome is an event, not a stored fact. They are text in the
@@ -807,6 +825,7 @@ export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
 export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
 export type BlockResultRow = z.infer<typeof blockResultRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
+export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
 export type SessionTransition = z.infer<typeof sessionTransitionSchema>
 export type SessionFunction = z.infer<typeof sessionFunctionSchema>

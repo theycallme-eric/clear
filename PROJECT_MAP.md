@@ -157,3 +157,15 @@ per-section floor, recording a relaxation rather than widening quietly. Nothing 
 model, and GEN-02b cannot select an ineligible exercise because the prompt it builds never contains
 one. `src/data/candidates.ts` is the only reader: it maps the payload, and turns a section that
 resolved to nothing into `GENERATION_NO_CANDIDATES` instead of an empty workout.
+
+SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
+training days, and no column anywhere holds it: `streak_sessions(...)`
+(`supabase/migrations/20260921000006_streak_sessions.sql`) answers a page of completed sessions
+newest first, `src/data/streak.ts` reads it — resolving the user's time zone once, and asking for
+the page before only when the run reaches the oldest row it has — and `src/state/streak.ts` derives
+the count as a pure function of those rows. The split is where it is because only the browser knows
+which zone to draw a day boundary in: a session at 11pm and one at 1am are two days for the user
+whatever UTC thinks. `src/test/streak-migration.test.ts` asserts the negative the requirement
+actually asks for, against every migration rather than against the new one — a future
+`streak_count` column fails it wherever it is added — and `StreakPolicy` is where HOME-02's pause
+states and rest-day allowances attach to this function instead of replacing it.
