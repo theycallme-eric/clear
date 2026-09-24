@@ -60,6 +60,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // session and a client before it could draw anything.
   ExerciseSetLogger: 'EXE-02 — one prescription of a live session, with its logged sets',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
+  // EXE-03's circuit. Its whole subject is a position inside a live block —
+  // which round, which movement, whether the shared rest is running — so a
+  // specimen would be framing an invented session rather than the renderer.
+  CircuitBlock: 'EXE-03 — a circuit of a live session, tracked round by round',
 }
 
 /** Components exported from a module, in source order. */

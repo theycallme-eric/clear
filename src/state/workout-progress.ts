@@ -75,6 +75,11 @@ export interface BlockProgress {
   readonly exerciseCount: number
   /** Those same prescriptions, in `order_index` order. */
   readonly exercises: readonly ExerciseProgress[]
+  /**
+   * Rounds the block prescribes, as the number rather than as the header's
+   * words. A circuit counts them (EXE-03); null is a block that carries none.
+   */
+  readonly rounds: number | null
   /** Rest the block prescribes between its rounds, in seconds. */
   readonly roundRestSeconds: number | null
 }
@@ -148,6 +153,10 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
             prescription: exercise,
             setLogs: set_logs,
           })),
+        // Both read from `workout_blocks` and from nowhere else: the clock and
+        // the round count live on the block so its members cannot disagree
+        // about them (DATA-01c §5).
+        rounds: blockEntry.block.rounds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
       }
     })
