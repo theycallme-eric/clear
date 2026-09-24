@@ -418,6 +418,52 @@ export const locationSchema = z.object({
  */
 export const locationListSchema = z.array(locationSchema)
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Onboarding — ONB-01
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What `complete_onboarding` is called with: the five answers, as one payload.
+ *
+ * Strict, like every other write that becomes a transaction. A key the
+ * function does not read is a preference the user believes they set, and this
+ * is the requirement's "every preference lands correctly" expressed where it
+ * can actually fail — before the round trip rather than after it.
+ *
+ * Every bound here is one the database already holds: a blank location name is
+ * `locations_name_not_blank`, an empty section list is
+ * `profiles_enabled_sections_not_empty`, and a blank equipment id is
+ * `location_equipment_id_not_blank`. So a payload that validates is one the
+ * transaction can commit, and a payload that does not never opens one.
+ */
+export const onboardingAnswersSchema = z.strictObject({
+  location_name: nonBlank,
+  location_tier: equipmentTierSchema,
+  /** Equipment ids, as the catalog spells them. Unordered, and may be empty. */
+  equipment: z.array(nonBlank),
+  experience_level: experienceLevelSchema,
+  goal_preset: goalPresetSchema,
+  enabled_sections: z.array(sectionTypeSchema).min(1),
+  /** Patterns to work around. Each becomes one persistent `exclude` row. */
+  avoid_patterns: z.array(movementPatternSchema),
+  /** Free text kept as context and never parsed into a constraint (DATA-05). */
+  note: z.string().nullable(),
+})
+
+/**
+ * What the commit answers with: the two rows the client's caches must now
+ * hold.
+ *
+ * It is the committed profile rather than an acknowledgement because the
+ * AUTH-03 guard routes on `profiles.onboarded_at` — a client that had to
+ * refetch before it could navigate would, for the length of that round trip,
+ * still look to the guard like a user who has not onboarded.
+ */
+export const onboardingCommitSchema = z.object({
+  profile: profileSchema,
+  location: locationSchema,
+})
+
 /**
  * `user_constraints` (DATA-05 §2), discriminated on `scope`, which is how the
  * table's two target CHECKs — exactly one target, and it is the one the scope
@@ -816,6 +862,8 @@ export type SchemaIssue = z.infer<typeof schemaIssueSchema>
 export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type Location = z.infer<typeof locationSchema>
+export type OnboardingAnswers = z.infer<typeof onboardingAnswersSchema>
+export type OnboardingCommit = z.infer<typeof onboardingCommitSchema>
 export type UserConstraintRow = z.infer<typeof userConstraintRowSchema>
 export type SessionAcceptance = z.infer<typeof sessionAcceptanceSchema>
 export type WorkoutSessionRow = z.infer<typeof workoutSessionRowSchema>
