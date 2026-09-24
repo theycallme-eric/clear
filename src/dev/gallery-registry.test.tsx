@@ -48,6 +48,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   StructureBadge: 'EXE-01 — the identity of one block row, per the master clarity spec',
   WorkoutNavigation: 'EXE-01 — prev/next/finish over a session’s sections',
   BlockEffortDialog: 'EXE-01 — the perceived-effort capture, opened at block completion',
+  AbandonConfirmDialog:
+    'EXE-01 — `ConfirmDialog critical` with fixed copy; the surface is framed under ConfirmDialog, and what is new here is the wording, reviewed where it is asked',
   BlockPanel:
     'EXE-01 — one block of a live session, and it completes through the shell’s provider',
   BlockSlot: 'EXE-01 — dispatch to whichever renderer performs a block’s structure',

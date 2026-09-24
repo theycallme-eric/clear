@@ -16,9 +16,10 @@
  *     backgrounding the phone persists what there is to persist — the rows are
  *     already written, and `usePersistedSection` keeps the open section — and
  *     the session surfaces on Home for resumption (HOME-01).
- *   · **Another route with a session running prompts rather than strands.**
- *     That is `ActiveSessionPrompt`, mounted in `AppChrome`, because a deep
- *     link never reaches this file.
+ *   · **Another route with a session running asks rather than strands.**
+ *     A deep link never reaches this file, so the answer lives above it:
+ *     `ResumableSession` is Home's card, and `ActiveSessionPrompt` is the
+ *     modal `AppChrome` mounts for everywhere else.
  *
  * The other thing the shell owns is **block completion**, and it owns it by
  * mounting `BlockCompletionProvider` around every renderer: one effort
@@ -63,9 +64,10 @@ import {
   useWorkoutClients,
 } from '../state/workout-queries'
 import { BlockSlot } from '../ui/block-renderers'
-import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
+import { ErrorDialog } from '../ui/blocking-dialog'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
+  AbandonConfirmDialog,
   GlobalTimer,
   ProgressTracker,
   SectionHeader,
@@ -360,18 +362,11 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
           </div>
         </Screen>
 
-        <ConfirmDialog
+        <AbandonConfirmDialog
           open={exiting}
-          critical
-          title="Abandon workout?"
-          confirmLabel="Abandon"
-          cancelLabel="Keep going"
           onConfirm={() => void confirmAbandon()}
           onCancel={cancelExit}
-        >
-          Everything logged so far is kept, and the workout stops here. It stays on
-          Home, where you can see what you did.
-        </ConfirmDialog>
+        />
 
         {failure !== null && (
           <ErrorDialog

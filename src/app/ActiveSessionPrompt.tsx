@@ -8,7 +8,7 @@
  * prompt to resume or abandon rather than silently stranding the session — so
  * this sits in `AppChrome`, above every route, and asks.
  *
- * Three deliberate choices:
+ * Four deliberate choices:
  *
  *   · **It asks about `active` sessions only.** A `prescribed` session has not
  *     been started; it belongs to Review, and interrupting a user to ask about
@@ -21,6 +21,17 @@
  *     a third that closed the dialog and left it running would recreate exactly
  *     the stranded state the requirement is about. Escape lands on Resume,
  *     the safe choice, which is also the first action in DOM order.
+ *   · **Abandoning is confirmed, here as everywhere.** This dialog arrives
+ *     unbidden, so its destructive answer is one reflex away from a workout
+ *     nobody meant to end. Answering it opens `AbandonConfirmDialog` — the
+ *     shell's question, in the shell's words — and the prompt steps aside
+ *     while it stands, so there is one modal on screen and one decision in it.
+ *
+ * Where it does *not* ask is as much of the rule as where it does: a route
+ * that surfaces the running session itself has already asked, in the page,
+ * without blocking anything. `/workout` is the shell, and `/` is Home's
+ * `ResumableSession` card — the requirement's own instruction that leaving the
+ * app "surfaces resumption on Home".
  */
 import { useCallback, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -30,10 +41,21 @@ import { isErr } from '../state/errors'
 import { showErrorToast } from '../state/toasts'
 import { isActiveSession, useActiveSessionQuery, useWorkoutClients } from '../state/workout-queries'
 import { AppDialog } from '../ui/app-dialog'
+import { AbandonConfirmDialog } from '../ui/workout-chrome'
 import { clearWorkoutShellState, defaultShellStorage } from '../state/workout-persistence'
+import { AUTHENTICATED_HOME } from './guards'
 
 /** The route the prompt exists to send people back to. */
 export const WORKOUT_ROUTE = '/workout'
+
+/**
+ * The routes that show the running session in the page, and therefore need no
+ * modal to say it exists: the shell itself, and Home's resumption card.
+ */
+const ROUTES_THAT_SURFACE_THE_SESSION: readonly string[] = [
+  WORKOUT_ROUTE,
+  AUTHENTICATED_HOME,
+]
 
 export function ActiveSessionPrompt() {
   const { pathname } = useLocation()
@@ -41,11 +63,13 @@ export function ActiveSessionPrompt() {
   const { sessions } = useWorkoutClients()
   const query = useActiveSessionQuery()
   const [abandoning, setAbandoning] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   const snapshot = query.state.status === 'ready' ? query.state.data : null
-  // On `/workout` the shell is already showing it; anywhere else a running
-  // session is a question that has to be answered before anything else.
-  const open = pathname !== WORKOUT_ROUTE && isActiveSession(snapshot)
+  // Somewhere the session is not already on the screen, a running session is a
+  // question that has to be answered before anything else.
+  const open =
+    !ROUTES_THAT_SURFACE_THE_SESSION.includes(pathname) && isActiveSession(snapshot)
 
   const resume = useCallback(() => {
     void navigate(WORKOUT_ROUTE)
@@ -57,6 +81,7 @@ export function ActiveSessionPrompt() {
     setAbandoning(true)
     const result = await sessions.abandon(snapshot.session.id)
     setAbandoning(false)
+    setConfirming(false)
 
     if (isErr(result)) {
       // Nothing is discarded and the prompt stays: the session is still
@@ -72,23 +97,33 @@ export function ActiveSessionPrompt() {
   if (!open || snapshot === null) return null
 
   return (
-    <AppDialog
-      open
-      title="You have a workout in progress"
-      onClose={resume}
-      actions={
-        <>
-          <Button variant="primary" onClick={resume}>
-            Resume workout
-          </Button>
-          <Button variant="critical" loading={abandoning} onClick={() => void abandon()}>
-            Abandon it
-          </Button>
-        </>
-      }
-    >
-      {snapshot.session.title} is still running. Resume it, or abandon it and keep
-      what was logged.
-    </AppDialog>
+    <>
+      <AppDialog
+        open={!confirming}
+        title="You have a workout in progress"
+        onClose={resume}
+        actions={
+          <>
+            <Button variant="primary" onClick={resume}>
+              Resume workout
+            </Button>
+            <Button variant="critical" loading={abandoning} onClick={() => setConfirming(true)}>
+              Abandon it
+            </Button>
+          </>
+        }
+      >
+        {snapshot.session.title} is still running. Resume it, or abandon it and keep
+        what was logged.
+      </AppDialog>
+
+      <AbandonConfirmDialog
+        open={confirming}
+        onConfirm={() => void abandon()}
+        // Back to the question, not out of it: declining the abandon leaves the
+        // session running, which is still something the user has to answer.
+        onCancel={() => setConfirming(false)}
+      />
+    </>
   )
 }

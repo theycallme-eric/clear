@@ -176,8 +176,16 @@ holds the session snapshot, blocks in-app navigation off `/workout` with `useBlo
 redirect and browser Back all arrive as the same abandon confirm — and owns the two exits, complete
 and abandon. What it deliberately does not do is argue with the platform: there is no
 `beforeunload` anywhere in the feature, because closing the tab loses nothing.
-`src/app/ActiveSessionPrompt.tsx` is the other half of that, mounted in `AppChrome` above every
-route, since a deep link into Home with a session running never reaches the shell to be told.
+Above the shell sit the two surfaces a deep link *does* reach, because a session running while the
+user is somewhere else never reaches `Workout.tsx` to be told. `src/app/ResumableSession.tsx` is
+Home's: a standing card that names the session, reads its wall clock, says how far it got, and
+offers resume or abandon in the page — the requirement's "leaving the app persists state and
+surfaces resumption on Home", answered without blocking the screen. `src/app/ActiveSessionPrompt.tsx`
+is the modal `AppChrome` mounts for everywhere else, and the division between them is one rule
+rather than two behaviours: the prompt stands down on a route that surfaces the session itself, so
+exactly one of the two asks, always. Both end in the same question — `AbandonConfirmDialog` in
+`src/ui/workout-chrome.tsx` is the one abandon confirm, shared by the shell, the card and the
+prompt, so what abandoning keeps and costs is stated in one set of words.
 
 Three state modules under the shell, each pure over the snapshot: `src/state/workout-progress.ts`
 derives section and block status and the structure identity the header states (`EMOM · 10 MIN`),
