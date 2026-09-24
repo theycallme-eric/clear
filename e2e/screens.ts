@@ -21,7 +21,10 @@ export interface E2eScreen {
 }
 
 export const SCREENS: readonly E2eScreen[] = [
-  { path: '/', route: '/', title: 'CLEAR', heading: 'CLEAR' },
+  // The root route is protected. With the credential-free preview fixture it
+  // must resolve through the public-only guard to Welcome, not pretend the
+  // authenticated app shell is visible.
+  { path: '/', route: '/', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/welcome', route: '/welcome', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/login', route: '/login', title: 'Sign in · CLEAR', heading: 'Sign in' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is

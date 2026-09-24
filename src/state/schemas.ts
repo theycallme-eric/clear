@@ -324,17 +324,35 @@ export const generationRequestSchema = z.strictObject({
 })
 
 /**
+ * One failure the boundary found, flattened to the two things a caller can act
+ * on. It is a wire shape as well as a local one: GEN-01's envelope answers a
+ * malformed body with this list, which is the difference between "validation
+ * failed" and the field that was wrong.
+ */
+export const schemaIssueSchema = z.strictObject({
+  /** Dotted path with array indices — `sections[0].blocks[0].exercises[2].sets`. */
+  path: nonBlank,
+  message: nonBlank,
+})
+
+/**
  * The CORE-01 wire error: `{ code, message, requestId }`, the same shape for
  * every function. `code` is the taxonomy in `src/state/errors.ts` rather than
  * a string, so a client can branch on it; the contract's own §9 code list
  * (`generation.malformed_prescription` and friends) names failures the
  * taxonomy spells `GENERATION_*`, and reconciling the two lists is GEN-01's
  * call to make once it owns the responses.
+ *
+ * `issues` is optional because most failures have no field to name: a model
+ * outage is not a path. When the failure *is* a malformed payload, the paths
+ * travel with it (GEN-01), and nothing else from an `AppError`'s `details`
+ * does — the rest of it is for the log.
  */
 export const errorResponseSchema = z.strictObject({
   code: z.enum(Object.values(ErrorCode) as [ErrorCode, ...ErrorCode[]]),
   message: nonBlank,
   requestId: requestIdSchema,
+  issues: z.array(schemaIssueSchema).optional(),
 })
 
 /** A generation that succeeded, echoing the id it was called with (§9). */
@@ -685,13 +703,6 @@ export const sessionTransitionSchema = z.object({
 // Parsing at the boundary
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** One failure, flattened to the two things a caller can act on. */
-export interface SchemaIssue {
-  /** Dotted path with array indices — `sections[0].blocks[0].exercises[2].sets`. */
-  readonly path: string
-  readonly message: string
-}
-
 /** The root of the payload, for an issue that belongs to no single field. */
 const ROOT_PATH = '(root)'
 
@@ -757,6 +768,7 @@ export type GenerationOutput = z.infer<typeof generationOutputSchema>
 export type GenerationRequest = z.infer<typeof generationRequestSchema>
 export type GenerationSuccess = z.infer<typeof generationSuccessSchema>
 export type ErrorResponse = z.infer<typeof errorResponseSchema>
+export type SchemaIssue = z.infer<typeof schemaIssueSchema>
 export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type Location = z.infer<typeof locationSchema>
