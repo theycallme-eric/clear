@@ -65,6 +65,15 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // plain props, so that one *is* framed below.
   LadderBlock:
     'EXE-04a — a For Time ladder of a live session, and it completes through the shell’s provider',
+  // EXE-03's circuit. Its whole subject is a position inside a live block —
+  // which round, which movement, whether the shared rest is running — so a
+  // specimen would be framing an invented session rather than the renderer.
+  CircuitBlock: 'EXE-03 — a circuit of a live session, tracked round by round',
+  // EXE-03's EMOM. Its whole subject is where a running clock has got to —
+  // which minute, whether the work or the remainder is live, which movement the
+  // minute prescribes — so a specimen would be framing an invented session
+  // rather than the renderer.
+  EmomBlock: 'EXE-03 — an EMOM of a live session, run minute by minute',
 }
 
 /** Components exported from a module, in source order. */

@@ -19,6 +19,14 @@
  * foreign-session record is simply ignored, and the shell falls back to the
  * first unfinished section derived from the rows.
  *
+ * EXE-03 adds two more conveniences one level down: a circuit's current round
+ * and position and an EMOM's running clock are not in the rows either. Each is
+ * kept under its own key because different components write them at different
+ * moments; merging them into the shell record would make independent
+ * read-modify-write cycles lose one another. All three records are dropped
+ * together when the session ends. Block ids are per-session, so each record can
+ * only be read back by the block that wrote it.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -26,8 +34,16 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { CircuitState } from './circuit'
+import type { EmomState } from './emom'
+
 /** One key, overwritten: the app has one session in progress at a time. */
 export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
+
+/** The circuits' key: one record per block id, for the session in progress. */
+export const WORKOUT_CIRCUIT_STORAGE_KEY = 'clear.workout-circuits'
+/** The EMOMs' key: one record per block id, for the session in progress. */
+export const WORKOUT_EMOM_STORAGE_KEY = 'clear.workout-emom'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -104,11 +120,17 @@ export function writeWorkoutShellState(
   }
 }
 
-/** Forgets the record — what completing or abandoning a session does. */
+/**
+ * Forgets everything the shell remembered locally — the open section and every
+ * timed block's position or clock. Completing and abandoning both call it, and
+ * clear all three keys because an ended session has nowhere to return to.
+ */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
+    storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+    storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -195,4 +217,210 @@ export function usePersistedSection(
   }, [])
 
   return { index, setIndex: setIndexState, persist, forget }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Circuits (EXE-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every circuit's place in its rounds, by block id. */
+type CircuitRecords = Record<string, CircuitState>
+
+function isCircuitState(value: unknown): value is CircuitState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  return (
+    typeof record.round === 'number' &&
+    Number.isInteger(record.round) &&
+    record.round >= 1 &&
+    typeof record.position === 'number' &&
+    Number.isInteger(record.position) &&
+    record.position >= 1 &&
+    (record.restStartedAt === null || typeof record.restStartedAt === 'string')
+  )
+}
+
+/** The stored map, with any entry it cannot vouch for dropped. */
+export function readCircuitStates(storage: ShellStorage | null): CircuitRecords {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: CircuitRecords = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isCircuitState(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/** One block's stored position, or null — for absent and unusable alike. */
+export function readCircuitState(
+  storage: ShellStorage | null,
+  blockId: string,
+): CircuitState | null {
+  return readCircuitStates(storage)[blockId] ?? null
+}
+
+/** Writes one block's position, leaving the other circuits alone. */
+export function writeCircuitState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: CircuitState,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      WORKOUT_CIRCUIT_STORAGE_KEY,
+      JSON.stringify({ ...readCircuitStates(storage), [blockId]: state }),
+    )
+  } catch {
+    // A full or refused quota costs the round on a refresh, never a logged set.
+  }
+}
+
+export interface PersistedCircuit {
+  readonly state: CircuitState
+  /** Moves the circuit and writes it in the same act. */
+  advanceTo(next: CircuitState): void
+}
+
+/** A circuit's position, restored on mount and written on every tap. */
+export function usePersistedCircuit(
+  blockId: string,
+  restore: (stored: CircuitState | null) => CircuitState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedCircuit {
+  const [state, setState] = useState(() => restore(readCircuitState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const advanceTo = useCallback(
+    (next: CircuitState) => {
+      setState(next)
+      writeCircuitState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, advanceTo }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMOMs (EXE-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every EMOM's clock, by block id. */
+type EmomRecords = Record<string, EmomState>
+
+function isEmomState(value: unknown): value is EmomState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.workDoneMinute === null ||
+      (typeof record.workDoneMinute === 'number' &&
+        Number.isInteger(record.workDoneMinute)))
+  )
+}
+
+/** The stored map, with any entry it cannot vouch for dropped. */
+export function readEmomStates(storage: ShellStorage | null): EmomRecords {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(WORKOUT_EMOM_STORAGE_KEY)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: EmomRecords = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isEmomState(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/** One block's stored clock, or null — for absent and unusable alike. */
+export function readEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+): EmomState | null {
+  return readEmomStates(storage)[blockId] ?? null
+}
+
+/** Writes one block's clock, leaving the other timed blocks alone. */
+export function writeEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: EmomState,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      WORKOUT_EMOM_STORAGE_KEY,
+      JSON.stringify({ ...readEmomStates(storage), [blockId]: state }),
+    )
+  } catch {
+    // A full or refused quota costs the clock on a refresh, never a logged set.
+  }
+}
+
+export interface PersistedEmom {
+  readonly state: EmomState
+  /** Moves the EMOM and writes it in the same act. */
+  update(next: EmomState): void
+}
+
+/**
+ * An EMOM's clock, restored on mount and written whenever it changes. The
+ * current minute is derived from the stored timestamp rather than stored.
+ */
+export function usePersistedEmom(
+  blockId: string,
+  restore: (stored: EmomState | null) => EmomState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedEmom {
+  const [state, setState] = useState(() => restore(readEmomState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const update = useCallback(
+    (next: EmomState) => {
+      setState(next)
+      writeEmomState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, update }
 }

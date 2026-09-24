@@ -214,3 +214,17 @@ seam — because a sixth renderer growing its own write is exactly how OVR-03's 
 being single, and no behavioural test would notice. `src/ui/workout-chrome.tsx` holds the shell's
 four presentation parts; the timer there counts up and is labelled rather than live, so it is
 app-owned rather than the export's countdown `TimerDisplay`.
+
+EXE-03's circuit is the first renderer with a *position* of its own, and that position is the one
+thing in execution the rows cannot answer: two rounds of the same movement are two set logs whichever
+order they happened in, so "round three, movement two, resting" can only be remembered.
+`src/state/circuit.ts` is that memory as pure arithmetic — one tap advances the movement, and the tap
+that leaves a round's last movement is the same tap that starts the next one, which is why shared
+rest is stamped at a round boundary rather than counted per exercise. Rest is a timestamp and never a
+tick count, read back through `workout-clock.ts`, so a locked phone and a refresh mid-rest both
+return to the rest that is actually left. `src/state/workout-persistence.ts` therefore keeps two
+things rather than one, under two keys: the open section, and a circuit record per block id, written
+on every tap and dropped with the session. Two keys on purpose — one read-modify-write racing the
+other is how the open section would start losing rounds. `src/ui/circuit-block.tsx` is the IA's
+`CircuitRenderer`, and it supplies `rounds_completed` through the same `BlockCompletionControl`
+every other structure completes through.

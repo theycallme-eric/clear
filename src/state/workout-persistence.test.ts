@@ -10,12 +10,18 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { CIRCUIT_START } from './circuit'
 import {
   clearWorkoutShellState,
+  readCircuitState,
+  readCircuitStates,
   readWorkoutShellState,
   restoredSectionIndex,
+  usePersistedCircuit,
   usePersistedSection,
+  WORKOUT_CIRCUIT_STORAGE_KEY,
   WORKOUT_SHELL_STORAGE_KEY,
+  writeCircuitState,
   writeWorkoutShellState,
   type ShellStorage,
 } from './workout-persistence'
@@ -234,5 +240,132 @@ describe('usePersistedSection', () => {
     })
 
     expect(result.current.index).toBe(2)
+  })
+})
+
+/**
+ * EXE-03's half: a circuit's place in its rounds is the second thing the rows
+ * cannot answer, and it is remembered on the same terms — written on every
+ * tap, discarded when it cannot be trusted, dropped when the session ends.
+ */
+describe('circuit records', () => {
+  const BLOCK = '70000001-0000-4000-8000-000000000000'
+  const OTHER_BLOCK = '70000002-0000-4000-8000-000000000000'
+  const AT_ROUND_TWO = { round: 2, position: 3, restStartedAt: null }
+
+  /** A whole `Storage`, since two keys are in play here. */
+  function memoryStorage(): ShellStorage {
+    const values = new Map<string, string>()
+    return {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => void values.set(key, value),
+      removeItem: (key) => void values.delete(key),
+    }
+  }
+
+  it('round-trips one block’s round and position', () => {
+    const storage = memoryStorage()
+    writeCircuitState(storage, BLOCK, AT_ROUND_TWO)
+
+    expect(readCircuitState(storage, BLOCK)).toEqual(AT_ROUND_TWO)
+    expect(readCircuitState(storage, OTHER_BLOCK)).toBeNull()
+  })
+
+  it('leaves the session’s other circuits where they were', () => {
+    const storage = memoryStorage()
+    writeCircuitState(storage, BLOCK, AT_ROUND_TWO)
+    writeCircuitState(storage, OTHER_BLOCK, {
+      round: 1,
+      position: 1,
+      restStartedAt: '2026-09-24T09:10:00.000Z',
+    })
+
+    expect(readCircuitState(storage, BLOCK)).toEqual(AT_ROUND_TWO)
+    expect(readCircuitStates(storage)).toHaveProperty(OTHER_BLOCK)
+  })
+
+  it('drops a record it cannot vouch for rather than restoring a wrong one', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      WORKOUT_CIRCUIT_STORAGE_KEY,
+      JSON.stringify({
+        [BLOCK]: { round: 0, position: 1, restStartedAt: null },
+        [OTHER_BLOCK]: AT_ROUND_TWO,
+      }),
+    )
+
+    // Round zero is not a round anyone is in; the other record is untouched.
+    expect(readCircuitState(storage, BLOCK)).toBeNull()
+    expect(readCircuitState(storage, OTHER_BLOCK)).toEqual(AT_ROUND_TWO)
+  })
+
+  it('ignores an unparsable map and storage that refuses to be read', () => {
+    const storage = memoryStorage()
+    storage.setItem(WORKOUT_CIRCUIT_STORAGE_KEY, '{ not json')
+
+    expect(readCircuitStates(storage)).toEqual({})
+    expect(readCircuitStates(hostileStorage())).toEqual({})
+    expect(() => writeCircuitState(hostileStorage(), BLOCK, AT_ROUND_TWO)).not.toThrow()
+    expect(readCircuitState(null, BLOCK)).toBeNull()
+  })
+
+  it('is forgotten with the session, along with the open section', () => {
+    const storage = memoryStorage()
+    writeWorkoutShellState(storage, {
+      sessionId: SESSION,
+      sectionIndex: 2,
+      updatedAt: '2026-09-24T09:10:00.000Z',
+    })
+    writeCircuitState(storage, BLOCK, AT_ROUND_TWO)
+
+    clearWorkoutShellState(storage)
+
+    expect(readWorkoutShellState(storage)).toBeNull()
+    expect(readCircuitStates(storage)).toEqual({})
+  })
+
+  it('restores on mount and writes on every advance', () => {
+    const storage = memoryStorage()
+    writeCircuitState(storage, BLOCK, AT_ROUND_TWO)
+
+    const { result } = renderHook(() =>
+      usePersistedCircuit(BLOCK, (stored) => stored ?? CIRCUIT_START, storage),
+    )
+
+    expect(result.current.state).toEqual(AT_ROUND_TWO)
+
+    act(() => {
+      result.current.advanceTo({ round: 3, position: 1, restStartedAt: null })
+    })
+
+    expect(result.current.state.round).toBe(3)
+    expect(readCircuitState(storage, BLOCK)).toEqual({
+      round: 3,
+      position: 1,
+      restStartedAt: null,
+    })
+  })
+
+  it('repairs what it restores through the caller, which knows the block', () => {
+    const storage = memoryStorage()
+    writeCircuitState(storage, BLOCK, AT_ROUND_TWO)
+
+    const { result } = renderHook(() =>
+      usePersistedCircuit(BLOCK, () => CIRCUIT_START, storage),
+    )
+
+    expect(result.current.state).toEqual(CIRCUIT_START)
+  })
+
+  it('keeps working when there is no storage at all', () => {
+    const { result } = renderHook(() =>
+      usePersistedCircuit(BLOCK, (stored) => stored ?? CIRCUIT_START, null),
+    )
+
+    act(() => {
+      result.current.advanceTo({ round: 2, position: 1, restStartedAt: null })
+    })
+
+    expect(result.current.state.round).toBe(2)
   })
 })
