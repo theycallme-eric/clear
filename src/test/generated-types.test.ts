@@ -155,7 +155,20 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000002_workout_domain.sql',
       '20260921000003_execution_domain.sql',
       '20260921000004_generation_candidates.sql',
+      '20260921000005_session_lifecycle.sql',
     ])
+  })
+
+  it('reads a column a later migration adds to an earlier table (SES-01a)', () => {
+    const { schema } = build()
+    const sessions = schema.tables.find((table) => table.name === 'workout_sessions')
+
+    // `abandoned_at` is declared by ALTER TABLE in 20260921000005, not by the
+    // CREATE TABLE in 20260921000002. A reader that only understood CREATE
+    // would type a `workout_sessions` row the schema no longer has.
+    const abandoned = sessions?.columns.find((column) => column.name === 'abandoned_at')
+    expect(abandoned?.pgType).toBe('timestamptz')
+    expect(abandoned?.nullable).toBe(true)
   })
 
   it('does not mistake a comment or a quoted semicolon for SQL', () => {

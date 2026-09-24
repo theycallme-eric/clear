@@ -40,6 +40,10 @@ describe('ErrorCode', () => {
     expect(ErrorCode.GENERATION_INVALID_PARAMS).toBe('GENERATION_INVALID_PARAMS')
     expect(ErrorCode.GENERATION_MODEL_ERROR).toBe('GENERATION_MODEL_ERROR')
 
+    // Session lifecycle (SES-01a)
+    expect(ErrorCode.SESSION_ALREADY_ACTIVE).toBe('SESSION_ALREADY_ACTIVE')
+    expect(ErrorCode.SESSION_INVALID_TRANSITION).toBe('SESSION_INVALID_TRANSITION')
+
     // Persistence
     expect(ErrorCode.PERSISTENCE_NOT_FOUND).toBe('PERSISTENCE_NOT_FOUND')
     expect(ErrorCode.PERSISTENCE_CONFLICT).toBe('PERSISTENCE_CONFLICT')

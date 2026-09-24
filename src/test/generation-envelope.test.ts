@@ -409,6 +409,11 @@ describe('every response echoes the client‘s request id', () => {
       expect(status).toBeLessThan(600)
     }
   })
+
+  it('maps session-state refusals to conflict instead of input validation', () => {
+    expect(statusForCode(ErrorCode.SESSION_ALREADY_ACTIVE)).toBe(409)
+    expect(statusForCode(ErrorCode.SESSION_INVALID_TRANSITION)).toBe(409)
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────

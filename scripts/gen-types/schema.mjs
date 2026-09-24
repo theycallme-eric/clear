@@ -201,6 +201,15 @@ const CREATE_ENUM = /create type public\.([a-z0-9_]+) as enum \(([^)]*)\)/gi
 const DROP_TYPE = /^drop type (?:if exists )?public\.([a-z0-9_]+)/i
 const CREATE_TABLE = /^create table (?:if not exists )?public\.([a-z0-9_]+) \(/i
 const DROP_TABLE = /^drop table (?:if exists )?public\.([a-z0-9_]+)/i
+/**
+ * A column added to a table a later migration did not author. Every other
+ * `alter table` this repository writes — RLS, privileges, a constraint added
+ * from inside a DO block — changes nothing a row's TypeScript can see, but a
+ * new column does, and a generator that ignored it would type a schema missing
+ * the column its own migrations declare (SES-01a's `abandoned_at`).
+ */
+const ALTER_TABLE_ADD_COLUMN =
+  /^alter table (?:if exists )?(?:only )?public\.([a-z0-9_]+) add column (?:if not exists )?(.+)$/i
 const CREATE_VIEW = /^create (?:or replace )?view public\.([a-z0-9_]+)/i
 const DROP_VIEW = /^drop view (?:if exists )?public\.([a-z0-9_]+)/i
 const CREATE_FUNCTION =
@@ -250,6 +259,26 @@ export function readSchema() {
       const dropTable = DROP_TABLE.exec(statement)
       if (dropTable !== null) {
         tables.delete(dropTable[1])
+        continue
+      }
+
+      const addColumn = ALTER_TABLE_ADD_COLUMN.exec(statement)
+      if (addColumn !== null) {
+        const [, name, column] = addColumn
+        const table = tables.get(name)
+        if (table === undefined) {
+          throw new Error(`alter table public.${name}: no such table is declared`)
+        }
+        // One column per statement, which is how this repository writes them.
+        // A multi-column ADD would parse the commas as a second column's worth
+        // of modifiers, so it raises rather than guessing.
+        const [added, ...rest] = parseColumns(name, column)
+        if (rest.length > 0) {
+          throw new Error(`alter table public.${name}: add one column per statement`)
+        }
+        if (!table.columns.some((existing) => existing.name === added.name)) {
+          table.columns.push(added)
+        }
         continue
       }
 

@@ -13,6 +13,7 @@
  *   supabase/migrations/20260921000002_workout_domain.sql
  *   supabase/migrations/20260921000003_execution_domain.sql
  *   supabase/migrations/20260921000004_generation_candidates.sql
+ *   supabase/migrations/20260921000005_session_lifecycle.sql
  */
 
 export type Json =
@@ -534,6 +535,7 @@ export type Database = {
           mood: number | null
           session_notes: string | null
           counts_for_streak: boolean
+          abandoned_at: string | null
         }
         Insert: {
           id?: string
@@ -561,6 +563,7 @@ export type Database = {
           mood?: number | null
           session_notes?: string | null
           counts_for_streak?: boolean
+          abandoned_at?: string | null
         }
         Update: {
           id?: string
@@ -588,10 +591,24 @@ export type Database = {
           mood?: number | null
           session_notes?: string | null
           counts_for_streak?: boolean
+          abandoned_at?: string | null
         }
       }
     }
     Functions: {
+      abandon_session: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      complete_session: {
+        Args: {
+          p_session_id: string
+          p_actual_duration_mins?: number | null
+        }
+        Returns: Json
+      }
       constraints_in_force: {
         Args: {
           p_user_id: string
@@ -633,6 +650,57 @@ export type Database = {
         }
         Returns: Database['public']['Enums']['section_type'][]
       }
+      insert_prescription: {
+        Args: {
+          p_block_id: string
+          p_order_index: number
+          p_slot_id: string
+          p_replaces_id: string
+          p_origin: Database['public']['Enums']['prescription_origin']
+          p_prescription: Json
+        }
+        Returns: string
+      }
+      persist_session: {
+        Args: {
+          p_user_id: string
+          p_session: Json
+        }
+        Returns: Json
+      }
+      resume_session: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      session_snapshot: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      session_state: {
+        Args: {
+          p_started_at: string
+          p_completed_at: string
+          p_abandoned_at: string
+        }
+        Returns: Database['public']['Enums']['session_state']
+      }
+      start_session: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      swap_session_exercise: {
+        Args: {
+          p_workout_exercise_id: string
+          p_prescription: Json
+        }
+        Returns: Json
+      }
       usable_equipment: {
         Args: {
           p_user_id: string
@@ -662,6 +730,7 @@ export type Database = {
       revision_status: 'active' | 'superseded'
       section_type: 'warmup' | 'mobility' | 'primary_lift' | 'accessory' | 'skill_power' | 'carries' | 'core' | 'stability_balance' | 'conditioning' | 'cooldown'
       session_focus: 'upper_body' | 'lower_body' | 'full_body' | 'power'
+      session_state: 'prescribed' | 'active' | 'completed' | 'abandoned'
       structure_type: 'standard' | 'superset' | 'circuit' | 'emom' | 'amrap' | 'for_time'
       target_kind: 'fixed' | 'range' | 'sequence'
       timer_contract: 'none' | 'count_up' | 'countdown' | 'interval' | 'per_minute'
@@ -717,6 +786,7 @@ export const Constants = {
       revision_status: ['active', 'superseded'],
       section_type: ['warmup', 'mobility', 'primary_lift', 'accessory', 'skill_power', 'carries', 'core', 'stability_balance', 'conditioning', 'cooldown'],
       session_focus: ['upper_body', 'lower_body', 'full_body', 'power'],
+      session_state: ['prescribed', 'active', 'completed', 'abandoned'],
       structure_type: ['standard', 'superset', 'circuit', 'emom', 'amrap', 'for_time'],
       target_kind: ['fixed', 'range', 'sequence'],
       timer_contract: ['none', 'count_up', 'countdown', 'interval', 'per_minute'],

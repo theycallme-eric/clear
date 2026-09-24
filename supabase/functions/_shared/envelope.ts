@@ -194,6 +194,10 @@ const statusByCode: Record<ErrorCode, number> = {
   [ErrorCode.GENERATION_MODEL_ERROR]: 502,
   [ErrorCode.GENERATION_FAILED]: 500,
 
+  // The request is valid, but the current session state conflicts with it.
+  [ErrorCode.SESSION_ALREADY_ACTIVE]: 409,
+  [ErrorCode.SESSION_INVALID_TRANSITION]: 409,
+
   [ErrorCode.PERSISTENCE_NOT_FOUND]: 404,
   [ErrorCode.PERSISTENCE_CONFLICT]: 409,
   [ErrorCode.PERSISTENCE_WRITE_FAILED]: 500,

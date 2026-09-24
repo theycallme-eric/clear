@@ -19,7 +19,7 @@
  *   * Not a second vocabulary. Every closed value set comes from
  *     `Constants.public.Enums`, which `npm run gen:types` writes from the
  *     migrations, so an enum that changes in SQL changes here or fails the
- *     drift check. The two exceptions are named at their definitions.
+ *     drift check. The three exceptions are named at their definitions.
  *   * Not a second type declaration. Every exported type is `z.infer` of its
  *     schema. A hand-written interface beside a schema is a second answer to
  *     the same question, and the two drift silently.
@@ -85,6 +85,16 @@ export const goalPresetSchema = z.enum(Constants.public.Enums.goal_preset)
 export const equipmentTierSchema = z.enum(Constants.public.Enums.equipment_tier)
 export const weightUnitSchema = z.enum(Constants.public.Enums.weight_unit)
 export const constraintScopeSchema = z.enum(Constants.public.Enums.constraint_scope)
+export const prescriptionOriginSchema = z.enum(Constants.public.Enums.prescription_origin)
+export const revisionStatusSchema = z.enum(Constants.public.Enums.revision_status)
+export const executionStatusSchema = z.enum(Constants.public.Enums.execution_status)
+/**
+ * `session_state` (SES-01a). No column holds it — it is derived from the three
+ * lifecycle timestamps — but the *set* of states is a type in SQL precisely so
+ * this schema and `src/state/session-machine.ts` enumerate the database's four
+ * rather than a fifth of their own.
+ */
+export const sessionStateSchema = z.enum(Constants.public.Enums.session_state)
 export const constraintActionSchema = z.enum(Constants.public.Enums.constraint_action)
 export const constraintPersistenceSchema = z.enum(Constants.public.Enums.constraint_persistence)
 
@@ -96,7 +106,7 @@ export const constraintPersistenceSchema = z.enum(Constants.public.Enums.constra
 export const modalitySchema = z.enum(Constants.public.Enums.prescription_modality)
 
 /**
- * Contract-only vocabulary, and the first of the two exceptions to "no second
+ * Contract-only vocabulary, and the first of the three exceptions to "no second
  * vocabulary". `workout_exercises` has no `session_function` column: contract
  * 4.1.0 §5 returns it per exercise and `DATA_MODEL.md` §6 has nowhere to put
  * it, a discrepancy DATA-01c recorded rather than invented a column for
@@ -467,6 +477,229 @@ export const userConstraintRowSchema = z
   )
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Session lifecycle — SES-01a
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What acceptance sends to `persist_session`: everything `workout_sessions`
+ * needs that composition does not supply, plus the composed workout itself.
+ *
+ * Strict, like the generation contract above and for the same reason — this is
+ * the payload that becomes four tables in one transaction, and a key the
+ * function does not read is a field the caller believes it persisted. The
+ * bounds are `workout_sessions`' own CHECK constraints, so a payload that
+ * validates here is one the database can hold.
+ */
+export const sessionAcceptanceSchema = z.strictObject({
+  // The training day, the user's own. Not unique per user: two workouts in one
+  // day is a thing people do (DATA-01c).
+  date: z.iso.date(),
+  // Null when the location was deleted between generating and accepting. What
+  // it was composed against is then simply no longer known.
+  location_id: z.uuid().nullable(),
+  session_focus: sessionFocusSchema,
+  // Snapshotted at generation time: the user's current goal is a preference
+  // and can change; what this workout was composed for cannot.
+  goal_preset: goalPresetSchema.nullable(),
+  requested_duration_mins: positiveInt,
+  effective_duration_target_mins: positiveInt,
+  /** GEN-06's number. Null until GEN-06 exists to compute it. */
+  computed_duration_mins: positiveInt.nullable(),
+  requested_intensity: z.int().min(1).max(10),
+  effective_intensity: z.int().min(1).max(10),
+  adjustment_reason: z.string().nullable(),
+  generation_notes: z.string().nullable(),
+  prompt_version: nonBlank,
+  contract_version: nonBlank,
+  workout: generationOutputSchema,
+})
+
+/** `workout_sessions` (DATA-01c §3, plus SES-01a's `abandoned_at`). */
+export const workoutSessionRowSchema = z.object({
+  id: z.uuid(),
+  user_id: z.uuid(),
+  location_id: z.uuid().nullable(),
+  created_at: timestamp,
+  updated_at: timestamp,
+  date: z.iso.date(),
+  title: nonBlank,
+  overview: z.string().nullable(),
+  session_focus: sessionFocusSchema,
+  goal_preset: goalPresetSchema.nullable(),
+  requested_duration_mins: positiveInt,
+  effective_duration_target_mins: positiveInt,
+  computed_duration_mins: positiveInt.nullable(),
+  // Zero is a real elapsed duration — a session completed the moment it
+  // started — so this is non-negative rather than positive, exactly as
+  // `workout_sessions_durations_sane` has it.
+  actual_duration_mins: nonNegativeInt.nullable(),
+  requested_intensity: z.int().min(1).max(10),
+  effective_intensity: z.int().min(1).max(10),
+  adjustment_reason: z.string().nullable(),
+  generation_notes: z.string().nullable(),
+  prompt_version: nonBlank,
+  contract_version: nonBlank,
+  // The three lifecycle timestamps. State is derived from them and stored
+  // nowhere, which is why all three are parsed rather than just the latest.
+  started_at: timestamp.nullable(),
+  completed_at: timestamp.nullable(),
+  abandoned_at: timestamp.nullable(),
+  mood: z.int().min(1).max(5).nullable(),
+  session_notes: z.string().nullable(),
+  counts_for_streak: z.boolean(),
+})
+
+/** `workout_sections` (DATA-01c §4). */
+export const workoutSectionRowSchema = z.object({
+  id: z.uuid(),
+  session_id: z.uuid(),
+  created_at: timestamp,
+  updated_at: timestamp,
+  section_type: sectionTypeSchema,
+  order_index: nonNegativeInt,
+  section_title: nonBlank,
+  section_notes: z.string().nullable(),
+})
+
+/** `workout_blocks` (DATA-01c §5). The clock, once, for the whole block. */
+export const workoutBlockRowSchema = z.object({
+  id: z.uuid(),
+  section_id: z.uuid(),
+  created_at: timestamp,
+  order_index: nonNegativeInt,
+  structure_type: structureTypeSchema,
+  rounds: positiveInt.nullable(),
+  timer_type: timerContractSchema,
+  timer_seconds: positiveInt.nullable(),
+  round_rest_seconds: nonNegativeInt.nullable(),
+  rep_scheme: repSchemeSchema,
+  block_notes: z.string().nullable(),
+})
+
+/**
+ * `workout_exercises` (DATA-01c §6). Both statuses are read, never one: a
+ * superseded row that was completed is a fact about what happened, and a
+ * reader that collapsed the two would lose it (DATA_MODEL §7).
+ */
+export const workoutExerciseRowSchema = z.object({
+  id: z.uuid(),
+  block_id: z.uuid(),
+  exercise_id: nonBlank,
+  order_index: nonNegativeInt,
+  modality: modalitySchema,
+  sets: positiveInt.nullable(),
+  target_kind: targetKindSchema,
+  target_value: positiveInt.nullable(),
+  target_min: positiveInt.nullable(),
+  target_max: positiveInt.nullable(),
+  target_sequence: z.array(positiveInt).nullable(),
+  per_side: z.boolean(),
+  distance_unit: distanceUnitSchema.nullable(),
+  rest_seconds: nonNegativeInt.nullable(),
+  tempo: z.string().nullable(),
+  load_type: loadGuidanceSchema.nullable(),
+  load_value: z.number().nullable(),
+  equipment_used: nonBlank,
+  is_interval_exercise: z.boolean(),
+  slot_id: z.uuid(),
+  replaces_id: z.uuid().nullable(),
+  origin: prescriptionOriginSchema,
+  created_at: timestamp,
+  superseded_at: timestamp.nullable(),
+  revision_status: revisionStatusSchema,
+  execution_status: executionStatusSchema,
+  exercise_notes: z.string().nullable(),
+})
+
+/**
+ * `exercise_set_logs` (DATA-01d §2). Every actual is nullable and every one of
+ * them admits zero: null is "not recorded", zero is a real result, and the two
+ * are different observations (DATA_MODEL §8).
+ */
+export const exerciseSetLogRowSchema = z.object({
+  id: z.uuid(),
+  workout_exercise_id: z.uuid(),
+  prescription_revision_status: revisionStatusSchema,
+  set_number: positiveInt,
+  actual_reps: nonNegativeInt.nullable(),
+  actual_duration_seconds: nonNegativeInt.nullable(),
+  actual_distance: z.number().min(0).nullable(),
+  actual_distance_unit: distanceUnitSchema.nullable(),
+  weight: z.number().min(0).nullable(),
+  weight_unit: weightUnitSchema,
+  rpe: z.number().min(1).max(10).nullable(),
+  is_warmup_set: z.boolean(),
+  created_at: timestamp,
+})
+
+/**
+ * What `session_snapshot` answers: the session as it currently stands, with
+ * the sets already logged against each active prescription. Nested rather than
+ * four flat lists because the nesting is the structure — a block's members are
+ * the block's, and a screen that had to re-join them could get it wrong.
+ */
+export const sessionSnapshotSchema = z.object({
+  session: workoutSessionRowSchema,
+  state: sessionStateSchema,
+  sections: z.array(
+    z.object({
+      section: workoutSectionRowSchema,
+      blocks: z.array(
+        z.object({
+          block: workoutBlockRowSchema,
+          exercises: z.array(
+            z.object({
+              exercise: workoutExerciseRowSchema,
+              set_logs: z.array(exerciseSetLogRowSchema),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+})
+
+/**
+ * Contract-only vocabulary, and the third exception to "no second vocabulary".
+ * These are what the lifecycle functions answer with, and no column holds one:
+ * a transition's outcome is an event, not a stored fact. They are text in the
+ * returned `jsonb` rather than an enum type because an enum inside `jsonb` is
+ * not enforced by Postgres anyway, and a vocabulary that looks enforced but is
+ * not is worse than one that is honestly parsed here.
+ *
+ * The three refusals are the reason these functions do not raise: an exception
+ * crosses PostgREST as a 400 carrying a Postgres message, and CORE-01's
+ * envelope cannot turn that back into a typed code (the same reasoning GEN-02a
+ * settled for retrieval).
+ */
+export const SESSION_OUTCOMES = [
+  'started',
+  'completed',
+  'abandoned',
+  'swapped',
+  'not_found',
+  'already_active',
+  'invalid_transition',
+] as const
+export const sessionOutcomeSchema = z.enum(SESSION_OUTCOMES)
+
+/**
+ * A lifecycle call's answer. `session` is present on everything except
+ * `not_found`, `active_session_id` names the session that is already running,
+ * and `event` and `state` say which transition was refused and from where —
+ * which is what turns "invalid transition" into a message a screen can write.
+ */
+export const sessionTransitionSchema = z.object({
+  outcome: sessionOutcomeSchema,
+  event: z.string().optional(),
+  state: sessionStateSchema.nullish(),
+  active_session_id: z.uuid().nullish(),
+  session: workoutSessionRowSchema.nullish(),
+  exercise: workoutExerciseRowSchema.nullish(),
+  superseded: workoutExerciseRowSchema.nullish(),
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Parsing at the boundary
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -540,5 +773,14 @@ export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type Location = z.infer<typeof locationSchema>
 export type UserConstraintRow = z.infer<typeof userConstraintRowSchema>
+export type SessionAcceptance = z.infer<typeof sessionAcceptanceSchema>
+export type WorkoutSessionRow = z.infer<typeof workoutSessionRowSchema>
+export type WorkoutSectionRow = z.infer<typeof workoutSectionRowSchema>
+export type WorkoutBlockRow = z.infer<typeof workoutBlockRowSchema>
+export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
+export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
+export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
+export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
+export type SessionTransition = z.infer<typeof sessionTransitionSchema>
 export type SessionFunction = z.infer<typeof sessionFunctionSchema>
 export type AnchorRelationship = z.infer<typeof anchorRelationshipSchema>
