@@ -39,6 +39,7 @@ import {
   type ExerciseSetLogRow,
 } from '../state/schemas'
 import type { AuthClient } from './auth'
+import { createExercisesClient, type ExercisesClient } from './exercises'
 import { createHistoryClient, type HistoryClient } from './history'
 import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
@@ -73,6 +74,12 @@ export interface WorkoutClients {
    */
   readonly history: HistoryClient
   readonly setLogs: SetLogsClient
+  /**
+   * EXE-05's coaching panel: the library definition behind a prescription, and
+   * the note the user writes on it. Here for the reason `history` is — it needs
+   * the access token as it is at the moment of the call and nothing more.
+   */
+  readonly exercises: ExercisesClient
 }
 
 export interface WorkoutClientsConfig {
@@ -238,7 +245,28 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults, history, setLogs }
+  const exercises: ExercisesClient = {
+    async definition(exerciseId) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      return createExercisesClient({
+        ...supabase,
+        accessToken: accessToken.value,
+      }).definition(exerciseId)
+    },
+    async saveNotes(workoutExerciseId, notes) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      return createExercisesClient({
+        ...supabase,
+        accessToken: accessToken.value,
+      }).saveNotes(workoutExerciseId, notes)
+    },
+  }
+
+  return { sessions, blockResults, history, setLogs, exercises }
 }
 
 /**
@@ -269,5 +297,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     blockResults: { record: refusal },
     history: { page: refusal },
     setLogs: { log: refusal },
+    exercises: { definition: refusal, saveNotes: refusal },
   }
 }
