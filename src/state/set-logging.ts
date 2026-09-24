@@ -78,6 +78,15 @@ export interface SetLogEntry {
 }
 
 /**
+ * Where a set stands between the user performing it and the database holding
+ * it (EXE-07). Three states, because the screen must be able to tell them
+ * apart: `logged` is a row the database has, `syncing` is a set written to the
+ * durable queue and on its way, and `failed` is one whose write came back
+ * refused and is being retried. Only `logged` may be drawn as confirmed.
+ */
+export type SetSyncStatus = 'logged' | 'syncing' | 'failed'
+
+/**
  * A set as it now stands, whether it was read from the snapshot or written a
  * moment ago. Nullable throughout, because the row is.
  */
@@ -91,6 +100,8 @@ export interface LoggedSet {
   readonly weightUnit: Enums<'weight_unit'>
   readonly rpe: number | null
   readonly isWarmup: boolean
+  /** Whether the database has this set, or only this device does (EXE-07). */
+  readonly status: SetSyncStatus
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -177,7 +188,7 @@ function isNonNegativeInteger(value: number | undefined): boolean {
   return value === undefined || (Number.isInteger(value) && value >= 0)
 }
 
-/** A stored row, as the screen reads it back. */
+/** A stored row, as the screen reads it back: the database has this one. */
 export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
   return {
     setNumber: row.set_number,
@@ -189,6 +200,38 @@ export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
     weightUnit: row.weight_unit,
     rpe: row.rpe,
     isWarmup: row.is_warmup_set,
+    status: 'logged',
+  }
+}
+
+/**
+ * A set the durable queue is holding (EXE-07), as the screen reads it. The
+ * numbers are the ones the user typed — the row does not exist yet — and the
+ * status is what stops the screen drawing it as confirmed. An omitted
+ * measurement reads back as `null` here for the same reason it is written as
+ * `null`: not recorded is not zero.
+ *
+ * `logged` is a legitimate status to ask for, in exactly one case: the insert
+ * came back as a collision on this entry's own client-minted id, which means
+ * the database is holding precisely these values already.
+ */
+export function loggedSetFromEntry(
+  entry: SetLogEntry,
+  status: SetSyncStatus,
+): LoggedSet {
+  const { performed } = entry
+
+  return {
+    setNumber: performed.setNumber,
+    reps: recorded(performed.reps),
+    durationSeconds: recorded(performed.durationSeconds),
+    distance: recorded(performed.distance),
+    distanceUnit: performed.distance === undefined ? null : entry.distanceUnit,
+    weight: recorded(performed.weight),
+    weightUnit: entry.weightUnit,
+    rpe: recorded(performed.rpe),
+    isWarmup: performed.isWarmup ?? false,
+    status,
   }
 }
 
@@ -241,8 +284,24 @@ export function prefillFrom(sets: readonly LoggedSet[]): SetPrefill | null {
 // The seam the renderers use
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Where a set is in its journey to a row. */
-export type SetLogStatus = 'logged' | 'saving'
+/**
+ * What the session owes the database, as one fact the shell can state once
+ * (EXE-07). It is a count and a flag rather than a list of errors because the
+ * requirement is explicit: sustained failure surfaces once, factually, with
+ * the number of unsynced sets — never a toast per set.
+ */
+export interface SetSyncState {
+  /** Sets held on this device that the database has not confirmed. */
+  readonly unsyncedCount: number
+  /**
+   * True once a queued set has been refused more than once, or refused by
+   * something a retry cannot fix. Below that, a set in the queue is ordinary
+   * and says so on its own row without the shell raising anything.
+   */
+  readonly sustainedFailure: boolean
+  /** True while a flush pass is actually in flight. */
+  readonly syncing: boolean
+}
 
 export interface SetLoggingApi {
   /**
@@ -252,15 +311,24 @@ export interface SetLoggingApi {
    */
   readonly weightUnit: Enums<'weight_unit'> | null
   /**
-   * Hands one performed set to the shell, which writes it immediately. A
-   * renderer never sees the row, the unit or the id — which is what keeps
-   * `exercise_set_logs` to one writer for every structure type.
+   * Hands one performed set to the shell, which writes it to the durable queue
+   * immediately and flushes it from there (EXE-07). A renderer never sees the
+   * row, the unit or the id — which is what keeps `exercise_set_logs` to one
+   * writer for every structure type.
    */
   logSet(exerciseId: string, performed: PerformedSet): void
-  /** Every set already recorded against this prescription, lowest set first. */
+  /**
+   * Every set recorded against this prescription, lowest set first — the rows
+   * the database holds and the ones still queued alike, each carrying the
+   * status that says which it is.
+   */
   loggedSets(exerciseId: string): readonly LoggedSet[]
   /** True while this exercise has a set in flight. */
   isSaving(exerciseId: string): boolean
+  /** What this session still owes the database. */
+  readonly sync: SetSyncState
+  /** Flushes the queue now: the one recovery action the notice offers. */
+  retrySync(): void
 }
 
 export const SetLoggingContext = createContext<SetLoggingApi | null>(null)

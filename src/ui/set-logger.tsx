@@ -20,10 +20,21 @@
  *     (`superset-circuit-clarity.md` §8);
  *   · a warmup set carries the word "Warmup", not a tint: colour is never the
  *     only cue.
+ *
+ * The set list also says where each set has *got to* (EXE-07). A set held by
+ * the durable queue is drawn — the user performed it — but never as though the
+ * database had it, and the difference is a word and a glyph before it is a hue.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 
-import { Button, Checkbox, Input } from '../design-system/index'
+import {
+  AlertTriangle,
+  Button,
+  Checkbox,
+  CircleCheck,
+  Input,
+  RefreshCw,
+} from '../design-system/index'
 import {
   exerciseName,
   modalityLabel,
@@ -42,6 +53,7 @@ import {
   type LoggedSet,
   type PerformedSet,
   type SetPrefill,
+  type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
 import { useInvalidFocus } from './formFocus'
@@ -147,11 +159,54 @@ function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
       {[...sets]
         .sort((left, right) => left.setNumber - right.setNumber)
         .map((set) => (
-          <li key={set.setNumber} style={{ fontFamily: 'var(--font-data)' }}>
-            {loggedSetText(set)}
+          <li
+            key={set.setNumber}
+            style={{
+              fontFamily: 'var(--font-data)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-100)',
+            }}
+          >
+            <span>{loggedSetText(set)}</span>
+            <SyncBadge status={set.status} />
           </li>
         ))}
     </ol>
+  )
+}
+
+/** What each status says and which glyph carries it. */
+const SYNC_BADGE: Record<SetSyncStatus, { label: string; icon: ReactNode; color: string }> = {
+  logged: { label: 'Saved', icon: <CircleCheck />, color: 'var(--icon-toast-positive)' },
+  syncing: { label: 'Saving', icon: <RefreshCw />, color: 'var(--icon-toast-info)' },
+  failed: { label: 'On this device only', icon: <AlertTriangle />, color: 'var(--icon-toast-negative)' },
+}
+
+/**
+ * Where one set has got to (EXE-07). A set the database has not confirmed is
+ * never drawn as though it had, and the difference is carried by a word and a
+ * glyph before it is carried by a hue — colour is never the only cue.
+ */
+function SyncBadge({ status }: { status: SetSyncStatus }) {
+  const badge = SYNC_BADGE[status]
+
+  return (
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 'var(--spacing-100)',
+        color: badge.color,
+        fontSize: 'var(--label-xs-size)',
+        letterSpacing: 'var(--tracking-data)',
+      }}
+    >
+      <span aria-hidden="true" style={{ display: 'flex' }}>
+        {badge.icon}
+      </span>
+      {badge.label}
+    </span>
   )
 }
 

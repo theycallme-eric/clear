@@ -95,6 +95,18 @@ Alongside that flow, `src/main.tsx` registers `public/sw.js` after render (PWA-0
 caches the app shell only — document network-first, fingerprinted assets cache-first — and every
 API response is left to the network, because offline data is OFF-01 in M3.
 
+One write path deliberately does not go straight to the network, and it is the only one:
+`exercise_set_logs`. EXE-07 puts `src/state/set-log-queue.ts` in front of `SetLogsClient`, so a
+logged set is serialised into `localStorage` under `clear.set-log-queue` inside the tap's own tick
+and flushed from there — retried on a backoff, on `online`, and when the tab returns — rather than
+written and hoped for. `SetLoggingProvider` owns that flush, reconciles the restored queue against
+the session snapshot on mount, and is what the screen reads a set's `logged` / `syncing` / `failed`
+status from. This is not the start of offline support: nothing is cached for reading, the queue
+holds only work the user physically did, and an entry leaves it only when the row is stored or the
+snapshot proves it already was. The idempotency it depends on is DATA-01d's client-minted primary
+key — a retried insert collides with its own first write instead of inventing a second set — and
+its key is the one local record `clearWorkoutShellState` must never drop.
+
 The database is a second, independent flow: `supabase/migrations/` → the reused Supabase project.
 DATA-01a adds the catalog domain — exercise definitions, the component→pattern map, muscle
 mappings, the authored pattern weighting, and the three derived views. Catalog tables are readable
