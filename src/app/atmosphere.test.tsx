@@ -50,7 +50,9 @@ const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
  * measure their own atmosphere instead of the destination of a redirect.
  */
 function providersFor(pathname: string): ProviderOptions {
-  if (pathname === '/summary') return signedIn()
+  // SET-01's hub is protected: signed out it renders a redirect to Welcome,
+  // whose `full` is then the only level there is to measure.
+  if (pathname === '/summary' || pathname === '/settings') return signedIn()
   if (pathname !== '/workout') return {}
   return signedIn({
     workout: createWorkoutDouble({ session: snapshotFixture() }).clients,

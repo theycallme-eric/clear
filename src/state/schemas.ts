@@ -400,6 +400,22 @@ export const profileSchema = z.object({
   onboarded_at: timestamp.nullable(),
 })
 
+/**
+ * SET-01's edit to `profiles`: the three preferences the settings hub writes,
+ * and nothing else.
+ *
+ * Strict, because a key this does not carry is a column the hub has no business
+ * changing — `onboarded_at` in particular, since re-answering a question is not
+ * re-entering onboarding (IA.md §6). Nullable exactly where the columns are,
+ * and `min(1)` because `profiles_enabled_sections_not_empty` is: an edit that
+ * unticks the last section is refused here rather than by the database.
+ */
+export const profilePreferencesSchema = z.strictObject({
+  experience_level: experienceLevelSchema.nullable(),
+  goal_preset: goalPresetSchema.nullable(),
+  enabled_sections: z.array(sectionTypeSchema).min(1),
+})
+
 /** `locations` (DATA-01b §4). Equipment is `location_equipment`, not a column. */
 export const locationSchema = z.object({
   id: z.uuid(),
@@ -902,6 +918,7 @@ export type ErrorResponse = z.infer<typeof errorResponseSchema>
 export type SchemaIssue = z.infer<typeof schemaIssueSchema>
 export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
+export type ProfilePreferences = z.infer<typeof profilePreferencesSchema>
 export type Location = z.infer<typeof locationSchema>
 export type OnboardingAnswers = z.infer<typeof onboardingAnswersSchema>
 export type OnboardingCommit = z.infer<typeof onboardingCommitSchema>

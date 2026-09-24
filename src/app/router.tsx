@@ -11,6 +11,7 @@ import { Protected, PublicOnly } from './guards'
 import { Login } from './Login'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
+import { Settings } from './Settings'
 import { Summary } from './Summary'
 import { Welcome } from './Welcome'
 import { Workout } from './Workout'
@@ -112,6 +113,17 @@ export const routes: RouteObject[] = [
               <PublicOnly title="Sign in">
                 <Login />
               </PublicOnly>
+            ),
+          },
+          // SET-01 — `protected` (IA.md §1). The hub answers every question
+          // onboarding asked; its four sub-views are SET-02's, and none of
+          // them is routed until the screen behind it exists.
+          {
+            path: '/settings',
+            element: (
+              <Protected title="Settings">
+                <Settings />
+              </Protected>
             ),
           },
           ...devRoutes,

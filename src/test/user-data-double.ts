@@ -17,6 +17,7 @@ import type {
   OnboardingAnswers,
   OnboardingCommit,
   Profile,
+  ProfilePreferences,
 } from '../state/schemas'
 import type { UserDataClient } from '../data/user-data'
 
@@ -69,6 +70,10 @@ export interface FakeUserDataOptions {
   readonly completeOnboarding?: (
     answers: OnboardingAnswers,
   ) => Promise<Result<OnboardingCommit>>
+  readonly updatePreferences?: (
+    userId: string,
+    preferences: ProfilePreferences,
+  ) => Promise<Result<Profile>>
 }
 
 export interface FakeUserDataClient extends UserDataClient {
@@ -77,6 +82,8 @@ export interface FakeUserDataClient extends UserDataClient {
   readonly locationCalls: string[]
   /** Every payload ONB-01's commit was called with, in order. */
   readonly onboardingCalls: OnboardingAnswers[]
+  /** Every preference patch SET-01's hub wrote, in order. */
+  readonly preferenceWrites: ProfilePreferences[]
 }
 
 export function createFakeUserDataClient(
@@ -85,11 +92,13 @@ export function createFakeUserDataClient(
   const profileCalls: string[] = []
   const locationCalls: string[] = []
   const onboardingCalls: OnboardingAnswers[] = []
+  const preferenceWrites: ProfilePreferences[] = []
 
   return {
     profileCalls,
     locationCalls,
     onboardingCalls,
+    preferenceWrites,
     async profile(userId) {
       profileCalls.push(userId)
       if (options.profile) return options.profile(userId)
@@ -107,6 +116,13 @@ export function createFakeUserDataClient(
       // transaction would have left behind for exactly these answers, so a
       // test that is not about failure never has to describe one.
       return ok(committedFor(answers))
+    },
+    async updatePreferences(userId, preferences) {
+      preferenceWrites.push(preferences)
+      if (options.updatePreferences) return options.updatePreferences(userId, preferences)
+      // The default stores: it answers with the row the patch would have left,
+      // which is what the next read — and the next generation — would see.
+      return ok(onboardedProfile(preferences))
     },
   }
 }

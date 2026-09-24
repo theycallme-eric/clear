@@ -92,6 +92,9 @@ function unconfiguredUserDataClient(): UserDataClient {
     async completeOnboarding() {
       return failure()
     },
+    async updatePreferences() {
+      return failure()
+    },
   }
 }
 
@@ -137,6 +140,9 @@ function unconfiguredUserConstraintsClient(): UserConstraintsClient {
       return failure()
     },
     async remove() {
+      return failure()
+    },
+    async setPatternNote() {
       return failure()
     },
   }

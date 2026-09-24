@@ -27,11 +27,13 @@ import {
   onboardingAnswersSchema,
   onboardingCommitSchema,
   parseBoundary,
+  profilePreferencesSchema,
   profileSchema,
   type Location,
   type OnboardingAnswers,
   type OnboardingCommit,
   type Profile,
+  type ProfilePreferences,
 } from '../state/schemas'
 import type { AuthClient } from './auth'
 import { createSupabaseClient, type SupabaseClient, type SupabaseConfig } from './supabase'
@@ -46,6 +48,16 @@ export interface UserDataClient {
    * with the rows as the transaction left them.
    */
   completeOnboarding(answers: OnboardingAnswers): Promise<Result<OnboardingCommit>>
+  /**
+   * SET-01's edit: the three preferences the settings hub owns, written as one
+   * patch and answered with the row as it now stands. Nothing here can create
+   * a profile — a settings change is a correction to an answered question, and
+   * onboarding is the only thing that answers one first (IA.md §6).
+   */
+  updatePreferences(
+    userId: string,
+    preferences: ProfilePreferences,
+  ): Promise<Result<Profile>>
 }
 
 export interface UserDataConfig {
@@ -129,6 +141,33 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       if (isErr(committed)) return committed
 
       return parseBoundary(onboardingCommitSchema, committed.value)
+    },
+
+    async updatePreferences(userId, preferences) {
+      // Parsed on the way out, like the commit above: an edit the database
+      // would refuse — an empty section set is the one a user can actually
+      // make — never becomes a request, and the screen gets the field back
+      // rather than a constraint violation phrased in Postgres' vocabulary.
+      const patch = parseBoundary(profilePreferencesSchema, preferences)
+      if (isErr(patch)) return patch
+
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      const rows = await supa.value.from('profiles').update(patch.value, { id: userId })
+      if (isErr(rows)) return rows
+
+      const [row] = rows.value
+      // No row means the patch matched nothing: RLS refused it, or the profile
+      // is gone. Either way the read that follows would be a second guess, so
+      // this answers with the failure rather than inventing a profile.
+      if (row === undefined) {
+        return err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED, {
+          details: { table: 'profiles', userId },
+        }))
+      }
+
+      return parseBoundary(profileSchema, row)
     },
   }
 }
