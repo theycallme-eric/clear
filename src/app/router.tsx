@@ -11,6 +11,7 @@ import { Protected, PublicOnly } from './guards'
 import { Login } from './Login'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
+import { Summary } from './Summary'
 import { Welcome } from './Welcome'
 import { Workout } from './Workout'
 
@@ -91,6 +92,18 @@ export const routes: RouteObject[] = [
               <PublicOnly title="Welcome">
                 <Welcome />
               </PublicOnly>
+            ),
+          },
+          // SUM-01 — `protected` is the whole of the route's guard. "A
+          // completed session" is not a question a route can answer: it is a
+          // fact about the data, so the screen asks for it and redirects Home
+          // when there is none (IA.md §1, state-dependent guards).
+          {
+            path: '/summary',
+            element: (
+              <Protected title="Summary">
+                <Summary />
+              </Protected>
             ),
           },
           {

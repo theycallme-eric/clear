@@ -21,6 +21,7 @@ import {
 } from '../data/auth'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
+import { createSummaryClient, type SummaryClient } from '../data/summary'
 import { createUserDataClient, type UserDataClient } from '../data/user-data'
 import {
   createWorkoutClients,
@@ -68,7 +69,7 @@ function unconfiguredOtpClient(): OtpClient {
   }
 }
 
-/** AUTH-03's reads, for a build that cannot reach the project at all. */
+/** AUTH-03's reads and ONB-01's write, for a build that cannot reach the project. */
 function unconfiguredUserDataClient(): UserDataClient {
   const failure = () =>
     err(
@@ -84,6 +85,31 @@ function unconfiguredUserDataClient(): UserDataClient {
     async locations() {
       return failure()
     },
+    async completeOnboarding() {
+      return failure()
+    },
+  }
+}
+
+/** SUM-01's two reads and its one write, for a build with no configuration. */
+function unconfiguredSummaryClient(): SummaryClient {
+  const failure = () =>
+    err(
+      createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
+  return {
+    async latest() {
+      return failure()
+    },
+    async streak() {
+      return failure()
+    },
+    async saveDebrief() {
+      return failure()
+    },
   }
 }
 
@@ -97,6 +123,12 @@ interface Clients {
    * `auth.ts` is the only thing that knows when that token rotated.
    */
   readonly userData: UserDataClient
+  /**
+   * SUM-01's debrief. Built here for the same reason `userData` is: the token
+   * it presents has to be the live one, and `auth` is what knows when it
+   * rotated.
+   */
+  readonly summary: SummaryClient
   /**
    * EXE-01's lifecycle and `block_results` writes. Built from the same `auth`
    * object for the same reason `userData` is: the token it presents has to be
@@ -126,6 +158,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       auth: unconfiguredAuthClient(),
       otp: unconfiguredOtpClient(),
       userData: unconfiguredUserDataClient(),
+      summary: unconfiguredSummaryClient(),
       workout: unconfiguredWorkoutClients(),
     }
     return clients
@@ -137,6 +170,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     auth,
     otp: createOtpClient(config.value),
     userData: createUserDataClient({ auth, supabase: config.value }),
+    summary: createSummaryClient({ auth, supabase: config.value }),
     workout: createWorkoutClients({ auth, supabase: config.value }),
   }
   return clients

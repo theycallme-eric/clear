@@ -1,6 +1,6 @@
 /**
  * AUTH-03 — the two reads the guards are built on: the signed-in user's
- * profile, and their locations.
+ * profile, and their locations. ONB-01 adds the one write that creates both.
  *
  * They are one module because they share exactly one thing — the access token
  * has to come from the live session on every call, since `auth.ts` rotates it
@@ -13,13 +13,24 @@
  * is the point. `null` means the query succeeded and there is no row. A read
  * that failed answers `err`, and a caller that cannot tell those apart is
  * defect D1 — routing a user to onboarding because their profile 500'd.
+ *
+ * `completeOnboarding` joins them rather than living in a module of its own
+ * because it writes exactly what they read, and because it has to answer them:
+ * the RPC hands back the committed profile and location so the two queries can
+ * be seeded instead of refetched. Atomicity is not this file's to arrange —
+ * `complete_onboarding` is one transaction (ONB-01's migration), so there is no
+ * partial-write path here to clean up after.
  */
 import { createError, err, ErrorCode, isErr, ok, type Result } from '../state/errors'
 import {
   locationListSchema,
+  onboardingAnswersSchema,
+  onboardingCommitSchema,
   parseBoundary,
   profileSchema,
   type Location,
+  type OnboardingAnswers,
+  type OnboardingCommit,
   type Profile,
 } from '../state/schemas'
 import type { AuthClient } from './auth'
@@ -30,6 +41,11 @@ export interface UserDataClient {
   profile(userId: string): Promise<Result<Profile | null>>
   /** Every location the user owns, default first then by name. */
   locations(userId: string): Promise<Result<Location[]>>
+  /**
+   * ONB-01's atomic commit: every first-run answer, or none of them. Answers
+   * with the rows as the transaction left them.
+   */
+  completeOnboarding(answers: OnboardingAnswers): Promise<Result<OnboardingCommit>>
 }
 
 export interface UserDataConfig {
@@ -86,6 +102,33 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       if (isErr(rows)) return rows
 
       return parseBoundary(locationListSchema, rows.value)
+    },
+
+    async completeOnboarding(answers) {
+      // Parsed on the way out as well as back. CORE-03's rule is that anything
+      // which validates can be persisted, so an answer set the transaction
+      // would have aborted halfway through never opens one.
+      const payload = parseBoundary(onboardingAnswersSchema, answers)
+      if (isErr(payload)) return payload
+
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      // No `p_user_id`: the function reads `auth.uid()`, so the token this
+      // client is already presenting is the only thing that names the owner.
+      const committed = await supa.value.rpc('complete_onboarding', {
+        p_location_name: payload.value.location_name,
+        p_location_tier: payload.value.location_tier,
+        p_equipment: payload.value.equipment,
+        p_experience_level: payload.value.experience_level,
+        p_goal_preset: payload.value.goal_preset,
+        p_sections: payload.value.enabled_sections,
+        p_avoid_patterns: payload.value.avoid_patterns,
+        p_note: payload.value.note,
+      })
+      if (isErr(committed)) return committed
+
+      return parseBoundary(onboardingCommitSchema, committed.value)
     },
   }
 }

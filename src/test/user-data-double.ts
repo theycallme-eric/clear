@@ -12,7 +12,12 @@
  * the test cannot be written.
  */
 import { ok, type Result } from '../state/errors'
-import type { Location, Profile } from '../state/schemas'
+import type {
+  Location,
+  OnboardingAnswers,
+  OnboardingCommit,
+  Profile,
+} from '../state/schemas'
 import type { UserDataClient } from '../data/user-data'
 
 /** The user `auth-double.ts` signs in. Both files have to agree on it. */
@@ -61,12 +66,17 @@ export function fixtureLocation(overrides: Partial<Location> = {}): Location {
 export interface FakeUserDataOptions {
   readonly profile?: (userId: string) => Promise<Result<Profile | null>>
   readonly locations?: (userId: string) => Promise<Result<Location[]>>
+  readonly completeOnboarding?: (
+    answers: OnboardingAnswers,
+  ) => Promise<Result<OnboardingCommit>>
 }
 
 export interface FakeUserDataClient extends UserDataClient {
   /** Every user id `profile` was asked for, in order. */
   readonly profileCalls: string[]
   readonly locationCalls: string[]
+  /** Every payload ONB-01's commit was called with, in order. */
+  readonly onboardingCalls: OnboardingAnswers[]
 }
 
 export function createFakeUserDataClient(
@@ -74,10 +84,12 @@ export function createFakeUserDataClient(
 ): FakeUserDataClient {
   const profileCalls: string[] = []
   const locationCalls: string[] = []
+  const onboardingCalls: OnboardingAnswers[] = []
 
   return {
     profileCalls,
     locationCalls,
+    onboardingCalls,
     async profile(userId) {
       profileCalls.push(userId)
       if (options.profile) return options.profile(userId)
@@ -88,5 +100,28 @@ export function createFakeUserDataClient(
       if (options.locations) return options.locations(userId)
       return ok([fixtureLocation()])
     },
+    async completeOnboarding(answers) {
+      onboardingCalls.push(answers)
+      if (options.completeOnboarding) return options.completeOnboarding(answers)
+      // The default double commits: it answers with the rows a real
+      // transaction would have left behind for exactly these answers, so a
+      // test that is not about failure never has to describe one.
+      return ok(committedFor(answers))
+    },
+  }
+}
+
+/** What `complete_onboarding` would return for `answers`, in memory. */
+export function committedFor(answers: OnboardingAnswers): OnboardingCommit {
+  return {
+    profile: onboardedProfile({
+      experience_level: answers.experience_level,
+      goal_preset: answers.goal_preset,
+      enabled_sections: answers.enabled_sections,
+    }),
+    location: fixtureLocation({
+      name: answers.location_name,
+      tier: answers.location_tier,
+    }),
   }
 }

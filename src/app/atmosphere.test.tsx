@@ -45,13 +45,12 @@ const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
 /**
  * What a route needs before it renders itself rather than a redirect.
  *
- * `/workout` is the only documented route with a state-dependent guard
- * (EXE-01): an anonymous visitor is sent to `/welcome` and a signed-in one
- * with no session is sent Home, and in both cases the pathname — and so the
- * level — is the destination's, not this route's. Every other route is
- * reachable by the default anonymous visitor.
+ * `/workout` has EXE-01's state-dependent guard and `/summary` is protected.
+ * Both need a signed-in fixture to stay mounted long enough for this test to
+ * measure their own atmosphere instead of the destination of a redirect.
  */
 function providersFor(pathname: string): ProviderOptions {
+  if (pathname === '/summary') return signedIn()
   if (pathname !== '/workout') return {}
   return signedIn({
     workout: createWorkoutDouble({ session: snapshotFixture() }).clients,

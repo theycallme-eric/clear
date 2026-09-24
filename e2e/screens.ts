@@ -27,6 +27,10 @@ export const SCREENS: readonly E2eScreen[] = [
   { path: '/', route: '/', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/welcome', route: '/welcome', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/login', route: '/login', title: 'Sign in · CLEAR', heading: 'Sign in' },
+  // Summary is protected as well. The credential-free preview must exercise
+  // its guard and arrive at Welcome; signed-in behavior is covered by SUM-01's
+  // unit and integration tests without putting credentials in preview CI.
+  { path: '/summary', route: '/summary', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // EXE-01's focus mode is protected *and* state-dependent. With the
   // credential-free preview fixture it resolves through the public-only path
   // to Welcome, exactly as `/` does — the shell is never reachable without a

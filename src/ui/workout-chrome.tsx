@@ -11,6 +11,12 @@
  * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
  * is the one that composes `TimerDisplay`, exactly as the IA says.
  *
+ * It also holds the one surface that is not the shell's alone:
+ * `AbandonConfirmDialog`. Three places can end a session early — the shell's
+ * header, a navigation the shell is holding, and Home's resumption card — and
+ * the requirement's promise is about the *act* rather than the surface, so the
+ * question is asked in one set of words from one component.
+ *
  * Operational-screen rules, from the export's pattern 6:
  *   · the timer is labelled once and is **not** a live region — announcing
  *     every second makes the rest of the screen unusable;
@@ -42,6 +48,7 @@ import type {
   StructureGlyph,
   StructureIdentity,
 } from '../state/workout-progress'
+import { ConfirmDialog } from './blocking-dialog'
 import { Heading, HeadingSection } from './Heading'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -292,6 +299,49 @@ const labelStyle: CSSProperties = {
   letterSpacing: 'var(--tracking-data)',
   textTransform: 'uppercase',
   color: 'var(--text-card-label)',
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Abandoning
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface AbandonConfirmDialogProps {
+  open: boolean
+  onConfirm: () => void
+  /** The safe exit: the cancel action, Esc, and the backdrop all land here. */
+  onCancel: () => void
+}
+
+/**
+ * The one question every abandon path asks, in the one set of words.
+ *
+ * Pattern 4 of the export's `patterns.md`: the title names the consequence as
+ * a question, the body says exactly what is kept and what is lost, and the
+ * confirm button repeats the verb rather than saying "OK". The body is precise
+ * about the disposition because that is what the user is deciding on — the
+ * logged work survives (abandoning is a state, not a delete), and what does not
+ * survive is the session's own resumability and its claim on the streak, which
+ * counts completed sessions (SES-01c).
+ */
+export function AbandonConfirmDialog({
+  open,
+  onConfirm,
+  onCancel,
+}: AbandonConfirmDialogProps) {
+  return (
+    <ConfirmDialog
+      open={open}
+      critical
+      title="Abandon workout?"
+      confirmLabel="Abandon"
+      cancelLabel="Keep going"
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    >
+      Everything logged so far is kept. The workout stops here: it cannot be
+      picked back up, and it does not count towards your streak.
+    </ConfirmDialog>
+  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
