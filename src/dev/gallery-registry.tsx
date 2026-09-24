@@ -18,6 +18,7 @@ import { useState, type ReactNode } from 'react'
 
 import { Button, Chip } from '../design-system/index'
 import { createError, ErrorCode, type AppError } from '../state/errors'
+import type { HistoryEntry } from '../state/history'
 import { toastQueue } from '../state/toasts'
 import {
   viewEmpty,
@@ -32,6 +33,7 @@ import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { Heading, HeadingSection } from '../ui/Heading'
+import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { Select } from '../ui/select'
 import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
@@ -113,6 +115,65 @@ function CardWithActions() {
 
 function CardEmpty() {
   return <Card />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HIST-01 — history rows and chronology
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SAMPLE_HISTORY_SESSION: HistoryEntry = {
+  kind: 'session',
+  key: 'session:gallery-completed',
+  id: 'gallery-completed',
+  day: '2026-09-22',
+  title: 'Lower-body strength',
+  focus: 'lower_body',
+  status: 'completed',
+  durationMins: 42,
+  intensity: 7,
+  mood: 4,
+}
+
+const SAMPLE_HISTORY_PARTIAL: HistoryEntry = {
+  kind: 'session',
+  key: 'session:gallery-partial',
+  id: 'gallery-partial',
+  day: '2026-09-18',
+  title: 'Upper-body volume',
+  focus: 'upper_body',
+  status: 'partial',
+  durationMins: 18,
+  intensity: 6,
+  mood: null,
+}
+
+const SAMPLE_HISTORY_REST: HistoryEntry = {
+  kind: 'rest',
+  key: 'rest:2026-09-19',
+  from: '2026-09-19',
+  to: '2026-09-21',
+  days: 3,
+}
+
+function WorkoutListItemCompleted() {
+  return <WorkoutListItem entry={SAMPLE_HISTORY_SESSION} />
+}
+
+function WorkoutListItemRest() {
+  return <WorkoutListItem entry={SAMPLE_HISTORY_REST} />
+}
+
+function HistoryListMixed() {
+  return (
+    <HistoryList
+      entries={[SAMPLE_HISTORY_SESSION, SAMPLE_HISTORY_REST, SAMPLE_HISTORY_PARTIAL]}
+      label="Workout history"
+    />
+  )
+}
+
+function HistoryListEmpty() {
+  return <HistoryList entries={[]} label="Workout history" />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -625,6 +686,32 @@ const ATMOSPHERE_SPECIMENS: readonly GallerySpecimen[] = ATMOSPHERE_LEVELS.map(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  {
+    component: 'WorkoutListItem',
+    requirement: 'HIST-01',
+    module: 'src/ui/history-list.tsx',
+    summary:
+      'One chronological row. Workout status is written and carries a glyph; rest uses a quieter frame and the word Rest, so colour is never the only cue.',
+    specimens: [
+      { state: 'completed session', Render: WorkoutListItemCompleted },
+      { state: 'rest run', Render: WorkoutListItemRest },
+    ],
+  },
+  {
+    component: 'HistoryList',
+    requirement: 'HIST-01',
+    module: 'src/ui/history-list.tsx',
+    summary:
+      'The newest-first chronology as a named list, including derived rest runs between sessions.',
+    specimens: [
+      { state: 'mixed chronology', Render: HistoryListMixed },
+      {
+        state: 'empty entries',
+        note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
+        Render: HistoryListEmpty,
+      },
+    ],
+  },
   {
     component: 'Card',
     requirement: 'DS-04a',

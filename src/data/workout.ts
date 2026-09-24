@@ -21,6 +21,7 @@ import {
 } from '../state/block-completion'
 import { blockResultRowSchema, parseBoundary, type BlockResultRow } from '../state/schemas'
 import type { AuthClient } from './auth'
+import { createHistoryClient, type HistoryClient } from './history'
 import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
 
@@ -33,6 +34,13 @@ export interface WorkoutClients {
   /** SES-01a's lifecycle, carrying the live token. */
   readonly sessions: SessionsClient
   readonly blockResults: BlockResultsClient
+  /**
+   * HIST-01's history read. It sits here rather than in a façade of its own
+   * because it needs exactly what the other two need and nothing else: the
+   * access token as it is at the moment of the call. A second context carrying
+   * a second copy of that discipline would be two places to get it wrong.
+   */
+  readonly history: HistoryClient
 }
 
 export interface WorkoutClientsConfig {
@@ -125,7 +133,19 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults }
+  const history: HistoryClient = {
+    async page(userId, query) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      return createHistoryClient({ ...supabase, accessToken: accessToken.value }).page(
+        userId,
+        query,
+      )
+    },
+  }
+
+  return { sessions, blockResults, history }
 }
 
 /**
@@ -154,5 +174,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       resume: refusal,
     },
     blockResults: { record: refusal },
+    history: { page: refusal },
   }
 }

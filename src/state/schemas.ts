@@ -549,6 +549,9 @@ export const workoutSessionRowSchema = z.object({
   counts_for_streak: z.boolean(),
 })
 
+/** A page of sessions, as HIST-01's history read returns them. */
+export const workoutSessionListSchema = z.array(workoutSessionRowSchema)
+
 /** `workout_sections` (DATA-01c §4). */
 export const workoutSectionRowSchema = z.object({
   id: z.uuid(),

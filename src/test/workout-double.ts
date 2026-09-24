@@ -21,6 +21,7 @@ import type {
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { ok, type Result } from '../state/errors'
+import type { HistoryClient } from '../data/history'
 import type { BlockResultsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient } from '../data/sessions'
 import { FIXTURE_USER_ID } from './user-data-double'
@@ -213,6 +214,7 @@ export interface WorkoutDoubleOptions {
   /** Override any client method — a failing abandon, a slow complete. */
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
+  history?: Partial<HistoryClient>
 }
 
 export interface WorkoutDouble {
@@ -284,8 +286,13 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.blockResults,
   }
 
+  const history: HistoryClient = {
+    page: () => unsupported('history.page'),
+    ...options.history,
+  }
+
   return {
-    clients: { sessions, blockResults },
+    clients: { sessions, blockResults, history },
     recorded: () => [...recorded],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
