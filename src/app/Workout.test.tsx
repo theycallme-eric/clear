@@ -436,7 +436,9 @@ describe('Workout — block completion', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    // EXE-03's EMOM renderer says what it is completing; the shell's write is
+    // the same one every structure goes through.
+    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
 
     // The dialog names what was finished, per the master clarity spec.
     const dialog = dialogTitled('EMOM complete')
@@ -455,7 +457,7 @@ describe('Workout — block completion', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
     await user.click(
       within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Record effort' }),
     )
@@ -477,7 +479,7 @@ describe('Workout — block completion', () => {
     const user = userEvent.setup()
     await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
     const effort = within(dialogTitled('EMOM complete')).getByRole('slider')
     expect(effort).toHaveValue('5')
     expect(effort).toHaveAttribute('aria-valuetext', '5 of 10, moderate')
@@ -489,14 +491,14 @@ describe('Workout — block completion', () => {
       blockResults: { record: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)) },
     })
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
     await user.click(
       within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Record effort' }),
     )
 
     expect(await screen.findByText('Could not save. Try again.')).toBeInTheDocument()
     // A performed block must never be lost because one write failed.
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
     expect(double.recorded()).toEqual([])
   })
 
@@ -504,13 +506,13 @@ describe('Workout — block completion', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
     await user.click(
       within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Not now' }),
     )
 
     await waitFor(() => expect(isDialogOpen('EMOM complete')).toBe(false))
     expect(double.recorded()).toEqual([])
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
   })
 })

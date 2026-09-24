@@ -39,6 +39,8 @@ function blockFixture(
     // are true of a block whose prescriptions this test does not describe.
     // What a renderer does with them is `standard-block.test.tsx`'s.
     exercises: [],
+    timerType: 'none',
+    timerSeconds: null,
     rounds: null,
     roundRestSeconds: null,
     ...overrides,
@@ -47,11 +49,12 @@ function blockFixture(
 
 /**
  * The verb a structure completes with, where it is not "Complete block".
- * EXE-03's circuit says what it is finishing; what it *supplies* when it has
- * movements to count is `circuit-block.test.tsx`'s subject.
+ * EXE-03's circuit and EMOM say what they are finishing; what each supplies
+ * once its rounds or clock run is covered by its dedicated renderer test.
  */
 const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
   circuit: 'Complete circuit',
+  emom: 'Complete EMOM',
 }
 
 /** The shell's half of the seam, as a spy. */
