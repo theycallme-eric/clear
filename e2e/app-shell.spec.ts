@@ -35,7 +35,15 @@ test('the skip link is the first thing a keyboard reaches', async ({
   page,
   visit,
 }) => {
-  await visit('/')
+  await visit('/welcome')
+
+  // Route changes deliberately focus the arriving screen heading. Clear that
+  // programmatic focus before proving the document's natural keyboard order.
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur()
+    }
+  })
 
   await page.keyboard.press('Tab')
 

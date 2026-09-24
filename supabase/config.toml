@@ -35,3 +35,16 @@ sql_paths = [
   "seed/020_exercise_muscle_groups.sql",
   "seed/030_exercise_pattern_weights.sql",
 ]
+
+[functions.generate-workout]
+# GEN-01. JWT verification is the function's own, not the gateway's, and that is
+# deliberate: with `verify_jwt = true` an unauthenticated call is refused by the
+# platform with an untyped body and no request id in it, which is precisely the
+# 401 this requirement exists to replace. The envelope verifies the same token
+# against GoTrue and answers `{ code, message, requestId }` like every other
+# failure — so the function is never reachable unauthenticated, it just refuses
+# in CLEAR's own words.
+verify_jwt = false
+# The function imports CORE-03's schemas from `src/`, which import `zod` by bare
+# specifier. `functions/deno.json` is where that name resolves.
+import_map = "./functions/deno.json"
