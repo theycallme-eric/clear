@@ -20,13 +20,13 @@
  *     That is `ActiveSessionPrompt`, mounted in `AppChrome`, because a deep
  *     link never reaches this file.
  *
- * The other thing the shell owns is **block completion**. Every structure type
- * writes its `block_results` row through `completeBlock` here, and perceived
- * effort is captured once, by the one dialog, for all of them — so EMOM, AMRAP,
- * For Time and the ladders record it through a single path rather than each
- * renderer growing its own (EXE-01, read by OVR-03). The renderers
- * (EXE-02…EXE-04c) supply the structure-specific fields through
- * `BlockCompletionContext`; they never touch the write.
+ * The other thing the shell owns is **block completion**, and it owns it by
+ * mounting `BlockCompletionProvider` around every renderer: one effort
+ * question, one `block_results` write, for EMOM, AMRAP, For Time and the
+ * ladders alike (EXE-01, read by OVR-03). The renderers (EXE-02…EXE-04c) reach
+ * it through `useBlockCompletion` and supply only the fields their structure
+ * observed; which renderer performs which structure is `BLOCK_RENDERERS`, and
+ * none of them touches the write.
  *
  * The four states (CORE-04): loading is the session hydrating, error is a
  * lifecycle or persistence failure — shown as a blocking dialog, because a
@@ -38,11 +38,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
-import {
-  BlockCompletionContext,
-  type BlockCompletionApi,
-  type BlockOutcome,
-} from '../state/block-completion'
+import { BlockCompletionProvider } from '../state/block-completion-provider'
 import type { AppError } from '../state/errors'
 import { isErr } from '../state/errors'
 import type { SessionSnapshot } from '../state/schemas'
@@ -50,7 +46,6 @@ import {
   clampSectionIndex,
   sessionProgress,
   startingSectionIndex,
-  type BlockProgress,
   type SectionProgress,
 } from '../state/workout-progress'
 import { elapsedMinutes, useElapsedSeconds } from '../state/workout-clock'
@@ -65,15 +60,13 @@ import {
   useActiveSessionQuery,
   useWorkoutClients,
 } from '../state/workout-queries'
-import { BlockEffortDialog } from '../ui/block-effort'
+import { BlockSlot } from '../ui/block-renderers'
 import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
-import { Card } from '../ui/card'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
   GlobalTimer,
   ProgressTracker,
   SectionHeader,
-  StructureBadge,
   WorkoutNavigation,
 } from '../ui/workout-chrome'
 import { AUTHENTICATED_HOME } from './guards'
@@ -160,11 +153,6 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
 // Shell
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface PendingBlock {
-  readonly block: BlockProgress
-  readonly outcome: BlockOutcome
-}
-
 interface WorkoutShellProps {
   snapshot: SessionSnapshot
   /** Publishes the session's end so every other screen agrees immediately. */
@@ -173,7 +161,7 @@ interface WorkoutShellProps {
 }
 
 function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) {
-  const { sessions, blockResults } = useWorkoutClients()
+  const { sessions } = useWorkoutClients()
   const navigate = useNavigate()
 
   const progress = useMemo(() => sessionProgress(snapshot), [snapshot])
@@ -195,10 +183,14 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
   const seconds = useElapsedSeconds(snapshot.session.started_at)
 
   const [askedToExit, setAskedToExit] = useState(false)
-  const [pending, setPending] = useState<PendingBlock | null>(null)
-  const [recorded, setRecorded] = useState<readonly string[]>([])
   const [failure, setFailure] = useState<AppError | null>(null)
-  const [busy, setBusy] = useState<'ending' | 'recording' | null>(null)
+  const [ending, setEnding] = useState(false)
+
+  /** Every block in the session, which is what a completion names. */
+  const blocks = useMemo(
+    () => progress.sections.flatMap((entry) => entry.blocks),
+    [progress.sections],
+  )
 
   // Set synchronously, because the blocker is consulted during the navigation
   // this handler starts — a state flag would still be false when it is read.
@@ -249,9 +241,9 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
   }, [blocker])
 
   const confirmAbandon = useCallback(async () => {
-    setBusy('ending')
+    setEnding(true)
     const result = await sessions.abandon(sessionId)
-    setBusy(null)
+    setEnding(false)
 
     if (isErr(result)) {
       // The session is still running and still the user's. Nothing is
@@ -270,12 +262,12 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
   }, [blocker, depart, onSessionEnded, sessionId, sessions])
 
   const finish = useCallback(async () => {
-    setBusy('ending')
+    setEnding(true)
     // The elapsed time this screen measured, in whole minutes. The database
     // would measure it from `started_at` itself; the shell knows what the user
     // actually watched, so it says so.
     const result = await sessions.complete(sessionId, elapsedMinutes(seconds))
-    setBusy(null)
+    setEnding(false)
 
     if (isErr(result)) {
       setFailure(result.error)
@@ -286,57 +278,14 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     depart(COMPLETION_ROUTE)
   }, [depart, onSessionEnded, seconds, sessionId, sessions])
 
-  // The seam EXE-02…EXE-04c call. A block already written is refused here
-  // rather than in each renderer: "captured once" is the shell's promise.
-  const completion = useMemo<BlockCompletionApi>(
-    () => ({
-      completeBlock(blockId, outcome) {
-        if (recorded.includes(blockId)) return
-        const block = progress.sections
-          .flatMap((entry) => entry.blocks)
-          .find((candidate) => candidate.blockId === blockId)
-        if (block === undefined) return
-        setPending({ block, outcome })
-      },
-      isBlockRecorded(blockId) {
-        return recorded.includes(blockId)
-      },
-    }),
-    [progress.sections, recorded],
-  )
-
-  const recordEffort = useCallback(
-    async (perceivedEffort: number) => {
-      if (pending === null) return
-
-      setBusy('recording')
-      const result = await blockResults.record({
-        blockId: pending.block.blockId,
-        outcome: pending.outcome,
-        perceivedEffort,
-      })
-      setBusy(null)
-
-      if (isErr(result)) {
-        // The outcome is kept: the dialog closes, the failure is shown, and the
-        // block can be completed again. A performed block must never be lost
-        // because one write failed.
-        setPending(null)
-        setFailure(result.error)
-        return
-      }
-
-      setRecorded((current) => [...current, pending.block.blockId])
-      setPending(null)
-    },
-    [blockResults, pending],
-  )
-
   const canGoBack = index > 0
   const canGoForward = index < progress.total - 1
 
   return (
-    <BlockCompletionContext value={completion}>
+    // The one completion path, mounted around every renderer: the effort
+    // question and the `block_results` write belong to it, for every structure
+    // type, and to no renderer inside it.
+    <BlockCompletionProvider blocks={blocks} onFailure={setFailure}>
       <AppHeader
         meta={<GlobalTimer seconds={seconds} />}
         actions={
@@ -368,12 +317,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
                 total={progress.total}
               />
               {current.blocks.map((block) => (
-                <BlockPanel
-                  key={block.blockId}
-                  block={block}
-                  recorded={recorded.includes(block.blockId)}
-                  onComplete={completion.completeBlock}
-                />
+                <BlockSlot key={block.blockId} block={block} />
               ))}
             </>
           )}
@@ -384,7 +328,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
             onPrevious={() => section.setIndex(index - 1)}
             onNext={() => section.setIndex(index + 1)}
             onFinish={() => void finish()}
-            busy={busy === 'ending'}
+            busy={ending}
           />
         </div>
       </Screen>
@@ -402,15 +346,6 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
         Home, where you can see what you did.
       </ConfirmDialog>
 
-      <BlockEffortDialog
-        open={pending !== null}
-        identity={pending?.block.identity ?? null}
-        outcome={pending?.outcome ?? null}
-        saving={busy === 'recording'}
-        onConfirm={(effort) => void recordEffort(effort)}
-        onCancel={() => setPending(null)}
-      />
-
       {failure !== null && (
         <ErrorDialog
           open
@@ -419,59 +354,6 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
           onDismiss={() => setFailure(null)}
         />
       )}
-    </BlockCompletionContext>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Blocks
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * One block, as the shell knows it: its structure identity, how much is in it,
- * and the completion control the shell owns.
- *
- * The *contents* are not here and are not meant to be. `SectionRenderer`
- * dispatches on `structure_type` to the renderers in EXE-02…EXE-04c, and each
- * one calls `completeBlock` with what its structure observed. Until they land
- * the shell still owns the write, which is why this panel offers completion
- * with no outcome fields rather than nothing at all — the path OVR-03 reads is
- * live from day one.
- */
-function BlockPanel({
-  block,
-  recorded,
-  onComplete,
-}: {
-  block: BlockProgress
-  recorded: boolean
-  onComplete: (blockId: string, outcome: BlockOutcome) => void
-}) {
-  return (
-    <Card>
-      <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span
-            style={{
-              fontFamily: 'var(--font-data)',
-              fontSize: 'var(--label-xs-size)',
-              letterSpacing: 'var(--tracking-data)',
-              color: 'var(--text-card-label)',
-            }}
-          >
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
-        <Button
-          variant="secondary"
-          size="lg"
-          disabled={recorded}
-          onClick={() => onComplete(block.blockId, {})}
-        >
-          {recorded ? 'Block recorded' : 'Complete block'}
-        </Button>
-      </div>
-    </Card>
+    </BlockCompletionProvider>
   )
 }

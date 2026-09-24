@@ -17,6 +17,9 @@
 import { isErr, ok, err, createError, ErrorCode, type Result } from '../state/errors'
 import {
   blockResultInsert,
+  isPerceivedEffort,
+  PERCEIVED_EFFORT_MAX,
+  PERCEIVED_EFFORT_MIN,
   type BlockCompletion,
 } from '../state/block-completion'
 import { blockResultRowSchema, parseBoundary, type BlockResultRow } from '../state/schemas'
@@ -25,7 +28,10 @@ import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
 
 export interface BlockResultsClient {
-  /** Writes one `block_results` row and answers it as the database stored it. */
+  /**
+   * Writes one `block_results` row and answers it as the database stored it.
+   * An effort outside 1–10 is refused before anything is sent.
+   */
   record(completion: BlockCompletion): Promise<Result<BlockResultRow>>
 }
 
@@ -100,6 +106,23 @@ export function createWorkoutClients({
 
   const blockResults: BlockResultsClient = {
     async record(completion) {
+      // The range is the database's (`block_results_perceived_effort_range`),
+      // and it is checked here because this is the one path every structure
+      // type writes through: whatever control a renderer grows, an effort
+      // outside 1–10 is refused in the caller's own vocabulary rather than as
+      // a 400 nobody can act on.
+      if (!isPerceivedEffort(completion.perceivedEffort)) {
+        return err(
+          createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+            details: {
+              field: 'perceived_effort',
+              min: PERCEIVED_EFFORT_MIN,
+              max: PERCEIVED_EFFORT_MAX,
+            },
+          }),
+        )
+      }
+
       const accessToken = await token()
       if (isErr(accessToken)) return accessToken
 
