@@ -816,6 +816,60 @@ export const sessionSnapshotSchema = z.object({
   ),
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Session reconstruction — SES-01b
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Which of DATA_MODEL §7's three questions an answer answers. The vocabulary
+ * is the database's `reconstruction_kind` type rather than a list written
+ * again here, so a fourth reconstruction cannot be invented on this side.
+ */
+export const reconstructionKindSchema = z.enum(Constants.public.Enums.reconstruction_kind)
+
+/**
+ * What `session_as_generated`, `session_as_intended_at_start` and
+ * `session_as_performed` all answer. One shape for the three, because the
+ * three differ by a predicate and a caller holding two of them is entitled to
+ * compare them field for field.
+ *
+ * Two fields the present-tense snapshot has no use for:
+ *
+ *   * `reconstruction` — which question this answers, so a payload that has
+ *     been passed around still says what it is.
+ *   * `as_of` — the instant it resolves at. Null only for
+ *     `intended_at_start` on a session that was never started, where it is the
+ *     reason the exercises are empty rather than a gap in the data.
+ *
+ * `block_result` is null until the block is scored, and `set_logs` are the
+ * ones attached to *that* prescription — which is the whole of D6: after a
+ * swap they hang off the substitute, and the original comes back beside it
+ * carrying its lineage and an empty array.
+ */
+export const sessionReconstructionSchema = z.object({
+  reconstruction: reconstructionKindSchema,
+  as_of: timestamp.nullable(),
+  session: workoutSessionRowSchema,
+  state: sessionStateSchema,
+  sections: z.array(
+    z.object({
+      section: workoutSectionRowSchema,
+      blocks: z.array(
+        z.object({
+          block: workoutBlockRowSchema,
+          block_result: blockResultRowSchema.nullable(),
+          exercises: z.array(
+            z.object({
+              exercise: workoutExerciseRowSchema,
+              set_logs: z.array(exerciseSetLogRowSchema),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+})
+
 /**
  * A page of `streak_sessions(...)` (SES-01c): one completed session each, in
  * the three columns a streak is derived from. `completed_at` is not nullable
@@ -980,6 +1034,8 @@ export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
+export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
+export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
 export type SessionTransition = z.infer<typeof sessionTransitionSchema>
 export type SessionFunction = z.infer<typeof sessionFunctionSchema>

@@ -1,5 +1,6 @@
 /**
- * SES-01a — the session lifecycle, read and written.
+ * SES-01a and SES-01b — the session lifecycle, read and written, and the three
+ * reconstructions of what it left behind.
  *
  * The lifecycle itself is SQL, in
  * `supabase/migrations/20260921000005_session_lifecycle.sql`: acceptance is one
@@ -25,6 +26,11 @@
  * A caller cannot tell the two paths apart, which is what "a typed error, not
  * a race" has to mean.
  *
+ * The three reconstructions are the same bargain in the read direction. SQL
+ * owns "what does *as intended at start* mean", so it cannot mean one thing on
+ * History and another on a summary screen; this module owns turning each one
+ * into a parsed value or a typed error, and nothing else.
+ *
  * No state is held here. Every answer is derived from the row that came back,
  * so a second tab, a refresh and a reinstall agree by construction rather than
  * by invalidation.
@@ -41,11 +47,13 @@ import {
 import {
   parseBoundary,
   sessionAcceptanceSchema,
+  sessionReconstructionSchema,
   sessionSnapshotSchema,
   sessionTransitionSchema,
   workoutExerciseRowSchema,
   type Prescription,
   type SessionAcceptance,
+  type SessionReconstruction,
   type SessionSnapshot,
   type SessionTransition,
   type WorkoutExerciseRow,
@@ -112,6 +120,30 @@ export interface SessionsClient {
    * answer, not a failure: most of the time nobody is mid-workout.
    */
   resume(userId: string): Promise<Result<SessionSnapshot | null>>
+
+  // ── SES-01b: the three reconstructions (DATA_MODEL §7) ──
+  //
+  // Three methods, not one with a `kind` argument, for the same reason the
+  // database declares three functions: a call site reads as the question it
+  // asks. They are the only supported way to ask any of the three — a screen
+  // that filtered a snapshot itself would be assembling a fourth, and the
+  // fourth is always the one that says `revision_status = 'active'` where it
+  // means "at start".
+
+  /** What the model composed, before anybody swapped anything. */
+  asGenerated(sessionId: string): Promise<Result<SessionReconstruction>>
+  /**
+   * What the user set out to do, resolved at `started_at`. A session that was
+   * never started answers with `as_of: null` and no exercises — nothing was
+   * intended at a start that never happened.
+   */
+  asIntendedAtStart(sessionId: string): Promise<Result<SessionReconstruction>>
+  /**
+   * What actually happened: every active prescription whether or not it was
+   * logged, each block's result, and the superseded prescriptions that carry
+   * evidence of having been performed.
+   */
+  asPerformed(sessionId: string): Promise<Result<SessionReconstruction>>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -239,6 +271,20 @@ export function createSessionsClient(config: SessionsClientConfig): SessionsClie
 
       return parseSnapshot(result.value)
     },
+
+    async asGenerated(sessionId) {
+      return reconstruct(await db.rpc('session_as_generated', { p_session_id: sessionId }))
+    },
+
+    async asIntendedAtStart(sessionId) {
+      return reconstruct(
+        await db.rpc('session_as_intended_at_start', { p_session_id: sessionId }),
+      )
+    },
+
+    async asPerformed(sessionId) {
+      return reconstruct(await db.rpc('session_as_performed', { p_session_id: sessionId }))
+    },
   }
 }
 
@@ -276,6 +322,20 @@ function refusal(
     default:
       return null
   }
+}
+
+/**
+ * A reconstruction's answer, parsed. The three share one shape, so they share
+ * one reader — and the SQL NULL that means "no such session, or not yours" is
+ * read the same way `session_snapshot`'s is.
+ */
+function reconstruct(result: Result<unknown>): Result<SessionReconstruction> {
+  if (!result.ok) return result
+  if (result.value === null) return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+
+  return parseBoundary(sessionReconstructionSchema, result.value, {
+    code: ErrorCode.PERSISTENCE_READ_FAILED,
+  })
 }
 
 function parseSnapshot(payload: unknown): Result<SessionSnapshot> {

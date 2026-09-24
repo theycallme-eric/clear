@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { ErrorCode } from '../state/errors'
-import type { Prescription } from '../state/schemas'
+import { ErrorCode, type Result } from '../state/errors'
+import type { Prescription, SessionReconstruction } from '../state/schemas'
 import { resumePoint } from '../state/session-machine'
 import { makePrescription, makeSessionAcceptance } from '../test/factories'
 import { createSessionDouble } from '../test/session-double'
@@ -474,5 +474,205 @@ describe('resuming after a hard refresh (SES-01a)', () => {
 
     expect(missing.ok).toBe(false)
     if (!missing.ok) expect(missing.error.code).toBe(ErrorCode.PERSISTENCE_NOT_FOUND)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SES-01b — the three reconstructions
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The same bargain as above. The reconstructions are SQL, and the double
+// transcribes them from 20260921000009_session_reconstruction.sql, which
+// src/test/session-reconstruction-migration.test.ts asserts clause by clause.
+// The behavioural proof against Postgres — the standing D6 regression — is
+// e2e/d6-swap-persistence.spec.ts.
+
+/** Every exercise entry in a reconstruction, flattened; order preserved. */
+const flatten = (payload: SessionReconstruction) =>
+  payload.sections.flatMap((section) => section.blocks.flatMap((block) => block.exercises))
+
+const ids = (payload: SessionReconstruction) => flatten(payload).map((entry) => entry.exercise.id)
+
+/** Unwrap a reconstruction, failing the test rather than the type system. */
+const reconstructed = async (result: Promise<Result<SessionReconstruction>>) => {
+  const value = await result
+  expect(value.ok, JSON.stringify(value)).toBe(true)
+  if (!value.ok) throw new Error('unreachable')
+  return value.value
+}
+
+describe('as generated (SES-01b)', () => {
+  it('answers what the model composed, swap or no swap', async () => {
+    const { client } = setup()
+    const accepted = await accept(client)
+    const outgoing = accepted.sections[1].blocks[0].exercises[0].exercise
+    const swapped = await client.swap(outgoing.id, makePrescription({ exercise_id: 'front-squat' }))
+    expect(swapped.ok).toBe(true)
+    if (!swapped.ok) return
+
+    const generated = await reconstructed(client.asGenerated(accepted.session.id))
+
+    expect(generated.reconstruction).toBe('generated')
+    expect(generated.as_of).toBe(accepted.session.created_at)
+    // The superseded original is here; the substitute is not, because nothing
+    // generated it. A swap does not un-compose what was composed.
+    expect(ids(generated)).toContain(outgoing.id)
+    expect(ids(generated)).not.toContain(swapped.value.exercise.id)
+    expect(flatten(generated).every((entry) => entry.exercise.origin === 'generated')).toBe(true)
+  })
+})
+
+describe('as intended at start (SES-01b)', () => {
+  it('resolves at started_at — a swap before it is what was intended', async () => {
+    const { client } = setup()
+    const accepted = await accept(client)
+    const outgoing = accepted.sections[1].blocks[0].exercises[0].exercise
+
+    const swapped = await client.swap(outgoing.id, makePrescription({ exercise_id: 'front-squat' }))
+    const started = await client.start(accepted.session.id)
+    expect(swapped.ok && started.ok).toBe(true)
+    if (!swapped.ok || !started.ok) return
+
+    const intended = await reconstructed(client.asIntendedAtStart(accepted.session.id))
+
+    expect(intended.as_of).toBe(started.value.session.started_at)
+    expect(ids(intended)).toContain(swapped.value.exercise.id)
+    expect(ids(intended)).not.toContain(outgoing.id)
+  })
+
+  it('does not let a swap made after starting rewrite what was intended', async () => {
+    const { client } = setup()
+    const accepted = await accept(client)
+    const outgoing = accepted.sections[1].blocks[0].exercises[0].exercise
+
+    await client.start(accepted.session.id)
+    const swapped = await client.swap(outgoing.id, makePrescription({ exercise_id: 'front-squat' }))
+    expect(swapped.ok).toBe(true)
+    if (!swapped.ok) return
+
+    const intended = await reconstructed(client.asIntendedAtStart(accepted.session.id))
+    const current = await reconstructed(client.asPerformed(accepted.session.id))
+
+    // This is the assertion `revision_status = 'active'` fails: the original
+    // is what the user set out to do, and it still is.
+    expect(ids(intended)).toContain(outgoing.id)
+    expect(ids(intended)).not.toContain(swapped.value.exercise.id)
+    // The present tense is a different question with a different answer, which
+    // is exactly why intended-at-start cannot be that query.
+    expect(ids(current)).toContain(swapped.value.exercise.id)
+  })
+
+  it('answers a never-started session with as_of null and nothing intended', async () => {
+    const { client } = setup()
+    const accepted = await accept(client)
+
+    const intended = await reconstructed(client.asIntendedAtStart(accepted.session.id))
+
+    // Not a gap in the data: nothing was intended at a start that never
+    // happened, and `as_of` is what says so rather than leaving a reader to
+    // wonder where the exercises went.
+    expect(intended.as_of).toBeNull()
+    expect(flatten(intended)).toEqual([])
+    // The structure is still there — this is a reconstruction of *that*
+    // session, and an empty envelope would be a different answer.
+    expect(intended.sections).toHaveLength(2)
+  })
+})
+
+describe('as performed (SES-01b)', () => {
+  it('is not a bare join to the set logs', async () => {
+    const { client, double } = setup()
+    const accepted = await accept(client)
+    await client.start(accepted.session.id)
+
+    const block = accepted.sections[1].blocks[0]
+    const lift = block.exercises[0].exercise
+    const skipped = block.exercises[1].exercise
+
+    double.logSet({ workout_exercise_id: lift.id, set_number: 1, actual_reps: 8, weight: 60 })
+    double.setExecutionStatus(skipped.id, 'skipped')
+    double.recordBlockResult({ block_id: block.block.id, rounds_completed: 3, perceived_effort: 7 })
+
+    const performed = await reconstructed(client.asPerformed(accepted.session.id))
+    const entries = flatten(performed)
+
+    // The skipped exercise has no logs and appears anyway: a real observation,
+    // distinct from silence (DATA_MODEL §8).
+    const skippedEntry = entries.find((entry) => entry.exercise.id === skipped.id)
+    expect(skippedEntry?.exercise.execution_status).toBe('skipped')
+    expect(skippedEntry?.set_logs).toEqual([])
+
+    // The partially-logged one: one set of three, present with what it has.
+    const liftEntry = entries.find((entry) => entry.exercise.id === lift.id)
+    expect(liftEntry?.set_logs.map((log) => log.set_number)).toEqual([1])
+
+    // And the block's own outcome, which belongs to no exercise at all.
+    expect(performed.sections[1].blocks[0].block_result?.rounds_completed).toBe(3)
+    // An unscored block says so with null rather than with a zeroed result.
+    expect(performed.sections[0].blocks[0].block_result).toBeNull()
+  })
+
+  it('keeps each set on the prescription it was performed against', async () => {
+    const { client, double } = setup()
+    const accepted = await accept(client)
+    await client.start(accepted.session.id)
+
+    const outgoing = accepted.sections[1].blocks[0].exercises[0].exercise
+    // Two sets performed, and only then does the user replace the exercise.
+    double.logSet({ workout_exercise_id: outgoing.id, set_number: 1, actual_reps: 8 })
+    double.logSet({ workout_exercise_id: outgoing.id, set_number: 2, actual_reps: 8 })
+    const swapped = await client.swap(outgoing.id, makePrescription({ exercise_id: 'front-squat' }))
+    expect(swapped.ok).toBe(true)
+    if (!swapped.ok) return
+
+    double.logSet({
+      workout_exercise_id: swapped.value.exercise.id,
+      set_number: 1,
+      actual_reps: 10,
+    })
+
+    const performed = await reconstructed(client.asPerformed(accepted.session.id))
+    const entries = flatten(performed)
+
+    // D6 as this client can see it: each set stays with the prescription it
+    // was performed against, and neither row absorbs the other's work.
+    const before = entries.find((entry) => entry.exercise.id === outgoing.id)
+    const after = entries.find((entry) => entry.exercise.id === swapped.value.exercise.id)
+
+    expect(before?.set_logs.map((log) => log.set_number)).toEqual([1, 2])
+    expect(after?.set_logs.map((log) => log.set_number)).toEqual([1])
+    // The superseded row is in "as performed" because it *was* performed.
+    // Dropping it is the same information loss under a different name.
+    expect(before?.exercise.revision_status).toBe('superseded')
+  })
+
+  it('omits a superseded prescription nobody touched', async () => {
+    const { client } = setup()
+    const accepted = await accept(client)
+    const outgoing = accepted.sections[1].blocks[0].exercises[0].exercise
+
+    await client.swap(outgoing.id, makePrescription({ exercise_id: 'front-squat' }))
+
+    const performed = await reconstructed(client.asPerformed(accepted.session.id))
+
+    // Replaced in review, never started, never logged: it was prescribed and
+    // then it was not. "As generated" is where it lives.
+    expect(ids(performed)).not.toContain(outgoing.id)
+  })
+})
+
+describe('a reconstruction of a session that is not there (SES-01b)', () => {
+  it('is not found rather than an empty history', async () => {
+    const { client } = setup()
+    const missing = 'f0000002-0000-4000-8000-000000000000'
+
+    for (const result of [
+      await client.asGenerated(missing),
+      await client.asIntendedAtStart(missing),
+      await client.asPerformed(missing),
+    ]) {
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error.code).toBe(ErrorCode.PERSISTENCE_NOT_FOUND)
+    }
   })
 })

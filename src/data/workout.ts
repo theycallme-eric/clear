@@ -143,6 +143,18 @@ export function createWorkoutClients({
       const client = await sessionsFor()
       return isErr(client) ? client : client.value.resume(userId)
     },
+    async asGenerated(sessionId) {
+      const client = await sessionsFor()
+      return isErr(client) ? client : client.value.asGenerated(sessionId)
+    },
+    async asIntendedAtStart(sessionId) {
+      const client = await sessionsFor()
+      return isErr(client) ? client : client.value.asIntendedAtStart(sessionId)
+    },
+    async asPerformed(sessionId) {
+      const client = await sessionsFor()
+      return isErr(client) ? client : client.value.asPerformed(sessionId)
+    },
   }
 
   const blockResults: BlockResultsClient = {
@@ -293,6 +305,9 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       swap: refusal,
       snapshot: refusal,
       resume: refusal,
+      asGenerated: refusal,
+      asIntendedAtStart: refusal,
+      asPerformed: refusal,
     },
     blockResults: { record: refusal },
     history: { page: refusal },

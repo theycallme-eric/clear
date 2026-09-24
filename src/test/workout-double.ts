@@ -363,6 +363,9 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     start: () => unsupported('start'),
     swap: () => unsupported('swap'),
     snapshot: () => unsupported('snapshot'),
+    asGenerated: () => unsupported('asGenerated'),
+    asIntendedAtStart: () => unsupported('asIntendedAtStart'),
+    asPerformed: () => unsupported('asPerformed'),
     async resume() {
       return ok(session)
     },
