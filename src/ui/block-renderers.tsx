@@ -1,0 +1,111 @@
+/**
+ * EXE-01 — which renderer performs a block, and what every one of them is
+ * allowed to do about completing it.
+ *
+ * The requirement splits the work in two: a renderer supplies the outcome
+ * fields its structure observed, and the shell writes the row. This registry is
+ * where that split is made structural rather than remembered. It is total over
+ * `structure_type`, so EXE-02…EXE-04c land by replacing an entry — and a new
+ * structure type fails to compile until something renders it, instead of
+ * quietly falling through to a panel that records nothing.
+ *
+ * A renderer receives the block and takes completion from
+ * `useBlockCompletion()`. It is given no client, no callback and no row: the
+ * only thing it can do with an outcome is hand it to the shell, which is what
+ * keeps `block_results` to one writer for every structure type.
+ *
+ * Until those renderers exist, every structure type is performed by
+ * `BlockPanel` — the block's identity, its size, and the shell's completion
+ * control. That is deliberate rather than a placeholder with no meaning: the
+ * path OVR-03 reads is live from day one, and a block completed through it
+ * records the effort with no outcome fields rather than with invented ones.
+ */
+import { createElement, type ReactElement } from 'react'
+
+import { Button } from '../design-system/index'
+import type { Enums } from '../data/database.types'
+import { useBlockCompletion } from '../state/block-completion'
+import type { BlockProgress } from '../state/workout-progress'
+import { Card } from './card'
+import { StructureBadge } from './workout-chrome'
+
+export interface BlockRendererProps {
+  readonly block: BlockProgress
+}
+
+/** What every structure's renderer is: a block in, an element out. */
+export type BlockRenderer = (props: BlockRendererProps) => ReactElement
+
+/**
+ * One block, as the shell knows it: its structure identity, how much is in it,
+ * and the completion the shell owns.
+ *
+ * The *contents* are not here and are not meant to be — the movements, the
+ * clock and the per-structure controls are EXE-02…EXE-04c's. What this does
+ * carry is the contract they inherit: `completeBlock` with what was observed,
+ * and nothing else.
+ */
+export function BlockPanel({ block }: BlockRendererProps) {
+  const { completeBlock, isBlockRecorded } = useBlockCompletion()
+  const recorded = isBlockRecorded(block.blockId)
+
+  return (
+    <Card>
+      <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+          <StructureBadge identity={block.identity} />
+          <span
+            style={{
+              fontFamily: 'var(--font-data)',
+              fontSize: 'var(--label-xs-size)',
+              letterSpacing: 'var(--tracking-data)',
+              color: 'var(--text-card-label)',
+            }}
+          >
+            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+          </span>
+        </div>
+        <Button
+          variant="secondary"
+          size="lg"
+          disabled={recorded}
+          // No outcome fields: this panel runs no clock and counts no rounds,
+          // and a zero it never observed would be a measurement (DATA_MODEL §8).
+          onClick={() => completeBlock(block.blockId, {})}
+        >
+          {recorded ? 'Block recorded' : 'Complete block'}
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+/**
+ * Structure type → the renderer that performs it. Total by type, which is the
+ * point: there is no default arm, so every structure has a renderer and every
+ * renderer completes through the shell.
+ */
+export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRenderer>> = {
+  standard: BlockPanel,
+  superset: BlockPanel,
+  circuit: BlockPanel,
+  emom: BlockPanel,
+  amrap: BlockPanel,
+  for_time: BlockPanel,
+}
+
+export function blockRendererFor(structureType: Enums<'structure_type'>): BlockRenderer {
+  return BLOCK_RENDERERS[structureType]
+}
+
+/**
+ * The shell's dispatch: one block, rendered by whatever performs its structure.
+ *
+ * `createElement` rather than JSX because the renderer is looked up rather than
+ * named: a capitalised local read as a tag is how a component gets *defined*
+ * during render, and `react-hooks/static-components` is right to refuse that
+ * shape even when the value behind it is a module constant.
+ */
+export function BlockSlot({ block }: BlockRendererProps) {
+  return createElement(blockRendererFor(block.structureType), { block })
+}
