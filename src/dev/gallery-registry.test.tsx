@@ -60,6 +60,7 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // session and a client before it could draw anything.
   ExerciseSetLogger: 'EXE-02 — one prescription of a live session, with its logged sets',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
+  SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
 }
 
 /** Components exported from a module, in source order. */

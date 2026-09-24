@@ -55,9 +55,21 @@ export interface ExerciseSetLoggerProps {
    * movement has no partner to be distinguished from.
    */
   ordinal?: string
+  /**
+   * Whether this movement states its own rest. False where rest belongs to the
+   * block instead — a superset rests once after both movements, so a per-
+   * movement line would state a rest the user is not meant to take
+   * (`superset-circuit-clarity.md` §2). The prescription's `rest_seconds` is
+   * untouched either way; this decides only who says it.
+   */
+  statesRest?: boolean
 }
 
-export function ExerciseSetLogger({ exercise, ordinal }: ExerciseSetLoggerProps) {
+export function ExerciseSetLogger({
+  exercise,
+  ordinal,
+  statesRest = true,
+}: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
 
   const prescription = exercise.prescription
@@ -65,7 +77,7 @@ export function ExerciseSetLogger({ exercise, ordinal }: ExerciseSetLoggerProps)
   const prescribed = prescribedSetCount(prescription)
   const setNumber = nextSetNumber(logged)
   const target = targetForSet(prescription, setNumber)
-  const rest = restText(prescription.rest_seconds)
+  const rest = statesRest ? restText(prescription.rest_seconds) : null
   const name = exerciseName(prescription.exercise_id)
 
   return (
