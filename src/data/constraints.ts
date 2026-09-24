@@ -260,6 +260,19 @@ export interface UserConstraintsClient {
   ): Promise<Result<UserConstraint[]>>
   /** Removes one constraint. Changing your mind is the normal case. */
   remove(id: string): Promise<Result<void>>
+  /**
+   * SET-01's note edit: the sentence carried by every *persistent pattern*
+   * limitation this user has, rewritten in place and answered with the rows as
+   * they now stand.
+   *
+   * One note across the set rather than one per row, because that is how it was
+   * written: `complete_onboarding` puts the same note on every pattern row it
+   * inserts, and the settings hub edits what onboarding collected rather than a
+   * second, differently-shaped version of it. The filter is narrow on purpose —
+   * a session-scoped exclusion or an equipment note is nothing this control is
+   * showing, so nothing this control writes may touch one.
+   */
+  setPatternNote(userId: string, note: string | null): Promise<Result<UserConstraint[]>>
 }
 
 const TABLE = 'user_constraints'
@@ -322,6 +335,21 @@ export function createUserConstraintsClient(
     async remove(id) {
       return db.from(TABLE).delete({ id })
     },
+
+    async setPatternNote(userId, note) {
+      const result = await db.from(TABLE).update(
+        // Blank is not a note: the column's null means "nothing written", and
+        // an empty string would claim a sentence that is not there.
+        { note: note === null || note.trim() === '' ? null : note },
+        { user_id: userId, scope: 'movement_pattern', persistence: 'persistent' },
+      )
+      if (!result.ok) return result
+
+      // No rows is not a failure. A user with no pattern limitations has
+      // nothing to carry a note, and writing one anyway would be inventing a
+      // constraint out of prose — which this module never does.
+      return rows(result.value)
+    },
   }
 }
 
@@ -382,6 +410,10 @@ export function createLiveUserConstraintsClient({
     async remove(id) {
       const client = await clientFor()
       return client.ok ? client.value.remove(id) : client
+    },
+    async setPatternNote(userId, note) {
+      const client = await clientFor()
+      return client.ok ? client.value.setPatternNote(userId, note) : client
     },
   }
 }

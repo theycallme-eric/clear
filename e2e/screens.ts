@@ -36,6 +36,11 @@ export const SCREENS: readonly E2eScreen[] = [
   // to Welcome, exactly as `/` does — the shell is never reachable without a
   // session, which is itself the behaviour worth scanning.
   { path: '/workout', route: '/workout', title: 'Welcome · CLEAR', heading: 'CLEAR' },
+  // SET-01's hub is protected too, so the credential-free preview resolves it
+  // to Welcome like `/` and `/summary`. What the signed-in hub renders is
+  // covered by `src/app/Settings.test.tsx`, without putting credentials in
+  // preview CI.
+  { path: '/settings', route: '/settings', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {
