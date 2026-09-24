@@ -17,19 +17,23 @@
  *
  * `standard` is EXE-02's `StandardBlock` — straight sets, each one logged as it
  * happens — and `superset` is its `SupersetBlock`, the same set logging with
- * the pair's ordering and the block's own rest around it. Every other structure
- * is still performed by `BlockPanel`: the block's identity, its size, and the
- * shell's completion control. That is deliberate rather than a placeholder with
- * no meaning — the path OVR-03 reads is live for every structure from day one,
- * and a block completed through it records the effort with no outcome fields
- * rather than with invented ones.
+ * the pair's ordering and the block's own rest around it. EXE-04a's
+ * `LadderBlock` is the one entry that is not keyed by structure type at all,
+ * because a ladder is a rep scheme; see `blockRendererFor`. Every other
+ * structure is still performed by `BlockPanel`: the block's identity, its size,
+ * and the shell's completion control. That is deliberate rather than a
+ * placeholder with no meaning — the path OVR-03 reads is live for every
+ * structure from day one, and a block completed through it records the effort
+ * with no outcome fields rather than with invented ones.
  */
 import { createElement, type ReactElement } from 'react'
 
 import type { Enums } from '../data/database.types'
+import { isLadderScheme } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
+import { LadderBlock } from './ladder-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
 import { StructureBadge } from './workout-chrome'
@@ -91,8 +95,28 @@ export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRend
   for_time: BlockPanel,
 }
 
-export function blockRendererFor(structureType: Enums<'structure_type'>): BlockRenderer {
-  return BLOCK_RENDERERS[structureType]
+/**
+ * Which renderer performs this block — its structure, and then the one thing
+ * that is not its structure.
+ *
+ * A ladder is a **rep scheme**, not a structure type (`workout_blocks` carries
+ * both), so it cannot be a seventh entry in a map keyed by type without
+ * claiming to be a structure it is not. EXE-04a therefore lands as an override
+ * rather than a replacement: a For Time block whose scheme is a ladder is
+ * performed by `LadderBlock`, and every other For Time block is still the
+ * default panel that EXE-04b replaces.
+ *
+ * The override is narrowed to `for_time` deliberately. The quickfix spec is
+ * right that ladders appear under other structures too — a circuit, an
+ * accessory pyramid — but those structures have their own renderers landing in
+ * EXE-03 and EXE-04c, and each of them composes `LadderRungs` when it does.
+ * Claiming them here would be this ticket rendering another ticket's structure.
+ */
+export function blockRendererFor(block: BlockProgress): BlockRenderer {
+  if (block.structureType === 'for_time' && isLadderScheme(block.repScheme)) {
+    return LadderBlock
+  }
+  return BLOCK_RENDERERS[block.structureType]
 }
 
 /**
@@ -104,5 +128,5 @@ export function blockRendererFor(structureType: Enums<'structure_type'>): BlockR
  * shape even when the value behind it is a module constant.
  */
 export function BlockSlot({ block }: BlockRendererProps) {
-  return createElement(blockRendererFor(block.structureType), { block })
+  return createElement(blockRendererFor(block), { block })
 }
