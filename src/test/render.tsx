@@ -13,6 +13,7 @@ import type { AuthClient } from '../data/auth'
 import type { OtpClient } from '../data/otp'
 import type { SummaryClient } from '../data/summary'
 import type { UserDataClient } from '../data/user-data'
+import type { WorkoutClients } from '../data/workout'
 import { AuthProvider } from '../state/auth-provider'
 import { QueryClient, QueryClientContext } from '../state/query'
 import { SignInClientsContext } from '../state/sign-in-context'
@@ -22,6 +23,7 @@ import {
   profileQueryKey,
   UserDataContext,
 } from '../state/user-queries'
+import { WorkoutClientsContext } from '../state/workout-queries'
 import { ToastHost } from '../ui/toast-host'
 import { createFakeAuthClient, createFakeOtpClient, signedInEvent } from './auth-double'
 import { createFakeSummaryClient } from './summary-double'
@@ -31,6 +33,7 @@ import {
   fixtureLocation,
   onboardedProfile,
 } from './user-data-double'
+import { createWorkoutDouble } from './workout-double'
 
 export interface ProviderOptions {
   /** AUTH-01's session client. Defaults to a settled, anonymous double. */
@@ -43,6 +46,12 @@ export interface ProviderOptions {
   queryClient?: QueryClient
   /** SUM-01's debrief reads and write. Defaults to a completed session. */
   summary?: SummaryClient
+  /**
+   * EXE-01's lifecycle and `block_results` clients. Defaults to a double whose
+   * `resume` answers `null` — nobody is mid-workout — so no test that is not
+   * about the workout shell meets its deep-link prompt.
+   */
+  workout?: WorkoutClients
 }
 
 /**
@@ -85,6 +94,7 @@ export function AppProviders({
   userData,
   queryClient,
   summary,
+  workout,
 }: ProviderOptions & { children: ReactNode }) {
   // Memoised, not rebuilt per render: the cache *is* the query state, and a
   // fresh one on every render would reset every query the moment one resolved.
@@ -95,6 +105,10 @@ export function AppProviders({
   const summaryClient = useMemo(
     () => summary ?? createFakeSummaryClient(),
     [summary],
+  )
+  const workoutClients = useMemo(
+    () => workout ?? createWorkoutDouble({ session: null }).clients,
+    [workout],
   )
 
   return (
@@ -107,8 +121,11 @@ export function AppProviders({
           <QueryClientContext value={cache}>
             <UserDataContext value={userDataClient}>
               <SignInClientsContext value={{ auth: authClient, otp: otpClient }}>
-                {/* Same SUM-01 client main.tsx builds, over an injected double */}
-                <SummaryContext value={summaryClient}>{children}</SummaryContext>
+                {/* Same EXE-01 clients main.tsx mounts */}
+                <WorkoutClientsContext value={workoutClients}>
+                  {/* Same SUM-01 client main.tsx builds, over an injected double */}
+                  <SummaryContext value={summaryClient}>{children}</SummaryContext>
+                </WorkoutClientsContext>
               </SignInClientsContext>
             </UserDataContext>
           </QueryClientContext>

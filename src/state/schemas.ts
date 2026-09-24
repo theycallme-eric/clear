@@ -633,6 +633,32 @@ export const exerciseSetLogRowSchema = z.object({
 })
 
 /**
+ * `block_results` (DATA-01d §3). One row per block that was performed, written
+ * by the EXE-01 shell and by nothing else — every structure type records its
+ * outcome through the same path, which is why `perceived_effort` sits here
+ * rather than in six renderers.
+ *
+ * Every outcome column is nullable and every one of them admits zero, for the
+ * same reason the set log's do: a structure that has no rounds records `null`
+ * rounds, and an AMRAP that managed none records `0`. They are different
+ * observations and OVR-03 reads them as different observations.
+ */
+export const blockResultRowSchema = z.object({
+  id: z.uuid(),
+  block_id: z.uuid(),
+  elapsed_seconds: nonNegativeInt.nullable(),
+  completed_under_cap: z.boolean().nullable(),
+  rounds_completed: nonNegativeInt.nullable(),
+  partial_round_reps: nonNegativeInt.nullable(),
+  minutes_completed: nonNegativeInt.nullable(),
+  highest_rung: nonNegativeInt.nullable(),
+  // OVR-03's input, 1–10, mirroring `block_results_perceived_effort_range`.
+  perceived_effort: z.int().min(1).max(10).nullable(),
+  notes: z.string().nullable(),
+  created_at: timestamp,
+})
+
+/**
  * What `session_snapshot` answers: the session as it currently stands, with
  * the sets already logged against each active prescription. Nested rather than
  * four flat lists because the nesting is the structure — a block's members are
@@ -813,6 +839,7 @@ export type WorkoutSectionRow = z.infer<typeof workoutSectionRowSchema>
 export type WorkoutBlockRow = z.infer<typeof workoutBlockRowSchema>
 export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
 export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
+export type BlockResultRow = z.infer<typeof blockResultRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>

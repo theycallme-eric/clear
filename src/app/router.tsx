@@ -13,6 +13,7 @@ import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
 import { Summary } from './Summary'
 import { Welcome } from './Welcome'
+import { Workout } from './Workout'
 
 /**
  * DS-07's gallery, in development only.
@@ -71,6 +72,17 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="CLEAR">
                 <AppShell />
+              </Protected>
+            ),
+          },
+          // EXE-01 — `protected + active session` (IA.md §1). Auth is the
+          // guard's; whether there is a session to render is a fact about the
+          // rows, and `Workout` redirects Home when there is not.
+          {
+            path: '/workout',
+            element: (
+              <Protected title="Workout">
+                <Workout />
               </Protected>
             ),
           },

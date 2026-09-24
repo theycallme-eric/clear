@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import { SkipLink } from '../ui/SkipLink'
+import { ActiveSessionPrompt } from './ActiveSessionPrompt'
 import { ScreenRegistryContext, type ScreenRegistry } from './screen-registry'
 
 interface Announcement {
@@ -47,6 +48,10 @@ export function AppChrome() {
     <ScreenRegistryContext.Provider value={registry}>
       <SkipLink />
       <Outlet />
+      {/* EXE-01: a session running while the user is somewhere else is a
+          question, asked above every route because a deep link never reaches
+          the workout shell. */}
+      <ActiveSessionPrompt />
       {/* Keyed by navigation so landing twice on same-named screens still
           mutates the region — one announcement per route change, exactly. */}
       <div role="status" aria-live="polite" className="a11y-hidden">

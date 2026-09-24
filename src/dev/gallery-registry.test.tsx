@@ -36,6 +36,18 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   Nav: 'CORE-05 — a <nav> landmark that requires a name; no visual surface',
   SkipLink:
     'CORE-05 — visible only while focused, and only as the first tab stop of the real app shell',
+  // EXE-01's shell parts. Each one is a reading of live session state — an
+  // elapsed wall clock, a section's derived status, a block's structure
+  // identity — so a specimen would have to invent a session to show anything,
+  // and would then be framing the fixture rather than the component. They are
+  // reviewed on `/workout` with a real session, which is where they mean
+  // something.
+  GlobalTimer: 'EXE-01 — reads elapsed session time; nothing to show without a session',
+  ProgressTracker: 'EXE-01 — renders section statuses derived from a session snapshot',
+  SectionHeader: 'EXE-01 — a section of a live session, with its blocks’ identities',
+  StructureBadge: 'EXE-01 — the identity of one block row, per the master clarity spec',
+  WorkoutNavigation: 'EXE-01 — prev/next/finish over a session’s sections',
+  BlockEffortDialog: 'EXE-01 — the perceived-effort capture, opened at block completion',
 }
 
 /** Components exported from a module, in source order. */
