@@ -82,6 +82,12 @@ export interface BlockProgress {
   readonly rounds: number | null
   /** Rest the block prescribes between its rounds, in seconds. */
   readonly roundRestSeconds: number | null
+  /**
+   * `workout_blocks.timer_seconds` — the duration a timed structure runs for, or
+   * the cap a For Time races (EXE-04b). The header states it in words; a
+   * renderer that has to *count* it needs the number, and this is the number.
+   */
+  readonly timerSeconds: number | null
 }
 
 export interface SectionProgress {
@@ -153,11 +159,12 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
             prescription: exercise,
             setLogs: set_logs,
           })),
-        // Both read from `workout_blocks` and from nowhere else: the clock and
-        // the round count live on the block so its members cannot disagree
+        // All three read from `workout_blocks` and from nowhere else: the clock
+        // and the round count live on the block so its members cannot disagree
         // about them (DATA-01c §5).
         rounds: blockEntry.block.rounds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
+        timerSeconds: blockEntry.block.timer_seconds,
       }
     })
 

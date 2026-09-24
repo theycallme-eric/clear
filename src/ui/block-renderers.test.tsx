@@ -41,17 +41,20 @@ function blockFixture(
     exercises: [],
     rounds: null,
     roundRestSeconds: null,
+    timerSeconds: null,
     ...overrides,
   }
 }
 
 /**
  * The verb a structure completes with, where it is not "Complete block".
- * EXE-03's circuit says what it is finishing; what it *supplies* when it has
- * movements to count is `circuit-block.test.tsx`'s subject.
+ * EXE-03's circuit says what it is finishing and EXE-04b's For Time says what it
+ * is recording; what either one *supplies* when it has movements to perform is
+ * `circuit-block.test.tsx`'s and `for-time-block.test.tsx`'s subject.
  */
 const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
   circuit: 'Complete circuit',
+  for_time: 'Record For Time',
 }
 
 /** The shell's half of the seam, as a spy. */

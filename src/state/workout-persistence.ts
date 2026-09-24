@@ -30,6 +30,11 @@
  * ids are per-session, so a circuit record can only ever be read back by the
  * block that wrote it.
  *
+ * EXE-04b adds the third, under a third key, by the same argument one structure
+ * across: a For Time block's clock. When the user *started racing* is not in the
+ * rows either — the session's `started_at` is the whole workout, not this block —
+ * and it has to survive a refresh, because the elapsed time is the score.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -38,12 +43,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { CircuitState } from './circuit'
+import type { ForTimeState } from './for-time'
 
 /** One key, overwritten: the app has one session in progress at a time. */
 export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
 
 /** The circuits' key: one record per block id, for the session in progress. */
 export const WORKOUT_CIRCUIT_STORAGE_KEY = 'clear.workout-circuits'
+
+/** The For Time blocks' key: one clock per block id (EXE-04b). */
+export const WORKOUT_FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -121,16 +130,17 @@ export function writeWorkoutShellState(
 }
 
 /**
- * Forgets everything the shell remembered locally — the open section and every
- * circuit's place in its rounds. Completing and abandoning both call it, and
- * they clear both keys, because a session that has ended has no position in it
- * to return to.
+ * Forgets everything the shell remembered locally — the open section, every
+ * circuit's place in its rounds, and every For Time clock. Completing and
+ * abandoning both call it, and they clear every key, because a session that has
+ * ended has no position in it to return to.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
     storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+    storage.removeItem(WORKOUT_FOR_TIME_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -220,11 +230,77 @@ export function usePersistedSection(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Per-block records
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What a per-block key holds: one record per block id, for the session in
+ * progress. Two structures keep one — EXE-03's circuit position and EXE-04b's
+ * For Time clock — and they keep it the same way, so the guard is the only thing
+ * that differs between them.
+ */
+type BlockRecords<T> = Record<string, T>
+
+/** The stored map under one key, with any entry it cannot vouch for dropped. */
+function readBlockRecords<T>(
+  storage: ShellStorage | null,
+  key: string,
+  isRecord: (value: unknown) => value is T,
+): BlockRecords<T> {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(key)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: BlockRecords<T> = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isRecord(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/**
+ * Writes one block's record, leaving the other blocks in the session alone. A
+ * session holds a handful of blocks and the whole map is dropped when it ends,
+ * so read-modify-write is the right size for the problem.
+ */
+function writeBlockRecord<T>(
+  storage: ShellStorage | null,
+  key: string,
+  isRecord: (value: unknown) => value is T,
+  blockId: string,
+  record: T,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      key,
+      JSON.stringify({ ...readBlockRecords(storage, key, isRecord), [blockId]: record }),
+    )
+  } catch {
+    // A full or refused quota costs a position on a refresh, never a logged set.
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Circuits (EXE-03)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Every circuit's place in its rounds, by block id. */
-type CircuitRecords = Record<string, CircuitState>
+type CircuitRecords = BlockRecords<CircuitState>
 
 function isCircuitState(value: unknown): value is CircuitState {
   if (typeof value !== 'object' || value === null) return false
@@ -243,29 +319,7 @@ function isCircuitState(value: unknown): value is CircuitState {
 
 /** The stored map, with any entry it cannot vouch for dropped. */
 export function readCircuitStates(storage: ShellStorage | null): CircuitRecords {
-  if (storage === null) return {}
-
-  let raw: string | null
-  try {
-    raw = storage.getItem(WORKOUT_CIRCUIT_STORAGE_KEY)
-  } catch {
-    return {}
-  }
-  if (raw === null) return {}
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof parsed !== 'object' || parsed === null) return {}
-
-  const records: CircuitRecords = {}
-  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
-    if (isCircuitState(entry)) records[blockId] = entry
-  }
-  return records
+  return readBlockRecords(storage, WORKOUT_CIRCUIT_STORAGE_KEY, isCircuitState)
 }
 
 /** One block's stored position, or null — for absent and unusable alike. */
@@ -276,25 +330,13 @@ export function readCircuitState(
   return readCircuitStates(storage)[blockId] ?? null
 }
 
-/**
- * Writes one block's position, leaving the other circuits in the session
- * alone. A session holds a handful of blocks and the whole map is dropped when
- * it ends, so read-modify-write is the right size for the problem.
- */
+/** Writes one block's position, leaving the other circuits in the session alone. */
 export function writeCircuitState(
   storage: ShellStorage | null,
   blockId: string,
   state: CircuitState,
 ): void {
-  if (storage === null) return
-  try {
-    storage.setItem(
-      WORKOUT_CIRCUIT_STORAGE_KEY,
-      JSON.stringify({ ...readCircuitStates(storage), [blockId]: state }),
-    )
-  } catch {
-    // A full or refused quota costs the round on a refresh, never a logged set.
-  }
+  writeBlockRecord(storage, WORKOUT_CIRCUIT_STORAGE_KEY, isCircuitState, blockId, state)
 }
 
 export interface PersistedCircuit {
@@ -338,4 +380,84 @@ export function usePersistedCircuit(
   )
 
   return { state, advanceTo }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// For Time (EXE-04b)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every For Time block's clock, by block id. */
+type ForTimeRecords = BlockRecords<ForTimeState>
+
+function isForTimeState(value: unknown): value is ForTimeState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  // Only the shape is checked here. Whether the stamps are *readable* — and
+  // whether the finish is after the start — is `clampForTimeState`'s, which is
+  // where the restoring renderer repairs the record it is given.
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.finishedAt === null || typeof record.finishedAt === 'string')
+  )
+}
+
+/** The stored map, with any entry it cannot vouch for dropped. */
+export function readForTimeStates(storage: ShellStorage | null): ForTimeRecords {
+  return readBlockRecords(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState)
+}
+
+/** One block's stored clock, or null — for absent and unusable alike. */
+export function readForTimeState(
+  storage: ShellStorage | null,
+  blockId: string,
+): ForTimeState | null {
+  return readForTimeStates(storage)[blockId] ?? null
+}
+
+/** Writes one block's clock, leaving the other blocks in the session alone. */
+export function writeForTimeState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: ForTimeState,
+): void {
+  writeBlockRecord(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState, blockId, state)
+}
+
+export interface PersistedForTime {
+  readonly state: ForTimeState
+  /** Moves the clock and writes it in the same act. */
+  moveTo(next: ForTimeState): void
+}
+
+/**
+ * A For Time block's clock, restored on mount and written on every tap.
+ *
+ * Like the circuit's position and unlike the open section, it changes only when
+ * the user presses something, and the press writes it — so there are no
+ * `visibilitychange` or `pagehide` listeners here either. Nothing accumulates in
+ * between: the two stamps are the whole state, and the seconds between them are
+ * read from the wall clock every time they are needed.
+ */
+export function usePersistedForTime(
+  blockId: string,
+  restore: (stored: ForTimeState | null) => ForTimeState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedForTime {
+  const [state, setState] = useState(() => restore(readForTimeState(storage, blockId)))
+
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const moveTo = useCallback(
+    (next: ForTimeState) => {
+      setState(next)
+      writeForTimeState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, moveTo }
 }
