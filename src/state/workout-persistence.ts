@@ -19,16 +19,13 @@
  * foreign-session record is simply ignored, and the shell falls back to the
  * first unfinished section derived from the rows.
  *
- * EXE-03 adds the second thing of that kind, and it is the same argument one
- * level down: a circuit's current round and position are not in the rows
- * either. Two rounds of the same movement are two set logs whichever order
- * they happened in, so "round three, movement two, resting" can only be
- * remembered. It is kept under its own key rather than inside the shell record
- * — the two are written by different components at different moments, and one
- * read-modify-write racing the other is how the open section would start
- * losing rounds — and both are dropped together when the session ends. Block
- * ids are per-session, so a circuit record can only ever be read back by the
- * block that wrote it.
+ * EXE-03 adds two more conveniences one level down: a circuit's current round
+ * and position and an EMOM's running clock are not in the rows either. Each is
+ * kept under its own key because different components write them at different
+ * moments; merging them into the shell record would make independent
+ * read-modify-write cycles lose one another. All three records are dropped
+ * together when the session ends. Block ids are per-session, so each record can
+ * only be read back by the block that wrote it.
  *
  * EXE-04b adds the third, under a third key, by the same argument one structure
  * across: a For Time block's clock. When the user *started racing* is not in the
@@ -43,6 +40,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { CircuitState } from './circuit'
+import type { EmomState } from './emom'
 import type { ForTimeState } from './for-time'
 
 /** One key, overwritten: the app has one session in progress at a time. */
@@ -50,6 +48,8 @@ export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
 
 /** The circuits' key: one record per block id, for the session in progress. */
 export const WORKOUT_CIRCUIT_STORAGE_KEY = 'clear.workout-circuits'
+/** The EMOMs' key: one record per block id, for the session in progress. */
+export const WORKOUT_EMOM_STORAGE_KEY = 'clear.workout-emom'
 
 /** The For Time blocks' key: one clock per block id (EXE-04b). */
 export const WORKOUT_FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
@@ -130,16 +130,16 @@ export function writeWorkoutShellState(
 }
 
 /**
- * Forgets everything the shell remembered locally — the open section, every
- * circuit's place in its rounds, and every For Time clock. Completing and
- * abandoning both call it, and they clear every key, because a session that has
- * ended has no position in it to return to.
+ * Forgets everything the shell remembered locally — the open section and every
+ * block's position or clock. Completing and abandoning both call it and clear
+ * every key because an ended session has nowhere to return to.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
     storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+    storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
     storage.removeItem(WORKOUT_FOR_TIME_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
@@ -330,7 +330,7 @@ export function readCircuitState(
   return readCircuitStates(storage)[blockId] ?? null
 }
 
-/** Writes one block's position, leaving the other circuits in the session alone. */
+/** Writes one block's position, leaving the other circuits alone. */
 export function writeCircuitState(
   storage: ShellStorage | null,
   blockId: string,
@@ -345,27 +345,13 @@ export interface PersistedCircuit {
   advanceTo(next: CircuitState): void
 }
 
-/**
- * A circuit's position, restored on mount and written on every tap.
- *
- * There is no `pagehide` listener here and there does not need to be: the
- * state changes only when the user taps, and the tap writes it. What the
- * section index needs those listeners for — a value that drifts while nobody
- * is pressing anything — has no equivalent in a circuit.
- *
- * `restore` runs exactly once, in the initialiser, and is where the caller
- * repairs a record against the block it is being restored into: the shape is
- * the renderer's knowledge, not this module's.
- */
+/** A circuit's position, restored on mount and written on every tap. */
 export function usePersistedCircuit(
   blockId: string,
   restore: (stored: CircuitState | null) => CircuitState,
   storage: ShellStorage | null = defaultShellStorage(),
 ): PersistedCircuit {
   const [state, setState] = useState(() => restore(readCircuitState(storage, blockId)))
-
-  // The storage handle can only be re-read, never re-restored: restoring twice
-  // would put the user back where they were two taps ago.
   const latest = useRef(storage)
   useEffect(() => {
     latest.current = storage
@@ -383,6 +369,71 @@ export function usePersistedCircuit(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EMOMs (EXE-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every EMOM's clock, by block id. */
+type EmomRecords = BlockRecords<EmomState>
+
+function isEmomState(value: unknown): value is EmomState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.workDoneMinute === null ||
+      (typeof record.workDoneMinute === 'number' &&
+        Number.isInteger(record.workDoneMinute)))
+  )
+}
+
+export function readEmomStates(storage: ShellStorage | null): EmomRecords {
+  return readBlockRecords(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState)
+}
+
+export function readEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+): EmomState | null {
+  return readEmomStates(storage)[blockId] ?? null
+}
+
+export function writeEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: EmomState,
+): void {
+  writeBlockRecord(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState, blockId, state)
+}
+
+export interface PersistedEmom {
+  readonly state: EmomState
+  update(next: EmomState): void
+}
+
+export function usePersistedEmom(
+  blockId: string,
+  restore: (stored: EmomState | null) => EmomState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedEmom {
+  const [state, setState] = useState(() => restore(readEmomState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const update = useCallback(
+    (next: EmomState) => {
+      setState(next)
+      writeEmomState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, update }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // For Time (EXE-04b)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -393,21 +444,16 @@ function isForTimeState(value: unknown): value is ForTimeState {
   if (typeof value !== 'object' || value === null) return false
   const record = value as Record<string, unknown>
 
-  // Only the shape is checked here. Whether the stamps are *readable* — and
-  // whether the finish is after the start — is `clampForTimeState`'s, which is
-  // where the restoring renderer repairs the record it is given.
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.finishedAt === null || typeof record.finishedAt === 'string')
   )
 }
 
-/** The stored map, with any entry it cannot vouch for dropped. */
 export function readForTimeStates(storage: ShellStorage | null): ForTimeRecords {
   return readBlockRecords(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState)
 }
 
-/** One block's stored clock, or null — for absent and unusable alike. */
 export function readForTimeState(
   storage: ShellStorage | null,
   blockId: string,
@@ -415,7 +461,6 @@ export function readForTimeState(
   return readForTimeStates(storage)[blockId] ?? null
 }
 
-/** Writes one block's clock, leaving the other blocks in the session alone. */
 export function writeForTimeState(
   storage: ShellStorage | null,
   blockId: string,
@@ -426,26 +471,15 @@ export function writeForTimeState(
 
 export interface PersistedForTime {
   readonly state: ForTimeState
-  /** Moves the clock and writes it in the same act. */
   moveTo(next: ForTimeState): void
 }
 
-/**
- * A For Time block's clock, restored on mount and written on every tap.
- *
- * Like the circuit's position and unlike the open section, it changes only when
- * the user presses something, and the press writes it — so there are no
- * `visibilitychange` or `pagehide` listeners here either. Nothing accumulates in
- * between: the two stamps are the whole state, and the seconds between them are
- * read from the wall clock every time they are needed.
- */
 export function usePersistedForTime(
   blockId: string,
   restore: (stored: ForTimeState | null) => ForTimeState,
   storage: ShellStorage | null = defaultShellStorage(),
 ): PersistedForTime {
   const [state, setState] = useState(() => restore(readForTimeState(storage, blockId)))
-
   const latest = useRef(storage)
   useEffect(() => {
     latest.current = storage

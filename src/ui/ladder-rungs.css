@@ -1,0 +1,102 @@
+/* =============================================================================
+   LADDER RUNGS — EXE-04a, the rung row's two appearances.
+
+   The quickfix spec's whole point is that these two are not the same object:
+   during the workout a rung is *data* — quiet, square, neutral-bordered, not
+   tappable-looking — and after the cap it becomes a *control*, where the
+   selection carries a surface, a border and a tick.
+
+   So the difference is size, weight and affordance, not hue alone:
+     · read-only  — 32×40, transparent, card border, no focus stop;
+     · interactive — 48×48 (the touch target, not just the glyph), a real radio
+       behind it, a reached fill, and a ticked selection.
+
+   No chamfer on a rung (the quickfix is explicit: a rung must not read as an
+   action card), and no corner radius anywhere in CLEAR. Tokens only.
+   ============================================================================= */
+
+.clr-rungs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+/* The fieldset the interactive row is grouped by owns no box of its own: it is
+   there for the grouping and the legend, and draws nothing. */
+.clr-rungs--interactive {
+  min-width: 0;
+  margin: var(--spacing-0);
+  padding: var(--spacing-0);
+  border: 0;
+}
+
+.clr-rungs__legend {
+  padding: var(--spacing-0);
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data-wide);
+  text-transform: uppercase;
+  color: var(--text-card-header);
+}
+
+.clr-rung {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-50);
+  box-sizing: border-box;
+  min-width: var(--spacing-700);
+  min-height: var(--spacing-800);
+  padding: var(--spacing-0) var(--spacing-100);
+  border: var(--border-width) solid var(--border-card);
+  background: transparent;
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  line-height: var(--label-sm-line-height);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-paragraph);
+}
+
+/* A rung that can be chosen is a touch target first: 48px each way, whatever
+   the number inside it is. */
+.clr-rung--selectable {
+  min-width: var(--spacing-1000);
+  min-height: var(--spacing-1000);
+  padding: var(--spacing-100) var(--spacing-200);
+  cursor: pointer;
+}
+
+/* Climbed past: the work that was done, filled but not chosen. */
+.clr-rung[data-state='reached'] {
+  background: var(--surface-frame-interaction-strong);
+}
+
+/* Stopped here. The surface says it, the border says it, and the tick inside
+   says it — colour is never the only cue. */
+.clr-rung[data-state='selected'] {
+  background: var(--surface-selected);
+  border-color: var(--border-selected);
+  color: var(--text-selected);
+  font-weight: var(--font-weight-bold);
+}
+
+/* The radio is real and keeps its keyboard behaviour; only its box is hidden,
+   so the ring has to be drawn by the card that stands in for it. */
+.clr-rung:has(input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.clr-rungs__selection {
+  margin: var(--spacing-0);
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-card-label);
+}
