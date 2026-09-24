@@ -68,6 +68,15 @@ export interface ExerciseProgress {
 export interface BlockProgress {
   readonly blockId: string
   readonly structureType: Enums<'structure_type'>
+  /**
+   * `workout_blocks.rep_scheme`, as the column holds it.
+   *
+   * Carried beside the structure type rather than read off `identity`, because
+   * the two answer different questions: `identity.repScheme` is the words the
+   * header shows (`LADDER DOWN`), and this is the value a renderer branches on
+   * — which ladder a block is, or whether it is one at all (EXE-04a).
+   */
+  readonly repScheme: Enums<'rep_scheme'>
   /** Terse identity for the block's header — see `structureIdentity`. */
   readonly identity: StructureIdentity
   readonly status: SectionStatus
@@ -75,6 +84,12 @@ export interface BlockProgress {
   readonly exerciseCount: number
   /** Those same prescriptions, in `order_index` order. */
   readonly exercises: readonly ExerciseProgress[]
+  /**
+   * The clock contract the block carries. `none` is a block that prescribes no
+   * clock at all, and a timed renderer (EXE-03) reads it rather than assuming
+   * one from the structure type.
+   */
+  readonly timerType: Enums<'timer_contract'>
   /**
    * Rounds the block prescribes, as the number rather than as the header's
    * words. A circuit counts them (EXE-03); null is a block that carries none.
@@ -143,6 +158,7 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
       return {
         blockId,
         structureType: blockEntry.block.structure_type,
+        repScheme: blockEntry.block.rep_scheme,
         identity: structureIdentity(blockEntry.block),
         status: statusOf(exercises.map(({ exercise }) => exercise.execution_status)),
         exerciseCount: exercises.length,
@@ -159,9 +175,10 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
             prescription: exercise,
             setLogs: set_logs,
           })),
-        // All three read from `workout_blocks` and from nowhere else: the clock
-        // and the round count live on the block so its members cannot disagree
-        // about them (DATA-01c §5).
+        // All four read from `workout_blocks` and from nowhere else: the clock,
+        // round count, and rest live on the block once, so its members cannot
+        // disagree about them (DATA-01c §5).
+        timerType: blockEntry.block.timer_type,
         rounds: blockEntry.block.rounds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
         timerSeconds: blockEntry.block.timer_seconds,

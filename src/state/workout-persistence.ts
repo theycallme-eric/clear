@@ -19,16 +19,18 @@
  * foreign-session record is simply ignored, and the shell falls back to the
  * first unfinished section derived from the rows.
  *
- * EXE-03 adds the second thing of that kind, and it is the same argument one
- * level down: a circuit's current round and position are not in the rows
- * either. Two rounds of the same movement are two set logs whichever order
- * they happened in, so "round three, movement two, resting" can only be
- * remembered. It is kept under its own key rather than inside the shell record
- * — the two are written by different components at different moments, and one
- * read-modify-write racing the other is how the open section would start
- * losing rounds — and both are dropped together when the session ends. Block
- * ids are per-session, so a circuit record can only ever be read back by the
- * block that wrote it.
+ * EXE-03 adds two more conveniences one level down: a circuit's current round
+ * and position and an EMOM's running clock are not in the rows either. Each is
+ * kept under its own key because different components write them at different
+ * moments; merging them into the shell record would make independent
+ * read-modify-write cycles lose one another. All three records are dropped
+ * together when the session ends. Block ids are per-session, so each record can
+ * only be read back by the block that wrote it.
+ *
+ * EXE-04b adds the third, under a third key, by the same argument one structure
+ * across: a For Time block's clock. When the user *started racing* is not in the
+ * rows either — the session's `started_at` is the whole workout, not this block —
+ * and it has to survive a refresh, because the elapsed time is the score.
  *
  * EXE-04c adds the third key on the same argument one level further: an AMRAP's
  * score — when its window opened, the rounds banked, the partial round at the
@@ -44,12 +46,19 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { AmrapState } from './amrap'
 import type { CircuitState } from './circuit'
+import type { EmomState } from './emom'
+import type { ForTimeState } from './for-time'
 
 /** One key, overwritten: the app has one session in progress at a time. */
 export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
 
 /** The circuits' key: one record per block id, for the session in progress. */
 export const WORKOUT_CIRCUIT_STORAGE_KEY = 'clear.workout-circuits'
+/** The EMOMs' key: one record per block id, for the session in progress. */
+export const WORKOUT_EMOM_STORAGE_KEY = 'clear.workout-emom'
+
+/** The For Time blocks' key: one clock per block id (EXE-04b). */
+export const WORKOUT_FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
 
 /** The AMRAPs' key: one score per block id, on the same terms as the circuits'. */
 export const WORKOUT_AMRAP_STORAGE_KEY = 'clear.workout-amraps'
@@ -130,17 +139,17 @@ export function writeWorkoutShellState(
 }
 
 /**
- * Forgets everything the shell remembered locally — the open section, every
- * circuit's place in its rounds, and every AMRAP's score. Completing and
- * abandoning both call it, and they clear every key, because a session that has
- * ended has no position in it to return to and its scores are in
- * `block_results` by then.
+ * Forgets everything the shell remembered locally — the open section and every
+ * block's position, clock, or score. Completing and abandoning both call it
+ * and clear every key because an ended session has nowhere to return to.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
     storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+    storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
+    storage.removeItem(WORKOUT_FOR_TIME_STORAGE_KEY)
     storage.removeItem(WORKOUT_AMRAP_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
@@ -231,11 +240,77 @@ export function usePersistedSection(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Per-block records
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What a per-block key holds: one record per block id, for the session in
+ * progress. Two structures keep one — EXE-03's circuit position and EXE-04b's
+ * For Time clock — and they keep it the same way, so the guard is the only thing
+ * that differs between them.
+ */
+type BlockRecords<T> = Record<string, T>
+
+/** The stored map under one key, with any entry it cannot vouch for dropped. */
+function readBlockRecords<T>(
+  storage: ShellStorage | null,
+  key: string,
+  isRecord: (value: unknown) => value is T,
+): BlockRecords<T> {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(key)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: BlockRecords<T> = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isRecord(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/**
+ * Writes one block's record, leaving the other blocks in the session alone. A
+ * session holds a handful of blocks and the whole map is dropped when it ends,
+ * so read-modify-write is the right size for the problem.
+ */
+function writeBlockRecord<T>(
+  storage: ShellStorage | null,
+  key: string,
+  isRecord: (value: unknown) => value is T,
+  blockId: string,
+  record: T,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      key,
+      JSON.stringify({ ...readBlockRecords(storage, key, isRecord), [blockId]: record }),
+    )
+  } catch {
+    // A full or refused quota costs a position on a refresh, never a logged set.
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Circuits (EXE-03)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Every circuit's place in its rounds, by block id. */
-type CircuitRecords = Record<string, CircuitState>
+type CircuitRecords = BlockRecords<CircuitState>
 
 function isCircuitState(value: unknown): value is CircuitState {
   if (typeof value !== 'object' || value === null) return false
@@ -254,29 +329,7 @@ function isCircuitState(value: unknown): value is CircuitState {
 
 /** The stored map, with any entry it cannot vouch for dropped. */
 export function readCircuitStates(storage: ShellStorage | null): CircuitRecords {
-  if (storage === null) return {}
-
-  let raw: string | null
-  try {
-    raw = storage.getItem(WORKOUT_CIRCUIT_STORAGE_KEY)
-  } catch {
-    return {}
-  }
-  if (raw === null) return {}
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof parsed !== 'object' || parsed === null) return {}
-
-  const records: CircuitRecords = {}
-  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
-    if (isCircuitState(entry)) records[blockId] = entry
-  }
-  return records
+  return readBlockRecords(storage, WORKOUT_CIRCUIT_STORAGE_KEY, isCircuitState)
 }
 
 /** One block's stored position, or null — for absent and unusable alike. */
@@ -287,25 +340,13 @@ export function readCircuitState(
   return readCircuitStates(storage)[blockId] ?? null
 }
 
-/**
- * Writes one block's position, leaving the other circuits in the session
- * alone. A session holds a handful of blocks and the whole map is dropped when
- * it ends, so read-modify-write is the right size for the problem.
- */
+/** Writes one block's position, leaving the other circuits alone. */
 export function writeCircuitState(
   storage: ShellStorage | null,
   blockId: string,
   state: CircuitState,
 ): void {
-  if (storage === null) return
-  try {
-    storage.setItem(
-      WORKOUT_CIRCUIT_STORAGE_KEY,
-      JSON.stringify({ ...readCircuitStates(storage), [blockId]: state }),
-    )
-  } catch {
-    // A full or refused quota costs the round on a refresh, never a logged set.
-  }
+  writeBlockRecord(storage, WORKOUT_CIRCUIT_STORAGE_KEY, isCircuitState, blockId, state)
 }
 
 export interface PersistedCircuit {
@@ -314,27 +355,13 @@ export interface PersistedCircuit {
   advanceTo(next: CircuitState): void
 }
 
-/**
- * A circuit's position, restored on mount and written on every tap.
- *
- * There is no `pagehide` listener here and there does not need to be: the
- * state changes only when the user taps, and the tap writes it. What the
- * section index needs those listeners for — a value that drifts while nobody
- * is pressing anything — has no equivalent in a circuit.
- *
- * `restore` runs exactly once, in the initialiser, and is where the caller
- * repairs a record against the block it is being restored into: the shape is
- * the renderer's knowledge, not this module's.
- */
+/** A circuit's position, restored on mount and written on every tap. */
 export function usePersistedCircuit(
   blockId: string,
   restore: (stored: CircuitState | null) => CircuitState,
   storage: ShellStorage | null = defaultShellStorage(),
 ): PersistedCircuit {
   const [state, setState] = useState(() => restore(readCircuitState(storage, blockId)))
-
-  // The storage handle can only be re-read, never re-restored: restoring twice
-  // would put the user back where they were two taps ago.
   const latest = useRef(storage)
   useEffect(() => {
     latest.current = storage
@@ -352,126 +379,141 @@ export function usePersistedCircuit(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EMOMs (EXE-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type EmomRecords = BlockRecords<EmomState>
+
+function isEmomState(value: unknown): value is EmomState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.workDoneMinute === null ||
+      (typeof record.workDoneMinute === 'number' && Number.isInteger(record.workDoneMinute)))
+  )
+}
+
+export function readEmomStates(storage: ShellStorage | null): EmomRecords {
+  return readBlockRecords(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState)
+}
+
+export function readEmomState(storage: ShellStorage | null, blockId: string): EmomState | null {
+  return readEmomStates(storage)[blockId] ?? null
+}
+
+export function writeEmomState(storage: ShellStorage | null, blockId: string, state: EmomState): void {
+  writeBlockRecord(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState, blockId, state)
+}
+
+export interface PersistedEmom { readonly state: EmomState; update(next: EmomState): void }
+
+export function usePersistedEmom(
+  blockId: string,
+  restore: (stored: EmomState | null) => EmomState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedEmom {
+  const [state, setState] = useState(() => restore(readEmomState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => { latest.current = storage })
+  const update = useCallback((next: EmomState) => {
+    setState(next)
+    writeEmomState(latest.current, blockId, next)
+  }, [blockId])
+  return { state, update }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// For Time (EXE-04b)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type ForTimeRecords = BlockRecords<ForTimeState>
+
+function isForTimeState(value: unknown): value is ForTimeState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.finishedAt === null || typeof record.finishedAt === 'string')
+  )
+}
+
+export function readForTimeStates(storage: ShellStorage | null): ForTimeRecords {
+  return readBlockRecords(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState)
+}
+
+export function readForTimeState(storage: ShellStorage | null, blockId: string): ForTimeState | null {
+  return readForTimeStates(storage)[blockId] ?? null
+}
+
+export function writeForTimeState(storage: ShellStorage | null, blockId: string, state: ForTimeState): void {
+  writeBlockRecord(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState, blockId, state)
+}
+
+export interface PersistedForTime { readonly state: ForTimeState; moveTo(next: ForTimeState): void }
+
+export function usePersistedForTime(
+  blockId: string,
+  restore: (stored: ForTimeState | null) => ForTimeState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedForTime {
+  const [state, setState] = useState(() => restore(readForTimeState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => { latest.current = storage })
+  const moveTo = useCallback((next: ForTimeState) => {
+    setState(next)
+    writeForTimeState(latest.current, blockId, next)
+  }, [blockId])
+  return { state, moveTo }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // AMRAPs (EXE-04c)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Every AMRAP's score so far, by block id. */
-type AmrapRecords = Record<string, AmrapState>
+type AmrapRecords = BlockRecords<AmrapState>
 
 function isAmrapState(value: unknown): value is AmrapState {
   if (typeof value !== 'object' || value === null) return false
   const record = value as Record<string, unknown>
-
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.endedAtSeconds === null ||
       (typeof record.endedAtSeconds === 'number' &&
-        Number.isFinite(record.endedAtSeconds) &&
-        record.endedAtSeconds >= 0)) &&
+        Number.isFinite(record.endedAtSeconds) && record.endedAtSeconds >= 0)) &&
     typeof record.roundsCompleted === 'number' &&
-    Number.isInteger(record.roundsCompleted) &&
-    record.roundsCompleted >= 0 &&
-    // Null and zero are both accepted and kept apart: no partial round recorded
-    // is not the same observation as a partial round of zero reps (DATA-01d).
+    Number.isInteger(record.roundsCompleted) && record.roundsCompleted >= 0 &&
     (record.partialRoundReps === null ||
       (typeof record.partialRoundReps === 'number' &&
-        Number.isInteger(record.partialRoundReps) &&
-        record.partialRoundReps >= 0))
+        Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0))
   )
 }
 
-/** The stored map, with any entry it cannot vouch for dropped. */
 export function readAmrapStates(storage: ShellStorage | null): AmrapRecords {
-  if (storage === null) return {}
-
-  let raw: string | null
-  try {
-    raw = storage.getItem(WORKOUT_AMRAP_STORAGE_KEY)
-  } catch {
-    return {}
-  }
-  if (raw === null) return {}
-
-  let parsed: unknown
-  try {
-    parsed = JSON.parse(raw)
-  } catch {
-    return {}
-  }
-  if (typeof parsed !== 'object' || parsed === null) return {}
-
-  const records: AmrapRecords = {}
-  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
-    if (isAmrapState(entry)) records[blockId] = entry
-  }
-  return records
+  return readBlockRecords(storage, WORKOUT_AMRAP_STORAGE_KEY, isAmrapState)
 }
 
-/** One block's stored score, or null — for absent and unusable alike. */
-export function readAmrapState(
-  storage: ShellStorage | null,
-  blockId: string,
-): AmrapState | null {
+export function readAmrapState(storage: ShellStorage | null, blockId: string): AmrapState | null {
   return readAmrapStates(storage)[blockId] ?? null
 }
 
-/**
- * Writes one block's score, leaving the other AMRAPs in the session alone. Same
- * shape, and the same reasoning, as `writeCircuitState`.
- */
-export function writeAmrapState(
-  storage: ShellStorage | null,
-  blockId: string,
-  state: AmrapState,
-): void {
-  if (storage === null) return
-  try {
-    storage.setItem(
-      WORKOUT_AMRAP_STORAGE_KEY,
-      JSON.stringify({ ...readAmrapStates(storage), [blockId]: state }),
-    )
-  } catch {
-    // A full or refused quota costs the score on a refresh, never a logged set.
-  }
+export function writeAmrapState(storage: ShellStorage | null, blockId: string, state: AmrapState): void {
+  writeBlockRecord(storage, WORKOUT_AMRAP_STORAGE_KEY, isAmrapState, blockId, state)
 }
 
-export interface PersistedAmrap {
-  readonly state: AmrapState
-  /** Records the score and writes it in the same act. */
-  update(next: AmrapState): void
-}
+export interface PersistedAmrap { readonly state: AmrapState; update(next: AmrapState): void }
 
-/**
- * An AMRAP's score, restored on mount and written on every tap.
- *
- * No `pagehide` listener, for the reason `usePersistedCircuit` needs none: the
- * state changes only when the user taps, and the tap writes it. The one value
- * here that moves on its own — the clock — is not stored at all; `startedAt` is,
- * and the remaining time is derived from it (`amrap.ts`).
- *
- * `restore` runs exactly once, in the initialiser, and is where the caller
- * repairs a record against the block it is being restored into.
- */
 export function usePersistedAmrap(
   blockId: string,
   restore: (stored: AmrapState | null) => AmrapState,
   storage: ShellStorage | null = defaultShellStorage(),
 ): PersistedAmrap {
   const [state, setState] = useState(() => restore(readAmrapState(storage, blockId)))
-
-  // Re-read, never re-restored: restoring twice would undo the taps since mount.
   const latest = useRef(storage)
-  useEffect(() => {
-    latest.current = storage
-  })
-
-  const update = useCallback(
-    (next: AmrapState) => {
-      setState(next)
-      writeAmrapState(latest.current, blockId, next)
-    },
-    [blockId],
-  )
-
+  useEffect(() => { latest.current = storage })
+  const update = useCallback((next: AmrapState) => {
+    setState(next)
+    writeAmrapState(latest.current, blockId, next)
+  }, [blockId])
   return { state, update }
 }

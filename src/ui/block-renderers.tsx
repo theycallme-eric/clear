@@ -19,22 +19,24 @@
  * happens. `superset` is its `SupersetBlock`, the same set logging with the
  * pair's ordering and the block's own rest around it. `circuit` is EXE-03's
  * `CircuitBlock`, which tracks the round and position and supplies
- * `rounds_completed`. `amrap` is EXE-04c's `AmrapBlock`, which counts the window
- * down and supplies `rounds_completed` with `partial_round_reps` beside it. Every
- * other structure is still performed by `BlockPanel`:
- * the block's identity, its size, and the shell's completion control. That is
- * deliberate rather than a placeholder with no meaning — the path OVR-03 reads
- * is live for every structure from day one, and a block completed through it
- * records the effort with no outcome fields rather than with invented ones.
+ * `rounds_completed`; `emom` is its `EmomBlock`, which runs the block's minute
+ * grid and supplies `minutes_completed`; `amrap` is EXE-04c's `AmrapBlock`,
+ * which counts the window down and records its score; and `for_time` is
+ * EXE-04b's `ForTimeBlock`, which races the cap. EXE-04a's `LadderBlock` is the
+ * one override keyed by rep scheme; see `blockRendererFor`.
  */
 import { createElement, type ReactElement } from 'react'
 
 import type { Enums } from '../data/database.types'
+import { isLadderScheme } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from './amrap-block'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { CircuitBlock } from './circuit-block'
+import { EmomBlock } from './emom-block'
+import { ForTimeBlock } from './for-time-block'
+import { LadderBlock } from './ladder-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
 import { StructureBadge } from './workout-chrome'
@@ -91,13 +93,33 @@ export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRend
   standard: StandardBlock,
   superset: SupersetBlock,
   circuit: CircuitBlock,
-  emom: BlockPanel,
+  emom: EmomBlock,
   amrap: AmrapBlock,
-  for_time: BlockPanel,
+  for_time: ForTimeBlock,
 }
 
-export function blockRendererFor(structureType: Enums<'structure_type'>): BlockRenderer {
-  return BLOCK_RENDERERS[structureType]
+/**
+ * Which renderer performs this block — its structure, and then the one thing
+ * that is not its structure.
+ *
+ * A ladder is a **rep scheme**, not a structure type (`workout_blocks` carries
+ * both), so it cannot be a seventh entry in a map keyed by type without
+ * claiming to be a structure it is not. EXE-04a therefore lands as an override
+ * rather than a replacement: a For Time block whose scheme is a ladder is
+ * performed by `LadderBlock`, and every other For Time block is still the
+ * default panel that EXE-04b replaces.
+ *
+ * The override is narrowed to `for_time` deliberately. The quickfix spec is
+ * right that ladders appear under other structures too — a circuit, an
+ * accessory pyramid — but those structures have their own renderers landing in
+ * EXE-03 and EXE-04c, and each of them composes `LadderRungs` when it does.
+ * Claiming them here would be this ticket rendering another ticket's structure.
+ */
+export function blockRendererFor(block: BlockProgress): BlockRenderer {
+  if (block.structureType === 'for_time' && isLadderScheme(block.repScheme)) {
+    return LadderBlock
+  }
+  return BLOCK_RENDERERS[block.structureType]
 }
 
 /**
@@ -109,5 +131,5 @@ export function blockRendererFor(structureType: Enums<'structure_type'>): BlockR
  * shape even when the value behind it is a module constant.
  */
 export function BlockSlot({ block }: BlockRendererProps) {
-  return createElement(blockRendererFor(block.structureType), { block })
+  return createElement(blockRendererFor(block), { block })
 }
