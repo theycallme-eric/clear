@@ -125,6 +125,12 @@ export interface SelectQuery<T extends TableName> {
   readonly where?: Filterable<T>
   readonly order?: readonly OrderBy<T>[]
   readonly limit?: number
+  /**
+   * Rows to skip, for a paginated read (HIST-01). Meaningful only alongside
+   * `order` — an offset into an unordered result is an offset into an answer
+   * the database was free to give in a different sequence last time.
+   */
+  readonly offset?: number
 }
 
 export interface TableClient<T extends TableName> {
@@ -210,6 +216,7 @@ export function createSupabaseClient(config: SupabaseConfig): SupabaseClient {
         )
       }
       if (query.limit !== undefined) params.set('limit', String(query.limit))
+      if (query.offset !== undefined) params.set('offset', String(query.offset))
 
       const result = await request(`/${name}?${params}`, { method: 'GET' })
 

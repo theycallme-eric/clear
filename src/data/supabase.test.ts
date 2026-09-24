@@ -132,6 +132,31 @@ describe('a typed table query (DATA-03)', () => {
     expect(query.get('limit')).toBe('10')
   })
 
+  it('sends a page offset alongside the order it is an offset into', async () => {
+    const { client, double } = setup()
+
+    expectOk(
+      await client.from('user_constraints').select({
+        where: { user_id: USER },
+        order: [{ column: 'created_at', ascending: false }],
+        limit: 20,
+        offset: 40,
+      }),
+    )
+
+    const query = new URLSearchParams(double.requests()[0].query)
+    expect(query.get('limit')).toBe('20')
+    expect(query.get('offset')).toBe('40')
+  })
+
+  it('asks for no offset when the caller wanted the first page', async () => {
+    const { client, double } = setup()
+
+    expectOk(await client.from('user_constraints').select({ limit: 20 }))
+
+    expect(new URLSearchParams(double.requests()[0].query).has('offset')).toBe(false)
+  })
+
   it('deletes by a typed filter and treats an absent row as done', async () => {
     const { client } = setup()
 

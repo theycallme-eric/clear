@@ -21,6 +21,7 @@ import type {
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { ok, type Result } from '../state/errors'
+import type { HistoryClient } from '../data/history'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient } from '../data/sessions'
@@ -262,6 +263,7 @@ export interface WorkoutDoubleOptions {
   /** Override any client method — a failing abandon, a slow complete. */
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
+  history?: Partial<HistoryClient>
   setLogs?: Partial<SetLogsClient>
 }
 
@@ -359,6 +361,11 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.blockResults,
   }
 
+  const history: HistoryClient = {
+    page: () => unsupported('history.page'),
+    ...options.history,
+  }
+
   const setLogs: SetLogsClient = {
     async log(entry) {
       loggedSets.push(entry)
@@ -368,7 +375,7 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   }
 
   return {
-    clients: { sessions, blockResults, setLogs },
+    clients: { sessions, blockResults, history, setLogs },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],

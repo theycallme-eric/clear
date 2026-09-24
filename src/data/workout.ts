@@ -39,6 +39,7 @@ import {
   type ExerciseSetLogRow,
 } from '../state/schemas'
 import type { AuthClient } from './auth'
+import { createHistoryClient, type HistoryClient } from './history'
 import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
 
@@ -64,6 +65,13 @@ export interface WorkoutClients {
   /** SES-01a's lifecycle, carrying the live token. */
   readonly sessions: SessionsClient
   readonly blockResults: BlockResultsClient
+  /**
+   * HIST-01's history read. It sits here rather than in a façade of its own
+   * because it needs exactly what the other two need and nothing else: the
+   * access token as it is at the moment of the call. A second context carrying
+   * a second copy of that discipline would be two places to get it wrong.
+   */
+  readonly history: HistoryClient
   readonly setLogs: SetLogsClient
 }
 
@@ -174,6 +182,18 @@ export function createWorkoutClients({
     },
   }
 
+  const history: HistoryClient = {
+    async page(userId, query) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      return createHistoryClient({ ...supabase, accessToken: accessToken.value }).page(
+        userId,
+        query,
+      )
+    },
+  }
+
   const setLogs: SetLogsClient = {
     async log(entry) {
       // The bounds are the table's own, and they are checked here for the same
@@ -218,7 +238,7 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults, setLogs }
+  return { sessions, blockResults, history, setLogs }
 }
 
 /**
@@ -247,6 +267,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       resume: refusal,
     },
     blockResults: { record: refusal },
+    history: { page: refusal },
     setLogs: { log: refusal },
   }
 }
