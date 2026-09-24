@@ -1,0 +1,12 @@
+<!-- SET-01 — the CLEAR mark in the `mono` skin. See favicon-clear.svg: same
+     geometry, this skin's --base and --structure. Mono separates roles by value
+     rather than hue, so the C is the structure grey here exactly as the shipped
+     ClearLogo is — a brand mark recolours with the skin, it is not repainted. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>CLEAR</title>
+  <path fill="#0A0A0A" d="M0 0 H32 V28 L28 32 H0 Z" />
+  <path
+    fill="#6A6A6A"
+    d="M10 10 H20.5 L22 11.5 V13 H13 V19 H22 V20.5 L20.5 22 H10 Z"
+  />
+</svg>
