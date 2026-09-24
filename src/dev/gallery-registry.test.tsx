@@ -82,6 +82,12 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // minute prescribes — so a specimen would be framing an invented session
   // rather than the renderer.
   EmomBlock: 'EXE-03 — an EMOM of a live session, run minute by minute',
+  // EXE-07's sync notice. What it states is a count held by the shell's own
+  // durable queue, and it renders nothing at all unless that queue has been
+  // refused more than once — so a specimen would have to invent a session, a
+  // queue and a dead signal before there was anything on screen to review.
+  SetSyncNotice:
+    'EXE-07 — the unsynced-set count of a live session, read from the shell’s set-log queue',
 }
 
 /** Components exported from a module, in source order. */

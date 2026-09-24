@@ -65,6 +65,7 @@ import {
 } from '../state/workout-queries'
 import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
+import { SetSyncNotice } from '../ui/set-sync-notice'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
   AbandonConfirmDialog,
@@ -311,9 +312,11 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
         renderer reaches it through `useSetLogging` and never sees the client.
       */}
       <SetLoggingProvider
+        sessionId={sessionId}
         exercises={exercises}
         weightUnit={weightUnit}
         onFailure={setFailure}
+        storage={storage}
       >
         <AppHeader
           meta={<GlobalTimer seconds={seconds} />}
@@ -332,6 +335,14 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
 
         <Screen title={SCREEN_TITLE}>
           <div className="clr-stack">
+            {/*
+              EXE-07's one statement about unsynced work. It is here rather
+              than in the error dialog because a queue that is retrying is not
+              a failed action: it must not interrupt a set, and it must say the
+              count once rather than once per set.
+            */}
+            <SetSyncNotice />
+
             <ProgressTracker
               progress={progress}
               currentIndex={index}

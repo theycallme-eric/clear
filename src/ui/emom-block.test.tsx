@@ -34,6 +34,7 @@ import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import { AppProviders } from '../test/render'
 import {
   createWorkoutDouble,
+  FIXTURE_SESSION_ID,
   snapshotFixture,
   type BlockFixture,
   type ExerciseFixture,
@@ -120,6 +121,8 @@ function mount(
     <AppProviders workout={workout.clients}>
       <BlockCompletionContext value={completion}>
         <SetLoggingProvider
+          sessionId={FIXTURE_SESSION_ID}
+          storage={null}
           exercises={block.exercises}
           weightUnit="kg"
           onFailure={() => {}}

@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { ExerciseSetLogRow } from './schemas'
 import {
+  loggedSetFromEntry,
   loggedSetFromRow,
   prefillFrom,
   RPE_MAX,
@@ -241,6 +242,36 @@ describe('a stored row, read back', () => {
       weightUnit: 'lb',
       rpe: 8,
       isWarmup: true,
+      // A row exists, so the database has this set: `logged` and nothing else.
+      status: 'logged',
+    })
+  })
+
+  it('reads a queued set back as the user typed it, marked unsynced', () => {
+    expect(
+      loggedSetFromEntry(
+        {
+          id: 'a0000001-0000-4000-8000-000000000000',
+          exerciseId: '80000001-0000-4000-8000-000000000000',
+          blockId: '70000001-0000-4000-8000-000000000000',
+          distanceUnit: 'm',
+          weightUnit: 'kg',
+          performed: { setNumber: 2, distance: 400, rpe: 7 },
+        },
+        'syncing',
+      ),
+    ).toEqual({
+      setNumber: 2,
+      reps: null,
+      durationSeconds: null,
+      distance: 400,
+      distanceUnit: 'm',
+      // Not recorded is null, never zero — the same rule the insert follows.
+      weight: null,
+      weightUnit: 'kg',
+      rpe: 7,
+      isWarmup: false,
+      status: 'syncing',
     })
   })
 })

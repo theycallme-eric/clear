@@ -142,6 +142,11 @@ export function writeWorkoutShellState(
  * Forgets everything the shell remembered locally — the open section and every
  * block's position, clock, or score. Completing and abandoning both call it
  * and clear every key because an ended session has nowhere to return to.
+ *
+ * EXE-07's set-log queue is deliberately *not* one of these keys and must never
+ * be added here. Every record above is a convenience the rows can reproduce;
+ * that one is work the user performed and the database does not have yet.
+ * Clearing it at the end of a session would lose exactly the sets D7 is about.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
