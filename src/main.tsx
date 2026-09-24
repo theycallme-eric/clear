@@ -20,6 +20,7 @@ import { registerServiceWorker } from './app/service-worker'
 import { AuthProvider } from './state/auth-provider'
 import { QueryClient, QueryClientContext } from './state/query'
 import { SignInClientsContext } from './state/sign-in-context'
+import { SummaryContext } from './state/summary-queries'
 import { UserDataContext } from './state/user-queries'
 import { ToastHost } from './ui/toast-host'
 
@@ -32,7 +33,7 @@ if (rootElement === null) {
 // AUTH-01's session client and AUTH-02's OTP client, built once from the
 // environment. The sign-in screen must hand its verified session to the same
 // client the provider subscribed to, so both come from one place.
-const { auth, otp, userData } = appAuthClients()
+const { auth, otp, userData, summary } = appAuthClients()
 
 // AUTH-03: the one cache. It is handed to the provider as AUTH-01's `QueryCache`
 // port, which is what makes `signOut` empty it — the next user never reads the
@@ -48,7 +49,10 @@ createRoot(rootElement).render(
         <QueryClientContext value={queryClient}>
           <UserDataContext value={userData}>
             <SignInClientsContext value={{ auth, otp }}>
-              <RouterProvider router={appRouter} />
+              {/* SUM-01: the debrief's reads and its one write */}
+              <SummaryContext value={summary}>
+                <RouterProvider router={appRouter} />
+              </SummaryContext>
             </SignInClientsContext>
           </UserDataContext>
         </QueryClientContext>

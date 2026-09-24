@@ -21,6 +21,7 @@ import {
 } from '../data/auth'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
+import { createSummaryClient, type SummaryClient } from '../data/summary'
 import { createUserDataClient, type UserDataClient } from '../data/user-data'
 import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
 import { createLogger } from '../state/logger'
@@ -82,6 +83,28 @@ function unconfiguredUserDataClient(): UserDataClient {
   }
 }
 
+/** SUM-01's two reads and its one write, for a build with no configuration. */
+function unconfiguredSummaryClient(): SummaryClient {
+  const failure = () =>
+    err(
+      createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
+  return {
+    async latest() {
+      return failure()
+    },
+    async streak() {
+      return failure()
+    },
+    async saveDebrief() {
+      return failure()
+    },
+  }
+}
+
 interface Clients {
   readonly auth: AuthClient
   readonly otp: OtpClient
@@ -92,6 +115,12 @@ interface Clients {
    * `auth.ts` is the only thing that knows when that token rotated.
    */
   readonly userData: UserDataClient
+  /**
+   * SUM-01's debrief. Built here for the same reason `userData` is: the token
+   * it presents has to be the live one, and `auth` is what knows when it
+   * rotated.
+   */
+  readonly summary: SummaryClient
 }
 
 let clients: Clients | null = null
@@ -115,6 +144,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       auth: unconfiguredAuthClient(),
       otp: unconfiguredOtpClient(),
       userData: unconfiguredUserDataClient(),
+      summary: unconfiguredSummaryClient(),
     }
     return clients
   }
@@ -125,6 +155,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     auth,
     otp: createOtpClient(config.value),
     userData: createUserDataClient({ auth, supabase: config.value }),
+    summary: createSummaryClient({ auth, supabase: config.value }),
   }
   return clients
 }

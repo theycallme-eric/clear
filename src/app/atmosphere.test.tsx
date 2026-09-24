@@ -9,7 +9,7 @@ import { act, render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AppProviders, renderApp } from '../test/render'
+import { AppProviders, renderApp, signedIn } from '../test/render'
 import { routes } from './router'
 import {
   DEFAULT_ATMOSPHERE,
@@ -107,7 +107,12 @@ describe('atmosphere assignment', () => {
 
 describe('atmosphere rendering', () => {
   it.each(DOCUMENTED_ROUTES)('renders %s with data-atmosphere="%s"', (pathname, level) => {
-    const { container } = renderApp([pathname])
+    // `/summary` is protected. Keep that route mounted so this test measures
+    // its atmosphere rather than the anonymous guard's Welcome redirect.
+    const { container } = renderApp(
+      [pathname],
+      pathname === '/summary' ? signedIn() : {},
+    )
 
     // IA.md §3 layer 2 — the shell carries the level…
     expect(container.querySelector('.clr-shell')).toHaveAttribute(

@@ -27,6 +27,10 @@ export const SCREENS: readonly E2eScreen[] = [
   { path: '/', route: '/', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/welcome', route: '/welcome', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/login', route: '/login', title: 'Sign in · CLEAR', heading: 'Sign in' },
+  // Summary is protected as well. The credential-free preview must exercise
+  // its guard and arrive at Welcome; signed-in behavior is covered by SUM-01's
+  // unit and integration tests without putting credentials in preview CI.
+  { path: '/summary', route: '/summary', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {
