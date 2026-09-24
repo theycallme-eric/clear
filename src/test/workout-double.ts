@@ -21,7 +21,8 @@ import type {
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { ok, type Result } from '../state/errors'
-import type { BlockResultsClient, WorkoutClients } from '../data/workout'
+import { setLogInsert, type SetLogEntry } from '../state/set-logging'
+import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient } from '../data/sessions'
 import { FIXTURE_USER_ID } from './user-data-double'
 
@@ -35,14 +36,29 @@ export function fixtureId(prefix: string, index: number): string {
 export const FIXTURE_SESSION_ID = fixtureId('5', 1)
 export const FIXTURE_STARTED_AT = '2026-09-24T09:00:00+00:00'
 
+/**
+ * One prescription in a block. A status on its own is the common case — a test
+ * about navigation cares only whether the movement is done — and the long form
+ * is for EXE-02's tests, which are about the prescription's own columns and the
+ * sets already logged against it.
+ */
+export interface ExerciseFixture {
+  status?: Enums<'execution_status'>
+  /** Columns to override on `workout_exercises`: the structured target. */
+  prescription?: Partial<WorkoutExerciseRow>
+  /** Sets the snapshot already carries — what a resumed session shows. */
+  setLogs?: Partial<ExerciseSetLogRow>[]
+}
+
 export interface BlockFixture {
   structureType?: Enums<'structure_type'>
   rounds?: number | null
   timerSeconds?: number | null
   timerType?: Enums<'timer_contract'>
   repScheme?: Enums<'rep_scheme'>
-  /** One entry per prescription: the status it is in. */
-  exercises?: Enums<'execution_status'>[]
+  roundRestSeconds?: number | null
+  /** One entry per prescription: its status, or the whole thing. */
+  exercises?: (Enums<'execution_status'> | ExerciseFixture)[]
 }
 
 export interface SectionFixture {
@@ -103,9 +119,33 @@ function blockRow(id: string, sectionId: string, index: number, fixture: BlockFi
     rounds: fixture.rounds ?? null,
     timer_type: fixture.timerType ?? 'none',
     timer_seconds: fixture.timerSeconds ?? null,
-    round_rest_seconds: null,
+    round_rest_seconds: fixture.roundRestSeconds ?? null,
     rep_scheme: fixture.repScheme ?? 'fixed',
     block_notes: null,
+  }
+}
+
+/** A `set_logs` row for a prescription, with only what a test states set. */
+function setLogRow(
+  exerciseId: string,
+  index: number,
+  overrides: Partial<ExerciseSetLogRow>,
+): ExerciseSetLogRow {
+  return {
+    id: fixtureId('a', index),
+    workout_exercise_id: exerciseId,
+    prescription_revision_status: 'active',
+    set_number: index,
+    actual_reps: null,
+    actual_duration_seconds: null,
+    actual_distance: null,
+    actual_distance_unit: null,
+    weight: null,
+    weight_unit: 'kg',
+    rpe: null,
+    is_warmup_set: false,
+    created_at: '2026-09-24T09:10:00+00:00',
+    ...overrides,
   }
 }
 
@@ -114,6 +154,7 @@ function exerciseRow(
   blockId: string,
   index: number,
   status: Enums<'execution_status'>,
+  overrides: Partial<WorkoutExerciseRow> = {},
 ): WorkoutExerciseRow {
   return {
     id,
@@ -143,6 +184,7 @@ function exerciseRow(
     revision_status: 'active',
     execution_status: status,
     exercise_notes: null,
+    ...overrides,
   }
 }
 
@@ -180,20 +222,27 @@ export function snapshotFixture(fixture: SnapshotFixture = {}): SessionSnapshot 
         blocks: blocks.map((block, blockIndex) => {
           blockCounter += 1
           const blockId = fixtureId('7', blockCounter)
-          const statuses = block.exercises ?? ['not_started']
+          const members = block.exercises ?? ['not_started']
 
           return {
             block: blockRow(blockId, sectionId, blockIndex, block),
-            exercises: statuses.map((status, index) => {
+            exercises: members.map((member, index) => {
               exerciseCounter += 1
+              const entry: ExerciseFixture =
+                typeof member === 'string' ? { status: member } : member
+              const exerciseId = fixtureId('8', exerciseCounter)
+
               return {
                 exercise: exerciseRow(
-                  fixtureId('8', exerciseCounter),
+                  exerciseId,
                   blockId,
                   index,
-                  status,
+                  entry.status ?? 'not_started',
+                  entry.prescription ?? {},
                 ),
-                set_logs: [] as ExerciseSetLogRow[],
+                set_logs: (entry.setLogs ?? []).map((log, logIndex) =>
+                  setLogRow(exerciseId, logIndex + 1, log),
+                ),
               }
             }),
           }
@@ -213,12 +262,15 @@ export interface WorkoutDoubleOptions {
   /** Override any client method — a failing abandon, a slow complete. */
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
+  setLogs?: Partial<SetLogsClient>
 }
 
 export interface WorkoutDouble {
   clients: WorkoutClients
   /** Every `block_results` write the shell made, in order. */
   recorded(): BlockCompletion[]
+  /** Every `exercise_set_logs` write the shell made, in order. */
+  loggedSets(): SetLogEntry[]
   /** Session ids passed to `abandon` and `complete`. */
   abandoned(): string[]
   completed(): { sessionId: string; minutes?: number }[]
@@ -240,9 +292,32 @@ function blockResultRow(completion: BlockCompletion): BlockResultRow {
   }
 }
 
-/** The shell's two clients, recording what they were asked to do. */
+/**
+ * The row the database would have stored, built from the same pure mapping the
+ * real client uses — so a test that asserts what came back is asserting the
+ * insert rather than a second, hand-written idea of it.
+ */
+function storedSetLog(entry: SetLogEntry): ExerciseSetLogRow {
+  const insert = setLogInsert(entry)
+
+  return {
+    ...insert,
+    prescription_revision_status: 'active',
+    actual_reps: insert.actual_reps ?? null,
+    actual_duration_seconds: insert.actual_duration_seconds ?? null,
+    actual_distance: insert.actual_distance ?? null,
+    actual_distance_unit: insert.actual_distance_unit ?? null,
+    weight: insert.weight ?? null,
+    rpe: insert.rpe ?? null,
+    is_warmup_set: insert.is_warmup_set ?? false,
+    created_at: '2026-09-24T09:20:00+00:00',
+  }
+}
+
+/** The shell's clients, recording what they were asked to do. */
 export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): WorkoutDouble {
   const recorded: BlockCompletion[] = []
+  const loggedSets: SetLogEntry[] = []
   const abandoned: string[] = []
   const completed: { sessionId: string; minutes?: number }[] = []
   const session = options.session === undefined ? snapshotFixture() : options.session
@@ -284,9 +359,18 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.blockResults,
   }
 
+  const setLogs: SetLogsClient = {
+    async log(entry) {
+      loggedSets.push(entry)
+      return ok(storedSetLog(entry))
+    },
+    ...options.setLogs,
+  }
+
   return {
-    clients: { sessions, blockResults },
+    clients: { sessions, blockResults, setLogs },
     recorded: () => [...recorded],
+    loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
   }

@@ -13,6 +13,14 @@
  * writes `block_results` for every structure type (EXE-01), so there is one
  * writer, one row shape and one place a failed write is turned into a typed
  * error. Renderers never reach it.
+ *
+ * `SetLogsClient` (EXE-02) is the same shape for the other row execution
+ * produces. One set, one insert, at the moment it was performed — the
+ * requirement's "written at log time, not batched at workout end" is this
+ * method being called per set rather than a queue being drained at the end. The
+ * durable local queue in front of it is EXE-07's, and it will wrap this client
+ * rather than replace it, which is why the row is minted by the caller: an id
+ * that exists before the request does is what makes a retry idempotent.
  */
 import { isErr, ok, err, createError, ErrorCode, type Result } from '../state/errors'
 import {
@@ -22,7 +30,14 @@ import {
   PERCEIVED_EFFORT_MIN,
   type BlockCompletion,
 } from '../state/block-completion'
-import { blockResultRowSchema, parseBoundary, type BlockResultRow } from '../state/schemas'
+import { setLogInsert, setLogViolation, type SetLogEntry } from '../state/set-logging'
+import {
+  blockResultRowSchema,
+  exerciseSetLogRowSchema,
+  parseBoundary,
+  type BlockResultRow,
+  type ExerciseSetLogRow,
+} from '../state/schemas'
 import type { AuthClient } from './auth'
 import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
@@ -35,10 +50,21 @@ export interface BlockResultsClient {
   record(completion: BlockCompletion): Promise<Result<BlockResultRow>>
 }
 
+export interface SetLogsClient {
+  /**
+   * Writes one `exercise_set_logs` row and answers it as the database stored
+   * it. A measurement the CHECK constraints would refuse — a negative weight,
+   * an RPE outside 1–10, a distance with no unit — is refused before anything
+   * is sent.
+   */
+  log(entry: SetLogEntry): Promise<Result<ExerciseSetLogRow>>
+}
+
 export interface WorkoutClients {
   /** SES-01a's lifecycle, carrying the live token. */
   readonly sessions: SessionsClient
   readonly blockResults: BlockResultsClient
+  readonly setLogs: SetLogsClient
 }
 
 export interface WorkoutClientsConfig {
@@ -148,7 +174,51 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults }
+  const setLogs: SetLogsClient = {
+    async log(entry) {
+      // The bounds are the table's own, and they are checked here for the same
+      // reason the effort range is: this is the one path every structure logs
+      // a set through, so an impossible measurement is refused in the caller's
+      // vocabulary rather than as a Postgres constraint name.
+      const violation = setLogViolation(entry)
+      if (violation !== null) {
+        return err(
+          createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+            details: { ...violation, exerciseId: entry.exerciseId },
+          }),
+        )
+      }
+
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      const db = createSupabaseClient({ ...supabase, accessToken: accessToken.value })
+      const rows = await db.from('exercise_set_logs').insert(setLogInsert(entry))
+      if (isErr(rows)) return rows
+
+      const [row] = rows.value
+      if (row === undefined) {
+        // Nothing was read back: RLS refused the insert, or it asked for no
+        // representation. A set the user performed must never be drawn as
+        // logged on the strength of a write that answered nothing.
+        return err(
+          createError(ErrorCode.PERSISTENCE_WRITE_FAILED, {
+            details: {
+              table: 'exercise_set_logs',
+              exerciseId: entry.exerciseId,
+              setNumber: entry.performed.setNumber,
+            },
+          }),
+        )
+      }
+
+      return parseBoundary(exerciseSetLogRowSchema, row, {
+        code: ErrorCode.PERSISTENCE_READ_FAILED,
+      })
+    },
+  }
+
+  return { sessions, blockResults, setLogs }
 }
 
 /**
@@ -177,5 +247,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       resume: refusal,
     },
     blockResults: { record: refusal },
+    setLogs: { log: refusal },
   }
 }

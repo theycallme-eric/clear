@@ -35,6 +35,11 @@ function blockFixture(
     },
     status: 'not_started',
     exerciseCount: 2,
+    // The registry's own assertions are about dispatch and completion, which
+    // are true of a block whose prescriptions this test does not describe.
+    // What a renderer does with them is `standard-block.test.tsx`'s.
+    exercises: [],
+    roundRestSeconds: null,
     ...overrides,
   }
 }

@@ -118,13 +118,56 @@ describe('a renderer supplies an outcome and nothing else (EXE-01)', () => {
   })
 
   it('leaves every renderer taking completion from the seam', () => {
-    // `block-renderers.tsx` is the registry plus the default panel today; when
-    // EXE-03 and EXE-04a…c replace its entries they inherit this assertion.
+    // One control, composed by every renderer: EXE-02's standard block and the
+    // default panel already share it, and EXE-03 and EXE-04a…c inherit it by
+    // composing the same component rather than by remembering this rule.
     const completing = renderers.filter((file) => /completeBlock\(/.test(read(file)))
 
-    expect(completing).toEqual(['src/ui/block-renderers.tsx'])
+    expect(completing).toEqual(['src/ui/block-completion-control.tsx'])
     for (const file of completing) {
       expect(read(file)).toContain('useBlockCompletion()')
+    }
+  })
+})
+
+/**
+ * EXE-02's half of the same guarantee. A set log is the other row execution
+ * writes, and "each logged set is a row written at log time" is exactly the
+ * property a second writer would break silently — a renderer batching its sets
+ * until the end of the block would pass every behavioural test in the suite.
+ */
+describe('one writer for exercise_set_logs (EXE-02)', () => {
+  it('names the table in exactly one place', () => {
+    expect(filesMatching(/from\(\s*'exercise_set_logs'\s*\)/)).toEqual([
+      'src/data/workout.ts',
+    ])
+  })
+
+  it('builds the row from one mapping, called from that same place', () => {
+    // Declared in `set-logging.ts`; *called* by the writer and by nobody else.
+    expect(filesMatching(/(?<!function )\bsetLogInsert\(/)).toEqual(['src/data/workout.ts'])
+  })
+
+  it('writes a set from one path', () => {
+    expect(filesMatching(/setLogs\.log\(/)).toEqual([
+      'src/state/set-logging-provider.tsx',
+    ])
+  })
+
+  it('provides the renderers’ seam from that same path', () => {
+    expect(filesMatching(/<SetLoggingContext/)).toEqual([
+      'src/state/set-logging-provider.tsx',
+    ])
+  })
+
+  it('logs a set from one component, which takes the seam', () => {
+    const logging = sources
+      .filter((file) => file.startsWith('src/ui/'))
+      .filter((file) => /\blogSet\(/.test(read(file)))
+
+    expect(logging).toEqual(['src/ui/set-logger.tsx'])
+    for (const file of logging) {
+      expect(read(file)).toContain('useSetLogging()')
     }
   })
 })
