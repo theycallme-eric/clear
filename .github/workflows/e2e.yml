@@ -8,8 +8,10 @@ name: E2E
 # `deployment_status` is how that is expressed without a third-party action or
 # a polling loop: Vercel's Git integration publishes one when a deployment
 # finishes, and it carries the URL. That preview lane receives no privileged
-# credential. The separate `push` lane runs the live backend/RLS checks only
-# from reviewed code after it reaches `main`.
+# credential.
+#
+# The `push` lane keeps the full trusted run, including the OTP flow, from
+# reviewed code on `main`.
 on:
   deployment_status:
   push:

@@ -37,6 +37,9 @@ export class AdminError extends Error {
 /** GoTrue pages its user list; 200 is far more than this namespace needs. */
 const USER_PAGE_SIZE = 200
 
+/** 5,000 users is not a state this project reaches; it is a stop, not a limit. */
+const MAX_USER_PAGES = 25
+
 /** @param {ClientOptions} options */
 export function createAdminClient(options) {
   const { url, serviceRoleKey, anonKey } = options
@@ -82,13 +85,35 @@ export function createAdminClient(options) {
   }
 
   return {
+    /**
+     * Every user GoTrue knows about, paged to the end.
+     *
+     * Paging matters now that the harness runs per pull request: one page of
+     * 200 was plenty for two fixed addresses, but a project that has hosted a
+     * hundred namespaces can push the one being looked for onto page two, and
+     * "not found" would then mean "created again", not "absent".
+     */
+    async listUsers() {
+      const found = []
+
+      // A ceiling rather than `while (true)`: a paging bug in either direction
+      // should stop, not spin against a live project.
+      for (let page = 1; page <= MAX_USER_PAGES; page += 1) {
+        const body = must(
+          'listing users',
+          await call(`/auth/v1/admin/users?page=${page}&per_page=${USER_PAGE_SIZE}`),
+        )
+        const users = Array.isArray(body) ? body : (body?.users ?? [])
+        found.push(...users)
+        if (users.length < USER_PAGE_SIZE) break
+      }
+
+      return found
+    },
+
     /** @param {string} email */
     async findUserByEmail(email) {
-      const body = must(
-        'listing users',
-        await call(`/auth/v1/admin/users?page=1&per_page=${USER_PAGE_SIZE}`),
-      )
-      const users = Array.isArray(body) ? body : (body?.users ?? [])
+      const users = await this.listUsers()
       return users.find((user) => user.email === email) ?? null
     },
 
@@ -273,6 +298,47 @@ export function createAdminClient(options) {
         },
         body: JSON.stringify(patch),
       })
+    },
+
+    /**
+     * Attempt a delete as a given user. The third kind of write, and the one
+     * whose absence is easiest to miss: `update` and `insert` policies are
+     * usually written together, `delete` often is not, and a table with no
+     * delete policy at all is only safe while RLS is on.
+     *
+     * Returns the raw response for the same reason the other two do — being
+     * refused is the expected outcome.
+     *
+     * @param {string} table
+     * @param {Record<string, string>} query
+     * @param {string} accessToken
+     */
+    async deleteAs(table, query, accessToken) {
+      const search = new URLSearchParams(query)
+      return call(`/rest/v1/${table}?${search}`, {
+        key: anonKey,
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Prefer: 'return=representation',
+        },
+      })
+    },
+
+    /**
+     * Read past every policy, as the service role.
+     *
+     * Used for exactly one thing: checking that teardown left nothing. Asking
+     * a test user whether their rows are gone proves nothing — RLS would hide
+     * them either way. The privileged read is the only one that can tell "not
+     * visible" from "not there".
+     *
+     * @param {string} table
+     * @param {Record<string, string>} query
+     */
+    async selectAsService(table, query) {
+      const search = new URLSearchParams({ select: '*', ...query })
+      return call(`/rest/v1/${table}?${search}`)
     },
   }
 }

@@ -10,13 +10,13 @@
 import { createAdminClient } from './client.mjs'
 import { requireE2eEnv } from './env.mjs'
 import { seed } from './lifecycle.mjs'
-import { emailForSlot } from './namespace.mjs'
+import { NAMESPACE, emailForSlot } from './namespace.mjs'
 
 const env = requireE2eEnv()
 const { users } = await seed(createAdminClient(env))
 
 process.stdout.write(
-  `E2E namespace seeded: ${Object.keys(users)
+  `E2E namespace '${NAMESPACE}' seeded: ${Object.keys(users)
     .map((slot) => emailForSlot(/** @type {'a' | 'b'} */ (slot)))
     .join(', ')}\n`,
 )

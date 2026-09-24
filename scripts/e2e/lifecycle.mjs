@@ -22,7 +22,16 @@ import {
   FIXTURE_IDS,
   SLOTS,
   emailForSlot,
+  isHarnessEmail,
 } from './namespace.mjs'
+
+/**
+ * How long an untouched harness user is assumed to belong to a run still in
+ * progress. Two hours is longer than any CI job this repository allows, so
+ * anything older was abandoned — a cancelled job, a laptop that slept, a
+ * process killed between seed and reset.
+ */
+export const STALE_AFTER_MS = 2 * 60 * 60 * 1000
 
 /**
  * Remove the entire E2E namespace. Safe to call on a project that has never
@@ -43,6 +52,43 @@ export async function reset(client) {
   }
 
   return { deleted }
+}
+
+/**
+ * Remove harness users left behind by *other* namespaces that are long gone.
+ *
+ * Per-pull-request namespaces mean a cancelled job can leave two users nobody
+ * will ever address again: its namespace is derived from a pull request number
+ * that will not come round twice. Reset cannot find them, because reset only
+ * knows its own namespace's addresses — so the sweep works by prefix instead,
+ * and uses age to avoid deleting a run that is still going.
+ *
+ * It is deliberately narrow. Only `clear-e2e-…@example.com` is eligible, only
+ * when older than the cutoff, and the deletion is the same cascading one reset
+ * performs. An address this harness never created cannot match.
+ *
+ * @param {ReturnType<import('./client.mjs').createAdminClient>} client
+ * @param {{ olderThanMs?: number, now?: number }} [options]
+ * @returns {Promise<{ swept: string[] }>}
+ */
+export async function sweepStale(client, options = {}) {
+  const { olderThanMs = STALE_AFTER_MS, now = Date.now() } = options
+  const cutoff = now - olderThanMs
+  const swept = []
+
+  for (const user of await client.listUsers()) {
+    if (!isHarnessEmail(user.email)) continue
+
+    const createdAt = Date.parse(user.created_at ?? '')
+    // An address with no readable timestamp is left alone: a sweep that
+    // guesses is a sweep that eventually deletes a live run.
+    if (!Number.isFinite(createdAt) || createdAt >= cutoff) continue
+
+    await client.deleteUser(user.id)
+    swept.push(user.email)
+  }
+
+  return { swept }
 }
 
 /**
