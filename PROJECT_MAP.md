@@ -188,10 +188,16 @@ was open — in `localStorage`, discarding any record it cannot use. `src/state/
 makes the resumable session a query every screen can ask, over `src/data/workout.ts`, which
 assembles SES-01a's lifecycle client per call so the token it presents is never stale.
 
-The shell also owns **block completion**: `src/state/block-completion.ts` is the seam the renderers
-(EXE-02…EXE-04c) call with the fields their structure observed, and the shell asks for perceived
-effort once — `src/ui/block-effort.tsx` — and writes the `block_results` row for every structure
-type. A renderer never writes that row, which is what makes OVR-03's input one column collected one
-way from day one. `src/ui/workout-chrome.tsx` holds the shell's four presentation parts; the timer
-there counts up and is labelled rather than live, so it is app-owned rather than the export's
-countdown `TimerDisplay`.
+The shell also owns **block completion**, and that is one path rather than a convention.
+`src/state/block-completion.ts` is the vocabulary — the outcome a renderer observed, and the
+`block_results` row it maps to — and `src/state/block-completion-provider.tsx` is the path: mounted
+by the shell around every renderer, it asks for perceived effort once (`src/ui/block-effort.tsx`),
+writes the row through `src/data/workout.ts`, and refuses a block it has already written. Which
+renderer performs a structure is `src/ui/block-renderers.tsx`, a map total over `structure_type`, so
+EXE-02…EXE-04c land by replacing an entry; a renderer receives no client and no callback, only
+`useBlockCompletion`. `src/test/block-completion-ownership.test.ts` keeps it that way, naming the one
+file allowed to insert the row, the one allowed to ask for effort, and the one allowed to provide the
+seam — because a sixth renderer growing its own write is exactly how OVR-03's single input stops
+being single, and no behavioural test would notice. `src/ui/workout-chrome.tsx` holds the shell's
+four presentation parts; the timer there counts up and is labelled rather than live, so it is
+app-owned rather than the export's countdown `TimerDisplay`.
