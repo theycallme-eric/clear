@@ -69,6 +69,8 @@ export interface SessionDouble {
   setExecutionStatus(id: string, status: WorkoutExerciseRow['execution_status']): void
   /** Every RPC the double answered, in order. */
   calls(): { fn: string; args: Record<string, unknown> }[]
+  /** Every request it answered, RPC and table alike, in order. */
+  requests(): { method: string; path: string; query: string }[]
 }
 
 type Json = Record<string, unknown>
@@ -76,13 +78,15 @@ type Json = Record<string, unknown>
 const EPOCH = Date.UTC(2026, 8, 22, 9, 0, 0)
 
 export function createSessionDouble(options: SessionDoubleOptions): SessionDouble {
-  const base = `${options.url.replace(/\/+$/, '')}/rest/v1/rpc/`
+  const rest = `${options.url.replace(/\/+$/, '')}/rest/v1`
+  const base = `${rest}/rpc/`
   const sessions: WorkoutSessionRow[] = [...(options.sessions ?? [])]
   const sections: WorkoutSectionRow[] = []
   const blocks: WorkoutBlockRow[] = []
   const exercises: WorkoutExerciseRow[] = []
   const setLogs: ExerciseSetLogRow[] = []
   const calls: { fn: string; args: Json }[] = []
+  const requests: { method: string; path: string; query: string }[] = []
 
   let sequence = 0
   let conflictsLeft = options.conflictOn === undefined ? 0 : 1
@@ -434,9 +438,60 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
     return { outcome: 'swapped', state, exercise: incoming, superseded: outgoing }
   }
 
+  /**
+   * `workout_sessions` as a table, which is how SUM-01 reads the row it is
+   * debriefing and writes the two columns it owns. Owner-only RLS is the same
+   * rule the functions apply — `workout_sessions_select_own` and
+   * `workout_sessions_update_own` — so a row belonging to somebody else is
+   * filtered out here rather than refused, exactly as a policy filters it.
+   */
+  const tableRequest = (url: URL, method: string, body: unknown, caller: string): Response => {
+    const id = (url.searchParams.get('id') ?? '').replace(/^eq\./, '')
+    const userId = (url.searchParams.get('user_id') ?? '').replace(/^eq\./, '')
+
+    const matches = sessions.filter(
+      (row) =>
+        row.user_id === caller &&
+        (id === '' || row.id === id) &&
+        (userId === '' || row.user_id === userId),
+    )
+
+    if (method === 'GET') {
+      const limit = Number(url.searchParams.get('limit') ?? matches.length)
+      return json(200, matches.slice(0, limit))
+    }
+
+    if (method !== 'PATCH') return json(404, { message: `no route for ${method}` })
+
+    const patch = body as Json
+    // `workout_sessions_mood_range`: NULL is "not asked yet", which is not 3.
+    if (
+      'mood' in patch &&
+      patch.mood !== null &&
+      (typeof patch.mood !== 'number' || patch.mood < 1 || patch.mood > 5)
+    ) {
+      return json(400, { code: '23514', message: 'workout_sessions_mood_range' })
+    }
+
+    for (const row of matches) {
+      if ('mood' in patch) row.mood = patch.mood as number | null
+      if ('session_notes' in patch) row.session_notes = patch.session_notes as string | null
+      row.updated_at = now()
+    }
+
+    return json(200, matches)
+  }
+
   const fetchImpl: typeof globalThis.fetch = async (input, init) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
     const headers = new Headers(init?.headers)
+    const method = init?.method ?? 'GET'
+    const parsed = new URL(url)
+    requests.push({
+      method,
+      path: parsed.pathname.slice(new URL(rest).pathname.length),
+      query: parsed.searchParams.toString(),
+    })
 
     if (headers.get('apikey') !== options.anonKey) return json(401, { message: 'invalid key' })
 
@@ -444,7 +499,17 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
     const caller = options.users[token]
     if (caller === undefined) return json(401, { message: 'not authenticated' })
 
-    if (!url.startsWith(base)) return json(404, { message: 'no such endpoint' })
+    if (!url.startsWith(base)) {
+      if (parsed.pathname === `${new URL(rest).pathname}/workout_sessions`) {
+        return tableRequest(
+          parsed,
+          method,
+          init?.body === undefined ? undefined : JSON.parse(String(init.body)),
+          caller,
+        )
+      }
+      return json(404, { message: 'no such endpoint' })
+    }
 
     const fn = url.slice(base.length)
     const args = JSON.parse(String(init?.body ?? '{}')) as Json
@@ -563,6 +628,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
       if (exercise !== undefined) exercise.execution_status = status
     },
     calls: () => [...calls],
+    requests: () => [...requests],
   }
 }
 

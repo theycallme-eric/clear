@@ -750,6 +750,22 @@ export const streakSessionRowSchema = z.object({
 export const streakSessionPageSchema = z.array(streakSessionRowSchema)
 
 /**
+ * SUM-01's write: the two columns the debrief owns on `workout_sessions`.
+ *
+ * Both are nullable and both mean the same thing when they are null — not
+ * answered. `workout_sessions_mood_range` is the same 1–5 in SQL, so a mood
+ * this refuses is a mood the database would have refused too, and the screen
+ * hears it before a round trip rather than as a constraint violation after
+ * one. The note's ceiling is the one `generationRequestSchema` already uses
+ * for user prose: the column is unbounded `text`, and an app that will accept
+ * any length is an app with no answer for a paste of a novel.
+ */
+export const sessionDebriefSchema = z.object({
+  mood: z.int().min(1).max(5).nullable(),
+  session_notes: z.string().max(2000).nullable(),
+})
+
+/**
  * Contract-only vocabulary, and the third exception to "no second vocabulary".
  * These are what the lifecycle functions answer with, and no column holds one:
  * a transition's outcome is an event, not a stored fact. They are text in the
@@ -874,6 +890,7 @@ export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
 export type BlockResultRow = z.infer<typeof blockResultRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
+export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
 export type SessionTransition = z.infer<typeof sessionTransitionSchema>
 export type SessionFunction = z.infer<typeof sessionFunctionSchema>
