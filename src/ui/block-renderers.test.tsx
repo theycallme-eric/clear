@@ -39,9 +39,20 @@ function blockFixture(
     // are true of a block whose prescriptions this test does not describe.
     // What a renderer does with them is `standard-block.test.tsx`'s.
     exercises: [],
+    timerType: 'none',
+    timerSeconds: null,
     roundRestSeconds: null,
     ...overrides,
   }
+}
+
+/**
+ * The verb a structure completes with, where it is not "Complete block".
+ * EXE-03's EMOM says what it is finishing; what it *supplies* once its clock
+ * has run is `emom-block.test.tsx`'s subject.
+ */
+const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
+  emom: 'Complete EMOM',
 }
 
 /** The shell's half of the seam, as a spy. */
@@ -83,7 +94,8 @@ describe('the renderer registry', () => {
       const { api, completeBlock } = completionDouble()
       renderSlot(block, api)
 
-      await user.click(screen.getByRole('button', { name: 'Complete block' }))
+      const label = COMPLETION_LABELS[structureType] ?? 'Complete block'
+      await user.click(screen.getByRole('button', { name: label }))
 
       // The shell's seam, with the empty outcome of a panel that runs no clock
       // — an unobserved zero would be a measurement (DATA_MODEL §8).

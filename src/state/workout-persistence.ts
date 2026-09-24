@@ -19,6 +19,17 @@
  * foreign-session record is simply ignored, and the shell falls back to the
  * first unfinished section derived from the rows.
  *
+ * EXE-03 adds the second thing of that kind, for the same reason one level
+ * down: an EMOM's clock is not in the rows either. Nothing in `block_results`
+ * or in a set log says the user started a 10-minute EMOM ninety seconds ago, so
+ * the moment it started — and whether the current minute's work was marked done
+ * early — can only be remembered. It is kept under its own key rather than
+ * inside the shell record: the two are written by different components at
+ * different moments, and one read-modify-write racing the other is how the open
+ * section would start losing minutes. Both are dropped together when the
+ * session ends. Block ids are per-session, so an EMOM record can only ever be
+ * read back by the block that wrote it.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -26,8 +37,13 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { EmomState } from './emom'
+
 /** One key, overwritten: the app has one session in progress at a time. */
 export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
+
+/** The EMOMs' key: one record per block id, for the session in progress. */
+export const WORKOUT_EMOM_STORAGE_KEY = 'clear.workout-emom'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -104,11 +120,16 @@ export function writeWorkoutShellState(
   }
 }
 
-/** Forgets the record — what completing or abandoning a session does. */
+/**
+ * Forgets everything the shell remembered locally — the open section and every
+ * timed block's clock. Completing and abandoning both call it, and both keys go
+ * together: a session that has ended has no minute to return to.
+ */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
+    storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -195,4 +216,124 @@ export function usePersistedSection(
   }, [])
 
   return { index, setIndex: setIndexState, persist, forget }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EMOMs (EXE-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every EMOM's clock, by block id. */
+type EmomRecords = Record<string, EmomState>
+
+function isEmomState(value: unknown): value is EmomState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.workDoneMinute === null ||
+      (typeof record.workDoneMinute === 'number' &&
+        Number.isInteger(record.workDoneMinute)))
+  )
+}
+
+/** The stored map, with any entry it cannot vouch for dropped. */
+export function readEmomStates(storage: ShellStorage | null): EmomRecords {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(WORKOUT_EMOM_STORAGE_KEY)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: EmomRecords = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isEmomState(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/** One block's stored clock, or null — for absent and unusable alike. */
+export function readEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+): EmomState | null {
+  return readEmomStates(storage)[blockId] ?? null
+}
+
+/**
+ * Writes one block's clock, leaving the other timed blocks in the session
+ * alone. A session holds a handful of blocks and the whole map is dropped when
+ * it ends, so read-modify-write is the right size for the problem.
+ */
+export function writeEmomState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: EmomState,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      WORKOUT_EMOM_STORAGE_KEY,
+      JSON.stringify({ ...readEmomStates(storage), [blockId]: state }),
+    )
+  } catch {
+    // A full or refused quota costs the clock on a refresh, never a logged set.
+  }
+}
+
+export interface PersistedEmom {
+  readonly state: EmomState
+  /** Moves the EMOM and writes it in the same act. */
+  update(next: EmomState): void
+}
+
+/**
+ * An EMOM's clock, restored on mount and written whenever it changes.
+ *
+ * There is no `pagehide` listener here and there does not need to be: the
+ * record changes only when the user starts the block or marks a minute done,
+ * and that act writes it. What the section index needs those listeners for — a
+ * value that drifts while nobody is pressing anything — has no equivalent here,
+ * because the minute the user is in is derived from the stored timestamp rather
+ * than stored itself.
+ *
+ * `restore` runs exactly once, in the initialiser, and is where the caller
+ * repairs a record against the block it is being restored into: the shape is
+ * the renderer's knowledge, not this module's.
+ */
+export function usePersistedEmom(
+  blockId: string,
+  restore: (stored: EmomState | null) => EmomState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedEmom {
+  const [state, setState] = useState(() => restore(readEmomState(storage, blockId)))
+
+  // The storage handle can only be re-read, never re-restored: restoring twice
+  // would put the user back in a minute they have already left.
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const update = useCallback(
+    (next: EmomState) => {
+      setState(next)
+      writeEmomState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, update }
 }

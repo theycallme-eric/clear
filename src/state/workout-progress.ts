@@ -75,6 +75,14 @@ export interface BlockProgress {
   readonly exerciseCount: number
   /** Those same prescriptions, in `order_index` order. */
   readonly exercises: readonly ExerciseProgress[]
+  /**
+   * The clock contract the block carries. `none` is a block that prescribes no
+   * clock at all, and a timed renderer (EXE-03) reads it rather than assuming
+   * one from the structure type.
+   */
+  readonly timerType: Enums<'timer_contract'>
+  /** The window the clock runs for, in seconds. Null when the block has none. */
+  readonly timerSeconds: number | null
   /** Rest the block prescribes between its rounds, in seconds. */
   readonly roundRestSeconds: number | null
 }
@@ -148,6 +156,11 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
             prescription: exercise,
             setLogs: set_logs,
           })),
+        // All three read from `workout_blocks` and from nowhere else: the clock
+        // lives on the block, once, so its members cannot disagree about it
+        // (DATA-01c §5).
+        timerType: blockEntry.block.timer_type,
+        timerSeconds: blockEntry.block.timer_seconds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
       }
     })

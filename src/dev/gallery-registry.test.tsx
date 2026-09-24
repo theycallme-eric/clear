@@ -61,6 +61,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   ExerciseSetLogger: 'EXE-02 — one prescription of a live session, with its logged sets',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
   SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
+  // EXE-03's EMOM. Its whole subject is where a running clock has got to —
+  // which minute, whether the work or the remainder is live, which movement the
+  // minute prescribes — so a specimen would be framing an invented session
+  // rather than the renderer.
+  EmomBlock: 'EXE-03 — an EMOM of a live session, run minute by minute',
 }
 
 /** Components exported from a module, in source order. */
