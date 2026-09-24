@@ -41,6 +41,7 @@ function blockFixture(
     exercises: [],
     timerType: 'none',
     timerSeconds: null,
+    rounds: null,
     roundRestSeconds: null,
     ...overrides,
   }
@@ -48,10 +49,11 @@ function blockFixture(
 
 /**
  * The verb a structure completes with, where it is not "Complete block".
- * EXE-03's EMOM says what it is finishing; what it *supplies* once its clock
- * has run is `emom-block.test.tsx`'s subject.
+ * EXE-03's circuit and EMOM say what they are finishing; what each supplies
+ * once its rounds or clock run is covered by its dedicated renderer test.
  */
 const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
+  circuit: 'Complete circuit',
   emom: 'Complete EMOM',
 }
 

@@ -249,6 +249,7 @@ describe('the seam outside the shell', () => {
             exercises: [],
             timerType: 'none',
             timerSeconds: null,
+            rounds: null,
             roundRestSeconds: null,
           }}
           outcome={{}}

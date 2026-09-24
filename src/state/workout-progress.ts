@@ -83,6 +83,11 @@ export interface BlockProgress {
   readonly timerType: Enums<'timer_contract'>
   /** The window the clock runs for, in seconds. Null when the block has none. */
   readonly timerSeconds: number | null
+  /**
+   * Rounds the block prescribes, as the number rather than as the header's
+   * words. A circuit counts them (EXE-03); null is a block that carries none.
+   */
+  readonly rounds: number | null
   /** Rest the block prescribes between its rounds, in seconds. */
   readonly roundRestSeconds: number | null
 }
@@ -156,11 +161,12 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
             prescription: exercise,
             setLogs: set_logs,
           })),
-        // All three read from `workout_blocks` and from nowhere else: the clock
-        // lives on the block, once, so its members cannot disagree about it
-        // (DATA-01c §5).
+        // All four read from `workout_blocks` and from nowhere else: the clock,
+        // round count, and rest live on the block once, so its members cannot
+        // disagree about them (DATA-01c §5).
         timerType: blockEntry.block.timer_type,
         timerSeconds: blockEntry.block.timer_seconds,
+        rounds: blockEntry.block.rounds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
       }
     })

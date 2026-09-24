@@ -16,10 +16,12 @@
  * to one writer for every structure type.
  *
  * `standard` is EXE-02's `StandardBlock` — straight sets, each one logged as it
- * happens — and `superset` is its `SupersetBlock`, the same set logging with
- * the pair's ordering and the block's own rest around it. `emom` is EXE-03's
- * `EmomBlock`, which runs the block's own minute grid and supplies
- * `minutes_completed`. Every other structure is still performed by `BlockPanel`:
+ * happens. `superset` is its `SupersetBlock`, the same set logging with the
+ * pair's ordering and the block's own rest around it. `circuit` is EXE-03's
+ * `CircuitBlock`, which tracks the round and position and supplies
+ * `rounds_completed`; `emom` is its `EmomBlock`, which runs the block's minute
+ * grid and supplies `minutes_completed`. Every other structure is still
+ * performed by `BlockPanel`:
  * the block's identity, its size, and the shell's completion control. That is
  * deliberate rather than a placeholder with no meaning — the path OVR-03 reads
  * is live for every structure from day one, and a block completed through it
@@ -31,6 +33,7 @@ import type { Enums } from '../data/database.types'
 import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
+import { CircuitBlock } from './circuit-block'
 import { EmomBlock } from './emom-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
@@ -87,7 +90,7 @@ export function BlockPanel({ block }: BlockRendererProps) {
 export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRenderer>> = {
   standard: StandardBlock,
   superset: SupersetBlock,
-  circuit: BlockPanel,
+  circuit: CircuitBlock,
   emom: EmomBlock,
   amrap: BlockPanel,
   for_time: BlockPanel,
