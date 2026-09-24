@@ -51,12 +51,13 @@ function blockFixture(
 
 /**
  * The verb a structure completes with, where it is not "Complete block".
- * EXE-03's circuit and EMOM say what they are finishing; what each supplies
- * once its rounds or clock run is covered by its dedicated renderer test.
+ * Circuit, EMOM, and For Time name what they finish or record; each concrete
+ * outcome is covered by its dedicated renderer test.
  */
 const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
   circuit: 'Complete circuit',
   emom: 'Complete EMOM',
+  for_time: 'Record For Time',
 }
 
 /** The shell's half of the seam, as a spy. */

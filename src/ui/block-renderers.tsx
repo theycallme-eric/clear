@@ -20,13 +20,11 @@
  * pair's ordering and the block's own rest around it. `circuit` is EXE-03's
  * `CircuitBlock`, which tracks the round and position and supplies
  * `rounds_completed`; `emom` is its `EmomBlock`, which runs the block's minute
- * grid and supplies `minutes_completed`. EXE-04a's `LadderBlock` is the one
- * entry that is not keyed by structure type because a ladder is a rep scheme;
- * see `blockRendererFor`. Every other structure is still performed by
- * `BlockPanel`: the block's identity, its size, and the shell's completion
- * control. That is deliberate rather than a placeholder with no meaning — the
- * path OVR-03 reads is live for every structure from day one, and a block
- * completed through it records the effort with no invented outcome fields.
+ * grid and supplies `minutes_completed`; `for_time` is EXE-04b's
+ * `ForTimeBlock`, which races the cap and supplies its elapsed result. EXE-04a's
+ * `LadderBlock` is the one override not keyed by structure type because a
+ * ladder is a rep scheme; see `blockRendererFor`. Every remaining structure is
+ * still performed by `BlockPanel` through the same shell-owned completion seam.
  */
 import { createElement, type ReactElement } from 'react'
 
@@ -37,6 +35,7 @@ import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { CircuitBlock } from './circuit-block'
 import { EmomBlock } from './emom-block'
+import { ForTimeBlock } from './for-time-block'
 import { LadderBlock } from './ladder-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
@@ -96,7 +95,7 @@ export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRend
   circuit: CircuitBlock,
   emom: EmomBlock,
   amrap: BlockPanel,
-  for_time: BlockPanel,
+  for_time: ForTimeBlock,
 }
 
 /**

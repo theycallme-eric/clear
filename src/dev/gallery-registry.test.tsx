@@ -69,6 +69,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // which round, which movement, whether the shared rest is running — so a
   // specimen would be framing an invented session rather than the renderer.
   CircuitBlock: 'EXE-03 — a circuit of a live session, tracked round by round',
+  // EXE-04b's For Time. The card is a clock: what it shows is how long a live
+  // block has been running against its cap, so a specimen would be framing a
+  // frozen moment of an invented session rather than the renderer.
+  ForTimeBlock: 'EXE-04b — a For Time block of a live session, raced against its cap',
   // EXE-03's EMOM. Its whole subject is where a running clock has got to —
   // which minute, whether the work or the remainder is live, which movement the
   // minute prescribes — so a specimen would be framing an invented session
