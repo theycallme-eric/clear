@@ -1,0 +1,13 @@
+<!-- SET-01 — the CLEAR mark in the `clear` skin. One file per skin in `SKINS`:
+     a favicon reads no stylesheet, so the two values it needs are restated here
+     from that skin's --base and --structure and checked against them in
+     src/test/skin-favicons.test.ts. Geometry is public/icon.svg's, unchanged —
+     a chamfered badge carrying a C of orthogonal and 45° edges only. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>CLEAR</title>
+  <path fill="#171717" d="M0 0 H32 V28 L28 32 H0 Z" />
+  <path
+    fill="#F87823"
+    d="M10 10 H20.5 L22 11.5 V13 H13 V19 H22 V20.5 L20.5 22 H10 Z"
+  />
+</svg>

@@ -1,0 +1,10 @@
+<!-- SET-01 — the CLEAR mark in the `signal` skin. See favicon-clear.svg: same
+     geometry, this skin's --base and --structure. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>CLEAR</title>
+  <path fill="#150A12" d="M0 0 H32 V28 L28 32 H0 Z" />
+  <path
+    fill="#C6FF2E"
+    d="M10 10 H20.5 L22 11.5 V13 H13 V19 H22 V20.5 L20.5 22 H10 Z"
+  />
+</svg>

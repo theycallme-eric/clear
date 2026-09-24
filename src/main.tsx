@@ -16,6 +16,7 @@ import './styles/a11y.css'
 import { appAuthClients } from './app/auth-client'
 import { BootGate } from './app/BootSequence'
 import { ErrorBoundary } from './app/ErrorBoundary'
+import { startFaviconSync } from './app/favicon'
 import { appRouter } from './app/router'
 import { registerServiceWorker } from './app/service-worker'
 import { AuthProvider } from './state/auth-provider'
@@ -79,3 +80,8 @@ createRoot(rootElement).render(
 // PWA-01: after the render call, never before it — the shell installs behind
 // the first paint, and a browser that refuses a worker changes nothing here.
 registerServiceWorker()
+
+// SET-01: the tab icon follows `data-skin` from here on — the stored skin the
+// head script already applied, and every later change, whether it came from the
+// Settings picker or from `initSkin` tracking the OS contrast preference.
+startFaviconSync()

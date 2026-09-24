@@ -17,6 +17,11 @@
 import { useState, type ReactNode } from 'react'
 
 import { Button, Chip } from '../design-system/index'
+import {
+  applyAppearance,
+  SYSTEM_APPEARANCE,
+  type AppearanceChoice,
+} from '../state/appearance'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
 import type { LadderRung } from '../state/ladder'
@@ -29,6 +34,7 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppDialog } from '../ui/app-dialog'
+import { AppearancePicker } from '../ui/appearance-picker'
 import { AtmosphereLayer } from '../ui/atmosphere'
 import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
@@ -741,6 +747,41 @@ function LadderRungsOverflowing() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SET-01 — AppearancePicker
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The picker is controlled, so a specimen supplies the choice — which is what
+ * makes both of its states reviewable rather than only the reviewer's own.
+ *
+ * `persist: false` throughout, the stance the chrome's SkinSwitcher already
+ * takes: looking at four skins in a row must not end up storing one as
+ * somebody's preference. The skin still flips live, because that is the thing
+ * to look at.
+ */
+function ReviewablePicker({ initial }: { initial: AppearanceChoice }) {
+  const [choice, setChoice] = useState<AppearanceChoice>(initial)
+
+  return (
+    <AppearancePicker
+      value={choice}
+      onChange={(next) => {
+        applyAppearance(next, { persist: false })
+        setChoice(next)
+      }}
+    />
+  )
+}
+
+function AppearancePickerFollowingSystem() {
+  return <ReviewablePicker initial={SYSTEM_APPEARANCE} />
+}
+
+function AppearancePickerChosenSkin() {
+  return <ReviewablePicker initial="mono" />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -962,6 +1003,25 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'interactive, 11 rungs',
         note: 'Wider than a phone: the rail contains the scroll and cues the edges rather than overflowing the page.',
         Render: LadderRungsOverflowing,
+      },
+    ],
+  },
+  {
+    component: 'AppearancePicker',
+    requirement: 'SET-01',
+    module: 'src/ui/appearance-picker.tsx',
+    summary:
+      'Skin selection, derived from the export’s own SKINS list and persisted by its own skin.js. Mono is named enhanced contrast, never accessible; the system option is the absence of a choice, which is what restores OS contrast following.',
+    specimens: [
+      {
+        state: 'following the system',
+        note: 'No stored choice. Selecting any skin here is an explicit choice that outranks the OS preference.',
+        Render: AppearancePickerFollowingSystem,
+      },
+      {
+        state: 'a skin chosen',
+        note: 'Selection carries a tick as well as a surface, so the chosen option is not colour alone.',
+        Render: AppearancePickerChosenSkin,
       },
     ],
   },
