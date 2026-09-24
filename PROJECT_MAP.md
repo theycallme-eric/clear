@@ -203,7 +203,12 @@ by the shell around every renderer, it asks for perceived effort once (`src/ui/b
 writes the row through `src/data/workout.ts`, and refuses a block it has already written. Which
 renderer performs a structure is `src/ui/block-renderers.tsx`, a map total over `structure_type`, so
 EXE-02…EXE-04c land by replacing an entry; a renderer receives no client and no callback, only
-`useBlockCompletion`. `src/test/block-completion-ownership.test.ts` keeps it that way, naming the one
+`useBlockCompletion`. One renderer is not keyed by structure type: a ladder is a **rep scheme**, so
+`blockRendererFor` takes the block and sends a For Time block whose `rep_scheme` is a ladder to
+EXE-04a's `src/ui/ladder-block.tsx`. Its rungs come from `target_sequence` through
+`src/state/ladder.ts` — pure over the snapshot like `prescription.ts` beside it, and the reason
+nothing in the renderer parses a pattern string — and are drawn by `src/ui/ladder-rungs.tsx`, which
+is read-only data during the block and a radio group once the cap is hit. `src/test/block-completion-ownership.test.ts` keeps it that way, naming the one
 file allowed to insert the row, the one allowed to ask for effort, and the one allowed to provide the
 seam — because a sixth renderer growing its own write is exactly how OVR-03's single input stops
 being single, and no behavioural test would notice. `src/ui/workout-chrome.tsx` holds the shell's

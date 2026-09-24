@@ -19,6 +19,7 @@ import { useState, type ReactNode } from 'react'
 import { Button, Chip } from '../design-system/index'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
+import type { LadderRung } from '../state/ladder'
 import { toastQueue } from '../state/toasts'
 import {
   viewEmpty,
@@ -34,6 +35,7 @@ import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
+import { LadderRungs } from '../ui/ladder-rungs'
 import { Select } from '../ui/select'
 import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
@@ -682,6 +684,63 @@ const ATMOSPHERE_SPECIMENS: readonly GallerySpecimen[] = ATMOSPHERE_LEVELS.map(
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
+// EXE-04a — the ladder's rungs, read-only and interactive
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `15-12-9-6-3`, as the rung list a block's `target_sequence` derives to. */
+const SAMPLE_RUNGS: readonly LadderRung[] = [15, 12, 9, 6, 3].map(
+  (target, index) => ({ number: index + 1, targets: [target] }),
+)
+
+/** Eleven rungs — more than a 375px screen holds, which is the rail's case. */
+const LONG_LADDER: readonly LadderRung[] = [
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+].map((target, index) => ({ number: index + 1, targets: [target] }))
+
+function LadderRungsReadOnly() {
+  return <LadderRungs rungs={SAMPLE_RUNGS} unit="reps" label="Ladder" />
+}
+
+function LadderRungsClimbed() {
+  return (
+    <LadderRungs
+      rungs={SAMPLE_RUNGS}
+      unit="reps"
+      label="Ladder"
+      reached={SAMPLE_RUNGS.length}
+    />
+  )
+}
+
+function LadderRungsChoosable() {
+  const [reached, setReached] = useState<number | null>(null)
+
+  return (
+    <LadderRungs
+      rungs={SAMPLE_RUNGS}
+      unit="reps"
+      label="How far did you get?"
+      reached={reached}
+      onSelect={setReached}
+    />
+  )
+}
+
+function LadderRungsOverflowing() {
+  const [reached, setReached] = useState<number | null>(9)
+
+  return (
+    <LadderRungs
+      rungs={LONG_LADDER}
+      unit="reps"
+      label="How far did you get?"
+      reached={reached}
+      onSelect={setReached}
+    />
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -880,6 +939,31 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     summary:
       'The one mapping from a ViewState onto a screen. The union is closed and the switch exhaustive, so no view using it can render nothing.',
     specimens: SWITCH_SPECIMENS,
+  },
+  {
+    component: 'LadderRungs',
+    requirement: 'EXE-04a',
+    module: 'src/ui/ladder-rungs.tsx',
+    summary:
+      'The block’s rep pattern, stated once. Read-only it is data — quiet, square, nothing to tap; once the cap is hit the same rungs become a radio group, named by their target rather than their index, with the choice ticked and said in words.',
+    specimens: [
+      { state: 'read-only', Render: LadderRungsReadOnly },
+      {
+        state: 'read-only, finished',
+        note: 'Every rung climbed. Still not a control — finishing changes the fill, not the affordance.',
+        Render: LadderRungsClimbed,
+      },
+      {
+        state: 'interactive',
+        note: 'One tab stop, arrows between rungs. Tap a rung: it ticks, and the rungs below it fill.',
+        Render: LadderRungsChoosable,
+      },
+      {
+        state: 'interactive, 11 rungs',
+        note: 'Wider than a phone: the rail contains the scroll and cues the edges rather than overflowing the page.',
+        Render: LadderRungsOverflowing,
+      },
+    ],
   },
   {
     component: 'AtmosphereLayer',

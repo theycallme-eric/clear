@@ -68,6 +68,15 @@ export interface ExerciseProgress {
 export interface BlockProgress {
   readonly blockId: string
   readonly structureType: Enums<'structure_type'>
+  /**
+   * `workout_blocks.rep_scheme`, as the column holds it.
+   *
+   * Carried beside the structure type rather than read off `identity`, because
+   * the two answer different questions: `identity.repScheme` is the words the
+   * header shows (`LADDER DOWN`), and this is the value a renderer branches on
+   * — which ladder a block is, or whether it is one at all (EXE-04a).
+   */
+  readonly repScheme: Enums<'rep_scheme'>
   /** Terse identity for the block's header — see `structureIdentity`. */
   readonly identity: StructureIdentity
   readonly status: SectionStatus
@@ -145,6 +154,7 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
       return {
         blockId,
         structureType: blockEntry.block.structure_type,
+        repScheme: blockEntry.block.rep_scheme,
         identity: structureIdentity(blockEntry.block),
         status: statusOf(exercises.map(({ exercise }) => exercise.execution_status)),
         exerciseCount: exercises.length,

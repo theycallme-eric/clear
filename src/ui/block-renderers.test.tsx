@@ -19,6 +19,7 @@ import {
 } from '../state/block-completion'
 import type { BlockProgress } from '../state/workout-progress'
 import { BLOCK_RENDERERS, BlockSlot, blockRendererFor } from './block-renderers'
+import { LadderBlock } from './ladder-block'
 
 function blockFixture(
   structureType: Enums<'structure_type'>,
@@ -27,6 +28,7 @@ function blockFixture(
   return {
     blockId: `7000000${Constants.public.Enums.structure_type.indexOf(structureType) + 1}-0000-4000-8000-000000000000`,
     structureType,
+    repScheme: 'fixed',
     identity: {
       label: structureType.toUpperCase(),
       detail: null,
@@ -84,7 +86,29 @@ describe('the renderer registry', () => {
 
   it('dispatches a block to the renderer for its structure', () => {
     for (const structureType of Constants.public.Enums.structure_type) {
-      expect(blockRendererFor(structureType)).toBe(BLOCK_RENDERERS[structureType])
+      expect(blockRendererFor(blockFixture(structureType))).toBe(
+        BLOCK_RENDERERS[structureType],
+      )
+    }
+  })
+
+  it('dispatches a For Time ladder to the ladder renderer, by its rep scheme', () => {
+    // EXE-04a is claimed on `rep_scheme`, which is not what the map is keyed
+    // by: the same structure type takes a different renderer depending on it.
+    const ladder = blockFixture('for_time', { repScheme: 'ladder_down' })
+
+    expect(blockRendererFor(ladder)).toBe(LadderBlock)
+    expect(blockRendererFor(blockFixture('for_time'))).toBe(BLOCK_RENDERERS.for_time)
+  })
+
+  it('leaves a ladder under another structure to that structure’s renderer', () => {
+    // Ladders appear under circuits and standard blocks too, and those
+    // renderers are EXE-02's and EXE-03's. This ticket claims For Time only.
+    for (const structureType of Constants.public.Enums.structure_type) {
+      if (structureType === 'for_time') continue
+      expect(blockRendererFor(blockFixture(structureType, { repScheme: 'pyramid' }))).toBe(
+        BLOCK_RENDERERS[structureType],
+      )
     }
   })
 
