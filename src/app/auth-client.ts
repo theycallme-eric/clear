@@ -68,7 +68,7 @@ function unconfiguredOtpClient(): OtpClient {
   }
 }
 
-/** AUTH-03's reads, for a build that cannot reach the project at all. */
+/** AUTH-03's reads and ONB-01's write, for a build that cannot reach the project. */
 function unconfiguredUserDataClient(): UserDataClient {
   const failure = () =>
     err(
@@ -82,6 +82,9 @@ function unconfiguredUserDataClient(): UserDataClient {
       return failure()
     },
     async locations() {
+      return failure()
+    },
+    async completeOnboarding() {
       return failure()
     },
   }

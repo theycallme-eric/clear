@@ -15,6 +15,7 @@
  *   supabase/migrations/20260921000004_generation_candidates.sql
  *   supabase/migrations/20260921000005_session_lifecycle.sql
  *   supabase/migrations/20260921000006_streak_sessions.sql
+ *   supabase/migrations/20260921000007_complete_onboarding.sql
  */
 
 export type Json =
@@ -600,6 +601,19 @@ export type Database = {
       abandon_session: {
         Args: {
           p_session_id: string
+        }
+        Returns: Json
+      }
+      complete_onboarding: {
+        Args: {
+          p_location_name: string
+          p_location_tier: Database['public']['Enums']['equipment_tier']
+          p_equipment: string[]
+          p_experience_level: Database['public']['Enums']['experience_level']
+          p_goal_preset: Database['public']['Enums']['goal_preset']
+          p_sections: Database['public']['Enums']['section_type'][]
+          p_avoid_patterns?: Database['public']['Enums']['movement_pattern'][] | null
+          p_note?: string | null
         }
         Returns: Json
       }
