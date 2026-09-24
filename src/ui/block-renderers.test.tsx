@@ -41,17 +41,20 @@ function blockFixture(
     exercises: [],
     rounds: null,
     roundRestSeconds: null,
+    timerSeconds: null,
     ...overrides,
   }
 }
 
 /**
  * The verb a structure completes with, where it is not "Complete block".
- * EXE-03's circuit says what it is finishing; what it *supplies* when it has
- * movements to count is `circuit-block.test.tsx`'s subject.
+ * EXE-03's circuit and EXE-04c's AMRAP each say what they are finishing; what
+ * they *supply* when there are movements to count is `circuit-block.test.tsx`'s
+ * and `amrap-block.test.tsx`'s subject.
  */
 const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
   circuit: 'Complete circuit',
+  amrap: 'Complete AMRAP',
 }
 
 /** The shell's half of the seam, as a spy. */

@@ -223,3 +223,18 @@ on every tap and dropped with the session. Two keys on purpose — one read-modi
 other is how the open section would start losing rounds. `src/ui/circuit-block.tsx` is the IA's
 `CircuitRenderer`, and it supplies `rounds_completed` through the same `BlockCompletionControl`
 every other structure completes through.
+
+EXE-04c's AMRAP is the same pattern against a clock instead of a position. `src/state/amrap.ts` is
+the score as pure arithmetic — the window, the rounds banked, the partial round at the buzzer — and
+its one structural decision is that **expiry is derived, never written**: `startedAt` is stamped once
+and `amrapView` reads the remaining time against the clock, so the buzzer can go while the tab is
+asleep and a session restored afterwards restores into the completion state rather than into a
+countdown stuck at zero. `src/ui/amrap-block.tsx` is the IA's `TimedRenderer` in its AMRAP mode,
+composing the shipped `TimerDisplay` as its `SectionTimer`; it counts rounds on the card while the
+clock runs — the requirement's "highest-frequency interaction in the app" — and captures
+`partial_round_reps` at the cap, where absence and a recorded zero are two visible states rather than
+an empty field (DATA-01d). `workout-persistence.ts` therefore keeps a third key, one score per block
+id, on the circuits' argument exactly: the score is nowhere in the rows until the block is completed,
+and walking to the next section and back must not lose it. `BlockProgress` now carries `timerSeconds`
+alongside `rounds` and `roundRestSeconds`, because a renderer that has to count a window down needs
+the number and not the header's words.

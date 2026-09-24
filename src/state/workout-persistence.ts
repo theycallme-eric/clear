@@ -30,6 +30,11 @@
  * ids are per-session, so a circuit record can only ever be read back by the
  * block that wrote it.
  *
+ * EXE-04c adds the third key on the same argument one level further: an AMRAP's
+ * score — when its window opened, the rounds banked, the partial round at the
+ * buzzer — is nowhere in the rows until the block is completed, and the user is
+ * entitled to walk to the next section and back without losing it.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -37,6 +42,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { AmrapState } from './amrap'
 import type { CircuitState } from './circuit'
 
 /** One key, overwritten: the app has one session in progress at a time. */
@@ -44,6 +50,9 @@ export const WORKOUT_SHELL_STORAGE_KEY = 'clear.workout-shell'
 
 /** The circuits' key: one record per block id, for the session in progress. */
 export const WORKOUT_CIRCUIT_STORAGE_KEY = 'clear.workout-circuits'
+
+/** The AMRAPs' key: one score per block id, on the same terms as the circuits'. */
+export const WORKOUT_AMRAP_STORAGE_KEY = 'clear.workout-amraps'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -121,16 +130,18 @@ export function writeWorkoutShellState(
 }
 
 /**
- * Forgets everything the shell remembered locally — the open section and every
- * circuit's place in its rounds. Completing and abandoning both call it, and
- * they clear both keys, because a session that has ended has no position in it
- * to return to.
+ * Forgets everything the shell remembered locally — the open section, every
+ * circuit's place in its rounds, and every AMRAP's score. Completing and
+ * abandoning both call it, and they clear every key, because a session that has
+ * ended has no position in it to return to and its scores are in
+ * `block_results` by then.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
   try {
     storage.removeItem(WORKOUT_SHELL_STORAGE_KEY)
     storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
+    storage.removeItem(WORKOUT_AMRAP_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -338,4 +349,129 @@ export function usePersistedCircuit(
   )
 
   return { state, advanceTo }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AMRAPs (EXE-04c)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Every AMRAP's score so far, by block id. */
+type AmrapRecords = Record<string, AmrapState>
+
+function isAmrapState(value: unknown): value is AmrapState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.endedAtSeconds === null ||
+      (typeof record.endedAtSeconds === 'number' &&
+        Number.isFinite(record.endedAtSeconds) &&
+        record.endedAtSeconds >= 0)) &&
+    typeof record.roundsCompleted === 'number' &&
+    Number.isInteger(record.roundsCompleted) &&
+    record.roundsCompleted >= 0 &&
+    // Null and zero are both accepted and kept apart: no partial round recorded
+    // is not the same observation as a partial round of zero reps (DATA-01d).
+    (record.partialRoundReps === null ||
+      (typeof record.partialRoundReps === 'number' &&
+        Number.isInteger(record.partialRoundReps) &&
+        record.partialRoundReps >= 0))
+  )
+}
+
+/** The stored map, with any entry it cannot vouch for dropped. */
+export function readAmrapStates(storage: ShellStorage | null): AmrapRecords {
+  if (storage === null) return {}
+
+  let raw: string | null
+  try {
+    raw = storage.getItem(WORKOUT_AMRAP_STORAGE_KEY)
+  } catch {
+    return {}
+  }
+  if (raw === null) return {}
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    return {}
+  }
+  if (typeof parsed !== 'object' || parsed === null) return {}
+
+  const records: AmrapRecords = {}
+  for (const [blockId, entry] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isAmrapState(entry)) records[blockId] = entry
+  }
+  return records
+}
+
+/** One block's stored score, or null — for absent and unusable alike. */
+export function readAmrapState(
+  storage: ShellStorage | null,
+  blockId: string,
+): AmrapState | null {
+  return readAmrapStates(storage)[blockId] ?? null
+}
+
+/**
+ * Writes one block's score, leaving the other AMRAPs in the session alone. Same
+ * shape, and the same reasoning, as `writeCircuitState`.
+ */
+export function writeAmrapState(
+  storage: ShellStorage | null,
+  blockId: string,
+  state: AmrapState,
+): void {
+  if (storage === null) return
+  try {
+    storage.setItem(
+      WORKOUT_AMRAP_STORAGE_KEY,
+      JSON.stringify({ ...readAmrapStates(storage), [blockId]: state }),
+    )
+  } catch {
+    // A full or refused quota costs the score on a refresh, never a logged set.
+  }
+}
+
+export interface PersistedAmrap {
+  readonly state: AmrapState
+  /** Records the score and writes it in the same act. */
+  update(next: AmrapState): void
+}
+
+/**
+ * An AMRAP's score, restored on mount and written on every tap.
+ *
+ * No `pagehide` listener, for the reason `usePersistedCircuit` needs none: the
+ * state changes only when the user taps, and the tap writes it. The one value
+ * here that moves on its own — the clock — is not stored at all; `startedAt` is,
+ * and the remaining time is derived from it (`amrap.ts`).
+ *
+ * `restore` runs exactly once, in the initialiser, and is where the caller
+ * repairs a record against the block it is being restored into.
+ */
+export function usePersistedAmrap(
+  blockId: string,
+  restore: (stored: AmrapState | null) => AmrapState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedAmrap {
+  const [state, setState] = useState(() => restore(readAmrapState(storage, blockId)))
+
+  // Re-read, never re-restored: restoring twice would undo the taps since mount.
+  const latest = useRef(storage)
+  useEffect(() => {
+    latest.current = storage
+  })
+
+  const update = useCallback(
+    (next: AmrapState) => {
+      setState(next)
+      writeAmrapState(latest.current, blockId, next)
+    },
+    [blockId],
+  )
+
+  return { state, update }
 }
