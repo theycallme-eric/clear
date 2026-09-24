@@ -33,8 +33,8 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `.claude/skills/` | Claude Code project entry points | exposing a reusable workflow to Anthropic tooling |
 | `.agents/skills/` | Codex project entry points | exposing the same reusable workflow to Codex |
 
-Current flow is `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/router.tsx →
-RootLayout → AppChrome → screens`. The CORE-04 boundary sits above the router. `RootLayout` mounts
+Current flow is `index.html → src/main.tsx → src/app/ErrorBoundary.tsx → src/app/BootSequence.tsx →
+src/app/router.tsx → RootLayout → AppChrome → screens`. The CORE-04 boundary sits above the router. `RootLayout` mounts
 the DS-06 atmosphere once and sets `data-atmosphere` from `src/app/atmosphere.ts`; a screen never
 mounts an atmosphere of its own. `AppChrome` owns the skip link, route-change focus, and polite route
 announcer. Every screen renders inside the `Screen` primitive, which owns the `<main>` landmark, the
@@ -255,3 +255,23 @@ id, on the circuits' argument exactly: the score is nowhere in the rows until th
 and walking to the next section and back must not lose it. `BlockProgress` now carries `timerSeconds`
 alongside `rounds` and `roundRestSeconds`, because a renderer that has to count a window down needs
 the number and not the header's words.
+
+REQ-057 adds the one thing that renders *above* the route tree rather than inside it, and the
+reason is that boot is the app becoming ready rather than a screen it navigates to.
+`src/app/BootSequence.tsx` holds both halves: the Boot Sequence template's composition —
+its own atmosphere layer, `ClearLogo` booting once, `ScanLoader` carrying the system checks —
+and `BootGate`, which `main.tsx` wraps the router in. What the checks are is
+`src/state/boot.ts`, a pure function of four results, and what they are *bound to* is
+`src/state/boot-queries.ts`: AUTH-03's profile and locations, HIST-01's first page, and DATA-05's
+constraints in force. Nothing there is a read invented to be watched — each lands in the shared
+cache, so removing the boot screen would change no request — and there is no timer anywhere in
+the path, which `src/state/boot.test.ts` asserts against the source because a delay added for
+effect is exactly what no behavioural test would notice. The gate renders its children the moment
+the last check answers: readiness is the only outcome, so a ready app is never behind a keypress,
+and a cache that already holds the four answers shows no sequence at all.
+
+That fourth check is also the first time `src/` reads DATA-05 through React.
+`src/state/constraint-queries.ts` is the hook and its context, over
+`createLiveUserConstraintsClient` in `src/data/constraints.ts` — the same per-call-token
+arrangement `workout.ts` uses, because a constraints read at boot can land either side of a token
+exchange.
