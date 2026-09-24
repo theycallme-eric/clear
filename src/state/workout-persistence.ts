@@ -32,6 +32,11 @@
  * rows either — the session's `started_at` is the whole workout, not this block —
  * and it has to survive a refresh, because the elapsed time is the score.
  *
+ * EXE-04c adds the third key on the same argument one level further: an AMRAP's
+ * score — when its window opened, the rounds banked, the partial round at the
+ * buzzer — is nowhere in the rows until the block is completed, and the user is
+ * entitled to walk to the next section and back without losing it.
+ *
  * No zod here. CORE-03's rule is that every payload crossing a *process*
  * boundary is parsed in `schemas.ts`; this crosses no process, and its own
  * previous write is the only thing that produces it. A hand-written guard is
@@ -39,6 +44,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import type { AmrapState } from './amrap'
 import type { CircuitState } from './circuit'
 import type { EmomState } from './emom'
 import type { ForTimeState } from './for-time'
@@ -53,6 +59,9 @@ export const WORKOUT_EMOM_STORAGE_KEY = 'clear.workout-emom'
 
 /** The For Time blocks' key: one clock per block id (EXE-04b). */
 export const WORKOUT_FOR_TIME_STORAGE_KEY = 'clear.workout-for-time'
+
+/** The AMRAPs' key: one score per block id, on the same terms as the circuits'. */
+export const WORKOUT_AMRAP_STORAGE_KEY = 'clear.workout-amraps'
 
 export interface WorkoutShellState {
   readonly sessionId: string
@@ -131,8 +140,8 @@ export function writeWorkoutShellState(
 
 /**
  * Forgets everything the shell remembered locally — the open section and every
- * block's position or clock. Completing and abandoning both call it and clear
- * every key because an ended session has nowhere to return to.
+ * block's position, clock, or score. Completing and abandoning both call it
+ * and clear every key because an ended session has nowhere to return to.
  */
 export function clearWorkoutShellState(storage: ShellStorage | null): void {
   if (storage === null) return
@@ -141,6 +150,7 @@ export function clearWorkoutShellState(storage: ShellStorage | null): void {
     storage.removeItem(WORKOUT_CIRCUIT_STORAGE_KEY)
     storage.removeItem(WORKOUT_EMOM_STORAGE_KEY)
     storage.removeItem(WORKOUT_FOR_TIME_STORAGE_KEY)
+    storage.removeItem(WORKOUT_AMRAP_STORAGE_KEY)
   } catch {
     // Nothing to recover: the next read discards a record it cannot use.
   }
@@ -372,18 +382,15 @@ export function usePersistedCircuit(
 // EMOMs (EXE-03)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Every EMOM's clock, by block id. */
 type EmomRecords = BlockRecords<EmomState>
 
 function isEmomState(value: unknown): value is EmomState {
   if (typeof value !== 'object' || value === null) return false
   const record = value as Record<string, unknown>
-
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.workDoneMinute === null ||
-      (typeof record.workDoneMinute === 'number' &&
-        Number.isInteger(record.workDoneMinute)))
+      (typeof record.workDoneMinute === 'number' && Number.isInteger(record.workDoneMinute)))
   )
 }
 
@@ -391,25 +398,15 @@ export function readEmomStates(storage: ShellStorage | null): EmomRecords {
   return readBlockRecords(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState)
 }
 
-export function readEmomState(
-  storage: ShellStorage | null,
-  blockId: string,
-): EmomState | null {
+export function readEmomState(storage: ShellStorage | null, blockId: string): EmomState | null {
   return readEmomStates(storage)[blockId] ?? null
 }
 
-export function writeEmomState(
-  storage: ShellStorage | null,
-  blockId: string,
-  state: EmomState,
-): void {
+export function writeEmomState(storage: ShellStorage | null, blockId: string, state: EmomState): void {
   writeBlockRecord(storage, WORKOUT_EMOM_STORAGE_KEY, isEmomState, blockId, state)
 }
 
-export interface PersistedEmom {
-  readonly state: EmomState
-  update(next: EmomState): void
-}
+export interface PersistedEmom { readonly state: EmomState; update(next: EmomState): void }
 
 export function usePersistedEmom(
   blockId: string,
@@ -418,18 +415,11 @@ export function usePersistedEmom(
 ): PersistedEmom {
   const [state, setState] = useState(() => restore(readEmomState(storage, blockId)))
   const latest = useRef(storage)
-  useEffect(() => {
-    latest.current = storage
-  })
-
-  const update = useCallback(
-    (next: EmomState) => {
-      setState(next)
-      writeEmomState(latest.current, blockId, next)
-    },
-    [blockId],
-  )
-
+  useEffect(() => { latest.current = storage })
+  const update = useCallback((next: EmomState) => {
+    setState(next)
+    writeEmomState(latest.current, blockId, next)
+  }, [blockId])
   return { state, update }
 }
 
@@ -437,13 +427,11 @@ export function usePersistedEmom(
 // For Time (EXE-04b)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** Every For Time block's clock, by block id. */
 type ForTimeRecords = BlockRecords<ForTimeState>
 
 function isForTimeState(value: unknown): value is ForTimeState {
   if (typeof value !== 'object' || value === null) return false
   const record = value as Record<string, unknown>
-
   return (
     (record.startedAt === null || typeof record.startedAt === 'string') &&
     (record.finishedAt === null || typeof record.finishedAt === 'string')
@@ -454,25 +442,15 @@ export function readForTimeStates(storage: ShellStorage | null): ForTimeRecords 
   return readBlockRecords(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState)
 }
 
-export function readForTimeState(
-  storage: ShellStorage | null,
-  blockId: string,
-): ForTimeState | null {
+export function readForTimeState(storage: ShellStorage | null, blockId: string): ForTimeState | null {
   return readForTimeStates(storage)[blockId] ?? null
 }
 
-export function writeForTimeState(
-  storage: ShellStorage | null,
-  blockId: string,
-  state: ForTimeState,
-): void {
+export function writeForTimeState(storage: ShellStorage | null, blockId: string, state: ForTimeState): void {
   writeBlockRecord(storage, WORKOUT_FOR_TIME_STORAGE_KEY, isForTimeState, blockId, state)
 }
 
-export interface PersistedForTime {
-  readonly state: ForTimeState
-  moveTo(next: ForTimeState): void
-}
+export interface PersistedForTime { readonly state: ForTimeState; moveTo(next: ForTimeState): void }
 
 export function usePersistedForTime(
   blockId: string,
@@ -481,17 +459,61 @@ export function usePersistedForTime(
 ): PersistedForTime {
   const [state, setState] = useState(() => restore(readForTimeState(storage, blockId)))
   const latest = useRef(storage)
-  useEffect(() => {
-    latest.current = storage
-  })
-
-  const moveTo = useCallback(
-    (next: ForTimeState) => {
-      setState(next)
-      writeForTimeState(latest.current, blockId, next)
-    },
-    [blockId],
-  )
-
+  useEffect(() => { latest.current = storage })
+  const moveTo = useCallback((next: ForTimeState) => {
+    setState(next)
+    writeForTimeState(latest.current, blockId, next)
+  }, [blockId])
   return { state, moveTo }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AMRAPs (EXE-04c)
+// ─────────────────────────────────────────────────────────────────────────────
+
+type AmrapRecords = BlockRecords<AmrapState>
+
+function isAmrapState(value: unknown): value is AmrapState {
+  if (typeof value !== 'object' || value === null) return false
+  const record = value as Record<string, unknown>
+  return (
+    (record.startedAt === null || typeof record.startedAt === 'string') &&
+    (record.endedAtSeconds === null ||
+      (typeof record.endedAtSeconds === 'number' &&
+        Number.isFinite(record.endedAtSeconds) && record.endedAtSeconds >= 0)) &&
+    typeof record.roundsCompleted === 'number' &&
+    Number.isInteger(record.roundsCompleted) && record.roundsCompleted >= 0 &&
+    (record.partialRoundReps === null ||
+      (typeof record.partialRoundReps === 'number' &&
+        Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0))
+  )
+}
+
+export function readAmrapStates(storage: ShellStorage | null): AmrapRecords {
+  return readBlockRecords(storage, WORKOUT_AMRAP_STORAGE_KEY, isAmrapState)
+}
+
+export function readAmrapState(storage: ShellStorage | null, blockId: string): AmrapState | null {
+  return readAmrapStates(storage)[blockId] ?? null
+}
+
+export function writeAmrapState(storage: ShellStorage | null, blockId: string, state: AmrapState): void {
+  writeBlockRecord(storage, WORKOUT_AMRAP_STORAGE_KEY, isAmrapState, blockId, state)
+}
+
+export interface PersistedAmrap { readonly state: AmrapState; update(next: AmrapState): void }
+
+export function usePersistedAmrap(
+  blockId: string,
+  restore: (stored: AmrapState | null) => AmrapState,
+  storage: ShellStorage | null = defaultShellStorage(),
+): PersistedAmrap {
+  const [state, setState] = useState(() => restore(readAmrapState(storage, blockId)))
+  const latest = useRef(storage)
+  useEffect(() => { latest.current = storage })
+  const update = useCallback((next: AmrapState) => {
+    setState(next)
+    writeAmrapState(latest.current, blockId, next)
+  }, [blockId])
+  return { state, update }
 }

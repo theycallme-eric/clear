@@ -69,6 +69,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // which round, which movement, whether the shared rest is running — so a
   // specimen would be framing an invented session rather than the renderer.
   CircuitBlock: 'EXE-03 — a circuit of a live session, tracked round by round',
+  // EXE-04c's AMRAP. Its subject is a window measured against the wall clock and
+  // a score kept across a refresh; a specimen would have to invent both, and
+  // would then be framing a stopped clock rather than the renderer.
+  AmrapBlock: 'EXE-04c — an AMRAP of a live session, counted down and scored',
   // EXE-04b's For Time. The card is a clock: what it shows is how long a live
   // block has been running against its cap, so a specimen would be framing a
   // frozen moment of an invented session rather than the renderer.

@@ -10,17 +10,23 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { AMRAP_START, type AmrapState } from './amrap'
 import { CIRCUIT_START } from './circuit'
 import {
   clearWorkoutShellState,
+  readAmrapState,
+  readAmrapStates,
   readCircuitState,
   readCircuitStates,
   readWorkoutShellState,
   restoredSectionIndex,
+  usePersistedAmrap,
   usePersistedCircuit,
   usePersistedSection,
+  WORKOUT_AMRAP_STORAGE_KEY,
   WORKOUT_CIRCUIT_STORAGE_KEY,
   WORKOUT_SHELL_STORAGE_KEY,
+  writeAmrapState,
   writeCircuitState,
   writeWorkoutShellState,
   type ShellStorage,
@@ -367,5 +373,133 @@ describe('circuit records', () => {
     })
 
     expect(result.current.state.round).toBe(2)
+  })
+})
+
+/**
+ * EXE-04c's records, on the same terms as the circuits' — with one property of
+ * their own: the guard has to let a zero through while still rejecting the shapes
+ * it cannot use, because `partialRoundReps: 0` is an observation and `null` is
+ * its absence (DATA-01d).
+ */
+describe('AMRAP records', () => {
+  const BLOCK = '70000005-0000-4000-8000-000000000000'
+  const OTHER_BLOCK = '70000006-0000-4000-8000-000000000000'
+  const SCORE: AmrapState = {
+    startedAt: '2026-09-24T09:00:00.000Z',
+    endedAtSeconds: null,
+    roundsCompleted: 5,
+    partialRoundReps: 8,
+  }
+
+  function memoryStorage(): ShellStorage {
+    const values = new Map<string, string>()
+    return {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => void values.set(key, value),
+      removeItem: (key) => void values.delete(key),
+    }
+  }
+
+  it('round-trips one block’s score, leaving the session’s others alone', () => {
+    const storage = memoryStorage()
+    writeAmrapState(storage, BLOCK, SCORE)
+    writeAmrapState(storage, OTHER_BLOCK, AMRAP_START)
+
+    expect(readAmrapState(storage, BLOCK)).toEqual(SCORE)
+    expect(readAmrapState(storage, OTHER_BLOCK)).toEqual(AMRAP_START)
+    expect(readAmrapState(storage, 'a-block-with-no-record')).toBeNull()
+  })
+
+  it('keeps a recorded zero, which is not the same record as an absent one', () => {
+    const storage = memoryStorage()
+    writeAmrapState(storage, BLOCK, { ...SCORE, partialRoundReps: 0 })
+
+    expect(readAmrapState(storage, BLOCK)?.partialRoundReps).toBe(0)
+
+    writeAmrapState(storage, BLOCK, { ...SCORE, partialRoundReps: null })
+    expect(readAmrapState(storage, BLOCK)?.partialRoundReps).toBeNull()
+  })
+
+  it('drops a record it cannot vouch for rather than restoring a wrong score', () => {
+    const storage = memoryStorage()
+    storage.setItem(
+      WORKOUT_AMRAP_STORAGE_KEY,
+      JSON.stringify({
+        [BLOCK]: { ...SCORE, roundsCompleted: -1 },
+        [OTHER_BLOCK]: SCORE,
+      }),
+    )
+
+    // Minus one round is not a score anyone performed; the other is untouched.
+    expect(readAmrapState(storage, BLOCK)).toBeNull()
+    expect(readAmrapState(storage, OTHER_BLOCK)).toEqual(SCORE)
+  })
+
+  it('ignores an unparsable map and storage that refuses to be read', () => {
+    const storage = memoryStorage()
+    storage.setItem(WORKOUT_AMRAP_STORAGE_KEY, '{ not json')
+
+    expect(readAmrapStates(storage)).toEqual({})
+    expect(readAmrapStates(hostileStorage())).toEqual({})
+    expect(() => writeAmrapState(hostileStorage(), BLOCK, SCORE)).not.toThrow()
+    expect(readAmrapState(null, BLOCK)).toBeNull()
+  })
+
+  it('is forgotten with the session, along with the open section', () => {
+    const storage = memoryStorage()
+    writeWorkoutShellState(storage, {
+      sessionId: SESSION,
+      sectionIndex: 2,
+      updatedAt: '2026-09-24T09:10:00.000Z',
+    })
+    writeAmrapState(storage, BLOCK, SCORE)
+
+    clearWorkoutShellState(storage)
+
+    // By then the score is in `block_results`; the local copy is a convenience.
+    expect(readWorkoutShellState(storage)).toBeNull()
+    expect(readAmrapStates(storage)).toEqual({})
+  })
+
+  it('restores on mount and writes on every tap', () => {
+    const storage = memoryStorage()
+    writeAmrapState(storage, BLOCK, SCORE)
+
+    const { result } = renderHook(() =>
+      usePersistedAmrap(BLOCK, (stored) => stored ?? AMRAP_START, storage),
+    )
+
+    expect(result.current.state).toEqual(SCORE)
+
+    act(() => {
+      result.current.update({ ...SCORE, roundsCompleted: 6 })
+    })
+
+    expect(result.current.state.roundsCompleted).toBe(6)
+    expect(readAmrapState(storage, BLOCK)?.roundsCompleted).toBe(6)
+  })
+
+  it('repairs what it restores through the caller, which knows the block', () => {
+    const storage = memoryStorage()
+    writeAmrapState(storage, BLOCK, SCORE)
+
+    const { result } = renderHook(() =>
+      usePersistedAmrap(BLOCK, () => AMRAP_START, storage),
+    )
+
+    expect(result.current.state).toEqual(AMRAP_START)
+  })
+
+  it('keeps working when there is no storage at all', () => {
+    const { result } = renderHook(() =>
+      usePersistedAmrap(BLOCK, (stored) => stored ?? AMRAP_START, null),
+    )
+
+    act(() => {
+      result.current.update({ ...AMRAP_START, roundsCompleted: 2 })
+    })
+
+    expect(result.current.state.roundsCompleted).toBe(2)
   })
 })

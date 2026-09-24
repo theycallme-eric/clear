@@ -98,9 +98,9 @@ export interface BlockProgress {
   /** Rest the block prescribes between its rounds, in seconds. */
   readonly roundRestSeconds: number | null
   /**
-   * `workout_blocks.timer_seconds` — the duration a timed structure runs for, or
-   * the cap a For Time races (EXE-04b). The header states it in words; a
-   * renderer that has to *count* it needs the number, and this is the number.
+   * The block's clock in seconds — an AMRAP's window, an EMOM's length, a For
+   * Time cap. Null is a block that prescribes none. The header states it in
+   * words (`structureIdentity`); EXE-04a…c need the number to count it down.
    */
   readonly timerSeconds: number | null
 }

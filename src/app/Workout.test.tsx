@@ -464,7 +464,9 @@ describe('Workout — block completion', () => {
     await screen.findByRole('button', { name: 'Block recorded' })
 
     await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    // EXE-04c's renderer names what it is completing; the shell's path is the
+    // same one the EMOM above went through, which is this test's whole subject.
+    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
     const amrap = dialogTitled('AMRAP complete')
     // A real `<input type="range">`; jsdom does not implement its key
     // behaviour, so the change event the platform would fire is fired here.

@@ -20,17 +20,17 @@
  * pair's ordering and the block's own rest around it. `circuit` is EXE-03's
  * `CircuitBlock`, which tracks the round and position and supplies
  * `rounds_completed`; `emom` is its `EmomBlock`, which runs the block's minute
- * grid and supplies `minutes_completed`; `for_time` is EXE-04b's
- * `ForTimeBlock`, which races the cap and supplies its elapsed result. EXE-04a's
- * `LadderBlock` is the one override not keyed by structure type because a
- * ladder is a rep scheme; see `blockRendererFor`. Every remaining structure is
- * still performed by `BlockPanel` through the same shell-owned completion seam.
+ * grid and supplies `minutes_completed`; `amrap` is EXE-04c's `AmrapBlock`,
+ * which counts the window down and records its score; and `for_time` is
+ * EXE-04b's `ForTimeBlock`, which races the cap. EXE-04a's `LadderBlock` is the
+ * one override keyed by rep scheme; see `blockRendererFor`.
  */
 import { createElement, type ReactElement } from 'react'
 
 import type { Enums } from '../data/database.types'
 import { isLadderScheme } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
+import { AmrapBlock } from './amrap-block'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { CircuitBlock } from './circuit-block'
@@ -94,7 +94,7 @@ export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRend
   superset: SupersetBlock,
   circuit: CircuitBlock,
   emom: EmomBlock,
-  amrap: BlockPanel,
+  amrap: AmrapBlock,
   for_time: ForTimeBlock,
 }
 
