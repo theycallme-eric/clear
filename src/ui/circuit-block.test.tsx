@@ -74,6 +74,8 @@ const setLogging: SetLoggingApi = {
   loggedSets: () => [],
   isSaving: () => false,
   weightUnit: 'kg',
+  sync: { unsyncedCount: 0, sustainedFailure: false, syncing: false },
+  retrySync: vi.fn(),
 }
 
 function renderCircuit(
