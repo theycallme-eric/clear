@@ -169,3 +169,29 @@ whatever UTC thinks. `src/test/streak-migration.test.ts` asserts the negative th
 actually asks for, against every migration rather than against the new one — a future
 `streak_count` column fails it wherever it is added — and `StreakPolicy` is where HOME-02's pause
 states and rest-day allowances attach to this function instead of replacing it.
+
+EXE-01 adds the first screen that is a *mode* rather than a page, and the boundary is worth naming
+because every execution renderer will sit inside it. `src/app/Workout.tsx` is the focus shell: it
+holds the session snapshot, blocks in-app navigation off `/workout` with `useBlocker` — a link, a
+redirect and browser Back all arrive as the same abandon confirm — and owns the two exits, complete
+and abandon. What it deliberately does not do is argue with the platform: there is no
+`beforeunload` anywhere in the feature, because closing the tab loses nothing.
+`src/app/ActiveSessionPrompt.tsx` is the other half of that, mounted in `AppChrome` above every
+route, since a deep link into Home with a session running never reaches the shell to be told.
+
+Three state modules under the shell, each pure over the snapshot: `src/state/workout-progress.ts`
+derives section and block status and the structure identity the header states (`EMOM · 10 MIN`),
+`src/state/workout-clock.ts` reads elapsed time from `started_at` on every tick rather than
+accumulating one, so a backgrounded tab returns correct instead of behind, and
+`src/state/workout-persistence.ts` keeps the one thing the database cannot answer — which section
+was open — in `localStorage`, discarding any record it cannot use. `src/state/workout-queries.ts`
+makes the resumable session a query every screen can ask, over `src/data/workout.ts`, which
+assembles SES-01a's lifecycle client per call so the token it presents is never stale.
+
+The shell also owns **block completion**: `src/state/block-completion.ts` is the seam the renderers
+(EXE-02…EXE-04c) call with the fields their structure observed, and the shell asks for perceived
+effort once — `src/ui/block-effort.tsx` — and writes the `block_results` row for every structure
+type. A renderer never writes that row, which is what makes OVR-03's input one column collected one
+way from day one. `src/ui/workout-chrome.tsx` holds the shell's four presentation parts; the timer
+there counts up and is labelled rather than live, so it is app-owned rather than the export's
+countdown `TimerDisplay`.

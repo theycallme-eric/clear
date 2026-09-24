@@ -160,13 +160,6 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
 // Shell
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** What the user is trying to do when the abandon confirm appears. */
-type Exit =
-  /** A blocked router navigation — a link, a redirect, or browser Back. */
-  | { readonly kind: 'navigation' }
-  /** The header's own Abandon control. */
-  | { readonly kind: 'control' }
-
 interface PendingBlock {
   readonly block: BlockProgress
   readonly outcome: BlockOutcome
@@ -201,7 +194,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
 
   const seconds = useElapsedSeconds(snapshot.session.started_at)
 
-  const [exit, setExit] = useState<Exit | null>(null)
+  const [askedToExit, setAskedToExit] = useState(false)
   const [pending, setPending] = useState<PendingBlock | null>(null)
   const [recorded, setRecorded] = useState<readonly string[]>([])
   const [failure, setFailure] = useState<AppError | null>(null)
@@ -226,9 +219,15 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     ),
   )
 
-  useEffect(() => {
-    if (blocker.state === 'blocked') setExit({ kind: 'navigation' })
-  }, [blocker.state])
+  /**
+   * The confirm is open for two reasons and they are asked the same way: the
+   * header's Abandon control, and a navigation the blocker is holding — a
+   * link, a redirect, or browser Back. The second is derived rather than
+   * copied into state by an effect, so a blocked navigation and the dialog it
+   * raises can never disagree about whether there is a question outstanding.
+   */
+  const blocked = blocker.state === 'blocked'
+  const exiting = blocked || askedToExit
 
   /** Leaves the route for real: the one place `leaving` is lifted. */
   const depart = useCallback(
@@ -245,7 +244,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
   )
 
   const cancelExit = useCallback(() => {
-    setExit(null)
+    setAskedToExit(false)
     if (blocker.state === 'blocked') blocker.reset()
   }, [blocker])
 
@@ -257,7 +256,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     if (isErr(result)) {
       // The session is still running and still the user's. Nothing is
       // discarded on a failed abandon, and the confirm stays available.
-      setExit(null)
+      setAskedToExit(false)
       if (blocker.state === 'blocked') blocker.reset()
       setFailure(result.error)
       return
@@ -266,7 +265,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
     // Abandoned is a state, not a delete: the structure, the logs and the
     // lineage remain, which is what HOME-01 resumption reads.
     onSessionEnded(null)
-    setExit(null)
+    setAskedToExit(false)
     depart(ABANDON_ROUTE)
   }, [blocker, depart, onSessionEnded, sessionId, sessions])
 
@@ -344,7 +343,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
           <Button
             variant="quiet"
             icon={<LogOut />}
-            onClick={() => setExit({ kind: 'control' })}
+            onClick={() => setAskedToExit(true)}
           >
             Abandon
           </Button>
@@ -391,7 +390,7 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
       </Screen>
 
       <ConfirmDialog
-        open={exit !== null}
+        open={exiting}
         critical
         title="Abandon workout?"
         confirmLabel="Abandon"

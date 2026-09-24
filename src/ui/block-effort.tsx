@@ -71,11 +71,19 @@ export function BlockEffortDialog({
 
   // Each opening is its own question: a block that felt like a 9 must not
   // pre-answer the next one, and the midpoint is the honest starting point.
+  // Adjusted during render rather than in an effect — the React "information
+  // from previous renders" pattern, the same one `AppDialog` uses for its
+  // phase — so the stale answer never commits and no second render is needed
+  // to correct it.
+  const [wasOpen, setWasOpen] = useState(open)
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setEffort(DEFAULT_PERCEIVED_EFFORT)
+  }
+
+  // Focus is the browser's, not React's, so it stays an effect.
   useEffect(() => {
-    if (open) {
-      setEffort(DEFAULT_PERCEIVED_EFFORT)
-      sliderRef.current?.focus()
-    }
+    if (open) sliderRef.current?.focus()
   }, [open])
 
   return (
