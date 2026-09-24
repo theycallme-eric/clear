@@ -9,7 +9,8 @@ import { act, render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { AppProviders, renderApp } from '../test/render'
+import { AppProviders, renderApp, signedIn, type ProviderOptions } from '../test/render'
+import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import { routes } from './router'
 import {
   DEFAULT_ATMOSPHERE,
@@ -40,6 +41,22 @@ const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
   // IA.md §4, Not Found — `*` is a brand moment.
   ['/no-such-screen', 'full'],
 ]
+
+/**
+ * What a route needs before it renders itself rather than a redirect.
+ *
+ * `/workout` is the only documented route with a state-dependent guard
+ * (EXE-01): an anonymous visitor is sent to `/welcome` and a signed-in one
+ * with no session is sent Home, and in both cases the pathname — and so the
+ * level — is the destination's, not this route's. Every other route is
+ * reachable by the default anonymous visitor.
+ */
+function providersFor(pathname: string): ProviderOptions {
+  if (pathname !== '/workout') return {}
+  return signedIn({
+    workout: createWorkoutDouble({ session: snapshotFixture() }).clients,
+  })
+}
 
 function setReducedMotion(prefersReduced: boolean) {
   vi.spyOn(window, 'matchMedia').mockImplementation(
@@ -107,7 +124,7 @@ describe('atmosphere assignment', () => {
 
 describe('atmosphere rendering', () => {
   it.each(DOCUMENTED_ROUTES)('renders %s with data-atmosphere="%s"', (pathname, level) => {
-    const { container } = renderApp([pathname])
+    const { container } = renderApp([pathname], providersFor(pathname))
 
     // IA.md §3 layer 2 — the shell carries the level…
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
@@ -127,7 +144,12 @@ describe('atmosphere rendering', () => {
   })
 
   it('changes level on navigation without remounting the layer', async () => {
-    const router = createMemoryRouter(routes, { initialEntries: ['/workout'] })
+    // `/welcome` → `/login` is `full` → `quiet` for the same anonymous visitor.
+    // It used to start on `/workout`, which EXE-01 has since made both
+    // protected and a focus mode — a navigation off it is intercepted by the
+    // abandon confirm, which is `Workout.test.tsx`'s subject and would prove
+    // nothing about the atmosphere layer here.
+    const router = createMemoryRouter(routes, { initialEntries: ['/welcome'] })
     // `/login` is a real screen now (AUTH-02) and reads the session, so this
     // router needs the same providers `renderApp` mounts.
     const { container } = render(
@@ -139,7 +161,7 @@ describe('atmosphere rendering', () => {
 
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
-      'operational',
+      'full',
     )
 
     await act(async () => {

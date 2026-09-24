@@ -27,6 +27,11 @@ export const SCREENS: readonly E2eScreen[] = [
   { path: '/', route: '/', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/welcome', route: '/welcome', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   { path: '/login', route: '/login', title: 'Sign in · CLEAR', heading: 'Sign in' },
+  // EXE-01's focus mode is protected *and* state-dependent. With the
+  // credential-free preview fixture it resolves through the public-only path
+  // to Welcome, exactly as `/` does — the shell is never reachable without a
+  // session, which is itself the behaviour worth scanning.
+  { path: '/workout', route: '/workout', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {

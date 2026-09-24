@@ -22,6 +22,11 @@ import {
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
 import { createUserDataClient, type UserDataClient } from '../data/user-data'
+import {
+  createWorkoutClients,
+  unconfiguredWorkoutClients,
+  type WorkoutClients,
+} from '../data/workout'
 import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
 import { createLogger } from '../state/logger'
 
@@ -92,6 +97,12 @@ interface Clients {
    * `auth.ts` is the only thing that knows when that token rotated.
    */
   readonly userData: UserDataClient
+  /**
+   * EXE-01's lifecycle and `block_results` writes. Built from the same `auth`
+   * object for the same reason `userData` is: the token it presents has to be
+   * the live one, and a workout outlives several of them.
+   */
+  readonly workout: WorkoutClients
 }
 
 let clients: Clients | null = null
@@ -115,6 +126,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       auth: unconfiguredAuthClient(),
       otp: unconfiguredOtpClient(),
       userData: unconfiguredUserDataClient(),
+      workout: unconfiguredWorkoutClients(),
     }
     return clients
   }
@@ -125,6 +137,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     auth,
     otp: createOtpClient(config.value),
     userData: createUserDataClient({ auth, supabase: config.value }),
+    workout: createWorkoutClients({ auth, supabase: config.value }),
   }
   return clients
 }
