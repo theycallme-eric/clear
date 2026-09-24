@@ -9,24 +9,26 @@
  * structure type fails to compile until something renders it, instead of
  * quietly falling through to a panel that records nothing.
  *
- * A renderer receives the block and takes completion from
- * `useBlockCompletion()`. It is given no client, no callback and no row: the
- * only thing it can do with an outcome is hand it to the shell, which is what
- * keeps `block_results` to one writer for every structure type.
+ * A renderer receives the block and completes it through
+ * `BlockCompletionControl`, the one component in this layer that calls the
+ * seam. It is given no client, no callback and no row: the only thing it can do
+ * with an outcome is hand it to the shell, which is what keeps `block_results`
+ * to one writer for every structure type.
  *
- * Until those renderers exist, every structure type is performed by
- * `BlockPanel` — the block's identity, its size, and the shell's completion
- * control. That is deliberate rather than a placeholder with no meaning: the
- * path OVR-03 reads is live from day one, and a block completed through it
+ * `standard` is EXE-02's `StandardBlock` — straight sets, each one logged as it
+ * happens. Every other structure is still performed by `BlockPanel`: the
+ * block's identity, its size, and the shell's completion control. That is
+ * deliberate rather than a placeholder with no meaning — the path OVR-03 reads
+ * is live for every structure from day one, and a block completed through it
  * records the effort with no outcome fields rather than with invented ones.
  */
 import { createElement, type ReactElement } from 'react'
 
-import { Button } from '../design-system/index'
 import type { Enums } from '../data/database.types'
-import { useBlockCompletion } from '../state/block-completion'
 import type { BlockProgress } from '../state/workout-progress'
+import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
+import { StandardBlock } from './standard-block'
 import { StructureBadge } from './workout-chrome'
 
 export interface BlockRendererProps {
@@ -46,9 +48,6 @@ export type BlockRenderer = (props: BlockRendererProps) => ReactElement
  * and nothing else.
  */
 export function BlockPanel({ block }: BlockRendererProps) {
-  const { completeBlock, isBlockRecorded } = useBlockCompletion()
-  const recorded = isBlockRecorded(block.blockId)
-
   return (
     <Card>
       <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -65,16 +64,11 @@ export function BlockPanel({ block }: BlockRendererProps) {
             {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
           </span>
         </div>
-        <Button
-          variant="secondary"
-          size="lg"
-          disabled={recorded}
-          // No outcome fields: this panel runs no clock and counts no rounds,
-          // and a zero it never observed would be a measurement (DATA_MODEL §8).
-          onClick={() => completeBlock(block.blockId, {})}
-        >
-          {recorded ? 'Block recorded' : 'Complete block'}
-        </Button>
+        {/*
+          No outcome fields: this panel runs no clock and counts no rounds, and
+          a zero it never observed would be a measurement (DATA_MODEL §8).
+        */}
+        <BlockCompletionControl blockId={block.blockId} outcome={{}} />
       </div>
     </Card>
   )
@@ -86,7 +80,7 @@ export function BlockPanel({ block }: BlockRendererProps) {
  * renderer completes through the shell.
  */
 export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRenderer>> = {
-  standard: BlockPanel,
+  standard: StandardBlock,
   superset: BlockPanel,
   circuit: BlockPanel,
   emom: BlockPanel,

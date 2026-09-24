@@ -20,7 +20,12 @@
  * nothing invents a number the block does not carry.
  */
 import type { Enums } from '../data/database.types'
-import type { SessionSnapshot, WorkoutBlockRow } from './schemas'
+import type {
+  ExerciseSetLogRow,
+  SessionSnapshot,
+  WorkoutBlockRow,
+  WorkoutExerciseRow,
+} from './schemas'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Section progress
@@ -33,6 +38,33 @@ import type { SessionSnapshot, WorkoutBlockRow } from './schemas'
  */
 export type SectionStatus = 'not_started' | 'in_progress' | 'complete'
 
+/**
+ * One active prescription, as a renderer performs it (EXE-02).
+ *
+ * The prescription row travels whole rather than pre-formatted, because the
+ * renderer reads its *columns* — `target_kind`, `modality`, `per_side`,
+ * `distance_unit` — and a derived string here would be the string-parsing the
+ * requirement exists to forbid, written one layer earlier. `prescription.ts`
+ * is what turns these columns into what the screen says.
+ *
+ * `blockId` is carried rather than looked up: a set log names the exercise, and
+ * the block it belongs to is how the shell checks that the exercise being
+ * logged against is one in the structure the user is actually performing.
+ */
+export interface ExerciseProgress {
+  /** `workout_exercises.id` — the row a set log is attributed to. */
+  readonly exerciseId: string
+  /** The block this prescription is performed in. */
+  readonly blockId: string
+  /** 1-based position within the block: the `1.` or the `A1` of its label. */
+  readonly position: number
+  readonly status: Enums<'execution_status'>
+  /** The structured prescription, read from its columns and never parsed. */
+  readonly prescription: WorkoutExerciseRow
+  /** Sets already recorded against it, as the snapshot answered them. */
+  readonly setLogs: readonly ExerciseSetLogRow[]
+}
+
 export interface BlockProgress {
   readonly blockId: string
   readonly structureType: Enums<'structure_type'>
@@ -41,6 +73,10 @@ export interface BlockProgress {
   readonly status: SectionStatus
   /** Prescriptions still active in this block, in order. */
   readonly exerciseCount: number
+  /** Those same prescriptions, in `order_index` order. */
+  readonly exercises: readonly ExerciseProgress[]
+  /** Rest the block prescribes between its rounds, in seconds. */
+  readonly roundRestSeconds: number | null
 }
 
 export interface SectionProgress {
@@ -91,13 +127,28 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
   const sections = snapshot.sections.map((entry, index): SectionProgress => {
     const blocks = entry.blocks.map((blockEntry): BlockProgress => {
       const exercises = activeExercises(blockEntry)
+      const blockId = blockEntry.block.id
 
       return {
-        blockId: blockEntry.block.id,
+        blockId,
         structureType: blockEntry.block.structure_type,
         identity: structureIdentity(blockEntry.block),
         status: statusOf(exercises.map(({ exercise }) => exercise.execution_status)),
         exerciseCount: exercises.length,
+        // Ordered here rather than trusted from the read: the order is the
+        // prescription — a superset's A1 and A2, a circuit's 1…n — and a
+        // renderer that labelled them in arrival order could mislabel them.
+        exercises: [...exercises]
+          .sort((left, right) => left.exercise.order_index - right.exercise.order_index)
+          .map(({ exercise, set_logs }, position): ExerciseProgress => ({
+            exerciseId: exercise.id,
+            blockId,
+            position: position + 1,
+            status: exercise.execution_status,
+            prescription: exercise,
+            setLogs: set_logs,
+          })),
+        roundRestSeconds: blockEntry.block.round_rest_seconds,
       }
     })
 
