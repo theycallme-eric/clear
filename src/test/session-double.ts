@@ -25,7 +25,9 @@
  */
 
 import type {
+  BlockResultRow,
   ExerciseSetLogRow,
+  ReconstructionKind,
   WorkoutBlockRow,
   WorkoutExerciseRow,
   WorkoutSectionRow,
@@ -62,9 +64,12 @@ export interface SessionDouble {
     blocks: WorkoutBlockRow[]
     exercises: WorkoutExerciseRow[]
     setLogs: ExerciseSetLogRow[]
+    blockResults: BlockResultRow[]
   }
   /** Add a logged set to a prescription, as EXE-02 will. */
   logSet(log: Partial<ExerciseSetLogRow> & { workout_exercise_id: string; set_number: number }): void
+  /** Score a block, as EXE-04 will. One result per block, as the UNIQUE says. */
+  recordBlockResult(result: Partial<BlockResultRow> & { block_id: string }): void
   /** Set an exercise's execution status, as performing or skipping it does. */
   setExecutionStatus(id: string, status: WorkoutExerciseRow['execution_status']): void
   /** Every RPC the double answered, in order. */
@@ -85,6 +90,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
   const blocks: WorkoutBlockRow[] = []
   const exercises: WorkoutExerciseRow[] = []
   const setLogs: ExerciseSetLogRow[] = []
+  const blockResults: BlockResultRow[] = []
   const calls: { fn: string; args: Json }[] = []
   const requests: { method: string; path: string; query: string }[] = []
 
@@ -137,6 +143,93 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
                     exercise.block_id === block.id && exercise.revision_status === 'active',
                 )
                 .sort((a, b) => a.order_index - b.order_index)
+                .map((exercise) => ({
+                  exercise,
+                  set_logs: setLogs
+                    .filter((log) => log.workout_exercise_id === exercise.id)
+                    .sort((a, b) => a.set_number - b.set_number),
+                })),
+            })),
+        })),
+    }
+  }
+
+  /**
+   * SES-01b's three reconstructions, transcribed from
+   * `20260921000009_session_reconstruction.sql` — one envelope, three
+   * predicates, each of them DATA_MODEL §7's.
+   *
+   * The temporal one is the reason this is not `revision_status = 'active'`
+   * with extra steps: a swap made after `started_at` must not change what was
+   * intended, and only a comparison against `started_at` gets that right.
+   */
+  const qualifies = (
+    kind: ReconstructionKind,
+    exercise: WorkoutExerciseRow,
+    session: WorkoutSessionRow,
+  ): boolean => {
+    if (kind === 'generated') return exercise.origin === 'generated'
+
+    if (kind === 'intended_at_start') {
+      if (session.started_at === null) return false
+      const startedAt = Date.parse(session.started_at)
+      return (
+        Date.parse(exercise.created_at) <= startedAt &&
+        (exercise.superseded_at === null || Date.parse(exercise.superseded_at) > startedAt)
+      )
+    }
+
+    // Performed: every active prescription whether or not it was logged, plus
+    // the superseded ones that carry evidence of having been performed.
+    return (
+      exercise.revision_status === 'active' ||
+      exercise.execution_status !== 'not_started' ||
+      setLogs.some((log) => log.workout_exercise_id === exercise.id)
+    )
+  }
+
+  const reconstruction = (
+    sessionId: string,
+    viewer: string,
+    kind: ReconstructionKind,
+  ): Json | null => {
+    const session = sessions.find((row) => row.id === sessionId && row.user_id === viewer)
+    if (session === undefined) return null
+
+    return {
+      reconstruction: kind,
+      as_of:
+        kind === 'generated'
+          ? session.created_at
+          : kind === 'intended_at_start'
+            ? session.started_at
+            : (session.completed_at ?? session.abandoned_at ?? now()),
+      session,
+      state: stateOf(session),
+      sections: sections
+        .filter((section) => section.session_id === session.id)
+        .sort((a, b) => a.order_index - b.order_index)
+        .map((section) => ({
+          section,
+          blocks: blocks
+            .filter((block) => block.section_id === section.id)
+            .sort((a, b) => a.order_index - b.order_index)
+            .map((block) => ({
+              block,
+              block_result:
+                blockResults.find((result) => result.block_id === block.id) ?? null,
+              exercises: exercises
+                .filter(
+                  (exercise) =>
+                    exercise.block_id === block.id && qualifies(kind, exercise, session),
+                )
+                // Two revisions of one slot share an order_index, so the tie is
+                // broken by when each was written.
+                .sort(
+                  (a, b) =>
+                    a.order_index - b.order_index ||
+                    Date.parse(a.created_at) - Date.parse(b.created_at),
+                )
                 .map((exercise) => ({
                   exercise,
                   set_logs: setLogs
@@ -528,6 +621,15 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
           return json(200, persist(args.p_user_id as string, args.p_session as Json, caller))
         case 'session_snapshot':
           return json(200, snapshot(args.p_session_id as string, caller))
+        case 'session_as_generated':
+          return json(200, reconstruction(args.p_session_id as string, caller, 'generated'))
+        case 'session_as_intended_at_start':
+          return json(
+            200,
+            reconstruction(args.p_session_id as string, caller, 'intended_at_start'),
+          )
+        case 'session_as_performed':
+          return json(200, reconstruction(args.p_session_id as string, caller, 'performed'))
         case 'resume_session': {
           if (args.p_user_id !== caller) return json(200, null)
           const resumable = sessions.find(
@@ -606,6 +708,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
       blocks: [...blocks],
       exercises: [...exercises],
       setLogs: [...setLogs],
+      blockResults: [...blockResults],
     }),
     logSet(log) {
       setLogs.push({
@@ -621,6 +724,21 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
         is_warmup_set: false,
         created_at: now(),
         ...log,
+      })
+    },
+    recordBlockResult(result) {
+      blockResults.push({
+        id: id('f'),
+        elapsed_seconds: null,
+        completed_under_cap: null,
+        rounds_completed: null,
+        partial_round_reps: null,
+        minutes_completed: null,
+        highest_rung: null,
+        perceived_effort: null,
+        notes: null,
+        created_at: now(),
+        ...result,
       })
     },
     setExecutionStatus(exerciseId, status) {

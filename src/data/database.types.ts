@@ -17,6 +17,7 @@
  *   supabase/migrations/20260921000006_streak_sessions.sql
  *   supabase/migrations/20260921000007_complete_onboarding.sql
  *   supabase/migrations/20260921000008_location_writes.sql
+ *   supabase/migrations/20260921000009_session_reconstruction.sql
  */
 
 export type Json =
@@ -699,6 +700,31 @@ export type Database = {
         }
         Returns: Json
       }
+      session_as_generated: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      session_as_intended_at_start: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      session_as_performed: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
+      session_reconstruction: {
+        Args: {
+          p_session_id: string
+          p_kind: Database['public']['Enums']['reconstruction_kind']
+        }
+        Returns: Json
+      }
       session_snapshot: {
         Args: {
           p_session_id: string
@@ -765,6 +791,7 @@ export type Database = {
       muscle_role: 'primary' | 'synergist' | 'stabilizer'
       prescription_modality: 'reps' | 'time' | 'distance'
       prescription_origin: 'generated' | 'revised'
+      reconstruction_kind: 'generated' | 'intended_at_start' | 'performed'
       rep_scheme: 'fixed' | 'ladder_up' | 'ladder_down' | 'pyramid' | 'inverse' | 'n_plus_one' | 'ladder_fixed_interval'
       revision_status: 'active' | 'superseded'
       section_type: 'warmup' | 'mobility' | 'primary_lift' | 'accessory' | 'skill_power' | 'carries' | 'core' | 'stability_balance' | 'conditioning' | 'cooldown'
@@ -821,6 +848,7 @@ export const Constants = {
       muscle_role: ['primary', 'synergist', 'stabilizer'],
       prescription_modality: ['reps', 'time', 'distance'],
       prescription_origin: ['generated', 'revised'],
+      reconstruction_kind: ['generated', 'intended_at_start', 'performed'],
       rep_scheme: ['fixed', 'ladder_up', 'ladder_down', 'pyramid', 'inverse', 'n_plus_one', 'ladder_fixed_interval'],
       revision_status: ['active', 'superseded'],
       section_type: ['warmup', 'mobility', 'primary_lift', 'accessory', 'skill_power', 'carries', 'core', 'stability_balance', 'conditioning', 'cooldown'],

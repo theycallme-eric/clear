@@ -326,6 +326,32 @@ export function createAdminClient(options) {
     },
 
     /**
+     * Call a Postgres function as a given user, over PostgREST's `/rpc`.
+     *
+     * The same posture as the three write helpers: the raw response comes
+     * back, because a refusal is an expected answer here too. SES-01a's
+     * lifecycle functions and SES-01b's reconstructions all *return* their
+     * refusals rather than raising, so a caller reads `body.outcome` far more
+     * often than it reads a status.
+     *
+     * Always with the user's token and the anon key. A reconstruction run as
+     * the service role would pass every RLS policy and prove nothing about
+     * what the app can actually see.
+     *
+     * @param {string} fn
+     * @param {Record<string, unknown>} args
+     * @param {string} accessToken
+     */
+    async rpcAs(fn, args, accessToken) {
+      return call(`/rest/v1/rpc/${fn}`, {
+        key: anonKey,
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify(args),
+      })
+    },
+
+    /**
      * Read past every policy, as the service role.
      *
      * Used for exactly one thing: checking that teardown left nothing. Asking

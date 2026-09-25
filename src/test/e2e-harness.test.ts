@@ -174,6 +174,16 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob.match(/npm run e2e:reset/g)).toHaveLength(2)
   })
 
+  it('runs the D6 regression where there is a database to run it against', () => {
+    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
+
+    // SES-01b. Its schema half runs in every lane — it needs no credentials —
+    // but the half that performs a swap, logs sets and reads the three
+    // reconstructions back needs a project, and this is the only job that has
+    // one. A spec nobody runs is not a standing regression test.
+    expect(backendJob).toContain('e2e/d6-swap-persistence.spec.ts')
+  })
+
   it('uploads the trace and screenshot when it fails', () => {
     expect(workflow).toContain('upload-artifact')
     expect(workflow).toContain('test-results/')
