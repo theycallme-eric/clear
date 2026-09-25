@@ -18,6 +18,7 @@
  *   supabase/migrations/20260921000007_complete_onboarding.sql
  *   supabase/migrations/20260921000008_location_writes.sql
  *   supabase/migrations/20260921000009_session_reconstruction.sql
+ *   supabase/migrations/20260921000010_load_anchors.sql
  */
 
 export type Json =
@@ -229,6 +230,41 @@ export type Database = {
         Update: {
           session_focus?: Database['public']['Enums']['session_focus']
           movement_pattern?: Database['public']['Enums']['movement_pattern']
+        }
+      }
+      load_anchors: {
+        Row: {
+          user_id: string
+          exercise_id: string
+          equipment_used: string
+          anchor_value: number
+          unit: Database['public']['Enums']['weight_unit']
+          confidence: Database['public']['Enums']['anchor_confidence']
+          session_count: number
+          last_session_date: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          exercise_id: string
+          equipment_used: string
+          anchor_value: number
+          unit: Database['public']['Enums']['weight_unit']
+          confidence: Database['public']['Enums']['anchor_confidence']
+          session_count: number
+          last_session_date: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          exercise_id?: string
+          equipment_used?: string
+          anchor_value?: number
+          unit?: Database['public']['Enums']['weight_unit']
+          confidence?: Database['public']['Enums']['anchor_confidence']
+          session_count?: number
+          last_session_date?: string
+          updated_at?: string
         }
       }
       location_equipment: {
@@ -540,6 +576,7 @@ export type Database = {
           session_notes: string | null
           counts_for_streak: boolean
           abandoned_at: string | null
+          is_deload: boolean
         }
         Insert: {
           id?: string
@@ -568,6 +605,7 @@ export type Database = {
           session_notes?: string | null
           counts_for_streak?: boolean
           abandoned_at?: string | null
+          is_deload?: boolean
         }
         Update: {
           id?: string
@@ -596,6 +634,7 @@ export type Database = {
           session_notes?: string | null
           counts_for_streak?: boolean
           abandoned_at?: string | null
+          is_deload?: boolean
         }
       }
     }
@@ -605,6 +644,12 @@ export type Database = {
           p_session_id: string
         }
         Returns: Json
+      }
+      anchor_evidence: {
+        Args: {
+          p_user_id: string
+        }
+        Returns: { session_id: string; session_date: string; logged_at: string; exercise_id: string; equipment_used: string; set_number: number; actual_reps: number; prescribed_reps: number; weight: number; weight_unit: Database['public']['Enums']['weight_unit']; rpe: number }[]
       }
       complete_onboarding: {
         Args: {
@@ -745,6 +790,13 @@ export type Database = {
         }
         Returns: Json
       }
+      set_load_anchors: {
+        Args: {
+          p_user_id: string
+          p_anchors: Json
+        }
+        Returns: Database['public']['Tables']['load_anchors']['Row'][]
+      }
       start_session: {
         Args: {
           p_session_id: string
@@ -777,6 +829,7 @@ export type Database = {
       }
     }
     Enums: {
+      anchor_confidence: 'low' | 'medium' | 'high'
       constraint_action: 'exclude' | 'avoid' | 'prefer_not'
       constraint_persistence: 'session' | 'persistent'
       constraint_scope: 'exercise' | 'movement_pattern' | 'equipment'
@@ -834,6 +887,7 @@ export type FunctionReturns<T extends FunctionName> = PublicSchema['Functions'][
 export const Constants = {
   public: {
     Enums: {
+      anchor_confidence: ['low', 'medium', 'high'],
       constraint_action: ['exclude', 'avoid', 'prefer_not'],
       constraint_persistence: ['session', 'persistent'],
       constraint_scope: ['exercise', 'movement_pattern', 'equipment'],

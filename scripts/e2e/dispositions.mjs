@@ -115,6 +115,13 @@ export const TABLE_DISPOSITIONS = [
     seeded: false,
     why: 'inherits ownership through its workout exercise; a row needs a catalog exercise id, which its own task applies',
   },
+  {
+    table: 'load_anchors',
+    standing: 'cross-user',
+    ownerColumn: 'user_id',
+    seeded: false,
+    why: 'what this person can lift, derived from their own logs; a row needs a catalog exercise id, which its own task applies',
+  },
 
   // The catalog. Shared, read-only to `authenticated`, written by the seeding
   // task with the service role — no `user_id` exists to cross.
