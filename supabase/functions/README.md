@@ -37,6 +37,25 @@ Two consequences at deploy time, both handled in `deno.json` and `../config.toml
 untyped and carries no request id, so the function verifies the same token against GoTrue itself
 and refuses in CLEAR's words instead.
 
+## Validation is a list you can falsify
+
+`_shared/validate.ts` is GEN-02c's half of GENERATION_CONTRACT §6 and its `HARD_CHECKS` is the
+correspondence the requirement asks for: one row per hard check, naming the constraint in
+`supabase/migrations/20260921000002_workout_domain.sql` that would refuse the row at the INSERT.
+`src/test/generation-validation.test.ts` reads every one of those declarations back out of the
+migration and every rule back out of the spec's own table, so a check with no matching constraint —
+or a constraint renamed under a check — fails a test rather than surviving as a paragraph.
+
+Checks 4–7 are not implemented there. They are `src/state/schemas.ts`, which ran before validation
+was reached; check 8 is duration plausibility and belongs to GEN-06. Checks 1–3 — the candidate set,
+its usable equipment, the enabled sections — are what this module runs, because they are questions
+about *this* request that neither the schema nor the database can answer.
+
+The soft checks return a `QualityRecord` and cannot reject: `validateComposition` reaches its `ok`
+before it observes anything. A rejection costs exactly one corrected retry, counted by `claude.ts`,
+which receives validation as an optional function rather than an import — a composer configured
+without one returns `validation: null`, which means nobody checked and never that nothing was wrong.
+
 ## Testing
 
 The envelope is a plain `(Request) => Promise<Response>` and touches no runtime global, so it is
