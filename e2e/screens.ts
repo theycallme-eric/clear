@@ -47,6 +47,10 @@ export const SCREENS: readonly E2eScreen[] = [
     title: 'Welcome · CLEAR',
     heading: 'CLEAR',
   },
+  // GEN-04's form is protected as well, so the credential-free preview resolves
+  // it to Welcome like `/` and `/settings`. What the signed-in form renders is
+  // covered by `src/app/Generate.test.tsx`.
+  { path: '/generate', route: '/generate', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {
