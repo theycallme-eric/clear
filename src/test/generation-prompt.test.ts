@@ -150,12 +150,15 @@ describe('the user message against PROMPT_v4.md §3', () => {
     const headings = message
       .split('\n')
       .filter((line) =>
-        /^(REQUEST|RECENT HISTORY|SOFT PREFERENCES|CANDIDATES — |OUTPUT CONTRACT)/.test(line),
+        /^(REQUEST|RECENT HISTORY|TRAINING HISTORY|SOFT PREFERENCES|CANDIDATES — |OUTPUT CONTRACT)/.test(
+          line,
+        ),
       )
 
     expect(headings).toEqual([
       'REQUEST',
       'RECENT HISTORY',
+      'TRAINING HISTORY (labels and confidence only — the app fills every load after generation)',
       'SOFT PREFERENCES',
       'CANDIDATES — warmup',
       'CANDIDATES — primary_lift',
@@ -319,7 +322,7 @@ describe('the retry addendum against PROMPT_v4.md §4', () => {
   })
 })
 
-describe('prompt 5.0.0 measured against the captured v4.0.0 baseline', () => {
+describe('prompt 5.1.0 measured against the captured v4.0.0 baseline', () => {
   // PROMPT_v4.md §5 asks for the comparison and says the result belongs in the
   // GEN-02b change rather than in the static spec. This is that record, and it
   // is a test rather than a note so it cannot quietly stop being true.
@@ -343,22 +346,28 @@ describe('prompt 5.0.0 measured against the captured v4.0.0 baseline', () => {
 
   it('records the measurement §5 asks for', () => {
     expect(measurement).toEqual({
-      promptVersion: '5.0.0',
+      promptVersion: '5.1.0',
       contractVersion: CONTRACT_VERSION,
       systemBytes: byteLength(SYSTEM_PROMPT),
       userBytes: byteLength(assembled.user),
       totalBytes: byteLength(SYSTEM_PROMPT) + byteLength(assembled.user),
       sectionCount: 3,
       candidateCount: 9,
+      anchoredExerciseCount: 2,
+      sessionDirective: 'normal',
     })
   })
 
   it('is measurably shorter than the old app’s, whole prompt to whole prompt', () => {
     expect(measurement.totalBytes).toBeLessThan(legacyLowerBound)
-    // Not a threshold anybody tuned: §2 predicted the system prompt alone would
-    // drop ~40%, and the library going away is the larger half. Half the bytes
-    // against a lower bound is a conservative floor under both claims.
-    expect(measurement.totalBytes / legacyLowerBound).toBeLessThan(0.5)
+    // §2 predicted the system prompt alone would drop ~40%, and the library going
+    // away is the larger half. The floor was 0.5 at 5.0.0 and is 0.6 at 5.1.0,
+    // and the difference is stated rather than quietly relaxed: OVR-02 adds a
+    // TRAINING HISTORY block and its directive handling, which the v4 prompt has
+    // no equivalent of at all. The comparison is still the same lower bound — the
+    // old prompt's nine candidate rows rather than its hundred — so a prompt that
+    // carries strictly more instruction is still measurably the smaller one.
+    expect(measurement.totalBytes / legacyLowerBound).toBeLessThan(0.6)
   })
 
   it('drops the system prompt by the ~40% GENERATION_CONTRACT §2 predicted', () => {

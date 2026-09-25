@@ -33,6 +33,11 @@ import {
   type RecentHistory,
   type SoftPreferences,
 } from '../../supabase/functions/_shared/prompt.ts'
+import {
+  buildTrainingHistory,
+  type AnchorHistory,
+  type TrainingHistory,
+} from '../../supabase/functions/_shared/training-history.ts'
 
 const repoRoot = resolve(import.meta.dirname, '../..')
 const capture = (file: string) =>
@@ -286,9 +291,52 @@ const PREFERENCES: SoftPreferences = {
   notes: 'left shoulder has been a bit cranky',
 }
 
+/**
+ * OVR-02's block for the same request: two anchored lower-body lifts the user
+ * has actually trained, one moving and one flat. Both are in today's candidate
+ * set, because an anchor is something you earned by training the exercise and
+ * the fixture should not model a history nobody could have.
+ */
+export const TRAINING_ANCHORS: readonly AnchorHistory[] = [
+  {
+    anchor: {
+      exercise_id: 'back-squat',
+      equipment_used: 'barbell',
+      anchor_value: 285,
+      unit: 'lb',
+      confidence: 'high',
+      session_count: 5,
+      last_session_date: '2026-09-21',
+    },
+    recentValues: [285, 280, 275],
+  },
+  {
+    anchor: {
+      exercise_id: 'deadlift',
+      equipment_used: 'barbell',
+      anchor_value: 345,
+      unit: 'lb',
+      confidence: 'medium',
+      session_count: 2,
+      last_session_date: '2026-09-18',
+    },
+    recentValues: [345, 345, 340],
+  },
+]
+
+/** The fixture's today, one week after the request was composed against. */
+export const TODAY = '2026-09-25'
+
+const TRAINING: TrainingHistory = buildTrainingHistory({
+  anchors: TRAINING_ANCHORS,
+  today: TODAY,
+  conditioningTrend: 'hold',
+})
+
 /** The whole prompt input, with any part of it overridden. */
 export function promptInput(overrides: Partial<PromptInput> = {}): PromptInput {
   return {
+    training: TRAINING,
     request: resolveEffectiveRequest({
       requestId: 'req_abc123_def456',
       goal: 'strength',
