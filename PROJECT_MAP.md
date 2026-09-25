@@ -310,7 +310,20 @@ function of the set logs and a second run against unchanged history writes the s
 recomputation is triggered from one place — `complete` in `src/data/workout.ts`, because completion
 is the only event that can change what the evidence says — and its failure is deliberately not the
 completion's: the workout is finished either way, and the next recomputation reads the whole history
-again. Nothing reads an anchor yet; the rules that act on one are OVR-01b's.
+again.
+
+OVR-01b is the other direction — what to prescribe *from* an anchor — and it is
+`src/state/progression.ts`, a second pure module beside `anchors.ts` rather than a section inside it.
+§2's RPE table is eight rows in evaluation order, each carrying the spec's own prose cells so
+`src/state/progression.test.ts` can compare the two lists by machine: one test per row, a coverage
+assertion that fails when a row arrives without one, and a parity test that reads §2's table out of
+the spec markdown. §5's ladders are the same shape — `sparsePolicy` for the 0/1/2/3+ session tiers,
+`stalenessOf` for the 3/6/12-week decay — and past twelve weeks the anchor is discarded rather than
+decayed, so `suggestLoad` answers `weight: null` and no screen can render a confident number from
+four months ago. `suggestLoad` is the whole pipeline in one place: decay, inversion at the prescribed
+reps and RIR, the rule's step, the equipment increment, then §1's 110% clamp — with the confidence
+tier and session count returned beside every number, never after it. Nothing calls it yet; the Review
+surface is OVR-01c's and the post-generation weight fill is OVR-02's.
 
 One thing genuinely cannot follow a token, and that is why `src/app/favicon.ts` exists: a favicon
 reads no stylesheet. The mark is therefore committed once per skin under `public/icons/`, outside
