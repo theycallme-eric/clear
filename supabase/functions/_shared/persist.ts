@@ -96,6 +96,13 @@ export interface SessionFacts {
    * knows better says so.
    */
   readonly adjustmentReason?: string | null
+  /**
+   * OVR-04: whether the user accepted the suggested deload for this session.
+   * Omitted is `false` — the session the caller never asked about is an
+   * ordinary one — and the flag is what keeps a deliberately light day out of
+   * `anchor_evidence` afterwards.
+   */
+  readonly isDeload?: boolean
 }
 
 /**
@@ -193,6 +200,9 @@ export function acceptanceFor(
       // §10's two versions, from the workout rather than from the constants.
       prompt_version: hydrated.promptVersion,
       contract_version: hydrated.contractVersion,
+      // OVR-04 §4: tagged at acceptance, because it is the request's own
+      // decision and nothing downstream can reconstruct it.
+      is_deload: facts.isDeload ?? false,
       workout: composedWorkout(hydrated),
     },
     { code: ErrorCode.VALIDATION_CONSTRAINT, requestId: request.requestId },

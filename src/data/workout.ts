@@ -38,7 +38,7 @@ import {
   type BlockResultRow,
   type ExerciseSetLogRow,
 } from '../state/schemas'
-import { createAnchorsClient } from './anchors'
+import { createAnchorsClient, type AnchorsClient } from './anchors'
 import type { AuthClient } from './auth'
 import { createCandidatesClient, type CandidatesClient } from './candidates'
 import { createConditioningClient, type ConditioningClient } from './conditioning'
@@ -99,6 +99,13 @@ export interface WorkoutClients {
    * the call, and nothing more.
    */
   readonly candidates: CandidatesClient
+  /**
+   * OVR-01a's anchor queries. On the surface since OVR-04, which is the first
+   * thing in `src/` that *reads* the evidence rather than recomputing from it:
+   * §4's triggers are a function of the same working sets an anchor is, and a
+   * second query that re-derived them could disagree about what a stall is.
+   */
+  readonly anchors: AnchorsClient
 }
 
 export interface WorkoutClientsConfig {
@@ -345,6 +352,7 @@ export function createWorkoutClients({
     exercises,
     conditioning,
     candidates,
+    anchors,
   }
 }
 
@@ -382,5 +390,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     exercises: { definition: refusal, saveNotes: refusal },
     conditioning: { history: refusal },
     candidates: { retrieve: refusal },
+    anchors: { evidence: refusal, list: refusal, recompute: refusal },
   }
 }
