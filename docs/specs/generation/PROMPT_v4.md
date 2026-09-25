@@ -1,10 +1,12 @@
 # CLEAR composition prompt — contract 4.1
 
-> **Prompt version:** `5.0.0`  
+> **Prompt version:** `5.1.0`  
 > **Contract version:** `4.1.0`  
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
-> version 5 because removing the library dump and moving eligibility into code is a major prompt change.
+> version 5 because removing the library dump and moving eligibility into code is a major prompt change.  
+> **5.1.0 (OVR-02):** the `TRAINING HISTORY` block, the session directive it carries, and the
+> instruction never to compute a load. Contract version unchanged — no output field moved.
 
 This is the composition policy for `GEN-02b`. It carries forward the useful coaching judgment
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
@@ -85,6 +87,27 @@ LOAD GUIDANCE
 - 7–8: challenging, roughly 70–80%.
 - 9–10: heavy, roughly 80–90%+, only where the goal and candidate role support it.
 Use only the contract's load_type/load_value representation. Never invent a prior-session number.
+Never compute, state or narrate a weight, anywhere, including section_notes, block_notes, tempo and
+the overview. The app fills every suggested load after generation from the user's own logged history;
+a number you write conflicts with the one it computes, and the user is left reading two answers for
+the same set.
+
+TRAINING HISTORY AND DIRECTIVES
+The user message carries a TRAINING HISTORY block: one line per exercise the user has recent capacity
+for, with its confidence, how long since it was trained, and a label. It carries labels and never
+loads, because the loads are filled afterwards by code.
+- SESSION DIRECTIVE normal: compose as the goal shape asks.
+- SESSION DIRECTIVE deload: the same movements rather than novelty. Apply the stated working-set
+  multiplier, hold rep targets where they are, keep conditioning at or below the stated intensity, and
+  state the RPE ceiling in section_notes.
+- SESSION DIRECTIVE re_entry: one fewer working set on every exercise the block notes as re-entry,
+  conservative cues, and the exercise's RPE ceiling stated in section_notes.
+- CONDITIONING TREND ready: add a round, add reps per round, or shorten a time cap by about 10%.
+  hold: keep the density where it was. backing_off: drop a round or lengthen the cap by about 15%.
+An exercise noted stalled may be swapped for a close variation, which is often the right answer to a
+plateau. An exercise noted progressing under a hypertrophy goal is better kept in the same rep band,
+so there is something for added reps to progress against. Both are preferences; goal shape and
+thematic coherence still win.
 
 SECTION COMPOSITION
 - Warmup progresses general movement → dynamic range → activation → specific movement prep.
@@ -131,6 +154,13 @@ enabled_sections: [...]
 RECENT HISTORY
 <compact pattern-frequency and recent-ID summary, or "none">
 
+TRAINING HISTORY (labels and confidence only — the app fills every load after generation)
+exercise_id | equipment | confidence | sessions | last trained | note
+<one line per anchored exercise, most recently trained first, at most 40, or "none">
+SESSION DIRECTIVE: normal | deload | re_entry
+DIRECTIVE RULES: <the directive's numeric rules; omitted under "normal">
+CONDITIONING TREND: ready | hold | backing_off
+
 SOFT PREFERENCES
 <avoid/prefer-not entries and free-text notes, or "none">
 
@@ -142,7 +172,14 @@ OUTPUT CONTRACT
 ```
 
 The candidate serializer is deterministic: stable section order, then stable exercise ID order.
-That makes prompt-size and output-quality comparisons meaningful.
+That makes prompt-size and output-quality comparisons meaningful. The `TRAINING HISTORY` block is
+deterministic the same way — most recently trained first, then exercise ID, then equipment.
+
+`TRAINING HISTORY` carries labels and confidence and **never an anchor value**, which is
+`OVR-01_progressive-overload.md` open question 6 decided: the model selects and structures, code fills
+every load after generation, and a number in the prompt is a number that ends up narrated in a
+coaching cue where it contradicts the computed one. `DIRECTIVE RULES` states the deload's set
+multiplier as a multiplier for the same reason — the arithmetic belongs to code.
 
 ## 4. Retry addendum
 
