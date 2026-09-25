@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
+import type { UserConstraint } from '../data/constraints'
 import { ErrorCode, err, ok, type Result } from '../state/errors'
 import {
   blockSwapResultSchema,
@@ -185,6 +186,30 @@ const unitRequest: SwapRequest = {
   block_id: BLOCK_ID,
 }
 
+/** One of each half of DATA-05's answer, as `constraints_in_force` returns them. */
+const constraintFixture = (
+  action: UserConstraint['action'],
+  target: UserConstraint['target'],
+): UserConstraint => ({
+  id: '99999999-9999-4999-8999-999999999999',
+  userId: USER_ID,
+  action,
+  target,
+  appliesTo: { persistence: 'persistent' },
+  note: null,
+  createdAt: NOW,
+})
+
+const SOFT_CONSTRAINT = constraintFixture('avoid', {
+  scope: 'movement_pattern',
+  pattern: 'hinge',
+})
+
+const HARD_CONSTRAINT = constraintFixture('exclude', {
+  scope: 'exercise',
+  exerciseId: 'deadlift',
+})
+
 const scopeFor = (request: SwapRequest, snapshot = snapshotFixture()): SwapScope => {
   const scope = resolveSwapScope(snapshot, request)
   if (!scope.ok) throw new Error(`the fixture did not resolve: ${scope.error.code}`)
@@ -285,7 +310,7 @@ describe('a swap is resolved against the session, not against the request', () =
 
 describe('the swap prompt is generation’s, with one directive', () => {
   const input = (request: SwapRequest): PromptInput =>
-    swapPromptInput(scopeFor(request), CANDIDATES, [], TODAY)
+    swapPromptInput(scopeFor(request), CANDIDATES, [], TODAY, REQUEST_ID)
 
   it('retrieves and offers the slot’s section alone', () => {
     const promptInput = input(singleRequest)
@@ -330,6 +355,9 @@ describe('the swap prompt is generation’s, with one directive', () => {
     // Last, so the one instruction this call does not share is read last.
     expect(assembled.user.endsWith(swapDirective(scope))).toBe(true)
     expect(assembled.measurement.contractVersion).toBe('4.1.0')
+    // §9's echo: the id the envelope is answering with, not the session's.
+    expect(assembled.user).toContain(`request_id: ${REQUEST_ID}`)
+    expect(assembled.user).not.toContain(`request_id: ${SESSION_ID}`)
   })
 })
 
@@ -400,7 +428,7 @@ describe('a response wider than the slot is rejected', () => {
   it('costs one corrected retry rather than a typed failure', () => {
     const validate = swapValidator(scope)
     const rejected = validate(composed(['front-squat', 'deadlift']), {
-      ...swapPromptInput(scope, CANDIDATES, [], TODAY),
+      ...swapPromptInput(scope, CANDIDATES, [], TODAY, REQUEST_ID),
     })
 
     expect(rejected.ok).toBe(false)
@@ -411,7 +439,13 @@ describe('a response wider than the slot is rejected', () => {
 
   it('still applies GEN-02c’s check 1 — the candidate set is the section’s', () => {
     const validate = swapValidator(scope)
-    const input = swapPromptInput(scope, sectionFixture('primary_lift', ['deadlift']), [], TODAY)
+    const input = swapPromptInput(
+      scope,
+      sectionFixture('primary_lift', ['deadlift']),
+      [],
+      TODAY,
+      REQUEST_ID,
+    )
     const rejected = validate(composed(['front-squat']), input)
 
     expect(rejected.ok).toBe(false)
@@ -555,6 +589,46 @@ describe('a swap draws from the same candidate query as generation', () => {
         sessionId: SESSION_ID,
       },
     ])
+  })
+
+  it('offers only the slot’s section, from the set the query returned', async () => {
+    const recorder = recordingDatabase()
+    const { composer, prompts } = composerReturning(composed(['front-squat']))
+
+    const result = await performSwap(
+      singleRequest,
+      { userId: USER_ID, requestId: REQUEST_ID },
+      { db: recorder.db, catalog, composer, today: () => TODAY },
+    )
+
+    expect(result.ok).toBe(true)
+    // `candidates` answered with two sections; the slot lives in one of them,
+    // and the other is not something this call may compose from.
+    expect(prompts[0]).toContain('CANDIDATES — primary_lift')
+    expect(prompts[0]).not.toContain('CANDIDATES — accessory')
+    expect(prompts[0]).toContain('front-squat')
+  })
+
+  it('carries the session’s soft constraints, and not the hard ones', async () => {
+    const recorder = recordingDatabase({
+      // What `constraints_in_force` returns: both halves, because the function
+      // that filtered the candidates and the prompt that reads them are
+      // different consumers of one answer (DATA-05).
+      constraints: async () => ok([SOFT_CONSTRAINT, HARD_CONSTRAINT]),
+    })
+    const { composer, prompts } = composerReturning(composed(['front-squat']))
+
+    const result = await performSwap(
+      singleRequest,
+      { userId: USER_ID, requestId: REQUEST_ID },
+      { db: recorder.db, catalog, composer, today: () => TODAY },
+    )
+
+    expect(result.ok).toBe(true)
+    expect(prompts[0]).toContain('avoid: movement_pattern:hinge')
+    // A hard exclusion is the candidate query's job and was applied there. Asking
+    // the model to also honor it would make the query's answer a suggestion.
+    expect(prompts[0]).not.toContain('exclude:')
   })
 
   it('refuses when the slot’s section has nothing eligible left', async () => {

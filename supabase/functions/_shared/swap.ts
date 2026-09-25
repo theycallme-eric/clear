@@ -250,15 +250,23 @@ export function swapEffectiveRequest(scope: SwapScope, requestId: string): Effec
   }
 }
 
-/** Everything the swap's user message is assembled from. */
+/**
+ * Everything the swap's user message is assembled from.
+ *
+ * `requestId` is the envelope's own, threaded through rather than re-derived:
+ * §9's echo is what ties a log line, a response and the prompt that produced it
+ * to one call, and a recording labelled `request_id` that held anything else
+ * would break that trail for the one call most likely to be read back.
+ */
 export function swapPromptInput(
   scope: SwapScope,
   candidates: SectionCandidates,
   constraints: readonly UserConstraint[],
   today: string,
+  requestId: string,
 ): PromptInput {
   return {
-    request: swapEffectiveRequest(scope, scope.session.id),
+    request: swapEffectiveRequest(scope, requestId),
     sections: [candidates],
     history: {
       focuses: [],
@@ -783,6 +791,7 @@ export async function performSwap(
     section,
     constraints.value,
     (deps.today ?? isoDate)(),
+    requestId,
   )
 
   logger?.info('composing swap', {
