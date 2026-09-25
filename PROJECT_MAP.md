@@ -295,6 +295,23 @@ two writes PostgREST cannot make atomic by itself: replacing a location and its 
 and moving the single default. The next generation already reads `location_equipment`, so saving
 that editor changes eligibility through the existing generation path rather than a UI-only copy.
 
+OVR-01a adds the first derived athlete state, and its split is SES-01c's split rather than a new one.
+`supabase/migrations/20260921000010_load_anchors.sql` owns the `load_anchors` table, the `is_deload`
+flag the exclusion needs, and `anchor_evidence(user)` — the working sets that may move an anchor,
+with warmups, deloads, active recovery, bodyweight and non-reps prescriptions already gone and the
+prescribed target read through the join to the immutable prescription row, because
+`exercise_set_logs` stores no `reps_prescribed` and rep completion is computed rather than parsed.
+`src/state/anchors.ts` owns everything §1 states as a formula — Epley over effective reps, the
+12-rep clamp, the unit conversion, the weighted smoothing, the confidence ladder — as pure functions
+over those rows, which is what makes every branch a unit test instead of SQL nobody can execute on a
+pull request. `src/data/anchors.ts` is the only caller: it reads the evidence, derives, and replaces
+the user's whole anchor set through `set_load_anchors` in one statement, so the table stays a
+function of the set logs and a second run against unchanged history writes the same rows. The
+recomputation is triggered from one place — `complete` in `src/data/workout.ts`, because completion
+is the only event that can change what the evidence says — and its failure is deliberately not the
+completion's: the workout is finished either way, and the next recomputation reads the whole history
+again. Nothing reads an anchor yet; the rules that act on one are OVR-01b's.
+
 One thing genuinely cannot follow a token, and that is why `src/app/favicon.ts` exists: a favicon
 reads no stylesheet. The mark is therefore committed once per skin under `public/icons/`, outside
 `src/` because those two hexes are literal values the DS-08 gate correctly refuses in app-owned

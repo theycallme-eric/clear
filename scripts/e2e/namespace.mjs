@@ -185,6 +185,8 @@ export function rowSelector(table, slot, userId) {
       return { block_id: `eq.${FIXTURE_IDS.workoutBlock[slot]}` }
     case 'exercise_set_logs':
       return { workout_exercise_id: `eq.${FIXTURE_IDS.workoutBlock[slot]}` }
+    case 'load_anchors':
+      return { user_id: `eq.${userId}` }
     default:
       throw new Error(`No row selector for ${table}`)
   }
@@ -262,6 +264,16 @@ export function forgedRow(table, slot, userId) {
       workout_exercise_id: FIXTURE_IDS.workoutBlock[slot],
       set_number: 1,
       weight_unit: 'lb',
+    },
+    load_anchors: {
+      user_id: userId,
+      exercise_id: 'forged-exercise',
+      equipment_used: 'barbell',
+      anchor_value: 315,
+      unit: 'lb',
+      confidence: 'high',
+      session_count: 1,
+      last_session_date: '2026-01-01',
     },
   }[table]
 

@@ -944,6 +944,65 @@ export const sessionTransitionSchema = z.object({
   superseded: workoutExerciseRowSchema.nullish(),
 })
 
+/**
+ * A row of `anchor_evidence(...)` (OVR-01a): one working set that is allowed to
+ * move a load anchor, with the target read from the prescription it was logged
+ * against.
+ *
+ * Every measurement is nullable and stays nullable here. The function
+ * deliberately does not drop a set that recorded no RPE or no weight — §1 skips
+ * those for the e1RM candidate, while rep completion still counts them — so a
+ * schema that demanded them would reject exactly the rows the second answer
+ * needs. `prescribed_reps` is null when the prescription had no target for that
+ * set number, which is one set past the end of a ladder.
+ */
+export const anchorEvidenceRowSchema = z.object({
+  session_id: z.uuid(),
+  session_date: z.iso.date(),
+  logged_at: timestamp,
+  exercise_id: nonBlank,
+  equipment_used: nonBlank,
+  set_number: positiveInt,
+  actual_reps: nonNegativeInt.nullable(),
+  prescribed_reps: nonNegativeInt.nullable(),
+  weight: z.number().min(0).nullable(),
+  weight_unit: weightUnitSchema,
+  rpe: z.number().min(1).max(10).nullable(),
+})
+
+export const anchorEvidenceSchema = z.array(anchorEvidenceRowSchema)
+
+/** How much history an anchor rests on (§5), as the enum SQL stores. */
+export const anchorConfidenceSchema = z.enum(Constants.public.Enums.anchor_confidence)
+
+/**
+ * One derived anchor, in the shape `set_load_anchors(...)` reads out of its
+ * `jsonb` argument. Parsed on the way *out* rather than on the way in, because
+ * this is the one payload in the file that `src/` composes for the database
+ * rather than receives from it — and `load_anchors`' CHECK constraints are
+ * exactly these bounds, so an anchor that validates is an anchor the table can
+ * hold.
+ */
+export const loadAnchorInputSchema = z.object({
+  exercise_id: nonBlank,
+  equipment_used: nonBlank,
+  anchor_value: z.number().positive(),
+  unit: weightUnitSchema,
+  confidence: anchorConfidenceSchema,
+  session_count: positiveInt,
+  last_session_date: z.iso.date(),
+})
+
+export const loadAnchorPayloadSchema = z.array(loadAnchorInputSchema)
+
+/** A stored `load_anchors` row: the input, plus what the database added. */
+export const loadAnchorRowSchema = loadAnchorInputSchema.extend({
+  user_id: z.uuid(),
+  updated_at: timestamp,
+})
+
+export const loadAnchorListSchema = z.array(loadAnchorRowSchema)
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Parsing at the boundary
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1033,6 +1092,10 @@ export type BlockResultRow = z.infer<typeof blockResultRowSchema>
 export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
+export type AnchorEvidenceRow = z.infer<typeof anchorEvidenceRowSchema>
+export type AnchorConfidence = z.infer<typeof anchorConfidenceSchema>
+export type LoadAnchorInput = z.infer<typeof loadAnchorInputSchema>
+export type LoadAnchorRow = z.infer<typeof loadAnchorRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
 export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
 export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>
