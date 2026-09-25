@@ -400,6 +400,34 @@ export const errorResponseSchema = z.strictObject({
   issues: z.array(schemaIssueSchema).optional(),
 })
 
+/**
+ * The contract's own §9 code list, in the contract's spelling. It is a second
+ * vocabulary beside `ErrorCode` on purpose: the taxonomy says what a client
+ * should *do*, and these say which check refused the composition. GEN-03 reads
+ * them to choose a sentence a person can act on — "change equipment" and "the
+ * retry is spent" are different advice arriving as the same taxonomy code.
+ */
+export const GENERATION_FAILURES = [
+  'generation.no_candidates',
+  'generation.invalid_reference',
+  'generation.malformed_prescription',
+  'generation.duration_implausible',
+  'generation.upstream',
+  'generation.exhausted',
+] as const
+export const generationFailureSchema = z.enum(GENERATION_FAILURES)
+
+/**
+ * The error response as GEN-03 reads it: CORE-01's wire error, plus the §9 code
+ * when the function names one. `errorResponseSchema` is left as it is — what
+ * GEN-01 *writes* is its own call, and this only widens what a client will
+ * accept. Unknown keys are still refused, and an answer without `failure`
+ * parses exactly as it does today.
+ */
+export const generationErrorResponseSchema = errorResponseSchema.extend({
+  failure: generationFailureSchema.optional(),
+})
+
 /** A generation that succeeded, echoing the id it was called with (§9). */
 export const generationSuccessSchema = z.strictObject({
   requestId: requestIdSchema,
@@ -1261,6 +1289,8 @@ export type GenerationOutput = z.infer<typeof generationOutputSchema>
 export type GenerationRequest = z.infer<typeof generationRequestSchema>
 export type GenerationSuccess = z.infer<typeof generationSuccessSchema>
 export type ErrorResponse = z.infer<typeof errorResponseSchema>
+export type GenerationFailure = z.infer<typeof generationFailureSchema>
+export type GenerationErrorResponse = z.infer<typeof generationErrorResponseSchema>
 export type SchemaIssue = z.infer<typeof schemaIssueSchema>
 export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type SwapMode = z.infer<typeof swapModeSchema>
