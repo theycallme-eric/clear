@@ -52,7 +52,13 @@ const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
 function providersFor(pathname: string): ProviderOptions {
   // SET-01's hub is protected: signed out it renders a redirect to Welcome,
   // whose `full` is then the only level there is to measure.
-  if (pathname === '/summary' || pathname.startsWith('/settings')) return signedIn()
+  if (
+    pathname === '/summary' ||
+    pathname === '/generate' ||
+    pathname.startsWith('/settings')
+  ) {
+    return signedIn()
+  }
   if (pathname !== '/workout') return {}
   return signedIn({
     workout: createWorkoutDouble({ session: snapshotFixture() }).clients,

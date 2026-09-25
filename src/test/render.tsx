@@ -11,12 +11,14 @@ import { ErrorBoundary } from '../app/ErrorBoundary'
 import { createTestRouter } from '../app/router'
 import type { AuthClient } from '../data/auth'
 import type { UserConstraintsClient } from '../data/constraints'
+import type { GenerationClient } from '../data/generation'
 import type { OtpClient } from '../data/otp'
 import type { SummaryClient } from '../data/summary'
 import type { UserDataClient } from '../data/user-data'
 import type { WorkoutClients } from '../data/workout'
 import { AuthProvider } from '../state/auth-provider'
 import { UserConstraintsContext } from '../state/constraint-queries'
+import { GenerationClientContext } from '../state/generation'
 import { QueryClient, QueryClientContext } from '../state/query'
 import { SignInClientsContext } from '../state/sign-in-context'
 import { SummaryContext } from '../state/summary-queries'
@@ -29,6 +31,7 @@ import { WorkoutClientsContext } from '../state/workout-queries'
 import { ToastHost } from '../ui/toast-host'
 import { createFakeAuthClient, createFakeOtpClient, signedInEvent } from './auth-double'
 import { createFakeConstraintsClient } from './constraints-double'
+import { createFakeGenerationClient } from './generation-double'
 import { createFakeSummaryClient } from './summary-double'
 import {
   createFakeUserDataClient,
@@ -57,6 +60,12 @@ export interface ProviderOptions {
   workout?: WorkoutClients
   /** DATA-05's read, which REQ-057's boot check is bound to. Defaults to none. */
   constraints?: UserConstraintsClient
+  /**
+   * GEN-03's call. Defaults to the double that answers nothing until a test
+   * tells it to, so a screen that starts a generation stays on its pending
+   * state rather than resolving out from under the assertion.
+   */
+  generation?: GenerationClient
 }
 
 /**
@@ -101,6 +110,7 @@ export function AppProviders({
   summary,
   workout,
   constraints,
+  generation,
 }: ProviderOptions & { children: ReactNode }) {
   // Memoised, not rebuilt per render: the cache *is* the query state, and a
   // fresh one on every render would reset every query the moment one resolved.
@@ -120,6 +130,10 @@ export function AppProviders({
     () => constraints ?? createFakeConstraintsClient(),
     [constraints],
   )
+  const generationClient = useMemo(
+    () => generation ?? createFakeGenerationClient(),
+    [generation],
+  )
 
   return (
     <StrictMode>
@@ -137,7 +151,10 @@ export function AppProviders({
                   <SummaryContext value={summaryClient}>
                     {/* Same DATA-05 read main.tsx mounts, over an injected double */}
                     <UserConstraintsContext value={constraintsClient}>
-                      {children}
+                      {/* Same GEN-03 client main.tsx mounts, over a double */}
+                      <GenerationClientContext value={generationClient}>
+                        {children}
+                      </GenerationClientContext>
                     </UserConstraintsContext>
                   </SummaryContext>
                 </WorkoutClientsContext>

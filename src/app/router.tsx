@@ -7,6 +7,7 @@ import {
 
 import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
+import { Generate } from './Generate'
 import { Protected, PublicOnly } from './guards'
 import { Login } from './Login'
 import { LocationSettings } from './LocationSettings'
@@ -85,6 +86,18 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="Workout">
                 <Workout />
+              </Protected>
+            ),
+          },
+          // GEN-04 — `protected` (IA.md §1). What the screen needs before it
+          // can be filled in is a place to train, which is a fact about the
+          // rows rather than the route, so the screen asks for it and offers
+          // the way to add one when there is none.
+          {
+            path: '/generate',
+            element: (
+              <Protected title="Generate workout">
+                <Generate />
               </Protected>
             ),
           },
