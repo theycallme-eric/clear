@@ -48,3 +48,11 @@ verify_jwt = false
 # The function imports CORE-03's schemas from `src/`, which import `zod` by bare
 # specifier. `functions/deno.json` is where that name resolves.
 import_map = "./functions/deno.json"
+
+[functions.generate-section]
+# REV-02. The same envelope, the same reasoning: the swap verifies the caller's
+# token itself so its 401 is typed and carries the request id. Both settings are
+# `generate-workout`'s because the shell is — a second answer here would be a
+# second contract for what an unauthenticated call gets back.
+verify_jwt = false
+import_map = "./functions/deno.json"

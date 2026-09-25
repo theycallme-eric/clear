@@ -188,6 +188,22 @@ unmount invalidate the run rather than the promise, so an answer that arrives la
 instead of landing in a state somebody renders. D2's silent fallback has no home in any of it, and
 `src/test/generation-fallback.test.ts` is the gate that keeps it that way: no workout fixture named
 in runtime source, and no runtime file importing the test harness.
+REV-02's swap is the fifth module in that directory and it is a *narrowing* of the four above rather
+than a parallel pipeline: `swap.ts` resolves what is being replaced from `session_snapshot`, retrieves
+`generation_candidate_sets` for the slot's section alone, appends `exercise-swap.md`'s directive to
+`prompt.ts`'s user message, and hands `claude.ts` a validator that runs its own scope checks before
+GEN-02c's — which is why `claude.ts` takes `assemble` as an option beside `validate`, so a swap
+reuses one retry budget, one measurement and one usage record instead of counting its own. The
+request carries ids only: a client that supplied the section, the equipment or the exercises staying
+could ask for a replacement the user's own constraints forbid, so all of it is read back from the
+session and "the same candidate query as generation" stays true. The write is the only step that is
+not generation's, and it is two RPCs rather than an UPDATE anywhere in TypeScript: SES-01a's
+`swap_session_exercise` for one slot, and `20260921000012_swap_session_block.sql`'s
+`swap_session_block` for a unit swap, which delegates every member of one block to that same
+function inside one plpgsql body so a half-revised block cannot exist. Neither writes
+`workout_blocks` — the structure and the timer are what the replacement has to fit into — and the
+response carries the database's own rows, superseded beside substitute, because a client rendering
+the prescription it asked for would not know whether it was stored (D6).
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s

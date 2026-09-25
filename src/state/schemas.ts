@@ -323,6 +323,51 @@ export const generationRequestSchema = z.strictObject({
   notes: z.string().max(2000).nullable(),
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Swap — REV-02 (the request; its response is below `workout_exercises`)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Which slot a swap replaces: one exercise, or one block as a unit
+ * (`docs/specs/generation/exercise-swap.md` §"Swap Behavior by Structure Type").
+ */
+export const SWAP_MODES = ['single', 'unit'] as const
+export const swapModeSchema = z.enum(SWAP_MODES)
+
+/**
+ * What a swap is asked for: the session it belongs to and the one thing in it
+ * being replaced. Deliberately *not* the section, the constraints, the
+ * equipment or the exercises that are staying — the function reads all of those
+ * back from the session it was given, because a client that supplied them could
+ * ask for a replacement the user's own constraints forbid, and the swap draws
+ * from the same candidate query as generation or it is not the same contract
+ * (REV-02, GENERATION_CONTRACT §11).
+ *
+ * The target is discriminated rather than two nullable ids: a `single` body
+ * carrying a block id is a caller that has not decided which swap it wants, and
+ * the boundary is where that is cheapest to say.
+ */
+export const singleSwapRequestSchema = z.strictObject({
+  request_id: requestIdSchema,
+  session_id: z.uuid(),
+  mode: z.literal('single'),
+  /** The active prescription to replace. Its block and section are read, never sent. */
+  workout_exercise_id: z.uuid(),
+})
+
+export const unitSwapRequestSchema = z.strictObject({
+  request_id: requestIdSchema,
+  session_id: z.uuid(),
+  mode: z.literal('unit'),
+  /** Every active member of this block is replaced together. */
+  block_id: z.uuid(),
+})
+
+export const swapRequestSchema = z.discriminatedUnion('mode', [
+  singleSwapRequestSchema,
+  unitSwapRequestSchema,
+])
+
 /**
  * One failure the boundary found, flattened to the two things a caller can act
  * on. It is a wire shape as well as a local one: GEN-01's envelope answers a
@@ -749,6 +794,32 @@ export const workoutExerciseRowSchema = z.object({
 })
 
 /**
+ * One slot's revision, as REV-02 persisted it: the row that was superseded and
+ * the row that replaced it. Both, rather than the new one alone — the lineage
+ * is the point of the operation (D6), and a client given only the substitute
+ * would have to guess what it replaced.
+ */
+export const swapRevisionSchema = z.strictObject({
+  superseded: workoutExerciseRowSchema,
+  exercise: workoutExerciseRowSchema,
+  /** §8's hydration, for the card that has to render the substitute immediately. */
+  name: nonBlank,
+  display_name: nonBlank,
+})
+
+/** A swap that succeeded, echoing the id it was called with (§9). */
+export const swapSuccessSchema = z.strictObject({
+  requestId: requestIdSchema,
+  mode: swapModeSchema,
+  section_type: sectionTypeSchema,
+  block_id: z.uuid(),
+  /** One entry for a single swap; one per block member for a unit swap. */
+  revisions: z.array(swapRevisionSchema).min(1),
+})
+
+export const swapResponseSchema = z.union([swapSuccessSchema, errorResponseSchema])
+
+/**
  * `exercise_set_logs` (DATA-01d §2). Every actual is nullable and every one of
  * them admits zero: null is "not recorded", zero is a real result, and the two
  * are different observations (DATA_MODEL §8).
@@ -994,6 +1065,34 @@ export const sessionTransitionSchema = z.object({
 })
 
 /**
+ * `swap_session_block`'s answer (REV-02): one unit swap, and one transition per
+ * member of the block it revised.
+ *
+ * `slot_mismatch` is the fourth refusal and belongs to this function alone —
+ * the payload did not name exactly the block's active members, which is a
+ * caller defect rather than a session state. It refuses rather than raising for
+ * the reason the lifecycle functions do, and it refuses *before* writing
+ * anything, because a unit swap that had already revised half the block is the
+ * state the function exists to make unreachable.
+ */
+export const BLOCK_SWAP_OUTCOMES = [
+  'swapped',
+  'not_found',
+  'invalid_transition',
+  'slot_mismatch',
+] as const
+export const blockSwapOutcomeSchema = z.enum(BLOCK_SWAP_OUTCOMES)
+
+export const blockSwapResultSchema = z.object({
+  outcome: blockSwapOutcomeSchema,
+  event: z.string().optional(),
+  state: sessionStateSchema.nullish(),
+  block_id: z.uuid().nullish(),
+  /** In the order the block holds its members, one entry each. */
+  revisions: z.array(sessionTransitionSchema).nullish(),
+})
+
+/**
  * A row of `anchor_evidence(...)` (OVR-01a): one working set that is allowed to
  * move a load anchor, with the target read from the prescription it was logged
  * against.
@@ -1194,6 +1293,11 @@ export type GenerationFailure = z.infer<typeof generationFailureSchema>
 export type GenerationErrorResponse = z.infer<typeof generationErrorResponseSchema>
 export type SchemaIssue = z.infer<typeof schemaIssueSchema>
 export type GenerationResponse = z.infer<typeof generationResponseSchema>
+export type SwapMode = z.infer<typeof swapModeSchema>
+export type SwapRequest = z.infer<typeof swapRequestSchema>
+export type SwapRevision = z.infer<typeof swapRevisionSchema>
+export type SwapSuccess = z.infer<typeof swapSuccessSchema>
+export type SwapResponse = z.infer<typeof swapResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type ProfilePreferences = z.infer<typeof profilePreferencesSchema>
 export type Location = z.infer<typeof locationSchema>
@@ -1224,5 +1328,7 @@ export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
 export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
 export type SessionTransition = z.infer<typeof sessionTransitionSchema>
+export type BlockSwapOutcome = z.infer<typeof blockSwapOutcomeSchema>
+export type BlockSwapResult = z.infer<typeof blockSwapResultSchema>
 export type SessionFunction = z.infer<typeof sessionFunctionSchema>
 export type AnchorRelationship = z.infer<typeof anchorRelationshipSchema>
