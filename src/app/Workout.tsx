@@ -41,6 +41,7 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { SetLoggingProvider } from '../state/set-logging-provider'
+import { SwapProvider } from '../state/swap-provider'
 import { useProfileQuery } from '../state/user-queries'
 import type { AppError } from '../state/errors'
 import { isErr } from '../state/errors'
@@ -148,6 +149,7 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
           key={snapshot.session.id}
           snapshot={snapshot}
           onSessionEnded={query.publish}
+          onSessionRevised={query.publish}
           storage={storage}
         />
       )
@@ -162,10 +164,21 @@ interface WorkoutShellProps {
   snapshot: SessionSnapshot
   /** Publishes the session's end so every other screen agrees immediately. */
   onSessionEnded: (snapshot: SessionSnapshot | null) => void
+  /**
+   * Publishes the session a swap produced (EXE-06). The same channel as the
+   * one above, named apart because they mean opposite things: one says the
+   * session is over, this one says it has been revised and is still running.
+   */
+  onSessionRevised: (snapshot: SessionSnapshot) => void
   storage?: ShellStorage | null
 }
 
-function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) {
+function WorkoutShell({
+  snapshot,
+  onSessionEnded,
+  onSessionRevised,
+  storage,
+}: WorkoutShellProps) {
   const { sessions } = useWorkoutClients()
   const navigate = useNavigate()
 
@@ -302,92 +315,104 @@ function WorkoutShell({ snapshot, onSessionEnded, storage }: WorkoutShellProps) 
   const canGoForward = index < progress.total - 1
 
   return (
-    // The one completion path, mounted around every renderer: the effort
-    // question and the `block_results` write belong to it, for every structure
-    // type, and to no renderer inside it.
-    <BlockCompletionProvider blocks={blocks} onFailure={setFailure}>
+    // EXE-06's revision path, outermost because it is the only one that
+    // changes what the other two are looking at: a swap republishes the
+    // session, and the completion and set-logging providers below are handed
+    // the revised structure on the next render rather than reconciling to it.
+    <SwapProvider
+      snapshot={snapshot}
+      onSwapped={onSessionRevised}
+      onFailure={setFailure}
+    >
       {/*
-        The other write execution produces, on the same terms: one path, one
-        row per set, written at log time, and the same error surface. A
-        renderer reaches it through `useSetLogging` and never sees the client.
+        The one completion path, mounted around every renderer: the effort
+        question and the `block_results` write belong to it, for every
+        structure type, and to no renderer inside it.
       */}
-      <SetLoggingProvider
-        sessionId={sessionId}
-        exercises={exercises}
-        weightUnit={weightUnit}
-        onFailure={setFailure}
-        storage={storage}
-      >
-        <AppHeader
-          meta={<GlobalTimer seconds={seconds} />}
-          actions={
-            <Button
-              variant="quiet"
-              icon={<LogOut />}
-              onClick={() => setAskedToExit(true)}
-            >
-              Abandon
-            </Button>
-          }
+      <BlockCompletionProvider blocks={blocks} onFailure={setFailure}>
+        {/*
+          The other write execution produces, on the same terms: one path, one
+          row per set, written at log time, and the same error surface. A
+          renderer reaches it through `useSetLogging` and never sees the client.
+        */}
+        <SetLoggingProvider
+          sessionId={sessionId}
+          exercises={exercises}
+          weightUnit={weightUnit}
+          onFailure={setFailure}
+          storage={storage}
         >
-          <ClearLogo size="sm" />
-        </AppHeader>
+          <AppHeader
+            meta={<GlobalTimer seconds={seconds} />}
+            actions={
+              <Button
+                variant="quiet"
+                icon={<LogOut />}
+                onClick={() => setAskedToExit(true)}
+              >
+                Abandon
+              </Button>
+            }
+          >
+            <ClearLogo size="sm" />
+          </AppHeader>
 
-        <Screen title={SCREEN_TITLE}>
-          <div className="clr-stack">
-            {/*
-              EXE-07's one statement about unsynced work. It is here rather
-              than in the error dialog because a queue that is retrying is not
-              a failed action: it must not interrupt a set, and it must say the
-              count once rather than once per set.
-            */}
-            <SetSyncNotice />
+          <Screen title={SCREEN_TITLE}>
+            <div className="clr-stack">
+              {/*
+                EXE-07's one statement about unsynced work. It is here rather
+                than in the error dialog because a queue that is retrying is not
+                a failed action: it must not interrupt a set, and it must say the
+                count once rather than once per set.
+              */}
+              <SetSyncNotice />
 
-            <ProgressTracker
-              progress={progress}
-              currentIndex={index}
-              onSelect={section.setIndex}
-            />
+              <ProgressTracker
+                progress={progress}
+                currentIndex={index}
+                onSelect={section.setIndex}
+              />
 
-            {current === undefined ? null : (
-              <>
-                <SectionHeader
-                  section={current}
-                  position={index + 1}
-                  total={progress.total}
-                />
-                {current.blocks.map((block) => (
-                  <BlockSlot key={block.blockId} block={block} />
-                ))}
-              </>
-            )}
+              {current === undefined ? null : (
+                <>
+                  <SectionHeader
+                    section={current}
+                    position={index + 1}
+                    total={progress.total}
+                  />
+                  {current.blocks.map((block) => (
+                    <BlockSlot key={block.blockId} block={block} />
+                  ))}
+                </>
+              )}
 
-            <WorkoutNavigation
-              canGoBack={canGoBack}
-              canGoForward={canGoForward}
-              onPrevious={() => section.setIndex(index - 1)}
-              onNext={() => section.setIndex(index + 1)}
-              onFinish={() => void finish()}
-              busy={ending}
-            />
-          </div>
-        </Screen>
+              <WorkoutNavigation
+                canGoBack={canGoBack}
+                canGoForward={canGoForward}
+                onPrevious={() => section.setIndex(index - 1)}
+                onNext={() => section.setIndex(index + 1)}
+                onFinish={() => void finish()}
+                busy={ending}
+              />
+            </div>
+          </Screen>
 
-        <AbandonConfirmDialog
-          open={exiting}
-          onConfirm={() => void confirmAbandon()}
-          onCancel={cancelExit}
-        />
-
-        {failure !== null && (
-          <ErrorDialog
-            open
-            error={failure}
-            title="That didn’t save"
-            onDismiss={() => setFailure(null)}
+          <AbandonConfirmDialog
+            open={exiting}
+            onConfirm={() => void confirmAbandon()}
+            onCancel={cancelExit}
           />
-        )}
-      </SetLoggingProvider>
-    </BlockCompletionProvider>
+
+          {failure !== null && (
+            <ErrorDialog
+              open
+              error={failure}
+              title="That didn’t save"
+              onDismiss={() => setFailure(null)}
+            />
+          )}
+        </SetLoggingProvider>
+      </BlockCompletionProvider>
+    </SwapProvider>
   )
 }

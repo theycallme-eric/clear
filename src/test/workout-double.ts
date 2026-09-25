@@ -12,6 +12,7 @@
 import type {
   BlockResultRow,
   ConditioningHistoryRow,
+  Prescription,
   ExerciseDefinitionRow,
   ExerciseSetLogRow,
   ReconstructionKind,
@@ -22,6 +23,7 @@ import type {
   WorkoutSectionRow,
   WorkoutSessionRow,
 } from '../state/schemas'
+import type { CandidatesClient, SectionCandidates } from '../data/candidates'
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
@@ -368,6 +370,14 @@ export interface WorkoutDoubleOptions {
   /** Prior scored conditioning blocks, newest first, as the RPC answers them. */
   conditioningHistory?: readonly ConditioningHistoryRow[]
   /**
+   * EXE-06's swap candidates. Unwired by default: a test that is not about a
+   * mid-workout swap never opens the panel, and a double that answered a list
+   * anyway would make "the candidate read happened" unassertable.
+   */
+  candidates?: Partial<CandidatesClient>
+  /** What `candidates.retrieve` answers, as GEN-02a's retrieval would. */
+  candidateSets?: readonly SectionCandidates[]
+  /**
    * What the catalog answers, by slug (EXE-05). A slug that is not here answers
    * `null` — the library has no definition for it — rather than throwing, so a
    * test that is not about the coaching panel does not have to wire one.
@@ -386,6 +396,14 @@ export interface WorkoutDouble {
   completed(): { sessionId: string; minutes?: number }[]
   /** Every `exercise_notes` write the panel made, in order (EXE-05). */
   savedNotes(): { exerciseId: string; notes: string | null }[]
+  /** Every swap the shell asked for, in order (EXE-06). */
+  swaps(): { workoutExerciseId: string; prescription: Prescription }[]
+  /**
+   * The session as the double now holds it — what a reload would read back.
+   * Maintained by the double's own `swap`, not by the code under test, so a
+   * test that asserts the shell agrees with it is asserting something.
+   */
+  stored(): SessionSnapshot | null
 }
 
 /**
@@ -451,7 +469,17 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   const abandoned: string[] = []
   const completed: { sessionId: string; minutes?: number }[] = []
   const savedNotes: { exerciseId: string; notes: string | null }[] = []
+  const swaps: { workoutExerciseId: string; prescription: Prescription }[] = []
   const session = options.session === undefined ? snapshotFixture() : options.session
+
+  /**
+   * The rows as the double holds them, which `swap` revises the way
+   * `swap_session_exercise` does: supersede in place, append a revision in the
+   * same `slot_id` with `replaces_id` set, and leave the outgoing row's set
+   * logs and `execution_status` exactly as they were.
+   */
+  let stored = session
+  let revisions = 0
 
   const unsupported = <T>(name: string): Promise<Result<T>> => {
     throw new Error(`The workout double was asked for ${name}, which no test wired`)
@@ -460,13 +488,68 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   const sessions: SessionsClient = {
     accept: () => unsupported('accept'),
     start: () => unsupported('start'),
-    swap: () => unsupported('swap'),
-    snapshot: () => unsupported('snapshot'),
     asGenerated: () => unsupported('asGenerated'),
     asIntendedAtStart: () => unsupported('asIntendedAtStart'),
     asPerformed: () => unsupported('asPerformed'),
+    async swap(workoutExerciseId, prescription) {
+      swaps.push({ workoutExerciseId, prescription })
+
+      const outgoing = prescriptionIn(stored, workoutExerciseId)
+      if (outgoing === undefined || outgoing.revision_status !== 'active') {
+        // What the function answers for a row that is not there, or is already
+        // superseded: `not_found` and `invalid_transition` both surface as a
+        // refusal rather than as a second revision of the same predecessor.
+        return err(
+          createError(ErrorCode.PERSISTENCE_NOT_FOUND, {
+            details: { table: 'workout_exercises', exerciseId: workoutExerciseId },
+          }),
+        )
+      }
+
+      revisions += 1
+      const superseded: WorkoutExerciseRow = {
+        ...outgoing,
+        revision_status: 'superseded',
+        superseded_at: '2026-09-24T09:15:00+00:00',
+      }
+      const replacement: WorkoutExerciseRow = {
+        ...outgoing,
+        id: fixtureId('c', revisions),
+        exercise_id: prescription.exercise_id,
+        equipment_used: prescription.equipment,
+        modality: prescription.modality,
+        sets: prescription.sets,
+        target_kind: prescription.target_kind,
+        target_value: prescription.target_value,
+        target_min: prescription.target_min,
+        target_max: prescription.target_max,
+        target_sequence: prescription.target_sequence,
+        per_side: prescription.per_side,
+        distance_unit: prescription.distance_unit,
+        rest_seconds: prescription.rest_seconds,
+        tempo: prescription.tempo,
+        load_type: prescription.load_type,
+        load_value: prescription.load_value,
+        is_interval_exercise: prescription.is_interval_exercise,
+        slot_id: outgoing.slot_id,
+        replaces_id: outgoing.id,
+        origin: 'revised',
+        created_at: '2026-09-24T09:15:00+00:00',
+        superseded_at: null,
+        revision_status: 'active',
+        // A replacement has not been performed. The row it replaced keeps
+        // whatever it had, which is the whole of DATA_MODEL §7's split.
+        execution_status: 'not_started',
+      }
+
+      stored = storedWith(stored, superseded, replacement)
+      return ok({ exercise: replacement, superseded })
+    },
+    async snapshot() {
+      return ok(stored ?? snapshotFixture())
+    },
     async resume() {
-      return ok(session)
+      return ok(stored)
     },
     async abandon(sessionId) {
       abandoned.push(sessionId)
@@ -536,13 +619,68 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.conditioning,
   }
 
+  const candidates: CandidatesClient = {
+    async retrieve() {
+      return ok([...(options.candidateSets ?? [])])
+    },
+    ...options.candidates,
+  }
+
   return {
-    clients: { sessions, blockResults, history, setLogs, exercises, conditioning },
+    clients: {
+      sessions,
+      blockResults,
+      history,
+      setLogs,
+      exercises,
+      conditioning,
+      candidates,
+    },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
     savedNotes: () => [...savedNotes],
+    swaps: () => [...swaps],
+    stored: () => stored,
+  }
+}
+
+/**
+ * The session with one slot revised: the superseded row in place, its set logs
+ * where they were, and the replacement appended to the same block.
+ *
+ * Written out rather than reusing `applySwap` — that is the function under
+ * test in `swap.test.ts`, and a double that stored what the code under test
+ * computed could never disagree with it.
+ */
+function storedWith(
+  snapshot: SessionSnapshot | null,
+  superseded: WorkoutExerciseRow,
+  replacement: WorkoutExerciseRow,
+): SessionSnapshot | null {
+  if (snapshot === null) return null
+
+  return {
+    ...snapshot,
+    sections: snapshot.sections.map((section) => ({
+      ...section,
+      blocks: section.blocks.map((block) => {
+        if (!block.exercises.some((entry) => entry.exercise.id === superseded.id)) {
+          return block
+        }
+
+        return {
+          ...block,
+          exercises: [
+            ...block.exercises.map((entry) =>
+              entry.exercise.id === superseded.id ? { ...entry, exercise: superseded } : entry,
+            ),
+            { exercise: replacement, set_logs: [] },
+          ],
+        }
+      }),
+    })),
   }
 }
 

@@ -56,6 +56,7 @@ import {
   type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
 import { Heading, HeadingSection } from './Heading'
 
@@ -125,6 +126,13 @@ export function ExerciseSetLogger({
         saving={isSaving(exercise.exerciseId)}
         onLog={(performed) => logSet(exercise.exerciseId, performed)}
       />
+
+      {/*
+        EXE-06. Below the set form rather than beside the heading: the rack
+        being taken is the exception, and the movement's own work is what the
+        card is for. Draws nothing outside the workout shell.
+      */}
+      <ExerciseSwapControls exercise={exercise} />
     </HeadingSection>
   )
 }
