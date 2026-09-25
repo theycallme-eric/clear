@@ -38,6 +38,7 @@ import {
   type BlockResultRow,
   type ExerciseSetLogRow,
 } from '../state/schemas'
+import { createAnchorsClient } from './anchors'
 import type { AuthClient } from './auth'
 import { createExercisesClient, type ExercisesClient } from './exercises'
 import { createHistoryClient, type HistoryClient } from './history'
@@ -114,6 +115,14 @@ export function createWorkoutClients({
     return ok(createSessionsClient({ ...supabase, accessToken: accessToken.value }))
   }
 
+  /**
+   * OVR-01a's anchor queries, built the same way and carrying the same token.
+   * It is here rather than on the façade's surface because nothing in `src/`
+   * reads an anchor yet — OVR-01b is what adds a reader — and the one thing
+   * that has to happen now is the recomputation `complete` triggers.
+   */
+  const anchors = createAnchorsClient({ auth, supabase })
+
   const sessions: SessionsClient = {
     async accept(userId, acceptance) {
       const client = await sessionsFor()
@@ -125,7 +134,24 @@ export function createWorkoutClients({
     },
     async complete(sessionId, actualDurationMins) {
       const client = await sessionsFor()
-      return isErr(client) ? client : client.value.complete(sessionId, actualDurationMins)
+      if (isErr(client)) return client
+
+      const completed = await client.value.complete(sessionId, actualDurationMins)
+      if (isErr(completed)) return completed
+
+      // OVR-01a: completion is the only event that can change what the anchor
+      // evidence says, so it is the only place that asks. Here rather than in
+      // the shell because a second caller that completed a session — and
+      // forgot — would leave the table quietly stale, which is the failure
+      // nothing would report.
+      //
+      // Its failure is deliberately not this call's failure. The workout is
+      // finished either way, and refusing the completion because a derived
+      // cache could not be rewritten would lose the session over the number.
+      // Recomputation reads the whole history, so the next one repairs it.
+      await anchors.recompute(completed.value.session.user_id)
+
+      return completed
     },
     async abandon(sessionId) {
       const client = await sessionsFor()

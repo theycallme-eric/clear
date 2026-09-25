@@ -66,6 +66,7 @@ describe('the generated types are current (DATA-03)', () => {
       'exercise_pattern_weights',
       'exercise_set_logs',
       'focus_pattern_map',
+      'load_anchors',
       'location_equipment',
       'locations',
       'profiles',
@@ -160,6 +161,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000007_complete_onboarding.sql',
       '20260921000008_location_writes.sql',
       '20260921000009_session_reconstruction.sql',
+      '20260921000010_load_anchors.sql',
     ])
   })
 
