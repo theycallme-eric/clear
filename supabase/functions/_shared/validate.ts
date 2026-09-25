@@ -47,6 +47,13 @@ import {
 } from '../../../src/state/schemas.ts'
 import { GenerationFailure, type AttemptFailure } from './claude.ts'
 import type { PromptInput } from './prompt.ts'
+import {
+  DELOAD_MIN_SETS,
+  DELOAD_RPE_CAP,
+  DELOAD_SET_FACTOR,
+  RE_ENTRY_RPE_CAP,
+  type SessionDirective,
+} from './training-history.ts'
 
 type GoalPreset = Enums<'goal_preset'>
 
@@ -375,6 +382,10 @@ export const SoftCheck = {
   WARMUP_COVERAGE: 'warmup_coverage',
   VARIETY: 'variety',
   REPETITION: 'repetition',
+  /** OVR-02: a weight the model wrote into prose the app is about to contradict. */
+  NARRATED_LOAD: 'narrated_load',
+  /** OVR-02: what the session directive asked of set counts and of the cues. */
+  DIRECTIVE_COMPLIANCE: 'directive_compliance',
 } as const
 
 export type SoftCheck = (typeof SoftCheck)[keyof typeof SoftCheck]
@@ -717,8 +728,203 @@ function observeRepetition(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// OVR-02 — the two observations about loads and directives
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
- * The four observations, together. Pure, and deliberately called only after the
+ * A weight written in prose: a number with a unit after it, or the bare `#` the
+ * gym writes instead of `lb`.
+ *
+ * Deliberately narrow. It matches a load and not a duration, a percentage, an
+ * RPE or a rep count, because a false positive here is an observation that cries
+ * wolf on every session and therefore an observation nobody reads. `225 lb`,
+ * `102.5kg`, `two plates` spelled with a numeral and `185#` are all loads; `45s
+ * rest`, `70%` and `RPE 8` are not.
+ */
+export const NARRATED_LOAD_PATTERN =
+  /\b\d+(?:\.\d+)?\s*(?:#|lbs?|pounds?|kgs?|kilos?|kilograms?|plates?)\b/i
+
+/**
+ * Every free-text field the model writes, with the path it lives at. The tempo
+ * is here for the same reason the notes are: it is prose the app renders
+ * verbatim, and "3s down at 185 lb" is a narrated weight wherever it is written.
+ */
+function proseFields(workout: GenerationOutput): readonly { path: string; text: string }[] {
+  const fields: { path: string; text: string }[] = [
+    { path: 'title', text: workout.title },
+    { path: 'overview', text: workout.overview ?? '' },
+  ]
+
+  workout.sections.forEach((section, sectionIndex) => {
+    const path = sectionPath(sectionIndex)
+    fields.push({ path: `${path}.section_title`, text: section.section_title })
+    fields.push({ path: `${path}.section_notes`, text: section.section_notes ?? '' })
+
+    section.blocks.forEach((block, blockIndex) => {
+      fields.push({
+        path: `${path}.blocks[${blockIndex}].block_notes`,
+        text: block.block_notes ?? '',
+      })
+
+      block.exercises.forEach((exercise, exerciseIndex) => {
+        fields.push({
+          path: prescriptionPath(
+            { sectionIndex, blockIndex, exerciseIndex, sectionType: section.section_type },
+            'tempo',
+          ),
+          text: exercise.tempo ?? '',
+        })
+      })
+    })
+  })
+
+  return fields
+}
+
+/**
+ * §"Generation Impact": the app fills every load after generation, so a weight
+ * the model narrated is a number the user will read next to a different one.
+ *
+ * Recorded rather than rejected, and the division is the one §6 already draws:
+ * a hard check is something the database refuses, and no constraint can refuse a
+ * sentence. What makes the observation useful anyway is that it names the field —
+ * a cue carrying a weight is a prompt regression, and this is the signal that the
+ * withheld-anchor decision (open question 6) is holding.
+ */
+function observeNarratedLoads(workout: GenerationOutput): SoftObservation {
+  const narrated = proseFields(workout).filter((field) => NARRATED_LOAD_PATTERN.test(field.text))
+
+  return {
+    check: SoftCheck.NARRATED_LOAD,
+    status: narrated.length === 0 ? 'within' : 'outside',
+    summary:
+      narrated.length === 0
+        ? 'no field narrates a weight; every load is the fill’s'
+        : `${narrated.length} field${narrated.length === 1 ? '' : 's'} narrate a weight the fill will contradict`,
+    metrics: { narrated: narrated.length },
+    detail: narrated.map((field) => field.path),
+  }
+}
+
+/**
+ * The working sets each session function is composed at, by intensity — the
+ * system prompt's own REP AND SET GUIDANCE, as the band's upper bound.
+ *
+ * It is a copy of prompt text in code, which is worth naming: the same trade
+ * `GOAL_SHAPES` above makes. A soft observation needs a number, the prompt states
+ * the number as prose, and the alternative to copying it is not observing the
+ * directive at all. A function with no stated band answers `null` and is left
+ * out of the observation rather than measured against a guess.
+ */
+function normalSetCeiling(
+  sessionFunction: Prescription['session_function'],
+  intensity: number,
+): number | null {
+  switch (sessionFunction) {
+    case 'primary':
+      if (intensity <= 3) return 3
+      if (intensity <= 6) return 4
+      if (intensity <= 8) return 5
+      return 6
+    case 'accessory':
+    case 'balance':
+      if (intensity <= 3) return 2
+      if (intensity <= 8) return 3
+      return 4
+    case 'core':
+      return 3
+    default:
+      return null
+  }
+}
+
+/** The exercises the TRAINING HISTORY block noted as a re-entry. */
+function reEntryExercises(input: PromptInput): ReadonlySet<string> {
+  return new Set(
+    input.training.anchors
+      .filter((anchor) => anchor.staleness === 're_entry' || anchor.staleness === 'recalibration')
+      .map((anchor) => anchor.exerciseId),
+  )
+}
+
+/**
+ * §4 and §5 as an observation: did the composition actually do what the directive
+ * asked of it?
+ *
+ * Two halves, because the directive has two halves. **Set counts** — a deload
+ * multiplies the band's ceiling by `DELOAD_SET_FACTOR` and floors it at
+ * `DELOAD_MIN_SETS`; a re-entry takes one working set off the exercises the block
+ * flagged. **Cue language** — both directives have to state their RPE ceiling in
+ * `section_notes`, which is the only place the user reads it, and a cap nobody
+ * was told about is not a cap.
+ *
+ * A `normal` session has nothing to comply with and records that it was composed
+ * without a directive, rather than recording a vacuous pass.
+ */
+function observeDirectiveCompliance(
+  workout: GenerationOutput,
+  input: PromptInput,
+  prescriptions: readonly PrescriptionEntry[],
+): SoftObservation {
+  const directive: SessionDirective = input.training.directive
+  const intensity = input.request.effectiveIntensity
+
+  if (directive === 'normal') {
+    return {
+      check: SoftCheck.DIRECTIVE_COMPLIANCE,
+      status: 'within',
+      summary: 'composed under no directive; set counts and cues are the goal shape’s',
+      metrics: { exercises: prescriptions.length, overSets: 0, capStated: 1 },
+      detail: ['directive:normal'],
+    }
+  }
+
+  const cap = directive === 'deload' ? DELOAD_RPE_CAP : RE_ENTRY_RPE_CAP
+  const flagged = reEntryExercises(input)
+
+  const overSets = prescriptions.filter((entry) => {
+    const { sets } = entry.exercise
+    if (sets === null) return false
+
+    const ceiling = normalSetCeiling(entry.exercise.session_function, intensity)
+    if (ceiling === null) return false
+
+    if (directive === 'deload') {
+      return sets > Math.max(Math.floor(ceiling * DELOAD_SET_FACTOR), DELOAD_MIN_SETS)
+    }
+
+    return flagged.has(entry.exercise.exercise_id) && sets > Math.max(ceiling - 1, 1)
+  })
+
+  // The cap has to be readable, so it has to be in a note the user sees, and it
+  // has to name the number rather than gesture at "taking it easy".
+  const capPattern = new RegExp(`rpe[^.\\n]{0,16}\\b${cap}\\b`, 'i')
+  const capStated = workout.sections.some((section) => capPattern.test(section.section_notes ?? ''))
+
+  const noted = [
+    ...overSets.map((entry) => `sets:${entry.exercise.exercise_id}:${entry.exercise.sets}`),
+    ...(capStated ? [] : [`missing:rpe_${cap}_in_section_notes`]),
+  ]
+
+  return {
+    check: SoftCheck.DIRECTIVE_COMPLIANCE,
+    status: noted.length === 0 ? 'within' : 'outside',
+    summary:
+      noted.length === 0
+        ? `${directive} honoured: set counts inside the directive’s ceiling and the RPE ${cap} cap stated in section_notes`
+        : `${directive} partly honoured: ${overSets.length} exercise${overSets.length === 1 ? '' : 's'} over the set ceiling, RPE ${cap} cap ${capStated ? 'stated' : 'unstated'}`,
+    metrics: {
+      exercises: prescriptions.length,
+      overSets: overSets.length,
+      capStated: capStated ? 1 : 0,
+    },
+    detail: [`directive:${directive}`, ...noted],
+  }
+}
+
+/**
+ * The six observations, together. Pure, and deliberately called only after the
  * hard verdict is already `ok`: nothing it returns can change that verdict
  * because the verdict was reached first.
  */
@@ -735,6 +941,8 @@ export function observeQuality(workout: GenerationOutput, input: PromptInput): Q
       observeWarmupCoverage(prescriptions, enabled),
       observeVariety(prescriptions),
       observeRepetition(workout, input, prescriptions),
+      observeNarratedLoads(workout),
+      observeDirectiveCompliance(workout, input, prescriptions),
     ],
   }
 }

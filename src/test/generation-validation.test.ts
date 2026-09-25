@@ -393,7 +393,7 @@ const observationFor = (record: QualityRecord, check: SoftCheck) =>
   record.observations.find((observation) => observation.check === check)
 
 describe('the soft record', () => {
-  it('is §6’s four checks, in §6’s order', () => {
+  it('is §6’s four checks in §6’s order, then OVR-02’s two', () => {
     const record = observeQuality(composed(), INPUT)
 
     expect(record.observations.map((observation) => observation.check)).toEqual([
@@ -401,6 +401,8 @@ describe('the soft record', () => {
       SoftCheck.WARMUP_COVERAGE,
       SoftCheck.VARIETY,
       SoftCheck.REPETITION,
+      SoftCheck.NARRATED_LOAD,
+      SoftCheck.DIRECTIVE_COMPLIANCE,
     ])
     expect(record.contractVersion).toBe(CONTRACT_VERSION)
   })
@@ -415,7 +417,17 @@ describe('the soft record', () => {
     const statuses = validated.value.quality.observations.map(
       (observation) => observation.status,
     )
-    expect(statuses).toEqual(['outside', 'outside', 'outside', 'outside'])
+    // The last two are OVR-02's, and this workout is poor rather than chatty:
+    // it narrates no weight and was composed under no directive, so both are
+    // honestly `within` while the four §6 checks are all outside.
+    expect(statuses).toEqual([
+      'outside',
+      'outside',
+      'outside',
+      'outside',
+      'within',
+      'within',
+    ])
     expect(validated.value.violations).toEqual([])
   })
 
@@ -573,7 +585,7 @@ describe('validation inside the composer’s one retry', () => {
     if (!composition.ok) return
 
     expect(composition.value.attempts).toBe(1)
-    expect(composition.value.validation?.quality.observations).toHaveLength(4)
+    expect(composition.value.validation?.quality.observations).toHaveLength(6)
   })
 
   it('costs one corrected retry, and the correction names the contract’s code', async () => {

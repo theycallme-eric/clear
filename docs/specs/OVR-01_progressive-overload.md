@@ -321,7 +321,9 @@ Additions to `prompt.ts` (currently v3.1.0):
 4. **Rep-band awareness** — when an exercise shows `progressing` and the goal is hypertrophy, prefer keeping it in the same rep band so double progression has something to progress against. Soft preference, not a constraint. Thematic coherence still wins.
 5. **Stall handling** — an exercise marked `stalled` may be swapped for a close variation, which is often the right response to a plateau. Anchor does **not** transfer to the variation (see §5 no-cross-exercise-inference).
 
-Prompt version bump: **v3.2.0**.
+Prompt version bump: **v3.2.0** — superseded. The prompt was rebuilt as `5.0.0` in GEN-02b (the
+library dump removed, eligibility moved into code), so OVR-02 lands as **`5.1.0`**: additive, with
+`CONTRACT_VERSION` unchanged at `4.1.0` because no output field moved.
 
 ---
 
@@ -349,7 +351,7 @@ Prompt version bump: **v3.2.0**.
 3. **Cross-exercise inference.** Ever? Front squat → back squat ratios are well-documented in the literature but poorly calibrated for one person. Currently ruled out for v1.
 4. **Aggressiveness default.** Should the Settings default be `conservative` for the first 4 weeks, then move to `standard` once anchors have real confidence?
 5. **Anchor smoothing window.** Weighted average of last 3 sessions is a guess. Should it be time-windowed (last 21 days) rather than count-windowed? Count-windowed breaks if you train an exercise twice in 3 months.
-6. **Does the AI need the anchor at all,** or just `progressing / stalled / re_entry` labels? Passing the raw number risks the model narrating weights in coaching cues that then conflict with the computed value. *(Leaning toward: pass the labels and confidence, withhold the number.)*
+6. **Does the AI need the anchor at all,** or just `progressing / stalled / re_entry` labels? Passing the raw number risks the model narrating weights in coaching cues that then conflict with the computed value. **Decided 2026-09-25 (OVR-02): labels and confidence, and the number is withheld.** The `TRAINING HISTORY` block carries `exercise_id | equipment | confidence | sessions | last trained | note` and no `anchor` column; the system prompt forbids computing, stating or narrating a weight anywhere, including `section_notes`, `block_notes`, `tempo` and the overview; and a narrated weight is recorded as the `narrated_load` soft observation so a regression shows up rather than reaching the user. Two reasons: a number in the prompt becomes a number in the cues that contradicts the one `weight-fill.ts` computes, and the model cannot act on the number anyway — it selects and structures, and code fills every load afterwards. Anchors as numbers reach the session through `weight_suggested`, never through the prompt.
 7. **Deload interaction with Favorites.** If a favorited workout is repeated during a deload, does "Previous Best" still show? *(Leaning: show it, but suppress the "beat your time" framing.)*
 8. **What happens to a suggestion the user overrides every time?** If the user consistently logs 20 lb below suggestion, the anchor is wrong. Should repeated downward overrides feed back into the anchor?
 

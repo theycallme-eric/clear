@@ -38,14 +38,28 @@ import {
 } from '../../../src/data/candidates.ts'
 import type { UserConstraint } from '../../../src/data/constraints.ts'
 import { ANCHOR_RELATIONSHIPS, CONTRACT_VERSION, SESSION_FUNCTIONS } from '../../../src/state/schemas.ts'
+import {
+  DELOAD_CONDITIONING_INTENSITY_MAX,
+  DELOAD_MIN_SETS,
+  DELOAD_RPE_CAP,
+  DELOAD_SET_FACTOR,
+  type AnchoredExercise,
+  type SessionDirective,
+  type TrainingHistory,
+} from './training-history.ts'
 
 /**
  * `PROMPT_v4.md`'s own version, and it is 5 rather than 4.1 on purpose:
  * removing the library dump and moving eligibility into code is a major prompt
  * change. It is stamped on every session beside `CONTRACT_VERSION`, which moves
  * independently because the two change for different reasons (§10).
+ *
+ * 5.1.0 is OVR-02: the TRAINING HISTORY block, the directive handling it carries
+ * and the instruction never to compute a load. A minor bump rather than a major
+ * one because nothing was removed and no output field moved — `CONTRACT_VERSION`
+ * is untouched, which is the requirement's own condition for leaving it alone.
  */
-export const PROMPT_VERSION = '5.0.0'
+export const PROMPT_VERSION = '5.1.0'
 
 export { CONTRACT_VERSION }
 
@@ -162,6 +176,14 @@ export interface PromptInput {
   readonly sections: readonly SectionCandidates[]
   readonly history: RecentHistory
   readonly preferences: SoftPreferences
+  /**
+   * OVR-02's block: the anchored exercises, the session directive and the
+   * conditioning trend. Required rather than optional, and required even when
+   * there are no anchors at all — a first session has an empty block and a
+   * `normal` directive, which is a fact worth stating, where a missing field is
+   * a caller that forgot. `buildTrainingHistory(...)` produces it.
+   */
+  readonly training: TrainingHistory
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -232,6 +254,27 @@ LOAD GUIDANCE
 - 7–8: challenging, roughly 70–80%.
 - 9–10: heavy, roughly 80–90%+, only where the goal and candidate role support it.
 Use only the contract's load_type/load_value representation. Never invent a prior-session number.
+Never compute, state or narrate a weight, anywhere, including section_notes, block_notes, tempo and
+the overview. The app fills every suggested load after generation from the user's own logged history;
+a number you write conflicts with the one it computes, and the user is left reading two answers for
+the same set.
+
+TRAINING HISTORY AND DIRECTIVES
+The user message carries a TRAINING HISTORY block: one line per exercise the user has recent capacity
+for, with its confidence, how long since it was trained, and a label. It carries labels and never
+loads, because the loads are filled afterwards by code.
+- SESSION DIRECTIVE normal: compose as the goal shape asks.
+- SESSION DIRECTIVE deload: the same movements rather than novelty. Apply the stated working-set
+  multiplier, hold rep targets where they are, keep conditioning at or below the stated intensity, and
+  state the RPE ceiling in section_notes.
+- SESSION DIRECTIVE re_entry: one fewer working set on every exercise the block notes as re-entry,
+  conservative cues, and the exercise's RPE ceiling stated in section_notes.
+- CONDITIONING TREND ready: add a round, add reps per round, or shorten a time cap by about 10%.
+  hold: keep the density where it was. backing_off: drop a round or lengthen the cap by about 15%.
+An exercise noted stalled may be swapped for a close variation, which is often the right answer to a
+plateau. An exercise noted progressing under a hypertrophy goal is better kept in the same rep band,
+so there is something for added reps to progress against. Both are preferences; goal shape and
+thematic coherence still win.
 
 SECTION COMPOSITION
 - Warmup progresses general movement → dynamic range → activation → specific movement prep.
@@ -425,6 +468,89 @@ function serializeHistory(history: RecentHistory): string {
   return ['RECENT HISTORY', ...(lines.length > 0 ? lines : [NONE])].join('\n')
 }
 
+/**
+ * §"Generation Impact"'s heading, and the sentence that makes the decision on
+ * open question 6 visible to the thing the decision is about: labels only, and
+ * the loads are the app's.
+ */
+const TRAINING_HISTORY_HEADING =
+  'TRAINING HISTORY (labels and confidence only — the app fills every load after generation)'
+
+/** The columns, named once so the rows below need no keys of their own. */
+const TRAINING_HISTORY_COLUMNS = 'exercise_id | equipment | confidence | sessions | last trained | note'
+
+/** `4d ago`, and `today` for a session logged the same day. */
+function lastTrained(days: number): string {
+  return days === 0 ? 'today' : `${days}d ago`
+}
+
+/**
+ * One anchored exercise. Unpadded, because column alignment is whitespace the
+ * request pays for per generation and the header already names the fields.
+ */
+function serializeAnchor(anchor: AnchoredExercise): string {
+  return [
+    anchor.exerciseId,
+    anchor.equipment,
+    anchor.confidence,
+    `${anchor.sessionCount}`,
+    lastTrained(anchor.daysSinceLastSession),
+    anchor.note ?? '',
+  ].join(' | ')
+}
+
+/**
+ * What the directive asks for, as numbers rather than as an adjective.
+ *
+ * §4's "reduced by ~40%" is a multiplier here for the same reason the anchor
+ * itself is withheld: arithmetic is code's. A model told to reduce sets "by about
+ * 40%" rounds in whichever direction suits the session it already meant to
+ * write; a model told to multiply by 0.6 and floor at 2 has been given the answer
+ * and only has to apply it.
+ */
+function directiveRules(directive: SessionDirective): readonly string[] {
+  switch (directive) {
+    case 'deload':
+      return [
+        `working sets × ${DELOAD_SET_FACTOR} rounded down, never below ${DELOAD_MIN_SETS}`,
+        'rep targets unchanged',
+        `conditioning at intensity ${DELOAD_CONDITIONING_INTENSITY_MAX} or lower`,
+        `state the RPE ${DELOAD_RPE_CAP} ceiling in section_notes`,
+      ]
+    case 're_entry':
+      return [
+        'one fewer working set on every exercise noted re-entry',
+        'conservative coaching cues',
+        'state that exercise’s RPE ceiling in section_notes',
+      ]
+    case 'normal':
+      return []
+  }
+}
+
+/**
+ * §"Generation Impact"'s block: the anchored exercises, then the two directive
+ * lines. The directive and the trend are printed whether or not there are
+ * anchors — a first session composes under `normal` and `hold`, and saying so is
+ * cheaper than leaving the model to infer which it is.
+ */
+function serializeTrainingHistory(training: TrainingHistory): string {
+  const rows =
+    training.anchors.length > 0
+      ? [TRAINING_HISTORY_COLUMNS, ...training.anchors.map(serializeAnchor)]
+      : [NONE]
+
+  const rules = directiveRules(training.directive)
+
+  return [
+    TRAINING_HISTORY_HEADING,
+    ...rows,
+    `SESSION DIRECTIVE: ${training.directive}`,
+    ...(rules.length > 0 ? [`DIRECTIVE RULES: ${rules.join(' · ')}`] : []),
+    `CONDITIONING TREND: ${training.conditioningTrend}`,
+  ].join('\n')
+}
+
 /** A constraint's target, in the one line the prompt gives it. */
 function serializeTarget(constraint: UserConstraint): string {
   const { target } = constraint
@@ -455,14 +581,22 @@ function serializePreferences(preferences: SoftPreferences): string {
 }
 
 /**
- * §3's assembly, in §3's order: request, history, preferences, candidates by
- * section, output contract. The order is stable so two recordings of the same
- * request differ only where the request did.
+ * §3's assembly, in §3's order: request, history, training history, preferences,
+ * candidates by section, output contract. The order is stable so two recordings
+ * of the same request differ only where the request did.
+ *
+ * TRAINING HISTORY sits directly after RECENT HISTORY because the two answer the
+ * same question at different resolutions — what has been trained, and what the
+ * training produced — and because everything below it is either a preference or a
+ * set to choose from. It is above the candidates for the reason §"Prompt changes
+ * required" gives: the directive changes how the candidates are used, so it has
+ * to be read before them.
  */
 export function buildUserMessage(input: PromptInput): string {
   return [
     serializeRequest(input.request),
     serializeHistory(input.history),
+    serializeTrainingHistory(input.training),
     serializePreferences(input.preferences),
     ...[...input.sections].sort(bySectionOrder).map(serializeSection),
     ['OUTPUT CONTRACT', OUTPUT_CONTRACT].join('\n'),
@@ -523,6 +657,10 @@ export interface PromptMeasurement {
   readonly totalBytes: number
   readonly sectionCount: number
   readonly candidateCount: number
+  /** How many anchored exercises the TRAINING HISTORY block carried (OVR-02). */
+  readonly anchoredExerciseCount: number
+  /** Which directive the session was composed under, recorded beside the version. */
+  readonly sessionDirective: SessionDirective
 }
 
 const encoder = new TextEncoder()
@@ -531,11 +669,12 @@ export const byteLength = (value: string): number => encoder.encode(value).lengt
 
 export function measurePrompt(
   userMessage: string,
-  sections: readonly SectionCandidates[],
+  input: Pick<PromptInput, 'sections' | 'training'>,
   systemPrompt: string = SYSTEM_PROMPT,
 ): PromptMeasurement {
   const systemBytes = byteLength(systemPrompt)
   const userBytes = byteLength(userMessage)
+  const { sections, training } = input
 
   return {
     promptVersion: PROMPT_VERSION,
@@ -545,6 +684,8 @@ export function measurePrompt(
     totalBytes: systemBytes + userBytes,
     sectionCount: sections.length,
     candidateCount: sections.reduce((total, section) => total + section.candidates.length, 0),
+    anchoredExerciseCount: training.anchors.length,
+    sessionDirective: training.directive,
   }
 }
 
@@ -561,6 +702,6 @@ export function assemblePrompt(input: PromptInput): AssembledPrompt {
   return {
     system: SYSTEM_PROMPT,
     user,
-    measurement: measurePrompt(user, input.sections),
+    measurement: measurePrompt(user, input),
   }
 }
