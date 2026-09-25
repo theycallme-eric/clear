@@ -275,10 +275,11 @@ describe("Claude's duration estimate is diagnostic and stays diagnostic", () => 
     })
   }
 
-  it('is the only thing in the hydrated result that claims to be minutes', () => {
+  it('keeps both duration measurements inside diagnostics', () => {
     expect(minuteFields(hydrated())).toEqual([
       'diagnostics.modelEstimateMins',
       'diagnostics.quality.modelEstimateMins',
+      'diagnostics.quality.computedDurationMins',
     ])
   })
 

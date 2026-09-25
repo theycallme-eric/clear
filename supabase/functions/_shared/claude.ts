@@ -156,6 +156,13 @@ export const GenerationFailure = {
    * it did reads from this object whichever half of the pipeline rejected it.
    */
   INVALID_REFERENCE: 'generation.invalid_reference',
+  /**
+   * Computed work and required rest that cannot fit the requested duration —
+   * GEN-06's check 8 (`duration.ts`), reached through the same validator. The
+   * detail names the overrunning block, so the retry is a specific instruction
+   * and not a blind re-roll (§7).
+   */
+  DURATION_IMPLAUSIBLE: 'generation.duration_implausible',
   /** Both attempts failed. Never retried again. */
   EXHAUSTED: 'generation.exhausted',
 } as const
@@ -377,11 +384,17 @@ export const MAX_ATTEMPTS = 2
  * instruction it cannot act on, and it would change the prompt on a path where
  * an unchanged one is what should be sent again.
  */
+const CORRECTABLE: ReadonlySet<GenerationFailure> = new Set([
+  GenerationFailure.MALFORMED,
+  GenerationFailure.INVALID_REFERENCE,
+  // §7: one targeted retry naming the overrunning block. The detail is the
+  // instruction, which is why a duration failure is corrected rather than
+  // resent unchanged — the same prompt would compose the same overrun.
+  GenerationFailure.DURATION_IMPLAUSIBLE,
+])
+
 function correctionFor(failure: AttemptFailure): RetryFailure | null {
-  return failure.code === GenerationFailure.MALFORMED ||
-    failure.code === GenerationFailure.INVALID_REFERENCE
-    ? { code: failure.code, detail: failure.detail }
-    : null
+  return CORRECTABLE.has(failure.code) ? { code: failure.code, detail: failure.detail } : null
 }
 
 /**
