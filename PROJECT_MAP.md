@@ -110,7 +110,16 @@ validation costs the same single corrected retry a malformed one does — and a 
 without a validator returns `validation: null`, meaning nobody checked rather than nothing was
 wrong. What it deliberately does not do is re-implement checks 4–7: those are `schemas.ts`'s
 discriminated target, its distance and load refinements and its block clock, which ran before this
-module was reached, and a second copy would be the one that drifts. Check 8 is GEN-06's.
+module was reached, and a second copy would be the one that drifts. Check 8 is GEN-06's, and it is
+now the fourth module in that directory: `duration.ts` computes a session's cost from blocks and
+prescriptions — `WORK_PER_SET_SECONDS`, `TRANSITION_SECONDS` and a 20% tolerance are the whole
+allowance model, and Claude's `estimated_duration_mins` is not a parameter of any function in it,
+which is what closes D5. `validateComposition` runs it last, after checks 1–3, and a workout whose
+work and rest cannot fit is rejected with `generation.duration_implausible` and a detail naming the
+overrunning block — never trimmed, because what to cut is composition judgment. The band is
+one-sided on purpose: a fixed work-per-set under-counts real time, so a computed duration below the
+target says something about the allowance rather than about the workout. `computed_duration_mins`
+rides in the quality record beside the model's estimate, for the session row to carry both.
 `HARD_CHECKS` is the requirement's "the correspondence is listed" as data rather than prose — one
 row per check naming the constraint in `20260921000002_workout_domain.sql` that would refuse the row
 — and `src/test/generation-validation.test.ts` reads those declarations back out of the migration and

@@ -24,10 +24,12 @@
  * they are `src/state/schemas.ts`'s discriminated target, its distance-unit and
  * load-value refinements and its block clock, which ran before this module was
  * reached. Restating them would put two answers in the codebase and the second
- * one would drift. Check 8 — duration plausibility — is GEN-06's, and it is
- * absent from `HARD_CHECKS` for the same reason a stub would be worse than
- * nothing: an entry listed as enforced that enforces nothing is exactly the
- * defect `HARD_CHECKS` exists to make impossible.
+ * one would drift. Check 8 — duration plausibility — is computed by GEN-06's
+ * `duration.ts` and run from `validateComposition` below, and it stays out of
+ * `HARD_CHECKS` because that table is the *correspondence*: every row names the
+ * constraint the database would refuse the row with, and no constraint can refuse
+ * a workout for being too long. `DURATION_CHECK` states it beside the seven
+ * rather than leaving a reader counting to eight to conclude it was forgotten.
  *
  * Nothing here parses, hydrates or persists. It lives in `_shared/` beside the
  * prompt and the model client because nothing in the browser bundle may reach
@@ -46,6 +48,7 @@ import {
   type Prescription,
 } from '../../../src/state/schemas.ts'
 import { GenerationFailure, type AttemptFailure } from './claude.ts'
+import { checkDuration, estimateDuration, type WorkoutDuration } from './duration.ts'
 import type { PromptInput } from './prompt.ts'
 import {
   DELOAD_MIN_SETS,
@@ -246,6 +249,28 @@ export const VALIDATOR_CHECKS = HARD_CHECKS.filter((check) => check.gate === 'va
  */
 export const DURATION_CHECK_OWNER = 'GEN-06'
 
+/**
+ * Check 8, as the other seven are stated: the rule, where it runs, what it fails
+ * with. It has no `constraints` because there is nothing in the schema for it to
+ * name — which is a fact about the check and not a gap in it, so the type says so
+ * rather than the list carrying an empty array a test would have to excuse.
+ */
+export const DURATION_CHECK: {
+  readonly number: 8
+  readonly rule: string
+  readonly gate: CheckGate
+  readonly failure: AttemptFailure['code']
+  readonly owner: string
+  readonly module: string
+} = {
+  number: 8,
+  rule: 'Computed duration within tolerance (§7)',
+  gate: 'validator',
+  failure: GenerationFailure.DURATION_IMPLAUSIBLE,
+  owner: DURATION_CHECK_OWNER,
+  module: 'supabase/functions/_shared/duration.ts',
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Hard checks 1–3
 // ─────────────────────────────────────────────────────────────────────────────
@@ -424,6 +449,13 @@ export interface QualityRecord {
    * verdict and every observation are identical.
    */
   readonly modelEstimateMins: number
+  /**
+   * GEN-06's independent estimate, in the units `computed_duration_mins` stores.
+   * It rides beside the model's own so the two can be compared later (§5, §7) —
+   * beside, and never instead of: this is the number validation used, and the one
+   * above it is the number validation ignored.
+   */
+  readonly computedDurationMins: number
   readonly observations: readonly SoftObservation[]
 }
 
@@ -485,10 +517,11 @@ function entries(
  * of the prescribed exercises.
  *
  * The count is a proxy for the session's shape and is named as one: the honest
- * denominator is GEN-06's computed duration, which does not exist yet. When it
- * does, this observation's `metrics` gain a second share computed from minutes
- * and the record's shape does not change — which is the reason to record a
- * number rather than a verdict.
+ * denominator is GEN-06's computed duration, which the record now carries as
+ * `computedDurationMins`. Re-denominating this share in minutes changes what a
+ * soft metric means, so it belongs to the requirement that owns the metric rather
+ * than to check 8 — and the record's shape does not change either way, which is
+ * the reason to record a number rather than a verdict.
  */
 function observeRatios(
   goal: GoalPreset,
@@ -928,7 +961,12 @@ function observeDirectiveCompliance(
  * hard verdict is already `ok`: nothing it returns can change that verdict
  * because the verdict was reached first.
  */
-export function observeQuality(workout: GenerationOutput, input: PromptInput): QualityRecord {
+export function observeQuality(
+  workout: GenerationOutput,
+  input: PromptInput,
+  /** Check 8's estimate, where the verdict already computed it. Recomputed if not. */
+  duration: WorkoutDuration = estimateDuration(workout),
+): QualityRecord {
   const index = candidateIndex(input)
   const prescriptions = entries(workout, index)
   const enabled = new Set(input.request.effectiveSections)
@@ -936,6 +974,7 @@ export function observeQuality(workout: GenerationOutput, input: PromptInput): Q
   return {
     contractVersion: CONTRACT_VERSION,
     modelEstimateMins: workout.estimated_duration_mins,
+    computedDurationMins: duration.minutes,
     observations: [
       observeRatios(input.request.goal, prescriptions),
       observeWarmupCoverage(prescriptions, enabled),
@@ -956,6 +995,7 @@ export function qualityFields(record: QualityRecord): Record<string, unknown> {
   return {
     contractVersion: record.contractVersion,
     modelEstimateMins: record.modelEstimateMins,
+    computedDurationMins: record.computedDurationMins,
     ...Object.fromEntries(
       record.observations.map((observation) => [observation.check, observation.status]),
     ),
@@ -971,6 +1011,12 @@ export function qualityFields(record: QualityRecord): Record<string, unknown> {
 export interface Validated {
   readonly workout: GenerationOutput
   readonly quality: QualityRecord
+  /**
+   * Check 8's whole answer, not only the minutes: the per-block breakdown is what
+   * makes `computed_duration_mins` reviewable later against the model's estimate
+   * rather than a bare number nobody can explain.
+   */
+  readonly duration: WorkoutDuration
   /** Every violation, when there were none. Kept so a caller cannot ask twice. */
   readonly violations: readonly HardViolation[]
 }
@@ -1017,12 +1063,33 @@ export function validateComposition(
     })
   }
 
-  const quality = observeQuality(workout, input)
+  // Check 8, after 1–3 and before anything is recorded. Last of the hard checks
+  // because it is the most expensive to act on — a workout that references an
+  // exercise nobody offered has a wrong duration too, and telling the model about
+  // the clock when the real fault is the candidate set is a wasted retry.
+  const duration = checkDuration(workout, input.request.durationTargetMins)
+
+  if (!duration.fits) {
+    options.logger?.warn('duration implausible', {
+      requestId: options.requestId,
+      computedDurationMins: duration.duration.minutes,
+      targetMins: duration.targetMins,
+      ceilingMins: duration.ceilingMins,
+      overrunMins: duration.overrunMins,
+      // The block, which is a structural fact about the composition. Never an
+      // exercise id: the detail goes to the model, not to the log.
+      block: duration.longestBlock?.path ?? null,
+    })
+
+    return err({ code: GenerationFailure.DURATION_IMPLAUSIBLE, detail: duration.detail })
+  }
+
+  const quality = observeQuality(workout, input, duration.duration)
 
   options.logger?.info('composition quality', {
     requestId: options.requestId,
     ...qualityFields(quality),
   })
 
-  return ok({ workout, quality, violations })
+  return ok({ workout, quality, duration: duration.duration, violations })
 }
