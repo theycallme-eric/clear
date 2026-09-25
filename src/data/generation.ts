@@ -247,6 +247,39 @@ const REQUEST_ID_HEADER = 'x-request-id'
 /** What a caller chooses. The request id is not theirs to pick — it is minted here. */
 export type GenerationInput = Omit<GenerationRequest, 'request_id'>
 
+/**
+ * The four things `generate` does, in the order it does them.
+ *
+ * They are the awaits this module already had rather than a script playing
+ * beside them: a stage is reported when its own work *starts*, so every stage
+ * before the current one is work that genuinely finished. A stage the call
+ * never reaches is never reported — a request refused by §1's bounds stops at
+ * `validating`.
+ *
+ * GEN-05's loading screen is why they are observable at all: "the loader
+ * reflects real stages" cannot be true of a caller that can only see `pending`.
+ * What they deliberately do not give is a *fraction*. `composing` holds
+ * essentially all of the latency, so three stages of four finishing is nothing
+ * like three quarters of the wait, and pattern 2's rule about a fake percentage
+ * being "a lie a screen reader repeats" applies to a stage count just as much.
+ */
+export const GENERATION_STAGES = [
+  'validating',
+  'authorizing',
+  'composing',
+  'reading',
+] as const
+
+export type GenerationStage = (typeof GENERATION_STAGES)[number]
+
+export interface GenerationCallOptions {
+  /**
+   * Called as each stage begins, on the call's own thread. Observation only —
+   * nothing it does can change what the call answers.
+   */
+  readonly onStage?: (stage: GenerationStage) => void
+}
+
 export interface GenerationClientConfig {
   /** Asked for the access token per call, so a rotated token is never stale. */
   readonly auth: Pick<AuthClient, 'getSession'>
@@ -261,7 +294,10 @@ export interface GenerationClient {
    * Composes one workout. Resolves to the validated workout or to a typed
    * error — never to both, and never to a workout nobody generated.
    */
-  generate(input: GenerationInput): Promise<Result<GenerationSuccess, GenerationError>>
+  generate(
+    input: GenerationInput,
+    options?: GenerationCallOptions,
+  ): Promise<Result<GenerationSuccess, GenerationError>>
 }
 
 export function createGenerationClient(config: GenerationClientConfig): GenerationClient {
@@ -270,12 +306,14 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
   const mintRequestId = config.requestId ?? generateRequestId
 
   return {
-    async generate(input) {
+    async generate(input, options = {}) {
       const requestId = mintRequestId()
+      const reachedStage = options.onStage ?? (() => undefined)
 
       // §1's own bounds: an intensity outside 1–10 or a duration of zero is a
       // row `workout_sessions` would refuse, so it is refused here rather than
       // after a model call has been paid for.
+      reachedStage('validating')
       const request = parseBoundary<GenerationRequest>(
         generationRequestSchema,
         { ...input, request_id: requestId },
@@ -285,6 +323,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
         return err(fromAppError(request.error, requestId))
       }
 
+      reachedStage('authorizing')
       const session = await config.auth.getSession()
       if (isErr(session)) {
         return err(fromAppError(session.error, requestId))
@@ -295,6 +334,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
 
       let response: Response
       try {
+        reachedStage('composing')
         response = await fetchImpl(`${base}${FUNCTION_PATH}`, {
           method: 'POST',
           headers: {
@@ -320,6 +360,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
 
       let payload: unknown
       try {
+        reachedStage('reading')
         payload = await response.json()
       } catch {
         // A body that will not read leaves the status as the only fact there is.

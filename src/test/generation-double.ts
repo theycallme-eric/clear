@@ -10,6 +10,7 @@ import type {
   GenerationClient,
   GenerationError,
   GenerationInput,
+  GenerationStage,
 } from '../data/generation'
 import { err, ok, type Result } from '../state/errors'
 import type { GenerationOutput, GenerationSuccess } from '../state/schemas'
@@ -26,14 +27,23 @@ export interface FakeGenerationClient extends GenerationClient {
   succeed(options?: { workout?: GenerationOutput; requestId?: string }): void
   /** Answers the oldest unanswered call with a typed error. */
   fail(error: GenerationError): void
+  /**
+   * Reports a stage on the oldest unanswered call, the way the real client
+   * reports one: as the work begins, on a call still in flight. Deliberately
+   * driven rather than replayed on a timer — a stage sequence a double invents
+   * is exactly the decorative progress GEN-05 must not have.
+   */
+  reachStage(stage: GenerationStage): void
 }
 
 export function createFakeGenerationClient(): FakeGenerationClient {
   const calls: GenerationInput[] = []
   const waiting: ((answer: Answer) => void)[] = []
+  const observers: ((stage: GenerationStage) => void)[] = []
 
   const answer = (value: Answer) => {
     const settle = waiting.shift()
+    observers.shift()
     if (settle === undefined) {
       throw new Error('the generation double was answered with nothing in flight')
     }
@@ -45,8 +55,9 @@ export function createFakeGenerationClient(): FakeGenerationClient {
     get outstanding() {
       return waiting.length
     },
-    generate(input) {
+    generate(input, options = {}) {
       calls.push(input)
+      observers.push(options.onStage ?? (() => undefined))
       return new Promise<Answer>((resolve) => waiting.push(resolve))
     },
     succeed(options = {}) {
@@ -59,6 +70,13 @@ export function createFakeGenerationClient(): FakeGenerationClient {
     },
     fail(error) {
       answer(err(error))
+    },
+    reachStage(stage) {
+      const observer = observers[0]
+      if (observer === undefined) {
+        throw new Error('the generation double reached a stage with nothing in flight')
+      }
+      observer(stage)
     },
   }
 }
