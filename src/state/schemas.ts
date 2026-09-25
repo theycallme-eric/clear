@@ -790,6 +790,27 @@ export const exerciseDefinitionRowSchema = z.object({
 })
 
 /**
+ * `exercise_catalog` (DATA-01a §7) — the same definition plus the two facts
+ * only the view assembles, as GEN-02c's hydration reads them.
+ *
+ * It extends the definition rather than restating it because they are the same
+ * row: the panel reads five columns of it and hydration reads seven, and a
+ * second declaration of `name` is a second chance for the two to disagree.
+ *
+ * `equipment_display_names` is `jsonb NOT NULL DEFAULT '{}'` — a map from an
+ * equipment slug to what the exercise is *called* with it ("Barbell Strict
+ * Press"), not a name for the equipment. An exercise with no entry for the
+ * equipment chosen keeps its own name, so the empty map is a complete answer
+ * and never a missing one.
+ */
+export const exerciseCatalogRowSchema = exerciseDefinitionRowSchema.extend({
+  equipment_display_names: z.record(z.string(), z.string()),
+  muscles: z.array(
+    z.object({ muscle: nonBlank, role: z.enum(Constants.public.Enums.muscle_role) }),
+  ),
+})
+
+/**
  * What `session_snapshot` answers: the session as it currently stands, with
  * the sets already logged against each active prescription. Nested rather than
  * four flat lists because the nesting is the structure — a block's members are
@@ -1159,6 +1180,7 @@ export type WorkoutExerciseRow = z.infer<typeof workoutExerciseRowSchema>
 export type ExerciseSetLogRow = z.infer<typeof exerciseSetLogRowSchema>
 export type BlockResultRow = z.infer<typeof blockResultRowSchema>
 export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
+export type ExerciseCatalogRow = z.infer<typeof exerciseCatalogRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
 export type AnchorEvidenceRow = z.infer<typeof anchorEvidenceRowSchema>
