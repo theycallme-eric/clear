@@ -49,6 +49,7 @@ import {
 import {
   assemblePrompt,
   withRetryCorrection,
+  type AssembledPrompt,
   type PromptInput,
   type PromptMeasurement,
   type RetryFailure,
@@ -112,6 +113,19 @@ export interface ComposerConfig<V = unknown> {
    * handler supplies it.
    */
   readonly validate?: CompositionValidator<V>
+  /**
+   * How the prompt is built, for a caller composing something narrower than a
+   * whole workout. `assemblePrompt` — generation's — by default.
+   *
+   * REV-02's swap is the case this exists for: the same system prompt, the same
+   * candidate set and the same contract, with a directive naming the one slot
+   * being replaced (`docs/specs/generation/exercise-swap.md` §"Prompt
+   * Strategy"). It is a parameter rather than a second composer because the
+   * retry budget, the measurement and the usage record are the contract's, not
+   * generation's — a swap that counted its own retries would be a second answer
+   * to §6's "reject, retry once, then fail typed".
+   */
+  readonly assemble?: (input: PromptInput) => AssembledPrompt
 }
 
 /**
@@ -465,7 +479,7 @@ async function attempt<V>(
 export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
   return {
     async compose(input, requestId) {
-      const prompt = assemblePrompt(input)
+      const prompt = (config.assemble ?? assemblePrompt)(input)
       const logger = config.logger
 
       logger?.info('composing workout', {

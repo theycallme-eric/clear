@@ -20,6 +20,7 @@
  *   supabase/migrations/20260921000009_session_reconstruction.sql
  *   supabase/migrations/20260921000010_load_anchors.sql
  *   supabase/migrations/20260921000011_conditioning_history.sql
+ *   supabase/migrations/20260921000012_swap_session_block.sql
  */
 
 export type Json =
@@ -818,6 +819,13 @@ export type Database = {
           p_limit?: number | null
         }
         Returns: { session_id: string; completed_at: string; counts_for_streak: boolean }[]
+      }
+      swap_session_block: {
+        Args: {
+          p_block_id: string
+          p_revisions: Json
+        }
+        Returns: Json
       }
       swap_session_exercise: {
         Args: {
