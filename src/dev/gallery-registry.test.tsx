@@ -90,6 +90,14 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
     'EXE-07 — the unsynced-set count of a live session, read from the shell’s set-log queue',
   SaveStatusLine:
     'SET-01/SET-02 — live save state beside its owning form; the settings screens frame it in context',
+  // EXE-06's swap. The controls exist only where the shell provides the seam,
+  // and the dialog's subject is a candidate read for one slot of a live
+  // session — the four states it draws are that read's, so a specimen would be
+  // framing an invented retrieval rather than the panel.
+  ExerciseSwapControls:
+    'EXE-06 — the swap affordance on a live prescription; nothing to show outside the shell',
+  SwapDialog:
+    'EXE-06 — the alternatives for one slot of a live session, opened by the shell’s provider',
 }
 
 /** Components exported from a module, in source order. */
