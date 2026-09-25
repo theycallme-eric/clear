@@ -40,6 +40,7 @@ import {
 } from '../state/schemas'
 import { createAnchorsClient } from './anchors'
 import type { AuthClient } from './auth'
+import { createCandidatesClient, type CandidatesClient } from './candidates'
 import { createConditioningClient, type ConditioningClient } from './conditioning'
 import { createExercisesClient, type ExercisesClient } from './exercises'
 import { createHistoryClient, type HistoryClient } from './history'
@@ -89,6 +90,15 @@ export interface WorkoutClients {
    * more — and read by the shell, which is where a block is completed.
    */
   readonly conditioning: ConditioningClient
+  /**
+   * GEN-02a's retrieval, read by EXE-06's mid-workout swap. It is generation's
+   * own candidate query and not a second one, which is the requirement: the
+   * alternatives offered for a slot respect the same equipment and limitation
+   * predicates, evaluated against the location the session is being performed
+   * at. Here for the reason `history` is — the token as it is at the moment of
+   * the call, and nothing more.
+   */
+  readonly candidates: CandidatesClient
 }
 
 export interface WorkoutClientsConfig {
@@ -315,7 +325,27 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults, history, setLogs, exercises, conditioning }
+  const candidates: CandidatesClient = {
+    async retrieve(request) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+
+      return createCandidatesClient({
+        ...supabase,
+        accessToken: accessToken.value,
+      }).retrieve(request)
+    },
+  }
+
+  return {
+    sessions,
+    blockResults,
+    history,
+    setLogs,
+    exercises,
+    conditioning,
+    candidates,
+  }
 }
 
 /**
@@ -351,5 +381,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     setLogs: { log: refusal },
     exercises: { definition: refusal, saveNotes: refusal },
     conditioning: { history: refusal },
+    candidates: { retrieve: refusal },
   }
 }
