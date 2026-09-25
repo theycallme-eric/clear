@@ -85,6 +85,25 @@ from `src/test/generation-envelope.test.ts` rather than by deploying it — and 
 matters most is a negative one: defect D3 logged every request header, and now no header map,
 request object or access token reaches a logger at all.
 
+GEN-02b adds the two modules that sit inside that shell, and they are in `_shared/` for the reason
+the envelope is: nothing in the browser bundle may reach a prompt or the client that sends one, and
+`npm run build` is what proves it — no file under `src/` imports either. `prompt.ts` is
+`PROMPT_v4.md` version `5.0.0` as pure functions: §2's system prompt (a copy of the spec's fenced
+block, held to it byte for byte by `src/test/generation-prompt.test.ts`), §3's user message in its
+fixed order, §4's retry addendum, and a deterministic candidate serializer — section-enum order,
+then exercise id — so two recordings of one request differ only where the request did. What it does
+*not* assemble is the point of the version bump: no exercise library, no rule GEN-02a's `WHERE`
+clause already enforces, and no name, cue or regression, because those are hydrated by id after
+validation. The active-recovery clamp lives here too, applied to the request rather than checked on
+the output, since the system prompt states the 1–3 range as an accomplished fact. `claude.ts` is the
+call: `ANTHROPIC_API_KEY` reaches it as an argument from `Deno.env.get` and leaves in one request
+header, the response is parsed against CORE-03's `generationOutputSchema`, and a typed failure buys
+exactly one corrected retry before `generation.exhausted`. There is no third attempt and no shape it
+can return but a parsed workout or an `AppError` — D2's mock workout has nowhere to live. Validating
+what comes back against *that section's* candidates, and persisting it, is GEN-02c's; until it
+lands, `generate-workout/index.ts` still refuses, typed, rather than answering with a workout nobody
+checked.
+
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
 documented variables hold real values and the hosted Supabase project answers. The preflight
