@@ -63,7 +63,7 @@ describe('AppChrome (CORE-05)', () => {
       await user.click(screen.getByRole('link', { name: 'Return to CLEAR' }))
 
       expect(
-        screen.getByRole('heading', { level: 1, name: 'CLEAR' }),
+        screen.getByRole('heading', { level: 1, name: 'Today' }),
       ).toHaveFocus()
       const status = announcer()
       expect(status).toHaveAttribute('aria-live', 'polite')

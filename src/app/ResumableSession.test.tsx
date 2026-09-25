@@ -46,9 +46,6 @@ const SECTIONS: SectionFixture[] = [
 
 const ABANDON_CONFIRM = 'Abandon workout?'
 
-/** Home's placeholder, so a test can prove it stayed there. */
-const HOME_COPY = 'Workout generation is being rebuilt.'
-
 function activeSession() {
   return snapshotFixture({
     sections: SECTIONS,
@@ -155,7 +152,7 @@ describe('Home — abandoning from the resumption card', () => {
     // Abandoned is a state, not a delete: the transition is the disposition.
     await waitFor(() => expect(double.abandoned()).toEqual([FIXTURE_SESSION_ID]))
     expect(await screen.findByText('No workout in progress')).toBeInTheDocument()
-    expect(screen.getByText(HOME_COPY)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
   })
 
   it('forgets the shell’s section record when it abandons', async () => {

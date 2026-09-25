@@ -44,7 +44,7 @@ describe('Welcome', () => {
     await waitFor(() => {
       expect(screen.queryByRole('button', { name: 'Sign in' })).not.toBeInTheDocument()
     })
-    // Home is the app shell for now; the onboarding question is AUTH-03's.
-    expect(screen.getByText('Workout generation is being rebuilt.')).toBeInTheDocument()
+    // Home is the authenticated daily entry point; onboarding remains AUTH-03's.
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
   })
 })

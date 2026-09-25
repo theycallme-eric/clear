@@ -209,7 +209,7 @@ describe('AUTH-03 guards, rendered', () => {
     expect(
       await screen.findByRole('button', { name: 'Sign in' }),
     ).toBeInTheDocument()
-    expect(screen.queryByText('Workout generation is being rebuilt.')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Today' })).toBeNull()
   })
 
   it('waits for the session rather than guessing which screen to show', () => {
@@ -254,7 +254,7 @@ describe('AUTH-03 guards, rendered', () => {
     await user.click(within(alert).getByRole('button', { name: 'Try again' }))
 
     expect(
-      await screen.findByText('Workout generation is being rebuilt.'),
+      await screen.findByRole('heading', { name: 'Today' }),
     ).toBeInTheDocument()
     expect(userData.profileCalls).toEqual(['user-1', 'user-1'])
   })
@@ -304,7 +304,7 @@ describe('AUTH-03 guards, rendered', () => {
     expect(within(alert).getByText('Your session couldn’t be confirmed')).toBeInTheDocument()
     expect(within(alert).getByRole('button', { name: 'Sign in again' })).toBeInTheDocument()
     // Not silently bounced to Welcome, and not shown the app either.
-    expect(screen.queryByText('Workout generation is being rebuilt.')).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Today' })).toBeNull()
   })
 
   it('keeps an authenticated visitor off the public-only routes', async () => {
@@ -313,7 +313,7 @@ describe('AUTH-03 guards, rendered', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText(/email/i)).toBeNull()
     })
-    expect(screen.getByText('Workout generation is being rebuilt.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
   })
 
   it('never reads the profile for a visitor on a public-only route', async () => {
@@ -335,7 +335,7 @@ describe('AUTH-03 guards, rendered', () => {
 
     // Locations failed; the profile is what the gate reads, so the user is in.
     expect(
-      await screen.findByText('Workout generation is being rebuilt.'),
+      await screen.findByRole('heading', { name: 'Today' }),
     ).toBeInTheDocument()
     expect(userData.locationCalls).toEqual(['user-1'])
   })
@@ -345,7 +345,7 @@ describe('AUTH-03 guards, rendered', () => {
     const userData = createFakeUserDataClient()
 
     renderApp(['/'], { auth, userData, queryClient: new QueryClient() })
-    await screen.findByText('Workout generation is being rebuilt.')
+    await screen.findByRole('heading', { name: 'Today' })
 
     // Same user, new access token — four times, as a refresh loop would.
     // `act` so each one is really flushed: an emit that changed nothing would
@@ -360,7 +360,7 @@ describe('AUTH-03 guards, rendered', () => {
     }
 
     await waitFor(() => {
-      expect(screen.getByText('Workout generation is being rebuilt.')).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
     })
     expect(userData.profileCalls).toEqual(['user-1'])
     expect(userData.locationCalls).toEqual(['user-1'])

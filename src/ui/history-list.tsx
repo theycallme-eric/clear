@@ -18,6 +18,7 @@
  *     `Partial`, `Not started` — a glyph beside each, never a glyph alone.
  */
 import type { CSSProperties, ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 
 import { CircleCheck, CircleX, Pause, Rest } from '../design-system/index'
 import {
@@ -74,19 +75,35 @@ const TITLE_STYLE: CSSProperties = {
 
 export interface WorkoutListItemProps {
   entry: HistoryEntry
+  /**
+   * Where this workout opens, when it opens anywhere. HOME-01's recents link
+   * into HIST-01's detail; the History screen's own list does not yet, so the
+   * link is a prop rather than a fact about the row. A rest run is never a
+   * link — there is no session behind it to open.
+   */
+  to?: string
 }
 
 /** One entry of the chronology: a workout, or the gap before it. */
-export function WorkoutListItem({ entry }: WorkoutListItemProps) {
-  return entry.kind === 'rest' ? <RestItem entry={entry} /> : <SessionItem entry={entry} />
+export function WorkoutListItem({ entry, to }: WorkoutListItemProps) {
+  return entry.kind === 'rest' ? (
+    <RestItem entry={entry} />
+  ) : (
+    <SessionItem entry={entry} to={to} />
+  )
 }
 
-function SessionItem({ entry }: { entry: HistorySessionEntry }) {
+function SessionItem({ entry, to }: { entry: HistorySessionEntry; to?: string }) {
   return (
     <HeadingSection>
       <Card>
         <p style={META_STYLE}>{formatDay(entry.day)}</p>
-        <Heading style={TITLE_STYLE}>{entry.title}</Heading>
+        {/* The title carries the link rather than the whole card: an
+            accessible name is the name of the workout, not every fact
+            printed beside it. */}
+        <Heading style={TITLE_STYLE}>
+          {to === undefined ? entry.title : <Link to={to}>{entry.title}</Link>}
+        </Heading>
         <p style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-200)' }}>
           <span style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)' }}>
             <span aria-hidden="true" style={{ display: 'flex' }}>

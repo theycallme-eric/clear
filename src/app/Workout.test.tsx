@@ -114,8 +114,8 @@ function isDialogOpen(title: string): boolean {
   return openDialogs().some((dialog) => dialog.querySelector('h2')?.textContent === title)
 }
 
-/** Home's placeholder, which is where both exits land. */
-const HOME_COPY = 'Workout generation is being rebuilt.'
+/** Home's page heading, which is where both exits land. */
+const HOME_HEADING = 'Today'
 
 const ABANDON_CONFIRM = 'Abandon workout?'
 
@@ -161,7 +161,7 @@ describe('Workout — the four states', () => {
   it('sends a visitor with no running session Home rather than rendering an empty shell', async () => {
     mountWorkout({ session: null })
 
-    expect(await screen.findByText(HOME_COPY)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(screen.queryByRole('navigation', { name: 'Workout sections' })).not.toBeInTheDocument()
   })
 
@@ -170,7 +170,7 @@ describe('Workout — the four states', () => {
     // workout that is actually running.
     mountWorkout({ session: snapshotFixture({ state: 'prescribed', startedAt: null }) })
 
-    expect(await screen.findByText(HOME_COPY)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
   })
 })
 
@@ -282,7 +282,7 @@ describe('Workout — the focus mode', () => {
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     // Still here: nothing was abandoned, and nothing was left behind.
     expect(screen.getByRole('heading', { level: 1, name: 'Workout' })).toBeInTheDocument()
-    expect(screen.queryByText(HOME_COPY)).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: HOME_HEADING })).not.toBeInTheDocument()
     expect(double.abandoned()).toEqual([])
   })
 
@@ -317,7 +317,7 @@ describe('Workout — the focus mode', () => {
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
 
-    expect(await screen.findByText(HOME_COPY)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     // Abandoned is a state, not a delete: the transition is what HOME-01 reads.
     expect(double.abandoned()).toEqual([FIXTURE_SESSION_ID])
     expect(router.state.location.pathname).toBe('/')
@@ -347,7 +347,7 @@ describe('Workout — the focus mode', () => {
     await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
-    expect(await screen.findByText(HOME_COPY)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(double.completed()).toEqual([{ sessionId: FIXTURE_SESSION_ID, minutes: 12 }])
     expect(router.state.location.pathname).toBe('/')
     expect(double.abandoned()).toEqual([])
