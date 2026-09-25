@@ -254,6 +254,8 @@ function minutesFrom(text: string): number | null {
 export function requestFrom(
   draft: GenerationDraft,
   requestId: string,
+  /** OVR-04: whether the user applied the suggested deload. Never inferred. */
+  deload = false,
 ): Result<GenerationRequest, AppError> {
   return parseBoundary<GenerationRequest>(
     generationRequestSchema,
@@ -264,6 +266,7 @@ export function requestFrom(
       requested_duration_mins: minutesFrom(draft.durationMins),
       location_id: draft.locationId,
       notes: draft.notes.trim() === '' ? null : draft.notes.trim(),
+      deload,
     },
     { code: ErrorCode.GENERATION_INVALID_PARAMS, requestId },
   )
@@ -334,5 +337,6 @@ export function inputFrom(request: GenerationRequest): GenerationInput {
     requested_duration_mins: request.requested_duration_mins,
     location_id: request.location_id,
     notes: request.notes,
+    deload: request.deload,
   }
 }
