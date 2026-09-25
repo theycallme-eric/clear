@@ -24,6 +24,8 @@ import {
 } from '../state/appearance'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
+import { MOOD_SCALE } from '../state/mood'
+import type { BlockDetailView, SectionDetailView } from '../state/session-detail'
 import type { LadderRung } from '../state/ladder'
 import { toastQueue } from '../state/toasts'
 import {
@@ -42,7 +44,14 @@ import { CollapsibleSection } from '../ui/collapsible-section'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
+import { MoodReading } from '../ui/mood'
 import { Select } from '../ui/select'
+import {
+  LoggedSetTable,
+  SessionProvenance,
+  SessionSectionCard,
+  StructureResultBadge,
+} from '../ui/session-detail'
 import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import type { AtmosphereLevel } from '../app/atmosphere'
@@ -182,6 +191,120 @@ function HistoryListMixed() {
 
 function HistoryListEmpty() {
   return <HistoryList entries={[]} label="Workout history" />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HIST-01 — session detail readings
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
+  id: 'gallery-detail-block',
+  identity: {
+    label: 'CIRCUIT',
+    detail: '4 ROUNDS',
+    repScheme: null,
+    glyph: 'Circuit',
+  },
+  scored: true,
+  outcome: [
+    { label: 'Rounds', value: '4 of 4' },
+    { label: 'Elapsed', value: '08:12' },
+  ],
+  perceivedEffort: '8 of 10',
+  notes: 'Moved cleanly through the final round.',
+  exercises: [
+    {
+      id: 'gallery-detail-exercise',
+      name: 'Back squat',
+      prescription: '3 × 8',
+      status: 'completed',
+      statusLabel: 'Done',
+      lineage: 'prescribed',
+      lineageLabel: null,
+      sets: [
+        {
+          key: 'gallery-detail-set',
+          setNumber: 1,
+          isWarmup: false,
+          reps: '8 reps',
+          weight: '60 kg',
+          rpe: 'RPE 8',
+          duration: null,
+          distance: null,
+        },
+      ],
+    },
+  ],
+}
+
+const SAMPLE_DETAIL_SECTION: SectionDetailView = {
+  id: 'gallery-detail-section',
+  title: 'Primary work',
+  type: 'primary_lift',
+  blocks: [SAMPLE_DETAIL_BLOCK],
+}
+
+function SessionProvenancePerformed() {
+  return (
+    <SessionProvenance
+      provenance={{ kind: 'performed', label: 'As performed', asOf: '24 Sep 2026, 09:00' }}
+    />
+  )
+}
+
+function SessionProvenanceUnresolved() {
+  return (
+    <SessionProvenance
+      provenance={{ kind: 'intended_at_start', label: 'As intended at start', asOf: null }}
+    />
+  )
+}
+
+function StructureResultBadgeScored() {
+  return <StructureResultBadge block={SAMPLE_DETAIL_BLOCK} />
+}
+
+function StructureResultBadgeUnscored() {
+  return (
+    <StructureResultBadge
+      block={{
+        ...SAMPLE_DETAIL_BLOCK,
+        scored: false,
+        outcome: [],
+        perceivedEffort: null,
+        notes: null,
+      }}
+    />
+  )
+}
+
+function LoggedSetTableRecorded() {
+  return (
+    <LoggedSetTable
+      sets={SAMPLE_DETAIL_BLOCK.exercises[0].sets}
+      label="Sets logged for back squat"
+    />
+  )
+}
+
+function LoggedSetTableEmpty() {
+  return <LoggedSetTable sets={[]} label="Sets logged for back squat" />
+}
+
+function SessionSectionCardExpanded() {
+  return <SessionSectionCard section={SAMPLE_DETAIL_SECTION} />
+}
+
+function SessionSectionCardCollapsed() {
+  return <SessionSectionCard section={SAMPLE_DETAIL_SECTION} defaultExpanded={false} />
+}
+
+function MoodReadingRecorded() {
+  return <MoodReading step={MOOD_SCALE[3]} />
+}
+
+function MoodReadingUnanswered() {
+  return <MoodReading step={null} />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -809,6 +932,65 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'empty entries',
         note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
         Render: HistoryListEmpty,
+      },
+    ],
+  },
+  {
+    component: 'SessionProvenance',
+    requirement: 'HIST-01',
+    module: 'src/ui/session-detail.tsx',
+    summary:
+      'Names which reconstruction is being read and the moment it resolves, including an explicit unresolved state.',
+    specimens: [
+      { state: 'performed, resolved', Render: SessionProvenancePerformed },
+      { state: 'intended, unresolved', Render: SessionProvenanceUnresolved },
+    ],
+  },
+  {
+    component: 'StructureResultBadge',
+    requirement: 'HIST-01',
+    module: 'src/ui/session-detail.tsx',
+    summary:
+      'Pairs the workout structure with its logged outcome and perceived effort without treating absent scores as zero.',
+    specimens: [
+      { state: 'scored circuit', Render: StructureResultBadgeScored },
+      { state: 'not scored', Render: StructureResultBadgeUnscored },
+    ],
+  },
+  {
+    component: 'LoggedSetTable',
+    requirement: 'HIST-01',
+    module: 'src/ui/session-detail.tsx',
+    summary:
+      'Reads weight, reps, and RPE as a named table while preserving the difference between zero and not logged.',
+    specimens: [
+      { state: 'one recorded set', Render: LoggedSetTableRecorded },
+      { state: 'no recorded sets', Render: LoggedSetTableEmpty },
+    ],
+  },
+  {
+    component: 'SessionSectionCard',
+    requirement: 'HIST-01',
+    module: 'src/ui/session-detail.tsx',
+    summary:
+      'Frames one historical workout section with its blocks, outcomes, prescriptions, lineage, and logged sets.',
+    specimens: [
+      { state: 'expanded', Render: SessionSectionCardExpanded },
+      { state: 'collapsed', Render: SessionSectionCardCollapsed },
+    ],
+  },
+  {
+    component: 'MoodReading',
+    requirement: 'HIST-01',
+    module: 'src/ui/mood.tsx',
+    summary:
+      'Reports a stored mood with glyph, word, and numeric scale; an unanswered debrief stays explicitly unanswered.',
+    specimens: [
+      { state: 'recorded', Render: MoodReadingRecorded },
+      {
+        state: 'unanswered',
+        note: 'No neutral value is invented for an unanswered debrief.',
+        Render: MoodReadingUnanswered,
       },
     ],
   },
