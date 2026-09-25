@@ -73,6 +73,23 @@ never the model's (D5). The catalog read is `fetch` against PostgREST rather tha
 the caller's own token, since `exercise_catalog` is `security_invoker` and needs no privilege the
 caller does not already hold.
 
+## Persistence is one request, on purpose
+
+`_shared/persist.ts` writes the validated, hydrated workout by calling `persist_session` — SES-01a's
+function, which writes sessions → sections → blocks → exercises in one transaction. Nothing here
+assembles that transaction, and that is the design: PostgREST runs one request in one transaction, so
+a module that makes exactly one request inherits atomicity, while four inserts issued from a function
+could not be given it. There is also no retry after a failed write. A generation retries once
+(`claude.ts`); a write cannot, because the session id is minted by the database and a second attempt
+cannot tell "not written" from "written and the answer was lost".
+
+`prompt_version` and `contract_version` are read off the `HydratedWorkout`, never off the constants in
+`prompt.ts`, so a session records the versions it was composed under. Hydration's catalog facts do not
+reach a row — `workout_exercises` stores the prescription and the id it points at, and copying a name
+into it would be the drift §8 exists to prevent. Claude's `estimated_duration_mins` travels in the
+payload because `generationOutputSchema` requires the field and `persist_session` reads it nowhere
+(D5).
+
 ## Testing
 
 The envelope is a plain `(Request) => Promise<Response>` and touches no runtime global, so it is
