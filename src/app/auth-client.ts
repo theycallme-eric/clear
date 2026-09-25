@@ -95,6 +95,18 @@ function unconfiguredUserDataClient(): UserDataClient {
     async updatePreferences() {
       return failure()
     },
+    async locationEquipment() {
+      return failure()
+    },
+    async saveLocation() {
+      return failure()
+    },
+    async setDefaultLocation() {
+      return failure()
+    },
+    async deleteLocation() {
+      return failure()
+    },
   }
 }
 

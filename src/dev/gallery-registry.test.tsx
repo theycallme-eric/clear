@@ -88,6 +88,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // queue and a dead signal before there was anything on screen to review.
   SetSyncNotice:
     'EXE-07 — the unsynced-set count of a live session, read from the shell’s set-log queue',
+  SaveStatusLine:
+    'SET-01/SET-02 — live save state beside its owning form; the settings screens frame it in context',
 }
 
 /** Components exported from a module, in source order. */

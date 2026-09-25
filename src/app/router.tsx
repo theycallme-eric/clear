@@ -9,6 +9,7 @@ import { AppChrome } from './AppChrome'
 import { AppShell } from './AppShell'
 import { Protected, PublicOnly } from './guards'
 import { Login } from './Login'
+import { LocationSettings } from './LocationSettings'
 import { NotFound } from './NotFound'
 import { RootLayout } from './RootLayout'
 import { Settings } from './Settings'
@@ -123,6 +124,14 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="Settings">
                 <Settings />
+              </Protected>
+            ),
+          },
+          {
+            path: '/settings/locations',
+            element: (
+              <Protected title="Places and equipment">
+                <LocationSettings />
               </Protected>
             ),
           },

@@ -434,6 +434,50 @@ export const locationSchema = z.object({
  */
 export const locationListSchema = z.array(locationSchema)
 
+/**
+ * `location_equipment`, as SET-02 reads it: the ids, already ordered by the
+ * query. One row per item is the table's shape (DATA-01b §5); the screen and
+ * generation both want the list, so the list is what the boundary answers.
+ */
+export const locationEquipmentRowSchema = z.object({
+  location_id: z.uuid(),
+  equipment_id: nonBlank,
+  created_at: timestamp,
+})
+
+export const locationEquipmentListSchema = z.array(locationEquipmentRowSchema)
+
+/**
+ * What SET-02 sends `save_location`: one place, and everything in it.
+ *
+ * Strict, like every other write that becomes a transaction. `id` is `null` for
+ * a place being created — the function's own `p_location_id default null` says
+ * the same thing — and the equipment array may be empty, because a location
+ * with nothing in it is a real answer (it simply makes nothing eligible).
+ *
+ * The bounds are the database's: `locations_name_not_blank` and
+ * `location_equipment_id_not_blank`. A draft that validates is one the
+ * transaction can commit, and one that does not never opens it.
+ */
+export const locationDraftSchema = z.strictObject({
+  id: z.uuid().nullable(),
+  name: nonBlank,
+  tier: equipmentTierSchema,
+  equipment: z.array(nonBlank),
+})
+
+/**
+ * What `save_location` answers: the committed row and the equipment as stored.
+ *
+ * Both, because both are cache entries the screen holds — the list of places and
+ * that place's equipment. A client that had to re-read after saving would show
+ * the location it just wrote with the equipment it had before.
+ */
+export const locationSetupSchema = z.object({
+  location: locationSchema,
+  equipment: z.array(nonBlank),
+})
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Onboarding — ONB-01
 // ─────────────────────────────────────────────────────────────────────────────
@@ -920,6 +964,8 @@ export type GenerationResponse = z.infer<typeof generationResponseSchema>
 export type Profile = z.infer<typeof profileSchema>
 export type ProfilePreferences = z.infer<typeof profilePreferencesSchema>
 export type Location = z.infer<typeof locationSchema>
+export type LocationDraft = z.infer<typeof locationDraftSchema>
+export type LocationSetup = z.infer<typeof locationSetupSchema>
 export type OnboardingAnswers = z.infer<typeof onboardingAnswersSchema>
 export type OnboardingCommit = z.infer<typeof onboardingCommitSchema>
 export type UserConstraintRow = z.infer<typeof userConstraintRowSchema>
