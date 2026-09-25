@@ -56,6 +56,23 @@ before it observes anything. A rejection costs exactly one corrected retry, coun
 which receives validation as an optional function rather than an import — a composer configured
 without one returns `validation: null`, which means nobody checked and never that nothing was wrong.
 
+## Hydration is what the model is not asked for
+
+`_shared/hydrate.ts` is §8: after validation and before persistence, the name, the equipment-resolved
+display name, the coaching cues, the regression reference and the muscle coverage are read from
+`exercise_catalog` by id. Contract v4.1 removed those fields from what Claude returns and
+`generationOutputSchema` is strict, so a response reproducing one is rejected before hydration is
+reached — drift is structurally impossible rather than something a check has to notice.
+
+Two properties the module is shaped to keep. `hydrateWorkout` takes a `Validated`, which only
+`validateComposition` produces, so hydrating an unchecked workout does not compile. And
+`HydratedWorkout` has no duration field: Claude's `estimated_duration_mins` is carried once, as
+`diagnostics.modelEstimateMins`, because the session's minutes are the request's and GEN-06's and
+never the model's (D5). The catalog read is `fetch` against PostgREST rather than
+`src/data/supabase.ts` — that client's extensionless imports do not resolve here — and it reads with
+the caller's own token, since `exercise_catalog` is `security_invoker` and needs no privilege the
+caller does not already hold.
+
 ## Testing
 
 The envelope is a plain `(Request) => Promise<Response>` and touches no runtime global, so it is

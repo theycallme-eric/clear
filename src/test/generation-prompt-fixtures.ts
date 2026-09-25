@@ -26,6 +26,7 @@ import type {
   SectionType,
 } from '../data/candidates'
 import type { UserConstraint } from '../data/constraints'
+import { exerciseCatalogRowSchema, type ExerciseCatalogRow } from '../state/schemas'
 import {
   resolveEffectiveRequest,
   type PromptInput,
@@ -211,6 +212,44 @@ export function sectionFixture(
   relaxed = false,
 ): SectionCandidates {
   return { section, relaxed, candidates: exerciseIds.map((id) => CANDIDATE_LIBRARY[id]) }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The catalog, as GEN-02c's hydration reads it
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The same captured row, shaped as `exercise_catalog` returns it. Every fact
+ * §8 hydrates is real: `back-squat`'s regression really is `goblet-squat`,
+ * `glute-bridge` really does carry three `equipment_display_names` and
+ * `back-squat` really carries none, so the resolution rule is exercised
+ * against the library rather than against a map written to make it pass.
+ *
+ * Parsed through `exerciseCatalogRowSchema` on the way out, which makes a
+ * fixture that stops matching the contract a failure here rather than a test
+ * passing against a shape the reader would refuse.
+ */
+export function catalogRowFixture(exerciseId: string): ExerciseCatalogRow {
+  const row = definitions.get(exerciseId)
+  if (!row) throw new Error(`${exerciseId} is not in the captured catalog`)
+
+  return exerciseCatalogRowSchema.parse({
+    id: exerciseId,
+    name: row.name,
+    coaching_cues: pgArray(row.coaching_cues),
+    // The capture writes an unset reference as an empty field; the column is
+    // nullable and "no easier variant authored" is what it means.
+    regression: row.regression === '' ? null : row.regression,
+    progression: row.progression === '' ? null : row.progression,
+    equipment_display_names:
+      row.equipment_display_names === '' ? {} : JSON.parse(row.equipment_display_names),
+    muscles: musclesById.get(exerciseId) ?? [],
+  })
+}
+
+/** Those rows for a set of ids, the way a catalog read answers. */
+export function catalogRowFixtures(exerciseIds: readonly string[]): ExerciseCatalogRow[] {
+  return exerciseIds.map(catalogRowFixture)
 }
 
 /** The request these tests measure: a 45-minute strength session at 8. */
