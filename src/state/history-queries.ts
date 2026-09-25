@@ -25,6 +25,7 @@ import { HISTORY_PAGE_SIZE, type HistoryPage } from '../data/history'
 import { useAuth } from './auth-context'
 import { createError, err, ErrorCode, type Result } from './errors'
 import { useQuery, type QueryResult } from './query'
+import type { SessionReconstruction } from './schemas'
 import { useWorkoutClients } from './workout-queries'
 
 /**
@@ -80,6 +81,57 @@ export function useHistoryQuery(enabled = true): HistoryQuery {
   }, [hasMore])
 
   return { ...query, pages, canLoadMore, loadMore }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// One workout — HIST-01's detail
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Keyed by the user *and* the session. The session id alone would be enough to
+ * identify the row — RLS sees to whose it is — but the key is what a cache is
+ * read by, and a key that does not name the reader is one a second reader could
+ * hit. Same reasoning as the history page above, same shape.
+ */
+export function sessionDetailQueryKey(userId: string, sessionId: string): string {
+  return `session-detail:${userId}:${sessionId}`
+}
+
+/**
+ * One past workout, as performed (SES-01b / DATA_MODEL §7).
+ *
+ * `asPerformed` and not `snapshot`, and the difference is the point of the
+ * requirement: the snapshot is the session's present tense — the active
+ * prescriptions, right now — while the detail view is a claim about what
+ * happened, which includes the movements that were swapped out and still
+ * carried logged work. Asking the database that question is also the only way
+ * to ask it: a screen that read a snapshot and filtered it would be inventing a
+ * fourth reconstruction, and the fourth one is always subtly wrong.
+ *
+ * `sessionId` is nullable because it arrives from the route, where it is a
+ * string the app has not checked yet. A null asks nothing rather than asking
+ * for a session called "undefined".
+ */
+export function useSessionDetailQuery(
+  sessionId: string | null,
+): QueryResult<SessionReconstruction> {
+  const { user } = useAuth()
+  const { sessions } = useWorkoutClients()
+
+  const userId = user?.id ?? null
+  const key =
+    userId === null || sessionId === null ? null : sessionDetailQueryKey(userId, sessionId)
+
+  return useQuery(
+    key,
+    useCallback(
+      () =>
+        sessionId === null
+          ? signedOut<SessionReconstruction>()
+          : sessions.asPerformed(sessionId),
+      [sessions, sessionId],
+    ),
+  )
 }
 
 /**

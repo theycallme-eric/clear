@@ -13,6 +13,8 @@ import type {
   BlockResultRow,
   ExerciseDefinitionRow,
   ExerciseSetLogRow,
+  ReconstructionKind,
+  SessionReconstruction,
   SessionSnapshot,
   WorkoutBlockRow,
   WorkoutExerciseRow,
@@ -62,6 +64,14 @@ export interface BlockFixture {
   roundRestSeconds?: number | null
   /** One entry per prescription: its status, or the whole thing. */
   exercises?: (Enums<'execution_status'> | ExerciseFixture)[]
+  /**
+   * The `block_results` row this block was scored with (SES-01b). Only a
+   * reconstruction carries one — `session_snapshot` answers the structure and
+   * the logs, not the score — so `snapshotFixture` ignores it and
+   * `reconstructionFixture` reads it. Absent means the block was never scored,
+   * which is a different fact from scored with nothing in it.
+   */
+  result?: Partial<BlockResultRow>
 }
 
 export interface SectionFixture {
@@ -77,6 +87,12 @@ export interface SnapshotFixture {
   state?: SessionSnapshot['state']
   startedAt?: string | null
   sections?: SectionFixture[]
+  /**
+   * Columns to override on `workout_sessions` — the debrief's `mood` and
+   * `session_notes`, a `completed_at`, a measured duration. The long way round
+   * for a test that is about the row rather than about the structure.
+   */
+  session?: Partial<WorkoutSessionRow>
 }
 
 function sessionRow(fixture: SnapshotFixture): WorkoutSessionRow {
@@ -109,6 +125,7 @@ function sessionRow(fixture: SnapshotFixture): WorkoutSessionRow {
     mood: null,
     session_notes: null,
     counts_for_streak: true,
+    ...fixture.session,
   }
 }
 
@@ -252,6 +269,78 @@ export function snapshotFixture(fixture: SnapshotFixture = {}): SessionSnapshot 
         }),
       }
     }),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reconstructions — SES-01b
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface ReconstructionFixture extends SnapshotFixture {
+  /** Which of the three questions this answers. `performed` by default. */
+  reconstruction?: ReconstructionKind
+  /**
+   * The instant it resolves at. `started_at` by default, because that is what
+   * `intended_at_start` and `performed` resolve against; pass `null` for the
+   * never-started session, where the null is the reason a list is empty.
+   */
+  asOf?: string | null
+}
+
+/**
+ * What `session_as_performed` and its two siblings answer, built from the same
+ * fixture `snapshotFixture` takes.
+ *
+ * One builder over two shapes rather than a second transcription of twenty-six
+ * columns: a reconstruction *is* a snapshot plus the question it answers, the
+ * instant it resolves at, and each block's score. Every row it produces is a
+ * real row — the shapes come from `schemas.ts` — so a payload this builds is
+ * one `sessionReconstructionSchema` would parse.
+ */
+export function reconstructionFixture(
+  fixture: ReconstructionFixture = {},
+): SessionReconstruction {
+  const snapshot = snapshotFixture(fixture)
+
+  return {
+    reconstruction: fixture.reconstruction ?? 'performed',
+    as_of: fixture.asOf === undefined ? snapshot.session.started_at : fixture.asOf,
+    session: snapshot.session,
+    state: snapshot.state,
+    sections: snapshot.sections.map((section, sectionIndex) => ({
+      section: section.section,
+      blocks: section.blocks.map((block, blockIndex) => ({
+        block: block.block,
+        block_result: resultRow(
+          block.block.id,
+          fixture.sections?.[sectionIndex]?.blocks?.[blockIndex]?.result,
+        ),
+        exercises: block.exercises,
+      })),
+    })),
+  }
+}
+
+/** A `block_results` row, or null for a block that was never scored. */
+function resultRow(
+  blockId: string,
+  overrides: Partial<BlockResultRow> | undefined,
+): BlockResultRow | null {
+  if (overrides === undefined) return null
+
+  return {
+    id: fixtureId('b', 1),
+    block_id: blockId,
+    elapsed_seconds: null,
+    completed_under_cap: null,
+    rounds_completed: null,
+    partial_round_reps: null,
+    minutes_completed: null,
+    highest_rung: null,
+    perceived_effort: null,
+    notes: null,
+    created_at: '2026-09-24T09:30:00+00:00',
+    ...overrides,
   }
 }
 
