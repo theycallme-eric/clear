@@ -23,6 +23,11 @@ import {
   createLiveUserConstraintsClient,
   type UserConstraintsClient,
 } from '../data/constraints'
+import {
+  createGenerationClient,
+  unconfiguredGenerationClient,
+  type GenerationClient,
+} from '../data/generation'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
 import { configFromEnv } from '../data/supabase'
 import { createSummaryClient, type SummaryClient } from '../data/summary'
@@ -187,6 +192,12 @@ interface Clients {
    * same reason the others are: the token it presents has to be the live one.
    */
   readonly constraints: UserConstraintsClient
+  /**
+   * GEN-03's call to `generate-workout`, which GEN-04's screen makes. Built
+   * from the same `auth` object as the rest: it asks for the access token per
+   * call, so a generation started after a refresh presents the live one.
+   */
+  readonly generation: GenerationClient
 }
 
 let clients: Clients | null = null
@@ -213,6 +224,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       summary: unconfiguredSummaryClient(),
       workout: unconfiguredWorkoutClients(),
       constraints: unconfiguredUserConstraintsClient(),
+      generation: unconfiguredGenerationClient(),
     }
     return clients
   }
@@ -226,6 +238,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     summary: createSummaryClient({ auth, supabase: config.value }),
     workout: createWorkoutClients({ auth, supabase: config.value }),
     constraints: createLiveUserConstraintsClient({ auth, supabase: config.value }),
+    generation: createGenerationClient({ auth, supabase: config.value }),
   }
   return clients
 }

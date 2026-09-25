@@ -379,6 +379,28 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
 }
 
 /**
+ * The client for a build with no Supabase configuration, so a screen that
+ * composes this one still mounts and says what is wrong when it is used. It
+ * refuses the same typed way `unconfiguredWorkoutClients` does: the request id
+ * is real, because a refusal with no id is one a log cannot be matched to.
+ */
+export function unconfiguredGenerationClient(): GenerationClient {
+  return {
+    async generate() {
+      const requestId = generateRequestId()
+
+      return err(
+        generationError({
+          code: ErrorCode.GENERATION_INVALID_PARAMS,
+          requestId,
+          details: { reason: 'missing-configuration' },
+        }),
+      )
+    },
+  }
+}
+
+/**
  * The answer, parsed. Which half of the response it is comes from the payload
  * carrying a `code` and not from the status, because a refusal is a refusal
  * whatever status it arrived with — but *both* halves are then parsed in full
