@@ -99,10 +99,28 @@ the output, since the system prompt states the 1–3 range as an accomplished fa
 call: `ANTHROPIC_API_KEY` reaches it as an argument from `Deno.env.get` and leaves in one request
 header, the response is parsed against CORE-03's `generationOutputSchema`, and a typed failure buys
 exactly one corrected retry before `generation.exhausted`. There is no third attempt and no shape it
-can return but a parsed workout or an `AppError` — D2's mock workout has nowhere to live. Validating
-what comes back against *that section's* candidates, and persisting it, is GEN-02c's; until it
-lands, `generate-workout/index.ts` still refuses, typed, rather than answering with a workout nobody
-checked.
+can return but a parsed workout or an `AppError` — D2's mock workout has nowhere to live.
+
+GEN-02c's validation is the third module in that directory, and the direction of its one import is
+the design. `validate.ts` asks the questions neither the schema nor the database can: is this
+exercise in *that section's* candidate set, is this equipment in that candidate's
+`usable_equipment`, is this section one the request enabled. `claude.ts` receives it as an optional
+function rather than importing it, so the retry budget stays one counter — a workout rejected by
+validation costs the same single corrected retry a malformed one does — and a composer configured
+without a validator returns `validation: null`, meaning nobody checked rather than nothing was
+wrong. What it deliberately does not do is re-implement checks 4–7: those are `schemas.ts`'s
+discriminated target, its distance and load refinements and its block clock, which ran before this
+module was reached, and a second copy would be the one that drifts. Check 8 is GEN-06's.
+`HARD_CHECKS` is the requirement's "the correspondence is listed" as data rather than prose — one
+row per check naming the constraint in `20260921000002_workout_domain.sql` that would refuse the row
+— and `src/test/generation-validation.test.ts` reads those declarations back out of the migration and
+the rules back out of the contract's own §6 table, so a check with no constraint fails a test. The
+soft half is a `QualityRecord` of four observations — ratios, warmup coverage, variety, repetition —
+computed *after* the verdict is already `ok`, which is the structural version of "a soft rule that
+rejects is a hard rule with a soft name". Claude's `estimated_duration_mins` rides along in that
+record and is read by nothing (D5). Hydrating facts by id and persisting the session is the rest of
+GEN-02c; until it lands, `generate-workout/index.ts` still refuses, typed, rather than answering
+with a workout it cannot store.
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s

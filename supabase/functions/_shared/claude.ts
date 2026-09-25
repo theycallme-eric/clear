@@ -22,10 +22,13 @@
  * config object or a prompt body into a log line in the first place (CORE-02,
  * defect D3).
  *
- * Validation of what comes back against *that section's candidate set* — checks
- * 1–3 and the duration plausibility of check 8 — is GEN-02c's and is
- * deliberately not here. This module's contract is narrower and worth stating
- * exactly: the response parsed as contract 4.1.0, or it did not.
+ * What validation *is* — checks 1–3 against that section's candidate set — is
+ * `validate.ts`'s, and reaches this module as an optional function rather than
+ * an import. That direction is the point: this file knows that something may
+ * reject a parsed workout and that a rejection is worth exactly one more call,
+ * and it knows nothing about candidates, equipment or quality records. A
+ * composer configured without a validator returns `validation: null`, which is
+ * "nobody checked" and never "nothing was wrong".
  */
 
 import {
@@ -76,7 +79,19 @@ export const DEFAULT_MODEL = 'claude-sonnet-5'
  */
 export const DEFAULT_MAX_TOKENS = 8192
 
-export interface ComposerConfig {
+/**
+ * GEN-02c's validation, as this module needs to see it: a parsed workout and
+ * the input it was composed from in, a verdict out. It is a function rather
+ * than an import so the retry counter stays in one place — `validate.ts`
+ * rejects, and this loop is the only thing in generation that decides whether a
+ * rejection is worth another call.
+ */
+export type CompositionValidator<V> = (
+  workout: GenerationOutput,
+  input: PromptInput,
+) => Result<V, AttemptFailure>
+
+export interface ComposerConfig<V = unknown> {
   /**
    * Read from the Supabase Edge Function secret store by the function that
    * mounts this, and passed in rather than read here so nothing in this module
@@ -89,6 +104,14 @@ export interface ComposerConfig {
   readonly fetch?: typeof globalThis.fetch
   /** The envelope's per-request logger, where there is one. */
   readonly logger?: Logger
+  /**
+   * `validateComposition` from `validate.ts`, where the caller wants a workout
+   * checked against its own candidate set before it is returned. Optional
+   * because this module's own contract does not depend on it; a caller that
+   * omits it gets a parsed workout nobody checked, which is why the function
+   * handler supplies it.
+   */
+  readonly validate?: CompositionValidator<V>
 }
 
 /**
@@ -126,6 +149,13 @@ export const GenerationFailure = {
   UPSTREAM: 'generation.upstream',
   /** Content arrived and was not a contract-4.1.0 workout. */
   MALFORMED: 'generation.malformed_prescription',
+  /**
+   * An id, an equipment value or a section outside what this request retrieved
+   * — GEN-02c's checks 1–3 (`validate.ts`). It is here rather than there so the
+   * contract's §9 vocabulary is one list: the addendum that tells the model what
+   * it did reads from this object whichever half of the pipeline rejected it.
+   */
+  INVALID_REFERENCE: 'generation.invalid_reference',
   /** Both attempts failed. Never retried again. */
   EXHAUSTED: 'generation.exhausted',
 } as const
@@ -148,7 +178,7 @@ export interface TokenUsage {
 }
 
 /** A composition that succeeded, and everything §5 asks to be recorded about it. */
-export interface Composition {
+export interface Composition<V = unknown> {
   readonly workout: GenerationOutput
   readonly measurement: PromptMeasurement
   readonly usage: TokenUsage
@@ -156,14 +186,20 @@ export interface Composition {
   readonly attempts: number
   /** The failure that caused the retry, when there was one. */
   readonly retriedAfter: AttemptFailure | null
+  /**
+   * What the validator returned, or `null` when no validator was configured.
+   * Null is therefore "nobody checked" rather than "nothing was wrong", and the
+   * two must not be read as the same thing.
+   */
+  readonly validation: V | null
 }
 
-export interface Composer {
+export interface Composer<V = unknown> {
   /**
-   * Assemble, call, parse — and on a typed failure, exactly one corrected
+   * Assemble, call, validate — and on a typed failure, exactly one corrected
    * retry. Resolves to the workout or to a typed error, never to a partial one.
    */
-  compose(input: PromptInput, requestId?: string): Promise<Result<Composition>>
+  compose(input: PromptInput, requestId?: string): Promise<Result<Composition<V>>>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -342,7 +378,8 @@ export const MAX_ATTEMPTS = 2
  * an unchanged one is what should be sent again.
  */
 function correctionFor(failure: AttemptFailure): RetryFailure | null {
-  return failure.code === GenerationFailure.MALFORMED
+  return failure.code === GenerationFailure.MALFORMED ||
+    failure.code === GenerationFailure.INVALID_REFERENCE
     ? { code: failure.code, detail: failure.detail }
     : null
 }
@@ -376,7 +413,43 @@ function exhausted(failures: readonly AttemptFailure[], requestId?: string): App
   )
 }
 
-export function createComposer(config: ComposerConfig): Composer {
+/** One attempt's whole answer: call, parse, and — where configured — validate. */
+interface Attempt<V> {
+  readonly workout: GenerationOutput
+  readonly usage: TokenUsage
+  readonly validation: V | null
+}
+
+/**
+ * Call, parse, validate. The three are one step rather than three because the
+ * retry budget is one for all of them: parsing is a statement about the shape
+ * and validation is a statement about *this* request's candidate set, and
+ * GENERATION_CONTRACT §6 gives the hard checks one retry between them rather
+ * than one each.
+ */
+async function attempt<V>(
+  config: ComposerConfig<V>,
+  system: string,
+  message: string,
+  input: PromptInput,
+): Promise<Result<Attempt<V>, AttemptFailure>> {
+  const completion = await callClaude(config, system, message)
+  if (!completion.ok) return err(completion.error)
+
+  const parsed = parseCompletion(completion.value.text)
+  if (!parsed.ok) return err(parsed.error)
+
+  const usage = completion.value.usage
+  if (!config.validate) return ok({ workout: parsed.value, usage, validation: null })
+
+  const validated = config.validate(parsed.value, input)
+
+  return validated.ok
+    ? ok({ workout: parsed.value, usage, validation: validated.value })
+    : err(validated.error)
+}
+
+export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
   return {
     async compose(input, requestId) {
       const prompt = assemblePrompt(input)
@@ -393,37 +466,35 @@ export function createComposer(config: ComposerConfig): Composer {
       const failures: AttemptFailure[] = []
       let message = prompt.user
 
-      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
-        const completion = await callClaude(config, prompt.system, message)
-        const parsed = completion.ok
-          ? parseCompletion(completion.value.text)
-          : err(completion.error)
+      for (let count = 1; count <= MAX_ATTEMPTS; count += 1) {
+        const outcome = await attempt(config, prompt.system, message, input)
 
-        if (parsed.ok) {
+        if (outcome.ok) {
           logger?.info('composed workout', {
             requestId,
-            attempt,
-            inputTokens: completion.ok ? completion.value.usage.inputTokens : null,
-            outputTokens: completion.ok ? completion.value.usage.outputTokens : null,
+            attempt: count,
+            inputTokens: outcome.value.usage.inputTokens,
+            outputTokens: outcome.value.usage.outputTokens,
           })
 
           return ok({
-            workout: parsed.value,
+            workout: outcome.value.workout,
             measurement: prompt.measurement,
-            usage: completion.ok ? completion.value.usage : EMPTY_USAGE,
-            attempts: attempt,
+            usage: outcome.value.usage,
+            attempts: count,
             retriedAfter: failures[0] ?? null,
+            validation: outcome.value.validation,
           })
         }
 
-        failures.push(parsed.error)
+        failures.push(outcome.error)
         logger?.warn('composition attempt failed', {
           requestId,
-          attempt,
-          code: parsed.error.code,
+          attempt: count,
+          code: outcome.error.code,
         })
 
-        const correction = correctionFor(parsed.error)
+        const correction = correctionFor(outcome.error)
         if (correction) message = withRetryCorrection(prompt.user, correction)
       }
 
@@ -434,5 +505,3 @@ export function createComposer(config: ComposerConfig): Composer {
     },
   }
 }
-
-const EMPTY_USAGE: TokenUsage = { inputTokens: null, outputTokens: null }
