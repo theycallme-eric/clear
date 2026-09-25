@@ -11,6 +11,7 @@
  */
 import type {
   BlockResultRow,
+  ConditioningHistoryRow,
   ExerciseDefinitionRow,
   ExerciseSetLogRow,
   ReconstructionKind,
@@ -24,6 +25,7 @@ import type {
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
+import type { ConditioningClient } from '../data/conditioning'
 import type { ExercisesClient } from '../data/exercises'
 import type { HistoryClient } from '../data/history'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
@@ -358,6 +360,14 @@ export interface WorkoutDoubleOptions {
   setLogs?: Partial<SetLogsClient>
   exercises?: Partial<ExercisesClient>
   /**
+   * OVR-03's conditioning read. Empty by default, which is the honest default:
+   * a user with no prior conditioning has no like-for-like comparison to be
+   * shown, so a test that is not about one does not have to wire it.
+   */
+  conditioning?: Partial<ConditioningClient>
+  /** Prior scored conditioning blocks, newest first, as the RPC answers them. */
+  conditioningHistory?: readonly ConditioningHistoryRow[]
+  /**
    * What the catalog answers, by slug (EXE-05). A slug that is not here answers
    * `null` — the library has no definition for it — rather than throwing, so a
    * test that is not about the coaching panel does not have to wire one.
@@ -519,8 +529,15 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.exercises,
   }
 
+  const conditioning: ConditioningClient = {
+    async history() {
+      return ok([...(options.conditioningHistory ?? [])])
+    },
+    ...options.conditioning,
+  }
+
   return {
-    clients: { sessions, blockResults, history, setLogs, exercises },
+    clients: { sessions, blockResults, history, setLogs, exercises, conditioning },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],

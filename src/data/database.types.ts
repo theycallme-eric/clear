@@ -19,6 +19,7 @@
  *   supabase/migrations/20260921000008_location_writes.sql
  *   supabase/migrations/20260921000009_session_reconstruction.sql
  *   supabase/migrations/20260921000010_load_anchors.sql
+ *   supabase/migrations/20260921000011_conditioning_history.sql
  */
 
 export type Json =
@@ -670,6 +671,13 @@ export type Database = {
           p_actual_duration_mins?: number | null
         }
         Returns: Json
+      }
+      conditioning_history: {
+        Args: {
+          p_user_id: string
+          p_limit?: number | null
+        }
+        Returns: { session_id: string; session_date: string; effective_intensity: number; goal_preset: Database['public']['Enums']['goal_preset']; section_id: string; section_order: number; block_id: string; block_order: number; structure_type: Database['public']['Enums']['structure_type']; rep_scheme: Database['public']['Enums']['rep_scheme']; timer_type: Database['public']['Enums']['timer_contract']; timer_seconds: number; rounds: number; round_rest_seconds: number; elapsed_seconds: number; completed_under_cap: boolean; rounds_completed: number; partial_round_reps: number; minutes_completed: number; highest_rung: number; perceived_effort: number; scored_at: string; prescriptions: Json }[]
       }
       constraints_in_force: {
         Args: {

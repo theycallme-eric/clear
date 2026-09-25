@@ -40,6 +40,7 @@ import {
 } from '../state/schemas'
 import { createAnchorsClient } from './anchors'
 import type { AuthClient } from './auth'
+import { createConditioningClient, type ConditioningClient } from './conditioning'
 import { createExercisesClient, type ExercisesClient } from './exercises'
 import { createHistoryClient, type HistoryClient } from './history'
 import { createSessionsClient, type SessionsClient } from './sessions'
@@ -81,6 +82,13 @@ export interface WorkoutClients {
    * the access token as it is at the moment of the call and nothing more.
    */
   readonly exercises: ExercisesClient
+  /**
+   * OVR-03's conditioning read: the scored conditioning blocks a like-for-like
+   * comparison and the density nudge are both drawn from. Here for the reason
+   * `history` is — the token as it is at the moment of the call, and nothing
+   * more — and read by the shell, which is where a block is completed.
+   */
+  readonly conditioning: ConditioningClient
 }
 
 export interface WorkoutClientsConfig {
@@ -122,6 +130,9 @@ export function createWorkoutClients({
    * that has to happen now is the recomputation `complete` triggers.
    */
   const anchors = createAnchorsClient({ auth, supabase })
+
+  /** OVR-03's conditioning read, built the same way and carrying the same token. */
+  const conditioning = createConditioningClient({ auth, supabase })
 
   const sessions: SessionsClient = {
     async accept(userId, acceptance) {
@@ -304,7 +315,7 @@ export function createWorkoutClients({
     },
   }
 
-  return { sessions, blockResults, history, setLogs, exercises }
+  return { sessions, blockResults, history, setLogs, exercises, conditioning }
 }
 
 /**
@@ -339,5 +350,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     history: { page: refusal },
     setLogs: { log: refusal },
     exercises: { definition: refusal, saveNotes: refusal },
+    conditioning: { history: refusal },
   }
 }
