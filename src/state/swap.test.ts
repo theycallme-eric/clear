@@ -40,7 +40,7 @@ function sessionWithLoggedSets(): SessionSnapshot {
           {
             exercises: [
               {
-                status: 'in_progress',
+                status: 'not_started',
                 prescription: {
                   exercise_id: 'deadlift',
                   equipment_used: 'barbell',
@@ -66,7 +66,7 @@ function candidate(overrides: Partial<Candidate> = {}): Candidate {
     name: 'Romanian deadlift',
     patterns: ['hinge'],
     primaryPatterns: ['hinge'],
-    role: 'compound',
+    role: 'compound_lift',
     components: ['hip-hinge'],
     muscles: [],
     canBePrimary: true,
@@ -269,7 +269,9 @@ describe('the session a swap produces (EXE-06)', () => {
 
   it('leaves the sets already logged attached to the row that was performed', () => {
     expect(members[0]?.set_logs).toHaveLength(3)
-    expect(members[0]?.exercise.execution_status).toBe('in_progress')
+    expect(members[0]?.exercise.execution_status).toBe(
+      activeRow(snapshot).execution_status,
+    )
     // And the replacement arrives with none, so the next set logged in this
     // slot is attributed to it rather than to the movement that was dropped.
     expect(members[1]?.set_logs).toEqual([])
