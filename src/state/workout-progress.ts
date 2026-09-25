@@ -23,7 +23,6 @@ import type { Enums } from '../data/database.types'
 import type {
   ExerciseSetLogRow,
   SessionSnapshot,
-  WorkoutBlockRow,
   WorkoutExerciseRow,
 } from './schemas'
 
@@ -233,6 +232,23 @@ export function isSessionFinished(progress: SessionProgress): boolean {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * The four columns a structure's identity is read from.
+ *
+ * Named rather than taking `WorkoutBlockRow` whole, because REV-01 reads the
+ * identity of a block that has not been persisted yet: a composed
+ * `WorkoutBlock` carries the clock, the rounds and the rep scheme and has no
+ * `id` or `section_id`, and a briefing that named structures differently from
+ * the shell that performs them would be a second vocabulary for one thing.
+ * Both shapes satisfy this structurally.
+ */
+export interface StructureColumns {
+  readonly structure_type: Enums<'structure_type'>
+  readonly rounds: number | null
+  readonly timer_seconds: number | null
+  readonly rep_scheme: Enums<'rep_scheme'>
+}
+
+/**
  * A block's identity, as the header renders it.
  *
  * `label` is the structure's name and `detail` is the one number that changes
@@ -304,7 +320,7 @@ function durationLabel(seconds: number): string {
  * block's own columns — `workout_blocks` is where the clock lives, once, so
  * members of a circuit cannot disagree about it (DATA-01c §5).
  */
-export function structureIdentity(block: WorkoutBlockRow): StructureIdentity {
+export function structureIdentity(block: StructureColumns): StructureIdentity {
   return {
     label: STRUCTURE_LABELS[block.structure_type],
     detail: structureDetail(block),
@@ -315,7 +331,7 @@ export function structureIdentity(block: WorkoutBlockRow): StructureIdentity {
   }
 }
 
-function structureDetail(block: WorkoutBlockRow): string | null {
+function structureDetail(block: StructureColumns): string | null {
   switch (block.structure_type) {
     case 'emom':
     case 'amrap':
