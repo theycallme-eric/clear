@@ -30,6 +30,13 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   shape, the parse of the `jsonb` candidate list, and the typed empty-set failure —
   `GENERATION_NO_CANDIDATES`, naming the sections that resolved to nothing. One RPC per request,
   and no model call anywhere in the path.
+- `generation.ts` (GEN-03) — the call to `generate-workout`, and every way it refuses. One method,
+  answering the validated workout or a typed error carrying the request id, and never both. Three
+  refusals happen before anything is sent: a request `workout_sessions`' CHECK constraints would not
+  hold, a caller with no session, and nothing else. The answer is re-parsed with CORE-03's schemas
+  rather than trusted, and the contract's §9 code is read when the function names one — each of the
+  six mapping to its own sentence and its own answer to whether retrying could work. There is no
+  fallback here and no fixture to reach for; `src/test/generation-fallback.test.ts` proves it.
 - `streak.ts` (SES-01c) — the streak query: the completed sessions `streak_sessions(...)` returns,
   newest first, and `src/state/streak.ts` derives the count from. It owns the three things between
   the rows and the derivation — the time zone resolved once when the client is made, the cursor

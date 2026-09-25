@@ -5,6 +5,7 @@
  *
  * Every factory returns a valid object and accepts partial overrides.
  */
+import type { GenerationError } from '../data/generation'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import {
   CONTRACT_VERSION,
@@ -20,6 +21,24 @@ export function makeAppError(overrides: Partial<AppError> = {}): AppError {
     ...createError(ErrorCode.NETWORK_SERVER_ERROR, {
       requestId: 'req_test_fixture',
     }),
+    ...overrides,
+  }
+}
+
+/**
+ * The error a generation answers with (GEN-03). It defaults to the offline
+ * failure because that is the one the requirement names: a network killed
+ * mid-generate, shown with its message, its request id and a retry.
+ */
+export function makeGenerationError(
+  overrides: Partial<GenerationError> = {},
+): GenerationError {
+  return {
+    ...createError(ErrorCode.NETWORK_OFFLINE, { requestId: 'req_test_generation' }),
+    requestId: 'req_test_generation',
+    failure: null,
+    issues: [],
+    retryable: true,
     ...overrides,
   }
 }

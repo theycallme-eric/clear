@@ -169,6 +169,26 @@ would wire GEN-02a's candidate read, HIST-01's history and GEN-06's minutes into
 this module's, and a function that answered with a workout the response envelope has no session id
 for would be GEN-01's contract changed by the back door.
 
+GEN-03 is the other end of that call, and it is two files. `src/data/generation.ts` makes the
+request — minting the request id, refusing a body `workout_sessions`' CHECK constraints would not
+hold and a caller with no session before anything is sent, and then re-parsing whatever comes back
+with CORE-03's own schemas. That re-parse is not redundant with GEN-02c's: the thing on the other
+side of the fetch is a deployment, which can be older than the bundle asking, and a workout that
+does not parse has to become an error rather than a half-rendered screen. It also reads the
+contract's §9 code (`generation.no_candidates` and friends) when the function names one, through
+`generationErrorResponseSchema` — CORE-03's error response widened for the client only, so what
+GEN-01 *writes* stays GEN-01's call — and maps each of the six to its own sentence and its own
+answer to "can this be retried", because "try again" is wrong advice for an over-constrained
+request and for a spent retry alike. `src/state/generation.ts` is the mutation over it: idle →
+pending → success | error, with the in-flight guard in a ref rather than in rendered state, because
+two clicks in one tick see the same state and only a ref has already moved. It is not in
+`query.ts` and deliberately not keyed or cached — generating twice produces two different workouts,
+and a cache that answered the second request with the first would be inventing content. Cancel and
+unmount invalidate the run rather than the promise, so an answer that arrives late is dropped
+instead of landing in a state somebody renders. D2's silent fallback has no home in any of it, and
+`src/test/generation-fallback.test.ts` is the gate that keeps it that way: no workout fixture named
+in runtime source, and no runtime file importing the test harness.
+
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
 documented variables hold real values and the hosted Supabase project answers. The preflight

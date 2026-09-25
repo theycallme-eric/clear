@@ -23,6 +23,11 @@ Client state machines, query hooks, and cross-screen state coordination belong h
   boundary later. `StreakPolicy` is the named extension point — HOME-02's pause states and rest-day
   allowances arrive as a different policy passed to this same function, never as a second
   derivation beside it.
+- `generation.ts` (GEN-03) — generation as a screen sees it: idle → pending → success | error over
+  `src/data/generation.ts`, plus the client's context. A mutation rather than a query, because
+  generating twice produces two different workouts and nothing here is keyed or cached. Double
+  submit is guarded by a ref, cancel and unmount invalidate the run in flight, and the only path to
+  `success` is a `Result` that said so.
 - `toasts.ts` (DS-05) — the root toast queue; `src/ui/toast-host.tsx` renders it.
 - `view-state.ts` (CORE-04) — the four-state contract every data-driven view implements.
 - `auth-context.ts` / `auth-provider.tsx` (AUTH-01) — the session context. The context file holds
