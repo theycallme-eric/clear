@@ -22,7 +22,12 @@
  */
 import { createContext, use, useCallback, useEffect, useRef, useState } from 'react'
 
-import type { GenerationClient, GenerationError, GenerationInput } from '../data/generation'
+import type {
+  GenerationClient,
+  GenerationError,
+  GenerationInput,
+  GenerationStage,
+} from '../data/generation'
 import type { GenerationOutput } from './schemas'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -70,6 +75,14 @@ export interface GenerationMutation {
   readonly state: GenerationState
   /** The submit control's disabled state, and nothing more interesting. */
   readonly isPending: boolean
+  /**
+   * The stage the call in flight has reached, as the call itself reported it —
+   * null before the first one lands. It survives into `error`, because the
+   * stage a failure happened *in* is part of what failed. GEN-05's loading
+   * screen is the only reader: this is what makes its log real stages rather
+   * than a sequence on a timer.
+   */
+  readonly stage: GenerationStage | null
   /** Starts a generation. Ignored while one is in flight. */
   generate(input: GenerationInput): void
   /** Repeats the last request. A no-op when there has not been one. */
@@ -88,6 +101,7 @@ export interface GenerationMutation {
 export function useGeneration(): GenerationMutation {
   const client = useGenerationClient()
   const [state, setState] = useState<GenerationState>(IDLE)
+  const [stage, setStage] = useState<GenerationStage | null>(null)
 
   /** Bumped by every start, cancel and unmount; an older run's answer is dropped. */
   const run = useRef(0)
@@ -110,34 +124,44 @@ export function useGeneration(): GenerationMutation {
       run.current += 1
       const ticket = run.current
       setState({ status: 'pending', input })
+      setStage(null)
 
-      void client.generate(input).then(
-        (result) => {
-          if (!mounted.current || run.current !== ticket) return
-          inFlight.current = false
-          setState(
-            result.ok
-              ? {
-                  status: 'success',
-                  input,
-                  requestId: result.value.requestId,
-                  workout: result.value.workout,
-                }
-              : { status: 'error', input, error: result.error },
-          )
-        },
-        // The client answers `Result` and does not throw. If one ever does, the
-        // screen must not be left pending forever — but inventing a
-        // `GenerationError` here would guess at a code, so the run is abandoned
-        // and the throw is re-raised where it is visible.
-        (reason: unknown) => {
-          if (run.current === ticket) {
+      void client
+        .generate(input, {
+          // The same ticket the answer is checked against: a stage reported by
+          // a run the user has already left is as stale as its workout.
+          onStage: (reached) => {
+            if (!mounted.current || run.current !== ticket) return
+            setStage(reached)
+          },
+        })
+        .then(
+          (result) => {
+            if (!mounted.current || run.current !== ticket) return
             inFlight.current = false
-            if (mounted.current) setState(IDLE)
-          }
-          throw reason
-        },
-      )
+            setState(
+              result.ok
+                ? {
+                    status: 'success',
+                    input,
+                    requestId: result.value.requestId,
+                    workout: result.value.workout,
+                  }
+                : { status: 'error', input, error: result.error },
+            )
+          },
+          // The client answers `Result` and does not throw. If one ever does,
+          // the screen must not be left pending forever — but inventing a
+          // `GenerationError` here would guess at a code, so the run is
+          // abandoned and the throw is re-raised where it is visible.
+          (reason: unknown) => {
+            if (run.current === ticket) {
+              inFlight.current = false
+              if (mounted.current) setState(IDLE)
+            }
+            throw reason
+          },
+        )
     },
     [client],
   )
@@ -157,11 +181,13 @@ export function useGeneration(): GenerationMutation {
     run.current += 1
     inFlight.current = false
     setState(IDLE)
+    setStage(null)
   }, [])
 
   return {
     state,
     isPending: state.status === 'pending',
+    stage,
     generate,
     retry,
     cancel: toIdle,
