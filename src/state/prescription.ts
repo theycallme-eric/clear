@@ -26,7 +26,36 @@
  * total over a row the database could hold.
  */
 import type { Enums } from '../data/database.types'
-import type { WorkoutExerciseRow } from './schemas'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// What a prescription is, to this module
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The columns every answer below is derived from — and deliberately no more
+ * than those.
+ *
+ * It was `WorkoutExerciseRow` until REV-01, which reads the *same* prescription
+ * one step earlier: a composed `Prescription` has no `id`, no `slot_id` and no
+ * `execution_status` because it has not been persisted yet, and is otherwise
+ * the identical set of target, modality and set-count columns. Two readers of
+ * one prescription is exactly how `{8,10}` became a rep range in one place and
+ * a two-rung ladder in another, so there is one reader and the parameter names
+ * what it actually touches. Both shapes satisfy it structurally; neither has to
+ * be converted into the other to be read.
+ */
+export interface PrescribedColumns {
+  readonly exercise_id: string
+  readonly modality: Enums<'prescription_modality'>
+  readonly sets: number | null
+  readonly target_kind: Enums<'target_kind'>
+  readonly target_value: number | null
+  readonly target_min: number | null
+  readonly target_max: number | null
+  readonly target_sequence: readonly number[] | null
+  readonly per_side: boolean
+  readonly distance_unit: Enums<'distance_unit'> | null
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Targets
@@ -62,7 +91,7 @@ export type PrescribedTarget = FixedTarget | RangeTarget | SequenceTarget
  * without a target rather than inventing one. A thrown error would take the
  * whole session down over one malformed prescription.
  */
-export function prescribedTarget(exercise: WorkoutExerciseRow): PrescribedTarget | null {
+export function prescribedTarget(exercise: PrescribedColumns): PrescribedTarget | null {
   switch (exercise.target_kind) {
     case 'fixed':
       return exercise.target_value === null
@@ -91,7 +120,7 @@ export function prescribedTarget(exercise: WorkoutExerciseRow): PrescribedTarget
  * answer until the clock stops (DATA-01c §6), and the renderer offers the set
  * the user is in rather than none.
  */
-export function prescribedSetCount(exercise: WorkoutExerciseRow): number {
+export function prescribedSetCount(exercise: PrescribedColumns): number {
   const target = prescribedTarget(exercise)
   if (target?.kind === 'sequence') return target.rungs.length
   return exercise.sets ?? 1
@@ -102,7 +131,7 @@ export function prescribedSetCount(exercise: WorkoutExerciseRow): number {
  * same number for everything else.
  */
 export function targetForSet(
-  exercise: WorkoutExerciseRow,
+  exercise: PrescribedColumns,
   setNumber: number,
 ): PrescribedTarget | null {
   const target = prescribedTarget(exercise)
@@ -125,7 +154,7 @@ export function targetForSet(
 export type PrescribedModality = Enums<'prescription_modality'>
 
 /** The unit word for a target's number: `reps`, `sec`, or the distance unit. */
-export function modalityUnit(exercise: WorkoutExerciseRow): string {
+export function modalityUnit(exercise: PrescribedColumns): string {
   switch (exercise.modality) {
     case 'reps':
       return 'reps'
@@ -140,7 +169,7 @@ export function modalityUnit(exercise: WorkoutExerciseRow): string {
 }
 
 /** What the log field for this modality is called, in the user's words. */
-export function modalityLabel(exercise: WorkoutExerciseRow): string {
+export function modalityLabel(exercise: PrescribedColumns): string {
   switch (exercise.modality) {
     case 'reps':
       return 'Reps'
@@ -181,7 +210,7 @@ export function targetNumbers(target: PrescribedTarget): string {
  * a user ended up doing half the work on one leg.
  */
 export function targetText(
-  exercise: WorkoutExerciseRow,
+  exercise: PrescribedColumns,
   target: PrescribedTarget | null = prescribedTarget(exercise),
 ): string {
   if (target === null) return 'No target'
@@ -201,7 +230,7 @@ export function targetText(
  * because the two are not the same shape — `5 × 15-12-9-6-3` would read as
  * twenty-five sets.
  */
-export function prescriptionText(exercise: WorkoutExerciseRow): string {
+export function prescriptionText(exercise: PrescribedColumns): string {
   const target = prescribedTarget(exercise)
   const sets = prescribedSetCount(exercise)
 
