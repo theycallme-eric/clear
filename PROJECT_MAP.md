@@ -118,9 +118,24 @@ the rules back out of the contract's own §6 table, so a check with no constrain
 soft half is a `QualityRecord` of four observations — ratios, warmup coverage, variety, repetition —
 computed *after* the verdict is already `ok`, which is the structural version of "a soft rule that
 rejects is a hard rule with a soft name". Claude's `estimated_duration_mins` rides along in that
-record and is read by nothing (D5). Hydrating facts by id and persisting the session is the rest of
-GEN-02c; until it lands, `generate-workout/index.ts` still refuses, typed, rather than answering
-with a workout it cannot store.
+record and is read by nothing (D5).
+
+GEN-02c's hydration is `hydrate.ts` beside it, and its signature is the requirement: `hydrateWorkout`
+takes a `Validated`, which only `validateComposition` constructs, so "hydrated only after validation"
+is a compile error rather than a convention. It reads `exercise_catalog` — DATA-01a's hydration view
+— by id over `fetch`, the way `auth.ts` reaches GoTrue and for the same reason (`src/data/supabase.ts`
+is the browser's client and its extensionless imports do not resolve in Deno), and fills in the name,
+the `equipment_display_names` resolution for the equipment actually prescribed, the coaching cues,
+the regression reference and the muscle coverage. It declares no schema: `exerciseCatalogRowSchema`
+is CORE-03's, in `schemas.ts` with every other one. The result is a `HydratedWorkout` rather than a
+`GenerationOutput` with extra keys, and the difference is deliberate — it carries `promptVersion` and
+`contractVersion` for the session that will be stamped with them, and it has no minutes field at all.
+Claude's `estimated_duration_mins` is read once, into `diagnostics.modelEstimateMins` beside the
+quality record, so there is no authoritative duration here for D5 to leak into;
+`src/test/generation-hydration.test.ts` reads that claim back out of the source and fails a third
+reader. Persisting the session is the rest of GEN-02c; until it lands,
+`generate-workout/index.ts` still refuses, typed, rather than answering with a workout it cannot
+store.
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
