@@ -21,8 +21,10 @@ import {
   PERCEIVED_EFFORT_MIN,
   type BlockOutcome,
 } from '../state/block-completion'
+import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import type { StructureIdentity } from '../state/workout-progress'
 import { AppDialog } from './app-dialog'
+import { ConditioningScoreLine } from './conditioning-score'
 
 /** The midpoint: a default that claims nothing, and is one drag from anything. */
 export const DEFAULT_PERCEIVED_EFFORT = 5
@@ -51,6 +53,18 @@ export interface BlockEffortDialogProps {
   identity: StructureIdentity | null
   /** The fields the renderer observed, echoed back as a factual summary. */
   outcome: BlockOutcome | null
+  /**
+   * OVR-03's normalized score for what was just finished, when the block is one
+   * §3 scores. The same function scores it here and when it is read back out of
+   * history, so the number shown at completion is the number a later comparison
+   * uses.
+   */
+  score?: ConditioningScore | null
+  /**
+   * The like-for-like comparison, and null whenever the work was not an
+   * identical repeat — which is most of the time, and is rendered as nothing.
+   */
+  comparison?: ScoreComparison | null
   /** True while the `block_results` write is in flight. */
   saving?: boolean
   onConfirm: (perceivedEffort: number) => void
@@ -62,6 +76,8 @@ export function BlockEffortDialog({
   open,
   identity,
   outcome,
+  score = null,
+  comparison = null,
   saving = false,
   onConfirm,
   onCancel,
@@ -104,6 +120,7 @@ export function BlockEffortDialog({
     >
       <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
         <p style={{ margin: 0 }}>{outcomeSummary(outcome)}</p>
+        <ConditioningScoreLine score={score} comparison={comparison} />
         <IntensitySlider
           label="Effort"
           min={PERCEIVED_EFFORT_MIN}

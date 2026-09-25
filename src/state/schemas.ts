@@ -1004,6 +1004,75 @@ export const loadAnchorRowSchema = loadAnchorInputSchema.extend({
 export const loadAnchorListSchema = z.array(loadAnchorRowSchema)
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Conditioning history — OVR-03
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * One active prescription of a conditioning block, as `conditioning_history`
+ * aggregates it (OVR-03 §3).
+ *
+ * The columns are the ones a *score* and a *fingerprint* need and no others: a
+ * reps-per-minute rate is reps ÷ minutes, so the target shape has to travel, and
+ * "identical work" means the same exercises, the same targets, the same sides
+ * and the same loads. `rest_seconds`, `tempo` and the rest are left out
+ * deliberately — a caller that received them could start comparing two pieces
+ * on a field §3(a) does not define identity by.
+ */
+export const conditioningPrescriptionSchema = z.object({
+  exercise_id: nonBlank,
+  order_index: nonNegativeInt,
+  modality: modalitySchema,
+  sets: positiveInt.nullable(),
+  target_kind: targetKindSchema,
+  target_value: positiveInt.nullable(),
+  target_min: positiveInt.nullable(),
+  target_max: positiveInt.nullable(),
+  target_sequence: z.array(positiveInt).nullable(),
+  per_side: z.boolean(),
+  distance_unit: distanceUnitSchema.nullable(),
+  load_type: loadGuidanceSchema.nullable(),
+  load_value: z.number().nullable(),
+  equipment_used: nonBlank,
+})
+
+/**
+ * A row of `conditioning_history(...)`: one scored conditioning block, its
+ * clock, its outcome and the prescription that outcome answers.
+ *
+ * Every measurement stays nullable, for the reason `anchor_evidence` gives: the
+ * function returns the block that recorded no partial reps rather than dropping
+ * it, and refusing to score what was not observed is
+ * `src/state/conditioning.ts`'s job, per measurement rather than per row.
+ */
+export const conditioningHistoryRowSchema = z.object({
+  session_id: z.uuid(),
+  session_date: z.iso.date(),
+  effective_intensity: z.int().min(1).max(10),
+  goal_preset: goalPresetSchema.nullable(),
+  section_id: z.uuid(),
+  section_order: nonNegativeInt,
+  block_id: z.uuid(),
+  block_order: nonNegativeInt,
+  structure_type: structureTypeSchema,
+  rep_scheme: repSchemeSchema,
+  timer_type: timerContractSchema,
+  timer_seconds: positiveInt.nullable(),
+  rounds: positiveInt.nullable(),
+  round_rest_seconds: nonNegativeInt.nullable(),
+  elapsed_seconds: nonNegativeInt.nullable(),
+  completed_under_cap: z.boolean().nullable(),
+  rounds_completed: nonNegativeInt.nullable(),
+  partial_round_reps: nonNegativeInt.nullable(),
+  minutes_completed: nonNegativeInt.nullable(),
+  highest_rung: nonNegativeInt.nullable(),
+  perceived_effort: z.int().min(1).max(10).nullable(),
+  scored_at: timestamp,
+  prescriptions: z.array(conditioningPrescriptionSchema),
+})
+
+export const conditioningHistorySchema = z.array(conditioningHistoryRowSchema)
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Parsing at the boundary
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1096,6 +1165,8 @@ export type AnchorEvidenceRow = z.infer<typeof anchorEvidenceRowSchema>
 export type AnchorConfidence = z.infer<typeof anchorConfidenceSchema>
 export type LoadAnchorInput = z.infer<typeof loadAnchorInputSchema>
 export type LoadAnchorRow = z.infer<typeof loadAnchorRowSchema>
+export type ConditioningPrescription = z.infer<typeof conditioningPrescriptionSchema>
+export type ConditioningHistoryRow = z.infer<typeof conditioningHistoryRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
 export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
 export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>

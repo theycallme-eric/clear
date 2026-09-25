@@ -22,6 +22,7 @@ import {
   SYSTEM_APPEARANCE,
   type AppearanceChoice,
 } from '../state/appearance'
+import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
 import { MOOD_SCALE } from '../state/mood'
@@ -41,6 +42,7 @@ import { AtmosphereLayer } from '../ui/atmosphere'
 import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
@@ -305,6 +307,42 @@ function MoodReadingRecorded() {
 
 function MoodReadingUnanswered() {
   return <MoodReading step={null} />
+}
+
+const SAMPLE_CONDITIONING_SCORE: ConditioningScore = {
+  format: 'amrap',
+  unit: 'reps_per_minute',
+  value: 12.5,
+  completedUnderCap: null,
+  label: '12.5 reps/min',
+}
+
+const SAMPLE_SCORE_COMPARISON: ScoreComparison = {
+  current: SAMPLE_CONDITIONING_SCORE,
+  best: {
+    ...SAMPLE_CONDITIONING_SCORE,
+    value: 11.8,
+    label: '11.8 reps/min',
+  },
+  bestDate: '2026-09-17',
+  attempts: 3,
+  direction: 'ahead',
+  delta: 0.7,
+  isBest: true,
+  label: 'Previous best 11.8 reps/min',
+}
+
+function ConditioningScoreWithoutComparison() {
+  return <ConditioningScoreLine score={SAMPLE_CONDITIONING_SCORE} />
+}
+
+function ConditioningScoreWithComparison() {
+  return (
+    <ConditioningScoreLine
+      score={SAMPLE_CONDITIONING_SCORE}
+      comparison={SAMPLE_SCORE_COMPARISON}
+    />
+  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -991,6 +1029,23 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'unanswered',
         note: 'No neutral value is invented for an unanswered debrief.',
         Render: MoodReadingUnanswered,
+      },
+    ],
+  },
+  {
+    component: 'ConditioningScoreLine',
+    requirement: 'OVR-03',
+    module: 'src/ui/conditioning-score.tsx',
+    summary:
+      'Names the normalized score for timed conditioning and shows a comparison only when an identical repeat provides one.',
+    specimens: [
+      {
+        state: 'score without comparison',
+        Render: ConditioningScoreWithoutComparison,
+      },
+      {
+        state: 'identical-repeat comparison',
+        Render: ConditioningScoreWithComparison,
       },
     ],
   },

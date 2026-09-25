@@ -162,6 +162,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000008_location_writes.sql',
       '20260921000009_session_reconstruction.sql',
       '20260921000010_load_anchors.sql',
+      '20260921000011_conditioning_history.sql',
     ])
   })
 
