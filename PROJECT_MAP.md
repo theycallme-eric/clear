@@ -142,9 +142,32 @@ is CORE-03's, in `schemas.ts` with every other one. The result is a `HydratedWor
 Claude's `estimated_duration_mins` is read once, into `diagnostics.modelEstimateMins` beside the
 quality record, so there is no authoritative duration here for D5 to leak into;
 `src/test/generation-hydration.test.ts` reads that claim back out of the source and fails a third
-reader. Persisting the session is the rest of GEN-02c; until it lands,
-`generate-workout/index.ts` still refuses, typed, rather than answering with a workout it cannot
-store.
+reader.
+
+GEN-02c's last module is `persist.ts`, and what it is worth noticing for is how little of it there
+is. The transaction is not here: `persist_session(p_user_id, p_session)` (SES-01a,
+`supabase/migrations/20260921000005_session_lifecycle.sql` §5) writes sessions → sections → blocks →
+exercises in one function, and PostgREST runs one request in one transaction — so this module's whole
+contribution to "a failure leaves no partial workout" is that it makes **exactly one request** and
+never takes a second look at a failure. Four inserts issued from here could not be made atomic by any
+amount of care, and a retry could not be made safe either: the session id is minted by the database,
+so a second attempt after an ambiguous failure cannot tell "not written" from "written and the answer
+was lost", and half of those guesses would leave the user holding one workout twice.
+`acceptanceFor` is the payload, parsed by CORE-03's `sessionAcceptanceSchema` before it is sent for
+the reason `src/data/sessions.ts` parses it too — the alternative is a CHECK constraint aborting a
+transaction that has already written half a workout, which is still atomic and still says nothing a
+caller can act on. `prompt_version` and `contract_version` come off the `HydratedWorkout` rather than
+off `prompt.ts`'s constants, so a deployment that bumped the prompt between the model call and the
+write cannot stamp the new number on the old workout. What does *not* reach a row is hydration's
+facts: a name, a cue and a muscle stay in `exercise_catalog`, because re-writing them into the
+session is the drift §8 exists to prevent. Claude's estimate rides in the payload only because
+`generationOutputSchema` requires the field, and `persist_session` never mentions it — which
+`src/test/generation-persistence.test.ts` reads back out of the migration, beside one pipeline run
+per goal preset whose section arc it reads back out of the system prompt's own GOAL SHAPES block.
+Nothing calls it yet: `generate-workout/index.ts` still refuses, typed, because the handler that
+would wire GEN-02a's candidate read, HIST-01's history and GEN-06's minutes into one request is not
+this module's, and a function that answered with a workout the response envelope has no session id
+for would be GEN-01's contract changed by the back door.
 
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
