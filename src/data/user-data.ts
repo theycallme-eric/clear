@@ -14,6 +14,13 @@
  * that failed answers `err`, and a caller that cannot tell those apart is
  * defect D1 — routing a user to onboarding because their profile 500'd.
  *
+ * SET-02's location writes live here for the same reason `updatePreferences`
+ * does: they write the rows `locations` reads, and they need the same live token
+ * per call. Two of the four are database functions rather than table calls, and
+ * `20260921000008_location_writes.sql` explains why in the only terms that
+ * matter — PostgREST cannot put two statements in one transaction, and both the
+ * default move and the equipment replacement need exactly that.
+ *
  * `completeOnboarding` joins them rather than living in a module of its own
  * because it writes exactly what they read, and because it has to answer them:
  * the RPC hands back the committed profile and location so the two queries can
@@ -23,13 +30,19 @@
  */
 import { createError, err, ErrorCode, isErr, ok, type Result } from '../state/errors'
 import {
+  locationDraftSchema,
+  locationEquipmentListSchema,
   locationListSchema,
+  locationSchema,
+  locationSetupSchema,
   onboardingAnswersSchema,
   onboardingCommitSchema,
   parseBoundary,
   profilePreferencesSchema,
   profileSchema,
   type Location,
+  type LocationDraft,
+  type LocationSetup,
   type OnboardingAnswers,
   type OnboardingCommit,
   type Profile,
@@ -58,6 +71,34 @@ export interface UserDataClient {
     userId: string,
     preferences: ProfilePreferences,
   ): Promise<Result<Profile>>
+  /**
+   * SET-02's read: what one location holds, as the ids generation joins on
+   * (DATA-01b §5). Kept off `locations` deliberately — the list of places is one
+   * query and each place's contents is another, so opening a location's editor
+   * does not re-read every other one.
+   */
+  locationEquipment(locationId: string): Promise<Result<string[]>>
+  /**
+   * SET-02's write: one place and everything in it, created when the draft has
+   * no id and updated when it has one. One call because it is one transaction
+   * (`save_location`) — a location that exists carrying equipment nobody chose
+   * is the partial write an optimistic screen cannot roll back.
+   */
+  saveLocation(draft: LocationDraft): Promise<Result<LocationSetup>>
+  /**
+   * Moves the default, which is the location generation reads when a request
+   * names none. A function rather than a PATCH because "exactly one default" is
+   * an immediate unique index plus a deferred trigger (DATA-01b §4), so the two
+   * UPDATEs have to be in one transaction.
+   */
+  setDefaultLocation(locationId: string): Promise<Result<Location>>
+  /**
+   * Deletes one location; its equipment goes with it (`on delete cascade`).
+   * Nothing here reassigns the default — REQ-063 asks that deleting the default
+   * force reassignment *first*, so that is a decision the screen makes the user
+   * take, and this is only ever called on a row that is safe to remove.
+   */
+  deleteLocation(locationId: string): Promise<Result<void>>
 }
 
 export interface UserDataConfig {
@@ -168,6 +209,70 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       }
 
       return parseBoundary(profileSchema, row)
+    },
+
+    async locationEquipment(locationId) {
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      // Ordered by the id, so the list reads the same twice and a test about
+      // the set is not a test about insertion order.
+      const rows = await supa.value.from('location_equipment').select({
+        where: { location_id: locationId },
+        order: [{ column: 'equipment_id' }],
+      })
+      if (isErr(rows)) return rows
+
+      const parsed = parseBoundary(locationEquipmentListSchema, rows.value)
+      if (isErr(parsed)) return parsed
+
+      return ok(parsed.value.map((row) => row.equipment_id))
+    },
+
+    async saveLocation(draft) {
+      // Parsed on the way out as well as back, like the onboarding commit: a
+      // draft the transaction would abort halfway through — a blank name is the
+      // one a user can actually produce — never opens one.
+      const payload = parseBoundary(locationDraftSchema, draft)
+      if (isErr(payload)) return payload
+
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      // No `p_user_id`: the function reads `auth.uid()`, so the token this
+      // client presents is the only thing that names the owner.
+      const saved = await supa.value.rpc('save_location', {
+        p_name: payload.value.name,
+        p_tier: payload.value.tier,
+        p_equipment: [...payload.value.equipment],
+        p_location_id: payload.value.id,
+      })
+      if (isErr(saved)) return saved
+
+      return parseBoundary(locationSetupSchema, saved.value)
+    },
+
+    async setDefaultLocation(locationId) {
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      const moved = await supa.value.rpc('set_default_location', {
+        p_location_id: locationId,
+      })
+      if (isErr(moved)) return moved
+
+      return parseBoundary(locationSchema, moved.value)
+    },
+
+    async deleteLocation(locationId) {
+      const supa = await client()
+      if (isErr(supa)) return supa
+
+      // No owner in the predicate and none needed: `locations_delete_own` is
+      // the policy, and a row that is not the caller's matches nothing. The
+      // delete asks for no representation, so a location already gone is not an
+      // error — the screen's optimistic removal was right either way.
+      return supa.value.from('locations').delete({ id: locationId })
     },
   }
 }

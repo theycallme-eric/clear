@@ -286,6 +286,15 @@ to any file in `src/`, and `src/ui/appearance-picker.tsx` is a controlled `Choic
 the screen owns the choice, which is what makes both of its states reviewable in the gallery
 without writing a reviewer's own preference.
 
+SET-02 keeps location editing behind the protected `/settings/locations` sub-view in
+`src/app/LocationSettings.tsx`. Its optimistic list transforms and the shared onboarding equipment
+vocabulary live in `src/state/locations.ts`; the per-location equipment query is beside the existing
+profile and location queries in `src/state/user-queries.ts`; and the authenticated reads/writes are
+part of `src/data/user-data.ts`. `supabase/migrations/20260921000008_location_writes.sql` owns the
+two writes PostgREST cannot make atomic by itself: replacing a location and its equipment together,
+and moving the single default. The next generation already reads `location_equipment`, so saving
+that editor changes eligibility through the existing generation path rather than a UI-only copy.
+
 One thing genuinely cannot follow a token, and that is why `src/app/favicon.ts` exists: a favicon
 reads no stylesheet. The mark is therefore committed once per skin under `public/icons/`, outside
 `src/` because those two hexes are literal values the DS-08 gate correctly refuses in app-owned

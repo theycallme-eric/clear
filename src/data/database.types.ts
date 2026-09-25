@@ -16,6 +16,7 @@
  *   supabase/migrations/20260921000005_session_lifecycle.sql
  *   supabase/migrations/20260921000006_streak_sessions.sql
  *   supabase/migrations/20260921000007_complete_onboarding.sql
+ *   supabase/migrations/20260921000008_location_writes.sql
  */
 
 export type Json =
@@ -689,6 +690,15 @@ export type Database = {
         }
         Returns: Json
       }
+      save_location: {
+        Args: {
+          p_name: string
+          p_tier: Database['public']['Enums']['equipment_tier']
+          p_equipment?: string[] | null
+          p_location_id?: string | null
+        }
+        Returns: Json
+      }
       session_snapshot: {
         Args: {
           p_session_id: string
@@ -702,6 +712,12 @@ export type Database = {
           p_abandoned_at: string
         }
         Returns: Database['public']['Enums']['session_state']
+      }
+      set_default_location: {
+        Args: {
+          p_location_id: string
+        }
+        Returns: Json
       }
       start_session: {
         Args: {

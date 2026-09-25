@@ -41,6 +41,12 @@ export const SCREENS: readonly E2eScreen[] = [
   // covered by `src/app/Settings.test.tsx`, without putting credentials in
   // preview CI.
   { path: '/settings', route: '/settings', title: 'Welcome · CLEAR', heading: 'CLEAR' },
+  {
+    path: '/settings/locations',
+    route: '/settings/locations',
+    title: 'Welcome · CLEAR',
+    heading: 'CLEAR',
+  },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {

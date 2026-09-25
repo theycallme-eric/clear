@@ -158,6 +158,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000005_session_lifecycle.sql',
       '20260921000006_streak_sessions.sql',
       '20260921000007_complete_onboarding.sql',
+      '20260921000008_location_writes.sql',
     ])
   })
 

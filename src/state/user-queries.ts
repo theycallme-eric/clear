@@ -45,6 +45,15 @@ export function locationsQueryKey(userId: string): string {
 }
 
 /**
+ * Keyed by the location, not by the user: SET-02 opens one place's editor at a
+ * time, and a key naming the user would make every other place's equipment
+ * stale the moment one of them was saved.
+ */
+export function locationEquipmentQueryKey(locationId: string): string {
+  return `location-equipment:${locationId}`
+}
+
+/**
  * `enabled` is how a guard that has no business reading this data declines to.
  * The public-only guard passes `false`: a visitor on their way off `/login`
  * is authenticated for one render, and firing two requests they will never
@@ -77,6 +86,27 @@ export function useLocationsQuery(enabled = true): QueryResult<Location[]> {
     useCallback(
       () => (userId === null ? signedOut<Location[]>() : userData.locations(userId)),
       [userData, userId],
+    ),
+  )
+}
+
+/**
+ * What one location holds (SET-02). `null` disables it, which is how the editor
+ * asks for nothing while it is closed and while a new place has no id yet.
+ */
+export function useLocationEquipmentQuery(
+  locationId: string | null,
+): QueryResult<string[]> {
+  const userData = useUserData()
+
+  return useQuery(
+    locationId === null ? null : locationEquipmentQueryKey(locationId),
+    useCallback(
+      () =>
+        locationId === null
+          ? signedOut<string[]>()
+          : userData.locationEquipment(locationId),
+      [userData, locationId],
     ),
   )
 }

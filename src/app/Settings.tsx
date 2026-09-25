@@ -31,7 +31,7 @@
  *      screen; a control now would be an affordance that lies, so this row
  *      states where the answer lives and offers nothing.
  */
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -43,12 +43,12 @@ import {
   EmptyState,
   Input,
   LogOut,
+  ChevronRight,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { constraintsQueryKey, useConstraintsQuery, useUserConstraints } from '../state/constraint-queries'
 import type { UserConstraint } from '../data/constraints'
 import type { Enums } from '../data/database.types'
-import type { AppError, Result } from '../state/errors'
 import { EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboarding'
 import { useQueryClient } from '../state/query'
 import type { Profile, ProfilePreferences } from '../state/schemas'
@@ -66,7 +66,6 @@ import {
   withPreferences,
   withSection,
 } from '../state/settings'
-import { showErrorToast } from '../state/toasts'
 import { profileQueryKey, useProfileQuery, useUserData } from '../state/user-queries'
 import {
   viewEmpty,
@@ -77,6 +76,7 @@ import {
 } from '../state/view-state'
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
+import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
 import { ANONYMOUS_HOME } from './guards'
@@ -132,60 +132,9 @@ export function Settings() {
   )
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Saving
-// ─────────────────────────────────────────────────────────────────────────────
-
-type SaveStatus = 'idle' | 'saving' | 'saved'
-
-/**
- * One inline save, reported where the control is.
- *
- * The optimistic write and its rollback are the caller's — only it knows which
- * cache entry the change belongs to — and this owns the part every save on the
- * screen shares: a busy state while the write is in flight, a settled one after
- * it, and a toast for the failure, because the screen still stands and an
- * `ErrorView` would replace a working card with an error page.
- */
-function useInlineSave(): {
-  readonly status: SaveStatus
-  readonly save: <T>(
-    write: () => Promise<Result<T>>,
-    onFailure: (error: AppError) => void,
-  ) => Promise<void>
-} {
-  const [status, setStatus] = useState<SaveStatus>('idle')
-
-  const save = useCallback(
-    async <T,>(
-      write: () => Promise<Result<T>>,
-      onFailure: (error: AppError) => void,
-    ) => {
-      setStatus('saving')
-      const result = await write()
-
-      if (!result.ok) {
-        setStatus('idle')
-        onFailure(result.error)
-        showErrorToast(result.error)
-        return
-      }
-      setStatus('saved')
-    },
-    [],
-  )
-
-  return { status, save }
-}
-
-/** The save's own polite status line — never colour alone, and never a spinner. */
-function SaveStatusLine({ status }: { status: SaveStatus }) {
-  return (
-    <p className="label" role="status">
-      {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : ' '}
-    </p>
-  )
-}
+// Saving is shared, not copied: `src/ui/inline-save.tsx` owns the busy state,
+// the settled state and the failure toast for both settings screens, and each
+// caller owns the cache entry it writes optimistically and rolls back.
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Preferences
@@ -463,11 +412,20 @@ function LimitationsEditor({
  * button now would be an affordance that lies.
  */
 function TrainingPlacesCard() {
+  const navigate = useNavigate()
+
   return (
     <Card>
       <div className="clr-stack">
         <Heading>Places and equipment</Heading>
-        <p>Editing where you train, and what is there, is being rebuilt.</p>
+        <p>Manage where you train and the equipment available at each place.</p>
+        <Button
+          variant="secondary"
+          icon={<ChevronRight size={20} />}
+          onClick={() => void navigate('/settings/locations')}
+        >
+          Manage places
+        </Button>
       </div>
     </Card>
   )
