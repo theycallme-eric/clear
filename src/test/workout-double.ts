@@ -19,6 +19,7 @@ import type {
   LoadAnchorRow,
   ReconstructionKind,
   SessionReconstruction,
+  SavedWorkoutAttemptRow,
   SavedWorkoutRow,
   SessionSnapshot,
   WorkoutBlockRow,
@@ -440,6 +441,8 @@ export interface WorkoutDoubleOptions {
   anchorEvidence?: readonly AnchorEvidenceRow[]
   /** FAV-01's favorites the user already keeps, newest first. */
   favorites?: readonly SavedWorkoutRow[]
+  /** FAV-02: attempts already made at those favorites, completed or not. */
+  favoriteAttempts?: readonly SavedWorkoutAttemptRow[]
   /** Overrides for the favorites client, for the tests about its failures. */
   favoritesClient?: Partial<FavoritesClient>
 }
@@ -465,8 +468,8 @@ export interface WorkoutDouble {
   stored(): SessionSnapshot | null
   /** The favorites the double now holds, newest first (FAV-01). */
   favorites(): SavedWorkoutRow[]
-  /** Every attempt at a favorite, and whether it has been completed. */
-  attempts(): { savedWorkoutId: string; sessionId: string; completed: boolean }[]
+  /** Every attempt at a favorite, as the rows themselves (FAV-02). */
+  attempts(): SavedWorkoutAttemptRow[]
 }
 
 /**
@@ -759,8 +762,13 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   // that saves a favorite and then reads the list is asserting that the two
   // agree — and `recordCompletion` counts the attempts it has, which is what
   // the function it stands in for does.
+  //
+  // FAV-02 reads the same rows back: an attempt is a real
+  // `saved_workout_completions` row here, so `completed_at` is the null that
+  // distinguishes an abandonment from a completion rather than a boolean this
+  // file invented.
   const favoriteRows: SavedWorkoutRow[] = [...(options.favorites ?? [])]
-  const attempts: { savedWorkoutId: string; sessionId: string; completed: boolean }[] = []
+  const attempts: SavedWorkoutAttemptRow[] = [...(options.favoriteAttempts ?? [])]
 
   const favorites: FavoritesClient = {
     async list() {
@@ -792,30 +800,51 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       }
       favoriteRows.unshift(row)
       attempts.push({
-        savedWorkoutId: row.id,
-        sessionId: draft.original_session_id,
-        completed: true,
+        id: fixtureId('c', attempts.length + 1),
+        saved_workout_id: row.id,
+        session_id: draft.original_session_id,
+        started_at: at,
+        completed_at: at,
       })
       return ok(row)
     },
     async attempt(savedWorkoutId, sessionId) {
-      if (!attempts.some((entry) => entry.sessionId === sessionId)) {
-        attempts.push({ savedWorkoutId, sessionId, completed: false })
+      if (!attempts.some((entry) => entry.session_id === sessionId)) {
+        attempts.push({
+          id: fixtureId('c', attempts.length + 1),
+          saved_workout_id: savedWorkoutId,
+          session_id: sessionId,
+          started_at: '2026-09-26T11:00:00+00:00',
+          completed_at: null,
+        })
       }
       return ok(undefined)
     },
+    async attempts(savedWorkoutId) {
+      return ok(
+        attempts
+          .filter((entry) => entry.saved_workout_id === savedWorkoutId)
+          .sort((left, right) =>
+            (right.completed_at ?? right.started_at).localeCompare(
+              left.completed_at ?? left.started_at,
+            ),
+          ),
+      )
+    },
     async recordCompletion(sessionId) {
-      const attempt = attempts.find((entry) => entry.sessionId === sessionId)
+      const attempt = attempts.find((entry) => entry.session_id === sessionId)
       if (attempt === undefined) return ok({ outcome: 'not_a_favorite', favorite: null })
 
-      attempt.completed = true
-      const index = favoriteRows.findIndex((row) => row.id === attempt.savedWorkoutId)
+      attempt.completed_at = '2026-09-26T12:00:00+00:00'
+      const index = favoriteRows.findIndex((row) => row.id === attempt.saved_workout_id)
       if (index === -1) return ok({ outcome: 'not_a_favorite', favorite: null })
 
       const updated: SavedWorkoutRow = {
         ...favoriteRows[index],
         times_completed: attempts.filter(
-          (entry) => entry.savedWorkoutId === attempt.savedWorkoutId && entry.completed,
+          (entry) =>
+            entry.saved_workout_id === attempt.saved_workout_id &&
+            entry.completed_at !== null,
         ).length,
         last_completed_at: '2026-09-26T12:00:00+00:00',
       }

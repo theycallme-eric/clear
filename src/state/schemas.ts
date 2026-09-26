@@ -1133,6 +1133,26 @@ export const savedWorkoutRowSchema = z.object({
 export const savedWorkoutListSchema = z.array(savedWorkoutRowSchema)
 
 /**
+ * `saved_workout_completions` (favorites-v2 §Schema) — one attempt at a
+ * favorite, as FAV-02's progression read walks them.
+ *
+ * `completed_at` is nullable and the null is load-bearing: an attempt that was
+ * started and abandoned is a row without one, which is what keeps
+ * `times_completed` to full completions (favorites-v2 §Incomplete Attempt) and
+ * what tells a progression read which sessions it is entitled to compare.
+ */
+export const savedWorkoutAttemptRowSchema = z.object({
+  id: z.uuid(),
+  saved_workout_id: z.uuid(),
+  session_id: z.uuid(),
+  started_at: timestamp,
+  completed_at: timestamp.nullable(),
+})
+
+/** Every attempt at one favorite. An empty list is a favorite never started. */
+export const savedWorkoutAttemptListSchema = z.array(savedWorkoutAttemptRowSchema)
+
+/**
  * What `save_favorite` is called with: the snapshot, the version it was
  * written under, and the metadata the list states.
  *
@@ -1502,6 +1522,7 @@ export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
 export type WorkoutSnapshot = z.infer<typeof workoutSnapshotSchema>
 export type SavedWorkoutRow = z.infer<typeof savedWorkoutRowSchema>
 export type SavedWorkoutDraft = z.infer<typeof savedWorkoutDraftSchema>
+export type SavedWorkoutAttemptRow = z.infer<typeof savedWorkoutAttemptRowSchema>
 export type FavoriteOutcome = z.infer<typeof favoriteOutcomeSchema>
 export type FavoriteResult = z.infer<typeof favoriteResultSchema>
 export type ReviewHandoff = z.infer<typeof reviewHandoffSchema>

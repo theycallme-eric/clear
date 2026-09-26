@@ -85,11 +85,24 @@ export interface ReviewProps {
   readonly acceptance: SessionAcceptance
   /** Discards this composition and asks for another. Confirmed before it fires. */
   readonly onRegenerate: () => void
+  /**
+   * FAV-02's repeat surface, when this composition came from a favorite: what
+   * happened the last times it was performed. A slot rather than a query,
+   * because the history belongs to the favorite and this screen renders a
+   * composition — a fresh generation has no such history, and passing nothing
+   * is how it says so.
+   */
+  readonly progression?: ReactNode
   /** The persisted, running session — for a caller that has state to clear. */
   readonly onStarted?: (snapshot: SessionSnapshot) => void
 }
 
-export function Review({ acceptance, onRegenerate, onStarted }: ReviewProps) {
+export function Review({
+  acceptance,
+  onRegenerate,
+  onStarted,
+  progression = null,
+}: ReviewProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { sessions } = useWorkoutClients()
@@ -159,6 +172,11 @@ export function Review({ acceptance, onRegenerate, onStarted }: ReviewProps) {
           adjustment={briefing.adjustment}
           movementCount={briefing.movementCount}
         />
+
+        {/* Above the sections, because it is context for the workout rather
+            than part of the prescription: what happened last time is what a
+            person reads before deciding how to attack it. */}
+        {progression}
 
         {briefing.sections.map((section) => (
           <ReviewSectionCard key={section.key} section={section} />
