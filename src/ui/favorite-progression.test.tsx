@@ -28,7 +28,7 @@ function run(day: string, elapsed: number, weight: number): FavoriteRun {
       blocks: [
         {
           structureType: 'for_time',
-          timerType: 'cap',
+          timerType: 'count_up',
           timerSeconds: 900,
           result: { elapsed_seconds: elapsed, completed_under_cap: true },
         },

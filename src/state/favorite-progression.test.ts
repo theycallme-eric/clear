@@ -62,7 +62,7 @@ function forTime(elapsed: number, underCap = true): SectionFixture {
       {
         structureType: 'for_time',
         timerSeconds: 900,
-        timerType: 'cap',
+        timerType: 'count_up',
         result: { elapsed_seconds: elapsed, completed_under_cap: underCap },
       },
     ],
@@ -78,7 +78,7 @@ function amrap(rounds: number, partial: number | null = null): SectionFixture {
       {
         structureType: 'amrap',
         timerSeconds: 600,
-        timerType: 'window',
+        timerType: 'countdown',
         result: { rounds_completed: rounds, partial_round_reps: partial },
       },
     ],
@@ -184,7 +184,7 @@ describe('the comparable readings of one run', () => {
     const unscored: SectionFixture = {
       title: 'Conditioning',
       sectionType: 'conditioning',
-      blocks: [{ structureType: 'for_time', timerSeconds: 900, timerType: 'cap' }],
+      blocks: [{ structureType: 'for_time', timerSeconds: 900, timerType: 'count_up' }],
     }
 
     expect(runMeasures(run('2026-09-01', [unscored]).performed)).toEqual([])
