@@ -200,6 +200,9 @@ export function quickStartPlan(
         location_id: row.location_id,
         // Notes were context for that composition, not a standing preference.
         notes: null,
+        // Quick Start has no deload prompt. OVR-04 forbids applying one without
+        // the user's explicit choice, so repeating a request is an ordinary day.
+        deload: false,
       },
       sessionId: row.id,
       title: row.title,

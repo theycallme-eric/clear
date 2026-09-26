@@ -47,6 +47,10 @@ export function DeloadBanner({ suggestion, applied, onApply, onDismiss }: Deload
   return (
     <div
       role="status"
+      // Named, because `role="status"` is not unique on a screen (AppChrome
+      // owns the app's own live region) and an unnamed one is announced as an
+      // anonymous update rather than as the thing the app noticed.
+      aria-label="Deload suggestion"
       className="clr-chamfer clr-chamfer--md clr-stack--tight"
       style={
         {

@@ -110,6 +110,7 @@ describe('quickStartPlan', () => {
         requested_intensity: 8,
         location_id: LOCATION_ID,
         notes: null,
+        deload: false,
       },
     })
   })

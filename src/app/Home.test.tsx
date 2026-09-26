@@ -61,6 +61,7 @@ describe('Home', () => {
           requested_intensity: 6,
           location_id: LOCATION_ID,
           notes: null,
+          deload: false,
         },
       ])
     })

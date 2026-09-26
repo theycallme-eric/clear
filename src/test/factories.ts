@@ -423,6 +423,9 @@ export function makeSessionAcceptance(
     generation_notes: null,
     prompt_version: 'p-1.0.0',
     contract_version: CONTRACT_VERSION,
+    // OVR-04: an ordinary session, which is what a factory without an opinion
+    // should build. A test about a deload says so by overriding it.
+    is_deload: false,
     workout: makeGenerationOutput(),
     ...overrides,
   }
