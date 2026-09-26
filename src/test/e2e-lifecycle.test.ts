@@ -454,6 +454,8 @@ describe('the RLS namespace covers the owner-scoped schema (ENV-07)', () => {
       'workout_exercises',
       'exercise_set_logs',
       'load_anchors',
+      'saved_workouts',
+      'saved_workout_completions',
     ])
   })
 

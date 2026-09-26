@@ -119,6 +119,7 @@ export function fixtureIds(namespace = NAMESPACE) {
     workoutSection: { a: id(4, 'a', namespace), b: id(4, 'b', namespace) },
     workoutBlock: { a: id(5, 'a', namespace), b: id(5, 'b', namespace) },
     blockResult: { a: id(6, 'a', namespace), b: id(6, 'b', namespace) },
+    savedWorkout: { a: id(7, 'a', namespace), b: id(7, 'b', namespace) },
   }
 }
 
@@ -145,9 +146,10 @@ export const FIXTURE_EQUIPMENT_ID = 'barbell'
  * everything and expect nothing" — unaffected by whatever else lives in the
  * reused project.
  *
- * `seeded: false` marks the two tables whose rows cannot be constructed from
- * the schema alone: both require an `exercise_definitions` id, and the catalog
- * is applied by its own task. They are still proved — a write for user B must
+ * `seeded: false` marks the tables whose rows cannot be constructed from the
+ * schema alone: each needs an `exercise_definitions` id — directly, or inside
+ * the workout snapshot a favorite stores — and the catalog is applied by its
+ * own task. They are still proved — a write for user B must
  * be refused, and a read of user B's rows must return none — they simply have
  * no seeded row to read. When the catalog is applied, they gain one here and
  * nothing else changes.
@@ -190,6 +192,10 @@ export function rowSelector(table, slot, userId) {
       return { workout_exercise_id: `eq.${FIXTURE_IDS.workoutBlock[slot]}` }
     case 'load_anchors':
       return { user_id: `eq.${userId}` }
+    case 'saved_workouts':
+      return { user_id: `eq.${userId}` }
+    case 'saved_workout_completions':
+      return { saved_workout_id: `eq.${FIXTURE_IDS.savedWorkout[slot]}` }
     default:
       throw new Error(`No row selector for ${table}`)
   }
@@ -282,6 +288,20 @@ export function forgedRow(table, slot, userId) {
       confidence: 'high',
       session_count: 1,
       last_session_date: '2026-01-01',
+    },
+    saved_workouts: {
+      id: FIXTURE_IDS.savedWorkout[slot],
+      user_id: userId,
+      workout_snapshot: {},
+      snapshot_contract_version: '4.1.0',
+      title: 'Forged by the other user',
+      session_focus: 'full_body',
+      intensity: 5,
+      duration_mins: 30,
+    },
+    saved_workout_completions: {
+      saved_workout_id: FIXTURE_IDS.savedWorkout[slot],
+      session_id: FIXTURE_IDS.workoutSession[slot],
     },
   }[table]
 

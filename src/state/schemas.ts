@@ -1056,6 +1056,125 @@ export const sessionDebriefSchema = z.object({
   session_notes: z.string().max(2000).nullable(),
 })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Favorites — FAV-01
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What a favorite stores: an acceptance payload without its date.
+ *
+ * A snapshot is the composed workout plus the facts it was composed under —
+ * exactly what Review renders and exactly what `persist_session` takes — so it
+ * is `sessionAcceptanceSchema` rather than a second description of the same
+ * thing, and a restart is a parse followed by a normal acceptance. The one
+ * field that is dropped is `date`: a favorite is performed on the day it is
+ * restarted, and storing the original day would restart a workout into the
+ * past.
+ *
+ * Strict, like the payload it is taken from: a key nothing reads is a fact the
+ * user believes was kept.
+ */
+export const workoutSnapshotSchema = sessionAcceptanceSchema.omit({ date: true })
+
+/**
+ * The snapshot schemas this build can read, keyed by the version a row states
+ * (DATA_MODEL §11).
+ *
+ * The registry is the whole of "validated against the schema for **that**
+ * version". A favorite carries `snapshot_contract_version` because the shape
+ * of a workout changes — structured prescriptions already changed it once —
+ * and restoring against whatever the app currently parses would either fail
+ * deep inside a screen or, worse, succeed with fields silently missing.
+ *
+ * One entry today. When contract 5 lands, its schema joins this map and 4.1.0
+ * either stays (still restorable) or leaves (restorable no longer, and every
+ * favorite saved under it says so in one clear sentence instead of failing
+ * obscurely). That is a decision made in this file, visibly, rather than a
+ * behaviour that emerges from a parse error.
+ */
+export const SNAPSHOT_SCHEMAS: Readonly<Record<string, typeof workoutSnapshotSchema>> = {
+  [CONTRACT_VERSION]: workoutSnapshotSchema,
+}
+
+/** The schema for a stated version, or `null` when this build cannot read it. */
+export function snapshotSchemaFor(version: string): typeof workoutSnapshotSchema | null {
+  return SNAPSHOT_SCHEMAS[version] ?? null
+}
+
+/**
+ * `saved_workouts` (favorites-v2 §Schema).
+ *
+ * `workout_snapshot` is `unknown` here and that is deliberate: this schema
+ * parses the *row*, and the document inside it is parsed separately against
+ * the schema its own `snapshot_contract_version` names. Parsing both together
+ * would make an unreadable snapshot into an unreadable favorite — the list
+ * could not draw the row, and the user would be told nothing about why.
+ *
+ * The four metadata columns mirror the table's CHECK constraints, so a row
+ * that parses is one the database can hold.
+ */
+export const savedWorkoutRowSchema = z.object({
+  id: z.uuid(),
+  user_id: z.uuid(),
+  original_session_id: z.uuid().nullable(),
+  workout_snapshot: z.unknown(),
+  snapshot_contract_version: nonBlank,
+  title: nonBlank,
+  session_focus: sessionFocusSchema,
+  intensity: z.int().min(1).max(10),
+  duration_mins: positiveInt,
+  times_completed: nonNegativeInt,
+  last_completed_at: timestamp.nullable(),
+  created_at: timestamp,
+  updated_at: timestamp,
+})
+
+/** The favorites tab's read: newest first, and an empty list is an answer. */
+export const savedWorkoutListSchema = z.array(savedWorkoutRowSchema)
+
+/**
+ * What `save_favorite` is called with: the snapshot, the version it was
+ * written under, and the metadata the list states.
+ *
+ * Strict, like every other write that becomes a transaction. The title, focus,
+ * intensity and duration are also inside the snapshot; they are sent
+ * separately because the list reads them as columns, and because they must go
+ * on meaning what they meant the day the favorite was saved.
+ */
+export const savedWorkoutDraftSchema = z.strictObject({
+  original_session_id: z.uuid(),
+  workout_snapshot: workoutSnapshotSchema,
+  snapshot_contract_version: nonBlank,
+  title: nonBlank,
+  session_focus: sessionFocusSchema,
+  intensity: z.int().min(1).max(10),
+  duration_mins: positiveInt,
+})
+
+/**
+ * What the two favorite functions answer with, in the same vocabulary the
+ * lifecycle functions use and for the same reason: an outcome is an event, and
+ * a function that raised would cross PostgREST as a Postgres message.
+ *
+ * `not_a_favorite` is the ordinary answer rather than a refusal — completion
+ * asks about every session, because nothing should have to remember where a
+ * session came from.
+ */
+export const FAVORITE_OUTCOMES = [
+  'saved',
+  'already_saved',
+  'recorded',
+  'not_completed',
+  'not_a_favorite',
+  'session_not_found',
+] as const
+export const favoriteOutcomeSchema = z.enum(FAVORITE_OUTCOMES)
+
+export const favoriteResultSchema = z.object({
+  outcome: favoriteOutcomeSchema,
+  favorite: savedWorkoutRowSchema.nullish(),
+})
+
 /**
  * Contract-only vocabulary, and the third exception to "no second vocabulary".
  * These are what the lifecycle functions answer with, and no column holds one:
@@ -1359,6 +1478,11 @@ export type LoadAnchorRow = z.infer<typeof loadAnchorRowSchema>
 export type ConditioningPrescription = z.infer<typeof conditioningPrescriptionSchema>
 export type ConditioningHistoryRow = z.infer<typeof conditioningHistoryRowSchema>
 export type SessionDebrief = z.infer<typeof sessionDebriefSchema>
+export type WorkoutSnapshot = z.infer<typeof workoutSnapshotSchema>
+export type SavedWorkoutRow = z.infer<typeof savedWorkoutRowSchema>
+export type SavedWorkoutDraft = z.infer<typeof savedWorkoutDraftSchema>
+export type FavoriteOutcome = z.infer<typeof favoriteOutcomeSchema>
+export type FavoriteResult = z.infer<typeof favoriteResultSchema>
 export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
 export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>
