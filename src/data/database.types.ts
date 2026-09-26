@@ -22,6 +22,7 @@
  *   supabase/migrations/20260921000011_conditioning_history.sql
  *   supabase/migrations/20260921000012_swap_session_block.sql
  *   supabase/migrations/20260921000013_swap_anchor_exclusion.sql
+ *   supabase/migrations/20260921000014_rest_days.sql
  */
 
 export type Json =
@@ -346,6 +347,35 @@ export type Database = {
           enabled_sections?: Database['public']['Enums']['section_type'][]
           weight_unit?: Database['public']['Enums']['weight_unit']
           onboarded_at?: string | null
+        }
+      }
+      rest_days: {
+        Row: {
+          id: string
+          user_id: string
+          day: string
+          reason: Database['public']['Enums']['rest_day_reason']
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          day: string
+          reason: Database['public']['Enums']['rest_day_reason']
+          note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          day?: string
+          reason?: Database['public']['Enums']['rest_day_reason']
+          note?: string | null
+          created_at?: string
+          updated_at?: string
         }
       }
       user_constraints: {
@@ -733,6 +763,14 @@ export type Database = {
         }
         Returns: string
       }
+      mark_rest_day: {
+        Args: {
+          p_day: string
+          p_reason: Database['public']['Enums']['rest_day_reason']
+          p_note?: string | null
+        }
+        Returns: Database['public']['Tables']['rest_days']['Row']
+      }
       persist_session: {
         Args: {
           p_user_id: string
@@ -863,6 +901,7 @@ export type Database = {
       prescription_origin: 'generated' | 'revised'
       reconstruction_kind: 'generated' | 'intended_at_start' | 'performed'
       rep_scheme: 'fixed' | 'ladder_up' | 'ladder_down' | 'pyramid' | 'inverse' | 'n_plus_one' | 'ladder_fixed_interval'
+      rest_day_reason: 'rest' | 'injury' | 'sick' | 'vacation'
       revision_status: 'active' | 'superseded'
       section_type: 'warmup' | 'mobility' | 'primary_lift' | 'accessory' | 'skill_power' | 'carries' | 'core' | 'stability_balance' | 'conditioning' | 'cooldown'
       session_focus: 'upper_body' | 'lower_body' | 'full_body' | 'power'
@@ -921,6 +960,7 @@ export const Constants = {
       prescription_origin: ['generated', 'revised'],
       reconstruction_kind: ['generated', 'intended_at_start', 'performed'],
       rep_scheme: ['fixed', 'ladder_up', 'ladder_down', 'pyramid', 'inverse', 'n_plus_one', 'ladder_fixed_interval'],
+      rest_day_reason: ['rest', 'injury', 'sick', 'vacation'],
       revision_status: ['active', 'superseded'],
       section_type: ['warmup', 'mobility', 'primary_lift', 'accessory', 'skill_power', 'carries', 'core', 'stability_balance', 'conditioning', 'cooldown'],
       session_focus: ['upper_body', 'lower_body', 'full_body', 'power'],

@@ -1009,6 +1009,38 @@ export const streakSessionRowSchema = z.object({
 export const streakSessionPageSchema = z.array(streakSessionRowSchema)
 
 /**
+ * HOME-02's marked rest day: why a day the user took off was taken off.
+ *
+ * `day` is a date and not a timestamp, exactly as the column is — the row
+ * records a decision about a calendar day in the user's own zone, and an
+ * instant would make the reader decide again which day was meant.
+ */
+export const restDayReasonSchema = z.enum(Constants.public.Enums.rest_day_reason)
+
+export const restDayRowSchema = z.object({
+  id: z.uuid(),
+  user_id: z.uuid(),
+  day: z.iso.date(),
+  reason: restDayReasonSchema,
+  note: z.string().nullable(),
+  created_at: timestamp,
+  updated_at: timestamp,
+})
+
+export const restDayPageSchema = z.array(restDayRowSchema)
+
+/**
+ * The write, validated before it is sent. The note's ceiling is the one every
+ * other piece of user prose in this file uses; the column is unbounded `text`,
+ * and an app that accepts any length has no answer for a pasted novel.
+ */
+export const restDayMarkSchema = z.object({
+  day: z.iso.date(),
+  reason: restDayReasonSchema,
+  note: z.string().max(2000).nullable(),
+})
+
+/**
  * SUM-01's write: the two columns the debrief owns on `workout_sessions`.
  *
  * Both are nullable and both mean the same thing when they are null — not
@@ -1317,6 +1349,9 @@ export type ExerciseDefinitionRow = z.infer<typeof exerciseDefinitionRowSchema>
 export type ExerciseCatalogRow = z.infer<typeof exerciseCatalogRowSchema>
 export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>
 export type StreakSessionRow = z.infer<typeof streakSessionRowSchema>
+export type RestDayReason = z.infer<typeof restDayReasonSchema>
+export type RestDayRow = z.infer<typeof restDayRowSchema>
+export type RestDayMark = z.infer<typeof restDayMarkSchema>
 export type AnchorEvidenceRow = z.infer<typeof anchorEvidenceRowSchema>
 export type AnchorConfidence = z.infer<typeof anchorConfidenceSchema>
 export type LoadAnchorInput = z.infer<typeof loadAnchorInputSchema>

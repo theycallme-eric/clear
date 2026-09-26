@@ -72,7 +72,18 @@ import {
 } from '../state/home'
 import type { HistorySessionEntry } from '../state/history'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
-import type { WorkoutSessionRow } from '../state/schemas'
+import { isErr } from '../state/errors'
+import {
+  useMarkRestDay,
+  useRestDaysQuery,
+} from '../state/rest-day-queries'
+import {
+  REST_DAY_REASONS,
+  REST_DAY_REASON_EFFECTS,
+  REST_DAY_REASON_LABELS,
+  restDayIndex,
+} from '../state/rest-days'
+import type { RestDayReason, WorkoutSessionRow } from '../state/schemas'
 import {
   defaultSuggestionStorage,
   suggestSession,
@@ -93,6 +104,7 @@ import {
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
 import { WorkoutListItem } from '../ui/history-list'
+import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { GenerationLoading } from './GenerationLoading'
@@ -116,6 +128,7 @@ export const SUGGESTION_EMPTY =
 
 export function Home() {
   const history = useHistoryQuery()
+  const restDays = useRestDaysQuery()
   const generation = useGeneration()
   const navigate = useNavigate()
 
@@ -124,7 +137,17 @@ export function Home() {
 
   // Derived once per answer rather than per render: three walks over the same
   // page, and the page only changes when the read does.
-  const week = useMemo(() => weekStrip(sessions ?? []), [sessions])
+  const marks = useMemo(
+    () =>
+      restDays.state.status === 'ready'
+        ? restDayIndex(restDays.state.data)
+        : null,
+    [restDays.state],
+  )
+  const week = useMemo(
+    () => weekStrip(sessions ?? [], { restDays: marks ?? undefined }),
+    [marks, sessions],
+  )
   const recents = useMemo(() => recentWorkouts(sessions ?? []), [sessions])
   const plan = useMemo(
     () => (sessions === null ? null : quickStartPlan(sessions)),
@@ -165,7 +188,11 @@ export function Home() {
       </AppHeader>
       <Screen title="CLEAR" heading={HOME_HEADING}>
         <div className="clr-stack">
-          <TrainingWeek query={history} week={week} />
+          <TrainingWeek query={history} restDays={restDays} week={week} />
+          <RestDayControl
+            today={week.find((day) => day.isToday)}
+            available={restDays.state.status === 'ready'}
+          />
 
           {/* EXE-01: a workout the user left the app in the middle of is the
               first thing Home has to answer for, and it answers in the page. */}
@@ -204,14 +231,24 @@ export function Home() {
  * the strip is *told*: nothing yet, nothing this week, this is what happened,
  * or the read failed and here is the retry.
  */
-function TrainingWeek({ query, week }: { query: HistoryQuery; week: readonly WeekDay[] }) {
+function TrainingWeek({
+  query,
+  restDays,
+  week,
+}: {
+  query: HistoryQuery
+  restDays: ReturnType<typeof useRestDaysQuery>
+  week: readonly WeekDay[]
+}) {
   const trained = daysTrained(week)
 
   const state: ViewState<readonly WeekDay[]> =
-    query.state.status === 'loading'
+    query.state.status === 'loading' || restDays.state.status === 'loading'
       ? viewLoading()
       : query.state.status === 'error'
         ? viewError(query.state.error)
+        : restDays.state.status === 'error'
+          ? viewError(restDays.state.error)
         : trained === 0
           ? viewEmpty()
           : viewReady(week)
@@ -225,7 +262,10 @@ function TrainingWeek({ query, week }: { query: HistoryQuery; week: readonly Wee
           state={state}
           loadingLabel="Reading your training week"
           errorTitle="This week didn’t load"
-          onRetry={query.refetch}
+          onRetry={() => {
+            query.refetch()
+            restDays.refetch()
+          }}
           empty={
             <>
               <WeekStrip days={week} label={WEEK_STRIP_LABEL} />
@@ -242,6 +282,95 @@ function TrainingWeek({ query, week }: { query: HistoryQuery; week: readonly Wee
             </>
           )}
         </ViewStateSwitch>
+      </div>
+    </Card>
+  )
+}
+
+/** HOME-02's one marking affordance, on Home and nowhere else. */
+function RestDayControl({
+  today,
+  available,
+}: {
+  today: WeekDay | undefined
+  available: boolean
+}) {
+  const write = useMarkRestDay()
+  const [editing, setEditing] = useState(false)
+  const [reason, setReason] = useState<RestDayReason>('rest')
+  const [failure, setFailure] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  // A performed workout wins over a mark in the strip and makes marking rest
+  // nonsensical, so the affordance is absent rather than disabled.
+  if (today === undefined || today.state === 'workout' || !available) return null
+
+  const begin = () => {
+    setReason(today.reason ?? 'rest')
+    setFailure(false)
+    setSaved(false)
+    setEditing(true)
+  }
+
+  const save = async () => {
+    setFailure(false)
+    const result = await write.mark({ day: today.day, reason, note: null })
+    if (isErr(result)) {
+      setFailure(true)
+      return
+    }
+
+    setEditing(false)
+    setSaved(true)
+  }
+
+  return (
+    <Card>
+      <div className="clr-stack clr-stack--tight">
+        <Heading>Rest day</Heading>
+        {today.reason === null ? (
+          <p style={{ margin: 0 }}>
+            Not training today? Mark why so your streak follows the right rule.
+          </p>
+        ) : (
+          <p style={{ margin: 0 }}>
+            Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
+          </p>
+        )}
+
+        {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
+        {failure && (
+          <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+            The rest day wasn’t saved. Try again.
+          </p>
+        )}
+
+        {!editing ? (
+          <Button variant="secondary" onClick={begin}>
+            {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+          </Button>
+        ) : (
+          <>
+            <Select
+              label="Reason"
+              value={reason}
+              options={REST_DAY_REASONS.map((value) => ({
+                value,
+                label: REST_DAY_REASON_LABELS[value],
+              }))}
+              helperText={REST_DAY_REASON_EFFECTS[reason]}
+              onChange={(value) => setReason(value as RestDayReason)}
+            />
+            <div className="clr-row">
+              <Button variant="primary" loading={write.marking} onClick={() => void save()}>
+                Save rest day
+              </Button>
+              <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </Card>
   )

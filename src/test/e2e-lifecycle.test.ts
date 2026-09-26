@@ -446,6 +446,7 @@ describe('the RLS namespace covers the owner-scoped schema (ENV-07)', () => {
       'locations',
       'location_equipment',
       'user_constraints',
+      'rest_days',
       'workout_sessions',
       'workout_sections',
       'workout_blocks',

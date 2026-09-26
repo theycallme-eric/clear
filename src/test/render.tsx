@@ -13,6 +13,7 @@ import type { AuthClient } from '../data/auth'
 import type { UserConstraintsClient } from '../data/constraints'
 import type { GenerationClient } from '../data/generation'
 import type { OtpClient } from '../data/otp'
+import type { RestDayClient } from '../data/rest-days'
 import type { SummaryClient } from '../data/summary'
 import type { UserDataClient } from '../data/user-data'
 import type { WorkoutClients } from '../data/workout'
@@ -20,6 +21,7 @@ import { AuthProvider } from '../state/auth-provider'
 import { UserConstraintsContext } from '../state/constraint-queries'
 import { GenerationClientContext } from '../state/generation'
 import { QueryClient, QueryClientContext } from '../state/query'
+import { RestDayContext } from '../state/rest-day-queries'
 import { SignInClientsContext } from '../state/sign-in-context'
 import { SummaryContext } from '../state/summary-queries'
 import {
@@ -32,6 +34,7 @@ import { ToastHost } from '../ui/toast-host'
 import { createFakeAuthClient, createFakeOtpClient, signedInEvent } from './auth-double'
 import { createFakeConstraintsClient } from './constraints-double'
 import { createFakeGenerationClient } from './generation-double'
+import { createFakeRestDayClient } from './rest-day-double'
 import { createFakeSummaryClient } from './summary-double'
 import {
   createFakeUserDataClient,
@@ -52,6 +55,8 @@ export interface ProviderOptions {
   queryClient?: QueryClient
   /** SUM-01's debrief reads and write. Defaults to a completed session. */
   summary?: SummaryClient
+  /** HOME-02's marked calendar days. Defaults to no marks. */
+  restDays?: RestDayClient
   /**
    * EXE-01's lifecycle and `block_results` clients. Defaults to a double whose
    * `resume` answers `null` — nobody is mid-workout — so no test that is not
@@ -108,6 +113,7 @@ export function AppProviders({
   userData,
   queryClient,
   summary,
+  restDays,
   workout,
   constraints,
   generation,
@@ -121,6 +127,10 @@ export function AppProviders({
   const summaryClient = useMemo(
     () => summary ?? createFakeSummaryClient(),
     [summary],
+  )
+  const restDayClient = useMemo(
+    () => restDays ?? createFakeRestDayClient(),
+    [restDays],
   )
   const workoutClients = useMemo(
     () => workout ?? createWorkoutDouble({ session: null }).clients,
@@ -149,13 +159,16 @@ export function AppProviders({
                 <WorkoutClientsContext value={workoutClients}>
                   {/* Same SUM-01 client main.tsx builds, over an injected double */}
                   <SummaryContext value={summaryClient}>
-                    {/* Same DATA-05 read main.tsx mounts, over an injected double */}
-                    <UserConstraintsContext value={constraintsClient}>
-                      {/* Same GEN-03 client main.tsx mounts, over a double */}
-                      <GenerationClientContext value={generationClient}>
-                        {children}
-                      </GenerationClientContext>
-                    </UserConstraintsContext>
+                    {/* Same HOME-02 client main.tsx mounts, over an in-memory double */}
+                    <RestDayContext value={restDayClient}>
+                      {/* Same DATA-05 read main.tsx mounts, over an injected double */}
+                      <UserConstraintsContext value={constraintsClient}>
+                        {/* Same GEN-03 client main.tsx mounts, over a double */}
+                        <GenerationClientContext value={generationClient}>
+                          {children}
+                        </GenerationClientContext>
+                      </UserConstraintsContext>
+                    </RestDayContext>
                   </SummaryContext>
                 </WorkoutClientsContext>
               </SignInClientsContext>

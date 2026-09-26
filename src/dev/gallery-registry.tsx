@@ -198,13 +198,13 @@ function HistoryListEmpty() {
 }
 
 const SAMPLE_WEEK: readonly WeekDay[] = [
-  { day: '2026-09-21', initial: 'M', weekday: 'Monday', state: 'workout', isToday: false },
-  { day: '2026-09-22', initial: 'T', weekday: 'Tuesday', state: 'rest', isToday: false },
-  { day: '2026-09-23', initial: 'W', weekday: 'Wednesday', state: 'workout', isToday: false },
-  { day: '2026-09-24', initial: 'T', weekday: 'Thursday', state: 'rest', isToday: false },
-  { day: '2026-09-25', initial: 'F', weekday: 'Friday', state: 'workout', isToday: true },
-  { day: '2026-09-26', initial: 'S', weekday: 'Saturday', state: 'upcoming', isToday: false },
-  { day: '2026-09-27', initial: 'S', weekday: 'Sunday', state: 'upcoming', isToday: false },
+  { day: '2026-09-21', reason: null, initial: 'M', weekday: 'Monday', state: 'workout', isToday: false },
+  { day: '2026-09-22', reason: 'rest', initial: 'T', weekday: 'Tuesday', state: 'rest', isToday: false },
+  { day: '2026-09-23', reason: null, initial: 'W', weekday: 'Wednesday', state: 'workout', isToday: false },
+  { day: '2026-09-24', reason: 'vacation', initial: 'T', weekday: 'Thursday', state: 'rest', isToday: false },
+  { day: '2026-09-25', reason: null, initial: 'F', weekday: 'Friday', state: 'workout', isToday: true },
+  { day: '2026-09-26', reason: null, initial: 'S', weekday: 'Saturday', state: 'upcoming', isToday: false },
+  { day: '2026-09-27', reason: null, initial: 'S', weekday: 'Sunday', state: 'upcoming', isToday: false },
 ]
 
 function WeekStripMixed() {

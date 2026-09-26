@@ -114,6 +114,7 @@ export function fixtureIds(namespace = NAMESPACE) {
   return {
     location: { a: id(1, 'a', namespace), b: id(1, 'b', namespace) },
     userConstraint: { a: id(2, 'a', namespace), b: id(2, 'b', namespace) },
+    restDay: { a: id(7, 'a', namespace), b: id(7, 'b', namespace) },
     workoutSession: { a: id(3, 'a', namespace), b: id(3, 'b', namespace) },
     workoutSection: { a: id(4, 'a', namespace), b: id(4, 'b', namespace) },
     workoutBlock: { a: id(5, 'a', namespace), b: id(5, 'b', namespace) },
@@ -173,6 +174,8 @@ export function rowSelector(table, slot, userId) {
       return { location_id: `eq.${FIXTURE_IDS.location[slot]}` }
     case 'user_constraints':
       return { id: `eq.${FIXTURE_IDS.userConstraint[slot]}` }
+    case 'rest_days':
+      return { id: `eq.${FIXTURE_IDS.restDay[slot]}` }
     case 'workout_sessions':
       return { id: `eq.${FIXTURE_IDS.workoutSession[slot]}` }
     case 'workout_sections':
@@ -221,6 +224,11 @@ export function forgedRow(table, slot, userId) {
       scope: 'equipment',
       action: 'exclude',
       target_equipment: 'forged-equipment',
+    },
+    rest_days: {
+      user_id: userId,
+      day: '2026-01-02',
+      reason: 'injury',
     },
     workout_sessions: {
       user_id: userId,
