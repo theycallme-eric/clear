@@ -10,11 +10,13 @@
  * the contract cannot be built here either.
  */
 import type {
+  AnchorEvidenceRow,
   BlockResultRow,
   ConditioningHistoryRow,
   Prescription,
   ExerciseDefinitionRow,
   ExerciseSetLogRow,
+  LoadAnchorRow,
   ReconstructionKind,
   SessionReconstruction,
   SessionSnapshot,
@@ -27,6 +29,7 @@ import type { CandidatesClient, SectionCandidates } from '../data/candidates'
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
+import type { AnchorsClient } from '../data/anchors'
 import type { ConditioningClient } from '../data/conditioning'
 import type { ExercisesClient } from '../data/exercises'
 import type { HistoryClient } from '../data/history'
@@ -385,6 +388,14 @@ export interface WorkoutDoubleOptions {
    * test that is not about the coaching panel does not have to wire one.
    */
   definitions?: Readonly<Record<string, ExerciseDefinitionRow>>
+  /**
+   * OVR-01a's anchor reads, for OVR-01c's Review suggestions. Both empty by
+   * default, which is the honest default: a user with no logged working sets has
+   * no anchor, and "no suggestion" is the state a test has to opt out of.
+   */
+  anchors?: Partial<AnchorsClient>
+  anchorRows?: readonly LoadAnchorRow[]
+  anchorEvidence?: readonly AnchorEvidenceRow[]
 }
 
 export interface WorkoutDouble {
@@ -629,6 +640,19 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.conditioning,
   }
 
+  const anchors: AnchorsClient = {
+    async list() {
+      return ok([...(options.anchorRows ?? [])])
+    },
+    async evidence() {
+      return ok([...(options.anchorEvidence ?? [])])
+    },
+    async recompute() {
+      return ok([...(options.anchorRows ?? [])])
+    },
+    ...options.anchors,
+  }
+
   const candidates: CandidatesClient = {
     async retrieve() {
       return ok([...(options.candidateSets ?? [])])
@@ -645,6 +669,7 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       exercises,
       conditioning,
       candidates,
+      anchors,
     },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
