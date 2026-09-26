@@ -190,6 +190,10 @@ export function createWorkoutClients({
       const client = await sessionsFor()
       return isErr(client) ? client : client.value.swap(workoutExerciseId, prescription)
     },
+    async swapBlock(blockId, revisions) {
+      const client = await sessionsFor()
+      return isErr(client) ? client : client.value.swapBlock(blockId, revisions)
+    },
     async snapshot(sessionId) {
       const client = await sessionsFor()
       return isErr(client) ? client : client.value.snapshot(sessionId)
@@ -379,6 +383,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       complete: refusal,
       abandon: refusal,
       swap: refusal,
+      swapBlock: refusal,
       snapshot: refusal,
       resume: refusal,
       asGenerated: refusal,
