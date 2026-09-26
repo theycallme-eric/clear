@@ -34,7 +34,7 @@ import type { ExercisesClient } from '../data/exercises'
 import { HISTORY_PAGE_SIZE, type HistoryClient } from '../data/history'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
-import type { SessionsClient } from '../data/sessions'
+import type { SessionsClient, SwapResult } from '../data/sessions'
 import { FIXTURE_USER_ID } from './user-data-double'
 
 const ZERO_UUID = '00000000-0000-4000-8000-000000000000'
@@ -505,15 +505,17 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     throw new Error(`The workout double was asked for ${name}, which no test wired`)
   }
 
-  const sessions: SessionsClient = {
-    accept: () => unsupported('accept'),
-    start: () => unsupported('start'),
-    asGenerated: () => unsupported('asGenerated'),
-    asIntendedAtStart: () => unsupported('asIntendedAtStart'),
-    asPerformed: () => unsupported('asPerformed'),
-    async swap(workoutExerciseId, prescription) {
-      swaps.push({ workoutExerciseId, prescription })
-
+  /**
+   * One slot revised in the stored rows, exactly as `swap_session_exercise`
+   * does it. Shared by `swap` and `swapBlock` for the reason the migration
+   * shares it: a unit swap is that mechanism applied to every member of one
+   * block, and a double whose two paths could disagree would prove nothing
+   * about the one that does not.
+   */
+  const revise = (
+    workoutExerciseId: string,
+    prescription: Prescription,
+  ): Result<SwapResult> => {
       const outgoing = prescriptionIn(stored, workoutExerciseId)
       if (outgoing === undefined || outgoing.revision_status !== 'active') {
         // What the function answers for a row that is not there, or is already
@@ -564,6 +566,49 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
 
       stored = storedWith(stored, superseded, replacement)
       return ok({ exercise: replacement, superseded })
+  }
+
+  const sessions: SessionsClient = {
+    accept: () => unsupported('accept'),
+    start: () => unsupported('start'),
+    asGenerated: () => unsupported('asGenerated'),
+    asIntendedAtStart: () => unsupported('asIntendedAtStart'),
+    asPerformed: () => unsupported('asPerformed'),
+    async swap(workoutExerciseId, prescription) {
+      swaps.push({ workoutExerciseId, prescription })
+      return revise(workoutExerciseId, prescription)
+    },
+    async swapBlock(blockId, revisions) {
+      // The slot check the function makes before writing anything: exactly the
+      // block's active members, once each. Checked here for the same reason —
+      // a payload that named three of four must leave the block untouched.
+      const active = activeIn(stored, blockId)
+      const targets = revisions.map((revision) => revision.workoutExerciseId)
+      const named = new Set(targets)
+      if (
+        targets.length !== active.length ||
+        named.size !== targets.length ||
+        !active.every((row) => named.has(row.id))
+      ) {
+        return err(
+          createError(ErrorCode.VALIDATION_CONSTRAINT, {
+            details: { event: 'swap_block', blockId },
+          }),
+        )
+      }
+
+      const members: SwapResult[] = []
+      for (const revision of revisions) {
+        swaps.push({
+          workoutExerciseId: revision.workoutExerciseId,
+          prescription: revision.prescription,
+        })
+        const result = revise(revision.workoutExerciseId, revision.prescription)
+        if (!result.ok) return result
+        members.push(result.value)
+      }
+
+      return ok(members)
     },
     async snapshot() {
       return ok(stored ?? snapshotFixture())
@@ -733,6 +778,19 @@ function storedWith(
 }
 
 /** The prescription row a session holds under this id, if it holds one. */
+/** The block's active members, in the order the block holds them. */
+function activeIn(
+  snapshot: SessionSnapshot | null,
+  blockId: string,
+): readonly WorkoutExerciseRow[] {
+  return (snapshot?.sections ?? [])
+    .flatMap((section) => section.blocks)
+    .filter((block) => block.block.id === blockId)
+    .flatMap((block) => block.exercises.map((entry) => entry.exercise))
+    .filter((row) => row.revision_status === 'active')
+    .sort((left, right) => left.order_index - right.order_index)
+}
+
 function prescriptionIn(
   snapshot: SessionSnapshot | null,
   exerciseId: string,
