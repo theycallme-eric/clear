@@ -43,7 +43,11 @@ import {
   Input,
   IntensitySlider,
 } from '../design-system/index'
-import { clampedIntensity, confirmsHardIntensity } from '../state/deload'
+import {
+  clampedIntensity,
+  confirmsHardIntensity,
+  type DeloadSuggestion,
+} from '../state/deload'
 import { useDeloadBanner } from '../state/deload-queries'
 import { generateRequestId, isErr } from '../state/errors'
 import { useGeneration, type GenerationMutation } from '../state/generation'
@@ -158,9 +162,20 @@ function GenerateForm({ places }: { places: Places }) {
     [],
   )
   const deload = useDeloadBanner(today)
-  const [applied, setApplied] = useState(false)
+  /**
+   * The suggestion the user applied, held here rather than read back from
+   * `deload`: recording an applied deload is what *suppresses* the suggestion
+   * (§4's window starts the moment it is accepted), so the hook rightly stops
+   * offering one and this screen would otherwise forget, mid-compose, what the
+   * user just agreed to. Null is "not applied", and it is also what Apply sends.
+   */
+  const [applied, setApplied] = useState<DeloadSuggestion | null>(null)
   const [confirming, setConfirming] = useState<number | null>(null)
   const [overridden, setOverridden] = useState(false)
+
+  // What the banner states, and what makes today a flagged day: an applied
+  // deload is still the reason this session is light.
+  const suggestion = applied ?? deload.suggestion
 
   const intensityHint = useId()
   const range = intensityRange(draft.goal)
@@ -173,7 +188,8 @@ function GenerateForm({ places }: { places: Places }) {
    * requirement's first sentence is that this is never automatic.
    */
   function applyDeload() {
-    setApplied(true)
+    if (deload.suggestion === null) return
+    setApplied(deload.suggestion)
     deload.answer('applied')
     setDraft(withIntensity(draft, clampedIntensity(draft.intensity ?? range.start)))
   }
@@ -184,7 +200,7 @@ function GenerateForm({ places }: { places: Places }) {
    * that asked again at submit would be arguing rather than confirming.
    */
   function chooseIntensity(value: number) {
-    if (!overridden && confirmsHardIntensity(value, deload.suggestion !== null)) {
+    if (!overridden && confirmsHardIntensity(value, suggestion !== null)) {
       setConfirming(value)
       return
     }
@@ -192,7 +208,7 @@ function GenerateForm({ places }: { places: Places }) {
   }
 
   function submit() {
-    const request = requestFrom(draft, generateRequestId(), applied)
+    const request = requestFrom(draft, generateRequestId(), applied !== null)
 
     // The one path to the client, and it is a total function: a refused draft
     // becomes sentences on the fields that caused it and nothing is sent.
@@ -255,10 +271,10 @@ function GenerateForm({ places }: { places: Places }) {
         </FormField>
 
         {/* Deload — above the intensity selector (IA §4), and only when §4 fired */}
-        {deload.suggestion !== null && (
+        {suggestion !== null && (
           <DeloadBanner
-            suggestion={deload.suggestion}
-            applied={applied}
+            suggestion={suggestion}
+            applied={applied !== null}
             onApply={applyDeload}
             onDismiss={() => deload.answer('dismissed')}
           />
@@ -349,7 +365,11 @@ function GenerateForm({ places }: { places: Places }) {
                 const value = confirming
                 setConfirming(null)
                 setOverridden(true)
-                setApplied(false)
+                // Going hard withdraws the deload rather than sending a light
+                // session at a heavy number, and §4's answer to it is to log
+                // the override and stop asking — not to keep making the case.
+                setApplied(null)
+                deload.answer('dismissed')
                 if (value !== null) setDraft(withIntensity(draft, value))
               }}
             >
@@ -359,8 +379,8 @@ function GenerateForm({ places }: { places: Places }) {
         }
       >
         <p>
-          {deload.suggestion?.reason} Intensity {confirming} is a hard session on a day
-          the app flagged. You know things it doesn’t — this is the only time it asks.
+          {suggestion?.reason} Intensity {confirming} is a hard session on a day the app
+          flagged. You know things it doesn’t — this is the only time it asks.
         </p>
       </AppDialog>
     </Card>

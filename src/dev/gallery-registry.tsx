@@ -23,6 +23,7 @@ import {
   type AppearanceChoice,
 } from '../state/appearance'
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
+import type { DeloadSuggestion } from '../state/deload'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
 import { MOOD_SCALE } from '../state/mood'
@@ -43,6 +44,7 @@ import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
+import { DeloadBanner } from '../ui/deload-banner'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
@@ -341,6 +343,66 @@ function ConditioningScoreWithComparison() {
     <ConditioningScoreLine
       score={SAMPLE_CONDITIONING_SCORE}
       comparison={SAMPLE_SCORE_COMPARISON}
+    />
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVR-04 — DeloadBanner
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** D1, the single-lift stall: the reason names the lift, the count and the RPE. */
+const SAMPLE_DELOAD_SUGGESTION: DeloadSuggestion = {
+  trigger: {
+    id: 'D1',
+    scope: 'movement',
+    exerciseId: 'e0000001-0000-4000-8000-000000000000',
+    reason: 'Your last 3 back squat sessions stalled at RPE 9+.',
+  },
+  triggers: [
+    {
+      id: 'D1',
+      scope: 'movement',
+      exerciseId: 'e0000001-0000-4000-8000-000000000000',
+      reason: 'Your last 3 back squat sessions stalled at RPE 9+.',
+    },
+  ],
+  scope: 'movement',
+  exerciseId: 'e0000001-0000-4000-8000-000000000000',
+  reason: 'Your last 3 back squat sessions stalled at RPE 9+.',
+  key: 'D1:e0000001-0000-4000-8000-000000000000',
+  dismissedSessionsAgo: null,
+}
+
+function DeloadBannerSuggested() {
+  return (
+    <DeloadBanner
+      suggestion={SAMPLE_DELOAD_SUGGESTION}
+      applied={false}
+      onApply={() => {}}
+      onDismiss={() => {}}
+    />
+  )
+}
+
+function DeloadBannerReturning() {
+  return (
+    <DeloadBanner
+      suggestion={{ ...SAMPLE_DELOAD_SUGGESTION, dismissedSessionsAgo: 3 }}
+      applied={false}
+      onApply={() => {}}
+      onDismiss={() => {}}
+    />
+  )
+}
+
+function DeloadBannerApplied() {
+  return (
+    <DeloadBanner
+      suggestion={SAMPLE_DELOAD_SUGGESTION}
+      applied
+      onApply={() => {}}
+      onDismiss={() => {}}
     />
   )
 }
@@ -1046,6 +1108,26 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       {
         state: 'identical-repeat comparison',
         Render: ConditioningScoreWithComparison,
+      },
+    ],
+  },
+  {
+    component: 'DeloadBanner',
+    requirement: 'OVR-04',
+    module: 'src/ui/deload-banner.tsx',
+    summary:
+      'States the one trigger that fired and offers both answers. Never a dialog and never urgent: the suggestion is ignorable by design, and severity is carried by the glyph and the sentence rather than by hue.',
+    specimens: [
+      { state: 'suggested', Render: DeloadBannerSuggested },
+      {
+        state: 'raised again after a dismissal',
+        note: 'The same trigger firing after the snooze returns with the count, per §4.',
+        Render: DeloadBannerReturning,
+      },
+      {
+        state: 'applied',
+        note: 'After Apply the banner states what it did, and that the user may still disagree.',
+        Render: DeloadBannerApplied,
       },
     ],
   },

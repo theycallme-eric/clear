@@ -10,6 +10,7 @@
  * the contract cannot be built here either.
  */
 import type {
+  AnchorEvidenceRow,
   BlockResultRow,
   ConditioningHistoryRow,
   Prescription,
@@ -23,13 +24,14 @@ import type {
   WorkoutSectionRow,
   WorkoutSessionRow,
 } from '../state/schemas'
+import type { AnchorsClient } from '../data/anchors'
 import type { CandidatesClient, SectionCandidates } from '../data/candidates'
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import type { ConditioningClient } from '../data/conditioning'
 import type { ExercisesClient } from '../data/exercises'
-import type { HistoryClient } from '../data/history'
+import { HISTORY_PAGE_SIZE, type HistoryClient } from '../data/history'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient } from '../data/sessions'
@@ -358,7 +360,16 @@ export interface WorkoutDoubleOptions {
   /** Override any client method — a failing abandon, a slow complete. */
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
+  /**
+   * HIST-01's session page. Empty by default since OVR-04, which reads it on
+   * the Generate screen: a user with no past sessions has no trend to be warned
+   * about, so a test about the generation form does not have to wire a history
+   * to see the form. `historySessions` is how a test that *is* about a trend
+   * says what the page holds.
+   */
   history?: Partial<HistoryClient>
+  /** The page `history.page` answers, newest first, as the read orders them. */
+  historySessions?: readonly WorkoutSessionRow[]
   setLogs?: Partial<SetLogsClient>
   exercises?: Partial<ExercisesClient>
   /**
@@ -377,6 +388,15 @@ export interface WorkoutDoubleOptions {
   candidates?: Partial<CandidatesClient>
   /** What `candidates.retrieve` answers, as GEN-02a's retrieval would. */
   candidateSets?: readonly SectionCandidates[]
+  /**
+   * OVR-01a's anchor reads, which OVR-04's triggers are a function of. Empty by
+   * default for the reason the conditioning read is: no logged working sets is
+   * no evidence of a stall, and that is the honest answer for a new user rather
+   * than a gap a test has to fill.
+   */
+  anchors?: Partial<AnchorsClient>
+  /** The working sets `anchors.evidence` answers (OVR-01a, OVR-04). */
+  anchorEvidence?: readonly AnchorEvidenceRow[]
   /**
    * What the catalog answers, by slug (EXE-05). A slug that is not here answers
    * `null` — the library has no definition for it — rather than throwing, so a
@@ -577,8 +597,29 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
   }
 
   const history: HistoryClient = {
-    page: () => unsupported('history.page'),
+    async page(_userId, query = {}) {
+      // The real read is a page: it answers one row more than it returns to
+      // learn whether an older one exists, and the double honours that so a
+      // paging assertion is about paging rather than about the double.
+      const rows = [...(options.historySessions ?? [])]
+      const offset = query.offset ?? 0
+      const limit = query.limit ?? HISTORY_PAGE_SIZE
+
+      return ok({
+        sessions: rows.slice(offset, offset + limit),
+        hasMore: rows.length > offset + limit,
+      })
+    },
     ...options.history,
+  }
+
+  const anchors: AnchorsClient = {
+    async evidence() {
+      return ok([...(options.anchorEvidence ?? [])])
+    },
+    list: () => unsupported('anchors.list'),
+    recompute: () => unsupported('anchors.recompute'),
+    ...options.anchors,
   }
 
   const setLogs: SetLogsClient = {
@@ -635,6 +676,7 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       exercises,
       conditioning,
       candidates,
+      anchors,
     },
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],

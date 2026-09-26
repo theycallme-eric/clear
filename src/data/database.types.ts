@@ -22,6 +22,7 @@
  *   supabase/migrations/20260921000011_conditioning_history.sql
  *   supabase/migrations/20260921000012_swap_session_block.sql
  *   supabase/migrations/20260921000013_swap_anchor_exclusion.sql
+ *   supabase/migrations/20260921000014_deload_session_tag.sql
  */
 
 export type Json =
