@@ -61,9 +61,9 @@ export interface ProviderOptions {
   /** DATA-05's read, which REQ-057's boot check is bound to. Defaults to none. */
   constraints?: UserConstraintsClient
   /**
-   * GEN-03's call. Defaults to the double that answers nothing until a test
-   * tells it to, so a screen that starts a generation stays on its pending
-   * state rather than resolving out from under the assertion.
+   * GEN-03's call, which HOME-01's Quick Start makes. Defaults to a double that
+   * answers nothing until a test answers it, so Home or Generate stays in its
+   * pending state rather than resolving out from under the assertion.
    */
   generation?: GenerationClient
 }

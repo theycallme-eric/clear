@@ -6,9 +6,9 @@ import {
 } from 'react-router-dom'
 
 import { AppChrome } from './AppChrome'
-import { AppShell } from './AppShell'
 import { Generate } from './Generate'
 import { Protected, PublicOnly } from './guards'
+import { Home } from './Home'
 import { Login } from './Login'
 import { LocationSettings } from './LocationSettings'
 import { NotFound } from './NotFound'
@@ -74,7 +74,7 @@ export const routes: RouteObject[] = [
             path: '/',
             element: (
               <Protected title="CLEAR">
-                <AppShell />
+                <Home />
               </Protected>
             ),
           },

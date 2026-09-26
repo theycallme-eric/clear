@@ -37,7 +37,13 @@ import {
   unconfiguredWorkoutClients,
   type WorkoutClients,
 } from '../data/workout'
-import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
+import {
+  createError,
+  err,
+  ErrorCode,
+  ok,
+  type Result,
+} from '../state/errors'
 import { createLogger } from '../state/logger'
 
 const logger = createLogger({ scope: 'app.auth-client' })
@@ -193,9 +199,10 @@ interface Clients {
    */
   readonly constraints: UserConstraintsClient
   /**
-   * GEN-03's call to `generate-workout`, which GEN-04's screen makes. Built
-   * from the same `auth` object as the rest: it asks for the access token per
-   * call, so a generation started after a refresh presents the live one.
+   * GEN-03's generation call, which HOME-01's Quick Start and GEN-04's screen
+   * make. Built from the same `auth` object as the rest: it asks for the access
+   * token per call, so a generation started after a refresh presents the live
+   * one.
    */
   readonly generation: GenerationClient
 }

@@ -25,6 +25,7 @@ import {
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import type { HistoryEntry } from '../state/history'
+import type { WeekDay } from '../state/home'
 import { MOOD_SCALE } from '../state/mood'
 import type { BlockDetailView, SectionDetailView } from '../state/session-detail'
 import type { LadderRung } from '../state/ladder'
@@ -56,6 +57,7 @@ import {
 } from '../ui/session-detail'
 import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
+import { WeekStrip } from '../ui/week-strip'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 
@@ -193,6 +195,32 @@ function HistoryListMixed() {
 
 function HistoryListEmpty() {
   return <HistoryList entries={[]} label="Workout history" />
+}
+
+const SAMPLE_WEEK: readonly WeekDay[] = [
+  { day: '2026-09-21', initial: 'M', weekday: 'Monday', state: 'workout', isToday: false },
+  { day: '2026-09-22', initial: 'T', weekday: 'Tuesday', state: 'rest', isToday: false },
+  { day: '2026-09-23', initial: 'W', weekday: 'Wednesday', state: 'workout', isToday: false },
+  { day: '2026-09-24', initial: 'T', weekday: 'Thursday', state: 'rest', isToday: false },
+  { day: '2026-09-25', initial: 'F', weekday: 'Friday', state: 'workout', isToday: true },
+  { day: '2026-09-26', initial: 'S', weekday: 'Saturday', state: 'upcoming', isToday: false },
+  { day: '2026-09-27', initial: 'S', weekday: 'Sunday', state: 'upcoming', isToday: false },
+]
+
+function WeekStripMixed() {
+  return <WeekStrip days={SAMPLE_WEEK} label="This week" />
+}
+
+function WeekStripRestWeek() {
+  return (
+    <WeekStrip
+      days={SAMPLE_WEEK.map((day) => ({
+        ...day,
+        state: day.state === 'upcoming' ? 'upcoming' : 'rest',
+      }))}
+      label="Rest week"
+    />
+  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -971,6 +999,17 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
         Render: HistoryListEmpty,
       },
+    ],
+  },
+  {
+    component: 'WeekStrip',
+    requirement: 'HOME-01',
+    module: 'src/ui/week-strip.tsx',
+    summary:
+      'Seven data-backed days with written accessible states; today is marked by structure rather than colour alone.',
+    specimens: [
+      { state: 'workout, rest, today, and upcoming', Render: WeekStripMixed },
+      { state: 'rest week', Render: WeekStripRestWeek },
     ],
   },
   {

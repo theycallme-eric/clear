@@ -125,7 +125,7 @@ describe('OTP login — verifying a code', () => {
     await waitFor(() => expect(auth.sessions).toEqual([session]))
     // Public-only: the signed-in visitor is sent to Home.
     expect(
-      await screen.findByText('Workout generation is being rebuilt.'),
+      await screen.findByRole('heading', { name: 'Today' }),
     ).toBeInTheDocument()
   })
 
@@ -302,7 +302,7 @@ describe('OTP login — the guard', () => {
     await waitFor(() => {
       expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
     })
-    expect(screen.getByText('Workout generation is being rebuilt.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
   })
 
   it('shows the form to a visitor whose stored session could not be revalidated', async () => {

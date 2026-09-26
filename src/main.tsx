@@ -60,7 +60,7 @@ createRoot(rootElement).render(
                 <SummaryContext value={summary}>
                   {/* DATA-05's read, which REQ-057's boot check is bound to */}
                   <UserConstraintsContext value={constraints}>
-                    {/* GEN-03: the one generation call, which GEN-04 starts */}
+                    {/* GEN-03: the generation call used by Home and Generate */}
                     <GenerationClientContext value={generation}>
                       {/* REQ-057: the app's real init, shown while it happens and
                           handed off the moment it finishes — no gate, no delay */}

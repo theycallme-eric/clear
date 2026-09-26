@@ -359,6 +359,8 @@ export interface WorkoutDoubleOptions {
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
   history?: Partial<HistoryClient>
+  /** HIST-01's rows, as `history.page` answers them. Empty by default. */
+  historyRows?: readonly WorkoutSessionRow[]
   setLogs?: Partial<SetLogsClient>
   exercises?: Partial<ExercisesClient>
   /**
@@ -576,8 +578,16 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.blockResults,
   }
 
+  /**
+   * A user with no history, unless a test says otherwise. Every screen that
+   * reads HIST-01's page — Home is the first — would otherwise have to wire one
+   * to render at all, and "nobody has trained yet" is the honest default for a
+   * test that is about something else.
+   */
   const history: HistoryClient = {
-    page: () => unsupported('history.page'),
+    async page() {
+      return ok({ sessions: [...(options.historyRows ?? [])], hasMore: false })
+    },
     ...options.history,
   }
 
