@@ -35,9 +35,11 @@ import type { ConditioningClient } from '../data/conditioning'
 import type { FavoritesClient } from '../data/favorites'
 import type { ExercisesClient } from '../data/exercises'
 import type { HistoryClient } from '../data/history'
+import { CONTRACT_VERSION } from '../state/schemas'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient, SwapResult } from '../data/sessions'
+import { makeSessionAcceptance } from './factories'
 import { FIXTURE_USER_ID } from './user-data-double'
 
 const ZERO_UUID = '00000000-0000-4000-8000-000000000000'
@@ -349,6 +351,44 @@ function resultRow(
     perceived_effort: null,
     notes: null,
     created_at: '2026-09-24T09:30:00+00:00',
+    ...overrides,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Favorites — FAV-01
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A `saved_workouts` row whose snapshot really is restorable.
+ *
+ * The snapshot is a `SessionAcceptance` with its `date` dropped, which is what
+ * `workoutSnapshotSchema` is — so a favorite from here restores through the
+ * same parse the app performs rather than through a shape only the test knows.
+ * The version is this build's, because that is the only one this build reads;
+ * a test about the older-contract message overrides it, and that override is
+ * the whole of what makes the message appear.
+ */
+export function savedWorkoutFixture(
+  overrides: Partial<SavedWorkoutRow> = {},
+): SavedWorkoutRow {
+  const { date: omittedDate, ...snapshot } = makeSessionAcceptance()
+  void omittedDate
+
+  return {
+    id: fixtureId('7', 1),
+    user_id: FIXTURE_USER_ID,
+    original_session_id: FIXTURE_SESSION_ID,
+    workout_snapshot: snapshot,
+    snapshot_contract_version: CONTRACT_VERSION,
+    title: 'Lower-body strength',
+    session_focus: 'lower_body',
+    intensity: 7,
+    duration_mins: 45,
+    times_completed: 2,
+    last_completed_at: '2026-09-22T10:00:00+00:00',
+    created_at: '2026-09-20T10:00:00+00:00',
+    updated_at: '2026-09-22T10:00:00+00:00',
     ...overrides,
   }
 }

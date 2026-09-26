@@ -41,7 +41,6 @@ import {
   parseBoundary,
   savedWorkoutDraftSchema,
   savedWorkoutListSchema,
-  savedWorkoutRowSchema,
   type FavoriteResult,
   type SavedWorkoutDraft,
   type SavedWorkoutRow,

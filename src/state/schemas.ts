@@ -1176,6 +1176,27 @@ export const favoriteResultSchema = z.object({
 })
 
 /**
+ * What `/review` is handed, as route state (FAV-01).
+ *
+ * A contract rather than an internal value, and it lives here for the reason
+ * every other contract does: React Router's history state is written by
+ * `history.pushState`, which is a public API — a user can edit an entry, and a
+ * back/forward entry outlives the render that created it and can outlive the
+ * deploy that understood it. So an arriving `/review` payload is parsed on read
+ * like any other boundary, and `src/state/review-handoff.ts` is the two
+ * functions that do it.
+ *
+ * Not strict, deliberately: a later requirement adding a key to its own
+ * hand-off into this screen must not make this one refuse to render.
+ * `savedWorkoutId` is the favorite the composition was restored from, and its
+ * absence is the honest description of a workout that belongs to no favorite.
+ */
+export const reviewHandoffSchema = z.object({
+  acceptance: sessionAcceptanceSchema,
+  savedWorkoutId: z.uuid().nullable().default(null),
+})
+
+/**
  * Contract-only vocabulary, and the third exception to "no second vocabulary".
  * These are what the lifecycle functions answer with, and no column holds one:
  * a transition's outcome is an event, not a stored fact. They are text in the
@@ -1483,6 +1504,7 @@ export type SavedWorkoutRow = z.infer<typeof savedWorkoutRowSchema>
 export type SavedWorkoutDraft = z.infer<typeof savedWorkoutDraftSchema>
 export type FavoriteOutcome = z.infer<typeof favoriteOutcomeSchema>
 export type FavoriteResult = z.infer<typeof favoriteResultSchema>
+export type ReviewHandoff = z.infer<typeof reviewHandoffSchema>
 export type ReconstructionKind = z.infer<typeof reconstructionKindSchema>
 export type SessionReconstruction = z.infer<typeof sessionReconstructionSchema>
 export type SessionOutcome = z.infer<typeof sessionOutcomeSchema>

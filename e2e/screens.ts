@@ -51,6 +51,11 @@ export const SCREENS: readonly E2eScreen[] = [
   // it to Welcome like `/` and `/settings`. What the signed-in form renders is
   // covered by `src/app/Generate.test.tsx`.
   { path: '/generate', route: '/generate', title: 'Welcome · CLEAR', heading: 'CLEAR' },
+  // FAV-01 routed REV-01's screen so a favorite restart has somewhere to land.
+  // It is protected, so the credential-free preview resolves it to Welcome like
+  // `/generate`; what it renders with and without a hand-off is covered by
+  // `src/app/ReviewRoute.test.tsx`.
+  { path: '/review', route: '/review', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {

@@ -38,26 +38,45 @@
  *      anchor and intensity; dismissing it leaves Generate on its defaults, and
  *      too little history produces no suggestion rather than a plausible one.
  *
- * Three destinations Home names are declared in `SCREEN_ATMOSPHERE` and routed
- * by requirements that have not landed yet — `/generate` (GEN-04), `/review`
- * (REV-01) and `/history/:id` (HIST-01's detail screen). They are linked by the
- * IA's own paths, exactly as `src/app/atmosphere.ts` anticipates, rather than
- * replaced by a control that does something else; carrying a generated workout
- * across the hand-off into Review is REV-01's to own, because GEN-03's state
- * belongs to whoever owns the Generate → Loading → Review journey and that
- * owner is not this screen once Review exists.
+ *   6. **Favorites are a tab here, and starting one is a restore.** FAV-01's
+ *      list sits beside the recents on its own read, and its Start control
+ *      parses the saved snapshot and carries the resulting acceptance payload
+ *      to `/review` as route state. No generation call is made and no row is
+ *      written on the way — Review's own Start is where the session begins to
+ *      exist, exactly as it is for a generated workout.
+ *
+ * `/history/:id` is declared in `SCREEN_ATMOSPHERE` and routed by a requirement
+ * that has not landed yet (HIST-01's detail screen). It is linked by the IA's
+ * own path, exactly as `src/app/atmosphere.ts` anticipates, rather than replaced
+ * by a control that does something else. `/review` *is* routed now, because
+ * FAV-01's restart has to land there; carrying a *generated* workout across
+ * that hand-off is still REV-01's to own, because GEN-03's state belongs to
+ * whoever owns the Generate → Loading → Review journey and that owner is not
+ * this screen.
  */
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import {
+  AlertCircle,
   AppHeader,
   Button,
   ClearLogo,
   EmptyState,
   Streak as StreakGlyph,
+  TabBar,
+  TabPanel,
   Zap,
 } from '../design-system/index'
+import { useFavoritesQuery } from '../state/favorite-queries'
+import {
+  favoriteEntries,
+  isOutdatedSnapshot,
+  OUTDATED_SNAPSHOT_MESSAGE,
+  restore,
+  todayLocal,
+  type FavoriteEntry,
+} from '../state/favorites'
 import { useGeneration } from '../state/generation'
 import { GENERATE_PATH } from '../state/generation-form'
 import {
@@ -83,7 +102,8 @@ import {
   REST_DAY_REASON_LABELS,
   restDayIndex,
 } from '../state/rest-days'
-import type { RestDayReason, WorkoutSessionRow } from '../state/schemas'
+import { reviewHandoff } from '../state/review-handoff'
+import type { RestDayReason, SavedWorkoutRow, WorkoutSessionRow } from '../state/schemas'
 import {
   defaultSuggestionStorage,
   suggestSession,
@@ -101,7 +121,10 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { useWorkoutClients } from '../state/workout-queries'
+import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
+import { FavoriteList } from '../ui/favorite-list'
 import { Heading } from '../ui/Heading'
 import { WorkoutListItem } from '../ui/history-list'
 import { Select } from '../ui/select'
@@ -121,6 +144,11 @@ export const HOME_HEADING = 'Today'
 export const WEEK_STRIP_LABEL = 'This week'
 export const RECENT_WORKOUTS_LABEL = 'Recent workouts'
 export const SUGGESTION_LABEL = 'Suggested next'
+
+/** FAV-01's tab, beside the recents, on the one read each of them needs. */
+export const FAVORITES_LABEL = 'Favorites'
+export const FAVORITES_EMPTY =
+  'No favorites yet. Save a workout from its summary and it appears here, ready to start again.'
 
 /** HOME-03's empty state: what is missing, not a focus guessed from too little. */
 export const SUGGESTION_EMPTY =
@@ -211,7 +239,11 @@ export function Home() {
             }}
           />
 
-          <RecentWorkouts query={history} entries={recents} />
+          {/* FAV-01: the favorites tab lives beside the recents rather than in
+              a screen of its own. Both are lists of workouts the user has
+              already done, and the tab is the IA's answer to which one they
+              are looking at. */}
+          <WorkoutTabs query={history} entries={recents} />
         </div>
       </Screen>
     </>
@@ -557,8 +589,52 @@ function QuickActions({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The recent three
+// The recent three, and the favorites beside them (FAV-01)
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Two lists of workouts already done, one tab each.
+ *
+ * Tabs rather than two stacked cards because the two answer the same question
+ * from different sides — what happened lately, and what the user chose to keep
+ * — and a phone screen that showed both at once would bury the second. The
+ * tablist is the export's `TabBar`, so the ARIA tabs pattern, its keyboard
+ * behaviour and its overflow are the design system's rather than this screen's.
+ *
+ * The panels do **not** share a query. Recents are a derivation of HIST-01's
+ * page, which Home already read; favorites are their own read, for the same
+ * reason the streak is: a favorites list that failed must not cost the user
+ * their recents.
+ */
+function WorkoutTabs({
+  query,
+  entries,
+}: {
+  query: HistoryQuery
+  entries: readonly HistorySessionEntry[]
+}) {
+  const [active, setActive] = useState(0)
+  const idBase = 'home-workout-tabs'
+
+  return (
+    <Card>
+      <div className="clr-stack clr-stack--tight">
+        <TabBar
+          tabs={[RECENT_WORKOUTS_LABEL, FAVORITES_LABEL]}
+          active={active}
+          onChange={setActive}
+          idBase={idBase}
+        />
+        <TabPanel idBase={idBase} index={0} active={active}>
+          <RecentWorkouts query={query} entries={entries} />
+        </TabPanel>
+        <TabPanel idBase={idBase} index={1} active={active}>
+          <FavoriteWorkouts />
+        </TabPanel>
+      </div>
+    </Card>
+  )
+}
 
 function RecentWorkouts({
   query,
@@ -577,43 +653,173 @@ function RecentWorkouts({
           : viewReady(entries)
 
   return (
-    <Card>
-      <div className="clr-stack clr-stack--tight">
-        <Heading>Recent workouts</Heading>
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your recent workouts"
-          errorTitle="Your recent workouts didn’t load"
-          onRetry={query.refetch}
-          empty={
-            <EmptyState
-              title="No workouts yet"
-              message="The workouts you finish appear here, newest first."
-            />
-          }
+    <ViewStateSwitch
+      state={state}
+      loadingLabel="Reading your recent workouts"
+      errorTitle="Your recent workouts didn’t load"
+      onRetry={query.refetch}
+      empty={
+        <EmptyState
+          title="No workouts yet"
+          message="The workouts you finish appear here, newest first."
+        />
+      }
+    >
+      {(recents) => (
+        <ul
+          aria-label={RECENT_WORKOUTS_LABEL}
+          style={{
+            listStyle: 'none',
+            margin: 0,
+            padding: 0,
+            display: 'grid',
+            gap: 'var(--spacing-300)',
+          }}
         >
-          {(recents) => (
-            <ul
-              aria-label={RECENT_WORKOUTS_LABEL}
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'grid',
-                gap: 'var(--spacing-300)',
-              }}
-            >
-              {recents.map((entry) => (
-                <li key={entry.key}>
-                  <WorkoutListItem entry={entry} to={sessionDetailPath(entry.id)} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </ViewStateSwitch>
-      </div>
-    </Card>
+          {recents.map((entry) => (
+            <li key={entry.key}>
+              <WorkoutListItem entry={entry} to={sessionDetailPath(entry.id)} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </ViewStateSwitch>
   )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Favorites (FAV-01)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The favorites the user keeps, and the two things they can do with one.
+ *
+ * **Starting is a restore, not a generation.** `restore` parses
+ * `workout_snapshot` against the schema the row's own
+ * `snapshot_contract_version` names and answers the acceptance payload Review
+ * takes — so the workout that appears is the one that was saved, exactly, with
+ * no model call anywhere on the path. The payload travels as route state and
+ * the favorite's id travels with it, because Review's Start is what writes the
+ * session and the attempt row beside it is the only thing that will later let
+ * a completion be attributed to this favorite.
+ *
+ * A snapshot this build cannot read never reaches `restore` from here — the
+ * card omits its Start control and says why — but the refusal is still handled,
+ * because a row whose version *is* supported can still hold a document that
+ * does not parse, and that is a different sentence.
+ *
+ * **Removing asks first.** Unfavoriting deletes the progression the favorite
+ * existed to accumulate (favorites-v2 §"Removing from Favorites"), which is
+ * exactly the case `ConfirmDialog critical` is for.
+ */
+function FavoriteWorkouts() {
+  const query = useFavoritesQuery()
+  const { favorites } = useWorkoutClients()
+  const navigate = useNavigate()
+
+  const [removingId, setRemovingId] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState<FavoriteEntry | null>(null)
+  const [failure, setFailure] = useState<string | null>(null)
+
+  const rows: readonly SavedWorkoutRow[] =
+    query.state.status === 'ready' ? query.state.data : []
+  const listed = useMemo(() => favoriteEntries(rows), [rows])
+
+  const state: ViewState<readonly FavoriteEntry[]> =
+    query.state.status === 'loading'
+      ? viewLoading()
+      : query.state.status === 'error'
+        ? viewError(query.state.error)
+        : listed.length === 0
+          ? viewEmpty()
+          : viewReady(listed)
+
+  const start = (entry: FavoriteEntry) => {
+    const row = rows.find((candidate) => candidate.id === entry.id)
+    if (row === undefined) return
+
+    const restored = restore(row, todayLocal())
+    if (isErr(restored)) {
+      setFailure(
+        isOutdatedSnapshot(restored.error)
+          ? OUTDATED_SNAPSHOT_MESSAGE
+          : 'This favorite couldn’t be opened. Generate a new workout instead.',
+      )
+      return
+    }
+
+    setFailure(null)
+    void navigate(REVIEW_ROUTE, { state: reviewHandoff(restored.value, row.id) })
+  }
+
+  const remove = async (entry: FavoriteEntry) => {
+    setConfirming(null)
+    setFailure(null)
+    setRemovingId(entry.id)
+    const removed = await favorites.remove(entry.id)
+    setRemovingId(null)
+
+    if (isErr(removed)) {
+      setFailure('That favorite wasn’t removed. Try again.')
+      return
+    }
+
+    query.refetch()
+  }
+
+  return (
+    <div className="clr-stack clr-stack--tight">
+      {failure !== null && (
+        <p role="alert" style={FAVORITE_FAILURE_STYLE}>
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            <AlertCircle size={16} />
+          </span>
+          {failure}
+        </p>
+      )}
+
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your favorites"
+        errorTitle="Your favorites didn’t load"
+        onRetry={query.refetch}
+        empty={<EmptyState title="No favorites yet" message={FAVORITES_EMPTY} />}
+      >
+        {(favorited) => (
+          <FavoriteList
+            entries={favorited}
+            label={FAVORITES_LABEL}
+            onStart={start}
+            onRemove={setConfirming}
+            removingId={removingId}
+          />
+        )}
+      </ViewStateSwitch>
+
+      <ConfirmDialog
+        open={confirming !== null}
+        critical
+        title="Remove from favorites?"
+        confirmLabel="Remove"
+        cancelLabel="Keep it"
+        onConfirm={() => {
+          if (confirming !== null) void remove(confirming)
+        }}
+        onCancel={() => setConfirming(null)}
+      >
+        Tracked data including completion history and personal bests will be
+        lost. The workout itself stays in your history.
+      </ConfirmDialog>
+    </div>
+  )
+}
+
+const FAVORITE_FAILURE_STYLE: CSSProperties = {
+  margin: 0,
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-200)',
+  color: 'var(--text-negative)',
 }
 
 /** The two answers side by side, wrapping on a narrow phone. */

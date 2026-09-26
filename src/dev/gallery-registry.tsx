@@ -24,6 +24,7 @@ import {
 } from '../state/appearance'
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import { createError, ErrorCode, type AppError } from '../state/errors'
+import type { FavoriteEntry } from '../state/favorites'
 import type { HistoryEntry } from '../state/history'
 import type { WeekDay } from '../state/home'
 import { MOOD_SCALE } from '../state/mood'
@@ -44,6 +45,7 @@ import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
+import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
@@ -195,6 +197,80 @@ function HistoryListMixed() {
 
 function HistoryListEmpty() {
   return <HistoryList entries={[]} label="Workout history" />
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAV-01 — favorites rows
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SAMPLE_FAVORITE: FavoriteEntry = {
+  key: 'favorite:gallery-restorable',
+  id: 'gallery-restorable',
+  title: 'Lower-body strength',
+  focus: 'lower_body',
+  meta: 'Lower body · 45 min · Intensity 7/10',
+  timesCompleted: 4,
+  lastCompleted: 'Tue 22 Sep 2026',
+  restorable: true,
+}
+
+const SAMPLE_FAVORITE_NEW: FavoriteEntry = {
+  ...SAMPLE_FAVORITE,
+  key: 'favorite:gallery-unperformed',
+  id: 'gallery-unperformed',
+  title: 'Power ladder',
+  focus: 'power',
+  meta: 'Power · 20 min · Intensity 9/10',
+  timesCompleted: 0,
+  lastCompleted: null,
+}
+
+/** The acceptance criterion about an older contract, as the card states it. */
+const SAMPLE_FAVORITE_OUTDATED: FavoriteEntry = {
+  ...SAMPLE_FAVORITE,
+  key: 'favorite:gallery-outdated',
+  id: 'gallery-outdated',
+  title: 'Full-body circuit',
+  focus: 'full_body',
+  meta: 'Full body · 30 min · Intensity 5/10',
+  restorable: false,
+}
+
+const noop = () => {}
+
+function FavoriteListItemRestorable() {
+  return <FavoriteListItem entry={SAMPLE_FAVORITE} onStart={noop} onRemove={noop} />
+}
+
+function FavoriteListItemNeverCompleted() {
+  return <FavoriteListItem entry={SAMPLE_FAVORITE_NEW} onStart={noop} onRemove={noop} />
+}
+
+function FavoriteListItemOutdated() {
+  return (
+    <FavoriteListItem entry={SAMPLE_FAVORITE_OUTDATED} onStart={noop} onRemove={noop} />
+  )
+}
+
+function FavoriteListItemRemoving() {
+  return (
+    <FavoriteListItem entry={SAMPLE_FAVORITE} onStart={noop} onRemove={noop} removing />
+  )
+}
+
+function FavoriteListPopulated() {
+  return (
+    <FavoriteList
+      entries={[SAMPLE_FAVORITE, SAMPLE_FAVORITE_NEW, SAMPLE_FAVORITE_OUTDATED]}
+      label="Favorites"
+      onStart={noop}
+      onRemove={noop}
+    />
+  )
+}
+
+function FavoriteListEmpty() {
+  return <FavoriteList entries={[]} label="Favorites" onStart={noop} onRemove={noop} />
 }
 
 const SAMPLE_WEEK: readonly WeekDay[] = [
@@ -998,6 +1074,37 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'empty entries',
         note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
         Render: HistoryListEmpty,
+      },
+    ],
+  },
+  {
+    component: 'FavoriteListItem',
+    requirement: 'FAV-01',
+    module: 'src/ui/favorite-list.tsx',
+    summary:
+      'One favorite: title with its star, anchor · duration · intensity, and the progression it is kept for. A snapshot this build cannot restore omits Start and says why in words.',
+    specimens: [
+      { state: 'completed four times', Render: FavoriteListItemRestorable },
+      { state: 'never completed', Render: FavoriteListItemNeverCompleted },
+      {
+        state: 'saved under an older contract',
+        note: 'Start is absent rather than disabled: there is nothing this build could do with the snapshot, and the sentence says so.',
+        Render: FavoriteListItemOutdated,
+      },
+      { state: 'removal in flight', Render: FavoriteListItemRemoving },
+    ],
+  },
+  {
+    component: 'FavoriteList',
+    requirement: 'FAV-01',
+    module: 'src/ui/favorite-list.tsx',
+    summary: 'The favorites a user keeps, newest first, as a named list.',
+    specimens: [
+      { state: 'three favorites', Render: FavoriteListPopulated },
+      {
+        state: 'empty entries',
+        note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
+        Render: FavoriteListEmpty,
       },
     ],
   },
