@@ -33,12 +33,27 @@
  * no GEN-03 state, so "discard this and compose another" means going to the
  * screen that composes one.
  */
+import { useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { EmptyState, Zap } from '../design-system/index'
+import {
+  deloadInEffect,
+  favoriteProgression,
+  type FavoriteRun,
+} from '../state/favorite-progression'
+import { useFavoriteRunsQuery, useFavoritesQuery } from '../state/favorite-queries'
 import { GENERATE_PATH } from '../state/generation-form'
 import { readReviewHandoff } from '../state/review-handoff'
+import {
+  viewError,
+  viewLoading,
+  viewReady,
+  type ViewState,
+} from '../state/view-state'
 import { useWorkoutClients } from '../state/workout-queries'
+import { FavoriteProgressionCard } from '../ui/favorite-progression'
+import { ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
 import { Review, REVIEW_TITLE } from './Review'
 
@@ -75,6 +90,14 @@ export function ReviewRoute() {
       // fresh briefing rather than the last one's pending state.
       key={`${savedWorkoutId ?? 'generated'}:${acceptance.date}`}
       acceptance={acceptance}
+      progression={
+        savedWorkoutId === null ? null : (
+          <FavoriteProgressionPanel
+            savedWorkoutId={savedWorkoutId}
+            deload={deloadInEffect(acceptance)}
+          />
+        )
+      }
       onRegenerate={() => void navigate(GENERATE_PATH)}
       onStarted={(snapshot) => {
         if (savedWorkoutId === null) return
@@ -87,5 +110,76 @@ export function ReviewRoute() {
         void favorites.attempt(savedWorkoutId, snapshot.session.id)
       }}
     />
+  )
+}
+
+export const PROGRESSION_LOADING_LABEL = 'Reading what happened last time'
+export const PROGRESSION_ERROR_TITLE = 'Your history for this one didn’t load'
+
+/**
+ * FAV-02 — the repeat surface for the favorite this composition came from.
+ *
+ * All four states, and the empty one is the interesting decision: a favorite
+ * saved and never completed is not an absence of data to apologize for, it is a
+ * fact about the favorite, so the card itself says so and the switch never
+ * reaches `empty`. What *is* an absence is a read that failed — that gets the
+ * error screen and its retry, because the numbers it would have shown are the
+ * whole reason this surface exists and inventing a silent blank in their place
+ * would be the screen deciding the user has no history.
+ *
+ * The true completion count comes from `saved_workouts.times_completed` rather
+ * than from the runs read here, which are the most recent
+ * `PROGRESSION_WINDOW` of them: the counter is the favorite's own answer, and a
+ * window is not a count.
+ */
+function FavoriteProgressionPanel({
+  savedWorkoutId,
+  deload,
+}: {
+  savedWorkoutId: string
+  deload: boolean
+}) {
+  const runs = useFavoriteRunsQuery(savedWorkoutId)
+  const favorites = useFavoritesQuery()
+
+  const loaded = runs.state.status === 'ready' ? runs.state.data : null
+
+  const progression = useMemo(
+    () => (loaded === null ? null : favoriteProgression(loaded, { deload })),
+    [loaded, deload],
+  )
+
+  // The counter, when the favorites list is in hand. It usually is — the tab
+  // the restart came from reads it — and when it is not, the runs that were
+  // read are the honest fallback rather than a zero.
+  const timesCompleted =
+    (favorites.state.status === 'ready'
+      ? favorites.state.data.find((row) => row.id === savedWorkoutId)?.times_completed
+      : undefined) ?? loaded?.length
+
+  const state: ViewState<readonly FavoriteRun[]> =
+    runs.state.status === 'loading'
+      ? viewLoading()
+      : runs.state.status === 'error'
+        ? viewError(runs.state.error)
+        : viewReady(runs.state.data)
+
+  return (
+    <ViewStateSwitch
+      state={state}
+      loadingLabel={PROGRESSION_LOADING_LABEL}
+      errorTitle={PROGRESSION_ERROR_TITLE}
+      onRetry={runs.refetch}
+      empty={null}
+    >
+      {() =>
+        progression === null ? null : (
+          <FavoriteProgressionCard
+            progression={progression}
+            timesCompleted={timesCompleted ?? 0}
+          />
+        )
+      }
+    </ViewStateSwitch>
   )
 }

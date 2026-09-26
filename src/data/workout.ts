@@ -180,6 +180,10 @@ export function createWorkoutClients({
       const client = await favoritesFor()
       return isErr(client) ? client : client.value.attempt(savedWorkoutId, sessionId)
     },
+    async attempts(savedWorkoutId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.attempts(savedWorkoutId)
+    },
     async recordCompletion(sessionId) {
       const client = await favoritesFor()
       return isErr(client) ? client : client.value.recordCompletion(sessionId)
@@ -451,6 +455,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       list: refusal,
       save: refusal,
       attempt: refusal,
+      attempts: refusal,
       recordCompletion: refusal,
       remove: refusal,
     },

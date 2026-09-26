@@ -14,6 +14,11 @@
  *   * **`attempt`** is the link a restart writes before the session starts. It
  *     is an insert rather than a function: the row is two ids, and both
  *     policies check the caller owns what the row names.
+ *   * **`attempts`** is FAV-02's read of those links: every attempt at one
+ *     favorite, newest completion first, unfiltered. What a progression is
+ *     computed from is each attempt's own `session_as_performed` answer
+ *     (SES-01b) — so this stays a two-column read and no reconstruction is
+ *     reinvented here.
  *   * **`recordCompletion`** is `record_favorite_completion`, asked of every
  *     completed session rather than only the ones known to have come from a
  *     favorite. `not_a_favorite` is the ordinary answer and not a failure,
@@ -39,9 +44,11 @@ import {
 import {
   favoriteResultSchema,
   parseBoundary,
+  savedWorkoutAttemptListSchema,
   savedWorkoutDraftSchema,
   savedWorkoutListSchema,
   type FavoriteResult,
+  type SavedWorkoutAttemptRow,
   type SavedWorkoutDraft,
   type SavedWorkoutRow,
 } from '../state/schemas'
@@ -61,6 +68,13 @@ export interface FavoritesClient {
   save(userId: string, draft: SavedWorkoutDraft): Promise<Result<SavedWorkoutRow>>
   /** Record that `sessionId` is an attempt at `savedWorkoutId`. */
   attempt(savedWorkoutId: string, sessionId: string): Promise<Result<void>>
+  /**
+   * Every attempt at one favorite, newest completion first (FAV-02). The
+   * abandoned ones travel too: which attempts count is the reader's judgement,
+   * and a transport that filtered them would be answering a question it was
+   * not asked.
+   */
+  attempts(savedWorkoutId: string): Promise<Result<readonly SavedWorkoutAttemptRow[]>>
   /**
    * Stamp the attempt a completed session belongs to and recompute the
    * favorite's counters. Answers the outcome, which may be `not_a_favorite`.
@@ -139,6 +153,18 @@ export function createFavoritesClient(config: FavoritesClientConfig): FavoritesC
       }
 
       return ok(undefined)
+    },
+
+    async attempts(savedWorkoutId) {
+      const rows = await db.from('saved_workout_completions').select({
+        where: { saved_workout_id: savedWorkoutId },
+        order: [{ column: 'completed_at', ascending: false }],
+      })
+      if (isErr(rows)) return rows
+
+      return parseBoundary(savedWorkoutAttemptListSchema, rows.value, {
+        code: ErrorCode.PERSISTENCE_READ_FAILED,
+      })
     },
 
     async recordCompletion(sessionId) {
