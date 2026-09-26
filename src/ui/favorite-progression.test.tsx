@@ -20,7 +20,7 @@ import { reconstructionFixture, type SectionFixture } from '../test/workout-doub
 import { FavoriteProgressionCard, PB_BADGE_LABEL } from './favorite-progression'
 
 /** A run of the same favorite: one For Time block and one loaded lift. */
-function run(day: string, elapsed: number, weight: number): FavoriteRun {
+function run(day: string, elapsed: number, weight: number, underCap = true): FavoriteRun {
   const sections: SectionFixture[] = [
     {
       title: 'Conditioning',
@@ -30,7 +30,7 @@ function run(day: string, elapsed: number, weight: number): FavoriteRun {
           structureType: 'for_time',
           timerType: 'count_up',
           timerSeconds: 900,
-          result: { elapsed_seconds: elapsed, completed_under_cap: true },
+          result: { elapsed_seconds: elapsed, completed_under_cap: underCap },
         },
       ],
     },
@@ -59,6 +59,11 @@ function run(day: string, elapsed: number, weight: number): FavoriteRun {
 
 const RUNS = [run('2026-09-01', 400, 95), run('2026-09-08', 383, 100)]
 
+/** An attempt whose For Time ran out of cap: a completion, and not a record. */
+function capped(day: string): FavoriteRun {
+  return run(day, 900, 100, false)
+}
+
 describe('the repeat surface', () => {
   it('states the last comparable performance with the day it was measured on', () => {
     renderWithProviders(
@@ -72,7 +77,7 @@ describe('the repeat surface', () => {
     expect(screen.getByText('For time 06:23', { selector: 'p' })).toBeInTheDocument()
   })
 
-  it('badges the personal best in words and names the run that set it', () => {
+  it('badges the personal best in words and names the workout that set it', () => {
     renderWithProviders(
       <FavoriteProgressionCard
         progression={favoriteProgression(RUNS)}
@@ -82,8 +87,38 @@ describe('the repeat surface', () => {
 
     expect(screen.getByText(BESTS_LABEL_COMPETITIVE)).toBeInTheDocument()
     expect(
-      screen.getByText(`${PB_BADGE_LABEL} · set Tue 8 Sep 2026`),
+      screen.getByText(`${PB_BADGE_LABEL} · set Tue 8 Sep 2026 · Full body`),
     ).toBeInTheDocument()
+  })
+
+  it('marks the completion that holds the record, and leaves the others unclaimed', () => {
+    renderWithProviders(
+      <FavoriteProgressionCard
+        progression={favoriteProgression(RUNS)}
+        timesCompleted={2}
+      />,
+    )
+
+    const days = screen.getByRole('list', { name: 'Completions' }).querySelectorAll('li')
+
+    expect(days[0]).toHaveTextContent(PB_BADGE_LABEL)
+    expect(days[1]).not.toHaveTextContent(PB_BADGE_LABEL)
+  })
+
+  it('badges no record at all when every attempt stopped at the cap', () => {
+    renderWithProviders(
+      <FavoriteProgressionCard
+        progression={favoriteProgression([capped('2026-09-01'), capped('2026-09-08')])}
+        timesCompleted={2}
+      />,
+    )
+
+    // Two completions, listed; no record drawn off a clock that read the cap.
+    expect(
+      screen.getByRole('list', { name: 'Completions' }).querySelectorAll('li'),
+    ).toHaveLength(2)
+    expect(screen.queryByText(new RegExp(PB_BADGE_LABEL))).not.toBeInTheDocument()
+    expect(screen.queryByText(BESTS_LABEL_COMPETITIVE)).not.toBeInTheDocument()
   })
 
   it('makes the delta obvious, with both readings and the day it is against', () => {

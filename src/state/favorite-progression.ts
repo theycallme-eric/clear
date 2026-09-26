@@ -42,9 +42,23 @@
  *     cap, not how long the work took, so it is not admitted to the best pool
  *     and not compared (`completed_under_cap`). Recording it as a slow finish
  *     would be inventing a measurement of work that was not finished.
+ *   * **Only what was performed, and only the work the favorite names.** A
+ *     reading is taken off `session_as_performed` and off nothing else, because
+ *     the other two reconstructions answer *what was meant to happen* — a
+ *     record drawn off an intention is a record of something nobody did. And a
+ *     block whose work changed mid-run — a slot swapped (EXE-04) or a movement
+ *     skipped — was not the block the other runs performed, so its score is not
+ *     set beside theirs.
  *   * **A best is only beaten strictly.** Equalling it leaves the earlier run
  *     holding it, which is the acceptance criterion in one line: *PB updates
  *     only when the new result beats the stored best.*
+ *   * **The completed performance a record comes from is a block, not a
+ *     session.** favorites-v2 §Incomplete Attempt is explicit: a favorite the
+ *     user bailed out of does not increment `times_completed`, and the timed
+ *     sections it *did* finish still count toward the best pool. So the tests a
+ *     reading has to pass are all block-level — scored, finished inside its cap,
+ *     over the work the snapshot names — and nothing here disqualifies a reading
+ *     for the state of the session around it.
  *   * **A deload drops the competitive framing, not the history** (REQ-059, per
  *     OVR-04). The numbers and the dates stay; the verdict does not. Nothing
  *     here decides *whether* a deload is in force — OVR-04 owns that signal,
@@ -59,7 +73,9 @@ import type {
   ExerciseSetLogRow,
   SessionAcceptance,
   SessionReconstruction,
+  WorkoutExerciseRow,
 } from './schemas'
+import { prescriptionLineage } from './session-detail'
 import { formatElapsed } from './workout-clock'
 import { structureIdentity } from './workout-progress'
 
@@ -108,7 +124,14 @@ export interface RunMeasure {
   readonly display: string
 }
 
-/** A best, and the run that set it. */
+/**
+ * A best, and the workout it was set in.
+ *
+ * Three fields name that source rather than one, because a record the user
+ * cannot go and look at is a claim: `setOn` is the day it reads as, `sessionId`
+ * is the session in History that holds the evidence, and `workoutTitle` is what
+ * that session is called.
+ */
 export interface PersonalBest {
   readonly key: string
   readonly kind: 'time' | 'rounds'
@@ -117,6 +140,10 @@ export interface PersonalBest {
   readonly value: number
   /** The day it was set — `Fri 12 Sep 2026`. The source of the number. */
   readonly setOn: string
+  /** `workout_sessions.id` of the run that set it. */
+  readonly sessionId: string
+  /** `workout_sessions.title` of that run — the workout the record came from. */
+  readonly workoutTitle: string
   /** How many runs held a comparable reading for this position. */
   readonly runCount: number
   /** Whether the most recent run is the one holding it. */
@@ -137,6 +164,12 @@ export interface CompletionEntry {
   readonly key: string
   readonly on: string
   readonly headline: string
+  /**
+   * Whether this run is the one holding a current best. The badge belongs on
+   * the run as well as on the record: it is the other half of a best naming its
+   * source, read from the side the user is scanning.
+   */
+  readonly holdsBest: boolean
 }
 
 /** One run against another, with the change made obvious. */
@@ -229,8 +262,23 @@ const SAME_WEIGHT = 'Same weight'
  * EMOM is binary completion and a circuit's elapsed clock is not a score
  * (favorites-v2 §"Beat Your Previous Best" names exactly the two formats
  * above); what those blocks contribute is their movements' top sets.
+ *
+ * Two things this refuses to read at all:
+ *
+ *   * **A reconstruction that is not `performed`.** `generated` and
+ *     `intended_at_start` answer what the session was *going to* be, block
+ *     results and all (SES-01b returns the score for every kind), and a reading
+ *     taken off one of them is an intention wearing a result's clothes.
+ *   * **A block whose work changed mid-run.** The score of a block one of whose
+ *     slots was swapped, or one of whose movements was skipped, measures
+ *     different work from the block the favorite's snapshot names — see
+ *     `sameWorkAsPrescribed`. Its movements' top sets still read, because a top
+ *     set is keyed by the movement it was lifted on and is a fact about that
+ *     movement either way.
  */
 export function runMeasures(performed: SessionReconstruction): readonly RunMeasure[] {
+  if (performed.reconstruction !== 'performed') return []
+
   const measures: RunMeasure[] = []
 
   for (const entry of performed.sections) {
@@ -238,8 +286,9 @@ export function runMeasures(performed: SessionReconstruction): readonly RunMeasu
       const { block, block_result: result } = held
       const position = `${entry.section.order_index}.${block.order_index}`
       const label = `${entry.section.section_title} · ${structureIdentity(block).label}`
+      const scorable = sameWorkAsPrescribed(held.exercises.map((member) => member.exercise))
 
-      if (result !== null && block.structure_type === 'for_time') {
+      if (result !== null && scorable && block.structure_type === 'for_time') {
         // A cap-stopped run is a different event from a finished one, and the
         // clock reads the cap either way. Comparing the two would report a
         // slower finish where there was no finish.
@@ -255,7 +304,7 @@ export function runMeasures(performed: SessionReconstruction): readonly RunMeasu
         }
       }
 
-      if (result !== null && block.structure_type === 'amrap') {
+      if (result !== null && scorable && block.structure_type === 'amrap') {
         if (result.rounds_completed !== null) {
           measures.push({
             key: `rounds:${position}`,
@@ -285,6 +334,32 @@ export function runMeasures(performed: SessionReconstruction): readonly RunMeasu
   }
 
   return measures
+}
+
+/**
+ * Whether a block performed the work its prescription named.
+ *
+ * A favorite is restored byte-for-byte, so two runs of one start from the same
+ * prescriptions — and the two things that can part them mid-run both say so in
+ * the rows the reconstruction carries:
+ *
+ *   * a **swap** (EXE-04) leaves the slot's lineage as `replaced` on the row
+ *     that went and `substituted` on the row that came, so a block holding
+ *     either performed movements the snapshot does not name;
+ *   * a **skip** leaves `execution_status = 'skipped'`, which is less work
+ *     against the same clock.
+ *
+ * Either way the block's score measures something the other runs did not do, so
+ * it is not a record and not a comparison. Read off the prescriptions rather
+ * than off the block, because `block_results` says how the clock ended and
+ * nothing about what was under it.
+ */
+function sameWorkAsPrescribed(exercises: readonly WorkoutExerciseRow[]): boolean {
+  return exercises.every(
+    (exercise) =>
+      prescriptionLineage(exercise) === 'prescribed' &&
+      exercise.execution_status !== 'skipped',
+  )
 }
 
 /**
@@ -328,6 +403,12 @@ function topSet(
  * Walked oldest first and replaced only on a strict improvement, so the run
  * that *set* the best is the one credited with it and equalling it does not
  * quietly move the date.
+ *
+ * Every candidate is a reading `runMeasures` admitted, which is the acceptance
+ * criterion doing its work upstream of here: a cap-stopped clock, a block whose
+ * work changed, and anything read off a reconstruction other than
+ * `session_as_performed` never reach this loop, so there is no second place
+ * where an inferred or incomparable result could become a record.
  */
 export function personalBests(runs: readonly FavoriteRun[]): readonly PersonalBest[] {
   const ordered = oldestFirst(runs)
@@ -350,6 +431,8 @@ export function personalBests(runs: readonly FavoriteRun[]): readonly PersonalBe
           display: measure.display,
           value: measure.value,
           setOn: day,
+          sessionId: run.sessionId,
+          workoutTitle: run.performed.session.title,
           runCount: 1,
           fromLastRun: run === lastRun,
         })
@@ -364,7 +447,11 @@ export function personalBests(runs: readonly FavoriteRun[]): readonly PersonalBe
         ...held,
         display: improved ? measure.display : held.display,
         value: improved ? measure.value : held.value,
+        // The source moves with the number or not at all: a record still
+        // pointing at the run that set it is the only checkable kind.
         setOn: improved ? day : held.setOn,
+        sessionId: improved ? run.sessionId : held.sessionId,
+        workoutTitle: improved ? run.performed.session.title : held.workoutTitle,
         runCount: held.runCount + 1,
         fromLastRun: improved ? run === lastRun : held.fromLastRun,
       })
@@ -404,12 +491,20 @@ export function lastWeights(runs: readonly FavoriteRun[]): readonly LastWeight[]
  * The headline is the run's timed readings, because those are what the formats
  * were scored on. A run with none says it was completed, with its measured
  * duration when one was recorded — never a top set dressed up as a score.
+ *
+ * Every run is listed, including the ones that set nothing: a cap-stopped
+ * attempt happened, and a history that hid it to keep the records tidy would be
+ * a different list from the one the user lived. What the run holds no record for
+ * it simply does not claim (`holdsBest`).
  */
 export function completionHistory(runs: readonly FavoriteRun[]): readonly CompletionEntry[] {
+  const holders = new Set(personalBests(runs).map((best) => best.sessionId))
+
   return [...oldestFirst(runs)].reverse().map((run) => ({
     key: run.sessionId,
     on: formatDay(run.performed.session.date),
     headline: headlineOf(run),
+    holdsBest: holders.has(run.sessionId),
   }))
 }
 

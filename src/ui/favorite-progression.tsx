@@ -185,9 +185,11 @@ export function FavoriteProgressionCard({
                   <span>{best.label}</span>
                   <span style={VALUE_STYLE}>{best.display}</span>
                   {/* The badge is a word, so the record reads as a record
-                      without depending on the glyph beside it. */}
+                      without depending on the glyph beside it — and it names
+                      the workout and the day it was set in, because a record
+                      whose source is not stated cannot be checked. */}
                   <span style={META_STYLE}>
-                    {PB_BADGE_LABEL} · set {best.setOn}
+                    {PB_BADGE_LABEL} · set {best.setOn} · {best.workoutTitle}
                   </span>
                 </li>
               ))}
@@ -234,6 +236,16 @@ export function FavoriteProgressionCard({
                 <li key={entry.key} style={ROW_STYLE}>
                   <span style={VALUE_STYLE}>{entry.on}</span>
                   <span>{entry.headline}</span>
+                  {/* The other end of the record's source: the run that holds
+                      it says so, in the same word the badge above uses. */}
+                  {entry.holdsBest && (
+                    <span style={META_STYLE}>
+                      <span aria-hidden="true" style={GLYPH_STYLE}>
+                        <Trophy size={16} />
+                      </span>{' '}
+                      {PB_BADGE_LABEL}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
