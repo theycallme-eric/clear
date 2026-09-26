@@ -38,6 +38,7 @@
  */
 import type { Enums } from '../data/database.types'
 import { formatFocus } from './history'
+import { prescriptionSiteKey } from './load-suggestions'
 import { exerciseName, prescriptionText, restText } from './prescription'
 import type {
   Prescription,
@@ -282,7 +283,7 @@ function reviewSection(
 ): ReviewSectionView {
   const key = `section-${index}`
   const blocks = section.blocks.map((block, blockIndex) =>
-    reviewBlock(block, `${key}-block-${blockIndex}`, weightUnit),
+    reviewBlock(block, index, blockIndex, weightUnit),
   )
 
   return {
@@ -297,17 +298,21 @@ function reviewSection(
 
 function reviewBlock(
   block: WorkoutBlock,
-  key: string,
+  sectionIndex: number,
+  blockIndex: number,
   weightUnit: BriefingWeightUnit | null,
 ): ReviewBlockView {
   return {
-    key,
+    key: `section-${sectionIndex}-block-${blockIndex}`,
     // The shell's own reading of the structure — see the header comment.
     identity: structureIdentity(block),
     notes: blankToNull(block.block_notes),
     roundRest: roundRestText(block.round_rest_seconds),
+    // The key is `prescriptionSiteKey`'s and not this file's: OVR-01c keys a
+    // load suggestion by the same position, and two definitions of "which
+    // prescription" is how a suggestion lands on the wrong row.
     exercises: block.exercises.map((exercise, index) =>
-      reviewExercise(exercise, `${key}-exercise-${index}`, weightUnit),
+      reviewExercise(exercise, prescriptionSiteKey(sectionIndex, blockIndex, index), weightUnit),
     ),
   }
 }

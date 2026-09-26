@@ -38,7 +38,7 @@ import {
   type BlockResultRow,
   type ExerciseSetLogRow,
 } from '../state/schemas'
-import { createAnchorsClient } from './anchors'
+import { createAnchorsClient, type AnchorsClient } from './anchors'
 import type { AuthClient } from './auth'
 import { createCandidatesClient, type CandidatesClient } from './candidates'
 import { createConditioningClient, type ConditioningClient } from './conditioning'
@@ -99,6 +99,14 @@ export interface WorkoutClients {
    * the call, and nothing more.
    */
   readonly candidates: CandidatesClient
+  /**
+   * OVR-01a's anchor queries, read by OVR-01c's Review surface: the stored
+   * anchors and the working sets behind them. On the façade for the reason
+   * `conditioning` is — the token as it is at the moment of the call — and the
+   * recomputation `complete` triggers goes through this same client, so what a
+   * screen reads and what a completion writes cannot be two clients.
+   */
+  readonly anchors: AnchorsClient
 }
 
 export interface WorkoutClientsConfig {
@@ -349,6 +357,7 @@ export function createWorkoutClients({
     exercises,
     conditioning,
     candidates,
+    anchors,
   }
 }
 
@@ -387,5 +396,6 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     exercises: { definition: refusal, saveNotes: refusal },
     conditioning: { history: refusal },
     candidates: { retrieve: refusal },
+    anchors: { evidence: refusal, list: refusal, recompute: refusal },
   }
 }
