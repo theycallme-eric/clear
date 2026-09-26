@@ -170,6 +170,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000013_swap_anchor_exclusion.sql',
       '20260921000014_rest_days.sql',
       '20260921000015_saved_workouts.sql',
+      '20260921000016_deload_session_tag.sql',
     ])
   })
 

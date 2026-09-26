@@ -49,6 +49,7 @@ const validBody: GenerationRequest = {
   requested_duration_mins: 45,
   location_id: '22222222-2222-4222-8222-222222222222',
   notes: null,
+  deload: false,
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

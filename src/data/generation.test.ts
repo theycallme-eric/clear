@@ -33,6 +33,7 @@ const INPUT: GenerationInput = {
   requested_duration_mins: 45,
   location_id: '11111111-2222-4333-8444-555555555555',
   notes: null,
+  deload: false,
 }
 
 const SESSION: AuthSession = {

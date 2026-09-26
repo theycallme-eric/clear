@@ -254,6 +254,9 @@ describe('the payload (CORE-03 §1)', () => {
       requested_duration_mins: 50,
       location_id: LOCATION,
       notes: 'Left shoulder is tight.',
+      // OVR-04: a caller that was never asked is not deloading. The default is
+      // the requirement — a deload is only ever applied by someone pressing it.
+      deload: false,
     })
   })
 
@@ -315,7 +318,17 @@ describe('the payload (CORE-03 §1)', () => {
       requested_duration_mins: DEFAULT_DURATION_MINS,
       location_id: LOCATION,
       notes: null,
+      deload: false,
     })
+  })
+
+  it('carries the deload the user applied, and nothing it inferred (OVR-04)', () => {
+    const asked = requestFrom(completeDraft(), REQUEST_ID, true)
+    const unasked = requestFrom(completeDraft(), REQUEST_ID)
+
+    expect(isOk(asked) && asked.value.deload).toBe(true)
+    expect(isOk(unasked) && unasked.value.deload).toBe(false)
+    expect(isOk(asked) && inputFrom(asked.value).deload).toBe(true)
   })
 
   it('carries the place the user overrode to, not the default', () => {

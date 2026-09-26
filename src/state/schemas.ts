@@ -321,6 +321,18 @@ export const generationRequestSchema = z.strictObject({
    * `user_constraints` row and never prose (DATA_MODEL §5).
    */
   notes: z.string().max(2000).nullable(),
+  /**
+   * OVR-04: whether the user accepted the deload the Generate screen suggested.
+   *
+   * On the wire rather than re-derived server-side, because it is a *decision*
+   * and not a read: §4's triggers can say a deload is warranted, and only the
+   * person training can say it is happening. A function that recomputed the
+   * triggers and applied one would be the auto-apply the requirement forbids.
+   *
+   * Defaulted rather than required: `false` is what every caller that has not
+   * been asked means, and a boolean nobody set is not a deload.
+   */
+  deload: z.boolean().default(false),
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -690,6 +702,13 @@ export const sessionAcceptanceSchema = z.strictObject({
   generation_notes: z.string().nullable(),
   prompt_version: nonBlank,
   contract_version: nonBlank,
+  /**
+   * OVR-04 §4: the session is tagged, because a deliberately light day is not
+   * evidence you got weaker. `anchor_evidence` and `conditioning_history` both
+   * already drop a session carrying this flag, so the tag is what makes that
+   * exclusion true of anything. Defaulted: an ordinary session is not a deload.
+   */
+  is_deload: z.boolean().default(false),
   workout: generationOutputSchema,
 })
 

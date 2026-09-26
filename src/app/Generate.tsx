@@ -35,7 +35,7 @@
  * the goal stays a client-side cascade until the schema carries it. That gap is
  * recorded in `docs/journal/2026-09-25.md`.
  */
-import { useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
@@ -49,6 +49,12 @@ import {
   Input,
   IntensitySlider,
 } from '../design-system/index'
+import {
+  clampedIntensity,
+  confirmsHardIntensity,
+  type DeloadSuggestion,
+} from '../state/deload'
+import { useDeloadBanner } from '../state/deload-queries'
 import { generateRequestId, isErr } from '../state/errors'
 import { useGeneration, type GenerationMutation } from '../state/generation'
 import {
@@ -75,6 +81,7 @@ import {
   type GenerationPrefill,
 } from '../state/generation-form'
 import type { Location } from '../state/schemas'
+import { localDayIn } from '../state/streak'
 import { useLocationsQuery } from '../state/user-queries'
 import {
   viewError,
@@ -83,7 +90,9 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { AppDialog } from '../ui/app-dialog'
 import { Card } from '../ui/card'
+import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
@@ -171,13 +180,60 @@ function GenerateForm({
   )
   const [refusal, setRefusal] = useState<DraftRefusal | null>(null)
 
+  // OVR-04. The user's own day draws the boundary every trigger is counted in,
+  // so the zone is read once here rather than inside a rule (SES-01c's rule).
+  const today = useMemo(
+    () => localDayIn(Intl.DateTimeFormat().resolvedOptions().timeZone)(new Date()),
+    [],
+  )
+  const deload = useDeloadBanner(today)
+  /**
+   * The suggestion the user applied, held here rather than read back from
+   * `deload`: recording an applied deload is what *suppresses* the suggestion
+   * (§4's window starts the moment it is accepted), so the hook rightly stops
+   * offering one and this screen would otherwise forget, mid-compose, what the
+   * user just agreed to. Null is "not applied", and it is also what Apply sends.
+   */
+  const [applied, setApplied] = useState<DeloadSuggestion | null>(null)
+  const [confirming, setConfirming] = useState<number | null>(null)
+  const [overridden, setOverridden] = useState(false)
+
+  // What the banner states, and what makes today a flagged day: an applied
+  // deload is still the reason this session is light.
+  const suggestion = applied ?? deload.suggestion
+
   const intensityHint = useId()
   const range = intensityRange(draft.goal)
   const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === draft.goal)
   const pending = generation.state.status === 'pending'
 
+  /**
+   * §4's Apply: the intensity is clamped and the directive rides on the request.
+   * Nothing else changes, and nothing changed before the user pressed it — the
+   * requirement's first sentence is that this is never automatic.
+   */
+  function applyDeload() {
+    if (deload.suggestion === null) return
+    setApplied(deload.suggestion)
+    deload.answer('applied')
+    setDraft(withIntensity(draft, clampedIntensity(draft.intensity ?? range.start)))
+  }
+
+  /**
+   * §4: a hard intensity on a flagged day confirms **once**, then does what was
+   * asked. `overridden` is what makes it once: the user has answered, and an app
+   * that asked again at submit would be arguing rather than confirming.
+   */
+  function chooseIntensity(value: number) {
+    if (!overridden && confirmsHardIntensity(value, suggestion !== null)) {
+      setConfirming(value)
+      return
+    }
+    setDraft(withIntensity(draft, value))
+  }
+
   function submit() {
-    const request = requestFrom(draft, generateRequestId())
+    const request = requestFrom(draft, generateRequestId(), applied !== null)
 
     // The one path to the client, and it is a total function: a refused draft
     // becomes sentences on the fields that caused it and nothing is sent.
@@ -247,6 +303,16 @@ function GenerateForm({
           </div>
         </FormField>
 
+        {/* Deload — above the intensity selector (IA §4), and only when §4 fired */}
+        {suggestion !== null && (
+          <DeloadBanner
+            suggestion={suggestion}
+            applied={applied !== null}
+            onApply={applyDeload}
+            onDismiss={() => deload.answer('dismissed')}
+          />
+        )}
+
         {/* Intensity — the range is the goal's, and the readout says so */}
         <div className="clr-stack clr-stack--tight">
           <IntensitySlider
@@ -258,7 +324,7 @@ function GenerateForm({
             disabled={draft.goal === null}
             valueText={`${draft.intensity ?? range.start} of ${range.max}`}
             aria-describedby={intensityHint}
-            onChange={(value) => setDraft(withIntensity(draft, value))}
+            onChange={chooseIntensity}
           />
           <p id={intensityHint}>
             {draft.goal === null
@@ -315,6 +381,41 @@ function GenerateForm({
 
         <GenerationStatus generation={generation} />
       </div>
+
+      {/* §4: confirm once, then honour it. The user knows things the app doesn't. */}
+      <AppDialog
+        open={confirming !== null}
+        title="Train hard today?"
+        onClose={() => setConfirming(null)}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setConfirming(null)}>
+              Keep it easier
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                const value = confirming
+                setConfirming(null)
+                setOverridden(true)
+                // Going hard withdraws the deload rather than sending a light
+                // session at a heavy number, and §4's answer to it is to log
+                // the override and stop asking — not to keep making the case.
+                setApplied(null)
+                deload.answer('dismissed')
+                if (value !== null) setDraft(withIntensity(draft, value))
+              }}
+            >
+              Go hard anyway
+            </Button>
+          </>
+        }
+      >
+        <p>
+          {suggestion?.reason} Intensity {confirming} is a hard session on a day the app
+          flagged. You know things it doesn’t — this is the only time it asks.
+        </p>
+      </AppDialog>
     </Card>
   )
 }

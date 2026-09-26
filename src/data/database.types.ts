@@ -24,6 +24,7 @@
  *   supabase/migrations/20260921000013_swap_anchor_exclusion.sql
  *   supabase/migrations/20260921000014_rest_days.sql
  *   supabase/migrations/20260921000015_saved_workouts.sql
+ *   supabase/migrations/20260921000016_deload_session_tag.sql
  */
 
 export type Json =

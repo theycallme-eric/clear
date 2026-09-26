@@ -27,15 +27,15 @@ import type {
   WorkoutSectionRow,
   WorkoutSessionRow,
 } from '../state/schemas'
+import type { AnchorsClient } from '../data/anchors'
 import type { CandidatesClient, SectionCandidates } from '../data/candidates'
 import type { Enums } from '../data/database.types'
 import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
-import type { AnchorsClient } from '../data/anchors'
 import type { ConditioningClient } from '../data/conditioning'
 import type { FavoritesClient } from '../data/favorites'
 import type { ExercisesClient } from '../data/exercises'
-import type { HistoryClient } from '../data/history'
+import { HISTORY_PAGE_SIZE, type HistoryClient } from '../data/history'
 import { CONTRACT_VERSION } from '../state/schemas'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
@@ -404,8 +404,15 @@ export interface WorkoutDoubleOptions {
   /** Override any client method — a failing abandon, a slow complete. */
   sessions?: Partial<SessionsClient>
   blockResults?: Partial<BlockResultsClient>
+  /**
+   * HIST-01's session page. Empty by default since OVR-04, which reads it on
+   * the Generate screen: a user with no past sessions has no trend to be warned
+   * about, so a test about the generation form does not have to wire a history
+   * to see the form. `historyRows` is how a test that *is* about a trend
+   * says what the page holds.
+   */
   history?: Partial<HistoryClient>
-  /** HIST-01's rows, as `history.page` answers them. Empty by default. */
+  /** HIST-01's rows, newest first, as `history.page` answers them. */
   historyRows?: readonly WorkoutSessionRow[]
   setLogs?: Partial<SetLogsClient>
   exercises?: Partial<ExercisesClient>
@@ -432,9 +439,9 @@ export interface WorkoutDoubleOptions {
    */
   definitions?: Readonly<Record<string, ExerciseDefinitionRow>>
   /**
-   * OVR-01a's anchor reads, for OVR-01c's Review suggestions. Both empty by
-   * default, which is the honest default: a user with no logged working sets has
-   * no anchor, and "no suggestion" is the state a test has to opt out of.
+   * OVR-01a's anchor reads, used by OVR-01c's Review suggestions and OVR-04's
+   * deload triggers. Both are empty by default: a user with no logged working
+   * sets has neither an anchor nor evidence of a stall.
    */
   anchors?: Partial<AnchorsClient>
   anchorRows?: readonly LoadAnchorRow[]
@@ -692,10 +699,20 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
    * reads HIST-01's page — Home is the first — would otherwise have to wire one
    * to render at all, and "nobody has trained yet" is the honest default for a
    * test that is about something else.
-   */
+  */
   const history: HistoryClient = {
-    async page() {
-      return ok({ sessions: [...(options.historyRows ?? [])], hasMore: false })
+    async page(_userId, query = {}) {
+      // The real read is a page: it answers one row more than it returns to
+      // learn whether an older one exists, and the double honours that so a
+      // paging assertion is about paging rather than about the double.
+      const rows = [...(options.historyRows ?? [])]
+      const offset = query.offset ?? 0
+      const limit = query.limit ?? HISTORY_PAGE_SIZE
+
+      return ok({
+        sessions: rows.slice(offset, offset + limit),
+        hasMore: rows.length > offset + limit,
+      })
     },
     ...options.history,
   }

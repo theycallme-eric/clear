@@ -102,10 +102,9 @@ export interface WorkoutClients {
   readonly candidates: CandidatesClient
   /**
    * OVR-01a's anchor queries, read by OVR-01c's Review surface: the stored
-   * anchors and the working sets behind them. On the façade for the reason
-   * `conditioning` is — the token as it is at the moment of the call — and the
-   * recomputation `complete` triggers goes through this same client, so what a
-   * screen reads and what a completion writes cannot be two clients.
+   * anchors and the working sets behind them. OVR-04's deload triggers use the
+   * same evidence instead of recomputing it, so the Review surface, completion
+   * writes, and stall detection cannot disagree.
    */
   readonly anchors: AnchorsClient
   /**
