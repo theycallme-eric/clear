@@ -129,6 +129,20 @@ export const TABLE_DISPOSITIONS = [
     seeded: false,
     why: 'what this person can lift, derived from their own logs; a row needs a catalog exercise id, which its own task applies',
   },
+  {
+    table: 'saved_workouts',
+    standing: 'cross-user',
+    ownerColumn: 'user_id',
+    seeded: false,
+    why: 'a workout this person kept; the snapshot it stores names catalog exercise ids, which its own task applies',
+  },
+  {
+    table: 'saved_workout_completions',
+    standing: 'cross-user',
+    ownerColumn: null,
+    seeded: false,
+    why: 'inherits ownership through its saved workout, which cannot be seeded without the catalog',
+  },
 
   // The catalog. Shared, read-only to `authenticated`, written by the seeding
   // task with the service role — no `user_id` exists to cross.

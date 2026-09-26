@@ -23,6 +23,7 @@
  *   supabase/migrations/20260921000012_swap_session_block.sql
  *   supabase/migrations/20260921000013_swap_anchor_exclusion.sql
  *   supabase/migrations/20260921000014_rest_days.sql
+ *   supabase/migrations/20260921000015_saved_workouts.sql
  */
 
 export type Json =
@@ -374,6 +375,76 @@ export type Database = {
           day?: string
           reason?: Database['public']['Enums']['rest_day_reason']
           note?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      saved_workout_completions: {
+        Row: {
+          id: string
+          saved_workout_id: string
+          session_id: string
+          started_at: string
+          completed_at: string | null
+        }
+        Insert: {
+          id?: string
+          saved_workout_id: string
+          session_id: string
+          started_at?: string
+          completed_at?: string | null
+        }
+        Update: {
+          id?: string
+          saved_workout_id?: string
+          session_id?: string
+          started_at?: string
+          completed_at?: string | null
+        }
+      }
+      saved_workouts: {
+        Row: {
+          id: string
+          user_id: string
+          original_session_id: string | null
+          workout_snapshot: Json
+          snapshot_contract_version: string
+          title: string
+          session_focus: Database['public']['Enums']['session_focus']
+          intensity: number
+          duration_mins: number
+          times_completed: number
+          last_completed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          original_session_id?: string | null
+          workout_snapshot: Json
+          snapshot_contract_version: string
+          title: string
+          session_focus: Database['public']['Enums']['session_focus']
+          intensity: number
+          duration_mins: number
+          times_completed?: number
+          last_completed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          original_session_id?: string | null
+          workout_snapshot?: Json
+          snapshot_contract_version?: string
+          title?: string
+          session_focus?: Database['public']['Enums']['session_focus']
+          intensity?: number
+          duration_mins?: number
+          times_completed?: number
+          last_completed_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -778,9 +849,22 @@ export type Database = {
         }
         Returns: Json
       }
+      record_favorite_completion: {
+        Args: {
+          p_session_id: string
+        }
+        Returns: Json
+      }
       resume_session: {
         Args: {
           p_user_id: string
+        }
+        Returns: Json
+      }
+      save_favorite: {
+        Args: {
+          p_user_id: string
+          p_favorite: Json
         }
         Returns: Json
       }

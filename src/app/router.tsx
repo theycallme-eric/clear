@@ -12,6 +12,7 @@ import { Home } from './Home'
 import { Login } from './Login'
 import { LocationSettings } from './LocationSettings'
 import { NotFound } from './NotFound'
+import { ReviewRoute } from './ReviewRoute'
 import { RootLayout } from './RootLayout'
 import { Settings } from './Settings'
 import { Summary } from './Summary'
@@ -98,6 +99,20 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="Generate workout">
                 <Generate />
+              </Protected>
+            ),
+          },
+          // FAV-01 — `protected`, and nothing more. What there is to review is
+          // carried in the route's own state and parsed on arrival, so "is
+          // there a workout here" is a fact about the entry rather than about
+          // the user; the screen answers an entry that carries none rather than
+          // redirecting, because Home navigates here on a successful generation
+          // and a redirect would bounce between the two.
+          {
+            path: '/review',
+            element: (
+              <Protected title="Review">
+                <ReviewRoute />
               </Protected>
             ),
           },

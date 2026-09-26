@@ -19,6 +19,7 @@ import type {
   LoadAnchorRow,
   ReconstructionKind,
   SessionReconstruction,
+  SavedWorkoutRow,
   SessionSnapshot,
   WorkoutBlockRow,
   WorkoutExerciseRow,
@@ -31,11 +32,14 @@ import type { BlockCompletion } from '../state/block-completion'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import type { AnchorsClient } from '../data/anchors'
 import type { ConditioningClient } from '../data/conditioning'
+import type { FavoritesClient } from '../data/favorites'
 import type { ExercisesClient } from '../data/exercises'
 import type { HistoryClient } from '../data/history'
+import { CONTRACT_VERSION } from '../state/schemas'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient, SwapResult } from '../data/sessions'
+import { makeSessionAcceptance } from './factories'
 import { FIXTURE_USER_ID } from './user-data-double'
 
 const ZERO_UUID = '00000000-0000-4000-8000-000000000000'
@@ -352,6 +356,44 @@ function resultRow(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Favorites — FAV-01
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A `saved_workouts` row whose snapshot really is restorable.
+ *
+ * The snapshot is a `SessionAcceptance` with its `date` dropped, which is what
+ * `workoutSnapshotSchema` is — so a favorite from here restores through the
+ * same parse the app performs rather than through a shape only the test knows.
+ * The version is this build's, because that is the only one this build reads;
+ * a test about the older-contract message overrides it, and that override is
+ * the whole of what makes the message appear.
+ */
+export function savedWorkoutFixture(
+  overrides: Partial<SavedWorkoutRow> = {},
+): SavedWorkoutRow {
+  const { date: omittedDate, ...snapshot } = makeSessionAcceptance()
+  void omittedDate
+
+  return {
+    id: fixtureId('7', 1),
+    user_id: FIXTURE_USER_ID,
+    original_session_id: FIXTURE_SESSION_ID,
+    workout_snapshot: snapshot,
+    snapshot_contract_version: CONTRACT_VERSION,
+    title: 'Lower-body strength',
+    session_focus: 'lower_body',
+    intensity: 7,
+    duration_mins: 45,
+    times_completed: 2,
+    last_completed_at: '2026-09-22T10:00:00+00:00',
+    created_at: '2026-09-20T10:00:00+00:00',
+    updated_at: '2026-09-22T10:00:00+00:00',
+    ...overrides,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Clients
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -396,6 +438,10 @@ export interface WorkoutDoubleOptions {
   anchors?: Partial<AnchorsClient>
   anchorRows?: readonly LoadAnchorRow[]
   anchorEvidence?: readonly AnchorEvidenceRow[]
+  /** FAV-01's favorites the user already keeps, newest first. */
+  favorites?: readonly SavedWorkoutRow[]
+  /** Overrides for the favorites client, for the tests about its failures. */
+  favoritesClient?: Partial<FavoritesClient>
 }
 
 export interface WorkoutDouble {
@@ -417,6 +463,10 @@ export interface WorkoutDouble {
    * test that asserts the shell agrees with it is asserting something.
    */
   stored(): SessionSnapshot | null
+  /** The favorites the double now holds, newest first (FAV-01). */
+  favorites(): SavedWorkoutRow[]
+  /** Every attempt at a favorite, and whether it has been completed. */
+  attempts(): { savedWorkoutId: string; sessionId: string; completed: boolean }[]
 }
 
 /**
@@ -705,6 +755,81 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     ...options.candidates,
   }
 
+  // FAV-01. The rows are held rather than answered from a fixture, so a test
+  // that saves a favorite and then reads the list is asserting that the two
+  // agree — and `recordCompletion` counts the attempts it has, which is what
+  // the function it stands in for does.
+  const favoriteRows: SavedWorkoutRow[] = [...(options.favorites ?? [])]
+  const attempts: { savedWorkoutId: string; sessionId: string; completed: boolean }[] = []
+
+  const favorites: FavoritesClient = {
+    async list() {
+      return ok([...favoriteRows])
+    },
+    async save(userId, draft) {
+      const existing = favoriteRows.find(
+        (row) => row.original_session_id === draft.original_session_id,
+      )
+      if (existing !== undefined) return ok(existing)
+
+      const at = `2026-09-26T10:0${favoriteRows.length}:00+00:00`
+      const row: SavedWorkoutRow = {
+        id: fixtureId('7', favoriteRows.length + 1),
+        user_id: userId,
+        original_session_id: draft.original_session_id,
+        workout_snapshot: draft.workout_snapshot,
+        snapshot_contract_version: draft.snapshot_contract_version,
+        title: draft.title,
+        session_focus: draft.session_focus,
+        intensity: draft.intensity,
+        duration_mins: draft.duration_mins,
+        // Favoriting from the summary screen counts that session as the first
+        // completion (favorites-v2 §Resolved Decisions 1).
+        times_completed: 1,
+        last_completed_at: at,
+        created_at: at,
+        updated_at: at,
+      }
+      favoriteRows.unshift(row)
+      attempts.push({
+        savedWorkoutId: row.id,
+        sessionId: draft.original_session_id,
+        completed: true,
+      })
+      return ok(row)
+    },
+    async attempt(savedWorkoutId, sessionId) {
+      if (!attempts.some((entry) => entry.sessionId === sessionId)) {
+        attempts.push({ savedWorkoutId, sessionId, completed: false })
+      }
+      return ok(undefined)
+    },
+    async recordCompletion(sessionId) {
+      const attempt = attempts.find((entry) => entry.sessionId === sessionId)
+      if (attempt === undefined) return ok({ outcome: 'not_a_favorite', favorite: null })
+
+      attempt.completed = true
+      const index = favoriteRows.findIndex((row) => row.id === attempt.savedWorkoutId)
+      if (index === -1) return ok({ outcome: 'not_a_favorite', favorite: null })
+
+      const updated: SavedWorkoutRow = {
+        ...favoriteRows[index],
+        times_completed: attempts.filter(
+          (entry) => entry.savedWorkoutId === attempt.savedWorkoutId && entry.completed,
+        ).length,
+        last_completed_at: '2026-09-26T12:00:00+00:00',
+      }
+      favoriteRows[index] = updated
+      return ok({ outcome: 'recorded', favorite: updated })
+    },
+    async remove(savedWorkoutId) {
+      const index = favoriteRows.findIndex((row) => row.id === savedWorkoutId)
+      if (index !== -1) favoriteRows.splice(index, 1)
+      return ok(undefined)
+    },
+    ...options.favoritesClient,
+  }
+
   return {
     clients: {
       sessions,
@@ -715,7 +840,10 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       conditioning,
       candidates,
       anchors,
+      favorites,
     },
+    favorites: () => [...favoriteRows],
+    attempts: () => attempts.map((entry) => ({ ...entry })),
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
     abandoned: () => [...abandoned],

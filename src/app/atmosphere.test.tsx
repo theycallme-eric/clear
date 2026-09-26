@@ -52,9 +52,13 @@ const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
 function providersFor(pathname: string): ProviderOptions {
   // SET-01's hub is protected: signed out it renders a redirect to Welcome,
   // whose `full` is then the only level there is to measure.
+  // `/review` joined them with FAV-01: protected, and it renders its own
+  // "nothing to review" screen rather than redirecting, so signed in is all it
+  // needs to stay mounted and carry its own level.
   if (
     pathname === '/summary' ||
     pathname === '/generate' ||
+    pathname === '/review' ||
     pathname.startsWith('/settings')
   ) {
     return signedIn()
