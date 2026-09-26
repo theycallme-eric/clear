@@ -85,6 +85,61 @@ function amrap(rounds: number, partial: number | null = null): SectionFixture {
   }
 }
 
+/**
+ * The same run, read as what the session was *going to* be rather than as what
+ * it was. SES-01b answers every kind with the block scores attached, so this is
+ * the payload a best must refuse: an intention, not a performance.
+ */
+function asIntended(attempt: FavoriteRun): FavoriteRun {
+  return {
+    ...attempt,
+    performed: { ...attempt.performed, reconstruction: 'intended_at_start' },
+  }
+}
+
+/**
+ * One For Time block finished inside the cap, over work that changed mid-run:
+ * `swap` replaces a slot (EXE-04's lineage, both rows) and `skip` leaves a
+ * movement undone.
+ */
+function forTimeOverChangedWork(
+  elapsed: number,
+  change: 'swap' | 'skip',
+): SectionFixture {
+  const members =
+    change === 'swap'
+      ? [
+          {
+            status: 'completed' as const,
+            prescription: { exercise_id: 'pull-up', revision_status: 'superseded' as const },
+          },
+          {
+            status: 'completed' as const,
+            prescription: {
+              exercise_id: 'ring-row',
+              equipment_used: 'rings',
+              origin: 'revised' as const,
+            },
+            setLogs: [{ set_number: 1, weight: 20, weight_unit: 'kg' as const, actual_reps: 10 }],
+          },
+        ]
+      : [{ status: 'skipped' as const, prescription: { exercise_id: 'pull-up' } }]
+
+  return {
+    title: 'Conditioning',
+    sectionType: 'conditioning',
+    blocks: [
+      {
+        structureType: 'for_time',
+        timerSeconds: 900,
+        timerType: 'count_up',
+        result: { elapsed_seconds: elapsed, completed_under_cap: true },
+        exercises: members,
+      },
+    ],
+  }
+}
+
 /** A primary lift with `weight` on its working sets, plus a lighter warmup. */
 function lift(weight: number, exerciseId = 'back-squat'): SectionFixture {
   return {
@@ -189,6 +244,30 @@ describe('the comparable readings of one run', () => {
 
     expect(runMeasures(run('2026-09-01', [unscored]).performed)).toEqual([])
   })
+
+  it('reads nothing off a reconstruction that is not what was performed', () => {
+    const intended = asIntended(run('2026-09-01', [forTime(383), lift(100)]))
+
+    expect(intended.performed.sections[0].blocks[0].block_result).not.toBeNull()
+    expect(runMeasures(intended.performed)).toEqual([])
+  })
+
+  it('refuses the score of a block whose slot was swapped — different work, same clock', () => {
+    const measures = runMeasures(
+      run('2026-09-08', [forTimeOverChangedWork(383, 'swap')]).performed,
+    )
+
+    expect(measures.map((measure) => measure.kind)).toEqual(['weight'])
+    // The substitute's top set still reads: it is a fact about that movement,
+    // keyed by the movement, and nothing about the block's clock.
+    expect(measures[0].display).toBe('20 kg')
+  })
+
+  it('refuses the score of a block that skipped one of its movements', () => {
+    expect(
+      runMeasures(run('2026-09-08', [forTimeOverChangedWork(383, 'skip')]).performed),
+    ).toEqual([])
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -247,6 +326,73 @@ describe('personal bests across runs (favorites-v2 §Progression Tracking)', () 
 
   it('draws no best off a weight — a top set is progression, not a record', () => {
     expect(personalBests([run('2026-09-01', [lift(100)])])).toEqual([])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// What a record may be drawn from, and what it has to name
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('a record is drawn only from a comparable completed performance', () => {
+  it('names the workout it was set in, not only the day', () => {
+    const [best] = personalBests([
+      run('2026-09-01', [forTime(400)], { title: 'Engine builder' }),
+      run('2026-09-08', [forTime(383)], { title: 'Engine builder' }),
+    ])
+
+    expect(best.setOn).toBe('Tue 8 Sep 2026')
+    expect(best.sessionId).toBe('session-2026-09-08')
+    expect(best.workoutTitle).toBe('Engine builder')
+  })
+
+  it('moves the source with the number, and only with the number', () => {
+    const runs = [
+      run('2026-09-01', [forTime(383)]),
+      run('2026-09-08', [forTime(383)]),
+      run('2026-09-15', [forTime(370)]),
+    ]
+
+    // Equalled on the 8th: the record stays where it was set.
+    expect(personalBests(runs.slice(0, 2))[0].sessionId).toBe('session-2026-09-01')
+    // Beaten on the 15th: the record and its source move together.
+    expect(personalBests(runs)[0].sessionId).toBe('session-2026-09-15')
+  })
+
+  it('takes no record off an intention — only what was performed counts', () => {
+    expect(personalBests([asIntended(run('2026-09-01', [forTime(383)]))])).toEqual([])
+  })
+
+  it('takes no record off a run that stopped at the cap, and leaves the real one standing', () => {
+    const bests = personalBests([
+      run('2026-09-01', [forTime(400)]),
+      run('2026-09-08', [forTime(900, false)]),
+    ])
+
+    expect(bests).toHaveLength(1)
+    expect(bests[0].value).toBe(400)
+    expect(bests[0].sessionId).toBe('session-2026-09-01')
+    expect(bests[0].runCount).toBe(1)
+  })
+
+  it('takes no record off a faster run over work that was swapped mid-run', () => {
+    const bests = personalBests([
+      run('2026-09-01', [forTime(400)]),
+      run('2026-09-08', [forTimeOverChangedWork(320, 'swap')]),
+    ])
+
+    expect(bests).toHaveLength(1)
+    expect(bests[0].value).toBe(400)
+    expect(bests[0].setOn).toBe('Tue 1 Sep 2026')
+  })
+
+  it('takes no record off a run that skipped part of the work', () => {
+    const bests = personalBests([
+      run('2026-09-01', [forTime(400)]),
+      run('2026-09-08', [forTimeOverChangedWork(320, 'skip')]),
+    ])
+
+    expect(bests[0].value).toBe(400)
+    expect(bests[0].fromLastRun).toBe(false)
   })
 })
 
@@ -310,8 +456,14 @@ describe('completion history', () => {
         key: 'session-2026-09-08',
         on: 'Tue 8 Sep 2026',
         headline: 'For time 06:23 · AMRAP 8 rounds + 4 reps',
+        holdsBest: true,
       },
-      { key: 'session-2026-09-01', on: 'Tue 1 Sep 2026', headline: 'For time 06:40' },
+      {
+        key: 'session-2026-09-01',
+        on: 'Tue 1 Sep 2026',
+        headline: 'For time 06:40',
+        holdsBest: false,
+      },
     ])
   })
 
@@ -327,6 +479,24 @@ describe('completion history', () => {
     expect(completionHistory([run('2026-09-01', [lift(100)])])[0].headline).toBe(
       COMPLETED_HEADLINE,
     )
+  })
+
+  it('marks the run that holds a record, and only that run', () => {
+    const history = completionHistory([
+      run('2026-09-01', [forTime(400)]),
+      run('2026-09-08', [forTime(383)]),
+      run('2026-09-15', [forTime(395)]),
+    ])
+
+    expect(history.map((entry) => entry.holdsBest)).toEqual([false, true, false])
+  })
+
+  it('lists a run that set no record, and claims none for it', () => {
+    const history = completionHistory([run('2026-09-01', [forTime(900, false)])])
+
+    expect(history).toHaveLength(1)
+    expect(history[0].headline).toBe(COMPLETED_HEADLINE)
+    expect(history[0].holdsBest).toBe(false)
   })
 })
 
