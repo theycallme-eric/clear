@@ -40,10 +40,14 @@ import {
   generationSuccessSchema,
   parseBoundary,
   schemaIssues,
+  swapRequestSchema,
+  swapSuccessSchema,
   type GenerationFailure as GenerationFailureCode,
   type GenerationRequest,
   type GenerationSuccess,
   type SchemaIssue,
+  type SwapRequest,
+  type SwapSuccess,
 } from '../state/schemas'
 import type { AuthClient } from './auth'
 import type { SupabaseConfig } from './supabase'
@@ -238,6 +242,15 @@ export function codeForStatus(status: number): ErrorCode {
 /** The route the function is mounted at. */
 const FUNCTION_PATH = '/functions/v1/generate-workout'
 
+/**
+ * REV-02's route. A second path rather than a second module, because a swap is
+ * the same call with a narrower scope: the same envelope, the same §9 codes,
+ * the same request id travelling in the header and the body, and the same rule
+ * that a failure is never content. What differs is the schema on each end, and
+ * that is a parameter rather than a parallel pipeline.
+ */
+const SWAP_FUNCTION_PATH = '/functions/v1/generate-section'
+
 const REQUEST_ID_HEADER = 'x-request-id'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -289,6 +302,14 @@ export interface GenerationClientConfig {
   readonly requestId?: () => string
 }
 
+/**
+ * What a swap's caller chooses: the session and the one thing in it being
+ * replaced. Everything else — the section, the equipment, the exercises that
+ * are staying, the user's constraints — is read back from the session by the
+ * function, so a client cannot widen its own request (REV-02).
+ */
+export type SectionSwapInput = Omit<SwapRequest, 'request_id'>
+
 export interface GenerationClient {
   /**
    * Composes one workout. Resolves to the validated workout or to a typed
@@ -298,6 +319,14 @@ export interface GenerationClient {
     input: GenerationInput,
     options?: GenerationCallOptions,
   ): Promise<Result<GenerationSuccess, GenerationError>>
+  /**
+   * Replaces one slot, or one block as a unit, in a session that already
+   * exists. Answers the revisions the database wrote — the substitute *and*
+   * the row it superseded — because the lineage is what the operation is (D6),
+   * and a caller given only the substitute would have to guess what it
+   * replaced. A failure answers a typed error and revises nothing.
+   */
+  swapSection(input: SectionSwapInput): Promise<Result<SwapSuccess, GenerationError>>
 }
 
 export function createGenerationClient(config: GenerationClientConfig): GenerationClient {
@@ -305,7 +334,96 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
   const fetchImpl = config.supabase.fetch ?? globalThis.fetch
   const mintRequestId = config.requestId ?? generateRequestId
 
+  /**
+   * One authenticated POST to an AI function, and the answer read back with the
+   * caller's own success schema.
+   *
+   * Shared by both calls rather than written twice: the token read, the two
+   * places the request id travels, the unreadable-body case and the
+   * refusal-or-success discrimination are envelope behaviour, and an envelope
+   * whose two callers disagreed about any of it would not be one.
+   */
+  const call = async <T>(
+    path: string,
+    body: unknown,
+    requestId: string,
+    success: Parser<T>,
+    // Observation only, and only three of GEN-05's four stages happen here —
+    // `validating` belongs to the caller, whose schema it is.
+    reachedStage: (stage: GenerationStage) => void = () => undefined,
+  ): Promise<Result<T, GenerationError>> => {
+    reachedStage('authorizing')
+    const session = await config.auth.getSession()
+    if (isErr(session)) {
+      return err(fromAppError(session.error, requestId))
+    }
+    if (session.value === null) {
+      return err(generationError({ code: ErrorCode.AUTH_UNAUTHENTICATED, requestId }))
+    }
+
+    let response: Response
+    try {
+      reachedStage('composing')
+      response = await fetchImpl(`${base}${path}`, {
+        method: 'POST',
+        headers: {
+          apikey: config.supabase.anonKey,
+          authorization: `Bearer ${session.value.accessToken}`,
+          'content-type': 'application/json',
+          [REQUEST_ID_HEADER]: requestId,
+        },
+        body: JSON.stringify(body),
+      })
+    } catch (error) {
+      // The request never landed — killed mid-call, or never started. Whether
+      // the function did anything is unknowable from here, and an unknown
+      // answer is not content.
+      return err(
+        generationError({
+          code: ErrorCode.NETWORK_OFFLINE,
+          requestId,
+          details: { reason: error instanceof Error ? error.message : String(error) },
+        }),
+      )
+    }
+
+    let payload: unknown
+    try {
+      reachedStage('reading')
+      payload = await response.json()
+    } catch {
+      // A body that will not read leaves the status as the only fact there is.
+      return err(
+        generationError({
+          code: codeForStatus(response.status),
+          requestId,
+          details: { status: response.status, reason: 'unreadable-body' },
+        }),
+      )
+    }
+
+    return readAnswer(success, payload, response.status, requestId)
+  }
+
   return {
+    async swapSection(input) {
+      const requestId = mintRequestId()
+
+      // The discriminated target, refused here rather than by the function: a
+      // `single` body carrying a block id is a caller that has not decided
+      // which swap it wants, and that costs a round trip to be told.
+      const request = parseBoundary<SwapRequest>(
+        swapRequestSchema,
+        { ...input, request_id: requestId },
+        { code: ErrorCode.GENERATION_INVALID_PARAMS, requestId },
+      )
+      if (isErr(request)) {
+        return err(fromAppError(request.error, requestId))
+      }
+
+      return call(SWAP_FUNCTION_PATH, request.value, requestId, swapSuccessSchema)
+    },
+
     async generate(input, options = {}) {
       const requestId = mintRequestId()
       const reachedStage = options.onStage ?? (() => undefined)
@@ -323,57 +441,13 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
         return err(fromAppError(request.error, requestId))
       }
 
-      reachedStage('authorizing')
-      const session = await config.auth.getSession()
-      if (isErr(session)) {
-        return err(fromAppError(session.error, requestId))
-      }
-      if (session.value === null) {
-        return err(generationError({ code: ErrorCode.AUTH_UNAUTHENTICATED, requestId }))
-      }
-
-      let response: Response
-      try {
-        reachedStage('composing')
-        response = await fetchImpl(`${base}${FUNCTION_PATH}`, {
-          method: 'POST',
-          headers: {
-            apikey: config.supabase.anonKey,
-            authorization: `Bearer ${session.value.accessToken}`,
-            'content-type': 'application/json',
-            [REQUEST_ID_HEADER]: requestId,
-          },
-          body: JSON.stringify(request.value),
-        })
-      } catch (error) {
-        // The request never landed — killed mid-generate, or never started.
-        // Whether the function composed anything is unknowable from here, and
-        // an unknown answer is not a workout.
-        return err(
-          generationError({
-            code: ErrorCode.NETWORK_OFFLINE,
-            requestId,
-            details: { reason: error instanceof Error ? error.message : String(error) },
-          }),
-        )
-      }
-
-      let payload: unknown
-      try {
-        reachedStage('reading')
-        payload = await response.json()
-      } catch {
-        // A body that will not read leaves the status as the only fact there is.
-        return err(
-          generationError({
-            code: codeForStatus(response.status),
-            requestId,
-            details: { status: response.status, reason: 'unreadable-body' },
-          }),
-        )
-      }
-
-      return readAnswer(payload, response.status, requestId)
+      return call(
+        FUNCTION_PATH,
+        request.value,
+        requestId,
+        generationSuccessSchema,
+        reachedStage,
+      )
     },
   }
 }
@@ -385,19 +459,34 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
  * is real, because a refusal with no id is one a log cannot be matched to.
  */
 export function unconfiguredGenerationClient(): GenerationClient {
+  const refuse = <T>(): Result<T, GenerationError> =>
+    err(
+      generationError({
+        code: ErrorCode.GENERATION_INVALID_PARAMS,
+        requestId: generateRequestId(),
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
   return {
     async generate() {
-      const requestId = generateRequestId()
-
-      return err(
-        generationError({
-          code: ErrorCode.GENERATION_INVALID_PARAMS,
-          requestId,
-          details: { reason: 'missing-configuration' },
-        }),
-      )
+      return refuse<GenerationSuccess>()
+    },
+    async swapSection() {
+      return refuse<SwapSuccess>()
     },
   }
+}
+
+/**
+ * The success half of whichever call is being read, as CORE-03 declares it.
+ * Structural rather than the schema type itself, so this module states what it
+ * needs of a schema — one parse — and declares none of its own.
+ */
+interface Parser<T> {
+  safeParse(value: unknown):
+    | { readonly success: true; readonly data: T }
+    | { readonly success: false; readonly error: Parameters<typeof schemaIssues>[0] }
 }
 
 /**
@@ -407,11 +496,12 @@ export function unconfiguredGenerationClient(): GenerationClient {
  * by CORE-03's schemas. Nothing is read off an unparsed body except that one
  * discriminator.
  */
-function readAnswer(
+function readAnswer<T>(
+  success: Parser<T>,
   payload: unknown,
   status: number,
   requestId: string,
-): Result<GenerationSuccess, GenerationError> {
+): Result<T, GenerationError> {
   if (looksLikeRefusal(payload)) {
     const refusal = generationErrorResponseSchema.safeParse(payload)
 
@@ -445,15 +535,15 @@ function readAnswer(
     )
   }
 
-  const success = generationSuccessSchema.safeParse(payload)
+  const parsed = success.safeParse(payload)
 
-  if (!success.success) {
+  if (!parsed.success) {
     return err(
       generationError({
         code: status >= 200 && status < 300 ? ErrorCode.GENERATION_FAILED : codeForStatus(status),
         requestId,
         failure: status >= 200 && status < 300 ? GenerationFailure.MALFORMED_PRESCRIPTION : null,
-        issues: schemaIssues(success.error),
+        issues: schemaIssues(parsed.error),
         details: { status, reason: 'unreadable-response' },
       }),
     )
@@ -472,7 +562,7 @@ function readAnswer(
     )
   }
 
-  return ok(success.data)
+  return ok(parsed.data)
 }
 
 /** The one thing read off an unparsed payload: does it claim to be a refusal. */

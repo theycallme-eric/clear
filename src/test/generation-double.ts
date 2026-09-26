@@ -11,12 +11,14 @@ import type {
   GenerationError,
   GenerationInput,
   GenerationStage,
+  SectionSwapInput,
 } from '../data/generation'
 import { err, ok, type Result } from '../state/errors'
-import type { GenerationOutput, GenerationSuccess } from '../state/schemas'
+import type { GenerationOutput, GenerationSuccess, SwapSuccess } from '../state/schemas'
 import { makeGenerationOutput } from './factories'
 
 type Answer = Result<GenerationSuccess, GenerationError>
+type SwapAnswer = Result<SwapSuccess, GenerationError>
 
 export interface FakeGenerationClient extends GenerationClient {
   /** Every input handed to `generate`, in order. */
@@ -34,12 +36,25 @@ export interface FakeGenerationClient extends GenerationClient {
    * is exactly the decorative progress GEN-05 must not have.
    */
   reachStage(stage: GenerationStage): void
+
+  // ── REV-02's swap, on the same seam and with the same discipline ──
+
+  /** Every input handed to `swapSection`, in order. */
+  readonly swaps: readonly SectionSwapInput[]
+  /** How many swap calls have not been answered yet. */
+  readonly swapsOutstanding: number
+  /** Answers the oldest unanswered swap with the revisions a test supplies. */
+  succeedSwap(success: SwapSuccess): void
+  /** Answers the oldest unanswered swap with a typed error. */
+  failSwap(error: GenerationError): void
 }
 
 export function createFakeGenerationClient(): FakeGenerationClient {
   const calls: GenerationInput[] = []
   const waiting: ((answer: Answer) => void)[] = []
   const observers: ((stage: GenerationStage) => void)[] = []
+  const swaps: SectionSwapInput[] = []
+  const swapsWaiting: ((answer: SwapAnswer) => void)[] = []
 
   const answer = (value: Answer) => {
     const settle = waiting.shift()
@@ -50,8 +65,30 @@ export function createFakeGenerationClient(): FakeGenerationClient {
     settle(value)
   }
 
+  const answerSwap = (value: SwapAnswer) => {
+    const settle = swapsWaiting.shift()
+    if (settle === undefined) {
+      throw new Error('the generation double was answered a swap with nothing in flight')
+    }
+    settle(value)
+  }
+
   return {
     calls,
+    swaps,
+    get swapsOutstanding() {
+      return swapsWaiting.length
+    },
+    swapSection(input) {
+      swaps.push(input)
+      return new Promise<SwapAnswer>((resolve) => swapsWaiting.push(resolve))
+    },
+    succeedSwap(success) {
+      answerSwap(ok(success))
+    },
+    failSwap(error) {
+      answerSwap(err(error))
+    },
     get outstanding() {
       return waiting.length
     },

@@ -45,6 +45,7 @@ import {
   type Result,
 } from '../state/errors'
 import {
+  blockSwapResultSchema,
   parseBoundary,
   sessionAcceptanceSchema,
   sessionReconstructionSchema,
@@ -88,6 +89,17 @@ export interface SwapResult {
   readonly superseded: WorkoutExerciseRow
 }
 
+/**
+ * One member of a unit swap: the active prescription being replaced, and what
+ * replaces it. The payload names its own targets rather than being zipped
+ * against a query inside the function — which prescription replaces which slot
+ * is the caller's decision, and it is already made by the time this is sent.
+ */
+export interface BlockRevisionInput {
+  readonly workoutExerciseId: string
+  readonly prescription: Prescription
+}
+
 /** The shared client's configuration; this module adds nothing to it. */
 export type SessionsClientConfig = SupabaseConfig
 
@@ -113,6 +125,20 @@ export interface SessionsClient {
    * is superseded, not mutated, and keeps its own `execution_status`.
    */
   swap(workoutExerciseId: string, prescription: Prescription): Promise<Result<SwapResult>>
+  /**
+   * Every active member of one block, replaced in one transaction (REV-02).
+   *
+   * Not a loop over `swap` — that is the whole reason the function exists. A
+   * unit swap that revised three of four members would leave a block holding
+   * two exercises composed for each other and two composed for the pair that
+   * is gone, and no amount of care in TypeScript makes four PostgREST round
+   * trips atomic. The payload must name exactly the block's active members,
+   * once each, or nothing is written.
+   */
+  swapBlock(
+    blockId: string,
+    revisions: readonly BlockRevisionInput[],
+  ): Promise<Result<readonly SwapResult[]>>
   /** A session as it currently stands, with the sets already logged. */
   snapshot(sessionId: string): Promise<Result<SessionSnapshot>>
   /**
@@ -252,6 +278,59 @@ export function createSessionsClient(config: SessionsClientConfig): SessionsClie
       }
 
       return ok({ exercise: exercise.data, superseded: superseded.data })
+    },
+
+    async swapBlock(blockId, revisions) {
+      const result = await db.rpc('swap_session_block', {
+        p_block_id: blockId,
+        p_revisions: revisions.map((revision) => ({
+          workout_exercise_id: revision.workoutExerciseId,
+          prescription: revision.prescription,
+        })),
+      })
+      if (!result.ok) return result
+
+      const parsed = parseBoundary(blockSwapResultSchema, result.value, {
+        code: ErrorCode.PERSISTENCE_READ_FAILED,
+      })
+      if (!parsed.ok) return parsed
+
+      // `slot_mismatch` is this function's alone and is a caller defect rather
+      // than a session state: the payload did not name exactly the block's
+      // active members. It is reported as a constraint violation naming the
+      // block, because "not found" would send a reader looking for the session.
+      if (parsed.value.outcome === 'slot_mismatch') {
+        return err(
+          createError(ErrorCode.VALIDATION_CONSTRAINT, {
+            details: { event: 'swap_block', blockId },
+          }),
+        )
+      }
+
+      const refused = refusal(
+        { outcome: parsed.value.outcome, event: parsed.value.event, state: parsed.value.state },
+        'swap',
+      )
+      if (refused !== null) return err(refused)
+
+      const members: SwapResult[] = []
+      for (const revision of parsed.value.revisions ?? []) {
+        const exercise = workoutExerciseRowSchema.safeParse(revision.exercise)
+        const superseded = workoutExerciseRowSchema.safeParse(revision.superseded)
+        if (!exercise.success || !superseded.success) {
+          return err(malformed({ outcome: parsed.value.outcome, exercise: 'missing' }))
+        }
+        members.push({ exercise: exercise.data, superseded: superseded.data })
+      }
+
+      // A `swapped` outcome with no revisions is the function having changed
+      // shape without this module hearing about it: the block had members, or
+      // the slot check would have refused it.
+      if (members.length === 0) {
+        return err(malformed({ outcome: parsed.value.outcome, revisions: 'empty' }))
+      }
+
+      return ok(members)
     },
 
     async snapshot(sessionId) {
