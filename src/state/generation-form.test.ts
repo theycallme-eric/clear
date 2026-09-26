@@ -9,12 +9,15 @@ import {
   clampIntensity,
   DEFAULT_DURATION_MINS,
   FULL_INTENSITY_RANGE,
+  GENERATE_PATH,
+  generatePath,
   GENERATION_GOALS,
   INTENSITY_BY_GOAL,
   initialDraft,
   inputFrom,
   intensityRange,
   NOTES_MAX_LENGTH,
+  prefillFrom,
   requestFrom,
   withAnchor,
   withDuration,
@@ -91,6 +94,55 @@ describe('the opening draft', () => {
   it('offers the full range until a goal says otherwise', () => {
     expect(intensityRange(null)).toEqual(FULL_INTENSITY_RANGE)
     expect(intensityRange('conditioning')).toEqual(INTENSITY_BY_GOAL.conditioning)
+  })
+})
+
+describe('a prefilled draft (HOME-03)', () => {
+  it('takes the anchor and the intensity, and still asks for the goal', () => {
+    const draft = initialDraft(LOCATION, { focus: 'lower_body', intensity: 7 })
+
+    expect(draft.anchor).toBe('lower_body')
+    expect(draft.intensity).toBe(7)
+    // The one criterion a prefill must not weaken: no goal, so no generating.
+    expect(draft.goal).toBeNull()
+    expect(canGenerate(draft)).toBe(false)
+    expect(draft.durationMins).toBe(String(DEFAULT_DURATION_MINS))
+    expect(draft.notes).toBe('')
+  })
+
+  it('keeps the prefilled intensity through the goal cascade, clamped to its range', () => {
+    const prefilled = initialDraft(LOCATION, { focus: 'lower_body', intensity: 9 })
+
+    expect(withGoal(prefilled, 'strength').intensity).toBe(9)
+    // Recovery tops out at 3, so the suggestion snaps rather than overriding it.
+    expect(withGoal(prefilled, 'active_recovery').intensity).toBe(
+      INTENSITY_BY_GOAL.active_recovery.max,
+    )
+  })
+
+  it('builds the destination Home links to, and reads it back', () => {
+    const prefill = { focus: 'power', intensity: 8 } as const
+
+    expect(generatePath()).toBe(GENERATE_PATH)
+    expect(generatePath(null)).toBe(GENERATE_PATH)
+    expect(generatePath(prefill)).toBe('/generate?focus=power&intensity=8')
+    expect(prefillFrom('?focus=power&intensity=8')).toEqual(prefill)
+    expect(prefillFrom(new URLSearchParams({ focus: 'power', intensity: '8' }))).toEqual(prefill)
+  })
+
+  it('refuses a prefill it cannot parse rather than half-filling the form', () => {
+    expect(prefillFrom('')).toBeNull()
+    expect(prefillFrom('?focus=lower_body')).toBeNull()
+    expect(prefillFrom('?intensity=7')).toBeNull()
+    expect(prefillFrom('?focus=legs&intensity=7')).toBeNull()
+    expect(prefillFrom('?focus=lower_body&intensity=0')).toBeNull()
+    expect(prefillFrom('?focus=lower_body&intensity=11')).toBeNull()
+    expect(prefillFrom('?focus=lower_body&intensity=7.5')).toBeNull()
+    expect(prefillFrom('?focus=lower_body&intensity=seven')).toBeNull()
+  })
+
+  it('opens on the defaults when there is no prefill at all', () => {
+    expect(initialDraft(LOCATION, prefillFrom(GENERATE_PATH))).toEqual(initialDraft(LOCATION))
   })
 })
 

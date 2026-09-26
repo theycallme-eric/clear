@@ -20,6 +20,12 @@
  *      only path to `generate`, and a refusal renders on the field the schema
  *      named instead. The screen cannot send a payload the function would have
  *      to reject, and `Generate.test.tsx` holds it to that.
+ *   3. **A prefill fills in the anchor and the intensity, and says so.** HOME-03
+ *      opens this screen with its suggestion in the query string; `prefillFrom`
+ *      parses it, `initialDraft` seeds the draft with it, and a notice states
+ *      that two fields were not chosen here. The goal is still unset, so a
+ *      prefilled form is still one answer short of generating — the suggestion
+ *      is read off history, and history does not know what today is for.
  *
  * **What this screen deliberately does not do.** The goal the user picks here
  * shapes the intensity range and the anchors offered (v3 delta §2.2–2.3), and
@@ -30,7 +36,7 @@
  * recorded in `docs/journal/2026-09-25.md`.
  */
 import { useId, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   AppHeader,
@@ -55,6 +61,7 @@ import {
   intensityRange,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
+  prefillFrom,
   refusalFrom,
   requestFrom,
   withAnchor,
@@ -65,6 +72,7 @@ import {
   withNotes,
   type DraftRefusal,
   type GenerationDraft,
+  type GenerationPrefill,
 } from '../state/generation-form'
 import type { Location } from '../state/schemas'
 import { useLocationsQuery } from '../state/user-queries'
@@ -83,9 +91,20 @@ import { Screen } from './Screen'
 /** What the form needs before it can be filled in: the places and their default. */
 type Places = readonly Location[]
 
+/** Said once, where a suggestion filled the anchor and the intensity in. */
+export const PREFILL_NOTICE =
+  'Prefilled from today’s suggestion. Change anything before you generate.'
+
 export function Generate() {
   const navigate = useNavigate()
   const locations = useLocationsQuery()
+  const [params] = useSearchParams()
+
+  // HOME-03's hand-off, and the only thing this screen takes from outside: the
+  // suggested anchor and intensity, parsed rather than trusted. A URL with no
+  // usable prefill — including the plain `/generate` the Generate button opens
+  // after the suggestion was dismissed — is a screen on its defaults.
+  const prefill = prefillFrom(params)
 
   // The places are the screen's data, and the profile deliberately is not: the
   // goal has no default to read from it (§2.1), the guard already answers
@@ -132,17 +151,23 @@ export function Generate() {
             />
           }
         >
-          {(places) => <GenerateForm places={places} />}
+          {(places) => <GenerateForm places={places} prefill={prefill} />}
         </ViewStateSwitch>
       </Screen>
     </>
   )
 }
 
-function GenerateForm({ places }: { places: Places }) {
+function GenerateForm({
+  places,
+  prefill,
+}: {
+  places: Places
+  prefill: GenerationPrefill | null
+}) {
   const generation = useGeneration()
   const [draft, setDraft] = useState<GenerationDraft>(() =>
-    initialDraft(defaultLocationId(places)),
+    initialDraft(defaultLocationId(places), prefill),
   )
   const [refusal, setRefusal] = useState<DraftRefusal | null>(null)
 
@@ -171,6 +196,14 @@ function GenerateForm({ places }: { places: Places }) {
         {refusal !== null && (
           <p role="alert" style={{ color: 'var(--text-negative)' }}>
             {refusal.message}
+          </p>
+        )}
+
+        {/* HOME-03: a prefilled form says so. A field filled in by something
+            other than the user, silently, is a field they did not choose. */}
+        {prefill !== null && (
+          <p role="status" style={{ margin: 0 }}>
+            {PREFILL_NOTICE}
           </p>
         )}
 

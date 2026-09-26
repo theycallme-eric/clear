@@ -31,6 +31,12 @@
  *      a typed error and one honest recovery action — never a workout.
  *   4. **The recents link into the chronology.** Each of the three opens
  *      HIST-01's detail for that session.
+ *   5. **The suggestion is read off the same rows, and it is refusable.**
+ *      HOME-03's least-recently-trained focus and history-averaged intensity
+ *      (`src/state/session-suggestion.ts`) are a fourth derivation of the one
+ *      read, not a fifth request. Taking it opens `/generate` prefilled with the
+ *      anchor and intensity; dismissing it leaves Generate on its defaults, and
+ *      too little history produces no suggestion rather than a plausible one.
  *
  * Three destinations Home names are declared in `SCREEN_ATMOSPHERE` and routed
  * by requirements that have not landed yet — `/generate` (GEN-04), `/review`
@@ -41,7 +47,7 @@
  * belongs to whoever owns the Generate → Loading → Review journey and that
  * owner is not this screen once Review exists.
  */
-import { useEffect, useMemo, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 import {
@@ -53,6 +59,7 @@ import {
   Zap,
 } from '../design-system/index'
 import { useGeneration } from '../state/generation'
+import { GENERATE_PATH } from '../state/generation-form'
 import {
   daysTrained,
   quickStartPlan,
@@ -66,6 +73,14 @@ import {
 import type { HistorySessionEntry } from '../state/history'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
 import type { WorkoutSessionRow } from '../state/schemas'
+import {
+  defaultSuggestionStorage,
+  suggestSession,
+  suggestionDay,
+  suggestionDismissed,
+  writeSuggestionDismissal,
+  type SessionSuggestion,
+} from '../state/session-suggestion'
 import { useStreakQuery } from '../state/summary-queries'
 import type { Streak } from '../state/streak'
 import {
@@ -85,7 +100,7 @@ import { ResumableSession } from './ResumableSession'
 import { Screen } from './Screen'
 
 /** IA.md §4's out-edges from Home. Each lands with the screen behind it. */
-export const GENERATE_ROUTE = '/generate'
+export const GENERATE_ROUTE = GENERATE_PATH
 export const REVIEW_ROUTE = '/review'
 
 /** The template's own h1 — the screen is "Today", the app is the wordmark. */
@@ -93,6 +108,11 @@ export const HOME_HEADING = 'Today'
 
 export const WEEK_STRIP_LABEL = 'This week'
 export const RECENT_WORKOUTS_LABEL = 'Recent workouts'
+export const SUGGESTION_LABEL = 'Suggested next'
+
+/** HOME-03's empty state: what is missing, not a focus guessed from too little. */
+export const SUGGESTION_EMPTY =
+  'Not enough history yet to suggest a focus. Finish a few sessions and this will say what you have been neglecting.'
 
 export function Home() {
   const history = useHistoryQuery()
@@ -108,6 +128,10 @@ export function Home() {
   const recents = useMemo(() => recentWorkouts(sessions ?? []), [sessions])
   const plan = useMemo(
     () => (sessions === null ? null : quickStartPlan(sessions)),
+    [sessions],
+  )
+  const suggestion = useMemo(
+    () => (sessions === null ? null : suggestSession(sessions)),
     [sessions],
   )
 
@@ -146,6 +170,12 @@ export function Home() {
           {/* EXE-01: a workout the user left the app in the middle of is the
               first thing Home has to answer for, and it answers in the page. */}
           <ResumableSession />
+
+          {/* HOME-03: what history says is overdue, before the actions that
+              would compose it. Dismissing it is the same absence Quick Start's
+              null plan is — the card is not rendered, and Generate opens on its
+              own defaults. */}
+          <SuggestedSession query={history} suggestion={suggestion} />
 
           <QuickActions
             plan={plan}
@@ -253,6 +283,91 @@ function StreakCount() {
         </p>
       )}
     </ViewStateSwitch>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// What to train next (HOME-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The suggestion, with the reason it is being made and two ways to answer it.
+ *
+ * Four states, on the same read as everything else on this screen. The one
+ * worth naming is **empty**: a history too thin to name a least-recently-trained
+ * focus produces no focus at all, and the card says that rather than showing a
+ * plausible one. `suggestSession` answers `null`, and a guess is the thing this
+ * state exists to refuse.
+ *
+ * Dismissal is `localStorage`, keyed to today. It is not a preference — tomorrow
+ * has a different suggestion and asks again — and losing it costs the user one
+ * card they can dismiss again, which is why an unavailable store is ignored
+ * rather than handled. `Use this` is the *only* thing that prefills: the path it
+ * navigates to carries the anchor and the intensity, so dismissing and pressing
+ * Generate opens the form on its defaults with nothing of the suggestion in it.
+ */
+function SuggestedSession({
+  query,
+  suggestion,
+}: {
+  query: HistoryQuery
+  suggestion: SessionSuggestion | null
+}) {
+  const navigate = useNavigate()
+  const storage = useMemo(() => defaultSuggestionStorage(), [])
+  const [dismissed, setDismissed] = useState(() => suggestionDismissed(storage))
+
+  const dismiss = useCallback(() => {
+    writeSuggestionDismissal(storage, suggestionDay())
+    setDismissed(true)
+  }, [storage])
+
+  if (dismissed) return null
+
+  const state: ViewState<SessionSuggestion> =
+    query.state.status === 'loading'
+      ? viewLoading()
+      : query.state.status === 'error'
+        ? viewError(query.state.error)
+        : suggestion === null
+          ? viewEmpty()
+          : viewReady(suggestion)
+
+  return (
+    <Card>
+      <div className="clr-stack clr-stack--tight">
+        <Heading>{SUGGESTION_LABEL}</Heading>
+        <ViewStateSwitch
+          state={state}
+          loadingLabel="Reading what you have been training"
+          errorTitle="Your suggestion didn’t load"
+          onRetry={query.refetch}
+          empty={<p style={{ margin: 0 }}>{SUGGESTION_EMPTY}</p>}
+        >
+          {(next) => (
+            <>
+              <p style={{ margin: 0 }}>
+                {next.focusLabel} · intensity {next.intensity}
+              </p>
+              {/* The reason is pattern-level on purpose: "no hinge in 11 days"
+                  is a fact about training, "no lower body" is a fact about
+                  labels. */}
+              <p style={{ margin: 0 }}>
+                {next.reason} {next.intensityReason}
+              </p>
+              <div className="clr-row" style={SUGGESTION_ACTIONS}>
+                <Button variant="secondary" onClick={() => void navigate(next.path)}>
+                  Use this
+                </Button>
+                <Button variant="quiet" onClick={dismiss}>
+                  Dismiss
+                </Button>
+              </div>
+            </>
+          )}
+        </ViewStateSwitch>
+      </div>
+    </Card>
   )
 }
 
@@ -370,6 +485,12 @@ function RecentWorkouts({
       </div>
     </Card>
   )
+}
+
+/** The two answers side by side, wrapping on a narrow phone. */
+const SUGGESTION_ACTIONS: CSSProperties = {
+  flexWrap: 'wrap',
+  gap: 'var(--spacing-100)',
 }
 
 const STREAK_STYLE: CSSProperties = {
