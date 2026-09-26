@@ -29,6 +29,7 @@ import {
   type GenerationClient,
 } from '../data/generation'
 import { createOtpClient, otpError, type OtpClient } from '../data/otp'
+import { createRestDayClient, type RestDayClient } from '../data/rest-days'
 import { configFromEnv } from '../data/supabase'
 import { createSummaryClient, type SummaryClient } from '../data/summary'
 import { createUserDataClient, type UserDataClient } from '../data/user-data'
@@ -143,6 +144,25 @@ function unconfiguredSummaryClient(): SummaryClient {
   }
 }
 
+/** HOME-02's read and write, for a build with no project configuration. */
+function unconfiguredRestDayClient(): RestDayClient {
+  const failure = () =>
+    err(
+      createError(ErrorCode.VALIDATION_REQUIRED_FIELD, {
+        details: { reason: 'missing-configuration' },
+      }),
+    )
+
+  return {
+    async recent() {
+      return failure()
+    },
+    async mark() {
+      return failure()
+    },
+  }
+}
+
 /** DATA-05's reads and writes, for a build that cannot reach the project. */
 function unconfiguredUserConstraintsClient(): UserConstraintsClient {
   const failure = () =>
@@ -187,6 +207,8 @@ interface Clients {
    * rotated.
    */
   readonly summary: SummaryClient
+  /** HOME-02's marked days, using the same rotating session token. */
+  readonly restDays: RestDayClient
   /**
    * EXE-01's lifecycle and `block_results` writes. Built from the same `auth`
    * object for the same reason `userData` is: the token it presents has to be
@@ -229,6 +251,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
       otp: unconfiguredOtpClient(),
       userData: unconfiguredUserDataClient(),
       summary: unconfiguredSummaryClient(),
+      restDays: unconfiguredRestDayClient(),
       workout: unconfiguredWorkoutClients(),
       constraints: unconfiguredUserConstraintsClient(),
       generation: unconfiguredGenerationClient(),
@@ -243,6 +266,7 @@ export function appAuthClients(env: Record<string, unknown> = import.meta.env): 
     otp: createOtpClient(config.value),
     userData: createUserDataClient({ auth, supabase: config.value }),
     summary: createSummaryClient({ auth, supabase: config.value }),
+    restDays: createRestDayClient({ auth, supabase: config.value }),
     workout: createWorkoutClients({ auth, supabase: config.value }),
     constraints: createLiveUserConstraintsClient({ auth, supabase: config.value }),
     generation: createGenerationClient({ auth, supabase: config.value }),

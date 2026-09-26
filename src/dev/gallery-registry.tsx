@@ -25,6 +25,17 @@ import {
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import type { DeloadSuggestion } from '../state/deload'
 import { createError, ErrorCode, type AppError } from '../state/errors'
+import {
+  BESTS_LABEL_COMPETITIVE,
+  BESTS_LABEL_DELOAD,
+  COMPARISON_LABEL_COMPETITIVE,
+  COMPARISON_LABEL_DELOAD,
+  DELOAD_NOTE,
+  FIRST_ATTEMPT_NOTE,
+  NO_RUNS_NOTE,
+  type FavoriteProgression,
+} from '../state/favorite-progression'
+import type { FavoriteEntry } from '../state/favorites'
 import type { HistoryEntry } from '../state/history'
 import type { WeekDay } from '../state/home'
 import { MOOD_SCALE } from '../state/mood'
@@ -46,6 +57,8 @@ import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { DeloadBanner } from '../ui/deload-banner'
+import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
+import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
@@ -199,14 +212,255 @@ function HistoryListEmpty() {
   return <HistoryList entries={[]} label="Workout history" />
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FAV-01 — favorites rows
+// ─────────────────────────────────────────────────────────────────────────────
+
+const SAMPLE_FAVORITE: FavoriteEntry = {
+  key: 'favorite:gallery-restorable',
+  id: 'gallery-restorable',
+  title: 'Lower-body strength',
+  focus: 'lower_body',
+  meta: 'Lower body · 45 min · Intensity 7/10',
+  timesCompleted: 4,
+  lastCompleted: 'Tue 22 Sep 2026',
+  restorable: true,
+}
+
+const SAMPLE_FAVORITE_NEW: FavoriteEntry = {
+  ...SAMPLE_FAVORITE,
+  key: 'favorite:gallery-unperformed',
+  id: 'gallery-unperformed',
+  title: 'Power ladder',
+  focus: 'power',
+  meta: 'Power · 20 min · Intensity 9/10',
+  timesCompleted: 0,
+  lastCompleted: null,
+}
+
+/** The acceptance criterion about an older contract, as the card states it. */
+const SAMPLE_FAVORITE_OUTDATED: FavoriteEntry = {
+  ...SAMPLE_FAVORITE,
+  key: 'favorite:gallery-outdated',
+  id: 'gallery-outdated',
+  title: 'Full-body circuit',
+  focus: 'full_body',
+  meta: 'Full body · 30 min · Intensity 5/10',
+  restorable: false,
+}
+
+const noop = () => {}
+
+function FavoriteListItemRestorable() {
+  return <FavoriteListItem entry={SAMPLE_FAVORITE} onStart={noop} onRemove={noop} />
+}
+
+function FavoriteListItemNeverCompleted() {
+  return <FavoriteListItem entry={SAMPLE_FAVORITE_NEW} onStart={noop} onRemove={noop} />
+}
+
+function FavoriteListItemOutdated() {
+  return (
+    <FavoriteListItem entry={SAMPLE_FAVORITE_OUTDATED} onStart={noop} onRemove={noop} />
+  )
+}
+
+function FavoriteListItemRemoving() {
+  return (
+    <FavoriteListItem entry={SAMPLE_FAVORITE} onStart={noop} onRemove={noop} removing />
+  )
+}
+
+function FavoriteListPopulated() {
+  return (
+    <FavoriteList
+      entries={[SAMPLE_FAVORITE, SAMPLE_FAVORITE_NEW, SAMPLE_FAVORITE_OUTDATED]}
+      label="Favorites"
+      onStart={noop}
+      onRemove={noop}
+    />
+  )
+}
+
+function FavoriteListEmpty() {
+  return <FavoriteList entries={[]} label="Favorites" onStart={noop} onRemove={noop} />
+}
+
+/**
+ * FAV-02's repeat surface, stated as the view model rather than derived from
+ * fixtures: the gallery frames what the card renders, and the derivation has its
+ * own unit tests.
+ */
+const SAMPLE_PROGRESSION: FavoriteProgression = {
+  runCount: 3,
+  framing: 'competitive',
+  lastRunOn: 'Tue 15 Sep 2026',
+  lastRunHeadline: 'For time 06:23 · AMRAP 8 rounds + 4 reps',
+  bests: [
+    {
+      key: 'time:1.0',
+      kind: 'time',
+      label: 'Conditioning · FOR TIME',
+      display: '06:23',
+      value: 383,
+      setOn: 'Tue 15 Sep 2026',
+      sessionId: 'run-3',
+      workoutTitle: 'Engine builder',
+      runCount: 3,
+      fromLastRun: true,
+    },
+    {
+      key: 'rounds:2.0',
+      kind: 'rounds',
+      label: 'Finisher · AMRAP',
+      display: '9 rounds',
+      value: 9,
+      setOn: 'Tue 8 Sep 2026',
+      sessionId: 'run-2',
+      workoutTitle: 'Engine builder',
+      runCount: 3,
+      fromLastRun: false,
+    },
+  ],
+  lastWeights: [
+    {
+      key: 'weight:back-squat:barbell',
+      label: 'back squat',
+      display: '102.5 kg',
+      setOn: 'Tue 15 Sep 2026',
+    },
+  ],
+  history: [
+    {
+      key: 'run-3',
+      on: 'Tue 15 Sep 2026',
+      headline: 'For time 06:23 · AMRAP 8 rounds',
+      holdsBest: true,
+    },
+    {
+      key: 'run-2',
+      on: 'Tue 8 Sep 2026',
+      headline: 'For time 06:35 · AMRAP 9 rounds',
+      holdsBest: true,
+    },
+    {
+      key: 'run-1',
+      on: 'Tue 1 Sep 2026',
+      headline: 'For time 06:40 · AMRAP 7 rounds',
+      holdsBest: false,
+    },
+  ],
+  deltas: [
+    {
+      key: 'time:1.0',
+      kind: 'time',
+      label: 'Conditioning · FOR TIME',
+      current: '06:23',
+      previous: '06:35',
+      direction: 'better',
+      change: '12s faster',
+      against: 'vs Tue 8 Sep 2026',
+    },
+    {
+      key: 'rounds:2.0',
+      kind: 'rounds',
+      label: 'Finisher · AMRAP',
+      current: '8 rounds + 4 reps',
+      previous: '9 rounds',
+      direction: 'worse',
+      change: '1 round fewer',
+      against: 'vs Tue 8 Sep 2026',
+    },
+    {
+      key: 'weight:back-squat:barbell',
+      kind: 'weight',
+      label: 'back squat',
+      current: '102.5 kg',
+      previous: '100 kg',
+      direction: 'better',
+      change: '2.5 kg heavier',
+      against: 'vs Tue 8 Sep 2026',
+    },
+  ],
+  bestsLabel: BESTS_LABEL_COMPETITIVE,
+  comparisonLabel: COMPARISON_LABEL_COMPETITIVE,
+  note: null,
+}
+
+const SAMPLE_PROGRESSION_DELOAD: FavoriteProgression = {
+  ...SAMPLE_PROGRESSION,
+  framing: 'deload',
+  deltas: SAMPLE_PROGRESSION.deltas.map((delta) => ({ ...delta, direction: 'unjudged' })),
+  bestsLabel: BESTS_LABEL_DELOAD,
+  comparisonLabel: COMPARISON_LABEL_DELOAD,
+  note: DELOAD_NOTE,
+}
+
+const SAMPLE_PROGRESSION_FIRST: FavoriteProgression = {
+  ...SAMPLE_PROGRESSION,
+  runCount: 1,
+  lastRunOn: 'Tue 1 Sep 2026',
+  lastRunHeadline: 'For time 06:40',
+  bests: [
+    {
+      ...SAMPLE_PROGRESSION.bests[0],
+      display: '06:40',
+      value: 400,
+      setOn: 'Tue 1 Sep 2026',
+      sessionId: 'run-1',
+      runCount: 1,
+    },
+  ],
+  history: [{ ...SAMPLE_PROGRESSION.history[2], holdsBest: true }],
+  deltas: [],
+  comparisonLabel: null,
+  note: FIRST_ATTEMPT_NOTE,
+}
+
+const SAMPLE_PROGRESSION_NONE: FavoriteProgression = {
+  runCount: 0,
+  framing: 'competitive',
+  lastRunOn: null,
+  lastRunHeadline: null,
+  bests: [],
+  lastWeights: [],
+  history: [],
+  deltas: [],
+  bestsLabel: BESTS_LABEL_COMPETITIVE,
+  comparisonLabel: null,
+  note: NO_RUNS_NOTE,
+}
+
+function FavoriteProgressionCardThreeRuns() {
+  return <FavoriteProgressionCard progression={SAMPLE_PROGRESSION} timesCompleted={3} />
+}
+
+function FavoriteProgressionCardFirstRun() {
+  return (
+    <FavoriteProgressionCard progression={SAMPLE_PROGRESSION_FIRST} timesCompleted={1} />
+  )
+}
+
+function FavoriteProgressionCardDeload() {
+  return (
+    <FavoriteProgressionCard progression={SAMPLE_PROGRESSION_DELOAD} timesCompleted={3} />
+  )
+}
+
+function FavoriteProgressionCardNeverCompleted() {
+  return (
+    <FavoriteProgressionCard progression={SAMPLE_PROGRESSION_NONE} timesCompleted={0} />
+  )
+}
+
 const SAMPLE_WEEK: readonly WeekDay[] = [
-  { day: '2026-09-21', initial: 'M', weekday: 'Monday', state: 'workout', isToday: false },
-  { day: '2026-09-22', initial: 'T', weekday: 'Tuesday', state: 'rest', isToday: false },
-  { day: '2026-09-23', initial: 'W', weekday: 'Wednesday', state: 'workout', isToday: false },
-  { day: '2026-09-24', initial: 'T', weekday: 'Thursday', state: 'rest', isToday: false },
-  { day: '2026-09-25', initial: 'F', weekday: 'Friday', state: 'workout', isToday: true },
-  { day: '2026-09-26', initial: 'S', weekday: 'Saturday', state: 'upcoming', isToday: false },
-  { day: '2026-09-27', initial: 'S', weekday: 'Sunday', state: 'upcoming', isToday: false },
+  { day: '2026-09-21', reason: null, initial: 'M', weekday: 'Monday', state: 'workout', isToday: false },
+  { day: '2026-09-22', reason: 'rest', initial: 'T', weekday: 'Tuesday', state: 'rest', isToday: false },
+  { day: '2026-09-23', reason: null, initial: 'W', weekday: 'Wednesday', state: 'workout', isToday: false },
+  { day: '2026-09-24', reason: 'vacation', initial: 'T', weekday: 'Thursday', state: 'rest', isToday: false },
+  { day: '2026-09-25', reason: null, initial: 'F', weekday: 'Friday', state: 'workout', isToday: true },
+  { day: '2026-09-26', reason: null, initial: 'S', weekday: 'Saturday', state: 'upcoming', isToday: false },
+  { day: '2026-09-27', reason: null, initial: 'S', weekday: 'Sunday', state: 'upcoming', isToday: false },
 ]
 
 function WeekStripMixed() {
@@ -1060,6 +1314,61 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'empty entries',
         note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
         Render: HistoryListEmpty,
+      },
+    ],
+  },
+  {
+    component: 'FavoriteListItem',
+    requirement: 'FAV-01',
+    module: 'src/ui/favorite-list.tsx',
+    summary:
+      'One favorite: title with its star, anchor · duration · intensity, and the progression it is kept for. A snapshot this build cannot restore omits Start and says why in words.',
+    specimens: [
+      { state: 'completed four times', Render: FavoriteListItemRestorable },
+      { state: 'never completed', Render: FavoriteListItemNeverCompleted },
+      {
+        state: 'saved under an older contract',
+        note: 'Start is absent rather than disabled: there is nothing this build could do with the snapshot, and the sentence says so.',
+        Render: FavoriteListItemOutdated,
+      },
+      { state: 'removal in flight', Render: FavoriteListItemRemoving },
+    ],
+  },
+  {
+    component: 'FavoriteList',
+    requirement: 'FAV-01',
+    module: 'src/ui/favorite-list.tsx',
+    summary: 'The favorites a user keeps, newest first, as a named list.',
+    specimens: [
+      { state: 'three favorites', Render: FavoriteListPopulated },
+      {
+        state: 'empty entries',
+        note: 'The screen owns empty-state copy; the list itself remains an empty named list.',
+        Render: FavoriteListEmpty,
+      },
+    ],
+  },
+  {
+    component: 'FavoriteProgressionCard',
+    requirement: 'FAV-02',
+    module: 'src/ui/favorite-progression.tsx',
+    summary:
+      'The thread between the runs of one favorite: bests, the last run against the one before it, what was lifted last time, and the completions — every figure carrying the day it was measured on.',
+    specimens: [
+      { state: 'three completions', Render: FavoriteProgressionCardThreeRuns },
+      {
+        state: 'one completion',
+        note: 'Nothing to compare against yet, so there is no comparison — not an empty one.',
+        Render: FavoriteProgressionCardFirstRun,
+      },
+      {
+        state: 'deload in force',
+        note: 'Per OVR-04: the history and the numbers stay, the verdict and the “beat your best” framing go.',
+        Render: FavoriteProgressionCardDeload,
+      },
+      {
+        state: 'never completed',
+        Render: FavoriteProgressionCardNeverCompleted,
       },
     ],
   },

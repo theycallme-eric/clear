@@ -32,7 +32,8 @@ import {
   type HistoryEntry,
   type HistorySessionEntry,
 } from './history'
-import type { WorkoutSessionRow } from './schemas'
+import type { RestDayReason, WorkoutSessionRow } from './schemas'
+import type { RestDayIndex } from './rest-days'
 import { localDayIn, previousDay, type LocalDay } from './streak'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +51,8 @@ export interface HomeOptions {
   readonly now?: Date
   /** An IANA zone. Only today is placed with it; sessions carry their own day. */
   readonly timeZone?: string
+  /** HOME-02's explicit marks. Omitted keeps HOME-01's session-only strip. */
+  readonly restDays?: RestDayIndex
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -76,6 +79,13 @@ export const WEEK_DAY_LABELS: Readonly<Record<WeekDayState, string>> = {
 
 export interface WeekDay {
   readonly day: LocalDay
+  /**
+   * Why the day was rested, when the user said (HOME-02). `null` for a day that
+   * was trained, a day still to come, and a finished day nobody accounted for —
+   * the third is the one that costs a streak, and the strip says `Rest` for it
+   * either way because the strip has three states, not four.
+   */
+  readonly reason: RestDayReason | null
   /** `M`, `T`, `W` — the letter the strip draws. Decorative; never the label. */
   readonly initial: string
   /** `Monday` — what a screen reader is given instead of the letter. */
@@ -106,13 +116,22 @@ export function weekStrip(
   const days: LocalDay[] = [startOfWeek(today)]
   while (days.length < WEEK_STRIP_DAYS) days.push(nextDay(days[days.length - 1]))
 
-  return days.map((day) => ({
-    day,
-    initial: weekdayIn(day, 'narrow'),
-    weekday: weekdayIn(day, 'long'),
-    state: performed.has(day) ? 'workout' : day < today ? 'rest' : 'upcoming',
-    isToday: day === today,
-  }))
+  return days.map((day) => {
+    const reason = options.restDays?.get(day) ?? null
+
+    return {
+      day,
+      reason,
+      initial: weekdayIn(day, 'narrow'),
+      weekday: weekdayIn(day, 'long'),
+      state: performed.has(day)
+        ? 'workout'
+        : reason !== null || day < today
+          ? 'rest'
+          : 'upcoming',
+      isToday: day === today,
+    }
+  })
 }
 
 /** Days of the strip that were trained. The strip's own "3 / 7". */

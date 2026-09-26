@@ -70,6 +70,9 @@ describe('the generated types are current (DATA-03)', () => {
       'location_equipment',
       'locations',
       'profiles',
+      'rest_days',
+      'saved_workout_completions',
+      'saved_workouts',
       'user_constraints',
       'workout_blocks',
       'workout_exercises',
@@ -165,7 +168,9 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000011_conditioning_history.sql',
       '20260921000012_swap_session_block.sql',
       '20260921000013_swap_anchor_exclusion.sql',
-      '20260921000014_deload_session_tag.sql',
+      '20260921000014_rest_days.sql',
+      '20260921000015_saved_workouts.sql',
+      '20260921000016_deload_session_tag.sql',
     ])
   })
 

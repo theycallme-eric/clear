@@ -43,6 +43,7 @@ import { GOALS, type Option } from './onboarding'
 import {
   generationRequestSchema,
   parseBoundary,
+  sessionFocusSchema,
   type GenerationRequest,
   type SchemaIssue,
 } from './schemas'
@@ -115,6 +116,76 @@ export const POWER_REFUSAL =
   'Recovery sessions are gentle movement, so Power isn’t one of their anchors.'
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Prefilling (HOME-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * What another screen may open this one *with*: an anchor and an intensity.
+ *
+ * Deliberately a pair and not a draft. A prefill is a suggestion about what to
+ * train, so it carries the two things history can support — HOME-03's
+ * least-recently-trained focus and the intensity recent sessions averaged — and
+ * nothing about the goal, the place, the time or the notes, each of which is
+ * either the user's standing preference or a question only today can answer.
+ */
+export interface GenerationPrefill {
+  readonly focus: SessionFocus
+  readonly intensity: number
+}
+
+/** GEN-04's route, owned here so a prefilled link is built where prefill is defined. */
+export const GENERATE_PATH = '/generate'
+
+export const PREFILL_FOCUS_PARAM = 'focus'
+export const PREFILL_INTENSITY_PARAM = 'intensity'
+
+/**
+ * Where a prefilled Generate screen lives.
+ *
+ * The prefill travels in the URL rather than in router state or a provider, and
+ * that is a decision rather than a convenience: a query string survives a
+ * reload and a shared link, it is legible in a bug report, and it makes the
+ * hand-off one path plus one parser instead of a context two screens have to
+ * agree about. It also means the values are user-editable, which is why
+ * `prefillFrom` parses rather than trusts.
+ */
+export function generatePath(prefill: GenerationPrefill | null = null): string {
+  if (prefill === null) return GENERATE_PATH
+
+  const params = new URLSearchParams({
+    [PREFILL_FOCUS_PARAM]: prefill.focus,
+    [PREFILL_INTENSITY_PARAM]: String(prefill.intensity),
+  })
+
+  return `${GENERATE_PATH}?${params.toString()}`
+}
+
+/**
+ * The prefill a URL carries, or `null` — for absent, unknown and out-of-range
+ * alike, which is exactly what "dismissing it leaves defaults" needs: a Generate
+ * screen with no usable prefill is a Generate screen with its defaults.
+ *
+ * Both fields or neither. A focus with no intensity would be a draft half
+ * composed by a suggestion and half by this module, and no reader of the URL
+ * could tell which number was whose.
+ */
+export function prefillFrom(search: string | URLSearchParams): GenerationPrefill | null {
+  const params = typeof search === 'string' ? new URLSearchParams(search) : search
+
+  const focus = sessionFocusSchema.safeParse(params.get(PREFILL_FOCUS_PARAM))
+  if (!focus.success) return null
+
+  const raw = params.get(PREFILL_INTENSITY_PARAM) ?? ''
+  if (!/^\d+$/.test(raw.trim())) return null
+
+  const intensity = Number(raw.trim())
+  const { min, max } = FULL_INTENSITY_RANGE
+  if (intensity < min || intensity > max) return null
+
+  return { focus: focus.data, intensity }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The draft
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -134,12 +205,24 @@ export interface GenerationDraft {
   readonly notes: string
 }
 
-/** The screen's opening state: the profile's default place, nothing else. */
-export function initialDraft(defaultLocationId: string | null): GenerationDraft {
+/**
+ * The screen's opening state: the profile's default place, plus whatever
+ * HOME-03's suggestion prefilled and nothing else.
+ *
+ * A prefill supplies the anchor and the intensity — never the goal. The goal is
+ * still asked first and still has no default (§2.1): a suggestion is read off
+ * history, and history cannot say what today is *for*. So a prefilled draft
+ * still cannot generate until the user answers that, which is the same
+ * criterion an empty one is held to.
+ */
+export function initialDraft(
+  defaultLocationId: string | null,
+  prefill: GenerationPrefill | null = null,
+): GenerationDraft {
   return {
     goal: null,
-    anchor: null,
-    intensity: null,
+    anchor: prefill?.focus ?? null,
+    intensity: prefill?.intensity ?? null,
     locationId: defaultLocationId,
     durationMins: String(DEFAULT_DURATION_MINS),
     notes: '',

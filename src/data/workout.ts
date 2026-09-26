@@ -43,6 +43,7 @@ import type { AuthClient } from './auth'
 import { createCandidatesClient, type CandidatesClient } from './candidates'
 import { createConditioningClient, type ConditioningClient } from './conditioning'
 import { createExercisesClient, type ExercisesClient } from './exercises'
+import { createFavoritesClient, type FavoritesClient } from './favorites'
 import { createHistoryClient, type HistoryClient } from './history'
 import { createSessionsClient, type SessionsClient } from './sessions'
 import { createSupabaseClient, type SupabaseConfig } from './supabase'
@@ -100,12 +101,19 @@ export interface WorkoutClients {
    */
   readonly candidates: CandidatesClient
   /**
-   * OVR-01a's anchor queries. On the surface since OVR-04, which is the first
-   * thing in `src/` that *reads* the evidence rather than recomputing from it:
-   * §4's triggers are a function of the same working sets an anchor is, and a
-   * second query that re-derived them could disagree about what a stall is.
+   * OVR-01a's anchor queries, read by OVR-01c's Review surface: the stored
+   * anchors and the working sets behind them. OVR-04's deload triggers use the
+   * same evidence instead of recomputing it, so the Review surface, completion
+   * writes, and stall detection cannot disagree.
    */
   readonly anchors: AnchorsClient
+  /**
+   * FAV-01's favorites. Here for the reason `history` is — the token as it is
+   * at the moment of the call — and because completion has to reach it: a
+   * restarted favorite's counter is bumped by `sessions.complete` below, and a
+   * client held somewhere else could not be.
+   */
+  readonly favorites: FavoritesClient
 }
 
 export interface WorkoutClientsConfig {
@@ -151,6 +159,40 @@ export function createWorkoutClients({
   /** OVR-03's conditioning read, built the same way and carrying the same token. */
   const conditioning = createConditioningClient({ auth, supabase })
 
+  /** FAV-01's favorites, assembled per call around the live token. */
+  const favoritesFor = async (): Promise<Result<FavoritesClient>> => {
+    const accessToken = await token()
+    if (isErr(accessToken)) return accessToken
+    return ok(createFavoritesClient({ ...supabase, accessToken: accessToken.value }))
+  }
+
+  const favorites: FavoritesClient = {
+    async list(userId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.list(userId)
+    },
+    async save(userId, draft) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.save(userId, draft)
+    },
+    async attempt(savedWorkoutId, sessionId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.attempt(savedWorkoutId, sessionId)
+    },
+    async attempts(savedWorkoutId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.attempts(savedWorkoutId)
+    },
+    async recordCompletion(sessionId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.recordCompletion(sessionId)
+    },
+    async remove(savedWorkoutId) {
+      const client = await favoritesFor()
+      return isErr(client) ? client : client.value.remove(savedWorkoutId)
+    },
+  }
+
   const sessions: SessionsClient = {
     async accept(userId, acceptance) {
       const client = await sessionsFor()
@@ -178,6 +220,17 @@ export function createWorkoutClients({
       // cache could not be rewritten would lose the session over the number.
       // Recomputation reads the whole history, so the next one repairs it.
       await anchors.recompute(completed.value.session.user_id)
+
+      // FAV-01, and the same argument: completion is the event that bumps a
+      // favorite's `times_completed`, so it is asked here rather than by the
+      // shell — a second caller that completed a session and forgot would
+      // leave a favorite quietly under-counted. Most sessions did not come
+      // from one, and `not_a_favorite` is the ordinary answer.
+      //
+      // Its failure is deliberately not this call's failure, for the reason
+      // the recomputation's is not: the workout is finished either way, and
+      // the attempt row is still there for a later call to stamp.
+      await favorites.recordCompletion(sessionId)
 
       return completed
     },
@@ -355,6 +408,7 @@ export function createWorkoutClients({
     setLogs,
     exercises,
     conditioning,
+    favorites,
     candidates,
     anchors,
   }
@@ -396,5 +450,13 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     conditioning: { history: refusal },
     candidates: { retrieve: refusal },
     anchors: { evidence: refusal, list: refusal, recompute: refusal },
+    favorites: {
+      list: refusal,
+      save: refusal,
+      attempt: refusal,
+      attempts: refusal,
+      recordCompletion: refusal,
+      remove: refusal,
+    },
   }
 }

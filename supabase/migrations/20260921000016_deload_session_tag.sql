@@ -1,4 +1,5 @@
 -- OVR-04 — persist_session() writes the deload tag it is given.
+-- Sequenced after the rest-day and saved-workout migrations already on main.
 --
 -- Spec: docs/specs/OVR-01_progressive-overload.md §4 ("session tagged
 -- `is_deload = true`", and "anchors do not update during a deload").
