@@ -74,6 +74,13 @@ export const TABLE_DISPOSITIONS = [
     why: 'injuries and exclusions — the most sensitive rows in the schema',
   },
   {
+    table: 'rest_days',
+    standing: 'cross-user',
+    ownerColumn: 'user_id',
+    seeded: true,
+    why: 'the days this person took off, and why — injury and illness among them',
+  },
+  {
     table: 'workout_sessions',
     standing: 'cross-user',
     ownerColumn: 'user_id',

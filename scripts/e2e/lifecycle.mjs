@@ -147,6 +147,17 @@ export async function seed(client) {
       },
     ])
 
+    // HOME-02's marked rest day. Dated away from the session's own day so the
+    // fixture never has to say which of the two a single date meant.
+    await client.insertRows('rest_days', [
+      {
+        id: FIXTURE_IDS.restDay[slot],
+        user_id: user.id,
+        day: '2026-01-02',
+        reason: 'rest',
+      },
+    ])
+
     await client.insertRows('workout_sessions', [
       {
         id: FIXTURE_IDS.workoutSession[slot],

@@ -9,6 +9,7 @@ import {
 import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
+import { createFakeRestDayClient } from '../test/rest-day-double'
 import { createWorkoutDouble } from '../test/workout-double'
 import { PREFILL_NOTICE } from './Generate'
 import { SUGGESTION_EMPTY } from './Home'
@@ -71,6 +72,25 @@ describe('Home', () => {
       ])
     })
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+  })
+
+  it('marks today with a reason and redraws the week from the saved row', async () => {
+    const user = userEvent.setup()
+    const restDays = createFakeRestDayClient()
+
+    renderApp(['/'], signedIn({ restDays }))
+
+    await user.click(await screen.findByRole('button', { name: 'Mark Rest Day' }))
+    await user.selectOptions(screen.getByLabelText('Reason'), 'sick')
+    await user.click(screen.getByRole('button', { name: 'Save rest day' }))
+
+    await waitFor(() => {
+      expect(restDays.markCalls).toEqual([
+        { day: suggestionDay(), reason: 'sick', note: null },
+      ])
+    })
+    expect(await screen.findByText('Today is marked: Unwell.')).toBeInTheDocument()
+    expect(screen.getByText('Rest day saved.')).toBeInTheDocument()
   })
 })
 

@@ -18,6 +18,7 @@ import type { CSSProperties } from 'react'
 import { Check, Rest } from '../design-system/index'
 import { formatDay } from '../state/history'
 import { WEEK_DAY_LABELS, type WeekDay } from '../state/home'
+import { REST_DAY_REASON_LABELS } from '../state/rest-days'
 
 const LIST_STYLE: CSSProperties = {
   listStyle: 'none',
@@ -102,6 +103,7 @@ export function WeekStrip({ days, label }: WeekStripProps) {
           <span className="a11y-hidden">
             {formatDay(day.day)}
             {day.isToday ? ' (today)' : ''}: {WEEK_DAY_LABELS[day.state]}
+            {day.reason === null ? '' : ` — ${REST_DAY_REASON_LABELS[day.reason]}`}
           </span>
         </li>
       ))}

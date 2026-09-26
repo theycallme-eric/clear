@@ -46,6 +46,26 @@ describe('weekStrip', () => {
     ])
     expect(daysTrained(week)).toBe(2)
   })
+
+  it('carries explicit reasons and lets a marked today become rest', () => {
+    const week = weekStrip([], {
+      ...OPTIONS,
+      restDays: new Map([
+        ['2026-09-23', 'injury'],
+        ['2026-09-25', 'rest'],
+      ]),
+    })
+
+    expect(week.find((day) => day.day === '2026-09-23')).toMatchObject({
+      state: 'rest',
+      reason: 'injury',
+    })
+    expect(week.find((day) => day.day === '2026-09-25')).toMatchObject({
+      state: 'rest',
+      reason: 'rest',
+      isToday: true,
+    })
+  })
 })
 
 describe('recentWorkouts', () => {
