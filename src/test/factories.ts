@@ -143,7 +143,7 @@ export function makeSessionRow(
     title: 'Lower-body strength',
     overview: null,
     session_focus: 'lower_body',
-    goal_preset: null,
+    goal_preset: 'balanced',
     requested_duration_mins: 45,
     effective_duration_target_mins: 45,
     computed_duration_mins: null,

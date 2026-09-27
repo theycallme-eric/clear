@@ -20,6 +20,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { Tables } from '../data/database.types'
 import { ErrorCode, isErr, isOk } from './errors'
+import { makeSessionAcceptance } from '../test/factories'
 import {
   CONTRACT_VERSION,
   errorResponseSchema,
@@ -416,6 +417,8 @@ describe('parseBoundary returns a typed failure, never a throw (CORE-01)', () =>
 describe('the request and response envelopes (GEN-01)', () => {
   const request = {
     request_id: 'req_lxyz123_a1b2c3',
+    goal: 'strength',
+    date: '2026-09-27',
     focus: 'lower_body',
     requested_intensity: 7,
     requested_duration_mins: 45,
@@ -446,7 +449,9 @@ describe('the request and response envelopes (GEN-01)', () => {
   it('reads either half of a response with one schema', () => {
     const success = generationResponseSchema.parse({
       requestId: 'req_lxyz123_a1b2c3',
-      workout: everyPrescriptionShape,
+      acceptance: makeSessionAcceptance({
+        workout: generationOutputSchema.parse(everyPrescriptionShape),
+      }),
     })
     const failure = generationResponseSchema.parse({
       code: ErrorCode.GENERATION_FAILED,
@@ -480,7 +485,10 @@ describe('the request and response envelopes (GEN-01)', () => {
     expect(
       generationResponseSchema.safeParse({
         requestId: 'req_lxyz123_a1b2c3',
-        workout: output(block({ structure_type: 'emom' })),
+        acceptance: {
+          ...makeSessionAcceptance(),
+          workout: output(block({ structure_type: 'emom' })),
+        },
       }).success,
     ).toBe(false)
   })

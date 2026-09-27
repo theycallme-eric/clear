@@ -45,7 +45,10 @@ const PARENT: Record<string, [string, string]> = {
   location_equipment: ['locations', 'location_id'],
   workout_sections: ['workout_sessions', 'session_id'],
   workout_blocks: ['workout_sections', 'section_id'],
+  workout_exercises: ['workout_blocks', 'block_id'],
+  exercise_set_logs: ['workout_exercises', 'workout_exercise_id'],
   block_results: ['workout_blocks', 'block_id'],
+  saved_workout_completions: ['saved_workouts', 'saved_workout_id'],
 }
 
 function createSupabaseDouble() {
@@ -59,6 +62,8 @@ function createSupabaseDouble() {
   const primaryKeyOf = (table: string, row: FakeRow) =>
     table === 'location_equipment'
       ? `${String(row.location_id)}:${String(row.equipment_id)}`
+      : table === 'load_anchors'
+        ? `${String(row.user_id)}:${String(row.exercise_id)}:${String(row.equipment_used)}`
       : String(row.id)
 
   /**

@@ -110,7 +110,7 @@ describe('quickStartPlan', () => {
       [
         session('2026-09-23', 1, {
           session_focus: 'upper_body',
-          goal_preset: 'build_strength',
+          goal_preset: 'strength',
           requested_duration_mins: 50,
           effective_duration_target_mins: 35,
           requested_intensity: 8,
@@ -122,9 +122,10 @@ describe('quickStartPlan', () => {
     )
 
     expect(plan).toMatchObject({
-      goal: 'build_strength',
-      goalLabel: 'Build strength',
+      goal: 'strength',
+      goalLabel: 'Strength',
       input: {
+        goal: 'strength',
         focus: 'upper_body',
         requested_duration_mins: 50,
         requested_intensity: 8,

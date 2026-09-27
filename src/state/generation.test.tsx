@@ -14,13 +14,14 @@ import { describe, expect, it } from 'vitest'
 import { ErrorCode } from './errors'
 import { GenerationClientContext, useGeneration } from './generation'
 import { GenerationFailure, type GenerationInput } from '../data/generation'
-import { makeGenerationError, makeGenerationOutput } from '../test/factories'
+import { makeGenerationError, makeSessionAcceptance } from '../test/factories'
 import {
   createFakeGenerationClient,
   type FakeGenerationClient,
 } from '../test/generation-double'
 
 const INPUT: GenerationInput = {
+  goal: 'strength',
   focus: 'lower_body',
   requested_intensity: 7,
   requested_duration_mins: 45,
@@ -38,7 +39,9 @@ function Probe() {
     <div>
       <p data-testid="status">{state.status}</p>
       <p data-testid="pending">{String(generation.isPending)}</p>
-      <p data-testid="title">{state.status === 'success' ? state.workout.title : ''}</p>
+      <p data-testid="title">
+        {state.status === 'success' ? state.acceptance.workout.title : ''}
+      </p>
       <p data-testid="request-id">
         {state.status === 'success'
           ? state.requestId
@@ -91,7 +94,9 @@ describe('the generation mutation', () => {
     await user.click(screen.getByRole('button', { name: 'generate' }))
     await act(async () => {
       client.succeed({
-        workout: makeGenerationOutput({ title: 'Squat-led session' }),
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeSessionAcceptance().workout, title: 'Squat-led session' },
+        }),
         requestId: 'req_abc_123',
       })
     })
@@ -185,7 +190,11 @@ describe('the generation mutation', () => {
     expect(status()).toBe('idle')
 
     await act(async () => {
-      client.succeed({ workout: makeGenerationOutput({ title: 'Too late' }) })
+      client.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeSessionAcceptance().workout, title: 'Too late' },
+        }),
+      })
     })
 
     expect(status()).toBe('idle')

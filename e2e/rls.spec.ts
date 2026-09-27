@@ -128,6 +128,13 @@ test.describe('row-level security', () => {
     }
   }
 
+  const timestampPatch = (table: string, value: unknown) => {
+    if (table === 'exercise_set_logs') return { actual_reps: value }
+    if (table === 'load_anchors') return { updated_at: value }
+    if (table === 'saved_workout_completions') return { started_at: value }
+    return { created_at: value }
+  }
+
   for (const { table, seeded } of USER_TABLES) {
     test.describe(table, () => {
       test('its owner can read their own row', async () => {
@@ -157,7 +164,16 @@ test.describe('row-level security', () => {
         const response = await client.updateAs(
           table,
           rowSelector(table, 'b', users.b.id),
-          { created_at: before.created_at },
+          timestampPatch(
+            table,
+            table === 'exercise_set_logs'
+              ? before.actual_reps
+              : table === 'load_anchors'
+              ? before.updated_at
+              : table === 'saved_workout_completions'
+                ? before.started_at
+                : before.created_at,
+          ),
           tokens.b,
         )
 
@@ -193,7 +209,10 @@ test.describe('row-level security', () => {
           rowSelector(table, 'b', users.b.id),
           // `created_at` exists on every one of these tables and changing it
           // is harmless if — wrongly — it succeeds.
-          { created_at: '2020-01-01T00:00:00Z' },
+          timestampPatch(
+            table,
+            table === 'exercise_set_logs' ? 99 : '2020-01-01T00:00:00Z',
+          ),
           tokens.a,
         )
 

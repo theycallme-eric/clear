@@ -339,11 +339,17 @@ export function requestFrom(
   requestId: string,
   /** OVR-04: whether the user applied the suggested deload. Never inferred. */
   deload = false,
+  /** The user's calendar day. The server cannot infer the browser's zone. */
+  date = new Date().toISOString().slice(0, 10),
 ): Result<GenerationRequest, AppError> {
   return parseBoundary<GenerationRequest>(
     generationRequestSchema,
     {
       request_id: requestId,
+      goal: draft.goal,
+      // `GenerationClient` replaces this from its own local-day clock at send
+      // time; carrying it here keeps this preflight on the exact wire schema.
+      date,
       focus: draft.anchor,
       requested_intensity: draft.intensity,
       requested_duration_mins: minutesFrom(draft.durationMins),
@@ -415,6 +421,7 @@ export function refusalFrom(error: AppError): DraftRefusal {
  */
 export function inputFrom(request: GenerationRequest): GenerationInput {
   return {
+    goal: request.goal,
     focus: request.focus,
     requested_intensity: request.requested_intensity,
     requested_duration_mins: request.requested_duration_mins,

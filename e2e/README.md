@@ -90,7 +90,7 @@ create an already-confirmed user, then mints a session directly through
 `generate_link` + `verify`.
 
 The OTP path itself is exercised **once**, in `e2e/auth-otp.spec.ts` — a real
-six-digit code, verified through the public endpoint with the anon key, and
+project-configured numeric code, verified through the public endpoint with the anon key, and
 proved unusable a second time. Every other spec takes a minted session. When
 AUTH-02 builds the send-and-verify screen, its browser half belongs in that file
 and nowhere else.

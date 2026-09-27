@@ -258,7 +258,7 @@ const REQUEST_ID_HEADER = 'x-request-id'
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** What a caller chooses. The request id is not theirs to pick — it is minted here. */
-export type GenerationInput = Omit<GenerationRequest, 'request_id'>
+export type GenerationInput = Omit<GenerationRequest, 'request_id' | 'date'>
 
 /**
  * The four things `generate` does, in the order it does them.
@@ -300,6 +300,16 @@ export interface GenerationClientConfig {
   readonly supabase: Omit<SupabaseConfig, 'accessToken'>
   /** Injected in tests; `generateRequestId` otherwise. */
   readonly requestId?: () => string
+  /** The caller's local calendar day. Injected so boundary tests are stable. */
+  readonly today?: () => string
+}
+
+function localToday(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 /**
@@ -333,6 +343,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
   const base = config.supabase.url.replace(/\/+$/, '')
   const fetchImpl = config.supabase.fetch ?? globalThis.fetch
   const mintRequestId = config.requestId ?? generateRequestId
+  const today = config.today ?? localToday
 
   /**
    * One authenticated POST to an AI function, and the answer read back with the
@@ -434,7 +445,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
       reachedStage('validating')
       const request = parseBoundary<GenerationRequest>(
         generationRequestSchema,
-        { ...input, request_id: requestId },
+        { ...input, request_id: requestId, date: today() },
         { code: ErrorCode.GENERATION_INVALID_PARAMS, requestId },
       )
       if (isErr(request)) {

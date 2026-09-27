@@ -191,9 +191,11 @@ export function Home() {
   // success state is the only place the workout exists (GEN-03).
   const generated = generation.state.status === 'success'
   useEffect(() => {
-    if (!generated) return
-    void navigate(REVIEW_ROUTE)
-  }, [generated, navigate])
+    if (!generated || generation.state.status !== 'success') return
+    void navigate(REVIEW_ROUTE, {
+      state: reviewHandoff(generation.state.acceptance),
+    })
+  }, [generated, generation.state, navigate])
 
   // GEN-05's screen is transient and has no route of its own: while a
   // generation Home started is in flight — or has failed and is being answered

@@ -7,10 +7,9 @@
  * `generate-section` (REV-02) mounts the identical shell with a different
  * schema and a different handler.
  *
- * The handler is GEN-02b's. Until it lands this function refuses, typed, and
- * that is the point rather than a placeholder: defect D2 was a `generate-workout`
- * that answered with a mock workout when it could not produce a real one, and
- * an app that looks like it works is worse than one that says it cannot.
+ * The handler mounts the complete generation pipeline. A failure remains typed
+ * and never falls back to plausible-looking content: defect D2 was a function
+ * that looked successful when generation had actually failed.
  *
  * `SUPABASE_URL` and `SUPABASE_ANON_KEY` are injected into every Supabase edge
  * function by the platform; neither is a secret, and no other credential is
@@ -20,18 +19,39 @@
  */
 
 import { createTokenVerifier } from '../_shared/auth.ts'
+import { apiKeyFromEnv } from '../_shared/claude.ts'
 import { createEdgeFunction } from '../_shared/envelope.ts'
-import { ErrorCode, createError, err } from '../../../src/state/errors.ts'
+import {
+  createGenerationComposer,
+  createGenerationDatabase,
+  performGeneration,
+} from '../_shared/generate.ts'
+import { createCatalogReader } from '../_shared/hydrate.ts'
+import { err } from '../../../src/state/errors.ts'
 import { generationRequestSchema } from '../../../src/state/schemas.ts'
+
+const url = Deno.env.get('SUPABASE_URL') ?? ''
+const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
 
 export const handleRequest = createEdgeFunction({
   route: 'generate-workout',
   schema: generationRequestSchema,
-  verifyToken: createTokenVerifier({
-    url: Deno.env.get('SUPABASE_URL') ?? '',
-    anonKey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-  }),
-  handle: ({ requestId }) => err(createError(ErrorCode.GENERATION_FAILED, { requestId })),
+  verifyToken: createTokenVerifier({ url, anonKey }),
+  handle: async ({ requestId, user, body, accessToken, logger }) => {
+    const apiKey = apiKeyFromEnv((name) => Deno.env.get(name))
+    if (!apiKey.ok) return err({ ...apiKey.error, requestId })
+
+    const credentials = { url, anonKey, accessToken }
+    return performGeneration(
+      body,
+      { userId: user.id, requestId, logger },
+      {
+        db: createGenerationDatabase(credentials),
+        catalog: createCatalogReader(credentials),
+        composer: createGenerationComposer({ apiKey: apiKey.value, logger }),
+      },
+    )
+  },
 })
 
 Deno.serve(handleRequest)

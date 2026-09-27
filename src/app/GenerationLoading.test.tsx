@@ -21,7 +21,7 @@ import { ErrorCode } from '../state/errors'
 import { GenerationClientContext, useGeneration } from '../state/generation'
 import { GENERATION_LOADING_TITLE } from '../state/generation-loading'
 import { toastQueue } from '../state/toasts'
-import { makeGenerationError, makeGenerationOutput } from '../test/factories'
+import { makeGenerationError, makeSessionAcceptance } from '../test/factories'
 import {
   createFakeGenerationClient,
   type FakeGenerationClient,
@@ -31,6 +31,7 @@ import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { GenerationLoading } from './GenerationLoading'
 
 const INPUT: GenerationInput = {
+  goal: 'strength',
   focus: 'lower_body',
   requested_intensity: 7,
   requested_duration_mins: 45,
@@ -66,7 +67,7 @@ function Journey({ slowThresholdMs }: { slowThresholdMs?: number }) {
 
   return (
     <div>
-      <p>{state.status === 'success' ? state.workout.title : FORM}</p>
+      <p>{state.status === 'success' ? state.acceptance.workout.title : FORM}</p>
       {/* A fresh arrow function per render on purpose: a caller that does not
           memoise its handlers must not make the failure toast repeat. */}
       <button
@@ -170,7 +171,11 @@ describe('GEN-05 · the loader reflects real stages', () => {
 
     await user.click(screen.getByRole('button', { name: GENERATE }))
     await act(async () => {
-      client.succeed({ workout: makeGenerationOutput({ title: 'Squat-led session' }) })
+      client.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeSessionAcceptance().workout, title: 'Squat-led session' },
+        }),
+      })
     })
 
     expect(loader()).not.toBeInTheDocument()
@@ -334,7 +339,11 @@ describe('GEN-05 · cancel, and the answer that arrives too late', () => {
     expect(screen.getByText(FORM)).toBeInTheDocument()
 
     await act(async () => {
-      client.succeed({ workout: makeGenerationOutput({ title: 'Too late' }) })
+      client.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeSessionAcceptance().workout, title: 'Too late' },
+        }),
+      })
     })
 
     expect(screen.queryByText('Too late')).not.toBeInTheDocument()

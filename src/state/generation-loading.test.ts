@@ -25,6 +25,7 @@ import {
 import { makeGenerationError } from '../test/factories'
 
 const INPUT: GenerationInput = {
+  goal: 'balanced',
   focus: 'full_body',
   requested_intensity: 6,
   requested_duration_mins: 40,

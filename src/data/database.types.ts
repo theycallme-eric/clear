@@ -25,6 +25,7 @@
  *   supabase/migrations/20260921000015_rest_days.sql
  *   supabase/migrations/20260921000016_saved_workouts.sql
  *   supabase/migrations/20260921000017_deload_session_tag.sql
+ *   supabase/migrations/20260927000018_generation_goal_scope.sql
  */
 
 export type Json =
@@ -800,6 +801,17 @@ export type Database = {
         }
         Returns: { section: Database['public']['Enums']['section_type']; relaxed: boolean; candidates: Json }[]
       }
+      generation_candidate_sets_for_goal: {
+        Args: {
+          p_user_id: string
+          p_goal: Database['public']['Enums']['goal_preset']
+          p_focus: Database['public']['Enums']['session_focus']
+          p_location_id?: string | null
+          p_session_id?: string | null
+          p_floor?: number | null
+        }
+        Returns: { section: Database['public']['Enums']['section_type']; relaxed: boolean; candidates: Json }[]
+      }
       generation_candidates: {
         Args: {
           p_user_id: string
@@ -821,6 +833,13 @@ export type Database = {
       generation_sections: {
         Args: {
           p_user_id: string
+        }
+        Returns: Database['public']['Enums']['section_type'][]
+      }
+      generation_sections_for_goal: {
+        Args: {
+          p_user_id: string
+          p_goal: Database['public']['Enums']['goal_preset']
         }
         Returns: Database['public']['Enums']['section_type'][]
       }

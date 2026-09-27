@@ -159,7 +159,8 @@ export function createAdminClient(options) {
     /**
      * Ask GoTrue for a one-time code without sending mail.
      *
-     * `generate_link` returns both halves of the OTP flow: the six-digit
+     * `generate_link` returns both halves of the OTP flow: the configured
+     * numeric email code
      * `email_otp` a person would type, and the `hashed_token` a magic link
      * carries. The harness uses the second to mint sessions in bulk; AUTH-02's
      * focused test uses the first, which is the real code path a user walks.
@@ -201,7 +202,9 @@ export function createAdminClient(options) {
           key: anonKey,
           method: 'POST',
           body: JSON.stringify(
-            type === 'magiclink' ? { type, token } : { type, email, token },
+            type === 'magiclink'
+              ? { type: 'email', token_hash: token }
+              : { type, email, token },
           ),
         }),
       )
