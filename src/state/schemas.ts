@@ -33,7 +33,10 @@
  */
 import { z } from 'zod'
 
-import { Constants } from '../data/database.types'
+// The explicit extension is required by Supabase's remote Deno bundler. Its
+// sloppy-import resolver treats `.types` as an extension and otherwise looks
+// for a nonexistent `database.types` file instead of `database.types.ts`.
+import { Constants } from '../data/database.types.ts'
 import { ErrorCode, createError, err, ok, type AppError, type Result } from './errors'
 
 // ─────────────────────────────────────────────────────────────────────────────
