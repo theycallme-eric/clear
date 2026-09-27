@@ -27,6 +27,7 @@ Ordered execution:
 8. Run `verify.sql`, the RLS/OTP/generation/persistence E2E suite, and repository verification.
 9. Set repository variable `E2E_LIVE_SCHEMA_READY=true`, then verify the standing RLS workflow.
 
-Any failure after step 2 freezes the sequence and routes to `docs/backend/rollback.md`. The old
-Vercel project is retired only after the new production URL and all post-cutover checks pass.
-
+Any failure after step 2 freezes the sequence and routes to the selective public-schema and ledger
+restore in `docs/backend/rollback.md`; the full dump is never replayed wholesale over managed
+Supabase schemas. The old Vercel project is retired only after the new production URL and all
+post-cutover checks pass.
