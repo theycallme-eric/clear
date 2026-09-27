@@ -355,6 +355,27 @@ export function createAdminClient(options) {
     },
 
     /**
+     * Invoke an Edge Function as the signed-in user.
+     *
+     * Kept beside `rpcAs` because both cross the live backend boundary with
+     * the caller's JWT and the public anon key. The service-role credential
+     * remains confined to lifecycle setup and teardown.
+     *
+     * @param {string} name
+     * @param {Record<string, unknown>} body
+     * @param {string} accessToken
+     * @param {Record<string, string>} [headers]
+     */
+    async functionAs(name, body, accessToken, headers = {}) {
+      return call(`/functions/v1/${name}`, {
+        key: anonKey,
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}`, ...headers },
+        body: JSON.stringify(body),
+      })
+    },
+
+    /**
      * Read past every policy, as the service role.
      *
      * Used for exactly one thing: checking that teardown left nothing. Asking

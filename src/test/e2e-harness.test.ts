@@ -163,7 +163,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(rlsJob).toMatch(/if: always\(\)\n\s+run: npm run e2e:reset/)
   })
 
-  it('runs privileged OTP and RLS checks only from trusted main', () => {
+  it('runs privileged OTP, RLS and generation checks only from trusted main', () => {
     const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
 
     expect(backendJob).toContain("github.event_name == 'push'")
@@ -171,6 +171,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob).toContain('SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}')
     expect(backendJob).not.toContain('VERCEL_AUTOMATION_BYPASS_SECRET')
     expect(backendJob).toContain('e2e/auth-otp.spec.ts e2e/rls.spec.ts')
+    expect(backendJob).toContain('e2e/generation-persistence.spec.ts')
     expect(backendJob.match(/npm run e2e:reset/g)).toHaveLength(2)
   })
 

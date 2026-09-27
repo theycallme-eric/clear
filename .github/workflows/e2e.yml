@@ -71,7 +71,7 @@ jobs:
           retention-days: 7
 
   backend-e2e:
-    name: Trusted backend E2E (OTP + RLS + D6)
+    name: Trusted backend E2E (OTP + RLS + generation + D6)
     # The service-role key is available only to code already reviewed and
     # merged to main. Pull-request/deployment code never enters this job.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -100,9 +100,10 @@ jobs:
       # real project, a real session, and a token that is somebody's. Its
       # schema half runs in every other lane; this is the half that proves it
       # by doing (SES-01b).
-      - name: Prove OTP, row-level security and D6 against the reused test project
+      - name: Prove OTP, RLS, generation/persistence and D6 on the reused project
         run: >-
           npx playwright test e2e/auth-otp.spec.ts e2e/rls.spec.ts
+          e2e/generation-persistence.spec.ts
           e2e/d6-swap-persistence.spec.ts
           --project=mobile
 
