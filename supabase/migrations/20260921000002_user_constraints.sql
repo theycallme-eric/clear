@@ -150,18 +150,35 @@ create index if not exists user_constraints_session_idx
   where applies_to_session_id is not null;
 
 -- The same exclusion added twice is not an error the user should have to see,
--- but it is two rows that filter identically and show up twice in a list. The
--- expression collapses the three target columns into the one that is populated
--- — guaranteed by the CHECKs above — and the sentinel stands in for "not
--- session-scoped", because NULLs in a unique index do not collide.
-create unique index if not exists user_constraints_no_duplicates_idx
+-- but it is two rows that filter identically and show up twice in a list. Keep
+-- each target in its native type: PostgreSQL's enum-to-text cast is STABLE, not
+-- IMMUTABLE, and therefore cannot be used in an index expression. The CHECKs
+-- above guarantee that exactly one partial index applies. The UUID sentinel
+-- stands in for "not session-scoped", because NULLs do not collide in a unique
+-- index.
+create unique index if not exists user_constraints_exercise_no_duplicates_idx
   on public.user_constraints (
     user_id,
-    scope,
     action,
-    (coalesce(target_exercise_id, target_pattern::text, target_equipment)),
+    target_exercise_id,
     (coalesce(applies_to_session_id, '00000000-0000-0000-0000-000000000000'::uuid))
-  );
+  ) where scope = 'exercise';
+
+create unique index if not exists user_constraints_pattern_no_duplicates_idx
+  on public.user_constraints (
+    user_id,
+    action,
+    target_pattern,
+    (coalesce(applies_to_session_id, '00000000-0000-0000-0000-000000000000'::uuid))
+  ) where scope = 'movement_pattern';
+
+create unique index if not exists user_constraints_equipment_no_duplicates_idx
+  on public.user_constraints (
+    user_id,
+    action,
+    target_equipment,
+    (coalesce(applies_to_session_id, '00000000-0000-0000-0000-000000000000'::uuid))
+  ) where scope = 'equipment';
 
 -- ===========================================================================
 -- 3. Row-level security — owner-only
