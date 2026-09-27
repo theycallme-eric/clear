@@ -42,9 +42,9 @@ const repoRoot = resolve(import.meta.dirname, '..')
 const migration = (name: string) =>
   readFileSync(resolve(repoRoot, 'supabase/migrations', name), 'utf-8')
 
-const LIFECYCLE = migration('20260921000005_session_lifecycle.sql')
-const RECONSTRUCTION = migration('20260921000009_session_reconstruction.sql')
-const EXECUTION = migration('20260921000003_execution_domain.sql')
+const LIFECYCLE = migration('20260921000006_session_lifecycle.sql')
+const RECONSTRUCTION = migration('20260921000010_session_reconstruction.sql')
+const EXECUTION = migration('20260921000004_execution_domain.sql')
 
 /**
  * Asserted before the skip, for the same reason `e2e/rls.spec.ts` asserts its

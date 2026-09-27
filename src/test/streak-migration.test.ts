@@ -17,8 +17,8 @@ import { REPO_ROOT, migrationFiles, readSchema } from '../../scripts/gen-types/s
 // is what the generator's own SQL reader is used for below. A future migration
 // that adds `streak_count` back fails this test wherever it is added.
 
-const MIGRATION = '20260921000006_streak_sessions.sql'
-const WORKOUT_MIGRATION = '20260921000002_workout_domain.sql'
+const MIGRATION = '20260921000007_streak_sessions.sql'
+const WORKOUT_MIGRATION = '20260921000003_workout_domain.sql'
 
 const read = (path: string) => readFileSync(join(REPO_ROOT, path), 'utf8')
 

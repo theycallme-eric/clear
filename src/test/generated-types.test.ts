@@ -156,21 +156,21 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000000_catalog_domain.sql',
       '20260921000001_user_baseline.sql',
       '20260921000002_user_constraints.sql',
-      '20260921000002_workout_domain.sql',
-      '20260921000003_execution_domain.sql',
-      '20260921000004_generation_candidates.sql',
-      '20260921000005_session_lifecycle.sql',
-      '20260921000006_streak_sessions.sql',
-      '20260921000007_complete_onboarding.sql',
-      '20260921000008_location_writes.sql',
-      '20260921000009_session_reconstruction.sql',
-      '20260921000010_load_anchors.sql',
-      '20260921000011_conditioning_history.sql',
-      '20260921000012_swap_session_block.sql',
-      '20260921000013_swap_anchor_exclusion.sql',
-      '20260921000014_rest_days.sql',
-      '20260921000015_saved_workouts.sql',
-      '20260921000016_deload_session_tag.sql',
+      '20260921000003_workout_domain.sql',
+      '20260921000004_execution_domain.sql',
+      '20260921000005_generation_candidates.sql',
+      '20260921000006_session_lifecycle.sql',
+      '20260921000007_streak_sessions.sql',
+      '20260921000008_complete_onboarding.sql',
+      '20260921000009_location_writes.sql',
+      '20260921000010_session_reconstruction.sql',
+      '20260921000011_load_anchors.sql',
+      '20260921000012_conditioning_history.sql',
+      '20260921000013_swap_session_block.sql',
+      '20260921000014_swap_anchor_exclusion.sql',
+      '20260921000015_rest_days.sql',
+      '20260921000016_saved_workouts.sql',
+      '20260921000017_deload_session_tag.sql',
     ])
   })
 
@@ -178,7 +178,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
     const { schema } = build()
     const sessions = schema.tables.find((table) => table.name === 'workout_sessions')
 
-    // `abandoned_at` is declared by ALTER TABLE in 20260921000005, not by the
+    // `abandoned_at` is declared by ALTER TABLE in 20260921000006, not by the
     // CREATE TABLE in 20260921000002. A reader that only understood CREATE
     // would type a `workout_sessions` row the schema no longer has.
     const abandoned = sessions?.columns.find((column) => column.name === 'abandoned_at')

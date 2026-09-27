@@ -482,7 +482,7 @@ describe('resuming after a hard refresh (SES-01a)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 //
 // The same bargain as above. The reconstructions are SQL, and the double
-// transcribes them from 20260921000009_session_reconstruction.sql, which
+// transcribes them from 20260921000010_session_reconstruction.sql, which
 // src/test/session-reconstruction-migration.test.ts asserts clause by clause.
 // The behavioural proof against Postgres — the standing D6 regression — is
 // e2e/d6-swap-persistence.spec.ts.

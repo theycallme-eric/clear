@@ -65,7 +65,7 @@ type GoalPreset = Enums<'goal_preset'>
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * One declaration in `20260921000002_workout_domain.sql`, as the migration
+ * One declaration in `20260921000003_workout_domain.sql`, as the migration
  * writes it with its whitespace collapsed. It is the text rather than a
  * constraint name alone because two of the seven correspond to a column
  * declaration — a foreign key and an enum type — which Postgres names

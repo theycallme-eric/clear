@@ -10,7 +10,7 @@
  *   * **Sessions → sections → blocks → exercises in one transaction; a failure
  *     leaves no partial workout.** The transaction is not assembled here.
  *     `persist_session(p_user_id, p_session)` (SES-01a,
- *     `supabase/migrations/20260921000005_session_lifecycle.sql` §5) writes all
+ *     `supabase/migrations/20260921000006_session_lifecycle.sql` §5) writes all
  *     four levels in one function, and PostgREST runs one request in one
  *     transaction — so this module's whole contribution to atomicity is that it
  *     makes **exactly one request** and never takes a second look at a failure.

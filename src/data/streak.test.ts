@@ -13,7 +13,7 @@ import { STREAK_PAGE_SIZE, createStreakClient, resolveTimeZone } from './streak'
 // truncated at a page boundary, the zone resolved once, and a failed read
 // surfacing as a typed error rather than a streak of zero. The double holds
 // the function's own rules, transcribed from
-// `supabase/migrations/20260921000006_streak_sessions.sql`.
+// `supabase/migrations/20260921000007_streak_sessions.sql`.
 
 const URL_ = 'https://project.supabase.co'
 const ANON_KEY = 'anon-key'

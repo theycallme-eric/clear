@@ -46,7 +46,7 @@ const repoRoot = resolve(import.meta.dirname, '../..')
 const read = (relativePath: string) => readFileSync(resolve(repoRoot, relativePath), 'utf-8')
 
 const CONTRACT = 'docs/specs/generation/GENERATION_CONTRACT.md'
-const MIGRATION = 'supabase/migrations/20260921000002_workout_domain.sql'
+const MIGRATION = 'supabase/migrations/20260921000003_workout_domain.sql'
 
 /** A parsed contract-4.1.0 workout, fresh each time so a test may mutate it. */
 function composed(): GenerationOutput {

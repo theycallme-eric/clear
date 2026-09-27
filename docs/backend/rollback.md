@@ -9,8 +9,9 @@ migration approval; it exists so that any cutover step can be undone to the pre-
    - a committed schema-only dump under `docs/backend/snapshot/<stamp>/schema.sql`;
    - committed catalog CSVs under `docs/backend/snapshot/<stamp>/catalog/`;
    - a full custom-format dump `backups/clear-full-<stamp>.dump` (gitignored) whose
-     `pg_restore --list` TOC has been reviewed and which is copied to at least one location off
-     the operator's machine (owner's choice; never a public bucket).
+     `pg_restore --list` TOC has been reviewed. The owner explicitly waived a second off-machine
+     copy on 2026-09-27 and accepted the verified local dump plus Git-tracked schema/catalog
+     evidence as the recovery boundary.
 2. The applied-migration list and auth settings are recorded in
    `docs/backend/live-inventory.md` §5.
 3. Previous Edge Function sources are committed at `docs/backend/evidence/previous-functions/`

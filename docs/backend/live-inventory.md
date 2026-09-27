@@ -140,11 +140,16 @@ justify replace/transform dispositions, not schema reuse.
   `component_movements` and `exercise_role` columns introduced by `00031`. Those tags remain
   rebuild reference evidence, not live catalog fields.
 
-## 5. Live capture — status: **CAPTURED AND OWNER-APPROVED; OFF-MACHINE COPY PENDING**
+## 5. Live capture — status: **CAPTURED, OWNER-APPROVED, AND AUTHORIZED FOR CUTOVER**
 
 > **This section is the gate.** The read-only capture and recoverable snapshot completed on
 > 2026-09-18. No live mutation occurred. The owner approved the dispositions on issue #80. The
-> mutation gate remains closed until the full dump is stored in a second, off-machine location.
+> On 2026-09-27 the owner explicitly accepted the verified local dump plus the Git-tracked
+> schema/catalog evidence as sufficient recovery coverage and waived a second encrypted
+> off-machine copy as a hard prerequisite. A fresh pre-cutover custom-format dump was then created
+> at `clear-audit-backups/2026-09-27T174312Z/` outside Git; its SHA-256 is
+> `5844bf72190e8f5d2d16b33101b3cc443ec2f61bfee24b851a3b3fa7f37918ac` and its 584-entry TOC
+> was parsed successfully. No secret or personal row is committed here.
 
 - [x] `npm run backend:prereqs` — PRE-003/PRE-004 present; PRE-007 authenticated
 - [x] Read-only SQL inventory captured in
@@ -153,7 +158,8 @@ justify replace/transform dispositions, not schema reuse.
       `docs/backend/snapshot/2026-09-18T162821Z/`
 - [x] Full custom-format dump created outside Git with a verified table of contents; dump SHA-256
       `8b78950e943d2064dc7341e4a66daa2669aca32d7dcc3cf5e84c275035578206`
-- [ ] Store a second copy of the full dump off-machine before any live mutation
+- [x] Owner accepted the verified local recovery set and explicitly waived a second off-machine
+      copy as a hard prerequisite (2026-09-27)
 - [x] Applied migrations compared with evidence: live stops at `00029`; `00030`/`00031` are absent
 - [x] Exact live catalog counts recorded: 140 definitions, 150 anchor links, 488 muscle mappings,
       and 27 legacy movement-pattern rows

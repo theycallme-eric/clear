@@ -17,7 +17,7 @@
  * SET-02's location writes live here for the same reason `updatePreferences`
  * does: they write the rows `locations` reads, and they need the same live token
  * per call. Two of the four are database functions rather than table calls, and
- * `20260921000008_location_writes.sql` explains why in the only terms that
+ * `20260921000009_location_writes.sql` explains why in the only terms that
  * matter — PostgREST cannot put two statements in one transaction, and both the
  * default move and the equipment replacement need exactly that.
  *

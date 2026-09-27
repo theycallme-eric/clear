@@ -1,3 +1,0 @@
--- Inherited history marker: 00022 drop_unique_section_type.
--- Already applied to the reused live project; intentionally a no-op here.
--- Why this file exists, and when it goes: supabase/migrations/README.md

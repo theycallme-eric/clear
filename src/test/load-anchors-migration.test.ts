@@ -11,8 +11,8 @@ import { Constants } from '../data/database.types'
 // every migration test here states applies: this cannot execute SQL.
 const repoRoot = resolve(import.meta.dirname, '../..')
 
-const MIGRATION = '20260921000010_load_anchors.sql'
-const EXECUTION_MIGRATION = '20260921000003_execution_domain.sql'
+const MIGRATION = '20260921000011_load_anchors.sql'
+const EXECUTION_MIGRATION = '20260921000004_execution_domain.sql'
 
 const sql = readFileSync(resolve(repoRoot, `supabase/migrations/${MIGRATION}`), 'utf-8')
 

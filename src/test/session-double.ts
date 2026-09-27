@@ -6,7 +6,7 @@
  * `docs/backend/live-inventory.md` forbids mutating the reused project until
  * TASK-072, and ENV-04 keeps Docker out of the loop — so the rules live in the
  * one place a test can run them. Every rule below is transcribed from
- * `supabase/migrations/20260921000005_session_lifecycle.sql`, which is asserted
+ * `supabase/migrations/20260921000006_session_lifecycle.sql`, which is asserted
  * clause by clause in `src/test/session-lifecycle-migration.test.ts`.
  *
  * What a test using this can prove: that the client speaks the functions'
@@ -156,7 +156,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
 
   /**
    * SES-01b's three reconstructions, transcribed from
-   * `20260921000009_session_reconstruction.sql` — one envelope, three
+   * `20260921000010_session_reconstruction.sql` — one envelope, three
    * predicates, each of them DATA_MODEL §7's.
    *
    * The temporal one is the reason this is not `revision_status = 'active'`
@@ -643,7 +643,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
         }
         case 'streak_sessions': {
           // SES-01c's read, transcribed from
-          // `supabase/migrations/20260921000006_streak_sessions.sql`: this
+          // `supabase/migrations/20260921000007_streak_sessions.sql`: this
           // user's completed sessions, newest first, one exclusive page at a
           // time. It counts nothing — `counts_for_streak` is returned for the
           // client to apply, and RLS makes another user's id return nothing

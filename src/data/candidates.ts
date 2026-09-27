@@ -2,7 +2,7 @@
  * GEN-02a — candidate resolution and retrieval, read back.
  *
  * The retrieval itself is SQL and lives in
- * `supabase/migrations/20260921000004_generation_candidates.sql`. This module
+ * `supabase/migrations/20260921000005_generation_candidates.sql`. This module
  * is the one way `src/` asks for it, and it deliberately decides nothing about
  * eligibility: every predicate — focus→pattern, section, equipment, exclusions
  * — ran in the database before a row reached here. A filter written here would

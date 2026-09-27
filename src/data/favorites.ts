@@ -2,7 +2,7 @@
  * FAV-01 — favorites, read and written.
  *
  * Four verbs and one rule: everything that changes a favorite's progression
- * goes through SQL (`supabase/migrations/20260921000014_saved_workouts.sql`),
+ * goes through SQL (`supabase/migrations/20260921000015_saved_workouts.sql`),
  * and everything that only reads or removes one is a plain typed table call.
  *
  *   * **`save`** is `save_favorite`, because saving a completed workout writes

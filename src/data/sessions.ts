@@ -3,7 +3,7 @@
  * reconstructions of what it left behind.
  *
  * The lifecycle itself is SQL, in
- * `supabase/migrations/20260921000005_session_lifecycle.sql`: acceptance is one
+ * `supabase/migrations/20260921000006_session_lifecycle.sql`: acceptance is one
  * transaction, the transitions are functions that answer with an outcome, and
  * the one-active-session invariant is a partial unique index. This module is
  * the only way `src/` asks for any of it, and what it owns is the translation

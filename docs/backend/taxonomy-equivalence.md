@@ -10,8 +10,8 @@ Reviewed tags: `docs/backend/evidence/previous-migrations/00031_tag_exercises.sq
 `00029`), so the capture has no `component_movements` column to export and
 this is the only place those tags exist.
 
-Nothing here was applied to a database. Live application is TASK-072, behind
-the off-machine-backup gate in `docs/backend/live-inventory.md`.
+This report does not apply database changes. Live application belongs to the
+reviewed deployment/cutover path documented under `docs/backend/`.
 
 ## 1. Preservation set
 

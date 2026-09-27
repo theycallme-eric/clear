@@ -5,7 +5,7 @@
 -- `is_deload = true`", and "anchors do not update during a deload").
 --
 -- Scope. One column, on one INSERT. `is_deload` itself was added by OVR-01a
--- (20260921000010) because the exclusion is that requirement's acceptance
+-- (20260921000011) because the exclusion is that requirement's acceptance
 -- criterion — `anchor_evidence` and `conditioning_history` already refuse a
 -- session carrying it. What was missing is the only thing that can ever set
 -- it: the write that accepts a generated workout. Until this migration the
