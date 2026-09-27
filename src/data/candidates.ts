@@ -32,9 +32,9 @@ import {
   ok,
   type AppError,
   type Result,
-} from '../state/errors'
-import { Constants, type Enums, type FunctionReturns } from './database.types'
-import { createSupabaseClient, type SupabaseConfig } from './supabase'
+} from '../state/errors.ts'
+import { Constants, type Enums, type FunctionReturns } from './database.types.ts'
+import { createSupabaseClient, type SupabaseConfig } from './supabase.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary

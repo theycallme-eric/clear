@@ -625,7 +625,7 @@ describe('one schema source, imported by client and edge alike (CORE-03)', () =>
     const module = read('src/state/schemas.ts')
     const imports = [...module.matchAll(/^import .*? from '(.+?)'$/gm)].map((match) => match[1])
 
-    expect(imports).toEqual(['zod', '../data/database.types.ts', './errors'])
+    expect(imports).toEqual(['zod', '../data/database.types.ts', './errors.ts'])
     expect(module).not.toContain('react')
     expect(module).not.toContain('document.')
   })

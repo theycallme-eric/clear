@@ -49,9 +49,9 @@
  * OVR-04's. Nothing here reads a row it was not handed.
  */
 
-import type { Enums } from '../data/database.types'
-import { convertWeight, type WeightUnit } from './anchors'
-import type { AnchorEvidenceRow } from './schemas'
+import type { Enums } from '../data/database.types.ts'
+import { convertWeight, type WeightUnit } from './anchors.ts'
+import type { AnchorEvidenceRow } from './schemas.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary

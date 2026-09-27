@@ -19,7 +19,7 @@
  * `FOR TIME · 10 MIN CAP`, `CIRCUIT · 3 ROUNDS`. Nothing parses a string, and
  * nothing invents a number the block does not carry.
  */
-import type { Enums } from '../data/database.types'
+import type { Enums } from '../data/database.types.ts'
 import type {
   ExerciseSetLogRow,
   SessionSnapshot,

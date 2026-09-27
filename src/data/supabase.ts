@@ -35,7 +35,7 @@ import {
   ok,
   type AppError,
   type Result,
-} from '../state/errors'
+} from '../state/errors.ts'
 import type {
   FunctionArgs,
   FunctionName,
@@ -44,7 +44,7 @@ import type {
   Tables,
   TablesInsert,
   TablesUpdate,
-} from './database.types'
+} from './database.types.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Configuration

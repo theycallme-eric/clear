@@ -13,7 +13,7 @@
  * disagreement between it and the database is always the database being right.
  */
 
-import type { ConstraintAction, MovementPattern, UserConstraint } from './constraints'
+import type { ConstraintAction, MovementPattern, UserConstraint } from './constraints.ts'
 
 /** Everything `exclude` removes, by scope. Deterministic order, always. */
 export interface Exclusions {

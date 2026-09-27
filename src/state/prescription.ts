@@ -25,7 +25,7 @@
  * Pure and React-free, like `workout-progress.ts` beside it: every function is
  * total over a row the database could hold.
  */
-import type { Enums } from '../data/database.types'
+import type { Enums } from '../data/database.types.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // What a prescription is, to this module
