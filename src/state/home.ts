@@ -175,13 +175,7 @@ export interface QuickStartPlan {
   readonly day: LocalDay
   /** `Full body · 45 min · intensity 6` — what the button promises. */
   readonly summary: string
-  /**
-   * The goal that session was composed for, read for the copy alone. It is
-   * **not** in the request: `generationRequestSchema` has no goal field,
-   * because the goal is a column on `profiles` that the function reads for
-   * itself. Sending a stale copy of it from the browser would be a second
-   * source for something the database already answers.
-   */
+  /** The goal that session was composed for and Quick Start repeats. */
   readonly goal: Enums<'goal_preset'> | null
   readonly goalLabel: string | null
 }
@@ -209,10 +203,11 @@ export function quickStartPlan(
     if (!isSessionEntry(entry) || entry.status !== 'completed') continue
 
     const row = byId.get(entry.id)
-    if (row === undefined || row.location_id === null) continue
+    if (row === undefined || row.location_id === null || row.goal_preset === null) continue
 
     return {
       input: {
+        goal: row.goal_preset,
         focus: row.session_focus,
         requested_intensity: row.requested_intensity,
         requested_duration_mins: row.requested_duration_mins,

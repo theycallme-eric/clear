@@ -21,8 +21,8 @@ import { describe, expect, it } from 'vitest'
 // database to run it against.
 const repoRoot = resolve(import.meta.dirname, '../..')
 
-const EXECUTION_MIGRATION = '20260921000003_execution_domain.sql'
-const WORKOUT_MIGRATION = '20260921000002_workout_domain.sql'
+const EXECUTION_MIGRATION = '20260921000004_execution_domain.sql'
+const WORKOUT_MIGRATION = '20260921000003_workout_domain.sql'
 
 const sql = readFileSync(
   resolve(repoRoot, `supabase/migrations/${EXECUTION_MIGRATION}`),

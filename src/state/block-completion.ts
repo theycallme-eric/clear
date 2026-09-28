@@ -20,7 +20,7 @@
  */
 import { createContext, use } from 'react'
 
-import type { TablesInsert } from '../data/database.types'
+import type { TablesInsert } from '../data/database.types.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary

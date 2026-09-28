@@ -1,3 +1,0 @@
--- Inherited history marker: 00001 create_enums.
--- Already applied to the reused live project; intentionally a no-op here.
--- Why this file exists, and when it goes: supabase/migrations/README.md

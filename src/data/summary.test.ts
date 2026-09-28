@@ -13,7 +13,7 @@ import { createSummaryClient, durationOf } from './summary'
 // that every refusal arrives as a typed error rather than as a screen with no
 // state. The rules the double applies are the table's own — owner-only RLS and
 // `workout_sessions_mood_range` — transcribed from
-// `supabase/migrations/20260921000002_workout_domain.sql`.
+// `supabase/migrations/20260921000003_workout_domain.sql`.
 
 const URL_ = 'https://project.supabase.co'
 const ANON_KEY = 'anon-key'

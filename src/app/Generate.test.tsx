@@ -191,6 +191,7 @@ describe('what is sent', () => {
 
     expect(generation.calls).toEqual([
       {
+        goal: 'strength',
         focus: 'upper_body',
         requested_intensity: INTENSITY_BY_GOAL.strength.start,
         requested_duration_mins: 30,

@@ -344,11 +344,10 @@ describe('catalog migration — read-only to clients (DATA-01a)', () => {
 })
 
 describe('inherited migration history (DATA-01a)', () => {
-  // The rebuild reuses the live project, whose history already records 29
-  // migrations. Without a local file per remote version the Supabase CLI
-  // refuses to push at all, and the documented alternative —
-  // `supabase migration repair` — deletes rows from the live project, which
-  // the off-machine-backup gate forbids until TASK-072.
+  // The rebuild reuses the live project, whose history records 29 migrations.
+  // TASK-072 retires their temporary local no-op markers only after the
+  // reviewed backup and migration-repair gate. The original SQL remains
+  // evidence; it must never re-enter the runnable migration directory.
   const INHERITED = [
     '00001_create_enums',
     '00002_create_profiles',
@@ -381,7 +380,7 @@ describe('inherited migration history (DATA-01a)', () => {
     '00029_get_last_set_data_rpc',
   ]
 
-  it('matches the versions the live capture recorded as applied', () => {
+  it('matches the versions the live capture recorded before retirement', () => {
     const capture = read(
       'docs/backend/capture/inventory-2026-09-18T162244Z.txt',
     )
@@ -394,7 +393,7 @@ describe('inherited migration history (DATA-01a)', () => {
     const inheritedFiles = migrationFiles.filter((name) => /^\d{5}_/.test(name))
     const rebuildFiles = migrationFiles.filter((name) => /^\d{14}_/.test(name))
 
-    expect(inheritedFiles).toEqual(INHERITED.map((stem) => `${stem}.sql`))
+    expect(inheritedFiles).toEqual([])
     // Every file belongs to one series or the other. A stray .sql named
     // outside both is one `db push` refuses to order.
     expect([...inheritedFiles, ...rebuildFiles].sort()).toEqual(migrationFiles)
@@ -403,16 +402,21 @@ describe('inherited migration history (DATA-01a)', () => {
     expect(rebuildFiles[0]).toBe(CATALOG_MIGRATION)
   })
 
-  it('records each inherited version as a no-op, never as re-runnable SQL', () => {
+  it('preserves inherited SQL as evidence, never as runnable migrations', () => {
     for (const stem of INHERITED) {
-      const marker = read(`supabase/migrations/${stem}.sql`)
-      const executable = marker
-        .split('\n')
-        .filter((line) => line.trim() !== '' && !line.trimStart().startsWith('--'))
+      const evidence = read(
+        `docs/backend/evidence/previous-migrations/${stem}.sql`,
+      )
 
-      expect(executable).toEqual([])
-      expect(marker).toContain('supabase/migrations/README.md')
+      expect(evidence.trim()).not.toBe('')
     }
+  })
+
+  it('assigns every rebuild migration a unique version', () => {
+    const rebuildFiles = migrationFiles.filter((name) => /^\d{14}_/.test(name))
+    const versions = rebuildFiles.map((name) => name.slice(0, 14))
+
+    expect(new Set(versions).size).toBe(versions.length)
   })
 
   it('explains itself where someone will look', () => {

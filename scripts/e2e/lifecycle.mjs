@@ -201,6 +201,68 @@ export async function seed(client) {
         notes: 'E2E fixture result',
       },
     ])
+
+    await client.insertRows('workout_exercises', [
+      {
+        id: FIXTURE_IDS.workoutExercise[slot],
+        block_id: FIXTURE_IDS.workoutBlock[slot],
+        exercise_id: 'bench-press',
+        order_index: 0,
+        modality: 'reps',
+        sets: 1,
+        target_kind: 'fixed',
+        target_value: 5,
+        equipment_used: 'barbell',
+        slot_id: FIXTURE_IDS.workoutExercise[slot],
+      },
+    ])
+
+    await client.insertRows('exercise_set_logs', [
+      {
+        id: FIXTURE_IDS.setLog[slot],
+        workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+        set_number: 1,
+        actual_reps: 5,
+        weight: 135,
+        weight_unit: 'lb',
+      },
+    ])
+
+    await client.insertRows('load_anchors', [
+      {
+        user_id: user.id,
+        exercise_id: 'bench-press',
+        equipment_used: 'barbell',
+        anchor_value: 157.5,
+        unit: 'lb',
+        confidence: 'low',
+        session_count: 1,
+        last_session_date: '2026-01-01',
+      },
+    ])
+
+    await client.insertRows('saved_workouts', [
+      {
+        id: FIXTURE_IDS.savedWorkout[slot],
+        user_id: user.id,
+        original_session_id: FIXTURE_IDS.workoutSession[slot],
+        workout_snapshot: {},
+        snapshot_contract_version: '4.1.0',
+        title: 'E2E fixture favorite',
+        session_focus: 'full_body',
+        intensity: 5,
+        duration_mins: 45,
+      },
+    ])
+
+    await client.insertRows('saved_workout_completions', [
+      {
+        id: FIXTURE_IDS.savedCompletion[slot],
+        saved_workout_id: FIXTURE_IDS.savedWorkout[slot],
+        session_id: FIXTURE_IDS.workoutSession[slot],
+        completed_at: '2026-01-01T01:00:00Z',
+      },
+    ])
   }
 
   return { users: /** @type {any} */ (users) }

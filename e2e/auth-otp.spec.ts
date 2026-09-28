@@ -11,7 +11,8 @@ import { backend } from './support/backend'
  * rate-limited; running it inside every flow would buy one more proof of the
  * same thing and pay for it in every test.
  *
- * What it proves is the part a human normally performs: a six-digit code,
+ * What it proves is the part a human normally performs: the project's
+ * configured numeric code,
  * issued for a confirmed address and typed once, becomes a session through the
  * *public* verify endpoint with the *anon* key — the call a browser makes. No
  * inbox is involved, because `generate_link` hands the harness the same code
@@ -32,7 +33,7 @@ test.describe('one-time code', () => {
     await client.ensureConfirmedUser(email)
 
     const { emailOtp } = await client.generateOneTimeCode(email)
-    expect(emailOtp, 'GoTrue issued no email OTP').toMatch(/^\d{6}$/)
+    expect(emailOtp, 'GoTrue issued no email OTP').toMatch(/^\d{6,10}$/)
 
     const session = await client.verifyOneTimeCode({
       email,

@@ -2,19 +2,14 @@
  * DATA-03 — the schema, read from the migrations that declare it.
  *
  * Why the migrations and not the live project. `supabase gen types` asks a
- * running database what it holds, and the database that would answer today
- * still holds the *previous* schema: `docs/backend/live-inventory.md` holds
- * every push behind the off-machine-backup gate until TASK-072, and ENV-04
- * settled that development runs against the hosted project with no local one to
- * reset. Asking it now would generate types for the schema this rebuild
- * replaces, which is worse than no types at all. So the generator reads the
- * same SQL the CLI would apply. `supabase/migrations/` is the source of truth
- * for what the schema is; the live project is the source of truth for what has
- * been *applied*, and those are different questions.
+ * running database what it holds, which makes output depend on deployment
+ * timing and credentials. The generator instead reads the same reviewed SQL
+ * the CLI applies. `supabase/migrations/` is the source of truth for what the
+ * repository declares; the live project is independently verified by the
+ * standing E2E workflow.
  *
- * What it reads: the five rebuild migrations. The inherited `00001`–`00029`
- * files are no-op history markers (`supabase/migrations/README.md`) and declare
- * nothing.
+ * What it reads: the rebuild migration series. Retired previous-app SQL lives
+ * under `docs/backend/evidence/previous-migrations/`, outside this reader.
  *
  * This is a reader for the SQL this repository writes, not a Postgres parser.
  * Anything it does not recognise raises rather than being skipped, so a schema

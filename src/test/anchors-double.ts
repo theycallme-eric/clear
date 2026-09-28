@@ -5,7 +5,7 @@
  * executed here, so the rules a call depends on live in the one place a test
  * can run them — owner-only RLS, `anchor_evidence` answering only the caller's
  * rows, and `set_load_anchors` *replacing* the stored set rather than adding to
- * it, each transcribed from `20260921000010_load_anchors.sql` and asserted
+ * it, each transcribed from `20260921000011_load_anchors.sql` and asserted
  * against separately in `src/test/load-anchors-migration.test.ts`. A test using
  * it proves the client speaks PostgREST correctly and derives from what it
  * received; ENV-07's suite is where Postgres agreeing is settled.

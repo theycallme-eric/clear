@@ -33,7 +33,7 @@
 -- reads as an EXE-06 rule even though it is stated once, for both.
 --
 -- Everything else about the function is unchanged and is restated verbatim
--- from `20260921000010_load_anchors.sql`, because `create or replace` replaces
+-- from `20260921000011_load_anchors.sql`, because `create or replace` replaces
 -- the whole body and a diff is not a patch.
 
 create or replace function public.anchor_evidence(p_user_id uuid)

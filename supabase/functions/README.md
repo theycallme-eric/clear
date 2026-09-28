@@ -41,7 +41,7 @@ and refuses in CLEAR's words instead.
 
 `_shared/validate.ts` is GEN-02c's half of GENERATION_CONTRACT §6 and its `HARD_CHECKS` is the
 correspondence the requirement asks for: one row per hard check, naming the constraint in
-`supabase/migrations/20260921000002_workout_domain.sql` that would refuse the row at the INSERT.
+`supabase/migrations/20260921000003_workout_domain.sql` that would refuse the row at the INSERT.
 `src/test/generation-validation.test.ts` reads every one of those declarations back out of the
 migration and every rule back out of the spec's own table, so a check with no matching constraint —
 or a constraint renamed under a check — fails a test rather than surviving as a paragraph.

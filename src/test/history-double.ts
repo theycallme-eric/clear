@@ -4,7 +4,7 @@
  * The same bargain as `src/test/postgrest-double.ts` and
  * `src/test/session-double.ts`: the migrations cannot be executed here, so the
  * rules a read depends on live in the one place a test can run them — owner-only
- * RLS from `20260921000002_workout_domain.sql`, and PostgREST's own `order`,
+ * RLS from `20260921000003_workout_domain.sql`, and PostgREST's own `order`,
  * `limit` and `offset` handling. A test using it proves the client speaks
  * PostgREST correctly; ENV-07's suite is where Postgres agreeing is settled.
  */

@@ -232,7 +232,7 @@ function LoginScreen() {
                     autoComplete="one-time-code"
                     value={code}
                     onChange={setCode}
-                    placeholder="6 digits"
+                    placeholder="6–10 digits"
                     helperText={`Sent to ${email.trim()}`}
                     invalid={
                       error?.failure === 'invalid-code' ||

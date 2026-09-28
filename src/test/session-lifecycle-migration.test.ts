@@ -15,9 +15,9 @@ const repoRoot = resolve(import.meta.dirname, '../..')
 
 const read = (relativePath: string) => readFileSync(resolve(repoRoot, relativePath), 'utf-8')
 
-const MIGRATION = '20260921000005_session_lifecycle.sql'
-const WORKOUT_MIGRATION = '20260921000002_workout_domain.sql'
-const EXECUTION_MIGRATION = '20260921000003_execution_domain.sql'
+const MIGRATION = '20260921000006_session_lifecycle.sql'
+const WORKOUT_MIGRATION = '20260921000003_workout_domain.sql'
+const EXECUTION_MIGRATION = '20260921000004_execution_domain.sql'
 
 const sql = read(`supabase/migrations/${MIGRATION}`)
 

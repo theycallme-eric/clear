@@ -11,7 +11,7 @@
  *
  * So this double holds the retrieval's rules in the one place a test can
  * execute them — each predicate transcribed from
- * `supabase/migrations/20260921000004_generation_candidates.sql`, which
+ * `supabase/migrations/20260921000005_generation_candidates.sql`, which
  * `src/test/generation-candidates-migration.test.ts` asserts against clause by
  * clause. What a test using it proves is that the *seeded library* answers the
  * requirement — every goal preset resolves to candidates, active recovery

@@ -62,7 +62,7 @@ import type { Enums } from '../data/database.types'
 // transaction gives it — every row is built before any row is stored.
 
 const REPO_ROOT = resolve(import.meta.dirname, '../..')
-const LIFECYCLE_MIGRATION = 'supabase/migrations/20260921000005_session_lifecycle.sql'
+const LIFECYCLE_MIGRATION = 'supabase/migrations/20260921000006_session_lifecycle.sql'
 const read = (relativePath: string) => readFileSync(resolve(REPO_ROOT, relativePath), 'utf-8')
 
 const PROJECT_URL = 'https://project.supabase.co'
@@ -361,7 +361,7 @@ describe('every session records prompt_version and contract_version', () => {
   })
 
   it('records both columns as NOT NULL in the schema they are written to', () => {
-    const domain = read('supabase/migrations/20260921000002_workout_domain.sql')
+    const domain = read('supabase/migrations/20260921000003_workout_domain.sql')
     expect(domain).toMatch(/prompt_version\s+text not null/i)
     expect(domain).toMatch(/contract_version text not null/i)
   })

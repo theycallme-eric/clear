@@ -31,9 +31,9 @@
  * Pure and React-free, like `prescription.ts` and `workout-progress.ts` beside
  * it.
  */
-import type { Enums } from '../data/database.types'
-import { modalityUnit, prescribedTarget } from './prescription'
-import type { ExerciseProgress } from './workout-progress'
+import type { Enums } from '../data/database.types.ts'
+import { modalityUnit, prescribedTarget } from './prescription.ts'
+import type { ExerciseProgress } from './workout-progress.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Which schemes are ladders

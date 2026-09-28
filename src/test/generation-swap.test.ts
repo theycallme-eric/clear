@@ -719,7 +719,7 @@ describe('the result is persisted as a revision, never a mutation in place', () 
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('swap_session_block is append-and-supersede, or none of it', () => {
-  const migration = read('supabase/migrations/20260921000012_swap_session_block.sql')
+  const migration = read('supabase/migrations/20260921000013_swap_session_block.sql')
   const body = migration.slice(
     migration.indexOf('create or replace function public.swap_session_block('),
     migration.indexOf('comment on function public.swap_session_block'),

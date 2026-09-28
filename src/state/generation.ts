@@ -28,7 +28,7 @@ import type {
   GenerationInput,
   GenerationStage,
 } from '../data/generation'
-import type { GenerationOutput } from './schemas'
+import type { SessionAcceptance } from './schemas'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The client, as the tree carries it
@@ -66,7 +66,7 @@ export type GenerationState =
       readonly input: GenerationInput
       readonly requestId: string
       /** Validated by the function and re-parsed by the client. Review's input. */
-      readonly workout: GenerationOutput
+      readonly acceptance: SessionAcceptance
     }
 
 const IDLE: GenerationState = { status: 'idle' }
@@ -145,7 +145,7 @@ export function useGeneration(): GenerationMutation {
                     status: 'success',
                     input,
                     requestId: result.value.requestId,
-                    workout: result.value.workout,
+                    acceptance: result.value.acceptance,
                   }
                 : { status: 'error', input, error: result.error },
             )

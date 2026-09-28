@@ -43,7 +43,7 @@
  * not here: this requirement only learns.
  */
 
-import type { AnchorEvidenceRow, LoadAnchorInput } from './schemas'
+import type { AnchorEvidenceRow, LoadAnchorInput } from './schemas.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants

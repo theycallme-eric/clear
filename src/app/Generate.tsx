@@ -27,15 +27,11 @@
  *      prefilled form is still one answer short of generating — the suggestion
  *      is read off history, and history does not know what today is for.
  *
- * **What this screen deliberately does not do.** The goal the user picks here
- * shapes the intensity range and the anchors offered (v3 delta §2.2–2.3), and
- * it is *not* on the wire: `generationRequestSchema` is CORE-03's strict object
- * and carries focus, intensity, duration, location and notes — no goal field.
- * Adding one is a contract change, which is not this requirement's to make, so
- * the goal stays a client-side cascade until the schema carries it. That gap is
- * recorded in `docs/journal/2026-09-25.md`.
+ * The goal the user picks is part of the wire contract. It scopes candidate
+ * retrieval as well as the client-side cascade, so the workout cannot be
+ * composed for a stale profile default after the user chose something else.
  */
-import { useId, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
@@ -81,6 +77,7 @@ import {
   type GenerationPrefill,
 } from '../state/generation-form'
 import type { Location } from '../state/schemas'
+import { reviewHandoff } from '../state/review-handoff'
 import { localDayIn } from '../state/streak'
 import { useLocationsQuery } from '../state/user-queries'
 import {
@@ -175,6 +172,7 @@ function GenerateForm({
   prefill: GenerationPrefill | null
 }) {
   const generation = useGeneration()
+  const navigate = useNavigate()
   const [draft, setDraft] = useState<GenerationDraft>(() =>
     initialDraft(defaultLocationId(places), prefill),
   )
@@ -207,6 +205,13 @@ function GenerateForm({
   const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === draft.goal)
   const pending = generation.state.status === 'pending'
 
+  useEffect(() => {
+    if (generation.state.status !== 'success') return
+    void navigate('/review', {
+      state: reviewHandoff(generation.state.acceptance),
+    })
+  }, [generation.state, navigate])
+
   /**
    * §4's Apply: the intensity is clamped and the directive rides on the request.
    * Nothing else changes, and nothing changed before the user pressed it — the
@@ -233,7 +238,7 @@ function GenerateForm({
   }
 
   function submit() {
-    const request = requestFrom(draft, generateRequestId(), applied !== null)
+    const request = requestFrom(draft, generateRequestId(), applied !== null, today)
 
     // The one path to the client, and it is a total function: a refused draft
     // becomes sentences on the fields that caused it and nothing is sent.

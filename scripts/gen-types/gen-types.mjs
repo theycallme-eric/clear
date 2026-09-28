@@ -6,8 +6,8 @@
  *
  * Offline by construction: it opens no connection and reads no credential. The
  * schema it types is the one `supabase/migrations/` declares — see the header of
- * `schema.mjs` for why that, and not the live project, is what `gen types` can
- * honestly be run against before the off-machine-backup gate clears.
+ * `schema.mjs` for why repository SQL, rather than live deployment state, is
+ * the deterministic source for this generator.
  *
  * Exit codes: 0 when the types were written, or (under `--check`) when the
  * committed file is byte-identical to what this run produces; 1 on drift or on

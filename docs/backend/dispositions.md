@@ -126,7 +126,8 @@ live mutation:
   captured 140-row catalog and taxonomy references; retire the unsupported 173-row expectation,
   eight test auth accounts, and personal/test rows; replace the old physical schema and deployed
   generation function; transform old-client auth URLs during cutover.
-- **Remaining precondition:** store a second copy of the verified full dump off-machine.
+- **Recovery decision:** on 2026-09-27 the owner accepted the verified local dump and Git-tracked
+  schema/catalog evidence, and explicitly waived a second off-machine copy as a hard prerequisite.
 - **Effect:** TASK-009 through TASK-013 may author and dry-run changes now. They may mutate the live
   project only after the off-machine-copy checkbox in `docs/backend/live-inventory.md` is checked.
 

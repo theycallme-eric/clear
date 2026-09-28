@@ -9,8 +9,9 @@ migration approval; it exists so that any cutover step can be undone to the pre-
    - a committed schema-only dump under `docs/backend/snapshot/<stamp>/schema.sql`;
    - committed catalog CSVs under `docs/backend/snapshot/<stamp>/catalog/`;
    - a full custom-format dump `backups/clear-full-<stamp>.dump` (gitignored) whose
-     `pg_restore --list` TOC has been reviewed and which is copied to at least one location off
-     the operator's machine (owner's choice; never a public bucket).
+     `pg_restore --list` TOC has been reviewed. The owner explicitly waived a second off-machine
+     copy on 2026-09-27 and accepted the verified local dump plus Git-tracked schema/catalog
+     evidence as the recovery boundary.
 2. The applied-migration list and auth settings are recorded in
    `docs/backend/live-inventory.md` §5.
 3. Previous Edge Function sources are committed at `docs/backend/evidence/previous-functions/`
@@ -34,14 +35,28 @@ inventory and spot-checked RPCs (`\df`) match the schema dump. Record the result
 ## Rollback steps (live incident during/after cutover)
 
 1. **Freeze.** Stop all DATA-task activity; note the failing step and current migration version.
-2. **Restore database.** Into the reused project via `SUPABASE_DB_URL`:
+2. **Restore database.** Re-run `scripts/backend-cutover/reset-public.sql`, then restore only the
+   legacy `public` schema from the verified dump. Do not restore the dump wholesale over
+   Supabase-managed schemas:
    ```sh
-   psql "$SUPABASE_DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
-   pg_restore --no-owner --no-privileges --dbname "$SUPABASE_DB_URL" \
-     backups/clear-full-<stamp>.dump
+   psql "$SUPABASE_DB_URL" -f scripts/backend-cutover/reset-public.sql
+   pg_restore --exit-on-error --no-owner --no-privileges --schema=public \
+     --dbname "$SUPABASE_DB_URL" backups/clear-full-<stamp>.dump
+
+   psql "$SUPABASE_DB_URL" \
+     -c "DELETE FROM supabase_migrations.schema_migrations;"
+   pg_restore --exit-on-error --no-owner --no-privileges --data-only \
+     --schema=supabase_migrations --table=schema_migrations \
+     --dbname "$SUPABASE_DB_URL" backups/clear-full-<stamp>.dump
+
+   psql "$SUPABASE_DB_URL" -f scripts/backend-cutover/restore-legacy-trigger.sql
    ```
-   (Supabase-managed schemas — auth, storage — are not touched by the rebuild's migrations; if
-   auth settings were changed, restore them from the values recorded in the inventory.)
+   The schema filter restores 173 public-schema archive entries; the second restore reinstates the
+   29-row legacy migration ledger. The explicit final script restores the `auth.users` trigger,
+   which belongs to the managed `auth` schema and therefore is intentionally outside the public
+   filter. Auth users are disposable by owner decision and are not restored. Auth, storage, and
+   other managed schemas are otherwise untouched; if Auth URLs were changed, restore them from the
+   values recorded in the inventory.
    Alternative when the damage window is small and the plan supports it: Supabase dashboard
    point-in-time recovery / scheduled backup restore to just before the first mutation.
 3. **Restore functions** (only if new functions were already deployed): redeploy the vendored

@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
 // ENV-07's continuous job once there is a database to run it against.
 const repoRoot = resolve(import.meta.dirname, '../..')
 
-const WORKOUT_MIGRATION = '20260921000002_workout_domain.sql'
+const WORKOUT_MIGRATION = '20260921000003_workout_domain.sql'
 const USER_BASELINE_MIGRATION = '20260921000001_user_baseline.sql'
 
 const sql = readFileSync(

@@ -13,7 +13,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { createError, ErrorCode, isErr, ok, type Result } from '../state/errors'
 import { GENERATION_FAILURES } from '../state/schemas'
-import { makeGenerationOutput } from '../test/factories'
+import { makeGenerationOutput, makeSessionAcceptance } from '../test/factories'
 import type { AuthSession } from './auth'
 import {
   codeForStatus,
@@ -28,6 +28,7 @@ const REQUEST_ID = 'req_test_generation'
 const FUNCTION_URL = 'https://project.supabase.co/functions/v1/generate-workout'
 
 const INPUT: GenerationInput = {
+  goal: 'strength',
   focus: 'lower_body',
   requested_intensity: 7,
   requested_duration_mins: 45,
@@ -52,6 +53,7 @@ function clientWith(
     auth: { getSession: () => Promise.resolve(session) },
     supabase: { url: 'https://project.supabase.co', anonKey: 'anon-key', fetch: fetchImpl },
     requestId: () => REQUEST_ID,
+    today: () => '2026-09-27',
   })
 }
 
@@ -69,13 +71,13 @@ function answering(body: unknown, status = 200): typeof globalThis.fetch {
 
 describe('the generation call', () => {
   it('posts the request to the function, carrying the session and the request id', async () => {
-    const workout = makeGenerationOutput()
-    const fetchImpl = answering({ requestId: REQUEST_ID, workout })
+    const acceptance = makeSessionAcceptance()
+    const fetchImpl = answering({ requestId: REQUEST_ID, acceptance })
 
     const result = await clientWith(fetchImpl).generate(INPUT)
 
     expect(result.ok).toBe(true)
-    expect(result.ok && result.value.workout).toEqual(workout)
+    expect(result.ok && result.value.acceptance).toEqual(acceptance)
 
     const [url, init] = vi.mocked(fetchImpl).mock.calls[0] as [string, RequestInit]
     expect(url).toBe(FUNCTION_URL)
@@ -88,7 +90,11 @@ describe('the generation call', () => {
     // screen shows, and the id the function logs.
     expect(headers['x-request-id']).toBe(REQUEST_ID)
 
-    expect(JSON.parse(String(init.body))).toEqual({ ...INPUT, request_id: REQUEST_ID })
+    expect(JSON.parse(String(init.body))).toEqual({
+      ...INPUT,
+      request_id: REQUEST_ID,
+      date: '2026-09-27',
+    })
   })
 
   it('refuses a request the session row could not hold, before any call', async () => {
@@ -148,7 +154,10 @@ describe('the generation call', () => {
     // workout with nothing in it, which is the D2 failure wearing a status code.
     const fetchImpl = answering({
       requestId: REQUEST_ID,
-      workout: { ...makeGenerationOutput(), sections: [] },
+      acceptance: {
+        ...makeSessionAcceptance(),
+        workout: { ...makeGenerationOutput(), sections: [] },
+      },
     })
 
     const result = await clientWith(fetchImpl).generate(INPUT)
@@ -157,7 +166,7 @@ describe('the generation call', () => {
     expect(!result.ok && result.error.code).toBe(ErrorCode.GENERATION_FAILED)
     expect(!result.ok && result.error.failure).toBe(GenerationFailure.MALFORMED_PRESCRIPTION)
     expect(!result.ok && result.error.issues.map((issue) => issue.path)).toEqual([
-      'workout.sections',
+      'acceptance.workout.sections',
     ])
   })
 

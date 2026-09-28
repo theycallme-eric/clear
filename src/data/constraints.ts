@@ -25,10 +25,10 @@ import {
   ok,
   type AppError,
   type Result,
-} from '../state/errors'
-import type { AuthClient } from './auth'
-import type { Enums, Tables, TablesInsert } from './database.types'
-import { createSupabaseClient, type SupabaseConfig } from './supabase'
+} from '../state/errors.ts'
+import type { AuthClient } from './auth.ts'
+import type { Enums, Tables, TablesInsert } from './database.types.ts'
+import { createSupabaseClient, type SupabaseConfig } from './supabase.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary

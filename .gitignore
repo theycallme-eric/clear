@@ -20,3 +20,4 @@ backups/
 supabase/.temp/
 supabase/.branches/
 supabase/logs/
+.vercel

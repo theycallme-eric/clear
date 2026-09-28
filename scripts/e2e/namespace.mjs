@@ -119,7 +119,13 @@ export function fixtureIds(namespace = NAMESPACE) {
     workoutSection: { a: id(4, 'a', namespace), b: id(4, 'b', namespace) },
     workoutBlock: { a: id(5, 'a', namespace), b: id(5, 'b', namespace) },
     blockResult: { a: id(6, 'a', namespace), b: id(6, 'b', namespace) },
+    workoutExercise: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
+    setLog: { a: id(9, 'a', namespace), b: id(9, 'b', namespace) },
     savedWorkout: { a: id(7, 'a', namespace), b: id(7, 'b', namespace) },
+    savedCompletion: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
+    forgedWorkoutExercise: { a: id(9, 'a', namespace), b: id(9, 'b', namespace) },
+    forgedSetLog: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
+    forgedSavedWorkout: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
   }
 }
 
@@ -146,13 +152,10 @@ export const FIXTURE_EQUIPMENT_ID = 'barbell'
  * everything and expect nothing" — unaffected by whatever else lives in the
  * reused project.
  *
- * `seeded: false` marks the tables whose rows cannot be constructed from the
- * schema alone: each needs an `exercise_definitions` id — directly, or inside
- * the workout snapshot a favorite stores — and the catalog is applied by its
- * own task. They are still proved — a write for user B must
- * be refused, and a read of user B's rows must return none — they simply have
- * no seeded row to read. When the catalog is applied, they gain one here and
- * nothing else changes.
+ * Every cross-user table now has a positive-control row because TASK-072
+ * applies the canonical catalog before enabling the standing check. A denial
+ * therefore proves that user B's real row is hidden or immutable to user A,
+ * rather than succeeding only because the table happened to be empty.
  */
 export const USER_TABLES = standingMatrix()
 
@@ -187,9 +190,9 @@ export function rowSelector(table, slot, userId) {
     case 'block_results':
       return { id: `eq.${FIXTURE_IDS.blockResult[slot]}` }
     case 'workout_exercises':
-      return { block_id: `eq.${FIXTURE_IDS.workoutBlock[slot]}` }
+      return { id: `eq.${FIXTURE_IDS.workoutExercise[slot]}` }
     case 'exercise_set_logs':
-      return { workout_exercise_id: `eq.${FIXTURE_IDS.workoutBlock[slot]}` }
+      return { id: `eq.${FIXTURE_IDS.setLog[slot]}` }
     case 'load_anchors':
       return { user_id: `eq.${userId}` }
     case 'saved_workouts':
@@ -264,25 +267,26 @@ export function forgedRow(table, slot, userId) {
       notes: 'Forged by the other user',
     },
     workout_exercises: {
+      id: FIXTURE_IDS.forgedWorkoutExercise[slot],
       block_id: FIXTURE_IDS.workoutBlock[slot],
-      exercise_id: 'forged-exercise',
+      exercise_id: 'push-ups',
       order_index: 99,
       modality: 'reps',
       target_kind: 'fixed',
       target_value: 5,
-      equipment_used: 'barbell',
-      slot_id: FIXTURE_IDS.workoutBlock[slot],
+      equipment_used: 'bodyweight',
+      slot_id: FIXTURE_IDS.forgedWorkoutExercise[slot],
     },
     exercise_set_logs: {
-      id: FIXTURE_IDS.blockResult[slot],
-      workout_exercise_id: FIXTURE_IDS.workoutBlock[slot],
-      set_number: 1,
+      id: FIXTURE_IDS.forgedSetLog[slot],
+      workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+      set_number: 2,
       weight_unit: 'lb',
     },
     load_anchors: {
       user_id: userId,
-      exercise_id: 'forged-exercise',
-      equipment_used: 'barbell',
+      exercise_id: 'bicep-curls',
+      equipment_used: 'dumbbells',
       anchor_value: 315,
       unit: 'lb',
       confidence: 'high',
@@ -290,7 +294,7 @@ export function forgedRow(table, slot, userId) {
       last_session_date: '2026-01-01',
     },
     saved_workouts: {
-      id: FIXTURE_IDS.savedWorkout[slot],
+      id: FIXTURE_IDS.forgedSavedWorkout[slot],
       user_id: userId,
       workout_snapshot: {},
       snapshot_contract_version: '4.1.0',
@@ -301,7 +305,7 @@ export function forgedRow(table, slot, userId) {
     },
     saved_workout_completions: {
       saved_workout_id: FIXTURE_IDS.savedWorkout[slot],
-      session_id: FIXTURE_IDS.workoutSession[slot],
+      session_id: FIXTURE_IDS.workoutSession.a,
     },
   }[table]
 

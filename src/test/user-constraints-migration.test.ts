@@ -147,14 +147,28 @@ describe('user constraints migration — a target cannot lie (DATA-05)', () => {
   })
 
   it('refuses the same exclusion twice', () => {
-    expect(statements).toMatch(
-      /create unique index if not exists user_constraints_no_duplicates_idx/i,
-    )
+    for (const [index, target, scope] of [
+      ['exercise', 'target_exercise_id', 'exercise'],
+      ['pattern', 'target_pattern', 'movement_pattern'],
+      ['equipment', 'target_equipment', 'equipment'],
+    ]) {
+      expect(statements).toMatch(
+        new RegExp(
+          `create unique index if not exists user_constraints_${index}_no_duplicates_idx[\\s\\S]*?${target}[\\s\\S]*?where scope = '${scope}'`,
+          'i',
+        ),
+      )
+    }
+    // Enum targets stay in their native type. PostgreSQL does not allow the
+    // enum-to-text cast in an index expression because that cast is STABLE.
+    expect(statements).not.toMatch(/target_pattern::text/i)
     // The sentinel is what makes it work: NULLs in a unique index do not
     // collide, so two identical persistent rows would both be allowed.
-    expect(statements).toMatch(
-      /coalesce\(applies_to_session_id, '00000000-0000-0000-0000-000000000000'::uuid\)/i,
-    )
+    expect(
+      statements.match(
+        /coalesce\(applies_to_session_id, '00000000-0000-0000-0000-000000000000'::uuid\)/gi,
+      ),
+    ).toHaveLength(3)
   })
 })
 

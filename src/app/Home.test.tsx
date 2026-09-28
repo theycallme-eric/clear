@@ -63,6 +63,7 @@ describe('Home', () => {
     await waitFor(() => {
       expect(generation.calls).toEqual([
         {
+          goal: 'balanced',
           focus: 'upper_body',
           requested_duration_mins: 35,
           requested_intensity: 6,

@@ -26,7 +26,7 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
 - `candidates.ts` (GEN-02a) — the eligible exercises for a generation request, read back from
   `generation_candidate_sets`. It decides no eligibility of its own: focus→pattern, section,
   equipment and exclusions all ran in SQL before a row arrived
-  (`supabase/migrations/20260921000004_generation_candidates.sql`). What it owns is the domain
+  (`supabase/migrations/20260921000005_generation_candidates.sql`). What it owns is the domain
   shape, the parse of the `jsonb` candidate list, and the typed empty-set failure —
   `GENERATION_NO_CANDIDATES`, naming the sections that resolved to nothing. One RPC per request,
   and no model call anywhere in the path.

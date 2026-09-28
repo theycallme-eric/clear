@@ -26,11 +26,11 @@ carried `surprise`, which named the absence of a movement pattern; the seed
 refuses to run unless every affected exercise is still reachable through its
 preserved `exercise_role` or `sections`.
 
-## Nothing here is applied
+## Generation does not apply database changes
 
 `npm run seed` writes files. It opens no connection and reads no credential.
-Applying these against the reused Supabase project is **TASK-072**, behind the
-off-machine-backup gate in `docs/backend/live-inventory.md`.
+Applying these files belongs to the reviewed deployment/cutover path documented
+under `docs/backend/`.
 
 The first three files are listed in `[db.seed]` in `supabase/config.toml`, so a
 local `supabase db reset` applies them in the order above — which is foreign-key

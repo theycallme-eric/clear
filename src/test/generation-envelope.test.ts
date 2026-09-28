@@ -44,6 +44,8 @@ const CLIENT_REQUEST_ID = 'req_lxyz123_a1b2c3'
 
 const validBody: GenerationRequest = {
   request_id: CLIENT_REQUEST_ID,
+  goal: 'balanced',
+  date: '2026-09-27',
   focus: 'full_body',
   requested_intensity: 6,
   requested_duration_mins: 45,

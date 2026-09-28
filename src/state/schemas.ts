@@ -33,8 +33,11 @@
  */
 import { z } from 'zod'
 
-import { Constants } from '../data/database.types'
-import { ErrorCode, createError, err, ok, type AppError, type Result } from './errors'
+// The explicit extension is required by Supabase's remote Deno bundler. Its
+// sloppy-import resolver treats `.types` as an extension and otherwise looks
+// for a nonexistent `database.types` file instead of `database.types.ts`.
+import { Constants } from '../data/database.types.ts'
+import { ErrorCode, createError, err, ok, type AppError, type Result } from './errors.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Primitives
@@ -311,6 +314,10 @@ export const generationOutputSchema = z.strictObject({
  */
 export const generationRequestSchema = z.strictObject({
   request_id: requestIdSchema,
+  /** The purpose chosen for this workout, not the profile's standing default. */
+  goal: goalPresetSchema,
+  /** The caller's local training day; the server cannot infer its time zone. */
+  date: z.iso.date(),
   focus: sessionFocusSchema,
   requested_intensity: z.int().min(1).max(10),
   requested_duration_mins: positiveInt,
@@ -440,10 +447,18 @@ export const generationErrorResponseSchema = errorResponseSchema.extend({
   failure: generationFailureSchema.optional(),
 })
 
-/** A generation that succeeded, echoing the id it was called with (§9). */
+/**
+ * A generation that succeeded, echoing the id it was called with (§9).
+ *
+ * The acceptance payload carries both the composition and the effective facts
+ * it was composed under. Review can therefore persist exactly this workout on
+ * Start without re-reading a profile that may have changed in the meantime.
+ */
 export const generationSuccessSchema = z.strictObject({
   requestId: requestIdSchema,
-  workout: generationOutputSchema,
+  // Declared below with the persisted payloads; lazy keeps one schema without
+  // moving the generation envelope away from its request/error peers.
+  acceptance: z.lazy(() => sessionAcceptanceSchema),
 })
 
 /**

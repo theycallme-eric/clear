@@ -10,21 +10,22 @@
  *   supabase/migrations/20260921000000_catalog_domain.sql
  *   supabase/migrations/20260921000001_user_baseline.sql
  *   supabase/migrations/20260921000002_user_constraints.sql
- *   supabase/migrations/20260921000002_workout_domain.sql
- *   supabase/migrations/20260921000003_execution_domain.sql
- *   supabase/migrations/20260921000004_generation_candidates.sql
- *   supabase/migrations/20260921000005_session_lifecycle.sql
- *   supabase/migrations/20260921000006_streak_sessions.sql
- *   supabase/migrations/20260921000007_complete_onboarding.sql
- *   supabase/migrations/20260921000008_location_writes.sql
- *   supabase/migrations/20260921000009_session_reconstruction.sql
- *   supabase/migrations/20260921000010_load_anchors.sql
- *   supabase/migrations/20260921000011_conditioning_history.sql
- *   supabase/migrations/20260921000012_swap_session_block.sql
- *   supabase/migrations/20260921000013_swap_anchor_exclusion.sql
- *   supabase/migrations/20260921000014_rest_days.sql
- *   supabase/migrations/20260921000015_saved_workouts.sql
- *   supabase/migrations/20260921000016_deload_session_tag.sql
+ *   supabase/migrations/20260921000003_workout_domain.sql
+ *   supabase/migrations/20260921000004_execution_domain.sql
+ *   supabase/migrations/20260921000005_generation_candidates.sql
+ *   supabase/migrations/20260921000006_session_lifecycle.sql
+ *   supabase/migrations/20260921000007_streak_sessions.sql
+ *   supabase/migrations/20260921000008_complete_onboarding.sql
+ *   supabase/migrations/20260921000009_location_writes.sql
+ *   supabase/migrations/20260921000010_session_reconstruction.sql
+ *   supabase/migrations/20260921000011_load_anchors.sql
+ *   supabase/migrations/20260921000012_conditioning_history.sql
+ *   supabase/migrations/20260921000013_swap_session_block.sql
+ *   supabase/migrations/20260921000014_swap_anchor_exclusion.sql
+ *   supabase/migrations/20260921000015_rest_days.sql
+ *   supabase/migrations/20260921000016_saved_workouts.sql
+ *   supabase/migrations/20260921000017_deload_session_tag.sql
+ *   supabase/migrations/20260927000018_generation_goal_scope.sql
  */
 
 export type Json =
@@ -800,6 +801,17 @@ export type Database = {
         }
         Returns: { section: Database['public']['Enums']['section_type']; relaxed: boolean; candidates: Json }[]
       }
+      generation_candidate_sets_for_goal: {
+        Args: {
+          p_user_id: string
+          p_goal: Database['public']['Enums']['goal_preset']
+          p_focus: Database['public']['Enums']['session_focus']
+          p_location_id?: string | null
+          p_session_id?: string | null
+          p_floor?: number | null
+        }
+        Returns: { section: Database['public']['Enums']['section_type']; relaxed: boolean; candidates: Json }[]
+      }
       generation_candidates: {
         Args: {
           p_user_id: string
@@ -821,6 +833,13 @@ export type Database = {
       generation_sections: {
         Args: {
           p_user_id: string
+        }
+        Returns: Database['public']['Enums']['section_type'][]
+      }
+      generation_sections_for_goal: {
+        Args: {
+          p_user_id: string
+          p_goal: Database['public']['Enums']['goal_preset']
         }
         Returns: Database['public']['Enums']['section_type'][]
       }

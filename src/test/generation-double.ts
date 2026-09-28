@@ -14,8 +14,8 @@ import type {
   SectionSwapInput,
 } from '../data/generation'
 import { err, ok, type Result } from '../state/errors'
-import type { GenerationOutput, GenerationSuccess, SwapSuccess } from '../state/schemas'
-import { makeGenerationOutput } from './factories'
+import type { GenerationSuccess, SessionAcceptance, SwapSuccess } from '../state/schemas'
+import { makeSessionAcceptance } from './factories'
 
 type Answer = Result<GenerationSuccess, GenerationError>
 type SwapAnswer = Result<SwapSuccess, GenerationError>
@@ -26,7 +26,7 @@ export interface FakeGenerationClient extends GenerationClient {
   /** How many calls have not been answered yet. */
   readonly outstanding: number
   /** Answers the oldest unanswered call with a workout. */
-  succeed(options?: { workout?: GenerationOutput; requestId?: string }): void
+  succeed(options?: { acceptance?: SessionAcceptance; requestId?: string }): void
   /** Answers the oldest unanswered call with a typed error. */
   fail(error: GenerationError): void
   /**
@@ -101,7 +101,7 @@ export function createFakeGenerationClient(): FakeGenerationClient {
       answer(
         ok({
           requestId: options.requestId ?? 'req_test_generation',
-          workout: options.workout ?? makeGenerationOutput(),
+          acceptance: options.acceptance ?? makeSessionAcceptance(),
         }),
       )
     },

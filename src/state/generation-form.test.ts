@@ -249,6 +249,8 @@ describe('the payload (CORE-03 §1)', () => {
     if (!isOk(request)) return
     expect(request.value).toEqual({
       request_id: REQUEST_ID,
+      goal: 'strength',
+      date: new Date().toISOString().slice(0, 10),
       focus: 'upper_body',
       requested_intensity: 7,
       requested_duration_mins: 50,
@@ -313,6 +315,7 @@ describe('the payload (CORE-03 §1)', () => {
     expect(isOk(request)).toBe(true)
     if (!isOk(request)) return
     expect(inputFrom(request.value)).toEqual({
+      goal: 'strength',
       focus: 'upper_body',
       requested_intensity: INTENSITY_BY_GOAL.strength.start,
       requested_duration_mins: DEFAULT_DURATION_MINS,

@@ -7,9 +7,8 @@
  *                               writing nothing (for CI)
  *
  * The command reads two committed inputs and writes four files. It opens no
- * connection, reads no environment variable and needs no credential: live
- * application is TASK-072's, and `docs/backend/live-inventory.md` forbids
- * mutating the reused project before the off-machine-backup gate clears.
+ * connection, reads no environment variable and needs no credential. Applying
+ * the generated SQL belongs to the reviewed deployment/cutover path.
  *
  * Idempotent in both directions. Running it twice writes byte-identical
  * artifacts — every collection is sorted and no timestamp is emitted — and the
@@ -144,8 +143,8 @@ export function main(argv) {
     write('  prior personal row and is not part of [db.seed].')
   }
   write('')
-  write('Not applied. `supabase db push` against the reused project is TASK-072,')
-  write('behind the off-machine-backup gate in docs/backend/live-inventory.md.')
+  write('Not applied. This command only prepares reviewed SQL; database changes')
+  write('belong to the deployment/cutover path documented under docs/backend/.')
 
   return 0
 }

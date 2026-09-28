@@ -61,11 +61,11 @@
  * fetches, and nothing here reads a row it was not handed.
  */
 
-import type { Enums } from '../data/database.types'
-import type { BlockOutcome } from './block-completion'
-import { isLadderScheme } from './ladder'
-import type { ConditioningHistoryRow, ConditioningPrescription } from './schemas'
-import type { BlockProgress } from './workout-progress'
+import type { Enums } from '../data/database.types.ts'
+import type { BlockOutcome } from './block-completion.ts'
+import { isLadderScheme } from './ladder.ts'
+import type { ConditioningHistoryRow, ConditioningPrescription } from './schemas.ts'
+import type { BlockProgress } from './workout-progress.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary
