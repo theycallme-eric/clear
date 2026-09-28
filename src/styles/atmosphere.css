@@ -15,6 +15,18 @@
 }
 
 /*
+ * Auth remains a quiet, readable form atmosphere, but it is also the handoff
+ * from CLEAR's full brand entry. The exported quiet values leave less than two
+ * percent effective role colour after dimming, which reads as no atmosphere at
+ * all on a phone. Scope the stronger quiet treatment to auth so ordinary
+ * reading and settings screens keep the export's lower intensity.
+ */
+.clr-atmosphere[data-context='auth'] {
+  --atmosphere-opacity: 0.26;
+  --atmosphere-dim: 0.58;
+}
+
+/*
  * The export positions the two largest blobs with vertical percentages. Those
  * percentages resolve against the viewport height, while each blob's height is
  * derived from its width. On a tall phone that put Structure almost entirely
