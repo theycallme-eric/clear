@@ -125,6 +125,11 @@ test.describe('live generation → persistence → reconstruction', () => {
   })
 
   test('a real generation returns Review’s complete acceptance payload', async () => {
+    // A full structured workout routinely takes longer than Playwright's
+    // generic 30-second test default. Keep the bound explicit and local to the
+    // only paid provider call; the surrounding database checks stay fast.
+    test.setTimeout(120_000)
+
     const body = must<{
       requestId: string
       acceptance: Record<string, unknown>
