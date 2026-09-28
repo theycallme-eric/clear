@@ -9,12 +9,17 @@ import { createFakeAuthClient, signedInEvent } from '../test/auth-double'
 import { renderApp } from '../test/render'
 
 describe('Welcome', () => {
-  it('shows the wordmark, the line under it, and one way forward', () => {
+  it('shows the wordmark, the line under it, and both auth paths in a card', () => {
     renderApp(['/welcome'])
 
     expect(screen.getByRole('heading', { level: 1, name: 'CLEAR' })).toBeInTheDocument()
     expect(screen.getByText('Strength training, simplified.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Sign in' })).toBeInTheDocument()
+    const card = screen.getByRole('button', { name: 'Sign in' }).closest('.clr-card')
+    expect(card).not.toBeNull()
+    expect(within(card as HTMLElement).getByRole('button', { name: 'Sign in' })).toBeInTheDocument()
+    expect(
+      within(card as HTMLElement).getByRole('button', { name: 'Create account' }),
+    ).toBeInTheDocument()
   })
 
   it('goes to the login screen', async () => {
@@ -24,6 +29,20 @@ describe('Welcome', () => {
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
+  })
+
+  it('opens an explicit account-creation version of the OTP screen', async () => {
+    const user = userEvent.setup()
+    renderApp(['/welcome'])
+
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Create account' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(/enter your email to create your account/i),
+    ).toBeInTheDocument()
   })
 
   it('waits for the session restore rather than flashing the screen', () => {
