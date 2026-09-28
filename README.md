@@ -90,10 +90,10 @@ the Google Fonts `@import`. `src/styles/fonts.test.ts` fails if any stylesheet t
 imports, or `index.html`, ever reaches `fonts.googleapis.com` or `fonts.gstatic.com` — a
 preconnect included.
 
-**The self-hosted faces are not in the tree yet.** They come from three Fontsource packages,
-and the workspace this was built in has no package registry. Until they are installed the
-three roles render in their fallback stacks. The exact remaining step is written at the foot
-of `src/styles/skin-clear.css`.
+The three Fontsource packages are installed and `src/styles/skin-clear.css` imports only the
+approved Latin weights. Vite fingerprints their local font files; `index.html` preloads the
+above-the-fold Rajdhani 700, Oxanium 700 and Space Grotesk 500 faces. The browser E2E suite
+loads all three role faces and fails if they are unavailable or requested from another origin.
 
 No CSS framework or component library is used. `DS-01` will vendor the approved public design
 system into `src/design-system/`; until then the shell intentionally uses browser-default styling.

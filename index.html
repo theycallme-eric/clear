@@ -8,6 +8,31 @@
     <meta name="description" content="CLEAR workout generator" />
     <title>CLEAR</title>
 
+    <!-- DS-02 — the three faces visible before interaction. Vite rewrites
+         these package assets to the same fingerprinted, app-local files used
+         by the Fontsource rules in src/styles/skin-clear.css. -->
+    <link
+      rel="preload"
+      href="./node_modules/@fontsource/rajdhani/files/rajdhani-latin-700-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./node_modules/@fontsource/oxanium/files/oxanium-latin-700-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-500-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <!-- PWA-01 — installable shell. The manifest carries the install identity;
          these tags carry what iOS reads instead of it. `theme-color` is the
          CLEAR skin's --base: a manifest and a meta tag read no CSS token, so
