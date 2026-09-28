@@ -9,9 +9,9 @@
  * it; the last test here asserts the vendored file still carries it, so these
  * checks can never pass by accident.
  *
- * The self-hosted faces are not in this workspace — see the delivery note at
- * the foot of skin-clear.css. The @font-face rules below are checked
- * generically so the guard already covers them when they land.
+ * The self-hosted faces are Fontsource's Latin-only files. These checks name
+ * every shipped family/weight so removing a face cannot silently fall back to
+ * a system font while the rest of the suite stays green.
  */
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -19,6 +19,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const srcDir = resolve(import.meta.dirname, '..')
+const projectDir = resolve(srcDir, '..')
 
 const read = (relativeToSrc: string): string =>
   readFileSync(resolve(srcDir, relativeToSrc), 'utf-8')
@@ -92,28 +93,46 @@ describe('every font role degrades to a real stack', () => {
   })
 })
 
-describe('self-hosted faces, when they land', () => {
-  const appOwnedCss = ['styles/skin-clear.css', 'styles/app-motion.css', 'styles/atmosphere.css']
-    .map((stylesheet) => code(read(stylesheet)))
-    .join('\n')
+describe('self-hosted faces are present', () => {
+  const skin = code(read('styles/skin-clear.css'))
+  const faces = [
+    ['rajdhani', 500],
+    ['rajdhani', 600],
+    ['rajdhani', 700],
+    ['oxanium', 400],
+    ['oxanium', 500],
+    ['oxanium', 600],
+    ['oxanium', 700],
+    ['space-grotesk', 400],
+    ['space-grotesk', 500],
+    ['space-grotesk', 700],
+  ] as const
 
-  const fontFaces = [...appOwnedCss.matchAll(/@font-face\s*\{([^}]*)\}/g)].map(
-    (match) => match[1],
-  )
+  it.each(faces)('ships @fontsource/%s Latin %i from this origin', (family, weight) => {
+    const importPath = `@fontsource/${family}/latin-${weight}.css`
+    expect(skin).toContain(`@import '${importPath}';`)
 
-  it('swaps rather than blocks, and is served from this origin', () => {
-    for (const face of fontFaces) {
-      expect(face).toMatch(/font-display:\s*swap/)
-      expect(face).not.toMatch(/url\(\s*['"]?https?:/)
-    }
+    const packageCss = readFileSync(
+      resolve(projectDir, 'node_modules', importPath),
+      'utf-8',
+    )
+    expect(packageCss).toMatch(/@font-face\s*\{/)
+    expect(packageCss).toMatch(new RegExp(`font-weight:\\s*${weight}`))
+    expect(packageCss).toMatch(/font-display:\s*swap/)
+    expect(packageCss).toMatch(/\.woff2\)/)
+    expect(packageCss).not.toMatch(/url\(\s*['"]?https?:/)
   })
 
-  it('records why there are none yet', () => {
-    // Deliberate: the packages that carry the woff2 files cannot be installed
-    // in this workspace. Deleting the note without shipping the faces should
-    // fail, because the absence would then look like an oversight.
-    if (fontFaces.length === 0) {
-      expect(read('styles/skin-clear.css')).toContain('NOT DELIVERED IN THIS WORKSPACE')
+  it('preloads only the above-the-fold display, data, and body faces', () => {
+    const preloads = [
+      'rajdhani/files/rajdhani-latin-700-normal.woff2',
+      'oxanium/files/oxanium-latin-700-normal.woff2',
+      'space-grotesk/files/space-grotesk-latin-500-normal.woff2',
+    ]
+
+    for (const preload of preloads) {
+      expect(indexHtml).toContain(`./node_modules/@fontsource/${preload}`)
     }
+    expect(indexHtml.match(/rel="preload"/g)).toHaveLength(3)
   })
 })

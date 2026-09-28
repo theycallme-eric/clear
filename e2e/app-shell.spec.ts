@@ -50,3 +50,80 @@ test('the skip link is the first thing a keyboard reaches', async ({
   const focused = page.locator(':focus')
   await expect(focused).toHaveAttribute('href', '#main')
 })
+
+test('the CLEAR type system loads from the app origin', async ({ page, visit }) => {
+  const fontResponses = new Set<string>()
+  await page.addInitScript(() => {
+    const metric = { value: 0 }
+    Object.defineProperty(window, '__clearFontLayoutShift', { value: metric })
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & {
+          hadRecentInput: boolean
+          value: number
+        }
+        if (!shift.hadRecentInput) metric.value += shift.value
+      }
+    }).observe({ type: 'layout-shift', buffered: true })
+  })
+  page.on('response', (response) => {
+    if (response.request().resourceType() === 'font') {
+      fontResponses.add(response.url())
+    }
+  })
+
+  await visit('/login')
+
+  const loaded = await page.evaluate(async () => {
+    const expected = [
+      ['Rajdhani', '700'],
+      ['Oxanium', '700'],
+      ['Space Grotesk', '500'],
+    ] as const
+
+    await Promise.all(
+      expected.map(([family, weight]) =>
+        document.fonts.load(`${weight} 32px "${family}"`, 'CLEAR SIGN IN'),
+      ),
+    )
+
+    return expected.map(([family, weight]) => ({
+      family,
+      weight,
+      available: document.fonts.check(
+        `${weight} 32px "${family}"`,
+        'CLEAR SIGN IN',
+      ),
+    }))
+  })
+
+  expect(loaded).toEqual([
+    { family: 'Rajdhani', weight: '700', available: true },
+    { family: 'Oxanium', weight: '700', available: true },
+    { family: 'Space Grotesk', weight: '500', available: true },
+  ])
+
+  const appOrigin = new URL(page.url()).origin
+  expect(fontResponses.size).toBeGreaterThanOrEqual(3)
+  for (const url of fontResponses) {
+    expect(new URL(url).origin).toBe(appOrigin)
+    expect(url).not.toMatch(/fonts\.(googleapis|gstatic)\.com/)
+  }
+
+  await expect(page.getByRole('heading', { level: 1 })).toHaveCSS(
+    'font-family',
+    /Rajdhani/,
+  )
+  await expect(page.locator('body')).toHaveCSS('font-family', /Space Grotesk/)
+
+  const fontLayoutShift = await page.evaluate(async () => {
+    await document.fonts.ready
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
+    })
+    return (
+      window as typeof window & { __clearFontLayoutShift: { value: number } }
+    ).__clearFontLayoutShift.value
+  })
+  expect(fontLayoutShift).toBeLessThanOrEqual(0.01)
+})
