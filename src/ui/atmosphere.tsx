@@ -7,9 +7,11 @@
  * it reads whatever `data-atmosphere` the document carries (ATOMIC.md §7.2),
  * which is what lets one mount serve every screen.
  *
- * Under `prefers-reduced-motion` the layer renders its static fallback: the
- * export's media query already stops the blob drift, and the scanlines — the
- * one remaining source of apparent movement — are dropped entirely.
+ * A small app-owned context can tune that level for a particular handoff
+ * without changing the documented level or every screen that shares it. Under
+ * `prefers-reduced-motion` the layer renders its static fallback: the export's
+ * media query already stops the blob drift, and the scanlines — the one
+ * remaining source of apparent movement — are dropped entirely.
  */
 import { useSyncExternalStore } from 'react'
 
@@ -32,13 +34,21 @@ function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(subscribeToReducedMotion, readReducedMotion)
 }
 
-export function AtmosphereLayer() {
+export type AtmosphereContext = 'auth'
+
+export interface AtmosphereLayerProps {
+  /** App-owned presentation context; intensity still comes from data-atmosphere. */
+  context?: AtmosphereContext
+}
+
+export function AtmosphereLayer({ context }: AtmosphereLayerProps = {}) {
   const prefersReducedMotion = usePrefersReducedMotion()
 
   return (
     <div
       aria-hidden="true"
       className="clr-atmosphere clr-atmosphere--fixed"
+      data-context={context}
       data-static={prefersReducedMotion ? 'true' : undefined}
     >
       <span className="clr-atmosphere__blob clr-atmosphere__blob--structure" />

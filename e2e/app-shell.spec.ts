@@ -96,6 +96,49 @@ test('the full atmosphere keeps every colored layer in the viewport', async ({
   }
 })
 
+test('the quiet auth atmosphere remains materially visible', async ({
+  page,
+  visit,
+}) => {
+  await visit('/login?mode=create')
+
+  const presentation = await page.locator('.clr-atmosphere').evaluate((layer) => {
+    const style = getComputedStyle(layer)
+    return {
+      context: (layer as HTMLElement).dataset.context,
+      opacity: Number(style.getPropertyValue('--atmosphere-opacity')),
+      dim: Number(style.getPropertyValue('--atmosphere-dim')),
+    }
+  })
+
+  expect(presentation).toEqual({
+    context: 'auth',
+    opacity: 0.26,
+    dim: 0.58,
+  })
+
+  const visibleFractions = await page
+    .locator('.clr-atmosphere__blob')
+    .evaluateAll((blobs) =>
+      blobs.map((blob) => {
+        const rect = blob.getBoundingClientRect()
+        const visibleWidth = Math.max(
+          0,
+          Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0),
+        )
+        const visibleHeight = Math.max(
+          0,
+          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0),
+        )
+        return (visibleWidth * visibleHeight) / (rect.width * rect.height)
+      }),
+    )
+
+  for (const visibleFraction of visibleFractions) {
+    expect(visibleFraction).toBeGreaterThan(0.25)
+  }
+})
+
 test('the CLEAR type system loads from the app origin', async ({ page, visit }) => {
   const fontResponses = new Set<string>()
   await page.addInitScript(() => {

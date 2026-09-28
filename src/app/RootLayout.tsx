@@ -10,7 +10,9 @@
  * two global attributes on `<html>`, which is what the viewport-fixed layer and
  * anything rendered outside the shell (native dialogs, toasts) inherit from;
  * IA.md §3 layer 2 states the shell itself carries it, which is what makes a
- * screen's own level readable from the rendered tree.
+ * screen's own level readable from the rendered tree. Auth also supplies the
+ * app-owned presentation context that keeps its quiet atmosphere perceptible;
+ * the level itself remains the IA's `quiet`.
  */
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
@@ -21,6 +23,7 @@ import { resolveAtmosphere } from './atmosphere'
 export function RootLayout() {
   const { pathname } = useLocation()
   const atmosphere = resolveAtmosphere(pathname)
+  const atmosphereContext = pathname === '/login' ? 'auth' : undefined
 
   useEffect(() => {
     document.documentElement.dataset.atmosphere = atmosphere
@@ -28,7 +31,7 @@ export function RootLayout() {
 
   return (
     <>
-      <AtmosphereLayer />
+      <AtmosphereLayer context={atmosphereContext} />
       <div className="clr-shell" data-atmosphere={atmosphere}>
         <div className="clr-shell__content">
           <Outlet />

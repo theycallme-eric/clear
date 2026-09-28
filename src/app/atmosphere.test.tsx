@@ -186,6 +186,20 @@ describe('atmosphere rendering', () => {
       'quiet',
     )
     expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute(
+      'data-context',
+      'auth',
+    )
+  })
+
+  it('scopes the stronger quiet presentation to the auth route', () => {
+    const authRender = renderApp(['/login'])
+    const auth = authRender.container.querySelector('.clr-atmosphere')
+    expect(auth).toHaveAttribute('data-context', 'auth')
+    authRender.unmount()
+
+    const welcome = renderApp(['/welcome']).container.querySelector('.clr-atmosphere')
+    expect(welcome).not.toHaveAttribute('data-context')
   })
 
   it('renders the export five-layer ground and hides it from assistive tech', () => {
