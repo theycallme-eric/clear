@@ -11,12 +11,14 @@ import { backend } from './support/backend'
  * rate-limited; running it inside every flow would buy one more proof of the
  * same thing and pay for it in every test.
  *
- * What it proves is the part a human normally performs: the project's
- * configured numeric code,
- * issued for a confirmed address and typed once, becomes a session through the
- * *public* verify endpoint with the *anon* key — the call a browser makes. No
- * inbox is involved, because `generate_link` hands the harness the same code
- * the mail would have carried.
+ * What it proves is one part a human performs: a project-issued numeric code,
+ * typed once, becomes a session through the *public* verify endpoint with the
+ * *anon* key — the call a browser makes.
+ *
+ * It deliberately does not prove delivery. `generate_link` returns the code
+ * without rendering the hosted email, so a live template that sends
+ * `{{ .ConfirmationURL }}` can still pass this spec. The committed template,
+ * read-only live drift check, and owner inbox acceptance cover that boundary.
  *
  * What it does not yet cover is the screen. AUTH-02 builds the send-and-verify
  * UI; when it lands, the browser half belongs here, in this file, and nowhere
