@@ -159,11 +159,14 @@ export function createAdminClient(options) {
     /**
      * Ask GoTrue for a one-time code without sending mail.
      *
-     * `generate_link` returns both halves of the OTP flow: the configured
-     * numeric email code
-     * `email_otp` a person would type, and the `hashed_token` a magic link
+     * `generate_link` returns both halves of the OTP flow: the numeric
+     * `email_otp` a person could type, and the `hashed_token` a magic link
      * carries. The harness uses the second to mint sessions in bulk; AUTH-02's
-     * focused test uses the first, which is the real code path a user walks.
+     * focused test uses the first to prove public verification.
+     *
+     * This endpoint does not render or deliver the hosted email template. It
+     * therefore cannot prove that a user actually receives `email_otp`; the
+     * template contract and live drift check own that separate boundary.
      *
      * @param {string} email
      */

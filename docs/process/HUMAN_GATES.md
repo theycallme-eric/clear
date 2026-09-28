@@ -12,7 +12,7 @@ Secret values are never pasted into chat, committed, or echoed into logs.
 | Live catalog export | DATA-02 | Use the captured 140-row live catalog plus taxonomy exports as the transformation input | Approve retiring the unsupported 173-row expectation through the REQ-008 disposition gate |
 | Browser Supabase client | DATA-03 | Add typed client and environment validation | Put the project URL and public anon key in the requested local/hosting environment |
 | Privileged E2E lifecycle | ENV-07 | Build seed/reset and RLS tests | Store the service-role/test credential in the named secret store |
-| OTP redirect behavior | AUTH-02 / AUTH-03 | Implement and test the client flow against configured URLs | Confirm deployed redirect URLs and email-auth behavior in the Supabase dashboard if configuration cannot be applied through the authenticated CLI |
+| OTP email delivery contract | AUTH-02 / AUTH-03 | Implement public send/verify, version the hosted email source, and compare the live template through the read-only Management API | Request a fresh inbox email and enter its numeric code on the deployed app; an admin-generated OTP does not prove email rendering or delivery |
 | Anthropic generation | GEN-02b | Build prompt, schema validation, and function boundary | Store `ANTHROPIC_API_KEY` in Supabase Edge Function secrets |
 | Merge | every issue | Open a tested PR with evidence | Review and merge, unless an explicit protected auto-merge policy is later approved |
 

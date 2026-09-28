@@ -23,7 +23,9 @@ cutover is declared done. Failures route to `docs/backend/rollback.md`.
 
 ## PC-3 Authentication
 
-- [x] **PC-3a** New-user email OTP signup completes on the deployed URL.
+- [x] **PC-3a1** A project-issued numeric OTP for a new user verifies through the public endpoint.
+- [ ] **PC-3a2** A newly requested inbox email renders the numeric code (not a magic link), and the
+      owner enters that delivered code to complete signup on the deployed URL.
 - [x] **PC-3b** Sign-in triggers profile creation in the new shape (`handle_new_user`
       replacement).
 - [x] **PC-3c** Redirect allow-list contains only the new deployment URLs.
@@ -54,7 +56,12 @@ cutover is declared done. Failures route to `docs/backend/rollback.md`.
 Record the run (date, commit, per-check result) in `docs/journal/` and link it from the cutover
 PR.
 
-All checks passed on 2026-09-28 at TASK-072 head `4aa90b3` plus the provider-timeout correction
-recorded in `docs/journal/2026-09-28.md`. Evidence: read-only `verify.sql`; the 48-check catalog
-seed/equivalence verifier; 99 live OTP, D6, and RLS checks; and the three-stage live
+TASK-072's automated checks passed on 2026-09-28 at head `4aa90b3` plus the provider-timeout
+correction recorded in `docs/journal/2026-09-28.md`. Evidence: read-only `verify.sql`; the 48-check
+catalog seed/equivalence verifier; 99 live OTP, D6, and RLS checks; and the three-stage live
 generation → persistence → reconstruction walk. Every disposable namespace was removed.
+
+Production UAT later proved that the automated OTP check had not covered the delivered email: the
+hosted template still rendered `{{ .ConfirmationURL }}`. Issue #185 changed the live template to
+`{{ .Token }}`, versioned it under `supabase/templates/`, and added a drift check. PC-3a2 remains
+open until an owner completes the flow using a newly delivered email.

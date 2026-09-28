@@ -10,6 +10,7 @@
     "dev": "node scripts/dev-preflight/preflight.mjs && vite",
     "backend:inventory": "bash scripts/backend-audit/inventory.sh",
     "backend:prereqs": "node scripts/backend-audit/check-prereqs.mjs",
+    "backend:auth-template": "node scripts/backend-audit/verify-auth-email-template.mjs",
     "backend:snapshot": "bash scripts/backend-audit/snapshot.sh",
     "build": "tsc --noEmit && vite build",
     "dag:ready": "python3 scripts/dag-ready.py",
