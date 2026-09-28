@@ -31,6 +31,11 @@ function mount(otp: FakeOtpClient, auth = createFakeAuthClient()) {
   return { auth, otp }
 }
 
+function mountCreateAccount(otp: FakeOtpClient, auth = createFakeAuthClient()) {
+  renderApp(['/login?mode=create'], { auth, otp })
+  return { auth, otp }
+}
+
 const emailField = () => screen.getByLabelText(/email/i)
 const codeField = () => screen.getByLabelText(/code/i)
 
@@ -49,6 +54,17 @@ describe('OTP login — requesting a code', () => {
     mount(createFakeOtpClient())
 
     expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
+    expect(emailField()).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
+  })
+
+  it('renders an explicit account-creation intent over the same passwordless flow', () => {
+    mountCreateAccount(createFakeOtpClient())
+
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Create account' }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/enter your email to create your account/i)).toBeInTheDocument()
     expect(emailField()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
   })

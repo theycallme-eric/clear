@@ -51,6 +51,51 @@ test('the skip link is the first thing a keyboard reaches', async ({
   await expect(focused).toHaveAttribute('href', '#main')
 })
 
+test('welcome exposes both auth paths inside a card', async ({ page, visit }) => {
+  await visit('/welcome')
+
+  const card = page.locator('.clr-card')
+  await expect(card).toHaveCount(1)
+  await expect(card.getByRole('button', { name: 'Sign in' })).toBeVisible()
+  await expect(card.getByRole('button', { name: 'Create account' })).toBeVisible()
+
+  await card.getByRole('button', { name: 'Create account' }).click()
+  await expect(page).toHaveURL(/\/login\?mode=create$/)
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'Create account' }),
+  ).toBeVisible()
+  await expect(page.locator('main .clr-card')).toHaveCount(1)
+})
+
+test('the full atmosphere keeps every colored layer in the viewport', async ({
+  page,
+  visit,
+}) => {
+  await visit('/welcome')
+
+  const visibleFractions = await page
+    .locator('.clr-atmosphere__blob')
+    .evaluateAll((blobs) =>
+      blobs.map((blob) => {
+        const rect = blob.getBoundingClientRect()
+        const visibleWidth = Math.max(
+          0,
+          Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0),
+        )
+        const visibleHeight = Math.max(
+          0,
+          Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0),
+        )
+        return (visibleWidth * visibleHeight) / (rect.width * rect.height)
+      }),
+    )
+
+  expect(visibleFractions).toHaveLength(3)
+  for (const visibleFraction of visibleFractions) {
+    expect(visibleFraction).toBeGreaterThan(0.25)
+  }
+})
+
 test('the CLEAR type system loads from the app origin', async ({ page, visit }) => {
   const fontResponses = new Set<string>()
   await page.addInitScript(() => {

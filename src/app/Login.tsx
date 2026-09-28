@@ -5,7 +5,8 @@
  * onboarding question is a profile question, and this screen reads no profile).
  * Composition is `AuthLayout › PageHeader + Card › Input + CTAButton` — the
  * shell and its atmosphere come from `RootLayout`, `PageHeader` is `AppHeader`,
- * and the two steps share one card.
+ * and the two steps share one card. `?mode=create` keeps first-run intent
+ * explicit through refresh and history while using the same OTP backend.
  *
  * Two things here are the requirement rather than decoration:
  *
@@ -35,6 +36,7 @@
  * outside that subtree and appears with no entrance animation, per IA.md §4.
  */
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import type { OtpError } from '../data/otp'
 import { isCodeLike, isEmailLike, otpError } from '../data/otp'
@@ -61,8 +63,11 @@ export function Login() {
 }
 
 function LoginScreen() {
+  const [searchParams] = useSearchParams()
   const { otp, auth } = useSignInClients()
   const cooldown = useCountdown()
+  const isCreatingAccount = searchParams.get('mode') === 'create'
+  const screenTitle = isCreatingAccount ? 'Create account' : 'Sign in'
 
   const [step, setStep] = useState<Step>('request')
   const [email, setEmail] = useState('')
@@ -170,10 +175,12 @@ function LoginScreen() {
       <AppHeader>
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="Sign in">
+      <Screen title={screenTitle}>
         <div className="clr-stack">
           <p>
-            We email a one-time code. No password to forget.
+            {isCreatingAccount
+              ? 'Enter your email to create your account. We’ll send a one-time code.'
+              : 'We email a one-time code. No password to forget.'}
           </p>
 
           <Card>
