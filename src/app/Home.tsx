@@ -45,10 +45,8 @@
  *      written on the way — Review's own Start is where the session begins to
  *      exist, exactly as it is for a generated workout.
  *
- * `/history/:id` is declared in `SCREEN_ATMOSPHERE` and routed by a requirement
- * that has not landed yet (HIST-01's detail screen). It is linked by the IA's
- * own path, exactly as `src/app/atmosphere.ts` anticipates, rather than replaced
- * by a control that does something else. `/review` *is* routed now, because
+ * Recent workouts open `/history/:id`, HIST-01's Session Detail, by the IA's own
+ * path (`sessionDetailPath`) — the same one History's rows use. `/review` *is* routed now, because
  * FAV-01's restart has to land there; carrying a *generated* workout across
  * that hand-off is still REV-01's to own, because GEN-03's state belongs to
  * whoever owns the Generate → Loading → Review journey and that owner is not
