@@ -184,6 +184,9 @@ jobs:
       - name: Walk location management against the deployed head
         run: npx playwright test e2e/settings-locations.spec.ts --project=mobile
 
+      - name: Walk appearance persistence against the deployed head
+        run: npx playwright test e2e/settings-appearance.spec.ts --project=mobile
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
