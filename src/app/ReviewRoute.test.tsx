@@ -452,8 +452,8 @@ describe('ReviewRoute · a restart from session detail', () => {
     await user.click(screen.getByRole('button', { name: SESSION_DETAIL_RESTART_LABEL }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(REVIEW_PATH))
+    expect(await screen.findByRole('button', { name: START_LABEL })).toBeEnabled()
     expect(await briefing(TITLE)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: START_LABEL })).toBeEnabled()
     expect(readReviewHandoff(router.state.location.state)?.savedWorkoutId).toBeNull()
     expect(client.calls).toEqual([])
     expect(double.favorites()).toEqual([])
