@@ -17,18 +17,46 @@
  * turned into words by `sessionDetail`, and turned into markup by the parts in
  * `src/ui/session-detail.tsx`. The screen arranges those three and nothing
  * else, so there is no fourth, per-screen idea of what a session contained.
+ *
+ * **Two actions, independent of each other (REQ-003).** Save as favorite is
+ * Summary's own control, and Restart hands the session's stored prescription to
+ * `/review` — rebuilt by `restartAcceptance`, with no generation call and no
+ * favorite required. Neither reads the other's outcome: a failed save leaves
+ * Restart exactly as it was, and restarting creates no favorite. A session
+ * already running elsewhere is `ActiveSessionPrompt`'s question, asked above
+ * this route before either action is reachable.
  */
-import { useMemo, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
-import { AppHeader, ArrowLeft, Button, ClearLogo } from '../design-system/index'
-import { ErrorCode, type AppError } from '../state/errors'
+import {
+  AlertCircle,
+  AppHeader,
+  ArrowLeft,
+  Button,
+  ClearLogo,
+  Info,
+  Play,
+} from '../design-system/index'
+import { ErrorCode, isErr, type AppError } from '../state/errors'
+import { todayLocal } from '../state/favorites'
 import { useSessionDetailQuery } from '../state/history-queries'
+import { reviewHandoff } from '../state/review-handoff'
+import type { SessionReconstruction } from '../state/schemas'
 import { sessionDetail, type SessionDetailView } from '../state/session-detail'
+import {
+  RESTART_FAILED_MESSAGE,
+  restartAcceptance,
+  restartEligibility,
+  restartFailureMessage,
+} from '../state/session-restart'
+import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
 import { MoodReading } from '../ui/mood'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
+import { FavoriteToggle } from './FavoriteToggle'
+import { REVIEW_PATH } from './ReviewRoute'
 import { Screen } from './Screen'
 
 /** Document title and route announcement; the h1 is the workout's own title. */
@@ -44,6 +72,7 @@ export const SESSION_DETAIL_MOOD_LABEL = 'Mood'
 export const SESSION_DETAIL_NOTES_LABEL = 'Notes'
 export const SESSION_DETAIL_NO_NOTES = 'No notes'
 export const SESSION_DETAIL_SECTIONS_LABEL = 'Sections'
+export const SESSION_DETAIL_RESTART_LABEL = 'Restart'
 
 const HISTORY_PATH = '/history'
 
@@ -118,7 +147,8 @@ export function SessionDetail() {
             onOpenHistory={() => void navigate(HISTORY_PATH)}
           />
         ) : (
-          view !== null && <SessionDetailBody view={view} />
+          payload !== null &&
+          view !== null && <SessionDetailBody view={view} record={payload} />
         )}
       </Screen>
     </>
@@ -147,7 +177,13 @@ function SessionDetailError({
 }
 
 /** The populated record: what it was, where the answer came from, and each section. */
-function SessionDetailBody({ view }: { view: SessionDetailView }) {
+function SessionDetailBody({
+  view,
+  record,
+}: {
+  view: SessionDetailView
+  record: SessionReconstruction
+}) {
   return (
     <div style={STACK_STYLE}>
       <p style={META_STYLE}>
@@ -158,6 +194,8 @@ function SessionDetailBody({ view }: { view: SessionDetailView }) {
         <span>Intensity {view.intensity}/10</span>
       </p>
       <SessionProvenance provenance={view.provenance} />
+
+      <SessionActions record={record} />
 
       <Card>
         <div style={STACK_STYLE}>
@@ -182,5 +220,94 @@ function SessionDetailBody({ view }: { view: SessionDetailView }) {
         ))}
       </section>
     </div>
+  )
+}
+
+const NOTICE_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-200)',
+  margin: 0,
+}
+
+/**
+ * Restart and Save as favorite, side by side and unaware of each other.
+ *
+ * Restart reads the session's *intended at start* reconstruction when tapped —
+ * the prescription as it stood before anything was logged, which is also what a
+ * favorite saves — and hands it to Review. A rebuild that fails is reported
+ * here and the user stays here; nothing was written, so the original session
+ * is exactly as it was. Eligibility is decided from the record already on
+ * screen, so an unavailable Restart is explained before anyone taps it.
+ *
+ * The favorite is offered for a completed session only: saving one counts it
+ * as the favorite's first completion, which an abandoned session is not.
+ */
+function SessionActions({ record }: { record: SessionReconstruction }) {
+  const navigate = useNavigate()
+  const { sessions } = useWorkoutClients()
+  const eligibility = restartEligibility(record)
+  const sessionId = record.session.id
+
+  const [restarting, setRestarting] = useState(false)
+  const [failure, setFailure] = useState<string | null>(null)
+
+  async function restart() {
+    setRestarting(true)
+    setFailure(null)
+
+    const intended = await sessions.asIntendedAtStart(sessionId)
+    if (isErr(intended)) {
+      setRestarting(false)
+      setFailure(RESTART_FAILED_MESSAGE)
+      return
+    }
+
+    const acceptance = restartAcceptance(intended.value, todayLocal())
+    if (isErr(acceptance)) {
+      setRestarting(false)
+      setFailure(restartFailureMessage(acceptance.error))
+      return
+    }
+
+    // No favorite id: a restart belongs to no favorite, so Review's Start
+    // writes a plain session and no attempt row.
+    await navigate(REVIEW_PATH, { state: reviewHandoff(acceptance.value) })
+  }
+
+  return (
+    <Card>
+      <div style={STACK_STYLE}>
+        <div className="clr-stack clr-stack--tight">
+          <span className="label">{SESSION_DETAIL_RESTART_LABEL}</span>
+          {failure !== null && (
+            <p role="alert" style={{ ...NOTICE_STYLE, color: 'var(--text-negative)' }}>
+              <span aria-hidden="true" style={{ display: 'flex' }}>
+                <AlertCircle size={16} />
+              </span>
+              {failure}
+            </p>
+          )}
+          {eligibility.available ? (
+            <Button
+              variant="primary"
+              icon={<Play size={20} />}
+              loading={restarting}
+              onClick={() => void restart()}
+            >
+              {SESSION_DETAIL_RESTART_LABEL}
+            </Button>
+          ) : (
+            <p style={NOTICE_STYLE}>
+              <span aria-hidden="true" style={{ display: 'flex' }}>
+                <Info size={16} />
+              </span>
+              {eligibility.message}
+            </p>
+          )}
+        </div>
+        {record.state === 'completed' && <FavoriteToggle sessionId={sessionId} />}
+      </div>
+    </Card>
   )
 }
