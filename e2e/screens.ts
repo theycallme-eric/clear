@@ -60,6 +60,15 @@ export const SCREENS: readonly E2eScreen[] = [
   // Welcome like `/review`; its four states, filter and paging are covered by
   // `src/app/History.test.tsx`.
   { path: '/history', route: '/history', title: 'Welcome · CLEAR', heading: 'CLEAR' },
+  // HIST-01's detail is protected too; the preview resolves it to Welcome. Its
+  // loading, error and populated states are covered by
+  // `src/app/SessionDetail.test.tsx`.
+  {
+    path: '/history/c0000001-0000-4000-8000-000000000000',
+    route: '/history/:id',
+    title: 'Welcome · CLEAR',
+    heading: 'CLEAR',
+  },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {
