@@ -80,6 +80,9 @@ describe('History route', () => {
       await screen.findByRole('heading', { level: 1, name: 'History' }),
     ).toBeInTheDocument()
     expect(await historyList()).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Session 1' }),
+    ).toBeInTheDocument()
 
     // No new level: whatever SCREEN_ATMOSPHERE says for History, and that is quiet.
     expect(screenAtmosphere('History')).toBe('quiet')
@@ -162,6 +165,9 @@ describe('History route', () => {
     // The gap between the two sessions is a rest entry: glyph-labelled word,
     // not a session heading, and never a link.
     expect(within(list).getAllByText('Rest').length).toBeGreaterThan(0)
+    expect(
+      within(list).getAllByRole('heading', { level: 2, name: 'Rest' }).length,
+    ).toBeGreaterThan(0)
 
     await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'rest')
     const restOnly = await historyList()
