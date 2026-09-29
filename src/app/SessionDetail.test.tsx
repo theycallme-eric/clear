@@ -1,19 +1,41 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import type { SessionsClient } from '../data/sessions'
 import { createError, err, ok, ErrorCode } from '../state/errors'
+import { readReviewHandoff } from '../state/review-handoff'
 import type { SessionReconstruction } from '../state/schemas'
-import { renderApp, signedIn } from '../test/render'
-import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
+import {
+  RESTART_FAILED_MESSAGE,
+  RESTART_NOT_COMPLETED_MESSAGE,
+  RESTART_UNSUPPORTED_MESSAGE,
+} from '../state/session-restart'
+import { createFakeGenerationClient } from '../test/generation-double'
+import { AppProviders, renderApp, signedIn } from '../test/render'
+import {
+  createWorkoutDouble,
+  reconstructionFixture,
+  savedWorkoutFixture,
+  snapshotFixture,
+  type WorkoutDoubleOptions,
+} from '../test/workout-double'
 import { screenAtmosphere } from './atmosphere'
+import {
+  SAVE_FAVORITE_FAILED,
+  SAVE_FAVORITE_LABEL,
+  SAVED_FAVORITE_LABEL,
+} from './FavoriteToggle'
 import { HISTORY_LIST_LABEL } from './History'
+import { REVIEW_PATH } from './ReviewRoute'
+import { routes } from './router'
 import {
   SESSION_DETAIL_ERROR_TITLE,
   SESSION_DETAIL_LOADING_LABEL,
   SESSION_DETAIL_NOT_FOUND_ACTION,
   SESSION_DETAIL_NOT_FOUND_TITLE,
+  SESSION_DETAIL_RESTART_LABEL,
 } from './SessionDetail'
 
 /**
@@ -299,5 +321,249 @@ describe('Session Detail entries', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
     expect(recording.asked).toEqual([SESSION_ID])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-003 · JOURNEY-004 — save as favorite and restart, independently
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ONE_EXERCISE = [{ title: 'Main', blocks: [{ exercises: ['completed' as const] }] }]
+
+/** The intended-at-start reading a restart and a favorite are both built from. */
+function intendedRecord(
+  overrides: Partial<SessionReconstruction['session']> = {},
+  sections: typeof ONE_EXERCISE = ONE_EXERCISE,
+): SessionReconstruction {
+  return reconstructionFixture({
+    sessionId: SESSION_ID,
+    title: 'Full-body conditioning',
+    state: 'completed',
+    reconstruction: 'intended_at_start',
+    sections,
+    session: overrides,
+  })
+}
+
+/** A legacy record: readable, but recorded under a contract this build cannot validate. */
+function withContract(record: SessionReconstruction, version: string): SessionReconstruction {
+  return { ...record, session: { ...record.session, contract_version: version } }
+}
+
+/**
+ * The detail on the real route tree, entered from History, over a sessions
+ * client that answers the record and its intended-at-start reading and records
+ * every time the second one is asked.
+ */
+function mountDetail(
+  options: { record?: SessionReconstruction; workout?: WorkoutDoubleOptions } = {},
+) {
+  const generation = createFakeGenerationClient()
+  const intendedAsked: string[] = []
+  const double = createWorkoutDouble({
+    session: null,
+    ...options.workout,
+    sessions: {
+      asPerformed: async () => ok(options.record ?? fullRecord()),
+      asIntendedAtStart: async (sessionId) => {
+        intendedAsked.push(sessionId)
+        return ok(intendedRecord())
+      },
+      ...options.workout?.sessions,
+    },
+  })
+  const router = createMemoryRouter(routes, {
+    initialEntries: ['/history', DETAIL_PATH],
+    initialIndex: 1,
+  })
+  render(
+    <AppProviders {...signedIn({ workout: double.clients, generation })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  return { router, double, generation, intendedAsked }
+}
+
+async function detailShown() {
+  await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' })
+}
+
+function restartButton(): HTMLElement | null {
+  return screen.queryByRole('button', { name: SESSION_DETAIL_RESTART_LABEL })
+}
+
+async function tapRestart(user: ReturnType<typeof userEvent.setup>) {
+  const button = restartButton()
+  if (button === null) throw new Error('Restart is not offered')
+  await user.click(button)
+}
+
+describe('Session Detail · save as favorite', () => {
+  it('saves in one tap, the way Summary does, and reports saved without leaving', async () => {
+    const user = userEvent.setup()
+    const { router, double, generation } = mountDetail()
+    await detailShown()
+
+    await user.click(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL }))
+
+    expect(await screen.findByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeNull()
+    expect(double.favorites().map((row) => row.original_session_id)).toEqual([SESSION_ID])
+    expect(router.state.location.pathname).toBe(DETAIL_PATH)
+    expect(generation.calls).toEqual([])
+    // Saving is not restarting: Restart is still on offer, unchanged.
+    expect(restartButton()).toBeEnabled()
+  })
+
+  it('reports a failed save in place and leaves Restart as it was', async () => {
+    const user = userEvent.setup()
+    const { router, double } = mountDetail({
+      workout: {
+        favoritesClient: {
+          save: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)),
+        },
+      },
+    })
+    await detailShown()
+
+    await user.click(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL }))
+
+    expect(await screen.findByText(SAVE_FAVORITE_FAILED)).toBeInTheDocument()
+    // The retry is the same tap, and the failure is the favorite's alone.
+    expect(screen.getByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(restartButton()).toBeEnabled()
+    expect(double.favorites()).toEqual([])
+    expect(router.state.location.pathname).toBe(DETAIL_PATH)
+  })
+
+  it('reads the favorites list to know this session is already saved', async () => {
+    const { intendedAsked } = mountDetail({
+      workout: { favorites: [savedWorkoutFixture({ original_session_id: SESSION_ID })] },
+    })
+    await detailShown()
+
+    expect(await screen.findByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeNull()
+    // Known from the list, not from a reconstruction or a flag of its own.
+    expect(intendedAsked).toEqual([])
+  })
+
+  it('offers to save when the list holds only other sessions’ favorites', async () => {
+    mountDetail({
+      workout: {
+        favorites: [
+          savedWorkoutFixture({ original_session_id: 'c0000009-0000-4000-8000-000000000000' }),
+        ],
+      },
+    })
+    await detailShown()
+
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(screen.queryByText(SAVED_FAVORITE_LABEL)).toBeNull()
+  })
+})
+
+describe('Session Detail · restart', () => {
+  it('hands the reconstructed workout to /review without generation or a favorite', async () => {
+    const user = userEvent.setup()
+    const { router, double, generation, intendedAsked } = mountDetail()
+    await detailShown()
+
+    await tapRestart(user)
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(REVIEW_PATH))
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start workout' })).toBeInTheDocument()
+
+    const handoff = readReviewHandoff(router.state.location.state)
+    expect(handoff?.savedWorkoutId).toBeNull()
+    expect(handoff?.acceptance.workout.title).toBe('Full-body conditioning')
+    expect(handoff?.acceptance.contract_version).toBe('4.1.0')
+
+    expect(intendedAsked).toEqual([SESSION_ID])
+    expect(generation.calls).toEqual([])
+    expect(double.favorites()).toEqual([])
+  })
+
+  it('keeps a legacy contract viewable, with Restart unavailable and explained', async () => {
+    const { intendedAsked } = mountDetail({ record: withContract(fullRecord(), '3.0.0') })
+    await detailShown()
+
+    expect(screen.getByRole('button', { name: /Strength/ })).toBeInTheDocument()
+    expect(screen.getByText(RESTART_UNSUPPORTED_MESSAGE)).toBeInTheDocument()
+    expect(restartButton()).toBeNull()
+    expect(intendedAsked).toEqual([])
+  })
+
+  it('names an unvalidatable contract version on the tap rather than failing obscurely', async () => {
+    const user = userEvent.setup()
+    const { router, generation } = mountDetail({
+      workout: {
+        sessions: {
+          asIntendedAtStart: async () => ok(intendedRecord({ contract_version: '3.0.0' })),
+        },
+      },
+    })
+    await detailShown()
+
+    await tapRestart(user)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(RESTART_UNSUPPORTED_MESSAGE)
+    expect(router.state.location.pathname).toBe(DETAIL_PATH)
+    expect(generation.calls).toEqual([])
+  })
+
+  it('reports a rebuild that fails validation on the detail and stays put', async () => {
+    const user = userEvent.setup()
+    const { router, generation } = mountDetail({
+      workout: {
+        // Nothing to rebuild: a workout with no exercises is not a prescription.
+        sessions: { asIntendedAtStart: async () => ok(intendedRecord({}, [])) },
+      },
+    })
+    await detailShown()
+
+    await tapRestart(user)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(RESTART_FAILED_MESSAGE)
+    expect(router.state.location.pathname).toBe(DETAIL_PATH)
+    expect(restartButton()).toBeEnabled()
+    expect(screen.getByText('Legs heavy, moved well after set two.')).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+  })
+
+  it('reports a failed read of the stored prescription the same way', async () => {
+    const user = userEvent.setup()
+    const { router } = mountDetail({
+      workout: {
+        sessions: {
+          asIntendedAtStart: async () => err(createError(ErrorCode.NETWORK_OFFLINE)),
+        },
+      },
+    })
+    await detailShown()
+
+    await tapRestart(user)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(RESTART_FAILED_MESSAGE)
+    expect(router.state.location.pathname).toBe(DETAIL_PATH)
+  })
+
+  it('offers neither action for a session that was not completed, and says why', async () => {
+    mountDetail({ record: { ...fullRecord(), state: 'abandoned' } })
+    await detailShown()
+
+    expect(screen.getByText(RESTART_NOT_COMPLETED_MESSAGE)).toBeInTheDocument()
+    expect(restartButton()).toBeNull()
+    expect(screen.queryByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeNull()
+  })
+
+  it('asks about a running session before a restart can replace it', async () => {
+    mountDetail({ workout: { session: snapshotFixture({ state: 'active' }) } })
+
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('button', { name: /Resume/ })).toBeInTheDocument()
   })
 })
