@@ -444,8 +444,15 @@ the spec markdown. §5's ladders are the same shape — `sparsePolicy` for the 0
 decayed, so `suggestLoad` answers `weight: null` and no screen can render a confident number from
 four months ago. `suggestLoad` is the whole pipeline in one place: decay, inversion at the prescribed
 reps and RIR, the rule's step, the equipment increment, then §1's 110% clamp — with the confidence
-tier and session count returned beside every number, never after it. Nothing calls it yet; the Review
-surface is OVR-01c's and the post-generation weight fill is OVR-02's.
+tier and session count returned beside every number, never after it. The post-generation weight fill
+is OVR-02's. OVR-01c's Review surface is the first caller. `src/app/Review.tsx` reads
+`useLoadAnchorsQuery` and `useAnchorEvidenceQuery` (`src/state/anchor-queries.ts`), and
+`reviewLoadSuggestions` in `src/state/load-suggestions.ts` turns them into one view per anchored
+prescription. `src/ui/load-suggestion.tsx` renders that view: the affordance, the "why this number"
+`Dialog`, and the reads' inline loading and error states, which never gate the briefing. A
+per-session override exists only as Review state until Start, when `applyLoadOverrides` writes it
+into the acceptance payload as that prescription's `absolute` load. Nothing on Review writes an
+anchor.
 
 One thing genuinely cannot follow a token, and that is why `src/app/favicon.ts` exists: a favicon
 reads no stylesheet. The mark is therefore committed once per skin under `public/icons/`, outside
