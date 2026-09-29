@@ -25,10 +25,13 @@ import {
   type Result,
 } from '../../../src/state/errors.ts'
 import type { Logger } from '../../../src/state/logger.ts'
+import { conditioningDirectiveOf } from '../../../src/state/conditioning.ts'
 import {
+  conditioningHistorySchema,
   loadAnchorListSchema,
   parseBoundary,
   userConstraintRowSchema,
+  type ConditioningHistoryRow,
   type GenerationRequest,
   type GenerationSuccess,
 } from '../../../src/state/schemas.ts'
@@ -67,6 +70,8 @@ export interface GenerationDatabase {
   constraints(userId: string): Promise<Result<readonly UserConstraint[], AppError>>
   recentHistory(userId: string): Promise<Result<RecentHistory, AppError>>
   anchors(userId: string): Promise<Result<readonly AnchorHistory[], AppError>>
+  /** OVR-03: the scored conditioning blocks the density directive is read over. */
+  conditioning(userId: string): Promise<Result<readonly ConditioningHistoryRow[], AppError>>
 }
 
 /** PostgREST reads through the caller's JWT, so RLS remains the authority. */
@@ -231,6 +236,25 @@ export function createGenerationDatabase(config: GenerationDatabaseConfig): Gene
 
       return ok(rows.value.map((anchor) => ({ anchor })))
     },
+
+    async conditioning(userId) {
+      const source = 'conditioning_history'
+      const payload = await requestJson(
+        `/rpc/${source}`,
+        {
+          method: 'POST',
+          // The function's own default window, as the client's read leaves it:
+          // one bound for both consumers, documented where it is declared.
+          body: JSON.stringify({ p_user_id: userId }),
+        },
+        source,
+      )
+      if (!payload.ok) return payload
+
+      return parseBoundary(conditioningHistorySchema, payload.value, {
+        code: ErrorCode.PERSISTENCE_READ_FAILED,
+      })
+    },
   }
 }
 
@@ -264,17 +288,32 @@ export async function performGeneration(
 ): Promise<Result<Omit<GenerationSuccess, 'requestId'>, AppError>> {
   const { requestId, logger, userId } = context
 
-  const [candidateResult, constraintResult, historyResult, anchorResult] = await Promise.all([
-    deps.db.candidates(request, userId),
-    deps.db.constraints(userId),
-    deps.db.recentHistory(userId),
-    deps.db.anchors(userId),
-  ])
+  const [candidateResult, constraintResult, historyResult, anchorResult, conditioningResult] =
+    await Promise.all([
+      deps.db.candidates(request, userId),
+      deps.db.constraints(userId),
+      deps.db.recentHistory(userId),
+      deps.db.anchors(userId),
+      deps.db.conditioning(userId),
+    ])
 
   if (!candidateResult.ok) return err({ ...candidateResult.error, requestId })
   if (!constraintResult.ok) return err({ ...constraintResult.error, requestId })
   if (!historyResult.ok) return err({ ...historyResult.error, requestId })
   if (!anchorResult.ok) return err({ ...anchorResult.error, requestId })
+
+  // OVR-03's density directive, decided here in code and never by the model. A
+  // failed read resolves to no directive rather than failing the workout: the
+  // nudge is a refinement, and an unread history is not a `hold`.
+  if (!conditioningResult.ok) {
+    logger?.warn('conditioning history unavailable; no density directive', {
+      requestId,
+      code: conditioningResult.error.code,
+    })
+  }
+  const conditioning = conditioningResult.ok
+    ? conditioningDirectiveOf(conditioningResult.value)
+    : null
 
   const effective = resolveEffectiveRequest({
     requestId,
@@ -299,6 +338,7 @@ export async function performGeneration(
       anchors: anchorResult.value,
       today: request.date,
       deload: request.deload,
+      conditioningTrend: conditioning?.conditioning_trend ?? null,
     }),
   }
 
@@ -309,6 +349,8 @@ export async function performGeneration(
     candidates: input.sections.reduce((total, section) => total + section.candidates.length, 0),
     history: input.history.focuses.length,
     anchors: input.training.anchors.length,
+    conditioningTrend: conditioning?.conditioning_trend ?? null,
+    conditioningReason: conditioning?.reason ?? null,
   })
 
   const composed = await deps

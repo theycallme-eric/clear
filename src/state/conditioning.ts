@@ -17,7 +17,8 @@
  *      exercises, same targets, same clock, same loads. Anywhere else there is
  *      no comparison, because §3(a) is explicit that a false one is worse than
  *      none.
- *   3. **The nudge** (`conditioningTrend`, `densitySuggestion`) — for freshly
+ *   3. **The nudge** (`conditioningTrend`, `conditioningDirective`,
+ *      `densitySuggestion`) — for freshly
  *      generated conditioning, progress is not measured but *prescribed*: a
  *      rolling read over the last three conditioning sections at intensity ≥ 5
  *      says `ready`, `hold` or `backing_off`, and the per-format suggestion says
@@ -842,7 +843,7 @@ function percent(fraction: number): string {
  */
 export interface ConditioningDirective {
   readonly conditioning_trend: ConditioningTrend
-  /** How many sections the window actually held, of `TREND_WINDOW`. */
+  /** How many sections the window held — always `TREND_WINDOW` when there is a directive. */
   readonly sections_read: number
   readonly reason: string
 }
@@ -853,21 +854,36 @@ const DIRECTIVE_REASON: Readonly<Record<ConditioningTrend, string>> = {
   hold: 'not two consecutive sections either way',
 }
 
-/** The directive for a history, ready to pass to generation. */
+/**
+ * The directive for a history, ready to pass to generation — or **null** when
+ * the window does not yet hold `TREND_WINDOW` qualifying sections.
+ *
+ * §3 reads "the last 3 conditioning sections at intensity ≥5", and a user with
+ * two has not got a last three. `hold` there would be a guess wearing the
+ * vocabulary of a read, so the answer is no directive and the request omits
+ * the line. The model is never asked to infer one: this function is the only
+ * place a trend is decided.
+ */
 export function conditioningDirective(
   sections: readonly ConditioningSectionRead[],
-): ConditioningDirective {
+): ConditioningDirective | null {
   const window = densityWindow(sections)
+  if (window.length < TREND_WINDOW) return null
+
   const trend = conditioningTrend(sections)
 
   return {
     conditioning_trend: trend,
     sections_read: window.length,
-    reason:
-      window.length < CONSECUTIVE_SECTIONS
-        ? `only ${window.length} conditioning section${window.length === 1 ? '' : 's'} at intensity ${DENSITY_INTENSITY_FLOOR} or above`
-        : DIRECTIVE_REASON[trend],
+    reason: DIRECTIVE_REASON[trend],
   }
+}
+
+/** The directive straight from `conditioning_history(...)` rows, newest first. */
+export function conditioningDirectiveOf(
+  rows: readonly ConditioningHistoryRow[],
+): ConditioningDirective | null {
+  return conditioningDirective(conditioningSections(rows))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
