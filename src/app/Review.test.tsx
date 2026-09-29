@@ -19,11 +19,35 @@ import { describe, expect, it } from 'vitest'
 
 import { Route, Routes } from 'react-router-dom'
 
+import type { AnchorsClient } from '../data/anchors'
 import { Constants } from '../data/database.types'
 import type { SessionsClient } from '../data/sessions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
-import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
+import {
+  LOW_CONFIDENCE_LABEL,
+  OVERRIDE_SCOPE_NOTE,
+  reviewLoadSuggestions,
+  sessionCountText,
+  weightText,
+} from '../state/load-suggestions'
+import type {
+  AnchorEvidenceRow,
+  LoadAnchorRow,
+  SessionAcceptance,
+  SessionSnapshot,
+} from '../state/schemas'
 import { makeSessionAcceptance, makeStructureSpectrumWorkout } from '../test/factories'
+import {
+  anchorRow,
+  evidenceRows,
+  suggestionAcceptance,
+} from '../test/load-suggestion-fixtures'
+import {
+  APPLY_OVERRIDE_LABEL,
+  SUGGESTIONS_ERROR_TITLE,
+  SUGGESTIONS_LOADING_LABEL,
+  WHY_TITLE,
+} from '../ui/load-suggestion'
 import { renderWithProviders, signedIn } from '../test/render'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import { REGENERATE_LABEL, Review, START_LABEL } from './Review'
@@ -55,6 +79,11 @@ interface HarnessOptions {
   startFails?: boolean
   /** Hold `accept` open, so the in-flight state can be observed. */
   holdAccept?: boolean
+  /** OVR-01c: the stored anchors and the working sets behind them. */
+  anchorRows?: readonly LoadAnchorRow[]
+  anchorEvidence?: readonly AnchorEvidenceRow[]
+  /** Overrides for the anchors client, for the reads that fail or hang. */
+  anchors?: Partial<AnchorsClient>
 }
 
 function sessionsDouble(
@@ -94,6 +123,9 @@ function renderReview(
   const workout = createWorkoutDouble({
     session: null,
     sessions: sessionsDouble(recorder, options),
+    anchorRows: options.anchorRows,
+    anchorEvidence: options.anchorEvidence,
+    anchors: options.anchors,
   })
 
   const view = renderWithProviders(
@@ -489,5 +521,190 @@ describe('Start hands off to SES-01', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: REGENERATE_LABEL })).toBeDisabled(),
     )
+  })
+})
+
+/**
+ * OVR-01c. The acceptance here has two primary lifts: back squat, which has an
+ * anchor and three sets of evidence behind it, and bench press, which has
+ * neither. The expected number is always the one `reviewLoadSuggestions`
+ * answers for the same inputs, so the screen is held to the rule table rather
+ * than to a figure restated in the test.
+ */
+describe('the suggested load, its confidence, and why', () => {
+  const SQUAT_DAY = suggestionAcceptance()
+  /** The affordance, in any of its three readings. */
+  const SUGGESTION_NAME = /^(Suggested|No suggested weight|Your weight)/
+
+  function expectedSuggestion(anchors: readonly LoadAnchorRow[] = [anchorRow()]) {
+    const [view] = [
+      ...reviewLoadSuggestions({
+        acceptance: SQUAT_DAY,
+        anchors,
+        evidence: evidenceRows(),
+      }).values(),
+    ]
+    if (view?.weight == null) throw new Error('expected a weighted suggestion')
+    return { ...view, weight: view.weight }
+  }
+
+  function renderSquatDay(options: HarnessOptions = {}) {
+    return renderReview({
+      acceptance: SQUAT_DAY,
+      anchorRows: [anchorRow()],
+      anchorEvidence: evidenceRows(),
+      ...options,
+    })
+  }
+
+  it('shows the rule table’s weight with its session-count confidence', async () => {
+    renderSquatDay()
+    const expected = expectedSuggestion()
+
+    const suggestion = await screen.findByRole('button', { name: SUGGESTION_NAME })
+    expect(suggestion).toHaveTextContent(weightText(expected.weight, 'kg'))
+    expect(suggestion).toHaveTextContent(sessionCountText(4))
+  })
+
+  it('shows no suggestion, and no zero, where there is no anchor', async () => {
+    renderSquatDay()
+    await screen.findByRole('button', { name: SUGGESTION_NAME })
+
+    // One anchored lift, one suggestion: bench press has none at all.
+    expect(screen.getAllByRole('button', { name: SUGGESTION_NAME })).toHaveLength(1)
+    expect(briefingText()).toContain('bench press')
+    expect(briefingText()).not.toMatch(/\b0 kg\b/)
+  })
+
+  it('renders nothing for a user with no anchors, rather than a state of zero', async () => {
+    renderSquatDay({ anchorRows: [], anchorEvidence: [] })
+    await screen.findByRole('heading', { level: 1, name: 'Squat day' })
+
+    await waitFor(() =>
+      expect(screen.queryByText(new RegExp(SUGGESTIONS_LOADING_LABEL))).not.toBeInTheDocument(),
+    )
+    expect(screen.queryByRole('button', { name: SUGGESTION_NAME })).not.toBeInTheDocument()
+  })
+
+  it('reads a one-session anchor as low confidence, before the number', async () => {
+    renderSquatDay({ anchorRows: [anchorRow({ session_count: 1, confidence: 'low' })] })
+
+    const suggestion = await screen.findByRole('button', { name: SUGGESTION_NAME })
+    expect(suggestion).toHaveAccessibleName(expect.stringContaining(LOW_CONFIDENCE_LABEL))
+    const text = suggestion.textContent ?? ''
+    expect(text.indexOf(LOW_CONFIDENCE_LABEL)).toBe(0)
+    expect(suggestion).toHaveTextContent(sessionCountText(1))
+  })
+
+  it('opens a Dialog with last session’s sets, the RPE recorded and the rule', async () => {
+    const user = userEvent.setup()
+    renderSquatDay()
+    const expected = expectedSuggestion()
+
+    await user.click(await screen.findByRole('button', { name: SUGGESTION_NAME }))
+
+    const dialog = await screen.findByRole('dialog', { name: new RegExp(WHY_TITLE) })
+    expect(within(dialog).getAllByRole('listitem')).toHaveLength(3)
+    expect(dialog).toHaveTextContent('Set 1 · 8 of 8 reps · 85 kg · RPE 7.5')
+    expect(dialog).toHaveTextContent('RPE 7.5 median across 3 sets')
+    expect(dialog).toHaveTextContent(expected.reason)
+    expect(dialog).toHaveTextContent('all reps completed → +1 increment')
+    expect(dialog).toHaveTextContent(OVERRIDE_SCOPE_NOTE)
+  })
+
+  it('applies an override to this session’s prescription and never to the anchor', async () => {
+    const user = userEvent.setup()
+    let recomputed = 0
+    const { recorder } = renderSquatDay({
+      anchors: {
+        async recompute() {
+          recomputed += 1
+          return ok([])
+        },
+      },
+    })
+
+    await user.click(await screen.findByRole('button', { name: SUGGESTION_NAME }))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByRole('spinbutton'), '205')
+    await user.click(within(dialog).getByRole('button', { name: APPLY_OVERRIDE_LABEL }))
+
+    expect(await screen.findByRole('button', { name: /^Your weight 205 kg/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+
+    const [squat, bench] = recorder.accepted[0].acceptance.workout.sections[0].blocks[0].exercises
+    expect(squat).toMatchObject({ load_type: 'absolute', load_value: 205 })
+    // The lift that was not overridden keeps the prescription generation gave it.
+    expect(bench).toMatchObject({ load_type: 'rir', load_value: 2 })
+    // Nothing on this screen asks for the anchors to be rewritten.
+    expect(recomputed).toBe(0)
+  })
+
+  it('accepts exactly the composed workout when nothing was overridden', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderSquatDay()
+    await screen.findByRole('button', { name: SUGGESTION_NAME })
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+
+    expect(recorder.accepted[0].acceptance).toBe(SQUAT_DAY)
+  })
+
+  it('shows loading in the suggestion surface while the briefing renders and starts', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderSquatDay({
+      anchors: {
+        list: () => new Promise(() => undefined),
+      },
+    })
+
+    expect(await screen.findByText(new RegExp(SUGGESTIONS_LOADING_LABEL))).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Squat day' })).toBeInTheDocument()
+    expect(briefingText()).toContain('back squat')
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+    expect(recorder.accepted).toHaveLength(1)
+  })
+
+  it('shows a failed anchor read in the suggestion surface and keeps the briefing', async () => {
+    renderSquatDay({
+      anchors: {
+        async list() {
+          return err(createError(ErrorCode.PERSISTENCE_READ_FAILED))
+        },
+      },
+    })
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
+    expect(screen.getByRole('heading', { level: 1, name: 'Squat day' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: SUGGESTION_NAME })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: START_LABEL })).toBeEnabled()
+  })
+
+  it('shows a failed evidence read the same way, and recovers on retry', async () => {
+    const user = userEvent.setup()
+    let calls = 0
+    renderSquatDay({
+      anchors: {
+        async evidence() {
+          calls += 1
+          return calls === 1
+            ? err(createError(ErrorCode.PERSISTENCE_READ_FAILED))
+            : ok(evidenceRows())
+        },
+      },
+    })
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
+
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByRole('button', { name: SUGGESTION_NAME })).toBeInTheDocument()
   })
 })

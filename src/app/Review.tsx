@@ -31,6 +31,13 @@
  * Start and got a screen that did not move has to be told why before they
  * press it again.
  *
+ * **The one read is OVR-01c's, and it qualifies the briefing rather than
+ * gating it.** The stored anchors and their evidence feed a per-prescription
+ * suggested weight (`src/ui/load-suggestion.tsx`); while they load or after
+ * they fail, the suggestion surface says so inline and everything else renders
+ * and starts as normal. An override is folded into the payload `accept`
+ * persists, through `applyLoadOverrides`, and no anchor is written here.
+ *
  * Atmosphere is `quiet` and is the route's, not this screen's: `/review` is
  * already in `SCREEN_ATMOSPHERE`, so `RootLayout` resolves it from the pathname
  * the day the journey that owns this screen routes it.
@@ -48,6 +55,7 @@ import {
   RefreshCw,
   Target,
 } from '../design-system/index'
+import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
 import { useAuth } from '../state/auth-context'
 import { createError, ErrorCode, isErr, type AppError } from '../state/errors'
 import {
@@ -61,12 +69,25 @@ import {
   type ReviewFact,
   type ReviewSectionView,
 } from '../state/review'
+import {
+  applyLoadOverrides,
+  reviewLoadSuggestions,
+  type LoadOverride,
+  type LoadOverrides,
+  type LoadSuggestions,
+  type LoadSuggestionView,
+} from '../state/load-suggestions'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
 import { useProfileQuery } from '../state/user-queries'
 import { useWorkoutClients } from '../state/workout-queries'
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import {
+  LoadSuggestionButton,
+  LoadSuggestionDialog,
+  LoadSuggestionsStatus,
+} from '../ui/load-suggestion'
 import { StructureBadge } from '../ui/workout-chrome'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 import { Screen } from './Screen'
@@ -117,6 +138,47 @@ export function Review({
 
   const briefing = reviewBriefing(acceptance, weightUnit)
 
+  // OVR-01c. The two anchor reads feed the suggestion surface and nothing
+  // else: while either is settling or has failed, the briefing renders and
+  // Start works exactly as it would for a user with no history at all. The
+  // numbers are `reviewLoadSuggestions`' — this screen does no arithmetic.
+  const anchorsQuery = useLoadAnchorsQuery()
+  const evidenceQuery = useAnchorEvidenceQuery()
+  const anchorsState = anchorsQuery.state
+  const evidenceState = evidenceQuery.state
+  const suggestions: LoadSuggestions =
+    anchorsState.status === 'ready' && evidenceState.status === 'ready'
+      ? reviewLoadSuggestions({
+          acceptance,
+          anchors: anchorsState.data,
+          evidence: evidenceState.data,
+          weightUnit,
+        })
+      : NO_SUGGESTIONS
+  const suggestionsLoading =
+    anchorsState.status === 'loading' || evidenceState.status === 'loading'
+  const suggestionsError =
+    anchorsState.status === 'error'
+      ? anchorsState.error
+      : evidenceState.status === 'error'
+        ? evidenceState.error
+        : null
+
+  // Overrides live here and only here, until `accept` persists them as this
+  // session's prescription. No anchor is written from this screen.
+  const [overrides, setOverrides] = useState<LoadOverrides>(() => new Map())
+  const [explaining, setExplaining] = useState<string | null>(null)
+  const explained = explaining === null ? undefined : suggestions.get(explaining)
+
+  function setOverride(key: string, override: LoadOverride | null) {
+    setOverrides((current) => {
+      const next = new Map(current)
+      if (override === null) next.delete(key)
+      else next.set(key, override)
+      return next
+    })
+  }
+
   const [starting, setStarting] = useState(false)
   const [failure, setFailure] = useState<AppError | null>(null)
   const [confirmingRegenerate, setConfirmingRegenerate] = useState(false)
@@ -141,7 +203,7 @@ export function Review({
     // start until acceptance has written one. A failure of either leaves the
     // user on this screen with the workout still in front of them — the
     // composition is in memory and is not lost by a write that did not land.
-    const accepted = await sessions.accept(userId, acceptance)
+    const accepted = await sessions.accept(userId, applyLoadOverrides(acceptance, overrides))
     if (isErr(accepted)) {
       setStarting(false)
       setFailure(accepted.error)
@@ -178,8 +240,27 @@ export function Review({
             person reads before deciding how to attack it. */}
         {progression}
 
+        {suggestionsLoading ? (
+          <LoadSuggestionsStatus status="loading" />
+        ) : suggestionsError !== null ? (
+          <LoadSuggestionsStatus
+            status="error"
+            error={suggestionsError}
+            onRetry={() => {
+              if (anchorsState.status === 'error') anchorsQuery.refetch()
+              if (evidenceState.status === 'error') evidenceQuery.refetch()
+            }}
+          />
+        ) : null}
+
         {briefing.sections.map((section) => (
-          <ReviewSectionCard key={section.key} section={section} />
+          <ReviewSectionCard
+            key={section.key}
+            section={section}
+            suggestions={suggestions}
+            overrides={overrides}
+            onExplain={setExplaining}
+          />
         ))}
 
         <div className="clr-row">
@@ -208,6 +289,17 @@ export function Review({
         </div>
       </div>
 
+      {explained !== undefined && (
+        <LoadSuggestionDialog
+          open
+          suggestion={explained}
+          override={overrides.get(explained.key) ?? null}
+          onClose={() => setExplaining(null)}
+          onOverride={(override) => setOverride(explained.key, override)}
+          onClearOverride={() => setOverride(explained.key, null)}
+        />
+      )}
+
       <RegenerateConfirmDialog
         open={confirmingRegenerate}
         onCancel={() => setConfirmingRegenerate(false)}
@@ -229,6 +321,16 @@ export function Review({
       )}
     </Screen>
   )
+}
+
+/** One stable empty map, for a briefing whose anchor reads have not answered. */
+const NO_SUGGESTIONS: LoadSuggestions = new Map()
+
+/** What a section threads down to each prescription row. */
+interface SuggestionProps {
+  suggestions: LoadSuggestions
+  overrides: LoadOverrides
+  onExplain: (key: string) => void
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -345,7 +447,10 @@ function BriefingHeader({
  * collapsed content in the accessibility tree either way, so closing one is
  * visual economy on a long session rather than removal.
  */
-function ReviewSectionCard({ section }: { section: ReviewSectionView }) {
+function ReviewSectionCard({
+  section,
+  ...suggestion
+}: { section: ReviewSectionView } & SuggestionProps) {
   return (
     <Card>
       <CollapsibleSection
@@ -367,7 +472,7 @@ function ReviewSectionCard({ section }: { section: ReviewSectionView }) {
         <div className="clr-stack--tight" style={STACK_STYLE}>
           {section.notes !== null && <p style={{ margin: 0 }}>{section.notes}</p>}
           {section.blocks.map((block) => (
-            <ReviewBlockRows key={block.key} block={block} />
+            <ReviewBlockRows key={block.key} block={block} {...suggestion} />
           ))}
         </div>
       </CollapsibleSection>
@@ -375,7 +480,12 @@ function ReviewSectionCard({ section }: { section: ReviewSectionView }) {
   )
 }
 
-function ReviewBlockRows({ block }: { block: ReviewBlockView }) {
+function ReviewBlockRows({
+  block,
+  suggestions,
+  overrides,
+  onExplain,
+}: { block: ReviewBlockView } & SuggestionProps) {
   return (
     <div className="clr-stack--tight" style={STACK_STYLE}>
       <div className="clr-row" style={{ justifyContent: 'space-between' }}>
@@ -384,7 +494,13 @@ function ReviewBlockRows({ block }: { block: ReviewBlockView }) {
       </div>
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
       {block.exercises.map((exercise) => (
-        <ReviewExerciseRow key={exercise.key} exercise={exercise} />
+        <ReviewExerciseRow
+          key={exercise.key}
+          exercise={exercise}
+          suggestion={suggestions.get(exercise.key) ?? null}
+          override={overrides.get(exercise.key) ?? null}
+          onExplain={() => onExplain(exercise.key)}
+        />
       ))}
     </div>
   )
@@ -396,7 +512,18 @@ function ReviewBlockRows({ block }: { block: ReviewBlockView }) {
  * anything would want to parse back, and the load, the rest and the tempo are
  * three different facts that a screen reader should be able to stop between.
  */
-function ReviewExerciseRow({ exercise }: { exercise: ReviewExerciseView }) {
+function ReviewExerciseRow({
+  exercise,
+  suggestion,
+  override,
+  onExplain,
+}: {
+  exercise: ReviewExerciseView
+  /** Null where there is no anchor — a state, and it renders nothing. */
+  suggestion: LoadSuggestionView | null
+  override: LoadOverride | null
+  onExplain: () => void
+}) {
   return (
     <div style={STACK_STYLE}>
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
@@ -411,6 +538,9 @@ function ReviewExerciseRow({ exercise }: { exercise: ReviewExerciseView }) {
         {exercise.rest !== null && <span style={DATA_STYLE}>{exercise.rest}</span>}
         {exercise.tempo !== null && <span style={DATA_STYLE}>Tempo {exercise.tempo}</span>}
       </div>
+      {suggestion !== null && (
+        <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
+      )}
     </div>
   )
 }

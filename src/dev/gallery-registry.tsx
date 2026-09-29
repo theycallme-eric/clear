@@ -24,6 +24,7 @@ import {
 } from '../state/appearance'
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
 import type { DeloadSuggestion } from '../state/deload'
+import type { LoadSuggestionView } from '../state/load-suggestions'
 import { createError, ErrorCode, type AppError } from '../state/errors'
 import {
   BESTS_LABEL_COMPETITIVE,
@@ -57,6 +58,11 @@ import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { DeloadBanner } from '../ui/deload-banner'
+import {
+  LoadSuggestionButton,
+  LoadSuggestionDialog,
+  LoadSuggestionsStatus,
+} from '../ui/load-suggestion'
 import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
@@ -685,6 +691,163 @@ function DeloadBannerApplied() {
       applied
       onApply={() => {}}
       onDismiss={() => {}}
+    />
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OVR-01c — the load suggestion
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Four sessions of history; last time was three sets of 8 at 85 kg, RPE 7.5. */
+const SAMPLE_LOAD_SUGGESTION: LoadSuggestionView = {
+  key: 'section-0-block-0-exercise-0',
+  exerciseId: 'back-squat',
+  name: 'back squat',
+  equipment: 'barbell',
+  weight: 87.5,
+  unit: 'kg',
+  confidence: 'high',
+  sessionCount: 4,
+  rule: 'on-target',
+  reason: 'RPE 7.5–8.5, all reps completed → +1 increment',
+  clamped: false,
+  delta: 2.5,
+  lastSession: {
+    date: '2026-09-15',
+    sets: [1, 2, 3].map((setNumber) => ({
+      setNumber,
+      reps: 8,
+      prescribedReps: 8,
+      weight: 85,
+      rpe: 7.5,
+    })),
+    medianRpe: 7.5,
+    topWeight: 85,
+  },
+}
+
+const SAMPLE_LOAD_SUGGESTION_LOW: LoadSuggestionView = {
+  ...SAMPLE_LOAD_SUGGESTION,
+  weight: 85,
+  confidence: 'low',
+  sessionCount: 1,
+  rule: null,
+  reason: 'one session of history → last working weight, no progression',
+  delta: null,
+}
+
+const SAMPLE_LOAD_SUGGESTION_STALE: LoadSuggestionView = {
+  ...SAMPLE_LOAD_SUGGESTION,
+  weight: null,
+  rule: null,
+  reason: 'last logged over 12 weeks ago → anchor discarded',
+  delta: null,
+}
+
+function LoadSuggestionButtonHigh() {
+  return (
+    <LoadSuggestionButton suggestion={SAMPLE_LOAD_SUGGESTION} override={null} onOpen={() => {}} />
+  )
+}
+
+function LoadSuggestionButtonLow() {
+  return (
+    <LoadSuggestionButton
+      suggestion={SAMPLE_LOAD_SUGGESTION_LOW}
+      override={null}
+      onOpen={() => {}}
+    />
+  )
+}
+
+function LoadSuggestionButtonNoNumber() {
+  return (
+    <LoadSuggestionButton
+      suggestion={SAMPLE_LOAD_SUGGESTION_STALE}
+      override={null}
+      onOpen={() => {}}
+    />
+  )
+}
+
+function LoadSuggestionButtonOverridden() {
+  return (
+    <LoadSuggestionButton
+      suggestion={SAMPLE_LOAD_SUGGESTION}
+      override={{ weight: 90, unit: 'kg' }}
+      onOpen={() => {}}
+    />
+  )
+}
+
+function LoadSuggestionDialogSpecimen({
+  label,
+  suggestion,
+  override,
+}: {
+  label: string
+  suggestion: LoadSuggestionView
+  override: { weight: number; unit: 'kg' } | null
+}) {
+  return (
+    <DialogTrigger label={label}>
+      {(open, close) =>
+        open && (
+          <LoadSuggestionDialog
+            open
+            suggestion={suggestion}
+            override={override}
+            onClose={close}
+            onOverride={() => {}}
+            onClearOverride={() => {}}
+          />
+        )
+      }
+    </DialogTrigger>
+  )
+}
+
+function LoadSuggestionDialogExplained() {
+  return (
+    <LoadSuggestionDialogSpecimen
+      label="Why this number"
+      suggestion={SAMPLE_LOAD_SUGGESTION}
+      override={null}
+    />
+  )
+}
+
+function LoadSuggestionDialogOverridden() {
+  return (
+    <LoadSuggestionDialogSpecimen
+      label="Why this number, overridden"
+      suggestion={SAMPLE_LOAD_SUGGESTION}
+      override={{ weight: 90, unit: 'kg' }}
+    />
+  )
+}
+
+function LoadSuggestionDialogNoSets() {
+  return (
+    <LoadSuggestionDialogSpecimen
+      label="Why this number, no sets on record"
+      suggestion={{ ...SAMPLE_LOAD_SUGGESTION_LOW, lastSession: null }}
+      override={null}
+    />
+  )
+}
+
+function LoadSuggestionsStatusLoading() {
+  return <LoadSuggestionsStatus status="loading" />
+}
+
+function LoadSuggestionsStatusError() {
+  return (
+    <LoadSuggestionsStatus
+      status="error"
+      error={createError(ErrorCode.PERSISTENCE_READ_FAILED)}
+      onRetry={() => {}}
     />
   )
 }
@@ -1477,6 +1640,53 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         note: 'After Apply the banner states what it did, and that the user may still disagree.',
         Render: DeloadBannerApplied,
       },
+    ],
+  },
+  {
+    component: 'LoadSuggestionButton',
+    requirement: 'OVR-01c',
+    module: 'src/ui/load-suggestion.tsx',
+    summary:
+      'One prescription’s suggested weight on Review, with its session count beside it. Low confidence leads with the words and a glyph in a dashed frame; a suggestion with no honest number says so rather than showing zero.',
+    specimens: [
+      { state: 'high confidence', Render: LoadSuggestionButtonHigh },
+      { state: 'low confidence', Render: LoadSuggestionButtonLow },
+      {
+        state: 'anchored, no number',
+        note: 'A discarded anchor is still a state with a reason, not a zero.',
+        Render: LoadSuggestionButtonNoNumber,
+      },
+      {
+        state: 'overridden for this session',
+        Render: LoadSuggestionButtonOverridden,
+      },
+    ],
+  },
+  {
+    component: 'LoadSuggestionDialog',
+    requirement: 'OVR-01c',
+    module: 'src/ui/load-suggestion.tsx',
+    summary:
+      'Why this number: last session’s sets, the RPE recorded, the rule that fired, and an override that changes this session only.',
+    specimens: [
+      { state: 'explained', Render: LoadSuggestionDialogExplained },
+      {
+        state: 'overridden',
+        note: 'Offers the way back to the suggestion.',
+        Render: LoadSuggestionDialogOverridden,
+      },
+      { state: 'no previous sets', Render: LoadSuggestionDialogNoSets },
+    ],
+  },
+  {
+    component: 'LoadSuggestionsStatus',
+    requirement: 'OVR-01c',
+    module: 'src/ui/load-suggestion.tsx',
+    summary:
+      'The anchor reads’ loading and error states, inline in the briefing so neither blocks nor discards it.',
+    specimens: [
+      { state: 'loading', Render: LoadSuggestionsStatusLoading },
+      { state: 'error', Render: LoadSuggestionsStatusError },
     ],
   },
   {
