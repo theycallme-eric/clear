@@ -192,6 +192,14 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob).toContain('e2e/d6-swap-persistence.spec.ts')
   })
 
+  it('walks Settings to appearance where a user can be signed in', () => {
+    const backendJob = backendJobOf(workflow)
+
+    // REQ-010. The journey needs a seeded, onboarded session, so its browser
+    // half runs only in the job that holds the key to mint one.
+    expect(backendJob).toContain('e2e/settings-appearance.spec.ts')
+  })
+
   it('walks the core loop against the production deployment of main’s exact head (REQ-010)', () => {
     const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
 
