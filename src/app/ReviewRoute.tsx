@@ -29,11 +29,18 @@
  *     failure: the user is in a workout either way, and a favorite counted one
  *     attempt short is a smaller harm than a workout refused at the door.
  *
- * Regenerating from here is Generate, not a generation call: this route holds
- * no GEN-03 state, so "discard this and compose another" means going to the
- * screen that composes one.
+ * **Regenerating is a generation run, watched from here** (REQ-004). Review's
+ * confirm is answered first; confirming discards the workout in hand — the
+ * route's history entry is replaced by one that carries nothing — and sends the
+ * request that composition was made from through GEN-03. The shared
+ * `GenerationLoadingHost` is the whole screen for the run, and success comes
+ * back to this same route with the new workout as its hand-off. Cancel lands
+ * here too, on the discard the confirm promised: "Nothing to review", never the
+ * old workout brought back and never the abandoned run's answer. A composition
+ * whose request can no longer be restated (`regenerationInput` answers null)
+ * goes to Generate, the one screen that can compose a new request.
  */
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import { EmptyState, Zap } from '../design-system/index'
@@ -43,8 +50,13 @@ import {
   type FavoriteRun,
 } from '../state/favorite-progression'
 import { useFavoriteRunsQuery, useFavoritesQuery } from '../state/favorite-queries'
+import { useGeneration } from '../state/generation'
 import { GENERATE_PATH } from '../state/generation-form'
-import { readReviewHandoff } from '../state/review-handoff'
+import {
+  readReviewHandoff,
+  regenerationInput,
+  reviewHandoff,
+} from '../state/review-handoff'
 import {
   viewError,
   viewLoading,
@@ -54,8 +66,12 @@ import {
 import { useWorkoutClients } from '../state/workout-queries'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { ViewStateSwitch } from '../ui/view-state'
+import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
 import { Review, REVIEW_TITLE } from './Review'
+
+/** Review's own path: where a regeneration returns, on success and on cancel. */
+export const REVIEW_PATH = '/review'
 
 export const NO_REVIEW_TITLE = 'Nothing to review'
 export const NO_REVIEW_MESSAGE =
@@ -65,51 +81,76 @@ export function ReviewRoute() {
   const location = useLocation()
   const navigate = useNavigate()
   const { favorites } = useWorkoutClients()
+  const generation = useGeneration()
 
-  const handoff = readReviewHandoff(location.state)
+  // The regenerated workout, while the success state holds it. Rendered from
+  // here on the render the run lands, and written into the history entry so a
+  // reload still has it — the entry is what outlives this component.
+  const regenerated =
+    generation.state.status === 'success' ? generation.state.acceptance : null
+  useEffect(() => {
+    if (regenerated === null) return
+    void navigate(REVIEW_PATH, { replace: true, state: reviewHandoff(regenerated) })
+  }, [regenerated, navigate])
 
-  if (handoff === null) {
-    return (
-      <Screen title={REVIEW_TITLE} heading={NO_REVIEW_TITLE}>
-        <EmptyState
-          title={NO_REVIEW_TITLE}
-          message={NO_REVIEW_MESSAGE}
-          icon={<Zap size={24} />}
-          actionLabel="Generate workout"
-          onAction={() => void navigate(GENERATE_PATH)}
-        />
-      </Screen>
-    )
-  }
+  const handoff =
+    regenerated === null ? readReviewHandoff(location.state) : reviewHandoff(regenerated)
 
-  const { acceptance, savedWorkoutId } = handoff
-
+  // The host is the whole screen while a regeneration is in flight or failed;
+  // cancelling it puts this route back, on whatever the entry now carries.
   return (
-    <Review
-      // Keyed by the composition, so arriving with a different workout is a
-      // fresh briefing rather than the last one's pending state.
-      key={`${savedWorkoutId ?? 'generated'}:${acceptance.date}`}
-      acceptance={acceptance}
-      progression={
-        savedWorkoutId === null ? null : (
-          <FavoriteProgressionPanel
-            savedWorkoutId={savedWorkoutId}
-            deload={deloadInEffect(acceptance)}
+    <GenerationLoadingHost generation={generation} cancelTo={REVIEW_PATH}>
+      {handoff === null ? (
+        <Screen title={REVIEW_TITLE} heading={NO_REVIEW_TITLE}>
+          <EmptyState
+            title={NO_REVIEW_TITLE}
+            message={NO_REVIEW_MESSAGE}
+            icon={<Zap size={24} />}
+            actionLabel="Generate workout"
+            onAction={() => void navigate(GENERATE_PATH)}
           />
-        )
-      }
-      onRegenerate={() => void navigate(GENERATE_PATH)}
-      onStarted={(snapshot) => {
-        if (savedWorkoutId === null) return
+        </Screen>
+      ) : (
+        <Review
+          // Keyed by the composition, so arriving with a different workout is a
+          // fresh briefing rather than the last one's pending state.
+          key={`${handoff.savedWorkoutId ?? 'generated'}:${handoff.acceptance.date}`}
+          acceptance={handoff.acceptance}
+          progression={
+            handoff.savedWorkoutId === null ? null : (
+              <FavoriteProgressionPanel
+                savedWorkoutId={handoff.savedWorkoutId}
+                deload={deloadInEffect(handoff.acceptance)}
+              />
+            )
+          }
+          onRegenerate={() => {
+            const input = regenerationInput(handoff.acceptance)
+            if (input === null) {
+              void navigate(GENERATE_PATH)
+              return
+            }
 
-        // Unawaited, and its failure deliberately unhandled: the session is
-        // already running, and there is nothing useful to ask of a user who is
-        // warming up. The counter is recomputed from the attempt rows on
-        // completion, so a link that did not land under-counts one session
-        // rather than corrupting the count.
-        void favorites.attempt(savedWorkoutId, snapshot.session.id)
-      }}
-    />
+            // The discard the confirm promised, then the run. The replaced
+            // entry carries nothing, so neither cancel nor a reload mid-run can
+            // bring the discarded workout back.
+            void navigate(REVIEW_PATH, { replace: true, state: null })
+            generation.generate(input)
+          }}
+          onStarted={(snapshot) => {
+            const { savedWorkoutId } = handoff
+            if (savedWorkoutId === null) return
+
+            // Unawaited, and its failure deliberately unhandled: the session is
+            // already running, and there is nothing useful to ask of a user who
+            // is warming up. The counter is recomputed from the attempt rows on
+            // completion, so a link that did not land under-counts one session
+            // rather than corrupting the count.
+            void favorites.attempt(savedWorkoutId, snapshot.session.id)
+          }}
+        />
+      )}
+    </GenerationLoadingHost>
   )
 }
 
