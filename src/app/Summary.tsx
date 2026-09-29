@@ -76,6 +76,9 @@ import { ViewStateSwitch } from '../ui/view-state'
 import { AUTHENTICATED_HOME } from './guards'
 import { Screen } from './Screen'
 
+/** This screen's path, which is where Workout completion lands. */
+export const SUMMARY_ROUTE = '/summary'
+
 /** The longest note the session row is asked to hold (CORE-03, `schemas.ts`). */
 export const NOTES_MAX_LENGTH = 2000
 

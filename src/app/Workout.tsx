@@ -39,8 +39,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
+import { useAuth } from '../state/auth-context'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
 import { RestTimerProvider } from '../state/rest-provider'
+import { historyQueryPrefix } from '../state/history-queries'
+import { useQueryClient } from '../state/query'
+import { completedSessionQueryKey, streakQueryKey } from '../state/summary-queries'
 import { SetLoggingProvider } from '../state/set-logging-provider'
 import { SwapProvider } from '../state/swap-provider'
 import { useProfileQuery } from '../state/user-queries'
@@ -79,14 +83,14 @@ import {
 } from '../ui/workout-chrome'
 import { AUTHENTICATED_HOME } from './guards'
 import { Screen } from './Screen'
+import { SUMMARY_ROUTE } from './Summary'
 
 /**
- * Where completion lands. SUM-01 owns `/summary` and it is not routed yet, so
- * a finished workout goes Home rather than to a path that answers Not Found —
- * the same posture `guards.tsx` takes for `/onboarding`. This constant is the
- * one line SUM-01 changes.
+ * Where completion lands: SUM-01's debrief (IA.md §4, "out to Summary"). The
+ * session is published as ended before the shell leaves, so `/summary` reads
+ * the completed row it is about, and its Done is what returns the user Home.
  */
-export const COMPLETION_ROUTE = AUTHENTICATED_HOME
+export const COMPLETION_ROUTE = SUMMARY_ROUTE
 
 /** Where abandoning lands: Home, where the session's remains are resumable. */
 export const ABANDON_ROUTE = AUTHENTICATED_HOME
@@ -110,10 +114,23 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
   const snapshot = query.state.status === 'ready' ? query.state.data : null
   const active = isActiveSession(snapshot)
 
+  // Set when the shell itself ended the session. Its exit then chooses the
+  // destination — Summary on completion — and the guard below must not race
+  // it Home the moment the published session stops being active.
+  const ended = useRef(false)
+  const { publish } = query
+  const endSession = useCallback(
+    (next: SessionSnapshot | null) => {
+      ended.current = true
+      publish(next)
+    },
+    [publish],
+  )
+
   // A redirect is an effect, not a render: `<Navigate>` here would compete
   // with the blocker below, which is mounted by the shell one render later.
   useEffect(() => {
-    if (query.state.status === 'ready' && !active) {
+    if (query.state.status === 'ready' && !active && !ended.current) {
       void navigate(AUTHENTICATED_HOME, { replace: true })
     }
   }, [active, navigate, query.state.status])
@@ -150,7 +167,7 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
         <WorkoutShell
           key={snapshot.session.id}
           snapshot={snapshot}
-          onSessionEnded={query.publish}
+          onSessionEnded={endSession}
           onSessionRevised={query.publish}
           storage={storage}
         />
@@ -182,6 +199,8 @@ function WorkoutShell({
   storage,
 }: WorkoutShellProps) {
   const { sessions } = useWorkoutClients()
+  const { user } = useAuth()
+  const cache = useQueryClient()
   const navigate = useNavigate()
 
   const progress = useMemo(() => sessionProgress(snapshot), [snapshot])
@@ -309,9 +328,17 @@ function WorkoutShell({
       return
     }
 
+    // Everything a completion changes the answer to was cached before it —
+    // Home read the streak and the recents on the way here — so it is read
+    // again: the debrief is about this session, and its streak counts it.
+    if (user !== null) {
+      cache.invalidate(completedSessionQueryKey(user.id))
+      cache.invalidate(streakQueryKey(user.id))
+      cache.invalidate(historyQueryPrefix(user.id))
+    }
     onSessionEnded(null)
     depart(COMPLETION_ROUTE)
-  }, [depart, onSessionEnded, seconds, sessionId, sessions])
+  }, [cache, depart, onSessionEnded, seconds, sessionId, sessions, user])
 
   const canGoBack = index > 0
   const canGoForward = index < progress.total - 1
