@@ -66,6 +66,7 @@ import {
   withPreferences,
   withSection,
 } from '../state/settings'
+import { useAppearance } from '../state/appearance'
 import { profileQueryKey, useProfileQuery, useUserData } from '../state/user-queries'
 import {
   viewEmpty,
@@ -74,6 +75,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { AppearancePicker } from '../ui/appearance-picker'
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
@@ -122,6 +124,7 @@ export function Settings() {
             <div className="clr-stack">
               <PreferencesCard profile={profile} />
               <LimitationsCard />
+              <AppearanceCard />
               <TrainingPlacesCard />
               <SignOutCard />
             </div>
@@ -399,6 +402,30 @@ function LimitationsEditor({
 
       <SaveStatusLine status={status} />
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Appearance
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The skin, which is this device's rather than the profile's: `skin.js` stores
+ * it and `useAppearance` wraps that, so this row owns no save and no rollback.
+ * Every option — the system one and each skin in `SKINS` — comes from the
+ * picker's derived list; none is named here. The favicon follows `data-skin`
+ * through `startFaviconSync`, so choosing here moves it with nothing to call.
+ */
+function AppearanceCard() {
+  const [appearance, choose] = useAppearance()
+
+  return (
+    <Card>
+      <div className="clr-stack">
+        <Heading>Appearance</Heading>
+        <AppearancePicker legend="Skin" value={appearance} onChange={choose} />
+      </div>
+    </Card>
   )
 }
 
