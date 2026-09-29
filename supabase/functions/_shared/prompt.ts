@@ -530,9 +530,11 @@ function directiveRules(directive: SessionDirective): readonly string[] {
 
 /**
  * §"Generation Impact"'s block: the anchored exercises, then the two directive
- * lines. The directive and the trend are printed whether or not there are
- * anchors — a first session composes under `normal` and `hold`, and saying so is
- * cheaper than leaving the model to infer which it is.
+ * lines. The session directive is printed whether or not there are anchors — a
+ * first session composes under `normal`, and saying so is cheaper than leaving
+ * the model to infer it. The conditioning trend is printed only when OVR-03's
+ * code computed one: fewer than three qualifying sections is no read, and a
+ * `hold` printed in its place would be a guess the model treats as a fact.
  */
 function serializeTrainingHistory(training: TrainingHistory): string {
   const rows =
@@ -547,7 +549,9 @@ function serializeTrainingHistory(training: TrainingHistory): string {
     ...rows,
     `SESSION DIRECTIVE: ${training.directive}`,
     ...(rules.length > 0 ? [`DIRECTIVE RULES: ${rules.join(' · ')}`] : []),
-    `CONDITIONING TREND: ${training.conditioningTrend}`,
+    ...(training.conditioningTrend === null
+      ? []
+      : [`CONDITIONING TREND: ${training.conditioningTrend}`]),
   ].join('\n')
 }
 
