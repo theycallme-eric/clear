@@ -221,7 +221,7 @@ function LocationCard({
           {tierLabel(location.tier)}
           {location.is_default ? ' · Default for generation' : ''}
         </p>
-        <div className="clr-row">
+        <div className="clr-row" style={{ flexWrap: 'wrap' }}>
           <Button variant="quiet" icon={<Pencil size={20} />} onClick={onEdit}>
             Edit
           </Button>

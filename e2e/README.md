@@ -57,7 +57,7 @@ Two other jobs are privileged, and they are privileged for different reasons:
 |---|---|---|---|
 | `rls-standing` | every pull request, branches of this repository only | `rls.spec.ts` | REQ-007 asks for the cross-user matrix *before* a merge, not after. It starts no browser against an untrusted origin and works in its own namespace |
 | `backend-e2e` | push to `main` | OTP + RLS + generation/persistence + D6 | reviewed and merged code, so the full trusted run including the OTP and model-backed generation flows |
-| `deployed-journeys` | successful Vercel **Production** deployment | `core-loop.spec.ts` (no retries) and `history-detail.spec.ts` against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; each journey owns and deletes its users (REQ-010) |
+| `deployed-journeys` | successful Vercel **Production** deployment | `core-loop.spec.ts` (no retries), `history-detail.spec.ts`, and `settings-locations.spec.ts` against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; each journey owns and deletes its users (REQ-010 / SET-02) |
 
 A pull request **from a fork** receives no secret from GitHub, so `rls-standing`
 skips rather than failing confusingly. What still runs there is the half that
