@@ -45,6 +45,7 @@ import {
   targetForSet,
   targetText,
 } from '../state/prescription'
+import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import {
   prefillFrom,
   RPE_MAX,
@@ -77,14 +78,25 @@ export interface ExerciseSetLoggerProps {
    * untouched either way; this decides only who says it.
    */
   statesRest?: boolean
+  /**
+   * The rest a logged set of this movement is followed by (EXE-05), in
+   * seconds. Omitted, it is the rest the movement states — its own
+   * `rest_seconds` when `statesRest`, none otherwise — so the rest the card
+   * says and the rest the bar starts cannot disagree. A superset passes the
+   * block's `round_rest_seconds` to the movement that closes the pair and
+   * nothing to the one before it.
+   */
+  restSeconds?: number | null
 }
 
 export function ExerciseSetLogger({
   exercise,
   ordinal,
   statesRest = true,
+  restSeconds,
 }: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
+  const restTimer = useRestTimer()
 
   const prescription = exercise.prescription
   const logged = loggedSets(exercise.exerciseId)
@@ -93,6 +105,21 @@ export function ExerciseSetLogger({
   const target = targetForSet(prescription, setNumber)
   const rest = statesRest ? restText(prescription.rest_seconds) : null
   const name = exerciseName(prescription.exercise_id)
+  const restAfterSet = prescribedRestSeconds(
+    restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
+  )
+
+  /**
+   * The set, then the rest it earns. The rest starts only for a set the shell
+   * can accept — with no unit to stamp the set is refused, and a rest after a
+   * set that was not recorded would be the app agreeing with itself about
+   * nothing. A set logged while a rest runs replaces it: the provider holds one.
+   */
+  const log = (performed: PerformedSet) => {
+    logSet(exercise.exerciseId, performed)
+    if (restAfterSet === null || weightUnit === null) return
+    restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restAfterSet })
+  }
 
   return (
     <HeadingSection
@@ -125,7 +152,7 @@ export function ExerciseSetLogger({
         modality={prescription.modality}
         exerciseName={name}
         saving={isSaving(exercise.exerciseId)}
-        onLog={(performed) => logSet(exercise.exerciseId, performed)}
+        onLog={log}
       />
 
       {/*

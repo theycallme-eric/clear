@@ -41,6 +41,12 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
+import { conditioningSections } from '../state/conditioning'
+import {
+  conditioningHistoryQueryKey,
+  useConditioningHistoryQuery,
+} from '../state/conditioning-queries'
+import { RestTimerProvider } from '../state/rest-provider'
 import { historyQueryPrefix } from '../state/history-queries'
 import { useQueryClient } from '../state/query'
 import { completedSessionQueryKey, streakQueryKey } from '../state/summary-queries'
@@ -76,6 +82,7 @@ import {
   AbandonConfirmDialog,
   GlobalTimer,
   ProgressTracker,
+  RestTimerBar,
   SectionHeader,
   WorkoutNavigation,
 } from '../ui/workout-chrome'
@@ -244,6 +251,19 @@ function WorkoutShell({
   const weightUnit =
     profile.state.status === 'ready' ? (profile.state.data?.weight_unit ?? null) : null
 
+  // OVR-03: the scored conditioning history a completed timed block is
+  // compared against. Anything but `ready` — loading, a failed read, no user —
+  // is null, which the completion path reads as "no comparison and no claim
+  // about history", and which never holds up the effort question or its write.
+  const conditioning = useConditioningHistoryQuery()
+  const conditioningHistory = useMemo(
+    () =>
+      conditioning.state.status === 'ready'
+        ? conditioningSections(conditioning.state.data)
+        : null,
+    [conditioning.state],
+  )
+
   // Set synchronously, because the blocker is consulted during the navigation
   // this handler starts — a state flag would still be false when it is read.
   const leaving = useRef(false)
@@ -333,6 +353,9 @@ function WorkoutShell({
       cache.invalidate(completedSessionQueryKey(user.id))
       cache.invalidate(streakQueryKey(user.id))
       cache.invalidate(historyQueryPrefix(user.id))
+      // The blocks just scored are the next repeat's previous attempt, and
+      // the density read generation takes next.
+      cache.invalidate(conditioningHistoryQueryKey(user.id))
     }
     onSessionEnded(null)
     depart(COMPLETION_ROUTE)
@@ -356,7 +379,11 @@ function WorkoutShell({
         question and the `block_results` write belong to it, for every
         structure type, and to no renderer inside it.
       */}
-      <BlockCompletionProvider blocks={blocks} onFailure={setFailure}>
+      <BlockCompletionProvider
+        blocks={blocks}
+        onFailure={setFailure}
+        conditioningHistory={conditioningHistory}
+      >
         {/*
           The other write execution produces, on the same terms: one path, one
           row per set, written at log time, and the same error surface. A
@@ -369,75 +396,88 @@ function WorkoutShell({
           onFailure={setFailure}
           storage={storage}
         >
-          <AppHeader
-            meta={<GlobalTimer seconds={seconds} />}
-            actions={
-              <Button
-                variant="quiet"
-                icon={<LogOut />}
-                onClick={() => setAskedToExit(true)}
-              >
-                Abandon
-              </Button>
-            }
-          >
-            <ClearLogo size="sm" />
-          </AppHeader>
+          {/*
+            EXE-05: the session's one rest. Inside the set path because a
+            logged set is what starts it, and at the shell rather than in a
+            renderer so a second set — or a set in another section — replaces
+            the rest instead of drawing a second bar beside it. Nothing here
+            persists: a reload loses the countdown and nothing the session
+            recorded.
+          */}
+          <RestTimerProvider>
+            <AppHeader
+              meta={<GlobalTimer seconds={seconds} />}
+              actions={
+                <Button
+                  variant="quiet"
+                  icon={<LogOut />}
+                  onClick={() => setAskedToExit(true)}
+                >
+                  Abandon
+                </Button>
+              }
+            >
+              <ClearLogo size="sm" />
+            </AppHeader>
 
-          <Screen title={SCREEN_TITLE}>
-            <div className="clr-stack">
-              {/*
-                EXE-07's one statement about unsynced work. It is here rather
-                than in the error dialog because a queue that is retrying is not
-                a failed action: it must not interrupt a set, and it must say the
-                count once rather than once per set.
-              */}
-              <SetSyncNotice />
+            <Screen title={SCREEN_TITLE}>
+              <div className="clr-stack">
+                {/*
+                  EXE-07's one statement about unsynced work. It is here rather
+                  than in the error dialog because a queue that is retrying is
+                  not a failed action: it must not interrupt a set, and it must
+                  say the count once rather than once per set.
+                */}
+                <SetSyncNotice />
 
-              <ProgressTracker
-                progress={progress}
-                currentIndex={index}
-                onSelect={section.setIndex}
-              />
+                <ProgressTracker
+                  progress={progress}
+                  currentIndex={index}
+                  onSelect={section.setIndex}
+                />
 
-              {current === undefined ? null : (
-                <>
-                  <SectionHeader
-                    section={current}
-                    position={index + 1}
-                    total={progress.total}
-                  />
-                  {current.blocks.map((block) => (
-                    <BlockSlot key={block.blockId} block={block} />
-                  ))}
-                </>
-              )}
+                {current === undefined ? null : (
+                  <>
+                    <SectionHeader
+                      section={current}
+                      position={index + 1}
+                      total={progress.total}
+                    />
+                    {current.blocks.map((block) => (
+                      <BlockSlot key={block.blockId} block={block} />
+                    ))}
+                  </>
+                )}
 
-              <WorkoutNavigation
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                onPrevious={() => section.setIndex(index - 1)}
-                onNext={() => section.setIndex(index + 1)}
-                onFinish={() => void finish()}
-                busy={ending}
-              />
-            </div>
-          </Screen>
+                {/* Between the work and the way on, where IA.md §4 composes it. */}
+                <RestTimerBar />
 
-          <AbandonConfirmDialog
-            open={exiting}
-            onConfirm={() => void confirmAbandon()}
-            onCancel={cancelExit}
-          />
+                <WorkoutNavigation
+                  canGoBack={canGoBack}
+                  canGoForward={canGoForward}
+                  onPrevious={() => section.setIndex(index - 1)}
+                  onNext={() => section.setIndex(index + 1)}
+                  onFinish={() => void finish()}
+                  busy={ending}
+                />
+              </div>
+            </Screen>
 
-          {failure !== null && (
-            <ErrorDialog
-              open
-              error={failure}
-              title="That didn’t save"
-              onDismiss={() => setFailure(null)}
+            <AbandonConfirmDialog
+              open={exiting}
+              onConfirm={() => void confirmAbandon()}
+              onCancel={cancelExit}
             />
-          )}
+
+            {failure !== null && (
+              <ErrorDialog
+                open
+                error={failure}
+                title="That didn’t save"
+                onDismiss={() => setFailure(null)}
+              />
+            )}
+          </RestTimerProvider>
         </SetLoggingProvider>
       </BlockCompletionProvider>
     </SwapProvider>

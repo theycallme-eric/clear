@@ -115,7 +115,12 @@ export interface TrainingHistory {
   /** Most recently trained first, capped at `TRAINING_HISTORY_LIMIT`. */
   readonly anchors: readonly AnchoredExercise[]
   readonly directive: SessionDirective
-  readonly conditioningTrend: ConditioningTrend
+  /**
+   * OVR-03's density directive, or `null` when there is none: fewer than three
+   * qualifying conditioning sections is no read, and the prompt then omits the
+   * line rather than stating a trend nobody measured.
+   */
+  readonly conditioningTrend: ConditioningTrend | null
 }
 
 /**
@@ -143,8 +148,12 @@ export interface TrainingHistoryInput {
    * no deload has been suggested, so none was accepted.
    */
   readonly deload?: boolean
-  /** OVR-03's `conditioningDirective(...).conditioning_trend`. */
-  readonly conditioningTrend?: ConditioningTrend
+  /**
+   * OVR-03's `conditioningDirective(...).conditioning_trend`, computed in code
+   * from the user's conditioning history. Absent or null means no directive —
+   * never a default, because a trend is a read and not a guess.
+   */
+  readonly conditioningTrend?: ConditioningTrend | null
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -263,7 +272,7 @@ export function buildTrainingHistory(input: TrainingHistoryInput): TrainingHisto
   return {
     anchors: entries,
     directive: sessionDirective(input),
-    conditioningTrend: input.conditioningTrend ?? 'hold',
+    conditioningTrend: input.conditioningTrend ?? null,
   }
 }
 
