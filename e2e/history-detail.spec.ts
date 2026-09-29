@@ -171,7 +171,10 @@ test.describe('history-detail — History list to Session Detail on the deployed
     adjustment_reason: null,
     generation_notes: null,
     prompt_version: 'e2e',
-    contract_version: 'e2e',
+    // A current contract makes this completed fixture eligible for the
+    // History -> Restart journey below. Legacy incompatibility is exercised
+    // separately by the Session Detail component suite.
+    contract_version: '4.1.0',
     workout: {
       title,
       overview: null,
@@ -375,6 +378,33 @@ test.describe('history-detail — History list to Session Detail on the deployed
     await expect(sets).toBeVisible()
     await expect(sets.locator('tbody tr')).toHaveCount(2)
     await expect(sets.locator('tbody th')).toHaveText(['1', '2'])
+    await checkA11y()
+  })
+
+  test('a compatible completed session restarts into Review without generation', async ({
+    page,
+    visit,
+    checkA11y,
+  }) => {
+    const generationRequests: string[] = []
+    page.on('request', (request) => {
+      if (
+        request.method() === 'POST' &&
+        request.url().includes('/functions/v1/generate-workout')
+      ) {
+        generationRequests.push(request.url())
+      }
+    })
+
+    await visit(`/history/${seeded.completedId}`)
+    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+
+    await page.getByRole('button', { name: 'Restart', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/review$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
+    expect(generationRequests, 'Restart called the model-backed generation endpoint').toEqual([])
     await checkA11y()
   })
 
