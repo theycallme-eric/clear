@@ -4,16 +4,19 @@
  * live, status is never colour alone, and the destructive action is nowhere
  * near the one pressed between every section.
  */
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '../test/render'
 import { snapshotFixture } from '../test/workout-double'
+import { useRestTimer } from '../state/rest'
+import { RestTimerProvider } from '../state/rest-provider'
 import { sessionProgress, type SessionProgress } from '../state/workout-progress'
 import {
   GlobalTimer,
   ProgressTracker,
+  RestTimerBar,
   SectionHeader,
   StructureBadge,
   WorkoutNavigation,
@@ -191,5 +194,148 @@ describe('WorkoutNavigation', () => {
 
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next section' })).toBeDisabled()
+  })
+})
+
+describe('RestTimerBar', () => {
+  /** A clock the test moves, so "the phone was in a pocket" is one assignment. */
+  function testClock(start = 1_000_000) {
+    let current = start
+    return {
+      now: () => current,
+      advance(seconds: number) {
+        current += seconds * 1000
+      },
+    }
+  }
+
+  function Raise({ seconds }: { seconds: number }) {
+    const rest = useRestTimer()
+    return (
+      <button
+        type="button"
+        onClick={() => rest.start({ exerciseId: 'ex-1', label: 'Back Squat', seconds })}
+      >
+        Raise rest
+      </button>
+    )
+  }
+
+  /** The bar under the shell's provider, and one control that raises a rest. */
+  function mountRest(clock = testClock(), seconds = 90) {
+    renderWithProviders(
+      <RestTimerProvider now={clock.now}>
+        <Raise seconds={seconds} />
+        <RestTimerBar />
+      </RestTimerProvider>,
+    )
+    return clock
+  }
+
+  function restBar(): HTMLElement | null {
+    return screen.queryByRole('region', { name: 'Rest' })
+  }
+
+  /** What the platform fires when a backgrounded tab comes back. */
+  function returnToForeground() {
+    act(() => {
+      window.dispatchEvent(new Event('visibilitychange'))
+      window.dispatchEvent(new Event('focus'))
+    })
+  }
+
+  it('draws nothing until a rest is running — no bar at zero', () => {
+    mountRest()
+
+    expect(restBar()).not.toBeInTheDocument()
+    expect(screen.queryByRole('timer', { name: 'Time remaining' })).not.toBeInTheDocument()
+  })
+
+  it('starts nothing for a rest of zero seconds', async () => {
+    const user = userEvent.setup()
+    mountRest(testClock(), 0)
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+
+    expect(restBar()).not.toBeInTheDocument()
+    expect(screen.queryByText(/Rest: 0/)).not.toBeInTheDocument()
+  })
+
+  it('shows the remaining time, in digits and in words, with skip and add-time', async () => {
+    const user = userEvent.setup()
+    mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+
+    const bar = within(restBar() as HTMLElement)
+    expect(bar.getByText('Rest after Back Squat')).toBeInTheDocument()
+    expect(bar.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('01:30')
+    expect(bar.getByText('1 minute 30 seconds left')).toBeInTheDocument()
+    expect(bar.getByRole('button', { name: 'Add 30s' })).toBeEnabled()
+    expect(bar.getByRole('button', { name: 'Skip rest' })).toBeEnabled()
+  })
+
+  it('adds time to the end of the rest, not to its start', async () => {
+    const user = userEvent.setup()
+    const clock = mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+    clock.advance(60)
+    await user.click(screen.getByRole('button', { name: 'Add 30s' }))
+
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('01:00')
+  })
+
+  it('leaves the screen when the rest is skipped', async () => {
+    const user = userEvent.setup()
+    mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+
+    expect(restBar()).not.toBeInTheDocument()
+  })
+
+  it('reads the wall clock on return from the background, and leaves when it elapses', async () => {
+    const user = userEvent.setup()
+    const clock = mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+
+    // Forty-five seconds in a pocket: the reading is what the clock implies,
+    // not a count that paused while the tab was throttled.
+    clock.advance(45)
+    returnToForeground()
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:45')
+
+    clock.advance(45)
+    returnToForeground()
+    expect(restBar()).not.toBeInTheDocument()
+  })
+
+  it('carries urgency in the last ten seconds beside the digits, never instead of them', async () => {
+    const user = userEvent.setup()
+    const clock = mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+    expect(restBar()).toHaveAttribute('data-urgent', 'false')
+
+    clock.advance(82)
+    returnToForeground()
+    expect(restBar()).toHaveAttribute('data-urgent', 'true')
+    expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+  })
+
+  it('enters with no list or route motion — it appears in the tap that logs a set', async () => {
+    const user = userEvent.setup()
+    mountRest()
+
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+
+    const bar = restBar() as HTMLElement
+    const animated = [bar, ...Array.from(bar.querySelectorAll('*'))].filter((node) =>
+      /route-enter|clr-boot|clr-reveal|clr-scan/.test(node.getAttribute('class') ?? ''),
+    )
+    expect(animated).toEqual([])
   })
 })
