@@ -200,6 +200,25 @@ emulated and asserts the screen arrives already finished: nothing still
 animating, nothing blanked by a silenced entrance, nothing to wait out before
 the screen can be used (CORE-05).
 
+## Focus ownership
+
+`focus-ownership.spec.ts` (REQ-010, REQ-011) walks the sign-in form — email
+step and one-time code step — and Settings with the Tab key, in every skin in
+`SKINS` and again under emulated forced colours. At each stop it reads the
+*computed* style of the rendered page against a capture taken with nothing
+focused: the focused control (or the box that visibly is a checkbox) must
+change its outline geometry, and every chamfered ancestor — the Card body —
+must paint exactly as it did at rest. Under forced colours the control's
+indicator must be `Highlight`, as the browser resolves it, and the card's must
+not.
+
+It needs no credentials. Supabase is stubbed at the browser's edge with
+`page.route` — `/otp` answers 200, a seeded session stands in for the verify
+step, PostgREST answers one onboarded profile — so no email is sent and the
+same file runs against a laptop or the deployed exact head. A build with no
+`VITE_SUPABASE_URL` makes no request to stub, so its code-step and Settings
+tests skip by name; the email-step tests still run.
+
 ## When something fails
 
 The run keeps a **trace** and a **screenshot**, not a stack: `npm run e2e:report`
