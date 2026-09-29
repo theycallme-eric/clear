@@ -175,7 +175,6 @@ export const REQUIRED_SCREENS: readonly RequiredScreen[] = [
     path: '/history/00000000-0000-4000-8000-000000000000',
     guard: 'protected',
     journeys: ['history-detail'],
-    pendingOwner: 'G03 / UAT-R03 — Session-detail route and restart journey',
   },
   {
     screen: 'Settings',

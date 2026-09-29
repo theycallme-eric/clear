@@ -192,12 +192,16 @@ describe('removing a required route from the router fails (REQ-010)', () => {
   })
 
   it('fails when a pending route lands and is still marked pending', () => {
-    const fixture: RouteObject[] = [
-      { path: '/history/:id', element: null },
-      ...routes,
-    ]
+    const staleInventory = REQUIRED_SCREENS.map((entry) =>
+      entry.screen === 'Session Detail'
+        ? {
+            ...entry,
+            pendingOwner: 'G03 / UAT-R03 — Session-detail route and restart journey',
+          }
+        : entry,
+    )
 
-    expect(unservedRequiredRoutes(fixture, REQUIRED_SCREENS)).toEqual([
+    expect(unservedRequiredRoutes(routes, staleInventory)).toEqual([
       expect.stringMatching(/^Session Detail \(\/history\/:id\) is now served/),
     ])
   })

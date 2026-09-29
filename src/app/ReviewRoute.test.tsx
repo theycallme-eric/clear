@@ -7,7 +7,7 @@
  * answers when a test says so. `RootLayout` is in the tree, so the atmosphere
  * the Loading screen restores is the one the route itself resolved.
  */
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -27,11 +27,17 @@ import {
   type FakeGenerationClient,
 } from '../test/generation-double'
 import { AppProviders, signedIn } from '../test/render'
-import { createWorkoutDouble } from '../test/workout-double'
+import { ok } from '../state/errors'
+import {
+  createWorkoutDouble,
+  reconstructionFixture,
+  snapshotFixture,
+} from '../test/workout-double'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
-import { REGENERATE_LABEL } from './Review'
+import { REGENERATE_LABEL, START_LABEL } from './Review'
 import { NO_REVIEW_TITLE, REVIEW_PATH } from './ReviewRoute'
 import { routes } from './router'
+import { SESSION_DETAIL_RESTART_LABEL } from './SessionDetail'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -387,5 +393,87 @@ describe('ReviewRoute · the atmosphere swap', () => {
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
     expect(atmosphere()).toBe('quiet')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-003 · JOURNEY-004 — arriving from a session-detail restart
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('ReviewRoute · a restart from session detail', () => {
+  const SESSION_ID = 'c0000001-0000-4000-8000-000000000000'
+  const TITLE = 'Tuesday pull'
+
+  function record(reconstruction: 'performed' | 'intended_at_start') {
+    return reconstructionFixture({
+      sessionId: SESSION_ID,
+      title: TITLE,
+      state: 'completed',
+      reconstruction,
+      sections: [{ title: 'Main', blocks: [{ exercises: ['completed'] }] }],
+    })
+  }
+
+  function mountFromDetail() {
+    const client = createFakeGenerationClient()
+    const accepted: SessionAcceptance[] = []
+    const double = createWorkoutDouble({
+      session: null,
+      sessions: {
+        asPerformed: async () => ok(record('performed')),
+        asIntendedAtStart: async () => ok(record('intended_at_start')),
+        async accept(_userId, acceptance) {
+          accepted.push(acceptance)
+          return ok(snapshotFixture({ sessionId: SESSION_ID, title: TITLE, state: 'prescribed' }))
+        },
+        async start() {
+          const running = snapshotFixture({ sessionId: SESSION_ID, title: TITLE, state: 'active' })
+          return ok({ session: running.session, state: 'active' as const })
+        },
+      },
+    })
+    const router = createMemoryRouter(routes, {
+      initialEntries: ['/history', `/history/${SESSION_ID}`],
+      initialIndex: 1,
+    })
+    render(
+      <AppProviders {...signedIn({ workout: double.clients, generation: client })}>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+    return { client, double, router, accepted }
+  }
+
+  it('shows the reproduced workout ready to start, with no generation call', async () => {
+    const user = userEvent.setup()
+    const { client, double, router } = mountFromDetail()
+
+    await briefing(TITLE)
+    await user.click(screen.getByRole('button', { name: SESSION_DETAIL_RESTART_LABEL }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(REVIEW_PATH))
+    expect(await screen.findByRole('button', { name: START_LABEL })).toBeEnabled()
+    expect(await briefing(TITLE)).toBeInTheDocument()
+    expect(readReviewHandoff(router.state.location.state)?.savedWorkoutId).toBeNull()
+    expect(client.calls).toEqual([])
+    expect(double.favorites()).toEqual([])
+  })
+
+  it('starts it as a plain session: accepted as reproduced, and attributed to no favorite', async () => {
+    const user = userEvent.setup()
+    const { client, double, router, accepted } = mountFromDetail()
+
+    await briefing(TITLE)
+    await user.click(screen.getByRole('button', { name: SESSION_DETAIL_RESTART_LABEL }))
+    await waitFor(() => expect(router.state.location.pathname).toBe(REVIEW_PATH))
+
+    await user.click(await screen.findByRole('button', { name: START_LABEL }))
+
+    await waitFor(() => expect(accepted).toHaveLength(1))
+    expect(accepted[0].workout.title).toBe(TITLE)
+    expect(accepted[0].workout.sections).toHaveLength(1)
+    expect(double.attempts()).toEqual([])
+    expect(double.favorites()).toEqual([])
+    expect(client.calls).toEqual([])
   })
 })
