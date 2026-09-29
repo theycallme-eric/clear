@@ -130,7 +130,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
 
     expect(
       [...jobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
-    ).toEqual(['preview-e2e', 'backend-e2e'])
+    ).toEqual(['preview-e2e', 'backend-e2e', 'release-e2e'])
     expect(
       [...rlsJobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
     ).toEqual(['rls-standing'])
@@ -167,8 +167,13 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(rlsJob).toMatch(/if: always\(\)\n\s+run: npm run e2e:reset/)
   })
 
+  const backendJob = workflow.slice(
+    workflow.indexOf('  backend-e2e:'),
+    workflow.indexOf('  release-e2e:'),
+  )
+  const releaseJob = workflow.slice(workflow.indexOf('  release-e2e:'))
+
   it('runs privileged OTP, RLS and generation checks only from trusted main', () => {
-    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
 
     expect(backendJob).toContain("github.event_name == 'push'")
     expect(backendJob).toContain("github.ref == 'refs/heads/main'")
@@ -180,13 +185,35 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
   })
 
   it('runs the D6 regression where there is a database to run it against', () => {
-    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
-
     // SES-01b. Its schema half runs in every lane — it needs no credentials —
     // but the half that performs a swap, logs sets and reads the three
     // reconstructions back needs a project, and this is the only job that has
     // one. A spec nobody runs is not a standing regression test.
     expect(backendJob).toContain('e2e/d6-swap-persistence.spec.ts')
+  })
+
+  it('walks the core loop against the production deployment of main’s exact head (REQ-010)', () => {
+    // Only a finished production deployment, and only once its SHA is main's.
+    expect(releaseJob).toContain("github.event_name == 'deployment_status'")
+    expect(releaseJob).toContain("github.event.deployment.environment == 'Production'")
+    expect(releaseJob).toContain('ref: ${{ github.event.deployment.sha }}')
+    expect(releaseJob).toContain('DEPLOYED_SHA: ${{ github.event.deployment.sha }}')
+    expect(releaseJob).toContain('git fetch --no-tags --depth=1 origin main')
+    expect(releaseJob).toMatch(/"\$MAIN_SHA" != "\$DEPLOYED_SHA"[\s\S]*exit 1/)
+    // The SHA check comes before anything that could report a pass.
+    expect(releaseJob.indexOf('DEPLOYED_SHA')).toBeLessThan(
+      releaseJob.indexOf('npx playwright test'),
+    )
+
+    expect(releaseJob).toContain(
+      'E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}',
+    )
+    expect(releaseJob).toContain(
+      'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
+    )
+    expect(releaseJob).toContain(
+      'npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0',
+    )
   })
 
   it('uploads the trace and screenshot when it fails', () => {

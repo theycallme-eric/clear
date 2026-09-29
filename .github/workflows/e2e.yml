@@ -119,3 +119,61 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  release-e2e:
+    name: Release gate — deployed exact-head core loop (REQ-010)
+    # The production deployment Vercel builds from a push to main. The job is
+    # trusted only once it has proved the deployed SHA *is* main's head, so a
+    # stale or out-of-band deployment never receives a pass.
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_NAMESPACE: release
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - name: Verify the deployment is main's exact head
+        env:
+          DEPLOYED_SHA: ${{ github.event.deployment.sha }}
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          MAIN_SHA="$(git rev-parse FETCH_HEAD)"
+          if [ "$MAIN_SHA" != "$DEPLOYED_SHA" ]; then
+            echo "::error::Deployed $DEPLOYED_SHA is not main's head $MAIN_SHA"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      # No retries: a generation failure fails the gate rather than being
+      # retried into a pass (the spec also pins retries to 0).
+      - name: Walk the new-user core loop against the deployment
+        env:
+          E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-release-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
