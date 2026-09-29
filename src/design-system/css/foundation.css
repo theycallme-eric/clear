@@ -644,6 +644,11 @@ select:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
   [role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
     outline: var(--focus-ring-width) solid Highlight;
   }
+  /* A native checkbox or radio is transparent over its box, so its own outline
+     is never seen: the box that visibly is the control takes the Highlight. */
+  .clr-check input:focus-visible ~ .clr-check__box {
+    outline: var(--focus-ring-width) solid Highlight;
+  }
   /* Same ownership as above: only the focus owner's frame turns Highlight, and
      it keeps the doubled width. A containing card keeps its CanvasText border. */
   .clr-chamfer:focus-visible::after,
