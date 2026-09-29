@@ -12,7 +12,7 @@ import { renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
 import { createWorkoutDouble } from '../test/workout-double'
 import { PREFILL_NOTICE } from './Generate'
-import { SUGGESTION_EMPTY } from './Home'
+import { HISTORY_ROUTE, SUGGESTION_EMPTY, VIEW_HISTORY_LABEL } from './Home'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -74,6 +74,23 @@ describe('Home', () => {
       ])
     })
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+  })
+
+  it('opens History from the Recent panel as a client-side navigation', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ workout: createWorkoutDouble({ session: null }).clients }))
+
+    const link = await screen.findByRole('link', { name: VIEW_HISTORY_LABEL })
+    expect(link).toHaveAttribute('href', HISTORY_ROUTE)
+
+    await user.click(link)
+
+    // Same router, same providers: the Home heading gave way to History's
+    // without the app being mounted again.
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'History' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Today' })).not.toBeInTheDocument()
   })
 
   it('marks today with a reason and redraws the week from the saved row', async () => {

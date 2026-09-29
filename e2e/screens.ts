@@ -56,6 +56,10 @@ export const SCREENS: readonly E2eScreen[] = [
   // `/generate`; what it renders with and without a hand-off is covered by
   // `src/app/ReviewRoute.test.tsx`.
   { path: '/review', route: '/review', title: 'Welcome · CLEAR', heading: 'CLEAR' },
+  // HIST-01's list is protected, so the credential-free preview resolves it to
+  // Welcome like `/review`; its four states, filter and paging are covered by
+  // `src/app/History.test.tsx`.
+  { path: '/history', route: '/history', title: 'Welcome · CLEAR', heading: 'CLEAR' },
   // A screen, not a gap: the catch-all route renders one, and a 404 that is
   // inaccessible is still inaccessible.
   {
