@@ -32,6 +32,19 @@ describe('app router', () => {
     expect(document.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'quiet')
   })
 
+  it('mounts /history as a protected route at the quiet atmosphere', async () => {
+    const { container } = renderApp(['/history'], signedIn())
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'History' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
+    expect(container.querySelector('.clr-shell')).toHaveAttribute(
+      'data-atmosphere',
+      'quiet',
+    )
+  })
+
   it('renders the fallback route', () => {
     renderApp(['/missing'])
 

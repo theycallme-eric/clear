@@ -8,6 +8,7 @@ import {
 import { AppChrome } from './AppChrome'
 import { Generate } from './Generate'
 import { ONBOARDING_ROUTE, OnboardingOnly, Protected, PublicOnly } from './guards'
+import { History } from './History'
 import { Home } from './Home'
 import { Login } from './Login'
 import { LocationSettings } from './LocationSettings'
@@ -121,6 +122,17 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="Review">
                 <ReviewRoute />
+              </Protected>
+            ),
+          },
+          // HIST-01 — `protected` (IA.md §1), at the `quiet` the atmosphere
+          // table already records for `/history`. In from Home's recents, out
+          // to Home.
+          {
+            path: '/history',
+            element: (
+              <Protected title="History">
+                <History />
               </Protected>
             ),
           },

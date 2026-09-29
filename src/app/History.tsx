@@ -22,8 +22,15 @@
  * route when that screen lands — not a second derivation.
  */
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { Button, EmptyState } from '../design-system/index'
+import {
+  AppHeader,
+  ArrowLeft,
+  Button,
+  ClearLogo,
+  EmptyState,
+} from '../design-system/index'
 import {
   filterHistory,
   historyEntries,
@@ -61,7 +68,12 @@ export const HISTORY_NO_MATCH_MESSAGE =
   'The history is there — this filter just does not reach it.'
 export const HISTORY_NO_MATCH_ACTION = 'Show all entries'
 
+/** IA.md §4's out-edge: History is entered from Home and returns there. */
+export const HISTORY_BACK_LABEL = 'Home'
+export const HISTORY_LOAD_MORE_LABEL = 'Load older workouts'
+
 export function History() {
+  const navigate = useNavigate()
   const query = useHistoryQuery()
   const [filter, setFilter] = useState<HistoryFilter>('all')
 
@@ -79,49 +91,64 @@ export function History() {
   const filtered = state.status === 'empty' && entries.length > 0
 
   return (
-    <Screen title={SCREEN_TITLE}>
-      {/* The control belongs to a history that exists. With none, there is
-          nothing to narrow, and an inert dropdown above "No workouts yet"
-          would be the screen offering an action that cannot do anything. */}
-      {entries.length > 0 && (
-        <Select
-          label={HISTORY_FILTER_LABEL}
-          value={filter}
-          options={[...HISTORY_FILTERS]}
-          onChange={(value) => setFilter(historyFilterOf(value))}
-        />
-      )}
-
-      <ViewStateSwitch
-        state={state}
-        loadingLabel={HISTORY_LOADING_LABEL}
-        errorTitle={HISTORY_ERROR_TITLE}
-        onRetry={query.refetch}
-        empty={
-          filtered ? (
-            <EmptyState
-              title={HISTORY_NO_MATCH_TITLE}
-              message={HISTORY_NO_MATCH_MESSAGE}
-              actionLabel={HISTORY_NO_MATCH_ACTION}
-              onAction={() => setFilter('all')}
-            />
-          ) : (
-            <EmptyState title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
-          )
+    <>
+      <AppHeader
+        actions={
+          <Button
+            variant="quiet"
+            icon={<ArrowLeft size={20} />}
+            onClick={() => void navigate('/')}
+          >
+            {HISTORY_BACK_LABEL}
+          </Button>
         }
       >
-        {(data) => (
-          <>
-            <HistoryList entries={data} label={HISTORY_LIST_LABEL} />
-            {query.canLoadMore && (
-              <Button variant="secondary" onClick={query.loadMore}>
-                Load older workouts
-              </Button>
-            )}
-          </>
+        <ClearLogo size="md" />
+      </AppHeader>
+      <Screen title={SCREEN_TITLE}>
+        {/* The control belongs to a history that exists. With none, there is
+            nothing to narrow, and an inert dropdown above "No workouts yet"
+            would be the screen offering an action that cannot do anything. */}
+        {entries.length > 0 && (
+          <Select
+            label={HISTORY_FILTER_LABEL}
+            value={filter}
+            options={[...HISTORY_FILTERS]}
+            onChange={(value) => setFilter(historyFilterOf(value))}
+          />
         )}
-      </ViewStateSwitch>
-    </Screen>
+
+        <ViewStateSwitch
+          state={state}
+          loadingLabel={HISTORY_LOADING_LABEL}
+          errorTitle={HISTORY_ERROR_TITLE}
+          onRetry={query.refetch}
+          empty={
+            filtered ? (
+              <EmptyState
+                title={HISTORY_NO_MATCH_TITLE}
+                message={HISTORY_NO_MATCH_MESSAGE}
+                actionLabel={HISTORY_NO_MATCH_ACTION}
+                onAction={() => setFilter('all')}
+              />
+            ) : (
+              <EmptyState title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
+            )
+          }
+        >
+          {(data) => (
+            <>
+              <HistoryList entries={data} label={HISTORY_LIST_LABEL} />
+              {query.canLoadMore && (
+                <Button variant="secondary" onClick={query.loadMore}>
+                  {HISTORY_LOAD_MORE_LABEL}
+                </Button>
+              )}
+            </>
+          )}
+        </ViewStateSwitch>
+      </Screen>
+    </>
   )
 }
 

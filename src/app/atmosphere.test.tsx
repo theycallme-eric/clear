@@ -62,6 +62,7 @@ function providersFor(pathname: string): ProviderOptions {
     pathname === '/summary' ||
     pathname === '/generate' ||
     pathname === '/review' ||
+    pathname === '/history' ||
     pathname.startsWith('/settings')
   ) {
     return signedIn()
