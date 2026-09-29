@@ -229,7 +229,15 @@ function CircuitMovement({
       style={{ display: 'flex', flexDirection: 'column' }}
     >
       {marker !== null && <p style={labelStyle}>{MARKER_WORDS[marker]}</p>}
-      <ExerciseSetLogger exercise={exercise} ordinal={`${exercise.position}.`} />
+      {/*
+        No rest bar per movement: a circuit rests once per round, and that
+        countdown is `RoundRest`'s (EXE-05).
+      */}
+      <ExerciseSetLogger
+        exercise={exercise}
+        ordinal={`${exercise.position}.`}
+        restSeconds={null}
+      />
     </li>
   )
 }

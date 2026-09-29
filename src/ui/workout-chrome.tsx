@@ -1,7 +1,7 @@
 /**
- * EXE-01's presentation: the four parts of the workout shell that are not the
- * renderers — `GlobalTimer`, `ProgressTracker`, `SectionHeader` and
- * `WorkoutNavigation` (IA.md §3, layer 4).
+ * EXE-01's presentation: the parts of the workout shell that are not the
+ * renderers — `GlobalTimer`, `ProgressTracker`, `SectionHeader`,
+ * `RestTimerBar` (EXE-05) and `WorkoutNavigation` (IA.md §3, layer 4).
  *
  * All four are app-owned domain components rather than design-system ones, and
  * `GlobalTimer` is the interesting case: the export ships `TimerDisplay`, but
@@ -34,12 +34,17 @@ import {
   Circuit,
   Dumbbell,
   Ladder,
+  Plus,
   Progress,
   Pulse,
+  Rest,
   Stopwatch,
   Superset,
   Button,
+  TimerDisplay,
+  X,
 } from '../design-system/index'
+import { REST_EXTENSION_SECONDS, spokenRest, useRestTimer } from '../state/rest'
 import { formatElapsed, spokenElapsed } from '../state/workout-clock'
 import type {
   SectionProgress,
@@ -50,6 +55,7 @@ import type {
 } from '../state/workout-progress'
 import { ConfirmDialog } from './blocking-dialog'
 import { Heading, HeadingSection } from './Heading'
+import './rest-timer-bar.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Global timer
@@ -341,6 +347,84 @@ export function AbandonConfirmDialog({
       Everything logged so far is kept. The workout stops here: it cannot be
       picked back up, and it does not count towards your streak.
     </ConfirmDialog>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rest
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The last stretch of a rest, where the fill takes the timer's urgency colour. */
+const REST_URGENT_SECONDS = 10
+
+/**
+ * The session's one rest, between sets (EXE-05).
+ *
+ * Everything it draws is `useRestTimer`'s, so it has no count of its own: the
+ * remaining seconds are the wall clock's reading of the rest the shell holds,
+ * which is what makes the bar right on the first paint after the phone unlocks.
+ *
+ * It is absent rather than empty. No rest running, a rest skipped, and a rest
+ * run out all draw nothing — never a bar at zero, and never `Rest: 0s`. And it
+ * carries no entrance: the bar appears in the same tap that logs a set, and
+ * the IA is explicit that no list or route motion fires while a set is being
+ * logged. The only moving parts are the digits, which tumble when they change,
+ * and the fill, which steps.
+ */
+export function RestTimerBar() {
+  const { rest, remainingSeconds, extend, skip } = useRestTimer()
+
+  if (rest === null || remainingSeconds <= 0) return null
+
+  const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
+  const urgent = remainingSeconds <= REST_URGENT_SECONDS
+
+  return (
+    <section
+      aria-label="Rest"
+      className="clr-rest-bar clr-stack--tight"
+      data-urgent={urgent ? 'true' : 'false'}
+      style={{ display: 'flex', flexDirection: 'column' }}
+    >
+      <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <p
+          style={{
+            margin: 0,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 'var(--spacing-100)',
+            fontFamily: 'var(--font-data)',
+            fontSize: 'var(--label-xs-size)',
+            letterSpacing: 'var(--tracking-data)',
+            textTransform: 'uppercase',
+            color: 'var(--text-card-label)',
+          }}
+        >
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            <Rest />
+          </span>
+          Rest after {rest.label}
+        </p>
+        <TimerDisplay seconds={remainingSeconds} lowThreshold={REST_URGENT_SECONDS} />
+      </div>
+      <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
+
+      <div className="clr-rest-bar__track" aria-hidden="true">
+        <div
+          className="clr-rest-bar__fill"
+          style={{ width: `${Math.round(fraction * 1000) / 10}%` }}
+        />
+      </div>
+
+      <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+        <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
+          Add {REST_EXTENSION_SECONDS}s
+        </Button>
+        <Button variant="quiet" icon={<X />} onClick={skip}>
+          Skip rest
+        </Button>
+      </div>
+    </section>
   )
 }
 
