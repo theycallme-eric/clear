@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
+import { createError, err, ErrorCode, ok } from '../state/errors'
+import type { ConditioningHistoryRow, GenerationRequest } from '../state/schemas'
+import {
+  performGeneration,
+  type GenerationComposerFactory,
+  type GenerationDatabase,
+} from '../../supabase/functions/_shared/generate.ts'
 import {
   buildUserMessage,
   SYSTEM_PROMPT,
@@ -13,7 +20,7 @@ import {
   TRAINING_HISTORY_LIMIT,
   type AnchorHistory,
 } from '../../supabase/functions/_shared/training-history.ts'
-import { promptInput, TODAY } from './generation-prompt-fixtures'
+import { promptInput, sectionFixture, TODAY } from './generation-prompt-fixtures'
 
 // OVR-02. The block is a decision about what the model is allowed to know, so
 // the tests are mostly about what is *not* in it: no anchor value, no unit, no
@@ -133,8 +140,172 @@ describe('the TRAINING HISTORY block', () => {
     expect(sessionDirective({ anchors: [], today: TODAY })).toBe('normal')
   })
 
-  it('holds conditioning when OVR-03 has said nothing', () => {
-    expect(buildTrainingHistory({ anchors: [], today: TODAY }).conditioningTrend).toBe('hold')
+  it('carries no conditioning trend when OVR-03 has said nothing, rather than guessing hold', () => {
+    expect(buildTrainingHistory({ anchors: [], today: TODAY }).conditioningTrend).toBeNull()
+    expect(
+      buildTrainingHistory({ anchors: [], today: TODAY, conditioningTrend: null })
+        .conditioningTrend,
+    ).toBeNull()
+  })
+})
+
+// OVR-03. The density directive is read from `conditioning_history(...)` and
+// decided by `conditioningDirective` before the model is called; these drive
+// the mounted pipeline with fixture history and read the prompt it composed.
+describe('the density directive on the generation request', () => {
+  const USER_ID = '11111111-1111-4111-8111-111111111111'
+  const REQUEST_ID = 'req_ovr03_density'
+
+  const request: GenerationRequest = {
+    request_id: REQUEST_ID,
+    goal: 'conditioning',
+    date: TODAY,
+    focus: 'full_body',
+    requested_intensity: 7,
+    requested_duration_mins: 45,
+    location_id: '22222222-2222-4222-8222-222222222222',
+    notes: null,
+    deload: false,
+  }
+
+  // One scored AMRAP block per row, newest first as the function answers.
+  // `perceived_effort` is the section RPE EXE-04's effort capture writes.
+  const section = (
+    index: number,
+    overrides: Partial<ConditioningHistoryRow> = {},
+  ): ConditioningHistoryRow => ({
+    session_id: `c000000${index}-0000-4000-8000-000000000000`,
+    session_date: `2026-09-${`${20 - index}`.padStart(2, '0')}`,
+    effective_intensity: 7,
+    goal_preset: 'conditioning',
+    section_id: `a000000${index}-0000-4000-8000-000000000000`,
+    section_order: 3,
+    block_id: `b000000${index}-0000-4000-8000-000000000000`,
+    block_order: 0,
+    structure_type: 'amrap',
+    rep_scheme: 'fixed',
+    timer_type: 'countdown',
+    timer_seconds: 600,
+    rounds: null,
+    round_rest_seconds: null,
+    elapsed_seconds: null,
+    completed_under_cap: null,
+    rounds_completed: 8,
+    partial_round_reps: null,
+    minutes_completed: null,
+    highest_rung: null,
+    perceived_effort: 6,
+    scored_at: '2026-09-20T10:30:00.000Z',
+    prescriptions: [
+      {
+        exercise_id: 'kettlebell-swing',
+        order_index: 0,
+        modality: 'reps',
+        sets: null,
+        target_kind: 'fixed',
+        target_value: 10,
+        target_min: null,
+        target_max: null,
+        target_sequence: null,
+        per_side: false,
+        distance_unit: null,
+        load_type: 'absolute',
+        load_value: 24,
+        equipment_used: 'kettlebell',
+      },
+    ],
+    ...overrides,
+  })
+  const easy = (index: number, overrides: Partial<ConditioningHistoryRow> = {}) =>
+    section(index, { perceived_effort: 6, ...overrides })
+  const hard = (index: number) => section(index, { perceived_effort: 9 })
+  const capped = (index: number) =>
+    section(index, {
+      structure_type: 'for_time',
+      rounds: 5,
+      completed_under_cap: false,
+      rounds_completed: 2,
+      perceived_effort: 9,
+    })
+
+  /** Runs the pipeline and returns the user message the model would have been sent. */
+  async function composedMessage(
+    conditioning: GenerationDatabase['conditioning'],
+  ): Promise<string> {
+    let message: string | null = null
+
+    const db: GenerationDatabase = {
+      candidates: async () => ok([sectionFixture('conditioning', ['box-jumps'])]),
+      constraints: async () => ok([]),
+      recentHistory: async () => ok({ focuses: [], patterns: [], exerciseIds: [] }),
+      anchors: async () => ok([]),
+      conditioning,
+    }
+    const composer: GenerationComposerFactory = () => ({
+      async compose(input) {
+        message = buildUserMessage(input)
+        return err(createError(ErrorCode.GENERATION_FAILED, { requestId: REQUEST_ID }))
+      },
+    })
+
+    await performGeneration(
+      request,
+      { userId: USER_ID, requestId: REQUEST_ID },
+      { db, catalog: async () => ok(new Map()), composer },
+    )
+
+    if (message === null) throw new Error('the pipeline never composed')
+    return message
+  }
+
+  it('states ready when the last two of three qualifying sections landed easily', async () => {
+    const message = await composedMessage(async () => ok([easy(1), easy(2), hard(3)]))
+    expect(message).toContain('CONDITIONING TREND: ready')
+  })
+
+  it('states backing_off when the last two of three qualifying sections hit the cap', async () => {
+    const message = await composedMessage(async () => ok([capped(1), capped(2), easy(3)]))
+    expect(message).toContain('CONDITIONING TREND: backing_off')
+  })
+
+  it('states hold when three qualifying sections are mixed', async () => {
+    const message = await composedMessage(async () => ok([easy(1), hard(2), easy(3)]))
+    expect(message).toContain('CONDITIONING TREND: hold')
+  })
+
+  it('omits the directive with fewer than three qualifying sections', async () => {
+    expect(await composedMessage(async () => ok([]))).not.toContain('CONDITIONING TREND')
+    expect(await composedMessage(async () => ok([easy(1), easy(2)]))).not.toContain(
+      'CONDITIONING TREND',
+    )
+  })
+
+  it('does not count a section below intensity 5 toward the three', async () => {
+    const light = easy(3, { effective_intensity: 4 })
+    const atFloor = easy(3, { effective_intensity: 5 })
+
+    expect(await composedMessage(async () => ok([easy(1), easy(2), light]))).not.toContain(
+      'CONDITIONING TREND',
+    )
+    expect(await composedMessage(async () => ok([easy(1), easy(2), atFloor]))).toContain(
+      'CONDITIONING TREND: ready',
+    )
+  })
+
+  it('omits the directive rather than failing when the history cannot be read', async () => {
+    const message = await composedMessage(async () =>
+      err(createError(ErrorCode.PERSISTENCE_READ_FAILED)),
+    )
+    expect(message).not.toContain('CONDITIONING TREND')
+  })
+
+  it('never asks the model to work the trend out', async () => {
+    const message = await composedMessage(async () => ok([easy(1), easy(2), hard(3)]))
+
+    // The model receives one decided value, not the rows it was decided from.
+    expect(message).not.toContain('perceived_effort')
+    expect(message).not.toMatch(/CONDITIONING TREND: .*\|/)
+    expect(SYSTEM_PROMPT).not.toMatch(/(?:decide|determine|infer|work out) the conditioning trend/i)
   })
 })
 
