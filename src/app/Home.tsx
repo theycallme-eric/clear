@@ -137,6 +137,10 @@ import { Screen } from './Screen'
 /** IA.md §4's out-edges from Home. Each lands with the screen behind it. */
 export const GENERATE_ROUTE = GENERATE_PATH
 export const REVIEW_ROUTE = '/review'
+export const HISTORY_ROUTE = '/history'
+
+/** The Recent panel's way into the whole chronology. */
+export const VIEW_HISTORY_LABEL = 'View history'
 
 /** The template's own h1 — the screen is "Today", the app is the wordmark. */
 export const HOME_HEADING = 'Today'
@@ -655,37 +659,45 @@ function RecentWorkouts({
           : viewReady(entries)
 
   return (
-    <ViewStateSwitch
-      state={state}
-      loadingLabel="Reading your recent workouts"
-      errorTitle="Your recent workouts didn’t load"
-      onRetry={query.refetch}
-      empty={
-        <EmptyState
-          title="No workouts yet"
-          message="The workouts you finish appear here, newest first."
-        />
-      }
-    >
-      {(recents) => (
-        <ul
-          aria-label={RECENT_WORKOUTS_LABEL}
-          style={{
-            listStyle: 'none',
-            margin: 0,
-            padding: 0,
-            display: 'grid',
-            gap: 'var(--spacing-300)',
-          }}
-        >
-          {recents.map((entry) => (
-            <li key={entry.key}>
-              <WorkoutListItem entry={entry} to={sessionDetailPath(entry.id)} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </ViewStateSwitch>
+    <div className="clr-stack clr-stack--tight">
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your recent workouts"
+        errorTitle="Your recent workouts didn’t load"
+        onRetry={query.refetch}
+        empty={
+          <EmptyState
+            title="No workouts yet"
+            message="The workouts you finish appear here, newest first."
+          />
+        }
+      >
+        {(recents) => (
+          <ul
+            aria-label={RECENT_WORKOUTS_LABEL}
+            style={{
+              listStyle: 'none',
+              margin: 0,
+              padding: 0,
+              display: 'grid',
+              gap: 'var(--spacing-300)',
+            }}
+          >
+            {recents.map((entry) => (
+              <li key={entry.key}>
+                <WorkoutListItem entry={entry} to={sessionDetailPath(entry.id)} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </ViewStateSwitch>
+      {/* The recents are the head of the chronology; the whole of it is one
+          link away in every state, because History answers its own empty and
+          error rather than inheriting these. */}
+      <p>
+        <Link to={HISTORY_ROUTE}>{VIEW_HISTORY_LABEL}</Link>
+      </p>
+    </div>
   )
 }
 
