@@ -40,6 +40,7 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
+import { RestTimerProvider } from '../state/rest-provider'
 import { SetLoggingProvider } from '../state/set-logging-provider'
 import { SwapProvider } from '../state/swap-provider'
 import { useProfileQuery } from '../state/user-queries'
@@ -72,6 +73,7 @@ import {
   AbandonConfirmDialog,
   GlobalTimer,
   ProgressTracker,
+  RestTimerBar,
   SectionHeader,
   WorkoutNavigation,
 } from '../ui/workout-chrome'
@@ -342,75 +344,88 @@ function WorkoutShell({
           onFailure={setFailure}
           storage={storage}
         >
-          <AppHeader
-            meta={<GlobalTimer seconds={seconds} />}
-            actions={
-              <Button
-                variant="quiet"
-                icon={<LogOut />}
-                onClick={() => setAskedToExit(true)}
-              >
-                Abandon
-              </Button>
-            }
-          >
-            <ClearLogo size="sm" />
-          </AppHeader>
+          {/*
+            EXE-05: the session's one rest. Inside the set path because a
+            logged set is what starts it, and at the shell rather than in a
+            renderer so a second set — or a set in another section — replaces
+            the rest instead of drawing a second bar beside it. Nothing here
+            persists: a reload loses the countdown and nothing the session
+            recorded.
+          */}
+          <RestTimerProvider>
+            <AppHeader
+              meta={<GlobalTimer seconds={seconds} />}
+              actions={
+                <Button
+                  variant="quiet"
+                  icon={<LogOut />}
+                  onClick={() => setAskedToExit(true)}
+                >
+                  Abandon
+                </Button>
+              }
+            >
+              <ClearLogo size="sm" />
+            </AppHeader>
 
-          <Screen title={SCREEN_TITLE}>
-            <div className="clr-stack">
-              {/*
-                EXE-07's one statement about unsynced work. It is here rather
-                than in the error dialog because a queue that is retrying is not
-                a failed action: it must not interrupt a set, and it must say the
-                count once rather than once per set.
-              */}
-              <SetSyncNotice />
+            <Screen title={SCREEN_TITLE}>
+              <div className="clr-stack">
+                {/*
+                  EXE-07's one statement about unsynced work. It is here rather
+                  than in the error dialog because a queue that is retrying is
+                  not a failed action: it must not interrupt a set, and it must
+                  say the count once rather than once per set.
+                */}
+                <SetSyncNotice />
 
-              <ProgressTracker
-                progress={progress}
-                currentIndex={index}
-                onSelect={section.setIndex}
-              />
+                <ProgressTracker
+                  progress={progress}
+                  currentIndex={index}
+                  onSelect={section.setIndex}
+                />
 
-              {current === undefined ? null : (
-                <>
-                  <SectionHeader
-                    section={current}
-                    position={index + 1}
-                    total={progress.total}
-                  />
-                  {current.blocks.map((block) => (
-                    <BlockSlot key={block.blockId} block={block} />
-                  ))}
-                </>
-              )}
+                {current === undefined ? null : (
+                  <>
+                    <SectionHeader
+                      section={current}
+                      position={index + 1}
+                      total={progress.total}
+                    />
+                    {current.blocks.map((block) => (
+                      <BlockSlot key={block.blockId} block={block} />
+                    ))}
+                  </>
+                )}
 
-              <WorkoutNavigation
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                onPrevious={() => section.setIndex(index - 1)}
-                onNext={() => section.setIndex(index + 1)}
-                onFinish={() => void finish()}
-                busy={ending}
-              />
-            </div>
-          </Screen>
+                {/* Between the work and the way on, where IA.md §4 composes it. */}
+                <RestTimerBar />
 
-          <AbandonConfirmDialog
-            open={exiting}
-            onConfirm={() => void confirmAbandon()}
-            onCancel={cancelExit}
-          />
+                <WorkoutNavigation
+                  canGoBack={canGoBack}
+                  canGoForward={canGoForward}
+                  onPrevious={() => section.setIndex(index - 1)}
+                  onNext={() => section.setIndex(index + 1)}
+                  onFinish={() => void finish()}
+                  busy={ending}
+                />
+              </div>
+            </Screen>
 
-          {failure !== null && (
-            <ErrorDialog
-              open
-              error={failure}
-              title="That didn’t save"
-              onDismiss={() => setFailure(null)}
+            <AbandonConfirmDialog
+              open={exiting}
+              onConfirm={() => void confirmAbandon()}
+              onCancel={cancelExit}
             />
-          )}
+
+            {failure !== null && (
+              <ErrorDialog
+                open
+                error={failure}
+                title="That didn’t save"
+                onDismiss={() => setFailure(null)}
+              />
+            )}
+          </RestTimerProvider>
         </SetLoggingProvider>
       </BlockCompletionProvider>
     </SwapProvider>

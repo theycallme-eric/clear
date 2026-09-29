@@ -15,10 +15,10 @@
  * type writes its `block_results` row through this one path, with perceived
  * effort captured once, by the shell's dialog.
  */
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode } from '../state/errors'
 import { WORKOUT_SHELL_STORAGE_KEY } from '../state/workout-persistence'
@@ -516,5 +516,200 @@ describe('Workout — block completion', () => {
     await waitFor(() => expect(isDialogOpen('EMOM complete')).toBe(false))
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rest (EXE-05)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Workout — the session’s one rest', () => {
+  /**
+   * One section, four ways a prescription can speak about rest: its own
+   * `rest_seconds`, none at all, and a superset whose rest is the block's and
+   * comes after the pair.
+   */
+  const REST_SECTIONS: SectionFixture[] = [
+    {
+      title: 'Strength',
+      sectionType: 'primary_lift',
+      blocks: [
+        { exercises: [{ prescription: { exercise_id: 'back-squat', rest_seconds: 90 } }] },
+        { exercises: [{ prescription: { exercise_id: 'plank', rest_seconds: null } }] },
+        { exercises: [{ prescription: { exercise_id: 'dead-bug', rest_seconds: 0 } }] },
+        {
+          structureType: 'superset',
+          roundRestSeconds: 60,
+          exercises: [
+            { prescription: { exercise_id: 'bench-press', rest_seconds: 90 } },
+            { prescription: { exercise_id: 'barbell-row', rest_seconds: 90 } },
+          ],
+        },
+      ],
+    },
+  ]
+
+  /** The wall clock every rest reading is taken from, moved by the test. */
+  let clock = 0
+
+  beforeEach(() => {
+    clock = Date.now()
+    vi.spyOn(Date, 'now').mockImplementation(() => clock)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  function advance(seconds: number) {
+    clock += seconds * 1000
+  }
+
+  function restShell() {
+    return shell({ session: activeSession(REST_SECTIONS) })
+  }
+
+  async function logSet(name: string, setNumber: number) {
+    const user = userEvent.setup()
+    const form = within(
+      screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }),
+    )
+    await user.click(form.getByRole('button', { name: `Log set ${setNumber}` }))
+  }
+
+  function restBars(): HTMLElement[] {
+    return screen.queryAllByRole('region', { name: 'Rest' })
+  }
+
+  /** The countdown inside the one bar — scoped, so no renderer's own timer answers. */
+  function restTimer(): HTMLElement {
+    return within(screen.getByRole('region', { name: 'Rest' })).getByRole('timer', {
+      name: 'Time remaining',
+    })
+  }
+
+  /** What the platform fires when a backgrounded tab comes back. */
+  function returnToForeground() {
+    act(() => {
+      window.dispatchEvent(new Event('visibilitychange'))
+      window.dispatchEvent(new Event('focus'))
+    })
+  }
+
+  it('draws no rest bar before any set is logged', async () => {
+    await restShell()
+
+    expect(restBars()).toEqual([])
+  })
+
+  it('starts the movement’s own rest when a set is logged', async () => {
+    await restShell()
+
+    await logSet('back squat', 1)
+
+    const [bar] = restBars()
+    expect(restBars()).toHaveLength(1)
+    expect(within(bar).getByText('Rest after back squat')).toBeInTheDocument()
+    expect(restTimer()).toHaveTextContent('01:30')
+    expect(within(bar).getByRole('button', { name: 'Skip rest' })).toBeInTheDocument()
+    expect(within(bar).getByRole('button', { name: 'Add 30s' })).toBeInTheDocument()
+  })
+
+  it('starts none, and draws no bar, for a prescription with no rest', async () => {
+    await restShell()
+
+    await logSet('plank', 1)
+    await logSet('dead bug', 1)
+
+    await screen.findByRole('form', { name: 'Log set 2 of dead bug' })
+    expect(restBars()).toEqual([])
+    expect(screen.queryByText(/Rest: 0|00:00/)).not.toBeInTheDocument()
+  })
+
+  it('rests a superset once, after the pair, for the block’s own number', async () => {
+    await restShell()
+
+    await logSet('bench press', 1)
+    // A1 → A2 has no rest by definition, whatever A1's own column says.
+    expect(restBars()).toEqual([])
+
+    await logSet('barbell row', 1)
+    expect(restBars()).toHaveLength(1)
+    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(restTimer()).toHaveTextContent('01:00')
+  })
+
+  it('replaces the running rest when another set is logged, rather than queueing one', async () => {
+    await restShell()
+
+    await logSet('back squat', 1)
+    advance(40)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:50')
+
+    await logSet('barbell row', 1)
+
+    expect(restBars()).toHaveLength(1)
+    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(screen.queryByText('Rest after back squat')).not.toBeInTheDocument()
+    expect(restTimer()).toHaveTextContent('01:00')
+
+    await logSet('back squat', 2)
+    expect(restBars()).toHaveLength(1)
+    expect(restTimer()).toHaveTextContent('01:30')
+  })
+
+  it('reads the wall clock after backgrounding, and leaves the screen when the rest elapses', async () => {
+    await restShell()
+
+    await logSet('back squat', 1)
+    advance(75)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:15')
+    expect(screen.getByText('15 seconds left')).toBeInTheDocument()
+
+    advance(15)
+    returnToForeground()
+    expect(restBars()).toEqual([])
+  })
+
+  it('extends and skips the rest from the bar', async () => {
+    const user = userEvent.setup()
+    await restShell()
+
+    await logSet('back squat', 1)
+    advance(60)
+    await user.click(screen.getByRole('button', { name: 'Add 30s' }))
+    expect(restTimer()).toHaveTextContent('01:00')
+
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+    expect(restBars()).toEqual([])
+    // Skipping ends the rest and records nothing: the set is still the set.
+    expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
+  })
+
+  it('keeps the rest when the user moves between sections, because the session owns it', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([...REST_SECTIONS, { title: 'Finisher', blocks: [{}] }]),
+    })
+
+    await logSet('back squat', 1)
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+
+    expect(restBars()).toHaveLength(1)
+    expect(restTimer()).toHaveTextContent('01:30')
+  })
+
+  it('fires no list or route motion when the bar appears in the tap that logs a set', async () => {
+    await restShell()
+
+    await logSet('back squat', 1)
+
+    const [bar] = restBars()
+    const animated = [bar, ...Array.from(bar.querySelectorAll('*'))].filter((node) =>
+      /route-enter|clr-boot|clr-reveal|clr-scan/.test(node.getAttribute('class') ?? ''),
+    )
+    expect(animated).toEqual([])
   })
 })

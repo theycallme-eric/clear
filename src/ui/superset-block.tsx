@@ -122,13 +122,16 @@ export function SupersetBlock({ block }: BlockRendererProps) {
                 paddingLeft: movements.length > 1 ? 'var(--spacing-200)' : undefined,
               }}
             >
-              {movements.map((exercise) => (
+              {movements.map((exercise, index) => (
                 <ExerciseSetLogger
                   key={exercise.exerciseId}
                   exercise={exercise}
                   ordinal={supersetOrdinal(exercise.position)}
                   // Rest here is the block's, stated once below the pair.
                   statesRest={false}
+                  // And taken once, after the movement that closes the pair:
+                  // A1 → A2 has no rest by definition (EXE-05).
+                  restSeconds={index === movements.length - 1 ? block.roundRestSeconds : null}
                 />
               ))}
             </div>
