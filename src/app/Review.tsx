@@ -77,9 +77,10 @@ import {
   type LoadSuggestions,
   type LoadSuggestionView,
 } from '../state/load-suggestions'
+import { useQueryClient } from '../state/query'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
 import { useProfileQuery } from '../state/user-queries'
-import { useWorkoutClients } from '../state/workout-queries'
+import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queries'
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
@@ -127,6 +128,7 @@ export function Review({
   const navigate = useNavigate()
   const { user } = useAuth()
   const { sessions } = useWorkoutClients()
+  const queryCache = useQueryClient()
 
   // The profile's unit, for an `absolute` load. Null while the query is
   // settling and null when it failed: `reviewBriefing` states such a load
@@ -217,7 +219,19 @@ export function Review({
       return
     }
 
-    onStarted?.(accepted.value)
+    // `Review` and `Workout` share the active-session query. Home may already
+    // have cached the truthful pre-start answer (`null`), so navigating before
+    // publishing the write's answer makes Workout immediately redirect Home.
+    // Preserve the accepted structure and replace only the session/state that
+    // `start_session` returned; this is the complete active snapshot Workout
+    // needs, with no redundant round trip and no stale-cache race.
+    const running: SessionSnapshot = {
+      ...accepted.value,
+      session: started.value.session,
+      state: started.value.state,
+    }
+    queryCache.setData(activeSessionQueryKey(userId), running)
+    onStarted?.(running)
     await navigate(WORKOUT_ROUTE)
   }
 

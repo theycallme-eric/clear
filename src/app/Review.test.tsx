@@ -36,6 +36,8 @@ import type {
   SessionAcceptance,
   SessionSnapshot,
 } from '../state/schemas'
+import { QueryClient } from '../state/query'
+import { activeSessionQueryKey } from '../state/workout-queries'
 import { makeSessionAcceptance, makeStructureSpectrumWorkout } from '../test/factories'
 import {
   anchorRow,
@@ -84,6 +86,8 @@ interface HarnessOptions {
   anchorEvidence?: readonly AnchorEvidenceRow[]
   /** Overrides for the anchors client, for the reads that fail or hang. */
   anchors?: Partial<AnchorsClient>
+  /** Lets a handoff assertion inspect the same cache the screen publishes. */
+  queryClient?: QueryClient
 }
 
 function sessionsDouble(
@@ -141,7 +145,11 @@ function renderReview(
       />
       <Route path="/workout" element={<p>{WORKOUT_MARKER}</p>} />
     </Routes>,
-    { route: '/review', ...signedIn({ workout: workout.clients }) },
+    {
+      route: '/review',
+      ...signedIn({ workout: workout.clients }),
+      queryClient: options.queryClient,
+    },
   )
 
   return { ...view, recorder }
@@ -446,6 +454,26 @@ describe('Start hands off to SES-01', () => {
     await user.click(screen.getByRole('button', { name: START_LABEL }))
 
     expect(await screen.findByText(WORKOUT_MARKER)).toBeInTheDocument()
+  })
+
+  it('publishes the running snapshot before Workout reads the shared cache', async () => {
+    const user = userEvent.setup()
+    const queryClient = new QueryClient()
+    renderReview({ queryClient })
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+
+    await waitFor(() =>
+      expect(queryClient.getState<SessionSnapshot>(activeSessionQueryKey('user-1'))).toEqual({
+        status: 'ready',
+        data: expect.objectContaining({
+          state: 'active',
+          session: expect.objectContaining({ id: PERSISTED.session.id }),
+          sections: PERSISTED.sections,
+        }),
+      }),
+    )
   })
 
   it('does not start a session the write never created', async () => {

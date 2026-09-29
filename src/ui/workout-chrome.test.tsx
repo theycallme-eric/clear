@@ -21,6 +21,7 @@ import {
   StructureBadge,
   WorkoutNavigation,
 } from './workout-chrome'
+import { HeadingLevelProvider } from './Heading'
 
 /** Three sections: one finished, one under way, one untouched. */
 function mixedProgress(): SessionProgress {
@@ -102,6 +103,19 @@ describe('ProgressTracker', () => {
 })
 
 describe('SectionHeader', () => {
+  it('uses the current structural heading level rather than skipping past it', () => {
+    const progress = mixedProgress()
+    renderWithProviders(
+      <HeadingLevelProvider level={2}>
+        <SectionHeader section={progress.sections[0]} position={1} total={3} />
+      </HeadingLevelProvider>,
+    )
+
+    expect(
+      screen.getByRole('heading', { level: 2, name: progress.sections[0].title }),
+    ).toBeInTheDocument()
+  })
+
   it('says where the section sits, what it is called, and what state it is in', () => {
     const progress = mixedProgress()
     renderWithProviders(

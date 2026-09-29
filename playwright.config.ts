@@ -38,6 +38,20 @@ export function vercelProtectionHeaders(secret: string | undefined) {
     : undefined
 }
 
+/**
+ * The backend harness accepts server-side Supabase names so the service-role
+ * key never needs a `VITE_` prefix. A local Vite server is still browser code,
+ * though, and only exposes variables with that prefix. Map only the public URL
+ * and anon key into that child process; the service-role key remains available
+ * to Playwright itself and never enters the browser bundle.
+ */
+export function browserSupabaseEnv(url: string | null, anonKey: string | null) {
+  return {
+    ...(url === null ? {} : { VITE_SUPABASE_URL: url }),
+    ...(anonKey === null ? {} : { VITE_SUPABASE_ANON_KEY: anonKey }),
+  }
+}
+
 const protectionHeaders = vercelProtectionHeaders(
   process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
 )
@@ -103,6 +117,7 @@ export default defineConfig({
     : {
         command: 'npm run e2e:server',
         url: LOCAL_BASE_URL,
+        env: browserSupabaseEnv(e2e.url, e2e.anonKey),
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
         stdout: 'ignore',

@@ -54,7 +54,7 @@ import type {
   StructureIdentity,
 } from '../state/workout-progress'
 import { ConfirmDialog } from './blocking-dialog'
-import { Heading, HeadingSection } from './Heading'
+import { Heading } from './Heading'
 import './rest-timer-bar.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -231,7 +231,11 @@ export function SectionHeader({
   children,
 }: SectionHeaderProps) {
   return (
-    <HeadingSection className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+    // `Screen` already establishes level two for its top-level content. This
+    // section title is that level-two heading; the block/exercise sections
+    // that follow advance themselves to level three. Wrapping this heading in
+    // `HeadingSection` skipped h2 and made the live Workout outline invalid.
+    <section className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
       <p style={labelStyle}>
         Section {position} / {total} · {STATUS_WORDS[section.status]}
       </p>
@@ -254,7 +258,7 @@ export function SectionHeader({
         ))}
       </ul>
       {children}
-    </HeadingSection>
+    </section>
   )
 }
 
