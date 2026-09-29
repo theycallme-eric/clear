@@ -100,6 +100,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
     'EXE-06 — the swap affordance on a live prescription; nothing to show outside the shell',
   SwapDialog:
     'EXE-06 — the alternatives for one slot of a live session, opened by the shell’s provider',
+  // EXE-05's panel. Its guidance is a catalog read keyed by a live
+  // prescription's slug and its note is a write to that prescription's row, so
+  // a specimen would be framing an invented read and an invented row.
+  ExerciseCoaching:
+    'EXE-05 — cues, regression and note for one live prescription; nothing to show outside the shell',
 }
 
 /** Components exported from a module, in source order. */
