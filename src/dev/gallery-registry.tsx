@@ -14,9 +14,9 @@
  * interaction — a chosen option, an open modal, a queued toast — can own the
  * state that produces it.
  */
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { Button, Chip } from '../design-system/index'
+import { Button, Chip, Input } from '../design-system/index'
 import {
   applyAppearance,
   SYSTEM_APPEARANCE,
@@ -151,6 +151,25 @@ function CardWithActions() {
 
 function CardEmpty() {
   return <Card />
+}
+
+// REQ-011's regression frame: a non-interactive chamfered card wrapping an
+// input that holds focus. The ring belongs to the input; the card's border
+// stays single. preventScroll keeps the gallery where the reviewer left it.
+function CardWrappingFocusedInput() {
+  const frame = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    frame.current?.querySelector('input')?.focus({ preventScroll: true })
+  }, [])
+
+  return (
+    <div ref={frame}>
+      <Card data-specimen="card-focused-input">
+        <Input label="Session name" defaultValue="Lower body · strength" />
+      </Card>
+    </div>
+  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1497,6 +1516,11 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'no children',
         note: 'Bar and body still draw — a card is a frame, not its content.',
         Render: CardEmpty,
+      },
+      {
+        state: 'wrapping a focused input',
+        note: 'Focus belongs to the control: the input carries the ring, the card border stays single-width in every skin.',
+        Render: CardWrappingFocusedInput,
       },
     ],
   },

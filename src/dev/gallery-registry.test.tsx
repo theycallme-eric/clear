@@ -218,6 +218,24 @@ describe('the app-composed section', () => {
     }
   })
 
+  it('frames REQ-011’s Card-to-Input regression with the input focused', () => {
+    const card = GALLERY_ENTRIES.find((entry) => entry.component === 'Card')
+    const specimen = card?.specimens.find(
+      (candidate) => candidate.state === 'wrapping a focused input',
+    )
+    expect(specimen).toBeDefined()
+    if (!specimen) return
+
+    const { container } = render(<specimen.Render />)
+    const body = container.querySelector('.clr-card__body.clr-chamfer')
+    const input = body?.querySelector('input')
+
+    expect(input).toBeInstanceOf(HTMLInputElement)
+    expect(document.activeElement).toBe(input)
+    // The card is a plain container; it must not have opted into owning focus.
+    expect(body).not.toHaveClass('clr-chamfer--focus-owner')
+  })
+
   it('shows all three atmosphere levels at once', () => {
     const { container } = renderWithProviders(<AppComposedParts />)
 
