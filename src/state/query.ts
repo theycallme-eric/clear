@@ -165,6 +165,22 @@ export class QueryClient {
   }
 
   /**
+   * Resets every key that starts with `prefix`, as `clear` does for all of
+   * them: a mounted reader fetches again at once, and anyone else on their
+   * next mount. For a write that changes answers already cached under keys
+   * this caller cannot enumerate — a streak keyed by its rules, a history
+   * keyed by its page count.
+   */
+  invalidate(prefix: string): void {
+    for (const [key, entry] of this.#entries) {
+      if (!key.startsWith(prefix)) continue
+      entry.generation += 1
+      entry.started = false
+      this.#publish(entry, LOADING)
+    }
+  }
+
+  /**
    * Empties the cache — AUTH-01's `QueryCache` port, called by `signOut`.
    *
    * Bumping every generation is the part that matters: a request that was
