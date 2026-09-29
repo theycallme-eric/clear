@@ -28,7 +28,7 @@ import {
 } from '../test/generation-double'
 import { renderWithProviders } from '../test/render'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
-import { GenerationLoading } from './GenerationLoading'
+import { GenerationLoadingHost } from './GenerationLoadingHost'
 
 const INPUT: GenerationInput = {
   goal: 'strength',
@@ -53,31 +53,26 @@ function Journey({ slowThresholdMs }: { slowThresholdMs?: number }) {
   const generation = useGeneration()
   const { state } = generation
 
-  if (state.status === 'pending' || state.status === 'error') {
-    return (
-      <GenerationLoading
-        state={state}
-        stage={generation.stage}
-        onCancel={generation.cancel}
-        onRetry={generation.retry}
-        slowThresholdMs={slowThresholdMs}
-      />
-    )
-  }
-
+  // The pending and error branch is the host's, as it is for every route.
   return (
-    <div>
-      <p>{state.status === 'success' ? state.acceptance.workout.title : FORM}</p>
-      {/* A fresh arrow function per render on purpose: a caller that does not
-          memoise its handlers must not make the failure toast repeat. */}
-      <button
-        onClick={() => {
-          generation.generate(INPUT)
-        }}
-      >
-        {GENERATE}
-      </button>
-    </div>
+    <GenerationLoadingHost
+      generation={generation}
+      cancelTo="/"
+      slowThresholdMs={slowThresholdMs}
+    >
+      <div>
+        <p>{state.status === 'success' ? state.acceptance.workout.title : FORM}</p>
+        {/* A fresh arrow function per render on purpose: a caller that does not
+            memoise its handlers must not make the failure toast repeat. */}
+        <button
+          onClick={() => {
+            generation.generate(INPUT)
+          }}
+        >
+          {GENERATE}
+        </button>
+      </div>
+    </GenerationLoadingHost>
   )
 }
 

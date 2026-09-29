@@ -93,7 +93,7 @@ export interface GenerationLoadingProps {
   readonly state: GenerationLoadingState
   /** The stage the call reported, straight off `useGeneration()`. */
   readonly stage: GenerationStage | null
-  /** Abandons the run and returns to Generate. Also pattern 3's exit. */
+  /** Abandons the run and returns to the route that started it. Also pattern 3's exit. */
   readonly onCancel: () => void
   /** Repeats the request that failed. Offered only when §9 says it could work. */
   readonly onRetry: () => void
