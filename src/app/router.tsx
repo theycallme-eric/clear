@@ -15,6 +15,7 @@ import { LocationSettings } from './LocationSettings'
 import { NotFound } from './NotFound'
 import { ReviewRoute } from './ReviewRoute'
 import { RootLayout } from './RootLayout'
+import { SessionDetail } from './SessionDetail'
 import { Settings } from './Settings'
 import { Summary } from './Summary'
 import { Welcome } from './Welcome'
@@ -125,6 +126,19 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="History">
                 <History />
+              </Protected>
+            ),
+          },
+          // HIST-01's detail — `protected`, at the `quiet` the atmosphere
+          // table records for `/history/:id`. In from History's rows and
+          // Home's recents. Whether the id names one of the user's sessions is
+          // a fact about the rows (RLS), so the screen answers it with its
+          // error state rather than the route with a redirect.
+          {
+            path: '/history/:id',
+            element: (
+              <Protected title="Workout">
+                <SessionDetail />
               </Protected>
             ),
           },

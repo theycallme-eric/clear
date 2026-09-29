@@ -55,6 +55,16 @@ function providersFor(pathname: string): ProviderOptions {
   // `/review` joined them with FAV-01: protected, and it renders its own
   // "nothing to review" screen rather than redirecting, so signed in is all it
   // needs to stay mounted and carry its own level.
+  // HIST-01's detail is protected and reads its session on arrival; a pending
+  // read keeps it mounted in its loading state, carrying its own level.
+  if (pathname.startsWith('/history/')) {
+    return signedIn({
+      workout: createWorkoutDouble({
+        session: null,
+        sessions: { asPerformed: () => new Promise(() => {}) },
+      }).clients,
+    })
+  }
   if (
     pathname === '/summary' ||
     pathname === '/generate' ||

@@ -76,10 +76,10 @@ const TITLE_STYLE: CSSProperties = {
 export interface WorkoutListItemProps {
   entry: HistoryEntry
   /**
-   * Where this workout opens, when it opens anywhere. HOME-01's recents link
-   * into HIST-01's detail; the History screen's own list does not yet, so the
-   * link is a prop rather than a fact about the row. A rest run is never a
-   * link — there is no session behind it to open.
+   * Where this workout opens, when it opens anywhere. HOME-01's recents and
+   * History's own list both link into HIST-01's detail; the link stays a prop
+   * rather than a fact about the row so a list that should not open anything
+   * can say so. A rest run is never a link — there is no session behind it.
    */
   to?: string
 }
@@ -156,10 +156,12 @@ export interface HistoryListProps {
   entries: readonly HistoryEntry[]
   /** Names the list for assistive technology — "Workout history". */
   label: string
+  /** Where each session row opens. Omitted, no row is a link. */
+  linkTo?: (entry: HistorySessionEntry) => string
 }
 
 /** The chronology, newest first, as a real list. */
-export function HistoryList({ entries, label }: HistoryListProps) {
+export function HistoryList({ entries, label, linkTo }: HistoryListProps) {
   return (
     <ul
       aria-label={label}
@@ -173,7 +175,10 @@ export function HistoryList({ entries, label }: HistoryListProps) {
     >
       {entries.map((entry) => (
         <li key={entry.key}>
-          <WorkoutListItem entry={entry} />
+          <WorkoutListItem
+            entry={entry}
+            to={entry.kind === 'session' ? linkTo?.(entry) : undefined}
+          />
         </li>
       ))}
     </ul>
