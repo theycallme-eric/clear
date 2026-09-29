@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import { SCREENS } from '../../e2e/screens'
 import playwrightConfig, {
+  browserSupabaseEnv,
   MOBILE_VIEWPORT,
   vercelProtectionHeaders,
 } from '../../playwright.config'
@@ -86,6 +87,16 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(playwrightConfig.webServer).toBeDefined()
     expect(packageJson.scripts['e2e:server']).toContain('vite')
     expect(packageJson.scripts.e2e).toBe('playwright test')
+  })
+
+  it('gives a local browser only the public Supabase configuration', () => {
+    expect(browserSupabaseEnv('https://project.supabase.co', 'anon-public')).toEqual({
+      VITE_SUPABASE_URL: 'https://project.supabase.co',
+      VITE_SUPABASE_ANON_KEY: 'anon-public',
+    })
+    expect(browserSupabaseEnv(null, null)).toEqual({})
+    expect(JSON.stringify(browserSupabaseEnv('https://project.supabase.co', 'anon-public')))
+      .not.toContain('SERVICE_ROLE')
   })
 
   it('runs in CI against the preview deployment, not a server it built', () => {

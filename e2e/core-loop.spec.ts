@@ -130,8 +130,14 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
     })
 
-    const code = page.getByLabel('Code', { exact: true })
-    await page.getByLabel('Email', { exact: true }).fill(email)
+    // `Input` renders its required marker inside the associated label. Use the
+    // field name rather than an exact raw-label-text match so the browser test
+    // follows the accessible control instead of coupling itself to that visual
+    // marker (the same locator contract used by focus-ownership.spec.ts).
+    const code = page.getByLabel('Code')
+    const emailField = page.getByLabel('Email')
+    await expect(emailField).toBeVisible({ timeout: 30_000 })
+    await emailField.fill(email)
     await page.getByRole('button', { name: 'Send code', exact: true }).click()
     await expect(code).toBeFocused()
     expect(deliveryRequested, 'the Login screen never asked for a code').toBe(true)
