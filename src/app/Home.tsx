@@ -130,9 +130,12 @@ import { WorkoutListItem } from '../ui/history-list'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
-import { GenerationLoading } from './GenerationLoading'
+import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { ResumableSession } from './ResumableSession'
 import { Screen } from './Screen'
+
+/** Home's own path: where cancelling a Quick Start run returns. */
+export const HOME_ROUTE = '/'
 
 /** IA.md §4's out-edges from Home. Each lands with the screen behind it. */
 export const GENERATE_ROUTE = GENERATE_PATH
@@ -203,20 +206,9 @@ export function Home() {
 
   // GEN-05's screen is transient and has no route of its own: while a
   // generation Home started is in flight — or has failed and is being answered
-  // — it *is* the screen, and cancelling puts Home back.
-  if (generation.state.status === 'pending' || generation.state.status === 'error') {
-    return (
-      <GenerationLoading
-        state={generation.state}
-        stage={generation.stage}
-        onCancel={generation.cancel}
-        onRetry={generation.retry}
-      />
-    )
-  }
-
+  // — the shared host makes it the screen, and cancelling puts Home back.
   return (
-    <>
+    <GenerationLoadingHost generation={generation} cancelTo={HOME_ROUTE}>
       <AppHeader actions={<Link to="/settings">Settings</Link>}>
         <ClearLogo size="md" />
       </AppHeader>
@@ -252,7 +244,7 @@ export function Home() {
           <WorkoutTabs query={history} entries={recents} />
         </div>
       </Screen>
-    </>
+    </GenerationLoadingHost>
   )
 }
 
