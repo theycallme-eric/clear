@@ -180,6 +180,29 @@ describe('QueryClient', () => {
     expect(fetcher).toHaveBeenCalledTimes(2)
   })
 
+  it('invalidates only the keys under a prefix, and fetches them again', async () => {
+    const client = new QueryClient()
+    const listener = vi.fn()
+    const fetcher = vi.fn(async () => ok('streak'))
+    client.subscribe('streak:user-1:rest', listener)
+
+    client.ensure('streak:user-1:rest', fetcher)
+    client.ensure('profile:user-1', async () => ok('profile'))
+    await vi.waitFor(() => {
+      expect(client.getState('profile:user-1').status).toBe('ready')
+    })
+    listener.mockClear()
+
+    client.invalidate('streak:user-1')
+
+    expect(client.getState('streak:user-1:rest')).toEqual({ status: 'loading' })
+    expect(client.getState('profile:user-1')).toEqual({ status: 'ready', data: 'profile' })
+    expect(listener).toHaveBeenCalledTimes(1)
+
+    client.ensure('streak:user-1:rest', fetcher)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
   it('seeds a key without fetching it', () => {
     const client = new QueryClient()
     const fetcher = vi.fn(async () => ok('fetched'))

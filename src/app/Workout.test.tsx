@@ -11,6 +11,10 @@
  *   · closing or backgrounding persists state without trapping the user;
  *   · section headers expose structure identity.
  *
+ * Its two exits are REQ-006's: completing lands on `/summary`, the debrief of
+ * the session just completed, whose Done returns Home; abandoning lands Home,
+ * where the session's remains stay resumable.
+ *
  * And the sixth thing the shell owns: **block completion**. Every structure
  * type writes its `block_results` row through this one path, with perceived
  * effort captured once, by the shell's dialog.
@@ -20,9 +24,15 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
-import { createError, err, ErrorCode } from '../state/errors'
+import { createError, err, ErrorCode, ok } from '../state/errors'
 import { WORKOUT_SHELL_STORAGE_KEY } from '../state/workout-persistence'
 import { AppProviders, signedIn } from '../test/render'
+import {
+  completedSession,
+  createFakeSummaryClient,
+  fixtureStreak,
+  type FakeSummaryClient,
+} from '../test/summary-double'
 import {
   createWorkoutDouble,
   FIXTURE_SESSION_ID,
@@ -31,7 +41,10 @@ import {
   type WorkoutDouble,
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
+import { AUTHENTICATED_HOME } from './guards'
 import { routes } from './router'
+import { SAVE_FAVORITE_LABEL } from './Summary'
+import { COMPLETION_ROUTE } from './Workout'
 
 /** Twelve and a half minutes ago, so the timer has something to read. */
 const ELAPSED_SECONDS = 750
@@ -91,6 +104,44 @@ async function shell(options: WorkoutDoubleOptions = {}): Promise<Mounted> {
   return mounted
 }
 
+interface Completing extends Mounted {
+  summary: FakeSummaryClient
+}
+
+/**
+ * The whole loop's tail: Home first, so the streak is read and cached the way
+ * it is in use, then into the workout. The summary double answers from the
+ * workout double's rows — nothing to debrief until `complete` has run, and then
+ * the session that was completed, with the streak it extended.
+ */
+async function completing(): Promise<Completing> {
+  const double = createWorkoutDouble({ session: activeSession() })
+  const finished = () => double.completed().length > 0
+  const summary = createFakeSummaryClient({
+    latest: async () =>
+      ok(
+        finished()
+          ? completedSession({ id: FIXTURE_SESSION_ID, title: 'Full body' })
+          : null,
+      ),
+    streak: async () => ok(fixtureStreak({ days: finished() ? 4 : 3 })),
+  })
+  const router = createMemoryRouter(routes, { initialEntries: ['/'] })
+
+  render(
+    <AppProviders {...signedIn({ summary, workout: double.clients })}>
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+
+  await screen.findByRole('heading', { name: HOME_HEADING })
+  await waitFor(() => expect(summary.streakCalls.length).toBeGreaterThan(0))
+  await router.navigate('/workout')
+  await screen.findByRole('navigation', { name: 'Workout sections' })
+
+  return { double, router, summary }
+}
+
 /**
  * A closed `<dialog>` keeps its markup, so "which dialog is open" is a
  * question about the `open` attribute rather than about what is in the DOM.
@@ -116,6 +167,9 @@ function isDialogOpen(title: string): boolean {
 
 /** Home's page heading, which is where both exits land. */
 const HOME_HEADING = 'Today'
+
+/** Summary's page heading, which is where completion lands. */
+const SUMMARY_HEADING = 'Nice work'
 
 const ABANDON_CONFIRM = 'Abandon workout?'
 
@@ -342,15 +396,62 @@ describe('Workout — the focus mode', () => {
 
   it('completes the session with the time the user actually watched', async () => {
     const user = userEvent.setup()
-    const { double, router } = await shell()
+    const { double } = await shell()
 
     await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
-    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
     expect(double.completed()).toEqual([{ sessionId: FIXTURE_SESSION_ID, minutes: 12 }])
-    expect(router.state.location.pathname).toBe('/')
     expect(double.abandoned()).toEqual([])
+  })
+
+  it('lands completion on the debrief of the session just completed, not on Home', async () => {
+    const user = userEvent.setup()
+    const { summary, router } = await completing()
+
+    expect(COMPLETION_ROUTE).toBe('/summary')
+    expect(COMPLETION_ROUTE).not.toBe(AUTHENTICATED_HOME)
+
+    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    expect(await screen.findByText('Full body, done.')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/summary')
+    expect(screen.queryByRole('heading', { name: HOME_HEADING })).not.toBeInTheDocument()
+    // The debrief's surface, whole: mood, notes, the streak and the favorite.
+    expect(screen.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    expect(await screen.findByText('4 days')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeInTheDocument()
+    // Asked after the completion, so it cannot be an answer cached before it.
+    expect(summary.latestCalls).toHaveLength(1)
+  })
+
+  it('reads the streak again after completing, rather than the one Home cached', async () => {
+    const user = userEvent.setup()
+    const { summary, router } = await completing()
+    const before = summary.streakCalls.length
+
+    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    expect(await screen.findByText('4 days')).toBeInTheDocument()
+    expect(summary.streakCalls.length).toBeGreaterThan(before)
+    expect(router.state.location.pathname).toBe('/summary')
+  })
+
+  it('returns Home from the debrief’s Done', async () => {
+    const user = userEvent.setup()
+    const { summary, router } = await completing()
+
+    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+    await user.click(await screen.findByRole('button', { name: 'Save and close' }))
+
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/')
+    expect(summary.saved.map((entry) => entry.sessionId)).toEqual([FIXTURE_SESSION_ID])
   })
 
   it('keeps the session on screen when completing it fails', async () => {
