@@ -7,11 +7,17 @@
  * — except the locations and equipment SET-02 owns — is editable here without
  * the wizard being re-entered.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import type { UserConstraint } from '../data/constraints'
+import { SKINS } from '../design-system/skin'
+import { appearanceLabel, appearanceOptions } from '../state/appearance'
+import { startFaviconSync } from './favicon'
 import { QueryClient } from '../state/query'
 import { GOALS, EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboarding'
 import { constraintsQueryKey } from '../state/constraint-queries'
@@ -392,5 +398,112 @@ describe('the screen implements all four states', () => {
 
     expect(await screen.findByRole('radio', { name: 'Balanced' })).toBeVisible()
     expect(attempts).toBeGreaterThan(1)
+  })
+})
+
+describe('appearance is chosen here, from the registry', () => {
+  const STORAGE_KEY = 'clear.skin'
+  const iconLink = () =>
+    document.querySelector<HTMLLinkElement>('link[rel="icon"]')
+  const stopped: Array<() => void> = []
+
+  afterEach(() => {
+    for (const stop of stopped.splice(0)) stop()
+    document.head.querySelectorAll('link[rel="icon"]').forEach((link) => link.remove())
+    document.documentElement.removeAttribute('data-skin')
+    localStorage.clear()
+  })
+
+  const skinGroup = async () =>
+    within(await screen.findByRole('group', { name: 'Skin' }))
+
+  it('offers the system option and every skin in SKINS, nothing more', async () => {
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getAllByRole('radio')).toHaveLength(SKINS.length + 1)
+    for (const option of appearanceOptions()) {
+      expect(group.getByRole('radio', { name: option.label })).toBeVisible()
+    }
+  })
+
+  it('names Mono enhanced contrast, and nothing accessible', async () => {
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getByRole('radio', { name: /Mono — enhanced contrast/ })).toBeVisible()
+    expect(document.body.textContent?.toLowerCase()).not.toContain('accessible')
+  })
+
+  it('arrives on the system option while nothing is stored', async () => {
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getByRole('radio', { name: /^System/ })).toBeChecked()
+  })
+
+  it('arrives on the stored skin', async () => {
+    localStorage.setItem(STORAGE_KEY, 'vapour')
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getByRole('radio', { name: appearanceLabel('vapour') })).toBeChecked()
+    expect(group.getByRole('radio', { name: /^System/ })).not.toBeChecked()
+  })
+
+  it('applies a choice live, stores it, and moves the favicon', async () => {
+    const user = userEvent.setup()
+    stopped.push(startFaviconSync())
+    renderSettings()
+    const group = await skinGroup()
+
+    await user.click(group.getByRole('radio', { name: appearanceLabel('signal') }))
+
+    // Live on <html>, which is every screen at once.
+    expect(document.documentElement.getAttribute('data-skin')).toBe('signal')
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('signal')
+    expect(group.getByRole('radio', { name: appearanceLabel('signal') })).toBeChecked()
+    await waitFor(() => {
+      expect(iconLink()?.getAttribute('href')).toBe('/icons/favicon-signal.svg')
+    })
+  })
+
+  it('survives a reload: a fresh mount arrives on the choice', async () => {
+    const user = userEvent.setup()
+    const first = renderSettings()
+    await user.click(
+      (await skinGroup()).getByRole('radio', { name: appearanceLabel('mono') }),
+    )
+    first.unmount()
+
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getByRole('radio', { name: appearanceLabel('mono') })).toBeChecked()
+    expect(document.documentElement.getAttribute('data-skin')).toBe('mono')
+  })
+
+  it('clears the stored choice for the system option, so the OS contrast is followed again', async () => {
+    const user = userEvent.setup()
+    localStorage.setItem(STORAGE_KEY, 'vapour')
+    renderSettings()
+    const group = await skinGroup()
+
+    await user.click(group.getByRole('radio', { name: /^System/ }))
+
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    expect(group.getByRole('radio', { name: /^System/ })).toBeChecked()
+    // Following the system again resolves from the OS, not the last choice.
+    expect(document.documentElement.getAttribute('data-skin')).not.toBe('vapour')
+  })
+
+  it('writes out no skin id or label — every option comes from the derived list', () => {
+    const source = readFileSync(resolve(import.meta.dirname, 'Settings.tsx'), 'utf8')
+
+    for (const option of appearanceOptions()) {
+      expect(source).not.toContain(`'${option.value}'`)
+      expect(source).not.toContain(`"${option.value}"`)
+      expect(source).not.toContain(option.label)
+    }
   })
 })
