@@ -182,11 +182,18 @@ There is no `page.goto` in any spec. The `visit` fixture navigates **and** runs
 A violation fails the run; the offending rules and nodes are attached to the
 report as JSON so the failure says *which*, not "expected 0, got 3".
 
-**Which screens get scanned is `screens.ts`.** It is the one list, walked by
-`app-shell.spec.ts` and `reduced-motion.spec.ts`, and the unit suite compares it
-against the route table in `src/app/router.tsx` — so a screen added to the app
-and not to that list fails CI before anyone has to remember it. Adding a screen
-is adding a line there.
+**Which screens get scanned is `screens.ts`, derived from `required-routes.ts`
+(REQ-010).** The inventory transcribes every screen IA.md §4 heads — the
+transient Loading screen included — and the journeys each belongs to, without
+importing the router. `screens.ts` is derived from it and walked by
+`app-shell.spec.ts` and `reduced-motion.spec.ts`. The unit suite then holds the
+router to the inventory (`src/test/required-routes.test.ts`): a required route
+the router does not serve fails CI, so a screen cannot vanish from the product
+and the suite together. The reverse still holds too — a route the router gains
+and the inventory does not name fails. A required route not mounted yet is
+recorded with `pendingOwner`, the recovery node that owns it; the suite fails
+as soon as the router serves it, so the marker cannot outlive the gap. Adding a
+screen is adding an entry to `required-routes.ts`.
 
 `reduced-motion.spec.ts` runs the same list with `prefers-reduced-motion: reduce`
 emulated and asserts the screen arrives already finished: nothing still

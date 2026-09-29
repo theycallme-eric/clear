@@ -472,10 +472,10 @@ describe('Session Detail · restart', () => {
     await tapRestart(user)
 
     await waitFor(() => expect(router.state.location.pathname).toBe(REVIEW_PATH))
+    expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' }),
     ).toBeInTheDocument()
-    expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
 
     const handoff = readReviewHandoff(router.state.location.state)
     expect(handoff?.savedWorkoutId).toBeNull()

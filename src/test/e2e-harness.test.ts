@@ -2,10 +2,14 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
+import { REQUIRED_SCREENS } from '../../e2e/required-routes'
+import { SCREENS } from '../../e2e/screens'
 import playwrightConfig, {
   MOBILE_VIEWPORT,
   vercelProtectionHeaders,
 } from '../../playwright.config'
+import { routes } from '../app/router'
+import { undeclaredRoutes, unservedRequiredRoutes } from './route-inventory'
 
 /**
  * ENV-07 — the harness's own acceptance criteria, asserted on the files that
@@ -279,24 +283,29 @@ describe('axe-core runs against every screen the suite visits (CORE-05)', () => 
   })
 
   /**
-   * The fixture guarantees that every *visited* screen is scanned. Nothing in
-   * the E2E suite can guarantee that every screen is visited — that is a fact
-   * about the route table, so it is checked here, against the route table.
+   * The fixture guarantees that every *visited* screen is scanned. Which
+   * screens are visited is REQ-010's required inventory, not the router: the
+   * router is held to the inventory, so a required route the router stops
+   * serving fails here rather than silently leaving the suite with it.
+   * `required-routes.test.ts` proves that direction on fixture routers.
    */
-  it('visits every screen the router can render', () => {
-    const router = read('src/app/router.tsx')
-    const routes = [...router.matchAll(/path:\s*'([^']+)'/g)]
-      .map((match) => match[1])
-      // DS-07's gallery is development-only and is not a product screen.
-      .filter((path) => !path.startsWith('dev/'))
+  it('fails when the router does not serve a required route (REQ-010)', () => {
+    expect(unservedRequiredRoutes(routes, REQUIRED_SCREENS)).toEqual([])
+  })
 
-    const screens = read('e2e/screens.ts')
-    const covered = [...screens.matchAll(/route:\s*'([^']+)'/g)].map(
-      (match) => match[1],
-    )
+  it('visits every required screen a preview build contains (REQ-010)', () => {
+    const visited = new Set(SCREENS.map((screen) => screen.route))
+    const expected = REQUIRED_SCREENS.filter(
+      (entry) => entry.route !== null && entry.guard !== 'dev-only',
+    ).map((entry) => entry.route)
 
-    expect(routes.length).toBeGreaterThan(0)
-    expect([...covered].sort()).toEqual([...routes].sort())
+    expect(expected.length).toBeGreaterThan(0)
+    expect([...visited].sort()).toEqual([...expected].sort())
+    expect(read('e2e/screens.ts')).toContain("from './required-routes'")
+  })
+
+  it('still asks the inventory to name any screen the router gains', () => {
+    expect(undeclaredRoutes(routes, REQUIRED_SCREENS)).toEqual([])
   })
 
   it('walks that list from the specs rather than restating it', () => {
