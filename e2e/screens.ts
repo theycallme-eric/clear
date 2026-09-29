@@ -1,18 +1,30 @@
+import { REQUIRED_SCREENS, type RequiredScreen } from './required-routes'
+
 /**
- * CORE-05 — every screen the app routes to, in one list.
+ * CORE-05 + REQ-010 — every screen the suite visits, derived from the required
+ * inventory.
  *
  * "axe-core runs against every screen the suite visits" is only worth as much
- * as the set of screens the suite visits, so the set is stated here once and
- * every spec that walks screens reads it. `src/test/e2e-harness.test.ts`
- * compares it against the route table in `src/app/router.tsx`: a screen added
- * to the app and not to this list fails the unit suite, which is what stops
- * "every screen" from quietly meaning "the two we remembered".
+ * as the set of screens the suite visits. That set used to be read off the
+ * router, so a screen missing from the router was missing from here too and
+ * nothing noticed. It is now derived from `required-routes.ts`, which states
+ * what IA.md §4 requires independently of what is built: a screen can only
+ * leave this list by leaving the requirement, and a required route the router
+ * stops serving fails `src/test/required-routes.test.ts`.
+ *
+ * What each entry expects is what the credential-free preview shows a
+ * signed-out visitor there — which is itself the behaviour worth scanning.
+ * Protected and onboarding routes resolve through their guard to Welcome;
+ * their signed-in states are covered by each screen's own unit tests and by
+ * REQ-010's journey specs, which hold a minted session.
  */
 
 export interface E2eScreen {
+  /** The IA.md §4 screen this visit covers. */
+  readonly screen: string
   /** The URL the suite navigates to. */
   readonly path: string
-  /** The route pattern in `src/app/router.tsx` this covers. */
+  /** The required route pattern this covers. */
   readonly route: string
   /** The full document title, including the app name. */
   readonly title: string
@@ -20,52 +32,51 @@ export interface E2eScreen {
   readonly heading: string
 }
 
-export const SCREENS: readonly E2eScreen[] = [
-  // The root route is protected. With the credential-free preview fixture it
-  // must resolve through the public-only guard to Welcome, not pretend the
-  // authenticated app shell is visible.
-  { path: '/', route: '/', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  { path: '/welcome', route: '/welcome', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  { path: '/login', route: '/login', title: 'Sign in · CLEAR', heading: 'Sign in' },
-  // Summary is protected as well. The credential-free preview must exercise
-  // its guard and arrive at Welcome; signed-in behavior is covered by SUM-01's
-  // unit and integration tests without putting credentials in preview CI.
-  { path: '/summary', route: '/summary', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  // EXE-01's focus mode is protected *and* state-dependent. With the
-  // credential-free preview fixture it resolves through the public-only path
-  // to Welcome, exactly as `/` does — the shell is never reachable without a
-  // session, which is itself the behaviour worth scanning.
-  { path: '/workout', route: '/workout', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  // SET-01's hub is protected too, so the credential-free preview resolves it
-  // to Welcome like `/` and `/summary`. What the signed-in hub renders is
-  // covered by `src/app/Settings.test.tsx`, without putting credentials in
-  // preview CI.
-  { path: '/settings', route: '/settings', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  {
-    path: '/settings/locations',
-    route: '/settings/locations',
-    title: 'Welcome · CLEAR',
-    heading: 'CLEAR',
-  },
-  // GEN-04's form is protected as well, so the credential-free preview resolves
-  // it to Welcome like `/` and `/settings`. What the signed-in form renders is
-  // covered by `src/app/Generate.test.tsx`.
-  { path: '/generate', route: '/generate', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  // FAV-01 routed REV-01's screen so a favorite restart has somewhere to land.
-  // It is protected, so the credential-free preview resolves it to Welcome like
-  // `/generate`; what it renders with and without a hand-off is covered by
-  // `src/app/ReviewRoute.test.tsx`.
-  { path: '/review', route: '/review', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  // HIST-01's list is protected, so the credential-free preview resolves it to
-  // Welcome like `/review`; its four states, filter and paging are covered by
-  // `src/app/History.test.tsx`.
-  { path: '/history', route: '/history', title: 'Welcome · CLEAR', heading: 'CLEAR' },
-  // A screen, not a gap: the catch-all route renders one, and a 404 that is
-  // inaccessible is still inaccessible.
-  {
-    path: '/does-not-exist',
-    route: '*',
-    title: 'Page not found · CLEAR',
-    heading: 'Page not found',
-  },
-]
+const WELCOME = { title: 'Welcome · CLEAR', heading: 'CLEAR' }
+const NOT_FOUND = { title: 'Page not found · CLEAR', heading: 'Page not found' }
+
+/** The two screens a signed-out visitor is allowed to see as themselves. */
+const PUBLIC_SCREENS: Readonly<Record<string, { title: string; heading: string }>> = {
+  Welcome: WELCOME,
+  'OTP Login': { title: 'Sign in · CLEAR', heading: 'Sign in' },
+}
+
+function signedOutView(entry: RequiredScreen): { title: string; heading: string } {
+  // Not mounted yet, so the catch-all answers — and is scanned as it does.
+  if (entry.pendingOwner !== undefined) return NOT_FOUND
+
+  switch (entry.guard) {
+    case 'public-only': {
+      const view = PUBLIC_SCREENS[entry.screen]
+      if (view === undefined) {
+        throw new Error(`No signed-out view is recorded for "${entry.screen}"`)
+      }
+      return view
+    }
+    case 'protected':
+    case 'onboarding':
+      return WELCOME
+    case 'none':
+    case 'dev-only':
+      return NOT_FOUND
+  }
+}
+
+export const SCREENS: readonly E2eScreen[] = REQUIRED_SCREENS.flatMap((entry) => {
+  // The transient Loading screen has no URL; it is reached inside the screens
+  // named by `renderedWithin`, which are visited here on their own routes.
+  // The gallery is development-only and a preview build does not contain it.
+  if (entry.route === null || entry.path === null || entry.guard === 'dev-only') {
+    return []
+  }
+
+  const view = signedOutView(entry)
+  const route = entry.route
+
+  return [entry.path, ...(entry.subPaths ?? [])].map((path) => ({
+    screen: entry.screen,
+    path,
+    route,
+    ...view,
+  }))
+})
