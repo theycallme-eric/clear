@@ -34,7 +34,14 @@ import {
   type FakeSummaryClient,
 } from '../test/summary-double'
 import {
+  NO_CUES_TEXT,
+  NO_REGRESSION_TEXT,
+  NOTE_FAILED_TEXT,
+  NOTE_SAVED_TEXT,
+} from '../ui/exercise-coaching'
+import {
   createWorkoutDouble,
+  definitionFixture,
   FIXTURE_SESSION_ID,
   snapshotFixture,
   type SectionFixture,
@@ -619,3 +626,116 @@ describe('Workout — block completion', () => {
     expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
   })
 })
+
+describe('Workout — coaching and notes', () => {
+  /** One movement per section, so each panel on screen names one card. */
+  const COACHED: SectionFixture[] = [
+    { title: 'Primary lift', sectionType: 'primary_lift', blocks: [{ exercises: ['not_started'] }] },
+    { title: 'Finisher', blocks: [{ exercises: ['not_started'] }] },
+  ]
+  const PANEL = 'Coaching and notes — back squat'
+
+  function coached(options: WorkoutDoubleOptions = {}) {
+    return shell({ session: activeSession(COACHED), ...options })
+  }
+
+  it('shows the cues and regression the library authored, in the shell', async () => {
+    const user = userEvent.setup()
+    await coached({ definitions: { 'back-squat': definitionFixture() } })
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+
+    expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
+    expect(within(panel).getByText('Knees track over the toes')).toBeInTheDocument()
+    expect(within(panel).getByText('Goblet squat')).toBeInTheDocument()
+  })
+
+  it('says a movement with no cues and no regression has none', async () => {
+    const user = userEvent.setup()
+    await coached({
+      definitions: {
+        'back-squat': definitionFixture({ coaching_cues: [], regression: null }),
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+
+    expect(await within(panel).findByText(NO_CUES_TEXT)).toBeInTheDocument()
+    expect(within(panel).getByText(NO_REGRESSION_TEXT)).toBeInTheDocument()
+  })
+
+  it('keeps set logging working beside a failed library read', async () => {
+    const user = userEvent.setup()
+    const { double } = await coached({
+      exercises: {
+        definition: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)),
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+    expect(await within(panel).findByRole('alert')).toHaveTextContent(
+      'Coaching for back squat didn’t load',
+    )
+    // The failure is the panel's: the shell raised no dialog over the set form.
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    await user.type(form.getByLabelText(/^Reps/), '8')
+    await user.click(form.getByRole('button', { name: 'Log set 1' }))
+
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+  })
+
+  it('persists a note to the exercise row and keeps it across sections', async () => {
+    const user = userEvent.setup()
+    const { double } = await coached()
+    const exerciseId = firstExerciseId(double)
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+    await user.type(
+      within(panel).getByRole('textbox', { name: /Notes — back squat/ }),
+      'Left knee felt tight',
+    )
+    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+
+    expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(double.savedNotes()).toEqual([{ exerciseId, notes: 'Left knee felt tight' }])
+
+    // The card is remounted on the way back; the note it shows is the stored one.
+    await user.click(screen.getByRole('button', { name: /^Finisher/ }))
+    await user.click(screen.getByRole('button', { name: /^Primary lift/ }))
+    expect(screen.getByRole('textbox', { name: /Notes — back squat/ })).toHaveValue(
+      'Left knee felt tight',
+    )
+  })
+
+  it('reports a failed note write and keeps the typed text', async () => {
+    const user = userEvent.setup()
+    await coached({
+      exercises: {
+        saveNotes: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)),
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+    const field = within(panel).getByRole('textbox', { name: /Notes — back squat/ })
+    await user.type(field, 'Grip slipped')
+    await user.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+
+    expect(await within(panel).findByText(NOTE_FAILED_TEXT)).toBeInTheDocument()
+    expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
+    expect(field).toHaveValue('Grip slipped')
+  })
+})
+
+/** The `workout_exercises.id` of the first movement in the first section. */
+function firstExerciseId(double: WorkoutDouble): string {
+  const stored = double.stored()
+  if (stored === null) throw new Error('The double holds no session')
+  return stored.sections[0].blocks[0].exercises[0].exercise.id
+}
