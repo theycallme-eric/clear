@@ -14,12 +14,57 @@
  */
 import { useCallback } from 'react'
 
-import { useQuery, type QueryResult } from './query'
-import type { ExerciseDefinitionRow } from './schemas'
+import type { Result } from './errors'
+import { useQuery, useQueryClient, type QueryResult } from './query'
+import type { ExerciseDefinitionRow, WorkoutExerciseRow } from './schemas'
 import { useWorkoutClients } from './workout-queries'
 
 export function exerciseDefinitionQueryKey(exerciseId: string): string {
   return `exercise-definition:${exerciseId}`
+}
+
+/**
+ * The note as last stored for one prescription, keyed by `workout_exercises.id`.
+ *
+ * The session snapshot carries `exercise_notes` as it was when the session was
+ * read, and a panel is remounted every time the user moves between sections —
+ * so without this entry, a note saved in the Warm-up would reopen showing what
+ * the snapshot said before the save. Only a successful write fills it.
+ */
+export function exerciseNotesQueryKey(workoutExerciseId: string): string {
+  return `exercise-notes:${workoutExerciseId}`
+}
+
+export interface ExerciseNotes {
+  /** The stored note: the last successful save, else the snapshot's column. */
+  stored(fallback: string | null): string | null
+  /** Writes the note to the row and, only once the row says so, remembers it. */
+  save(notes: string | null): Promise<Result<WorkoutExerciseRow>>
+}
+
+export function useExerciseNotes(workoutExerciseId: string): ExerciseNotes {
+  const { exercises } = useWorkoutClients()
+  const cache = useQueryClient()
+  const key = exerciseNotesQueryKey(workoutExerciseId)
+
+  const stored = useCallback(
+    (fallback: string | null) => {
+      const state = cache.getState<string | null>(key)
+      return state.status === 'ready' ? state.data : fallback
+    },
+    [cache, key],
+  )
+
+  const save = useCallback(
+    async (notes: string | null) => {
+      const result = await exercises.saveNotes(workoutExerciseId, notes)
+      if (result.ok) cache.setData(key, result.value.exercise_notes)
+      return result
+    },
+    [cache, exercises, key, workoutExerciseId],
+  )
+
+  return { stored, save }
 }
 
 /**
