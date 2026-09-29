@@ -119,3 +119,55 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  deployed-journeys:
+    name: Deployed exact-head journeys (mobile)
+    # REQ-010: the core journeys walked in a browser against the deployment of
+    # the merged head itself. Only a successful Production deployment — which
+    # Vercel builds from reviewed `main` — so the service-role key never meets
+    # pull-request code, and the spec checked out is the deployed commit's own.
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment.environment == 'Production'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+      E2E_NAMESPACE: deploy-${{ github.event.deployment.sha }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # The harness requires it for any external target in CI; it opens only
+      # protected Clear deployments and grants no Supabase access.
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      # Each spec creates and deletes its own users; the sweep clears what a
+      # cancelled run left behind.
+      - name: Sweep abandoned E2E namespaces
+        run: npm run e2e:reset -- --stale
+
+      - name: Walk History list to session detail on the deployed head
+        run: npx playwright test e2e/history-detail.spec.ts --project=mobile
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-deployed-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
