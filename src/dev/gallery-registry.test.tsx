@@ -100,6 +100,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
     'EXE-06 — the swap affordance on a live prescription; nothing to show outside the shell',
   SwapDialog:
     'EXE-06 — the alternatives for one slot of a live session, opened by the shell’s provider',
+  // EXE-05's panel. Its guidance is a catalog read keyed by a live
+  // prescription's slug and its note is a write to that prescription's row, so
+  // a specimen would be framing an invented read and an invented row.
+  ExerciseCoaching:
+    'EXE-05 — cues, regression and note for one live prescription; nothing to show outside the shell',
 }
 
 /** Components exported from a module, in source order. */
@@ -216,6 +221,24 @@ describe('the app-composed section', () => {
         unmount()
       }
     }
+  })
+
+  it('frames REQ-011’s Card-to-Input regression with the input focused', () => {
+    const card = GALLERY_ENTRIES.find((entry) => entry.component === 'Card')
+    const specimen = card?.specimens.find(
+      (candidate) => candidate.state === 'wrapping a focused input',
+    )
+    expect(specimen).toBeDefined()
+    if (!specimen) return
+
+    const { container } = render(<specimen.Render />)
+    const body = container.querySelector('.clr-card__body.clr-chamfer')
+    const input = body?.querySelector('input')
+
+    expect(input).toBeInstanceOf(HTMLInputElement)
+    expect(document.activeElement).toBe(input)
+    // The card is a plain container; it must not have opted into owning focus.
+    expect(body).not.toHaveClass('clr-chamfer--focus-owner')
   })
 
   it('shows all three atmosphere levels at once', () => {

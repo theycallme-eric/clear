@@ -614,16 +614,20 @@ select:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
   outline-offset: var(--focus-ring-offset);
 }
 
-/* Chamfered: doubled border, focus hue. Also fires when a focusable child is
-   focused, so a frame wrapping a native control still shows the state.
+/* Chamfered: doubled border, focus hue. Painted only by the chamfer that owns
+   focus — the focused element itself, or a wrapper that opts in with
+   .clr-chamfer--focus-owner because it IS the control's visible frame. A card
+   or panel that merely contains a focused control paints nothing: two rings
+   would make the real focus location ambiguous (REQ-011). Ownership is never
+   inferred from a role; the opt-in is the only way in.
    The layers are painted directly rather than through --bw / --brd, so this
    selector declares no custom properties of its own. */
 .clr-chamfer:focus-visible,
-.clr-chamfer:has(:focus-visible) { outline: none; }
+.clr-chamfer--focus-owner:has(:focus-visible) { outline: none; }
 .clr-chamfer:focus-visible::after,
-.clr-chamfer:has(:focus-visible)::after { background: var(--focus-ring); }
+.clr-chamfer--focus-owner:has(:focus-visible)::after { background: var(--focus-ring); }
 .clr-chamfer:focus-visible::before,
-.clr-chamfer:has(:focus-visible)::before { inset: calc(var(--border-width) * 2); }
+.clr-chamfer--focus-owner:has(:focus-visible)::before { inset: calc(var(--border-width) * 2); }
 
 /* Range thumbs need their own selectors — they are not the focused element. */
 .clr-slider:focus-visible { outline: none; }
@@ -636,8 +640,18 @@ select:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
   .clr-chamfer::after { background: CanvasText; }
   .clr-chamfer::before { background: Canvas; }
   button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+  select:focus-visible, summary:focus-visible, [tabindex]:focus-visible,
   [role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
     outline: var(--focus-ring-width) solid Highlight;
+  }
+  /* Same ownership as above: only the focus owner's frame turns Highlight, and
+     it keeps the doubled width. A containing card keeps its CanvasText border. */
+  .clr-chamfer:focus-visible::after,
+  .clr-chamfer--focus-owner:has(:focus-visible)::after { background: Highlight; }
+  /* The thumb's box-shadow is dropped in forced colours; outline the track. */
+  .clr-slider:focus-visible {
+    outline: var(--focus-ring-width) solid Highlight;
+    outline-offset: var(--focus-ring-offset);
   }
   .clr-atmosphere { display: none; }
 }
