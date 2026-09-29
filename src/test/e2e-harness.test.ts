@@ -94,7 +94,8 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
       'E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}',
     )
     expect(workflow).toContain('npm run e2e')
-    // Never production: this workflow seeds and deletes users.
+    // The pull-request lane is previews only; the one Production lane is the
+    // trusted post-merge walk asserted below.
     expect(workflow).toContain("github.event.deployment.environment == 'Preview'")
   })
 
@@ -130,7 +131,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
 
     expect(
       [...jobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
-    ).toEqual(['preview-e2e', 'backend-e2e'])
+    ).toEqual(['preview-e2e', 'backend-e2e', 'deployed-journeys'])
     expect(
       [...rlsJobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
     ).toEqual(['rls-standing'])
@@ -167,8 +168,11 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(rlsJob).toMatch(/if: always\(\)\n\s+run: npm run e2e:reset/)
   })
 
+  const backendJobOf = (source: string) =>
+    source.slice(source.indexOf('  backend-e2e:'), source.indexOf('  deployed-journeys:'))
+
   it('runs privileged OTP, RLS and generation checks only from trusted main', () => {
-    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
+    const backendJob = backendJobOf(workflow)
 
     expect(backendJob).toContain("github.event_name == 'push'")
     expect(backendJob).toContain("github.ref == 'refs/heads/main'")
@@ -180,8 +184,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
   })
 
   it('runs the D6 regression where there is a database to run it against', () => {
-    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
-
+    const backendJob = backendJobOf(workflow)
     // SES-01b. Its schema half runs in every lane — it needs no credentials —
     // but the half that performs a swap, logs sets and reads the three
     // reconstructions back needs a project, and this is the only job that has
@@ -190,11 +193,57 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
   })
 
   it('walks Settings to appearance where a user can be signed in', () => {
-    const backendJob = workflow.slice(workflow.indexOf('  backend-e2e:'))
+    const backendJob = backendJobOf(workflow)
 
     // REQ-010. The journey needs a seeded, onboarded session, so its browser
     // half runs only in the job that holds the key to mint one.
     expect(backendJob).toContain('e2e/settings-appearance.spec.ts')
+  })
+
+  it('walks the core loop against the production deployment of main’s exact head (REQ-010)', () => {
+    const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
+
+    // Only a finished production deployment, and only once its SHA is main's.
+    expect(deployedJob).toContain("github.event_name == 'deployment_status'")
+    expect(deployedJob).toContain("github.event.deployment.environment == 'Production'")
+    expect(deployedJob).toContain('ref: ${{ github.event.deployment.sha }}')
+    expect(deployedJob).toContain('DEPLOYED_SHA: ${{ github.event.deployment.sha }}')
+    expect(deployedJob).toContain('git fetch --no-tags --depth=1 origin main')
+    expect(deployedJob).toMatch(/"\$MAIN_SHA" != "\$DEPLOYED_SHA"[\s\S]*exit 1/)
+    // The SHA check comes before anything that could report a pass.
+    expect(deployedJob.indexOf('DEPLOYED_SHA')).toBeLessThan(
+      deployedJob.indexOf('npx playwright test'),
+    )
+
+    expect(deployedJob).toContain(
+      'E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}',
+    )
+    expect(deployedJob).toContain(
+      'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
+    )
+    expect(deployedJob).toContain(
+      'npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0',
+    )
+  })
+
+  it('walks History to session detail against the deployed merged head (REQ-010)', () => {
+    const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
+
+    // Only the Production deployment Vercel builds from reviewed `main`, never
+    // a preview: this job holds the service-role key.
+    expect(deployedJob).toContain("github.event_name == 'deployment_status'")
+    expect(deployedJob).toContain("github.event.deployment_status.state == 'success'")
+    expect(deployedJob).toContain("github.event.deployment.environment == 'Production'")
+    expect(deployedJob).not.toContain("== 'Preview'")
+    // The deployed origin, and the deployed commit's own spec.
+    expect(deployedJob).toContain(
+      'E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}',
+    )
+    expect(deployedJob).toContain('ref: ${{ github.event.deployment.sha }}')
+    expect(deployedJob).toContain('SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}')
+    expect(deployedJob).toContain(
+      'npx playwright test e2e/history-detail.spec.ts --project=mobile',
+    )
   })
 
   it('uploads the trace and screenshot when it fails', () => {
