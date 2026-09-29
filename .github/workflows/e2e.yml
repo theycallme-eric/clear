@@ -99,12 +99,14 @@ jobs:
       # The D6 regression joins these two because it needs what they need: a
       # real project, a real session, and a token that is somebody's. Its
       # schema half runs in every other lane; this is the half that proves it
-      # by doing (SES-01b).
+      # by doing (SES-01b). The Settings to appearance journey (REQ-010) needs
+      # a seeded, signed-in user, which only this job can mint.
       - name: Prove OTP, RLS, generation/persistence and D6 on the reused project
         run: >-
           npx playwright test e2e/auth-otp.spec.ts e2e/rls.spec.ts
           e2e/generation-persistence.spec.ts
           e2e/d6-swap-persistence.spec.ts
+          e2e/settings-appearance.spec.ts
           --project=mobile
 
       - name: Leave the deterministic E2E namespace clean
