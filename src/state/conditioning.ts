@@ -588,7 +588,7 @@ export interface ScoreComparison {
  * report every repeat as "level".
  */
 export function previousBest(
-  current: ConditioningSectionRead,
+  current: Pick<ConditioningSectionRead, 'blockId' | 'fingerprint' | 'score'>,
   history: readonly ConditioningSectionRead[],
 ): ScoreComparison | null {
   const score = current.score
@@ -910,5 +910,68 @@ export function outcomeOf(outcome: BlockOutcome, perceivedEffort: number | null)
     minutesCompleted: outcome.minutesCompleted ?? null,
     highestRung: outcome.highestRung ?? null,
     perceivedEffort,
+  }
+}
+
+/**
+ * Why a scored block carries no comparison, once the history has answered.
+ * `first_attempt`: nothing in this format has been scored before.
+ * `different_composition`: earlier pieces exist, and none of them is this one.
+ */
+export type ComparisonAbsence = 'first_attempt' | 'different_composition'
+
+/** What completion says about the block just finished. */
+export interface LikeForLike {
+  /** §3's normalized score for this attempt, or null for a block it does not score. */
+  readonly score: ConditioningScore | null
+  /** The comparison, only on an identical repeat. */
+  readonly comparison: ScoreComparison | null
+  /** Why there is no comparison — null when there is one, or nothing to say. */
+  readonly absence: ComparisonAbsence | null
+}
+
+/**
+ * The score and the like-for-like read for a block at completion.
+ *
+ * `history` is null whenever it is not in hand — loading, failed, signed out —
+ * and null resolves to the score alone: no comparison, and no statement about
+ * the history either, because "first attempt" is as much a claim about rows
+ * nobody read as "ahead of your best" is. A block §3 does not score says
+ * nothing at all.
+ *
+ * The score is the one `conditioningScore` gives the same piece when it is read
+ * back out of `conditioning_history(...)`, so what completion shows is what the
+ * next identical repeat is compared against.
+ */
+export function likeForLike(
+  block: BlockProgress,
+  outcome: BlockOutcome,
+  history: readonly ConditioningSectionRead[] | null,
+): LikeForLike {
+  const prescription = blockPrescription(block)
+  const score = conditioningScore(prescription, outcomeOf(outcome, null))
+  if (score === null || history === null) return { score, comparison: null, absence: null }
+
+  const current = {
+    blockId: block.blockId,
+    fingerprint: conditioningFingerprint(prescription),
+    score,
+  }
+  const comparison = previousBest(current, history)
+  if (comparison !== null) return { score, comparison, absence: null }
+
+  // An earlier piece in the same format that is not this one is the case §3(a)
+  // refuses; with none, this is simply the first time the piece has been done.
+  const format = conditioningFormat(prescription)
+  const differs = history.some(
+    (section) =>
+      section.blockId !== block.blockId &&
+      section.format === format &&
+      section.fingerprint !== current.fingerprint,
+  )
+  return {
+    score,
+    comparison: null,
+    absence: differs ? 'different_composition' : 'first_attempt',
   }
 }
