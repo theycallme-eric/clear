@@ -16,11 +16,11 @@
  * a table rather than fifteen renders (`guards.test.tsx`). `RouteGuard` renders
  * the decision and owns nothing else.
  *
- * **The onboarding placeholder.** ONB-01 is M2, so `/onboarding` does not
- * exist. Sending a user there would be a redirect to a route that answers
- * `Not Found`, so until it lands, `protected` renders `AccountSetupPending`
- * in place: the requirement's explicit instruction. `ONBOARDING_ROUTE` below is
- * the one line ONB-01 changes.
+ * **The onboarding gate.** An authenticated user whose profile loaded and says
+ * onboarding is not done is redirected from every `protected` route to
+ * `ONBOARDING_ROUTE` (ONB-01), and the `onboarding` guard on that route sends
+ * anyone already onboarded Home. The two are one rule read from both ends, so
+ * neither route can be reached from the wrong side of it.
  */
 import { Navigate } from 'react-router-dom'
 import type { ReactNode } from 'react'
@@ -31,7 +31,6 @@ import type { QueryState } from '../state/query'
 import type { Profile } from '../state/schemas'
 import { isOnboarded, useLocationsQuery, useProfileQuery } from '../state/user-queries'
 import { ErrorView, LoadingView } from '../ui/view-state'
-import { AccountSetupPending } from './AccountSetupPending'
 import { Screen } from './Screen'
 
 /** Where a signed-in visitor to a public-only route is sent. */
@@ -40,11 +39,7 @@ export const AUTHENTICATED_HOME = '/'
 /** Where a signed-out visitor to a protected route is sent. */
 export const ANONYMOUS_HOME = '/welcome'
 
-/**
- * ONB-01's route. Declared, not routed: nothing navigates here while the
- * placeholder stands, and the `onboarding` guard exists so that the screen has
- * its gate the day it is written.
- */
+/** Where an authenticated visitor who has not finished onboarding is sent (ONB-01). */
 export const ONBOARDING_ROUTE = '/onboarding'
 
 export type GuardKind = 'public-only' | 'protected' | 'onboarding'
@@ -57,8 +52,6 @@ export type GuardDecision =
   | { readonly kind: 'session-error'; readonly error: AppError }
   /** The profile read failed. Retry — and never the gate. */
   | { readonly kind: 'profile-error'; readonly error: AppError }
-  /** Authenticated, not onboarded, and ONB-01 does not exist yet. */
-  | { readonly kind: 'setup-pending' }
   | { readonly kind: 'allow' }
 
 export const CHECKING_SESSION = 'Checking session'
@@ -129,7 +122,8 @@ export function resolveGuard(
         // Nothing to set up: ONB-01 is strictly first-run (IA.md §6).
         return onboarded ? { kind: 'redirect', to: AUTHENTICATED_HOME } : { kind: 'allow' }
       }
-      return onboarded ? { kind: 'allow' } : { kind: 'setup-pending' }
+      // A missing row is not onboarded either — it is the newest user there is.
+      return onboarded ? { kind: 'allow' } : { kind: 'redirect', to: ONBOARDING_ROUTE }
     }
   }
 }
@@ -181,8 +175,6 @@ export function RouteGuard({ guard, title, children }: RouteGuardProps) {
           />
         </Screen>
       )
-    case 'setup-pending':
-      return <AccountSetupPending />
     case 'allow':
       return <>{children}</>
   }
@@ -231,7 +223,7 @@ export function Protected({ title, children }: Omit<RouteGuardProps, 'guard'>) {
   )
 }
 
-/** ONB-01's gate: authed, and not finished. Unrouted until that screen exists. */
+/** ONB-01's gate: authed, and not finished. */
 export function OnboardingOnly({ title, children }: Omit<RouteGuardProps, 'guard'>) {
   return (
     <RouteGuard guard="onboarding" title={title}>
