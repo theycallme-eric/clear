@@ -359,6 +359,10 @@ These are already true. Do not re-implement them; do not regress them.
 - **Focus visible on everything.** Chamfered elements express focus as a *doubled border*
   in the focus hue, because a chamfer's `clip-path` clips its own outline away. The width
   change is the point — a colour change alone is not a focus indicator.
+  Only the chamfer that *owns* focus paints it (REQ-011): the focused element itself, or a
+  wrapper that is a control's visible frame and opts in with `.clr-chamfer--focus-owner`.
+  A card or panel that merely contains a focused control paints nothing — including under
+  `forced-colors`, where the owner turns `Highlight`. Never infer ownership from a role.
 - **Selection never relies on colour alone** — chips and choice groups carry a solid tick.
 - **Native where native is better** — checkbox, radio, slider, dialog are real platform
   elements, so form participation, `required`, indeterminate, grouping, arrow keys, focus
