@@ -20,6 +20,7 @@
  * review of a composition that belongs to nothing — which is what a *generated*
  * workout will be when REV-01 routes one through here.
  */
+import type { GenerationInput } from '../data/generation'
 import type { Result } from './errors'
 import {
   parseBoundary,
@@ -48,4 +49,30 @@ export function reviewHandoff(
 export function readReviewHandoff(state: unknown): ReviewHandoff | null {
   const parsed: Result<ReviewHandoff> = parseBoundary(reviewHandoffSchema, state)
   return parsed.ok ? parsed.value : null
+}
+
+/**
+ * REQ-004 — the request a regeneration from Review sends: the one this
+ * composition was made from, restated off the facts the acceptance snapshotted.
+ *
+ * `null` when those facts cannot make a request. A composition whose location
+ * was deleted, or that carries no goal, was composed under something that no
+ * longer exists, and inventing a stand-in would regenerate a workout for a
+ * request the user never made — so the caller sends them to the form instead.
+ * Notes are not repeated: they were context for that composition, not a
+ * standing preference, which is Quick Start's rule too. The deload is, because
+ * it was the user's own decision for this day.
+ */
+export function regenerationInput(acceptance: SessionAcceptance): GenerationInput | null {
+  if (acceptance.location_id === null || acceptance.goal_preset === null) return null
+
+  return {
+    goal: acceptance.goal_preset,
+    focus: acceptance.session_focus,
+    requested_intensity: acceptance.requested_intensity,
+    requested_duration_mins: acceptance.requested_duration_mins,
+    location_id: acceptance.location_id,
+    notes: null,
+    deload: acceptance.is_deload,
+  }
 }
