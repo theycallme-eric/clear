@@ -185,12 +185,37 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
 
   it('runs the D6 regression where there is a database to run it against', () => {
     const backendJob = backendJobOf(workflow)
-
     // SES-01b. Its schema half runs in every lane — it needs no credentials —
     // but the half that performs a swap, logs sets and reads the three
     // reconstructions back needs a project, and this is the only job that has
     // one. A spec nobody runs is not a standing regression test.
     expect(backendJob).toContain('e2e/d6-swap-persistence.spec.ts')
+  })
+
+  it('walks the core loop against the production deployment of main’s exact head (REQ-010)', () => {
+    const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
+
+    // Only a finished production deployment, and only once its SHA is main's.
+    expect(deployedJob).toContain("github.event_name == 'deployment_status'")
+    expect(deployedJob).toContain("github.event.deployment.environment == 'Production'")
+    expect(deployedJob).toContain('ref: ${{ github.event.deployment.sha }}')
+    expect(deployedJob).toContain('DEPLOYED_SHA: ${{ github.event.deployment.sha }}')
+    expect(deployedJob).toContain('git fetch --no-tags --depth=1 origin main')
+    expect(deployedJob).toMatch(/"\$MAIN_SHA" != "\$DEPLOYED_SHA"[\s\S]*exit 1/)
+    // The SHA check comes before anything that could report a pass.
+    expect(deployedJob.indexOf('DEPLOYED_SHA')).toBeLessThan(
+      deployedJob.indexOf('npx playwright test'),
+    )
+
+    expect(deployedJob).toContain(
+      'E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}',
+    )
+    expect(deployedJob).toContain(
+      'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
+    )
+    expect(deployedJob).toContain(
+      'npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0',
+    )
   })
 
   it('walks History to session detail against the deployed merged head (REQ-010)', () => {
