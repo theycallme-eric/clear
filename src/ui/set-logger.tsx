@@ -57,6 +57,7 @@ import {
   type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
 import { Heading, HeadingSection } from './Heading'
@@ -160,6 +161,12 @@ export function ExerciseSetLogger({
         card is for. Draws nothing outside the workout shell.
       */}
       <ExerciseSwapControls exercise={exercise} />
+
+      {/*
+        EXE-05. Its own component with its own reads and write, so a panel
+        whose library read failed leaves the set form above it untouched.
+      */}
+      <ExerciseCoaching exercise={exercise} />
     </HeadingSection>
   )
 }

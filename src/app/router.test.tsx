@@ -1,4 +1,4 @@
-import { act, screen, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
@@ -17,6 +17,7 @@ import {
   notOnboardedProfile,
   onboardedProfile,
 } from '../test/user-data-double'
+import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
 import { ONBOARDING_TITLE } from './Onboarding'
 
 describe('app router', () => {
@@ -56,6 +57,35 @@ describe('app router', () => {
     )
   })
 
+  it('mounts /history/:id as a protected route at the quiet atmosphere', async () => {
+    const record = reconstructionFixture({ title: 'Routed session' })
+    const workout = createWorkoutDouble({
+      session: null,
+      sessions: { asPerformed: async () => ok(record) },
+    })
+    const { container } = renderApp(
+      [`/history/${record.session.id}`],
+      signedIn({ workout: workout.clients }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Routed session' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
+    expect(container.querySelector('.clr-shell')).toHaveAttribute(
+      'data-atmosphere',
+      'quiet',
+    )
+  })
+
+  it('does not render /history/:id for a signed-out visitor', async () => {
+    renderApp(['/history/c0000001-0000-4000-8000-000000000000'])
+
+    await waitFor(() => expect(document.documentElement.dataset.atmosphere).toBe('full'))
+    expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
+    expect(screen.queryByRole('main')?.textContent ?? '').not.toContain('As performed')
+  })
+
   it('takes a /generate submit through Loading to /review with the validated workout', async () => {
     const user = userEvent.setup()
     const cache = new QueryClient()
@@ -76,7 +106,6 @@ describe('app router', () => {
     )
     await user.click(screen.getByRole('button', { name: /generate workout/i }))
 
-    // The Loading screen is the route's screen for the run, at `full`.
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
     expect(document.documentElement.dataset.atmosphere).toBe('full')
 

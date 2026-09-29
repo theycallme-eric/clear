@@ -5,6 +5,7 @@ import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { ok } from '../state/errors'
 import {
   GENERATION_CANCEL_LABEL,
   GENERATION_FAILED_LABEL,
@@ -25,7 +26,7 @@ import {
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
-import { createWorkoutDouble } from '../test/workout-double'
+import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { resolveAtmosphere } from './atmosphere'
 import { PREFILL_NOTICE } from './Generate'
@@ -114,6 +115,37 @@ describe('Home', () => {
       await screen.findByRole('heading', { level: 1, name: 'History' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Today' })).not.toBeInTheDocument()
+  })
+
+  it('opens a recent workout into its Session Detail rather than Not Found', async () => {
+    const user = userEvent.setup()
+    const record = reconstructionFixture({
+      sessionId: 'b0000003-0000-4000-8000-000000000000',
+      title: 'Hinge and carry',
+    })
+    const asked: string[] = []
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [record.session],
+      sessions: {
+        asPerformed: async (sessionId) => {
+          asked.push(sessionId)
+          return ok(record)
+        },
+      },
+    })
+
+    renderApp(['/'], signedIn({ workout: workout.clients }))
+
+    const link = await screen.findByRole('link', { name: /Hinge and carry/i })
+    expect(link).toHaveAttribute('href', `/history/${record.session.id}`)
+    await user.click(link)
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Hinge and carry' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
+    expect(asked).toEqual([record.session.id])
   })
 
   it('marks today with a reason and redraws the week from the saved row', async () => {

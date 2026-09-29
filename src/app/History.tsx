@@ -15,11 +15,9 @@
  * loaded window keeps one ordering, one page boundary and one derivation, and
  * "load more" widens the window rather than the filter.
  *
- * What is deliberately not here: the link into `/history/:id`. The Session
- * Detail screen is the other half of HIST-01 and is not routed yet, and a list
- * that linked to it today would navigate every row into Not Found. The entry's
- * `id` is already carried by `HistoryEntry`, so the link is an anchor and a
- * route when that screen lands — not a second derivation.
+ * Each session row links into `/history/:id` — the Session Detail screen, the
+ * other half of HIST-01 — through the same `sessionDetailPath` Home's recents
+ * use, so both entries name the same route for the same session.
  */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -40,6 +38,7 @@ import {
   type HistoryFilter,
 } from '../state/history'
 import { useHistoryQuery } from '../state/history-queries'
+import { sessionDetailPath } from '../state/home'
 import {
   viewError,
   viewEmpty,
@@ -138,7 +137,11 @@ export function History() {
         >
           {(data) => (
             <>
-              <HistoryList entries={data} label={HISTORY_LIST_LABEL} />
+              <HistoryList
+                entries={data}
+                label={HISTORY_LIST_LABEL}
+                linkTo={(entry) => sessionDetailPath(entry.id)}
+              />
               {query.canLoadMore && (
                 <Button variant="secondary" onClick={query.loadMore}>
                   {HISTORY_LOAD_MORE_LABEL}
