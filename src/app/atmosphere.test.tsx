@@ -9,7 +9,10 @@ import { act, render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { QueryClient } from '../state/query'
+import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import { AppProviders, renderApp, signedIn, type ProviderOptions } from '../test/render'
+import { FIXTURE_USER_ID, notOnboardedProfile } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import { routes } from './router'
 import {
@@ -73,6 +76,14 @@ function providersFor(pathname: string): ProviderOptions {
     pathname.startsWith('/settings')
   ) {
     return signedIn()
+  }
+  // ONB-01's gate: authed and not onboarded. An onboarded fixture would be
+  // redirected Home and measure `/`'s level instead.
+  if (pathname === '/onboarding') {
+    const queryClient = new QueryClient()
+    queryClient.setData(profileQueryKey(FIXTURE_USER_ID), notOnboardedProfile())
+    queryClient.setData(locationsQueryKey(FIXTURE_USER_ID), [])
+    return signedIn({ queryClient })
   }
   if (pathname !== '/workout') return {}
   return signedIn({

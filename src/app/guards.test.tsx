@@ -12,7 +12,7 @@
  *      omission.
  *   2. **The rendered consequences**, through the real route tree, for the four
  *      things that are behaviour and not a lookup: a profile 500, the
- *      placeholder that stands in for ONB-01, the redirects, and sign-out.
+ *      redirect into ONB-01's wizard, the redirects out, and sign-out.
  *
  * The one that matters most is `a profile 500 never becomes onboarding`. D1
  * was a failed read being indistinguishable from a new user; if that line ever
@@ -45,6 +45,8 @@ import {
   type GuardKind,
   type GuardSession,
 } from './guards'
+import { STEP_TITLES } from '../state/onboarding'
+import { ONBOARDING_TITLE } from './Onboarding'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The matrix
@@ -86,7 +88,7 @@ const WAIT_ACCOUNT = { kind: 'wait', label: CHECKING_ACCOUNT } as const
 const TO_HOME = { kind: 'redirect', to: '/' } as const
 const TO_WELCOME = { kind: 'redirect', to: '/welcome' } as const
 const ALLOW = { kind: 'allow' } as const
-const SETUP = { kind: 'setup-pending' } as const
+const TO_ONBOARDING = { kind: 'redirect', to: '/onboarding' } as const
 const PROFILE_FAILED = { kind: 'profile-error', error: PROFILE_ERROR } as const
 const SESSION_FAILED = { kind: 'session-error', error: SESSION_ERROR } as const
 
@@ -115,10 +117,10 @@ const MATRIX: readonly Cell[] = [
   { guard: 'protected', session: 'authenticated', profile: 'loading', expected: WAIT_ACCOUNT },
   { guard: 'protected', session: 'authenticated', profile: 'error', expected: PROFILE_FAILED },
   { guard: 'protected', session: 'authenticated', profile: 'onboarded', expected: ALLOW },
-  { guard: 'protected', session: 'authenticated', profile: 'not-onboarded', expected: SETUP },
-  { guard: 'protected', session: 'authenticated', profile: 'no-row', expected: SETUP },
+  { guard: 'protected', session: 'authenticated', profile: 'not-onboarded', expected: TO_ONBOARDING },
+  { guard: 'protected', session: 'authenticated', profile: 'no-row', expected: TO_ONBOARDING },
 
-  // onboarding — ONB-01's own gate. Unrouted until M2, specified now.
+  // onboarding — ONB-01's own gate on `/onboarding`.
   { guard: 'onboarding', session: 'loading', profile: 'loading', expected: WAIT_SESSION },
   { guard: 'onboarding', session: 'anonymous', profile: 'loading', expected: TO_WELCOME },
   { guard: 'onboarding', session: 'session-error', profile: 'loading', expected: SESSION_FAILED },
@@ -181,7 +183,7 @@ describe('AUTH-03 guard matrix', () => {
       const decision = resolveGuard(guard, SESSIONS.authenticated, PROFILES.error)
 
       expect(decision.kind).toBe('profile-error')
-      expect(decision).not.toEqual(SETUP)
+      expect(decision).not.toEqual(TO_ONBOARDING)
       expect(decision).not.toEqual(TO_HOME)
       expect(decision).not.toEqual(TO_WELCOME)
     }
@@ -228,7 +230,7 @@ describe('AUTH-03 guards, rendered', () => {
 
     const waiting = await within(screen.getByRole('main')).findByRole('status')
     expect(waiting).toHaveTextContent(CHECKING_ACCOUNT)
-    expect(screen.queryByText(/isn’t built yet/)).toBeNull()
+    expect(screen.queryByRole('heading', { name: ONBOARDING_TITLE })).toBeNull()
   })
 
   it('renders a retryable error for a profile 500, and never routes to onboarding', async () => {
@@ -248,8 +250,7 @@ describe('AUTH-03 guards, rendered', () => {
     const alert = await screen.findByRole('alert')
     expect(within(alert).getByText('Your account didn’t load')).toBeInTheDocument()
     // The screen the user must never see instead of this one.
-    expect(screen.queryByText(/isn’t built yet/)).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Sign out' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: ONBOARDING_TITLE })).toBeNull()
 
     await user.click(within(alert).getByRole('button', { name: 'Try again' }))
 
@@ -259,37 +260,33 @@ describe('AUTH-03 guards, rendered', () => {
     expect(userData.profileCalls).toEqual(['user-1', 'user-1'])
   })
 
-  it('shows the ONB-01 placeholder — not a redirect — to a user who has not onboarded', async () => {
-    const userData = createFakeUserDataClient({
-      profile: async () => ok(notOnboardedProfile()),
-    })
+  it.each([
+    ['a profile that has not finished', () => ok(notOnboardedProfile())],
+    ['no profile row at all', () => ok(null)],
+  ] as const)('redirects %s from a protected route into the wizard', async (_, answer) => {
+    const userData = createFakeUserDataClient({ profile: async () => answer() })
 
-    renderApp(['/'], coldProviders(userData))
+    renderApp(['/generate'], coldProviders(userData))
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Account setup' }),
+      await screen.findByRole('heading', { level: 2, name: STEP_TITLES.location }),
     ).toBeInTheDocument()
-    expect(screen.getByText('Account setup isn’t built yet')).toBeInTheDocument()
-    // The redirect the requirement forbids would have landed here instead.
+    expect(screen.getByRole('heading', { level: 1, name: ONBOARDING_TITLE })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
   })
 
-  it('offers sign-out from the placeholder, and the guard takes it from there', async () => {
-    const user = userEvent.setup()
-    const auth = createFakeAuthClient({ settled: signedInEvent() })
-    const userData = createFakeUserDataClient({
-      profile: async () => ok(notOnboardedProfile()),
-    })
+  it('sends an onboarded visitor to /onboarding Home instead of the wizard', async () => {
+    renderApp(['/onboarding'], signedIn())
 
-    renderApp(['/'], { auth, userData, queryClient: new QueryClient() })
+    expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: ONBOARDING_TITLE })).toBeNull()
+  })
 
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+  it('sends a signed-out visitor to /onboarding to Welcome', async () => {
+    renderApp(['/onboarding'])
 
-    // No navigation of its own: the session went anonymous and the protected
-    // guard above it resolved to `/welcome`.
-    expect(
-      await screen.findByRole('button', { name: 'Sign in' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: ONBOARDING_TITLE })).toBeNull()
   })
 
   it('shows a session that could not be revalidated as an error, not as a sign-out', async () => {
