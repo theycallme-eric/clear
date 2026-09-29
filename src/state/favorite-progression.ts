@@ -673,13 +673,11 @@ function noteFor(runCount: number, deload: boolean, deltaCount: number): string 
 /**
  * Whether a deload is in force for the workout about to be performed.
  *
- * OVR-04 is the requirement that decides this, and it is not built: the column
- * it will write is `workout_sessions.is_deload`, and a restored favorite has no
- * session row yet — Review's Start is what writes one. So the two facts the
- * acceptance payload actually carries are read instead: the goal the workout
- * was composed for, and the adjustment that moved it. Both are stated by
- * generation, neither is inferred from a screen, and when OVR-04 lands this
- * function is the single place that changes.
+ * OVR-04 owns the durable `workout_sessions.is_deload` tag, but a restored
+ * favorite has no new session row yet — Review's Start is what writes one. So
+ * the two facts the acceptance payload already carries are read instead: the
+ * goal the workout was composed for, and the adjustment that moved it. Both
+ * are stated by generation and neither is inferred from a screen.
  */
 export function deloadInEffect(
   acceptance: Pick<SessionAcceptance, 'goal_preset' | 'adjustment_reason'>,

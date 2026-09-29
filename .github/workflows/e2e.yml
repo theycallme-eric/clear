@@ -181,6 +181,9 @@ jobs:
       - name: Walk History list to session detail on the deployed head
         run: npx playwright test e2e/history-detail.spec.ts --project=mobile
 
+      - name: Walk location management against the deployed head
+        run: npx playwright test e2e/settings-locations.spec.ts --project=mobile
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
