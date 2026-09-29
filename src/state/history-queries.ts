@@ -36,7 +36,12 @@ import { useWorkoutClients } from './workout-queries'
 export const HISTORY_MAX_PAGES = 10
 
 export function historyQueryKey(userId: string, pages: number): string {
-  return `history:${userId}:${pages}`
+  return `${historyQueryPrefix(userId)}${pages}`
+}
+
+/** What every page count of one user's history is keyed under. */
+export function historyQueryPrefix(userId: string): string {
+  return `history:${userId}:`
 }
 
 export interface HistoryQuery extends QueryResult<HistoryPage> {
