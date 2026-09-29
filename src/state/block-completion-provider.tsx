@@ -35,6 +35,7 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from './block-completion'
+import { likeForLike, type ConditioningSectionRead } from './conditioning'
 import type { AppError } from './errors'
 import { isErr } from './errors'
 import type { BlockProgress } from './workout-progress'
@@ -55,12 +56,19 @@ export interface BlockCompletionProviderProps {
   blocks: readonly BlockProgress[]
   /** Where a failed write is shown: the shell's one error surface. */
   onFailure: (error: AppError) => void
+  /**
+   * OVR-03's scored history, read, or null while it is not in hand — loading,
+   * failed or signed out. Null costs the dialog its comparison and nothing
+   * else: the effort question and the write never wait on this read.
+   */
+  conditioningHistory?: readonly ConditioningSectionRead[] | null
   children: ReactNode
 }
 
 export function BlockCompletionProvider({
   blocks,
   onFailure,
+  conditioningHistory = null,
   children,
 }: BlockCompletionProviderProps) {
   const { blockResults } = useWorkoutClients()
@@ -111,6 +119,16 @@ export function BlockCompletionProvider({
     [blockResults, onFailure, pending],
   )
 
+  // The score is derived from the outcome this write stores, by the function
+  // that scores the same row when history reads it back (OVR-03 §3).
+  const read = useMemo(
+    () =>
+      pending === null
+        ? null
+        : likeForLike(pending.block, pending.outcome, conditioningHistory),
+    [conditioningHistory, pending],
+  )
+
   return (
     <BlockCompletionContext value={completion}>
       {children}
@@ -118,6 +136,9 @@ export function BlockCompletionProvider({
         open={pending !== null}
         identity={pending?.block.identity ?? null}
         outcome={pending?.outcome ?? null}
+        score={read?.score ?? null}
+        comparison={read?.comparison ?? null}
+        absence={read?.absence ?? null}
         saving={saving}
         onConfirm={(effort) => void record(effort)}
         onCancel={() => setPending(null)}

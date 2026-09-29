@@ -43,6 +43,7 @@ function database(): GenerationDatabase {
     recentHistory: async () =>
       ok({ focuses: ['full_body'], patterns: [], exerciseIds: [] }),
     anchors: async () => ok([]),
+    conditioning: async () => ok([]),
   }
 }
 

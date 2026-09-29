@@ -24,6 +24,7 @@ import {
   CAP_LENGTHEN_FRACTION,
   CAP_SHORTEN_FRACTION,
   conditioningDirective,
+  conditioningDirectiveOf,
   conditioningFingerprint,
   conditioningFormat,
   conditioningScore,
@@ -835,24 +836,109 @@ describe("§3(b)'s trend", () => {
 })
 
 describe('the directive generation reads', () => {
-  const easy = (date: string) =>
-    section({ session_date: date, perceived_effort: 6, rounds_completed: 8 })
+  // Rows exactly as `conditioning_history(...)` answers them, newest first: the
+  // `perceived_effort` on each is the section RPE EXE-04's capture writes.
+  const easy = (date: string, overrides: Partial<ConditioningHistoryRow> = {}) =>
+    row({ session_date: date, perceived_effort: READY_EFFORT_CEILING, rounds_completed: 8, ...overrides })
+  const hard = (date: string, overrides: Partial<ConditioningHistoryRow> = {}) =>
+    row({ session_date: date, perceived_effort: 9, rounds_completed: 8, ...overrides })
+  const capped = (date: string, overrides: Partial<ConditioningHistoryRow> = {}) =>
+    row({
+      session_date: date,
+      structure_type: 'for_time',
+      rounds: 5,
+      completed_under_cap: false,
+      rounds_completed: 2,
+      perceived_effort: 9,
+      ...overrides,
+    })
 
-  it('carries the trend under the name §3 gives it', () => {
-    const directive = conditioningDirective([easy('2026-09-20'), easy('2026-09-15')])
+  it('says ready over three sections whose last two landed easily', () => {
+    const directive = conditioningDirectiveOf([
+      easy('2026-09-20'),
+      easy('2026-09-15'),
+      hard('2026-09-10'),
+    ])
 
-    expect(directive.conditioning_trend).toBe('ready')
-    expect(directive.sections_read).toBe(2)
-    expect(directive.reason).toContain('two consecutive')
+    expect(directive).toEqual({
+      conditioning_trend: 'ready',
+      sections_read: TREND_WINDOW,
+      reason: 'two consecutive conditioning sections finished as prescribed at RPE 7 or below',
+    })
   })
 
-  it('says how thin the evidence was when it holds for want of data', () => {
-    expect(conditioningDirective([]).reason).toBe(
-      `only 0 conditioning sections at intensity ${DENSITY_INTENSITY_FLOOR} or above`,
+  it('says backing_off over three sections whose last two hit the cap', () => {
+    const directive = conditioningDirectiveOf([
+      capped('2026-09-20'),
+      capped('2026-09-15'),
+      easy('2026-09-10'),
+    ])
+
+    expect(directive?.conditioning_trend).toBe('backing_off')
+    expect(directive?.sections_read).toBe(TREND_WINDOW)
+  })
+
+  it('says hold over three sections that are mixed', () => {
+    const directive = conditioningDirectiveOf([
+      easy('2026-09-20'),
+      hard('2026-09-15'),
+      easy('2026-09-10'),
+    ])
+
+    expect(directive?.conditioning_trend).toBe('hold')
+    expect(directive?.reason).toBe('not two consecutive sections either way')
+  })
+
+  it('reads the section RPE the effort capture wrote, and none it did not', () => {
+    const unrated = { perceived_effort: null }
+
+    expect(
+      conditioningDirectiveOf([
+        easy('2026-09-20', unrated),
+        easy('2026-09-15', unrated),
+        easy('2026-09-10', unrated),
+      ])?.conditioning_trend,
+    ).toBe('hold')
+  })
+
+  it('gives no directive at two qualifying sections, and one at three', () => {
+    const two = [easy('2026-09-20'), easy('2026-09-15')]
+
+    expect(conditioningDirectiveOf(two)).toBeNull()
+    expect(conditioningDirectiveOf([...two, easy('2026-09-10')])?.conditioning_trend).toBe(
+      'ready',
     )
-    expect(conditioningDirective([easy('2026-09-20')]).reason).toBe(
-      `only 1 conditioning section at intensity ${DENSITY_INTENSITY_FLOOR} or above`,
-    )
+  })
+
+  it('gives no directive for no history and for one section', () => {
+    expect(conditioningDirective([])).toBeNull()
+    expect(conditioningDirectiveOf([easy('2026-09-20')])).toBeNull()
+  })
+
+  it('counts a section at intensity 5 and not one at intensity 4', () => {
+    const atFloor = easy('2026-09-10', { effective_intensity: DENSITY_INTENSITY_FLOOR })
+    const belowFloor = easy('2026-09-10', { effective_intensity: DENSITY_INTENSITY_FLOOR - 1 })
+    const recent = [easy('2026-09-20'), easy('2026-09-15')]
+
+    expect(DENSITY_INTENSITY_FLOOR).toBe(5)
+    expect(conditioningDirectiveOf([...recent, atFloor])?.conditioning_trend).toBe('ready')
+    expect(conditioningDirectiveOf([...recent, belowFloor])).toBeNull()
+  })
+
+  it('reads only the latest three qualifying sections, past a light one', () => {
+    // A light session between capped ones is not part of the read, so the
+    // window is the three capped sections either side of it.
+    const directive = conditioningDirectiveOf([
+      capped('2026-09-20'),
+      easy('2026-09-18', { effective_intensity: DENSITY_INTENSITY_FLOOR - 1 }),
+      capped('2026-09-15'),
+      capped('2026-09-10'),
+      easy('2026-09-05'),
+      easy('2026-09-01'),
+    ])
+
+    expect(directive?.conditioning_trend).toBe('backing_off')
+    expect(directive?.sections_read).toBe(TREND_WINDOW)
   })
 })
 

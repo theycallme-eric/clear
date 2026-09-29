@@ -25,7 +25,9 @@ import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
+import type { ConditioningHistoryRow } from '../state/schemas'
 import { WORKOUT_SHELL_STORAGE_KEY } from '../state/workout-persistence'
+import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import { AppProviders, signedIn } from '../test/render'
 import {
   completedSession,
@@ -36,11 +38,13 @@ import {
 import {
   createWorkoutDouble,
   FIXTURE_SESSION_ID,
+  fixtureId,
   snapshotFixture,
   type SectionFixture,
   type WorkoutDouble,
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
+import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { AUTHENTICATED_HOME } from './guards'
 import { routes } from './router'
 import { SAVE_FAVORITE_LABEL } from './Summary'
@@ -617,6 +621,173 @@ describe('Workout — block completion', () => {
     await waitFor(() => expect(isDialogOpen('EMOM complete')).toBe(false))
     expect(double.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The like-for-like comparison (OVR-03)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A session before this one, whose block the Finisher may or may not repeat. */
+const EARLIER_SESSION = fixtureId('9', 1)
+const EARLIER_SECTION = fixtureId('9', 2)
+const EARLIER_BLOCK = fixtureId('9', 3)
+
+describe('Workout — the like-for-like comparison', () => {
+  /** The Finisher AMRAP as the shell derives it, which is what a repeat matches. */
+  function finisher(): BlockProgress {
+    const block = sessionProgress(activeSession()).sections[2]?.blocks[0]
+    if (block === undefined) throw new Error('the fixture has no Finisher block')
+    return block
+  }
+
+  /** An earlier scored attempt at the Finisher, as `conditioning_history` answers it. */
+  function earlierAttempt(
+    overrides: Partial<ConditioningHistoryRow> = {},
+  ): ConditioningHistoryRow {
+    const block = finisher()
+    return {
+      session_id: EARLIER_SESSION,
+      session_date: '2026-09-20',
+      effective_intensity: 7,
+      goal_preset: null,
+      section_id: EARLIER_SECTION,
+      section_order: 2,
+      block_id: EARLIER_BLOCK,
+      block_order: 0,
+      structure_type: block.structureType,
+      rep_scheme: block.repScheme,
+      timer_type: block.timerType,
+      timer_seconds: block.timerSeconds,
+      rounds: block.rounds,
+      round_rest_seconds: block.roundRestSeconds,
+      elapsed_seconds: block.timerSeconds,
+      completed_under_cap: null,
+      rounds_completed: 1,
+      partial_round_reps: null,
+      minutes_completed: null,
+      highest_rung: null,
+      perceived_effort: 6,
+      scored_at: '2026-09-20T10:30:00.000Z',
+      prescriptions: block.exercises.map((exercise) => exercise.prescription),
+      ...overrides,
+    }
+  }
+
+  /** Performs two rounds of the Finisher and opens its effort question. */
+  async function completeFinisher(
+    user: ReturnType<typeof userEvent.setup>,
+  ): Promise<HTMLElement> {
+    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
+    return dialogTitled('AMRAP complete')
+  }
+
+  const COMPARED = /Previous best/
+  const FIRST = /First attempt at this piece/
+  const DIFFERENT = /Nothing like-for-like to compare/
+
+  it('reads the conditioning history for the signed-in user', async () => {
+    const history = vi.fn(async () => ok([]))
+    await shell({ conditioning: { history } })
+
+    await waitFor(() => expect(history).toHaveBeenCalledWith(FIXTURE_USER_ID))
+  })
+
+  it('shows the normalized score of the piece, computed from the outcome it writes', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+
+    const dialog = await completeFinisher(user)
+    // Two rounds of 3 × 8 over the 8-minute window: 48 reps ÷ 8 min.
+    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
+    await waitFor(() => expect(double.recorded()).toHaveLength(1))
+    expect(double.recorded()[0]?.outcome).toMatchObject({ roundsCompleted: 2 })
+  })
+
+  it('compares an identical repeat against its previous best', async () => {
+    const user = userEvent.setup()
+    await shell({ conditioningHistory: [earlierAttempt()] })
+
+    const dialog = await completeFinisher(user)
+    expect(
+      await within(dialog).findByText('Previous best 3 reps/min · Ahead of your previous best'),
+    ).toBeInTheDocument()
+    expect(within(dialog).queryByText(DIFFERENT)).not.toBeInTheDocument()
+    expect(within(dialog).queryByText(FIRST)).not.toBeInTheDocument()
+  })
+
+  it('refuses to compare a piece whose composition differs, and says so', async () => {
+    const user = userEvent.setup()
+    // Same format, a different clock: a different test, however alike it looks.
+    await shell({ conditioningHistory: [earlierAttempt({ timer_seconds: 600 })] })
+
+    const dialog = await completeFinisher(user)
+    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
+    expect(await within(dialog).findByText(DIFFERENT)).toBeInTheDocument()
+    expect(within(dialog).queryByText(COMPARED)).not.toBeInTheDocument()
+  })
+
+  it('says a first attempt is one rather than comparing it against nothing', async () => {
+    const user = userEvent.setup()
+    await shell({ conditioningHistory: [] })
+
+    const dialog = await completeFinisher(user)
+    expect(await within(dialog).findByText(FIRST)).toBeInTheDocument()
+    expect(within(dialog).queryByText(COMPARED)).not.toBeInTheDocument()
+    expect(within(dialog).queryByText(DIFFERENT)).not.toBeInTheDocument()
+  })
+
+  it('claims nothing about history while it is still loading', async () => {
+    const user = userEvent.setup()
+    await shell({
+      conditioningHistory: [earlierAttempt()],
+      conditioning: { history: () => new Promise(() => {}) },
+    })
+
+    const dialog = await completeFinisher(user)
+    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
+    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
+      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
+    }
+  })
+
+  it('claims nothing when the history read fails, and still records the block', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell({
+      conditioning: {
+        history: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)),
+      },
+    })
+
+    const dialog = await completeFinisher(user)
+    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
+      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
+    }
+
+    await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
+    await waitFor(() => expect(double.recorded()).toHaveLength(1))
+    expect(await screen.findByRole('button', { name: 'Block recorded' })).toBeDisabled()
+  })
+
+  it('claims nothing when the read is refused as signed out', async () => {
+    const user = userEvent.setup()
+    await shell({
+      conditioning: {
+        history: async () => err(createError(ErrorCode.AUTH_UNAUTHENTICATED)),
+      },
+    })
+
+    const dialog = await completeFinisher(user)
+    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
+      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
+    }
   })
 })
 

@@ -1,11 +1,22 @@
-import { screen } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { ok } from '../state/errors'
+import { GENERATION_LOADING_TITLE } from '../state/generation-loading'
 import { STEP_TITLES } from '../state/onboarding'
 import { QueryClient } from '../state/query'
+import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
+import { makeGenerationOutput, makeSessionAcceptance } from '../test/factories'
+import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
-import { createFakeUserDataClient, notOnboardedProfile } from '../test/user-data-double'
+import {
+  createFakeUserDataClient,
+  FIXTURE_USER_ID,
+  fixtureLocation,
+  notOnboardedProfile,
+  onboardedProfile,
+} from '../test/user-data-double'
 import { ONBOARDING_TITLE } from './Onboarding'
 
 describe('app router', () => {
@@ -42,6 +53,48 @@ describe('app router', () => {
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
       'quiet',
+    )
+  })
+
+  it('takes a /generate submit through Loading to /review with the validated workout', async () => {
+    const user = userEvent.setup()
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
+    const generation = createFakeGenerationClient()
+    const { container } = renderApp(['/generate'], signedIn({ queryClient: cache, generation }))
+
+    await user.click(
+      within(screen.getByRole('group', { name: 'Goal' })).getByRole('button', {
+        name: /strength/i,
+      }),
+    )
+    await user.click(
+      within(screen.getByRole('group', { name: 'Anchor' })).getByRole('button', {
+        name: /upper body/i,
+      }),
+    )
+    await user.click(screen.getByRole('button', { name: /generate workout/i }))
+
+    // The Loading screen is the route's screen for the run, at `full`.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
+
+    await act(async () => {
+      generation.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeGenerationOutput(), title: 'Routed session' },
+        }),
+      })
+    })
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Routed session' }),
+    ).toBeInTheDocument()
+    expect(document.documentElement.dataset.atmosphere).not.toBe('full')
+    expect(container.querySelector('.clr-shell')).toHaveAttribute(
+      'data-atmosphere',
+      document.documentElement.dataset.atmosphere,
     )
   })
 

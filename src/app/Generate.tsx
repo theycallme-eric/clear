@@ -27,6 +27,12 @@
  *      prefilled form is still one answer short of generating — the suggestion
  *      is read off history, and history does not know what today is for.
  *
+ * Pressing Generate hands the screen to the shared Loading host (REQ-004): the
+ * Loading screen is the screen for the whole run, success lands on Review with
+ * the validated workout, and cancelling puts this form back. What the user
+ * composed is held above the host — the Loading screen replaces the form's
+ * components, and cancelling must not replace the user's answers with defaults.
+ *
  * The goal the user picks is part of the wire contract. It scopes candidate
  * retrieval as well as the client-side cascade, so the workout cannot be
  * composed for a stale profile default after the user chose something else.
@@ -57,6 +63,7 @@ import {
   ANCHORS,
   anchorAllowed,
   canGenerate,
+  GENERATE_PATH,
   GENERATION_GOALS,
   initialDraft,
   inputFrom,
@@ -92,10 +99,24 @@ import { Card } from '../ui/card'
 import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
+import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
 
 /** What the form needs before it can be filled in: the places and their default. */
 type Places = readonly Location[]
+
+/**
+ * What the user has composed, and what they agreed to while composing it.
+ *
+ * The deload answer travels with the draft because it is part of the request:
+ * a draft clamped by an applied deload, handed back without the directive,
+ * would send a light number with nothing saying why.
+ */
+interface Composition {
+  readonly draft: GenerationDraft
+  readonly applied: DeloadSuggestion | null
+  readonly overridden: boolean
+}
 
 /** Said once, where a suggestion filled the anchor and the intensity in. */
 export const PREFILL_NOTICE =
@@ -112,6 +133,21 @@ export function Generate() {
   // after the suggestion was dismissed — is a screen on its defaults.
   const prefill = prefillFrom(params)
 
+  // The run and the composition both live above the host: the Loading screen
+  // replaces everything below it, and the form it hands back on cancel is the
+  // one the user left. Null is "untouched" — the form's own defaults.
+  const generation = useGeneration()
+  const [composition, setComposition] = useState<Composition | null>(null)
+
+  // The hand-off. The mutation's success state is the only place the validated
+  // workout exists, and Review is the route the IA sends it to.
+  useEffect(() => {
+    if (generation.state.status !== 'success') return
+    void navigate('/review', {
+      state: reviewHandoff(generation.state.acceptance),
+    })
+  }, [generation.state, navigate])
+
   // The places are the screen's data, and the profile deliberately is not: the
   // goal has no default to read from it (§2.1), the guard already answers
   // whether this account finished onboarding, and a query nothing renders would
@@ -127,8 +163,11 @@ export function Generate() {
           ? viewEmpty()
           : viewReady(locations.state.data)
 
+  // GEN-05's screen has no route of its own: while a run this screen started is
+  // in flight — or has failed and is being answered — the shared host makes it
+  // the screen, and cancelling puts the form back where the user left it.
   return (
-    <>
+    <GenerationLoadingHost generation={generation} cancelTo={GENERATE_PATH}>
       <AppHeader
         actions={
           <Button
@@ -157,25 +196,49 @@ export function Generate() {
             />
           }
         >
-          {(places) => <GenerateForm places={places} prefill={prefill} />}
+          {(places) => (
+            <GenerateForm
+              places={places}
+              prefill={prefill}
+              generation={generation}
+              composition={composition}
+              onCompose={setComposition}
+            />
+          )}
         </ViewStateSwitch>
       </Screen>
-    </>
+    </GenerationLoadingHost>
   )
 }
 
 function GenerateForm({
   places,
   prefill,
+  generation,
+  composition,
+  onCompose,
 }: {
   places: Places
   prefill: GenerationPrefill | null
+  generation: GenerationMutation
+  composition: Composition | null
+  onCompose: (update: (previous: Composition | null) => Composition) => void
 }) {
-  const generation = useGeneration()
-  const navigate = useNavigate()
-  const [draft, setDraft] = useState<GenerationDraft>(() =>
-    initialDraft(defaultLocationId(places), prefill),
-  )
+  const untouched = (): Composition => ({
+    draft: initialDraft(defaultLocationId(places), prefill),
+    applied: null,
+    overridden: false,
+  })
+  const { draft, applied, overridden } = composition ?? untouched()
+
+  /** One edit to what the user composed, laid over whatever is already held. */
+  function compose(change: Partial<Composition>) {
+    onCompose((previous) => ({ ...(previous ?? untouched()), ...change }))
+  }
+  function setDraft(next: GenerationDraft) {
+    compose({ draft: next })
+  }
+
   const [refusal, setRefusal] = useState<DraftRefusal | null>(null)
 
   // OVR-04. The user's own day draws the boundary every trigger is counted in,
@@ -185,16 +248,15 @@ function GenerateForm({
     [],
   )
   const deload = useDeloadBanner(today)
-  /**
-   * The suggestion the user applied, held here rather than read back from
-   * `deload`: recording an applied deload is what *suppresses* the suggestion
-   * (§4's window starts the moment it is accepted), so the hook rightly stops
-   * offering one and this screen would otherwise forget, mid-compose, what the
-   * user just agreed to. Null is "not applied", and it is also what Apply sends.
+  /*
+   * `applied` is the suggestion the user applied, held in the composition
+   * rather than read back from `deload`: recording an applied deload is what
+   * *suppresses* the suggestion (§4's window starts the moment it is accepted),
+   * so the hook rightly stops offering one and this screen would otherwise
+   * forget, mid-compose, what the user just agreed to. Null is "not applied",
+   * and it is also what Apply sends.
    */
-  const [applied, setApplied] = useState<DeloadSuggestion | null>(null)
   const [confirming, setConfirming] = useState<number | null>(null)
-  const [overridden, setOverridden] = useState(false)
 
   // What the banner states, and what makes today a flagged day: an applied
   // deload is still the reason this session is light.
@@ -203,14 +265,6 @@ function GenerateForm({
   const intensityHint = useId()
   const range = intensityRange(draft.goal)
   const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === draft.goal)
-  const pending = generation.state.status === 'pending'
-
-  useEffect(() => {
-    if (generation.state.status !== 'success') return
-    void navigate('/review', {
-      state: reviewHandoff(generation.state.acceptance),
-    })
-  }, [generation.state, navigate])
 
   /**
    * §4's Apply: the intensity is clamped and the directive rides on the request.
@@ -219,9 +273,11 @@ function GenerateForm({
    */
   function applyDeload() {
     if (deload.suggestion === null) return
-    setApplied(deload.suggestion)
+    compose({
+      applied: deload.suggestion,
+      draft: withIntensity(draft, clampedIntensity(draft.intensity ?? range.start)),
+    })
     deload.answer('applied')
-    setDraft(withIntensity(draft, clampedIntensity(draft.intensity ?? range.start)))
   }
 
   /**
@@ -247,6 +303,9 @@ function GenerateForm({
       return
     }
 
+    // The host takes the screen from here. A second press cannot reach a form
+    // that is no longer rendered, and GEN-03's in-flight guard refuses one
+    // landing in the same tick.
     setRefusal(null)
     generation.generate(inputFrom(request.value))
   }
@@ -377,14 +436,11 @@ function GenerateForm({
           variant="primary"
           size="lg"
           style={{ width: '100%' }}
-          disabled={!canGenerate(draft) || pending}
-          loading={pending}
+          disabled={!canGenerate(draft)}
           onClick={submit}
         >
           Generate workout
         </Button>
-
-        <GenerationStatus generation={generation} />
       </div>
 
       {/* §4: confirm once, then honour it. The user knows things the app doesn't. */}
@@ -402,13 +458,15 @@ function GenerateForm({
               onClick={() => {
                 const value = confirming
                 setConfirming(null)
-                setOverridden(true)
                 // Going hard withdraws the deload rather than sending a light
                 // session at a heavy number, and §4's answer to it is to log
                 // the override and stop asking — not to keep making the case.
-                setApplied(null)
+                compose({
+                  overridden: true,
+                  applied: null,
+                  ...(value !== null && { draft: withIntensity(draft, value) }),
+                })
                 deload.answer('dismissed')
-                if (value !== null) setDraft(withIntensity(draft, value))
               }}
             >
               Go hard anyway
@@ -423,50 +481,6 @@ function GenerateForm({
       </AppDialog>
     </Card>
   )
-}
-
-/**
- * What the call itself is doing, beneath the action that started it.
- *
- * Deliberately small: GEN-05 owns the loading screen this hands off to, and a
- * second one invented here would be the thing it replaces. Until then the
- * states are said plainly — in flight, refused with the reason and the request
- * id, or finished with a workout the screen that shows it does not exist yet.
- */
-function GenerationStatus({ generation }: { generation: GenerationMutation }) {
-  const state = generation.state
-
-  switch (state.status) {
-    case 'idle':
-      return null
-    case 'pending':
-      return (
-        <div className="clr-stack clr-stack--tight">
-          <p role="status">Composing your session…</p>
-          <Button variant="quiet" onClick={generation.cancel}>
-            Cancel
-          </Button>
-        </div>
-      )
-    case 'error':
-      return (
-        <div className="clr-stack clr-stack--tight" role="alert">
-          <p style={{ color: 'var(--text-negative)' }}>{state.error.message}</p>
-          <p style={{ fontFamily: 'var(--font-data)' }}>{state.error.requestId}</p>
-          {state.error.retryable && (
-            <Button variant="secondary" onClick={generation.retry}>
-              Try again
-            </Button>
-          )}
-        </div>
-      )
-    case 'success':
-      return (
-        <p role="status">
-          Your workout is ready. The screen that shows it is being rebuilt.
-        </p>
-      )
-  }
 }
 
 /** The chip rows wrap on a phone: five goals never fit one line (§2.1). */
