@@ -387,7 +387,11 @@ test.describe('history-detail — History list to Session Detail on the deployed
     await visit(`/history/${seeded.foreignId}`)
 
     const alert = page.getByRole('alert')
-    await expect(alert).toBeVisible()
+    // A direct reconstruction can cold-start independently of the list read;
+    // wait on the product's resolved state rather than Playwright's five-second
+    // assertion default. The loading screen remains visible and honest while
+    // RLS resolves the foreign id to the same not-found answer as a missing id.
+    await expect(alert).toBeVisible({ timeout: 30_000 })
     await expect(alert).toContainText(NOT_FOUND_TITLE)
     await expect(page.getByText(TITLES.foreign)).toHaveCount(0)
     await expect(page.getByRole('region', { name: 'Sections' })).toHaveCount(0)

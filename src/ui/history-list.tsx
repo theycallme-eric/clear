@@ -32,7 +32,7 @@ import {
   type HistorySessionStatus,
 } from '../state/history'
 import { Card } from './card'
-import { Heading, HeadingSection } from './Heading'
+import { Heading } from './Heading'
 
 /** The glyph each status carries. Colour is never the only cue. */
 const STATUS_GLYPH: Readonly<Record<HistorySessionStatus, ReactNode>> = {
@@ -95,7 +95,10 @@ export function WorkoutListItem({ entry, to }: WorkoutListItemProps) {
 
 function SessionItem({ entry, to }: { entry: HistorySessionEntry; to?: string }) {
   return (
-    <HeadingSection>
+    // A list row is a top-level section of both History and Home's recent
+    // panel. `Screen` has already established h2 for this content; deepening
+    // here skipped directly from the screen's h1 to h3.
+    <section>
       <Card>
         <p style={META_STYLE}>{formatDay(entry.day)}</p>
         {/* The title carries the link rather than the whole card: an
@@ -116,7 +119,7 @@ function SessionItem({ entry, to }: { entry: HistorySessionEntry; to?: string })
           <span>Intensity {entry.intensity}/10</span>
         </p>
       </Card>
-    </HeadingSection>
+    </section>
   )
 }
 
@@ -128,7 +131,7 @@ function SessionItem({ entry, to }: { entry: HistorySessionEntry; to?: string })
  */
 function RestItem({ entry }: { entry: HistoryRestEntry }) {
   return (
-    <HeadingSection>
+    <section>
       <Card
         style={
           {
@@ -148,7 +151,7 @@ function RestItem({ entry }: { entry: HistoryRestEntry }) {
           Rest
         </Heading>
       </Card>
-    </HeadingSection>
+    </section>
   )
 }
 
