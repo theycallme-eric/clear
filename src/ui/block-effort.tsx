@@ -21,7 +21,11 @@ import {
   PERCEIVED_EFFORT_MIN,
   type BlockOutcome,
 } from '../state/block-completion'
-import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
+import type {
+  ComparisonAbsence,
+  ConditioningScore,
+  ScoreComparison,
+} from '../state/conditioning'
 import type { StructureIdentity } from '../state/workout-progress'
 import { AppDialog } from './app-dialog'
 import { ConditioningScoreLine } from './conditioning-score'
@@ -65,6 +69,8 @@ export interface BlockEffortDialogProps {
    * identical repeat — which is most of the time, and is rendered as nothing.
    */
   comparison?: ScoreComparison | null
+  /** Why there is no comparison, when the history that was read says why. */
+  absence?: ComparisonAbsence | null
   /** True while the `block_results` write is in flight. */
   saving?: boolean
   onConfirm: (perceivedEffort: number) => void
@@ -78,6 +84,7 @@ export function BlockEffortDialog({
   outcome,
   score = null,
   comparison = null,
+  absence = null,
   saving = false,
   onConfirm,
   onCancel,
@@ -120,7 +127,7 @@ export function BlockEffortDialog({
     >
       <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
         <p style={{ margin: 0 }}>{outcomeSummary(outcome)}</p>
-        <ConditioningScoreLine score={score} comparison={comparison} />
+        <ConditioningScoreLine score={score} comparison={comparison} absence={absence} />
         <IntensitySlider
           label="Effort"
           min={PERCEIVED_EFFORT_MIN}
