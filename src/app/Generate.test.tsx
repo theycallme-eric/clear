@@ -6,15 +6,27 @@
  * notes, one full-width primary action — and no payload the CORE-03 request
  * schema would refuse ever reaches the generation client.
  */
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WorkoutClients } from '../data/workout'
 import { DELOAD_DECISIONS_STORAGE_KEY } from '../state/deload-decisions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import { INTENSITY_BY_GOAL, REFUSAL_SUMMARY } from '../state/generation-form'
+import {
+  GENERATION_FAILED_LABEL,
+  GENERATION_LOADING_TITLE,
+} from '../state/generation-loading'
 import { QueryClient } from '../state/query'
+import { toastQueue, type ToastMessage } from '../state/toasts'
+import { SLOW_THRESHOLD_MS } from '../state/view-state'
+import { SLOW_LOADING_LABEL } from '../ui/view-state'
+import {
+  makeGenerationError,
+  makeGenerationOutput,
+  makeSessionAcceptance,
+} from '../test/factories'
 import { createWorkoutDouble } from '../test/workout-double'
 import type { AnchorEvidenceRow, Location } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
@@ -242,39 +254,245 @@ describe('what is sent', () => {
     expect(generation.calls[0]?.requested_duration_mins).toBe(60)
   })
 
-  it('says the call is in flight and does not start a second one', async () => {
-    const { user, generation } = renderGenerate()
+})
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
-    await user.click(cta())
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-004 — Generate → Loading → Review through the shared host
+// ─────────────────────────────────────────────────────────────────────────────
 
-    expect(screen.getByText(/Composing your session/i)).toBeInTheDocument()
-    expect(cta()).toBeDisabled()
-    expect(generation.calls).toHaveLength(1)
+/**
+ * JOURNEY-005, end to end on the real route tree: the Loading screen is the
+ * whole screen for the run, success lands on Review with the validated
+ * workout, a failure is pattern 3, and cancelling hands the form back as the
+ * user left it.
+ */
+describe('REQ-004 — the Loading screen for a Generate run', () => {
+  beforeEach(() => {
+    toastQueue.clear()
+    delete document.documentElement.dataset.atmosphere
   })
 
-  it('renders a refusal from the function with its request id', async () => {
+  /** Every run here is composed the same way, with edits away from the defaults. */
+  async function composeAndSubmit(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(goalChip('Strength'))
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.selectOptions(screen.getByLabelText(/place/i), GYM.id)
+    await user.clear(screen.getByLabelText(/time available/i))
+    await user.type(screen.getByLabelText(/time available/i), '30')
+    await user.type(screen.getByLabelText(/notes/i), 'Left shoulder is tight.')
+    await user.click(cta())
+  }
+
+  /** Toasts still showing or waiting to show — a `leaving` one is on its way out. */
+  function liveToasts(): ToastMessage[] {
+    const { current, phase, queue } = toastQueue.getState()
+    return [...(current !== null && phase === 'visible' ? [current] : []), ...queue]
+  }
+
+  it('replaces the whole form with the Loading screen for the run, with no invented progress', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
+    expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Generate workout' })).not.toBeInTheDocument()
+
+    await act(async () => {
+      generation.reachStage('composing')
+    })
+
+    // Still the screen while the call works: it says the stage the call
+    // reported, and still no progress it cannot know.
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
+    const region = within(screen.getByRole('main')).getByRole('status')
+    expect(region).toHaveTextContent('Composing session')
+    expect(region).toHaveAttribute('aria-busy', 'true')
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(region.querySelector('[aria-valuenow], [aria-valuemax], progress')).toBeNull()
+    expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
+  })
+
+  it('starts one run however often the submit is pressed', async () => {
     const { user, generation } = renderGenerate()
 
     await user.click(goalChip('Strength'))
     await user.click(chipIn('Anchor', 'Upper body'))
+    // Two presses in one tick: the second lands before the form has gone.
+    const button = cta()
+    fireEvent.click(button)
+    fireEvent.click(button)
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.outstanding).toBe(1)
+    expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+  })
+
+  it('lands on Review with the validated workout when the run succeeds', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+    await act(async () => {
+      generation.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeGenerationOutput(), title: 'Upper-body strength, 30 minutes' },
+        }),
+      })
+    })
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Upper-body strength, 30 minutes' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(GENERATION_LOADING_TITLE)).not.toBeInTheDocument()
+  })
+
+  it('says the run is slow at the documented threshold, stating the fact only', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      const generation = createFakeGenerationClient()
+      renderApp(
+        ['/generate'],
+        signedIn({ queryClient: warmCache([fixtureLocation(), GYM]), generation }),
+      )
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+      await user.click(goalChip('Strength'))
+      await user.click(chipIn('Anchor', 'Upper body'))
+      await user.click(cta())
+
+      // A margin below the budget, because `shouldAdvanceTime` also lets the
+      // test's own wall-clock time through.
+      await act(async () => {
+        vi.advanceTimersByTime(SLOW_THRESHOLD_MS - 500)
+      })
+      expect(within(screen.getByRole('main')).getByRole('status')).not.toHaveTextContent(
+        SLOW_LOADING_LABEL,
+      )
+
+      await act(async () => {
+        vi.advanceTimersByTime(500)
+      })
+      const region = within(screen.getByRole('main')).getByRole('status')
+      expect(region).toHaveTextContent(SLOW_LOADING_LABEL)
+      expect(region.textContent).not.toMatch(/sorry|apolog|hang tight|oops|!/i)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('fails into pattern 3: the loader says so and one negative toast offers one retry', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+    await act(async () => {
+      generation.fail(makeGenerationError({ requestId: 'req_generate_1' }))
+    })
+
+    expect(within(screen.getByRole('main')).getByRole('status')).toHaveTextContent(GENERATION_FAILED_LABEL)
+    const toasts = liveToasts()
+    expect(toasts).toHaveLength(1)
+    expect(toasts[0]?.variant).toBe('negative')
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('req_generate_1')
+    const actions = within(alert)
+      .getAllByRole('button')
+      .map((button) => button.textContent)
+      .filter((label) => label !== '')
+    expect(actions).toEqual(['Retry'])
+    // Never a dead end: the cancel exit stays beside the failure.
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+    expect(generation.calls).toHaveLength(2)
+    expect(generation.calls[1]).toEqual(generation.calls[0])
+    expect(within(screen.getByRole('main')).getByRole('status')).toHaveTextContent(GENERATION_LOADING_TITLE)
+  })
+
+  it('cancels back to the form with the draft exactly as the user left it', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(chipIn('Goal', 'Strength')).toHaveAttribute('aria-pressed', 'true')
+    expect(chipIn('Anchor', 'Upper body')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByLabelText(/place/i)).toHaveValue(GYM.id)
+    expect(screen.getByLabelText(/time available/i)).toHaveValue(30)
+    expect(screen.getByLabelText(/notes/i)).toHaveValue('Left shoulder is tight.')
+    expect(cta()).toBeEnabled()
+
+    // And the same request goes out again, not the defaults.
     await user.click(cta())
+    expect(generation.calls).toHaveLength(2)
+    expect(generation.calls[1]).toEqual(generation.calls[0])
+  })
 
-    generation.fail({
-      ...createError(ErrorCode.GENERATION_FAILED, { requestId: 'req_failed_1' }),
-      message: 'Generation could not complete.',
-      requestId: 'req_failed_1',
-      failure: null,
-      issues: [],
-      retryable: true,
+  it('discards the abandoned run’s answer after cancel', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    await act(async () => {
+      generation.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeGenerationOutput(), title: 'Too late' },
+        }),
+      })
     })
 
-    await waitFor(() => {
-      expect(screen.getByRole('alert')).toHaveTextContent('Generation could not complete.')
+    expect(screen.queryByText('Too late')).not.toBeInTheDocument()
+    expect(screen.queryByText(GENERATION_LOADING_TITLE)).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByLabelText(/notes/i)).toHaveValue('Left shoulder is tight.')
+  })
+
+  it('discards a failure that arrives after cancel', async () => {
+    const { user, generation } = renderGenerate()
+
+    await composeAndSubmit(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    await act(async () => {
+      generation.fail(makeGenerationError())
     })
-    expect(screen.getByText('req_failed_1')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument()
+
+    expect(liveToasts()).toEqual([])
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+  })
+
+  it('discards the answer when the screen unmounts mid-run', async () => {
+    const { user, generation, unmount } = renderGenerate()
+
+    await composeAndSubmit(user)
+    unmount()
+    await act(async () => {
+      generation.succeed({
+        acceptance: makeSessionAcceptance({
+          workout: { ...makeGenerationOutput(), title: 'Too late' },
+        }),
+      })
+    })
+
+    expect(screen.queryByText('Too late')).not.toBeInTheDocument()
+    expect(liveToasts()).toEqual([])
+  })
+
+  it('renders at the full atmosphere and gives the form its quiet back when it leaves', async () => {
+    const { user } = renderGenerate()
+
+    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+
+    await composeAndSubmit(user)
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
+    expect(within(screen.getByRole('main')).getByRole('status').closest('[data-atmosphere]')).toHaveAttribute(
+      'data-atmosphere',
+      'full',
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
   })
 })
 
