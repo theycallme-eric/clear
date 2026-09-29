@@ -7,11 +7,12 @@ import {
 
 import { AppChrome } from './AppChrome'
 import { Generate } from './Generate'
-import { Protected, PublicOnly } from './guards'
+import { ONBOARDING_ROUTE, OnboardingOnly, Protected, PublicOnly } from './guards'
 import { Home } from './Home'
 import { Login } from './Login'
 import { LocationSettings } from './LocationSettings'
 import { NotFound } from './NotFound'
+import { Onboarding, ONBOARDING_TITLE } from './Onboarding'
 import { ReviewRoute } from './ReviewRoute'
 import { RootLayout } from './RootLayout'
 import { Settings } from './Settings'
@@ -67,16 +68,23 @@ export const routes: RouteObject[] = [
           // calls that out explicitly: whether a visitor may see a screen is a
           // property of the route they asked for, so a screen cannot forget to
           // ask, and a reader can see the whole guard map in one place.
-          //
-          // `/onboarding` is absent on purpose. ONB-01 (M2) owns it, and until
-          // it exists `Protected` renders `AccountSetupPending` rather than
-          // redirecting anyone to a path that answers Not Found.
           {
             path: '/',
             element: (
               <Protected title="CLEAR">
                 <Home />
               </Protected>
+            ),
+          },
+          // ONB-01 — `authed + not onboarded` (IA.md §1). Every protected route
+          // redirects a not-onboarded user here, and this guard sends an
+          // onboarded one Home, so the wizard is strictly first-run.
+          {
+            path: ONBOARDING_ROUTE,
+            element: (
+              <OnboardingOnly title={ONBOARDING_TITLE}>
+                <Onboarding />
+              </OnboardingOnly>
             ),
           },
           // EXE-01 — `protected + active session` (IA.md §1). Auth is the
