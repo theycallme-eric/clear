@@ -13,6 +13,11 @@ describe('Welcome', () => {
     renderApp(['/welcome'])
 
     expect(screen.getByRole('heading', { level: 1, name: 'CLEAR' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'CLEAR' }).firstElementChild).toHaveStyle({
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
+    })
     expect(screen.getByText('Strength training, simplified.')).toBeInTheDocument()
     const card = screen.getByRole('button', { name: 'Sign in' }).closest('.clr-card')
     expect(card).not.toBeNull()

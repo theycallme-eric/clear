@@ -210,15 +210,25 @@ describe('atmosphere rendering', () => {
     expect(document.documentElement.dataset.atmosphere).toBe('quiet')
     expect(container.querySelector('.clr-atmosphere')).toHaveAttribute(
       'data-context',
-      'auth',
+      'entry-form',
     )
   })
 
-  it('scopes the stronger quiet presentation to the auth route', () => {
+  it('scopes the stronger quiet presentation to login and onboarding', () => {
     const authRender = renderApp(['/login'])
     const auth = authRender.container.querySelector('.clr-atmosphere')
-    expect(auth).toHaveAttribute('data-context', 'auth')
+    expect(auth).toHaveAttribute('data-context', 'entry-form')
     authRender.unmount()
+
+    const onboardingRender = renderApp(
+      ['/onboarding'],
+      providersFor('/onboarding'),
+    )
+    expect(onboardingRender.container.querySelector('.clr-atmosphere')).toHaveAttribute(
+      'data-context',
+      'entry-form',
+    )
+    onboardingRender.unmount()
 
     const welcome = renderApp(['/welcome']).container.querySelector('.clr-atmosphere')
     expect(welcome).not.toHaveAttribute('data-context')

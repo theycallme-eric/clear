@@ -42,3 +42,18 @@ export function Card({
     </div>
   )
 }
+
+/**
+ * The action edge of a card. Keeping this composition inside the card makes
+ * primary/secondary placement a rule instead of a screen-by-screen spacing
+ * decision.
+ */
+export function CardActions({ className, style, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={['clr-row', className].filter(Boolean).join(' ')}
+      style={{ justifyContent: 'flex-end', flexWrap: 'wrap', ...style }}
+      {...props}
+    />
+  )
+}

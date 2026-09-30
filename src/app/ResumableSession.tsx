@@ -25,24 +25,17 @@
  *     it belongs to Review, and resuming it here would drop the user into a
  *     workout they never agreed to be in.
  *
- * Four states, because it is a data-driven view (CORE-04): loading is the read
- * in flight, empty is the honest and common answer — nobody is mid-workout —
- * error is the failed read, and populated is the card.
+ * The ordinary Train Today fallback remains usable while the read is in flight
+ * and when it answers empty. A failed read adds a retry without removing those
+ * actions; a confirmed active session replaces them with the resume card.
  */
-import { useCallback, useState, type CSSProperties } from 'react'
+import { useCallback, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button, EmptyState, LogOut, Play, Progress, Pulse } from '../design-system/index'
+import { Button, LogOut, Play, Progress, Pulse } from '../design-system/index'
 import { isErr } from '../state/errors'
 import type { SessionSnapshot } from '../state/schemas'
 import { showErrorToast } from '../state/toasts'
-import {
-  viewEmpty,
-  viewError,
-  viewLoading,
-  viewReady,
-  type ViewState,
-} from '../state/view-state'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { clearWorkoutShellState, defaultShellStorage } from '../state/workout-persistence'
 import { sessionProgress, startingSectionIndex } from '../state/workout-progress'
@@ -50,62 +43,50 @@ import {
   isActiveSession,
   useActiveSessionQuery,
   useWorkoutClients,
-  type ActiveSessionQuery,
 } from '../state/workout-queries'
 import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
-import { ViewStateSwitch } from '../ui/view-state'
+import { ErrorView } from '../ui/view-state'
 import { AbandonConfirmDialog, GlobalTimer } from '../ui/workout-chrome'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 
-export function ResumableSession() {
+export function ResumableSession({ fallback = null }: { fallback?: ReactNode }) {
   const query = useActiveSessionQuery()
+
+  if (query.state.status === 'error') {
+    return (
+      <section className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+        {fallback}
+        <ErrorView
+          error={query.state.error}
+          title="Couldn’t check for a workout in progress"
+          onRetry={query.refetch}
+        />
+      </section>
+    )
+  }
+
+  const snapshot =
+    query.state.status === 'ready' &&
+    query.state.data !== null &&
+    isActiveSession(query.state.data)
+      ? query.state.data
+      : null
 
   return (
     // A plain section, not a `HeadingSection`: the card's title is one of
     // Home's own regions rather than something nested inside one, so it heads
     // at the level `Screen` hands its children (CORE-05).
     <section className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-      <ViewStateSwitch
-        state={resumableState(query)}
-        loadingLabel="Checking for a workout in progress"
-        errorTitle="Couldn’t check for a workout in progress"
-        onRetry={query.refetch}
-        empty={
-          <EmptyState
-            title="No workout in progress"
-            message="A workout you start stays here until you finish or abandon it."
-          />
-        }
-      >
-        {(snapshot) => (
-          <ResumableCard
-            key={snapshot.session.id}
-            snapshot={snapshot}
-            onSessionEnded={() => query.publish(null)}
-          />
-        )}
-      </ViewStateSwitch>
+      {snapshot === null ? fallback : (
+        <ResumableCard
+          key={snapshot.session.id}
+          snapshot={snapshot}
+          onSessionEnded={() => query.publish(null)}
+        />
+      )}
     </section>
   )
-}
-
-/**
- * The query's three states onto the view's four. `empty` is the judgement only
- * this view can make, and it makes it twice: no session at all, and a session
- * that is not one the user is *in*.
- */
-function resumableState(query: ActiveSessionQuery): ViewState<SessionSnapshot> {
-  switch (query.state.status) {
-    case 'loading':
-      return viewLoading()
-    case 'error':
-      return viewError(query.state.error)
-    case 'ready':
-      return query.state.data !== null && isActiveSession(query.state.data)
-        ? viewReady(query.state.data)
-        : viewEmpty()
-  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -151,19 +132,17 @@ function ResumableCard({
 
   return (
     <>
-      <Card barWidth="lg">
+      <Card>
         <div
           className="clr-stack--tight"
           style={{ display: 'flex', flexDirection: 'column' }}
         >
+          <Heading style={{ margin: 0 }}>Train today</Heading>
           <p style={labelStyle}>
-            <Pulse size={16} /> In progress
+            <Pulse size={16} /> In progress · {snapshot.session.title}
           </p>
 
-          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-            <Heading style={{ margin: 0 }}>{snapshot.session.title}</Heading>
-            <GlobalTimer seconds={seconds} />
-          </div>
+          <GlobalTimer seconds={seconds} />
 
           <Progress
             value={progress.completed}

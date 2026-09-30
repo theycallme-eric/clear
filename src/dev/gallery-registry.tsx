@@ -16,7 +16,7 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { Button, Chip, Input } from '../design-system/index'
+import { Button, Checkbox, Chip, Input } from '../design-system/index'
 import {
   applyAppearance,
   SYSTEM_APPEARANCE,
@@ -54,7 +54,8 @@ import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
 import { AtmosphereLayer } from '../ui/atmosphere'
 import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
-import { Card } from '../ui/card'
+import { Card, CardActions } from '../ui/card'
+import { CheckboxGroup } from '../ui/checkbox-group'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { DeloadBanner } from '../ui/deload-banner'
@@ -157,6 +158,41 @@ function CardWithActions() {
 
 function CardEmpty() {
   return <Card />
+}
+
+function CardActionsForwardOnly() {
+  return (
+    <CardActions>
+      <Button>Continue</Button>
+    </CardActions>
+  )
+}
+
+function CardActionsBackAndForward() {
+  return (
+    <CardActions>
+      <Button variant="secondary">Back</Button>
+      <Button>Continue</Button>
+    </CardActions>
+  )
+}
+
+function CheckboxGroupUnselected() {
+  return (
+    <CheckboxGroup legend="Equipment">
+      <Checkbox label="Dumbbells" checked={false} onChange={noop} />
+      <Checkbox label="Kettlebells" checked={false} onChange={noop} />
+    </CheckboxGroup>
+  )
+}
+
+function CheckboxGroupSelected() {
+  return (
+    <CheckboxGroup legend="Equipment">
+      <Checkbox label="Dumbbells" checked onChange={noop} />
+      <Checkbox label="Kettlebells" checked={false} onChange={noop} />
+    </CheckboxGroup>
+  )
 }
 
 // REQ-011's regression frame: a non-interactive chamfered card wrapping an
@@ -1732,6 +1768,28 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         note: 'Focus belongs to the control: the input carries the ring, the card border stays single-width in every skin.',
         Render: CardWrappingFocusedInput,
       },
+    ],
+  },
+  {
+    component: 'CardActions',
+    requirement: 'DS-04a',
+    module: 'src/ui/card.tsx',
+    summary:
+      'The reusable action edge inside a card, keeping single- and multi-action placement consistent across flows.',
+    specimens: [
+      { state: 'forward action', Render: CardActionsForwardOnly },
+      { state: 'back and forward actions', Render: CardActionsBackAndForward },
+    ],
+  },
+  {
+    component: 'CheckboxGroup',
+    requirement: 'DS-04b',
+    module: 'src/ui/checkbox-group.tsx',
+    summary:
+      'A native fieldset and legend for related checkboxes without a second visual frame around controls.',
+    specimens: [
+      { state: 'unselected', Render: CheckboxGroupUnselected },
+      { state: 'selected item', Render: CheckboxGroupSelected },
     ],
   },
   {

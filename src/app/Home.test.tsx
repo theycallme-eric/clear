@@ -34,7 +34,6 @@ import {
   HISTORY_ROUTE,
   HOME_HEADING,
   HOME_ROUTE,
-  SUGGESTION_EMPTY,
   VIEW_HISTORY_LABEL,
 } from './Home'
 
@@ -49,6 +48,14 @@ describe('Home', () => {
     expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
     expect(await screen.findByText('No workouts yet')).toBeInTheDocument()
     expect(screen.getByRole('list', { name: 'This week' }).children).toHaveLength(7)
+
+    const trainToday = screen.getByRole('heading', { name: 'Train today' }).closest('.clr-card')
+    const thisWeek = screen.getByRole('heading', { name: 'This week' }).closest('.clr-card')
+    expect(trainToday).not.toBeNull()
+    expect(thisWeek).not.toBeNull()
+    expect(trainToday!.compareDocumentPosition(thisWeek!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    expect(screen.queryByText('No workout in progress')).not.toBeInTheDocument()
+    expect(document.querySelectorAll('.clr-card__bar--lg')).toHaveLength(0)
   })
 
   it('renders recent history and Quick Start immediately repeats the last request', async () => {
@@ -154,7 +161,10 @@ describe('Home', () => {
 
     renderApp(['/'], signedIn({ restDays }))
 
-    await user.click(await screen.findByRole('button', { name: 'Mark Rest Day' }))
+    const restButton = await screen.findByRole('button', { name: 'Mark Rest Day' })
+    const weekCard = screen.getByRole('heading', { name: 'This week' }).closest('.clr-card')
+    expect(weekCard).toContainElement(restButton)
+    await user.click(restButton)
     await user.selectOptions(screen.getByLabelText('Reason'), 'sick')
     await user.click(screen.getByRole('button', { name: 'Save rest day' }))
 
@@ -461,14 +471,17 @@ describe('Home’s suggestion (HOME-03)', () => {
     return userEvent.setup()
   }
 
-  async function suggestionCard(): Promise<HTMLElement> {
-    const heading = await screen.findByRole('heading', { name: 'Suggested next' })
-    return heading.closest<HTMLElement>('.clr-card') ?? heading
+  async function suggestionPrompt(): Promise<HTMLElement> {
+    return screen.findByLabelText('Suggested next')
   }
 
   it('names the least-recently-trained focus, says which pattern is stale, and prefills generation', async () => {
     const user = renderHome(lowerBodyBlock())
-    const card = within(await suggestionCard())
+    const prompt = await suggestionPrompt()
+    const card = within(prompt)
+    expect(prompt.closest('.clr-card')).toBe(
+      screen.getByRole('heading', { name: 'Train today' }).closest('.clr-card'),
+    )
 
     expect(card.getByText('Upper body · intensity 7')).toBeInTheDocument()
     // Pattern-level, not "no upper body": the sentence names a movement pattern.
@@ -499,11 +512,11 @@ describe('Home’s suggestion (HOME-03)', () => {
 
   it('dismisses for the day and leaves Generate on its defaults', async () => {
     const user = renderHome(lowerBodyBlock())
-    const card = within(await suggestionCard())
+    const card = within(await suggestionPrompt())
 
     await user.click(card.getByRole('button', { name: 'Dismiss' }))
 
-    expect(screen.queryByRole('heading', { name: 'Suggested next' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
     expect(localStorage.getItem(SUGGESTION_DISMISSAL_STORAGE_KEY)).toBe(suggestionDay())
 
     await user.click(screen.getByRole('button', { name: 'Generate workout' }))
@@ -524,17 +537,17 @@ describe('Home’s suggestion (HOME-03)', () => {
     renderHome(lowerBodyBlock())
 
     expect(await screen.findByRole('button', { name: 'Quick start' })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Suggested next' })).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
   })
 
-  it('shows an empty state rather than a guess when the history is too thin', async () => {
+  it('omits the smart prompt rather than guessing when the history is too thin', async () => {
     renderHome([
       completed(1, 1, { session_focus: 'lower_body' }),
       completed(2, 4, { session_focus: 'lower_body' }),
     ])
 
-    const card = within(await suggestionCard())
-    expect(card.getByText(SUGGESTION_EMPTY)).toBeInTheDocument()
-    expect(card.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument()
+    await screen.findByRole('button', { name: 'Quick start' })
+    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument()
   })
 })

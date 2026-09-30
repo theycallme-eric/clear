@@ -186,7 +186,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **States:** populated only — static screen, no data fetch.
 
 ### OTP Login — `/login`
-**Atmosphere:** `quiet` — reading and input
+**Atmosphere:** `quiet` — reading and input; the entry-form presentation keeps the role layers visible on portrait screens
 **Visual reference:** `docs/design/exports/clear-design-system-0.5.0/templates/form-screen/FormScreen.dc.html`
 **Motion:** `.route-enter-forward` from Welcome and `.route-enter-back` on return; request/verify state swaps use `.clr-interlace`, while validation errors appear without entrance animation.
 **Guard:** public-only · **Requirements:** AUTH-02
@@ -196,7 +196,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** request code · enter code · resend with cooldown countdown.
 
 ### Onboarding — `/onboarding`
-**Atmosphere:** `quiet` — reading and input
+**Atmosphere:** `quiet` — reading and input; the entry-form presentation keeps the role layers visible on portrait screens
 **Visual reference:** `docs/design/exports/clear-design-system-0.5.0/templates/form-screen/FormScreen.dc.html`; `docs/specs/screens/onboarding-wireframe.md`
 **Motion:** Steps use `.route-enter-forward` / `.route-enter-back`; selection changes use the controls' baked state motion. Never replay a full-screen boot between steps.
 **Guard:** authed + not onboarded · **Requirements:** ONB-01 · **Spec:** `docs/specs/screens/onboarding-wireframe.md`
@@ -211,7 +211,7 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Motion:** Initial populated cards may stagger with `.clr-boot`; tab changes use `.clr-tab-enter`; streak digit changes use `.clr-tumble`. Refetches do not replay the page entrance.
 **Guard:** protected · **Requirements:** HOME-01, HOME-02, HOME-03
 **In:** login, onboarding, any screen's back/done · **Out:** everywhere
-**Composition:** `AppLayout` › `PageHeader` + `WeekStreakDisplay` + `Card`(×2 quick actions) + `TabbedPanel` › `WorkoutListItem` · `FavoriteListItem` + `ConfirmationModal`
+**Composition:** `AppLayout` › `PageHeader` + `Card`(Train Today or active-session replacement) + `Card`(This Week + Rest Day action) + `TabbedPanel` › `WorkoutListItem` · `FavoriteListItem` + `ConfirmationModal`. The smart suggestion is part of Train Today, never a peer card.
 **States:** **all four, and this is the screen where it matters most.** Loading skeleton on first paint · empty (no history yet — distinct from loading) · error (history fetch failed, retry) · populated.
 **Interactions:** Generate · Quick Start (reuses last config, skips `/generate`) · resume incomplete session · mark rest day · switch History/Favorites tab · open a workout · accept or dismiss a deload suggestion (OVR-04).
 

@@ -34,7 +34,7 @@ function usePrefersReducedMotion(): boolean {
   return useSyncExternalStore(subscribeToReducedMotion, readReducedMotion)
 }
 
-export type AtmosphereContext = 'auth'
+export type AtmosphereContext = 'entry-form'
 
 export interface AtmosphereLayerProps {
   /** App-owned presentation context; intensity still comes from data-atmosphere. */

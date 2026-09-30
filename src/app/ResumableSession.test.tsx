@@ -84,9 +84,9 @@ describe('Home — a resumable session', () => {
   it('names the session, times it, and says how far it got', async () => {
     home()
 
-    expect(
-      await screen.findByRole('heading', { level: 2, name: 'Full body' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/In progress · Full body/)).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { level: 2, name: 'Train today' })).toHaveLength(1)
+    expect(screen.queryByRole('button', { name: 'Generate workout' })).not.toBeInTheDocument()
     // Read from `started_at`, so a tab that was closed for an hour comes back
     // with the hour in it rather than with zero.
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
@@ -108,7 +108,7 @@ describe('Home — a resumable session', () => {
   it('does not double up: Home surfaces the session, so nothing modal asks about it', async () => {
     home()
 
-    await screen.findByRole('heading', { level: 2, name: 'Full body' })
+    await screen.findByText(/In progress · Full body/)
     expect(isDialogOpen('You have a workout in progress')).toBe(false)
   })
 })
@@ -139,7 +139,7 @@ describe('Home — abandoning from the resumption card', () => {
 
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(false))
     expect(double.abandoned()).toEqual([])
-    expect(screen.getByRole('heading', { level: 2, name: 'Full body' })).toBeInTheDocument()
+    expect(screen.getByText(/In progress · Full body/)).toBeInTheDocument()
   })
 
   it('abandons on confirmation and stops offering a session that is over', async () => {
@@ -151,7 +151,8 @@ describe('Home — abandoning from the resumption card', () => {
 
     // Abandoned is a state, not a delete: the transition is the disposition.
     await waitFor(() => expect(double.abandoned()).toEqual([FIXTURE_SESSION_ID]))
-    expect(await screen.findByText('No workout in progress')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.queryByText('No workout in progress')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
   })
 
@@ -184,7 +185,7 @@ describe('Home — abandoning from the resumption card', () => {
 
     expect(await screen.findByText('No connection. Check your network.')).toBeInTheDocument()
     // Nothing was discarded: the session is still there to resume.
-    expect(screen.getByRole('heading', { level: 2, name: 'Full body' })).toBeInTheDocument()
+    expect(screen.getByText(/In progress · Full body/)).toBeInTheDocument()
   })
 })
 
@@ -193,10 +194,10 @@ describe('Home — abandoning from the resumption card', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('Home — the resumption card’s four states', () => {
-  it('says it is looking rather than saying there is nothing', () => {
+  it('keeps Train Today usable while it checks for an active workout', () => {
     home({ sessions: { resume: () => new Promise(() => {}) } })
 
-    expect(screen.getByText('Checking for a workout in progress')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
     expect(screen.queryByText('No workout in progress')).not.toBeInTheDocument()
   })
 
@@ -226,15 +227,14 @@ describe('Home — the resumption card’s four states', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Retry' }))
 
-    expect(
-      await screen.findByRole('heading', { level: 2, name: 'Full body' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(/In progress · Full body/)).toBeInTheDocument()
   })
 
-  it('says there is no workout running when there is not', async () => {
+  it('renders no empty workout card when there is no active workout', async () => {
     home({ session: null })
 
-    expect(await screen.findByText('No workout in progress')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.queryByText('No workout in progress')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Resume workout' })).not.toBeInTheDocument()
   })
 
@@ -243,6 +243,7 @@ describe('Home — the resumption card’s four states', () => {
 
     // A prescribed session belongs to Review. Resuming it here would start a
     // workout the user never agreed to be in.
-    expect(await screen.findByText('No workout in progress')).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.queryByText('No workout in progress')).not.toBeInTheDocument()
   })
 })

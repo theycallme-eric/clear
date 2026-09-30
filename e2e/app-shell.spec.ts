@@ -96,7 +96,7 @@ test('the full atmosphere keeps every colored layer in the viewport', async ({
   }
 })
 
-test('the quiet auth atmosphere remains materially visible', async ({
+test('the quiet entry-form atmosphere remains materially visible', async ({
   page,
   visit,
 }) => {
@@ -112,7 +112,7 @@ test('the quiet auth atmosphere remains materially visible', async ({
   })
 
   expect(presentation).toEqual({
-    context: 'auth',
+    context: 'entry-form',
     opacity: 0.26,
     dim: 0.58,
   })
