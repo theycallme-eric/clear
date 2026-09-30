@@ -68,6 +68,7 @@ import {
 } from '../state/settings'
 import { useAppearance } from '../state/appearance'
 import { profileQueryKey, useProfileQuery, useUserData } from '../state/user-queries'
+import { CheckboxGroup } from '../ui/checkbox-group'
 import {
   viewEmpty,
   viewError,
@@ -206,8 +207,7 @@ function PreferencesCard({ profile }: { profile: Profile }) {
           }}
         />
 
-        <fieldset className="clr-stack clr-stack--tight">
-          <legend className="label">Sections</legend>
+        <CheckboxGroup legend="Sections">
           {locked && <p>{LOCKED_SECTIONS_REASON}</p>}
           {SECTIONS.map((section) => (
             <Checkbox
@@ -228,7 +228,7 @@ function PreferencesCard({ profile }: { profile: Profile }) {
             />
           ))}
           {refusal !== null && <p role="alert">{refusal}</p>}
-        </fieldset>
+        </CheckboxGroup>
 
         <SaveStatusLine status={status} />
       </div>
@@ -367,8 +367,7 @@ function LimitationsEditor({
         <p>Nothing recorded. Tick anything a workout should work around.</p>
       )}
 
-      <fieldset className="clr-stack clr-stack--tight">
-        <legend className="label">Work around</legend>
+      <CheckboxGroup legend="Work around">
         {MOVEMENT_PATTERNS.map((pattern) => (
           <Checkbox
             key={pattern.value}
@@ -379,7 +378,7 @@ function LimitationsEditor({
             }}
           />
         ))}
-      </fieldset>
+      </CheckboxGroup>
 
       <Input
         label="Note · optional"

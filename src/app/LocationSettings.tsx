@@ -51,6 +51,7 @@ import {
   useUserData,
 } from '../state/user-queries'
 import { Card } from '../ui/card'
+import { CheckboxGroup } from '../ui/checkbox-group'
 import { Heading } from '../ui/Heading'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ConfirmDialog } from '../ui/blocking-dialog'
@@ -369,8 +370,7 @@ function LocationEditorForm({
             }
           }}
         />
-        <fieldset className="clr-stack clr-stack--tight">
-          <legend className="label">Equipment</legend>
+        <CheckboxGroup legend="Equipment">
           {equipmentOptions(draft.equipment).map((item) => (
             <Checkbox
               key={item.value}
@@ -379,7 +379,7 @@ function LocationEditorForm({
               onChange={() => setDraft((current) => withEquipment(current, item.value))}
             />
           ))}
-        </fieldset>
+        </CheckboxGroup>
         {validation !== null && validation !== BLANK_NAME_REASON && (
           <p role="alert">{validation}</p>
         )}

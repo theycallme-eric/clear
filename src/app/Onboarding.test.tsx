@@ -110,7 +110,10 @@ describe('ONB-01 onboarding wizard', () => {
 
     await onStep('location')
     expect(next()).toBeDisabled()
-    expect(screen.getByText('Choose the setup closest to yours.')).toBeInTheDocument()
+    const firstCard = screen.getByRole('heading', { name: STEP_TITLES.location }).closest('.clr-card')
+    const blocked = screen.getByText('Choose the setup closest to yours.')
+    expect(firstCard).toContainElement(blocked)
+    expect(firstCard).toContainElement(next())
 
     await answerEverything(user)
 
@@ -130,6 +133,13 @@ describe('ONB-01 onboarding wizard', () => {
     await onStep('limitations')
     expect(screen.getByRole('checkbox', { name: 'Pulling' })).toBeChecked()
     expect(screen.getByLabelText(/Note/)).toHaveValue('Left shoulder')
+    expect(
+      screen.queryByText('Kept with the movements ticked above. Editable later in Settings.'),
+    ).not.toBeInTheDocument()
+    const limitations = screen.getByRole('group', { name: 'Work around' })
+    expect(limitations.style.border).toBe('0px')
+    expect(limitations.style.margin).toBe('0px')
+    expect(limitations.style.padding).toBe('0px')
 
     await user.click(screen.getByRole('button', { name: 'Back' }))
     await onStep('goals')

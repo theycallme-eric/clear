@@ -63,7 +63,8 @@ import {
 import { useQueryClient } from '../state/query'
 import type { Location } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey, useUserData } from '../state/user-queries'
-import { Card } from '../ui/card'
+import { Card, CardActions } from '../ui/card'
+import { CheckboxGroup } from '../ui/checkbox-group'
 import { Heading } from '../ui/Heading'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { AUTHENTICATED_HOME } from './guards'
@@ -169,46 +170,45 @@ export function Onboarding() {
             <div className="clr-stack">
               <Heading>{STEP_TITLES[step]}</Heading>
               <StepView step={step} draft={draft} dispatch={dispatch} />
+              {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
+
+              <CardActions>
+                {index > 0 && (
+                  <Button
+                    variant="secondary"
+                    icon={<ChevronLeft size={20} />}
+                    onClick={() => {
+                      go(index - 1, 'back')
+                    }}
+                  >
+                    Back
+                  </Button>
+                )}
+                {step === 'confirm' ? (
+                  commit.status !== 'failed' && (
+                    <Button
+                      disabled={answers === null}
+                      onClick={() => {
+                        void submit()
+                      }}
+                    >
+                      Finish setup
+                    </Button>
+                  )
+                ) : (
+                  <Button
+                    disabled={blocked !== null}
+                    icon={<ChevronRight size={20} />}
+                    onClick={() => {
+                      go(index + 1, 'forward')
+                    }}
+                  >
+                    {step === 'limitations' && draft.avoidPatterns.length === 0 ? 'Skip' : 'Next'}
+                  </Button>
+                )}
+              </CardActions>
             </div>
           </Card>
-        </div>
-
-        {blocked !== null && <p>{blocked}</p>}
-
-        <div className="clr-row">
-          {index > 0 && (
-            <Button
-              variant="secondary"
-              icon={<ChevronLeft size={20} />}
-              onClick={() => {
-                go(index - 1, 'back')
-              }}
-            >
-              Back
-            </Button>
-          )}
-          {step === 'confirm' ? (
-            commit.status !== 'failed' && (
-              <Button
-                disabled={answers === null}
-                onClick={() => {
-                  void submit()
-                }}
-              >
-                Finish setup
-              </Button>
-            )
-          ) : (
-            <Button
-              disabled={blocked !== null}
-              icon={<ChevronRight size={20} />}
-              onClick={() => {
-                go(index + 1, 'forward')
-              }}
-            >
-              {step === 'limitations' && draft.avoidPatterns.length === 0 ? 'Skip' : 'Next'}
-            </Button>
-          )}
         </div>
       </div>
     </Screen>
@@ -237,8 +237,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
             }}
           />
           {draft.tier !== null && (
-            <fieldset className="clr-stack clr-stack--tight">
-              <legend className="label">Equipment</legend>
+            <CheckboxGroup legend="Equipment">
               {EQUIPMENT.map((item) => (
                 <Checkbox
                   key={item.value}
@@ -249,7 +248,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
                   }}
                 />
               ))}
-            </fieldset>
+            </CheckboxGroup>
           )}
         </>
       )
@@ -280,8 +279,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
             }}
           />
           {draft.goal !== null && (
-            <fieldset className="clr-stack clr-stack--tight">
-              <legend className="label">Sections</legend>
+            <CheckboxGroup legend="Sections">
               {SECTIONS.map((section) => (
                 <Checkbox
                   key={section.value}
@@ -292,15 +290,14 @@ function StepView({ step, draft, dispatch }: StepProps) {
                   }}
                 />
               ))}
-            </fieldset>
+            </CheckboxGroup>
           )}
         </>
       )
     case 'limitations':
       return (
         <>
-          <fieldset className="clr-stack clr-stack--tight">
-            <legend className="label">Work around</legend>
+          <CheckboxGroup legend="Work around">
             {MOVEMENT_PATTERNS.map((pattern) => (
               <Checkbox
                 key={pattern.value}
@@ -311,7 +308,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
                 }}
               />
             ))}
-          </fieldset>
+          </CheckboxGroup>
           <Input
             label="Note · optional"
             name="limitations_note"
@@ -322,7 +319,6 @@ function StepView({ step, draft, dispatch }: StepProps) {
               dispatch({ type: 'note', value })
             }}
             placeholder="Left shoulder — nothing overhead for a few weeks."
-            helperText="Kept with the movements ticked above. Editable later in Settings."
           />
         </>
       )

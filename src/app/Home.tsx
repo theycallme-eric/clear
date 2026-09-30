@@ -4,8 +4,8 @@
  * IA.md §4: atmosphere `full`, guard protected, and **all four states, on the
  * screen where it matters most**. Composition is the App Shell template
  * (`src/design-system/templates/app-shell/AppShell.dc.html`) read through the
- * IA's own line — `AppLayout › PageHeader + WeekStreakDisplay + Card(×2 quick
- * actions) + WorkoutListItem` — so the shell and its atmosphere are
+ * IA's own line — `AppLayout › PageHeader + Card(Train Today/active) +
+ * Card(This Week/rest) + TabbedPanel` — so the shell and its atmosphere are
  * `RootLayout`'s, `PageHeader` is `AppHeader` with the wordmark, and every
  * region below is a `Card`.
  *
@@ -16,9 +16,10 @@
  *
  * Four behaviours here are the requirement rather than the layout:
  *
- *   1. **An unfinished workout is answered first.** `ResumableSession` is
- *      EXE-01's standing card, and resuming from it re-enters the shell at the
- *      section the session actually reached — the position is
+ *   1. **Train Today is answered first.** `ResumableSession` owns that slot:
+ *      an unfinished workout replaces the ordinary actions rather than adding
+ *      another card. Resuming re-enters the shell at the section the session
+ *      actually reached — the position is
  *      `workout-progress.ts`'s, never a number this screen keeps.
  *   2. **Quick Start is absent until there is something to repeat.** Not
  *      disabled, not defaulted: `quickStartPlan` answers `null` and the control
@@ -155,10 +156,6 @@ export const FAVORITES_LABEL = 'Favorites'
 export const FAVORITES_EMPTY =
   'No favorites yet. Save a workout from its summary and it appears here, ready to start again.'
 
-/** HOME-03's empty state: what is missing, not a focus guessed from too little. */
-export const SUGGESTION_EMPTY =
-  'Not enough history yet to suggest a focus. Finish a few sessions and this will say what you have been neglecting.'
-
 export function Home() {
   const history = useHistoryQuery()
   const restDays = useRestDaysQuery()
@@ -212,28 +209,22 @@ export function Home() {
       </AppHeader>
       <Screen title="CLEAR" heading={HOME_HEADING}>
         <div className="clr-stack">
+          {/* One top slot: an active workout replaces Train Today, while an
+              empty active-session read renders the ordinary actions. */}
+          <ResumableSession
+            fallback={
+              <QuickActions
+                plan={plan}
+                query={history}
+                suggestion={suggestion}
+                onQuickStart={() => {
+                  if (plan !== null) generation.generate(plan.input)
+                }}
+              />
+            }
+          />
+
           <TrainingWeek query={history} restDays={restDays} week={week} />
-          <RestDayControl
-            today={week.find((day) => day.isToday)}
-            available={restDays.state.status === 'ready'}
-          />
-
-          {/* EXE-01: a workout the user left the app in the middle of is the
-              first thing Home has to answer for, and it answers in the page. */}
-          <ResumableSession />
-
-          {/* HOME-03: what history says is overdue, before the actions that
-              would compose it. Dismissing it is the same absence Quick Start's
-              null plan is — the card is not rendered, and Generate opens on its
-              own defaults. */}
-          <SuggestedSession query={history} suggestion={suggestion} />
-
-          <QuickActions
-            plan={plan}
-            onQuickStart={() => {
-              if (plan !== null) generation.generate(plan.input)
-            }}
-          />
 
           {/* FAV-01: the favorites tab lives beside the recents rather than in
               a screen of its own. Both are lists of workouts the user has
@@ -310,6 +301,10 @@ function TrainingWeek({
             </>
           )}
         </ViewStateSwitch>
+        <RestDayControl
+          today={week.find((day) => day.isToday)}
+          available={restDays.state.status === 'ready'}
+        />
       </div>
     </Card>
   )
@@ -353,54 +348,54 @@ function RestDayControl({
   }
 
   return (
-    <Card>
-      <div className="clr-stack clr-stack--tight">
-        <Heading>Rest day</Heading>
-        {today.reason === null ? (
-          <p style={{ margin: 0 }}>
-            Not training today? Mark why so your streak follows the right rule.
-          </p>
-        ) : (
-          <p style={{ margin: 0 }}>
-            Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
-          </p>
-        )}
+    <section className="clr-stack clr-stack--tight" aria-label="Rest day">
+      <p className="label" style={{ margin: 0 }}>
+        Rest day
+      </p>
+      {today.reason === null ? (
+        <p style={{ margin: 0 }}>
+          Not training today? Mark why so your streak follows the right rule.
+        </p>
+      ) : (
+        <p style={{ margin: 0 }}>
+          Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
+        </p>
+      )}
 
-        {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
-        {failure && (
-          <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-            The rest day wasn’t saved. Try again.
-          </p>
-        )}
+      {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
+      {failure && (
+        <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+          The rest day wasn’t saved. Try again.
+        </p>
+      )}
 
-        {!editing ? (
-          <Button variant="secondary" onClick={begin}>
-            {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-          </Button>
-        ) : (
-          <>
-            <Select
-              label="Reason"
-              value={reason}
-              options={REST_DAY_REASONS.map((value) => ({
-                value,
-                label: REST_DAY_REASON_LABELS[value],
-              }))}
-              helperText={REST_DAY_REASON_EFFECTS[reason]}
-              onChange={(value) => setReason(value as RestDayReason)}
-            />
-            <div className="clr-row">
-              <Button variant="primary" loading={write.marking} onClick={() => void save()}>
-                Save rest day
-              </Button>
-              <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
-                Cancel
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-    </Card>
+      {!editing ? (
+        <Button variant="secondary" onClick={begin}>
+          {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+        </Button>
+      ) : (
+        <>
+          <Select
+            label="Reason"
+            value={reason}
+            options={REST_DAY_REASONS.map((value) => ({
+              value,
+              label: REST_DAY_REASON_LABELS[value],
+            }))}
+            helperText={REST_DAY_REASON_EFFECTS[reason]}
+            onChange={(value) => setReason(value as RestDayReason)}
+          />
+          <div className="clr-row">
+            <Button variant="primary" loading={write.marking} onClick={() => void save()}>
+              Save rest day
+            </Button>
+            <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
+              Cancel
+            </Button>
+          </div>
+        </>
+      )}
+    </section>
   )
 }
 
@@ -448,13 +443,14 @@ function StreakCount() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The suggestion, with the reason it is being made and two ways to answer it.
+ * The suggestion, with the reason it is being made and two ways to answer it,
+ * lives inside Train Today. It is a prompt that informs the action, not a
+ * peer card competing with the action.
  *
- * Four states, on the same read as everything else on this screen. The one
- * worth naming is **empty**: a history too thin to name a least-recently-trained
- * focus produces no focus at all, and the card says that rather than showing a
- * plausible one. `suggestSession` answers `null`, and a guess is the thing this
- * state exists to refuse.
+ * It uses the same history read as everything else on this screen. Thin history
+ * produces no prompt at all: `suggestSession` answers `null`, and a guessed
+ * focus would be worse than an absent prompt. A failed read stays recoverable
+ * inline without manufacturing another Home card.
  *
  * Dismissal is `localStorage`, keyed to today. It is not a preference — tomorrow
  * has a different suggestion and asks again — and losing it costs the user one
@@ -479,52 +475,42 @@ function SuggestedSession({
     setDismissed(true)
   }, [storage])
 
-  if (dismissed) return null
+  if (dismissed || query.state.status === 'loading') return null
 
-  const state: ViewState<SessionSuggestion> =
-    query.state.status === 'loading'
-      ? viewLoading()
-      : query.state.status === 'error'
-        ? viewError(query.state.error)
-        : suggestion === null
-          ? viewEmpty()
-          : viewReady(suggestion)
+  if (query.state.status === 'error') {
+    return (
+      <div role="alert" className="clr-stack clr-stack--tight">
+        <p style={{ margin: 0 }}>Your suggestion didn’t load.</p>
+        <Button variant="quiet" onClick={query.refetch}>Retry suggestion</Button>
+      </div>
+    )
+  }
+
+  if (suggestion === null) return null
 
   return (
-    <Card>
-      <div className="clr-stack clr-stack--tight">
-        <Heading>{SUGGESTION_LABEL}</Heading>
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading what you have been training"
-          errorTitle="Your suggestion didn’t load"
-          onRetry={query.refetch}
-          empty={<p style={{ margin: 0 }}>{SUGGESTION_EMPTY}</p>}
-        >
-          {(next) => (
-            <>
-              <p style={{ margin: 0 }}>
-                {next.focusLabel} · intensity {next.intensity}
-              </p>
-              {/* The reason is pattern-level on purpose: "no hinge in 11 days"
-                  is a fact about training, "no lower body" is a fact about
-                  labels. */}
-              <p style={{ margin: 0 }}>
-                {next.reason} {next.intensityReason}
-              </p>
-              <div className="clr-row" style={SUGGESTION_ACTIONS}>
-                <Button variant="secondary" onClick={() => void navigate(next.path)}>
-                  Use this
-                </Button>
-                <Button variant="quiet" onClick={dismiss}>
-                  Dismiss
-                </Button>
-              </div>
-            </>
-          )}
-        </ViewStateSwitch>
+    <section
+      aria-label={SUGGESTION_LABEL}
+      className="clr-stack clr-stack--tight"
+    >
+      <p className="label" style={{ margin: 0 }}>{SUGGESTION_LABEL}</p>
+      <p style={{ margin: 0 }}>
+        {suggestion.focusLabel} · intensity {suggestion.intensity}
+      </p>
+      {/* The reason is pattern-level on purpose: "no hinge in 11 days"
+          is a fact about training, "no lower body" is a fact about labels. */}
+      <p style={{ margin: 0 }}>
+        {suggestion.reason} {suggestion.intensityReason}
+      </p>
+      <div className="clr-row" style={SUGGESTION_ACTIONS}>
+        <Button variant="secondary" onClick={() => void navigate(suggestion.path)}>
+          Use this
+        </Button>
+        <Button variant="quiet" onClick={dismiss}>
+          Dismiss
+        </Button>
       </div>
-    </Card>
+    </section>
   )
 }
 
@@ -542,20 +528,25 @@ function SuggestedSession({
  */
 function QuickActions({
   plan,
+  query,
+  suggestion,
   onQuickStart,
 }: {
   plan: QuickStartPlan | null
+  query: HistoryQuery
+  suggestion: SessionSuggestion | null
   onQuickStart: () => void
 }) {
   const navigate = useNavigate()
 
   return (
-    <Card barWidth="lg">
+    <Card>
       <div className="clr-stack">
         <Heading>Train today</Heading>
         <p style={{ margin: 0 }}>
           Compose a session from how you feel today, or repeat the last one.
         </p>
+        <SuggestedSession query={query} suggestion={suggestion} />
         <Button
           variant="primary"
           size="lg"

@@ -15,6 +15,7 @@
  * first paint and the animation is decoration over the top of it.
  */
 import { useNavigate } from 'react-router-dom'
+import type { CSSProperties } from 'react'
 
 import { Button, ClearLogo } from '../design-system/index'
 import { Card } from '../ui/card'
@@ -27,7 +28,14 @@ export function Welcome() {
   const navigate = useNavigate()
 
   return (
-    <Screen title="Welcome" heading={<ClearLogo size="xl" boot />}>
+    <Screen
+      title="Welcome"
+      heading={
+        <span style={BRAND_HEADING_STYLE}>
+          <ClearLogo size="xl" boot />
+        </span>
+      }
+    >
       <div className="clr-stack clr-boot">
         <p className="label">Strength training, simplified.</p>
         <Card barWidth="lg">
@@ -55,4 +63,10 @@ export function Welcome() {
       </div>
     </Screen>
   )
+}
+
+const BRAND_HEADING_STYLE: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
 }

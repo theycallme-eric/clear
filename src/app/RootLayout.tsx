@@ -23,7 +23,8 @@ import { resolveAtmosphere } from './atmosphere'
 export function RootLayout() {
   const { pathname } = useLocation()
   const atmosphere = resolveAtmosphere(pathname)
-  const atmosphereContext = pathname === '/login' ? 'auth' : undefined
+  const atmosphereContext =
+    pathname === '/login' || pathname === '/onboarding' ? 'entry-form' : undefined
 
   useEffect(() => {
     document.documentElement.dataset.atmosphere = atmosphere

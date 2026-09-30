@@ -13,6 +13,21 @@ First-time user setup flow. Collects only what makes workouts better — no fluf
 
 **Flow:** 5 steps, linear progression, no skipping.
 
+## UAT composition reconciliation — September 29, 2026
+
+The ASCII sketches below preserve the questions and order. The rendered
+composition follows these clarified rules across every step:
+
+- The quiet atmosphere remains visibly present on portrait screens.
+- The step heading, controls, validation guidance, and Back/Next/Finish actions
+  live in one card; navigation never floats as a detached row below it.
+- Equipment, section, and limitation checkboxes keep native fieldset/legend
+  semantics but draw no extra frame around the list. The checkbox controls are
+  the visual treatment.
+- Validation guidance is shown inside the active card only when it blocks the
+  next action. Supplemental helper copy is omitted unless the field needs it to
+  be understood.
+
 ---
 
 ## Step 1: Equipment / Location
