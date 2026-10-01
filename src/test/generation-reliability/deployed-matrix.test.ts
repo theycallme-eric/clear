@@ -156,10 +156,17 @@ const acceptable = serializeOwnerMirror(
   }),
 )
 
+// Building and comparing the complete legal-state matrix is intentionally
+// exhaustive. GitHub's shared runners can take longer than Vitest's five-second
+// default while the full suite is running, so this file gets a bounded timeout
+// without weakening any assertion or skipping any matrix case.
+const matrixIt = (name: string, test: () => void | Promise<void>) =>
+  it(name, test, 20_000)
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('the deployed comparison', () => {
-  it('passes when the deployed catalog produces the committed-seed matrix', async () => {
+  matrixIt('passes when the deployed catalog produces the committed-seed matrix', async () => {
     const { code, output, written } = await run({ committed: acceptable })
 
     expect(code).toBe(0)
@@ -167,7 +174,7 @@ describe('the deployed comparison', () => {
     expect(written).toEqual([])
   })
 
-  it('reads the catalog in the shape the seed reader produces', async () => {
+  matrixIt('reads the catalog in the shape the seed reader produces', async () => {
     const reader = createHostedReader({
       url: URL,
       serviceRoleKey: KEY,
@@ -178,7 +185,7 @@ describe('the deployed comparison', () => {
     expect(diffMatrices(matrix, deployed)).toEqual([])
   })
 
-  it('fails and names each differing row when a deployed exercise has drifted', async () => {
+  matrixIt('fails and names each differing row when a deployed exercise has drifted', async () => {
     const [first, ...rest] = seedRows()
     const { code, output } = await run({
       catalog: [{ ...first, sections: [] }, ...rest],
@@ -196,7 +203,7 @@ describe('the deployed comparison', () => {
     expect(/^ {2}states {2}[a-z_]+\/[a-z_]+\/[a-z_]+\/\S+ {2}\(differs\)$/m.test(output)).toBe(true)
   })
 
-  it('fails when the deployed catalog is missing or has gained an exercise', async () => {
+  matrixIt('fails when the deployed catalog is missing or has gained an exercise', async () => {
     const rows = seedRows()
     const missing = await run({ catalog: rows.slice(1), committed: acceptable })
     const extra = await run({
@@ -214,7 +221,7 @@ describe('the deployed comparison', () => {
     )
   })
 
-  it('names every row kind it compares', () => {
+  matrixIt('names every row kind it compares', () => {
     const drifted = buildMatrix({ ...inputs, catalog: seededCatalog().slice(0, 40) })
     const kinds = new Set(diffMatrices(matrix, drifted).map((difference) => difference.kind))
 
@@ -239,11 +246,11 @@ describe('missing prerequisites', () => {
     },
   )
 
-  it('names both when neither is supplied', () => {
+  matrixIt('names both when neither is supplied', () => {
     expect(missingPrerequisites({})).toHaveLength(2)
   })
 
-  it('fails rather than passing when the hosted project refuses the read', async () => {
+  matrixIt('fails rather than passing when the hosted project refuses the read', async () => {
     const lines: string[] = []
     const code = await compareDeployed({
       checkOnly: true,
@@ -263,7 +270,7 @@ describe('missing prerequisites', () => {
 })
 
 describe('the hosted project is only read', () => {
-  it('issues nothing but GETs, with or without the owner read', async () => {
+  matrixIt('issues nothing but GETs, with or without the owner read', async () => {
     const check = await run({ committed: acceptable })
     const record = await run({ checkOnly: false })
 
@@ -274,7 +281,7 @@ describe('the hosted project is only read', () => {
     }
   })
 
-  it('does not read the owner profile when a fixture is already committed', async () => {
+  matrixIt('does not read the owner profile when a fixture is already committed', async () => {
     const { requests } = await run({ committed: acceptable })
 
     expect(requests.every((request) => request.url.includes('/rest/v1/exercise_catalog'))).toBe(
@@ -284,7 +291,7 @@ describe('the hosted project is only read', () => {
 })
 
 describe('the owner-mirror fixture', () => {
-  it('is recorded once: written when absent, left alone when committed', async () => {
+  matrixIt('is recorded once: written when absent, left alone when committed', async () => {
     const absent = await run({ committed: null })
     const present = await run({ committed: acceptable })
 
@@ -294,7 +301,7 @@ describe('the owner-mirror fixture', () => {
     expect(present.written).toEqual([])
   })
 
-  it('mirrors the one onboarded non-harness profile and nothing that identifies it', async () => {
+  matrixIt('mirrors the one onboarded non-harness profile and nothing that identifies it', async () => {
     const { written } = await run({ checkOnly: false })
     const mirror = JSON.parse(written[0].contents)
 
@@ -313,14 +320,14 @@ describe('the owner-mirror fixture', () => {
     expect(ownerMirrorProblems(written[0].contents, rules.enums, equipment)).toEqual([])
   })
 
-  it('is not written when the matrices differ', async () => {
+  matrixIt('is not written when the matrices differ', async () => {
     const { code, written } = await run({ catalog: seedRows().slice(1), checkOnly: false })
 
     expect(code).toBe(1)
     expect(written).toEqual([])
   })
 
-  it('fails the check when it is absent and cannot be recorded, or is unacceptable', async () => {
+  matrixIt('fails the check when it is absent and cannot be recorded, or is unacceptable', async () => {
     const mirror = JSON.parse(acceptable)
     const withNote = JSON.stringify({ ...mirror, note: NOTE })
     const withId = JSON.stringify({ ...mirror, equipment: [OWNER_ID] })
@@ -340,7 +347,7 @@ describe('the owner-mirror fixture', () => {
     }
   })
 
-  it('is committed, and holds only enumerated values and equipment ids', () => {
+  matrixIt('is committed, and holds only enumerated values and equipment ids', () => {
     const committed = readFileSync(join(REPO_ROOT, OWNER_MIRROR_PATH), 'utf8')
     const mirror = JSON.parse(committed)
 
@@ -356,7 +363,7 @@ describe('the owner-mirror fixture', () => {
 })
 
 describe('output', () => {
-  it('carries only counts, section names and row identifiers', async () => {
+  matrixIt('carries only counts, section names and row identifiers', async () => {
     const rows = seedRows()
     const runs = [
       await run({ committed: acceptable }),
