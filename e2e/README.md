@@ -101,6 +101,29 @@ namespaced user, so it leaves nothing behind. Every other spec takes a minted se
 AUTH-02 builds the send-and-verify screen, its browser half belongs in that file
 and nowhere else.
 
+### One session from the real screen, shared (REQ-019)
+
+`e2e/support/authenticated-session.ts` is the one place a session comes from
+the sign-in screen and is then handed on. Its worker fixture,
+`authenticatedSession`, walks Welcome → `/login` → Home → Generate once per
+worker as a namespaced, onboarded user it provisions and deletes, and counts
+what the walk sent: one code request, one verification, no generation request.
+`authenticatedPage` is the test's page with that session already in storage.
+
+```ts
+import { expect, test } from './support/authenticated-session'
+
+test('…', async ({ authenticatedPage: page, visit }) => {
+  await visit('/generate') // signed in; no code requested, issued or verified
+})
+```
+
+The generation browser lanes take their session this way rather than
+authenticating again. `e2e/session-continuity.spec.ts` holds the journey to
+those counts and proves a second test consumes the fixture with no call to
+`/auth/v1/otp` or `/auth/v1/verify`. Specs that are not about generation keep
+using `mintSession`.
+
 ## Paid model boundary
 
 The ordinary unit, integration, preview, trusted-backend, and automatic
