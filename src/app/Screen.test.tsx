@@ -30,6 +30,41 @@ describe('Screen (CORE-05)', () => {
     )
   })
 
+  it('gives the screen one named, keyboard-reachable vertical scroll owner', () => {
+    const { container } = renderWithProviders(<Screen title="Sample">Body</Screen>)
+
+    const region = container.querySelector('.clr-scroll-region')
+    const scroller = screen.getByRole('region', { name: 'Sample content' })
+    expect(region).not.toBeNull()
+    expect(container.querySelectorAll('.clr-scroll-region__scroller')).toHaveLength(1)
+    expect(scroller).toHaveClass('clr-scroll-region__scroller')
+    expect(scroller).toHaveAttribute('tabindex', '0')
+    expect(scroller).toContainElement(screen.getByRole('heading', { level: 1 }))
+  })
+
+  it('keeps optional pinned layers outside the scrolling content', () => {
+    renderWithProviders(
+      <Screen
+        title="Sample"
+        pinnedHead={<nav aria-label="Views">Recent</nav>}
+        pinnedFoot={<button type="button">Save</button>}
+      >
+        Body
+      </Screen>,
+    )
+
+    const scroller = screen.getByRole('region', { name: 'Sample content' })
+    expect(scroller).not.toContainElement(screen.getByRole('navigation', { name: 'Views' }))
+    expect(scroller).not.toContainElement(screen.getByRole('button', { name: 'Save' }))
+    expect(
+      screen.getByRole('navigation', { name: 'Views' }).closest('.clr-scroll-region__head'),
+    ).not.toBeNull()
+    expect(
+      screen.getByRole('button', { name: 'Save' }).closest('.clr-scroll-region__foot'),
+    ).not.toBeNull()
+    expect(document.querySelectorAll('.clr-scroll-region__streak')).toHaveLength(2)
+  })
+
   it('sets a per-screen document title suffixed with the app name', () => {
     renderWithProviders(<Screen title="Sample" />)
 

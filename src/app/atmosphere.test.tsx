@@ -147,7 +147,9 @@ describe('atmosphere rendering', () => {
     const { container } = renderApp([pathname], providersFor(pathname))
 
     // IA.md §3 layer 2 — the shell carries the level…
-    expect(container.querySelector('.clr-shell')).toHaveAttribute(
+    const shell = container.querySelector('.clr-shell')
+    expect(shell).toHaveClass('clr-shell--fixed', 'clr-shell--contained')
+    expect(shell).toHaveAttribute(
       'data-atmosphere',
       'full',
     )

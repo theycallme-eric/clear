@@ -23,8 +23,8 @@ already been visually reconciled.
 | Work package | Status | Evidence |
 | --- | --- | --- |
 | DS-097-A | Merged | Exact 0.9.7 evidence/runtime import, active contract sync, identity/API/adherence tests; PR #275 |
-| DS-097-B | In progress | Shared atmosphere, Card, focus, token/motion, action/list/band/footer substrate; issue #270 |
-| DS-097-C | Pending | Fixed shell and public `ScrollRegion`; issue #269 |
+| DS-097-B | Merged | Shared atmosphere, Card, focus, token/motion, action/list/band/footer substrate; PR #276 |
+| DS-097-C | In progress | Fixed shell and public `ScrollRegion`; issue #269 |
 | VIBE-A / B / C | Pending | Route-family reconciliation; issues #271–#273 |
 | VIBE-D | Pending | Final rendered audit and exception ledger; issue #274 |
 

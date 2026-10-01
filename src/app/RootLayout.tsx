@@ -28,7 +28,10 @@ export function RootLayout() {
     <>
       <FocusBrackets />
       <AtmosphereLayer />
-      <div className="clr-shell" data-atmosphere={DEFAULT_ATMOSPHERE}>
+      <div
+        className="clr-shell clr-shell--fixed clr-shell--contained"
+        data-atmosphere={DEFAULT_ATMOSPHERE}
+      >
         <div className="clr-shell__content">
           <Outlet />
         </div>

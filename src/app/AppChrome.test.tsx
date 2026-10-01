@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { renderApp, signedIn } from '../test/render'
 
@@ -56,6 +56,7 @@ describe('AppChrome (CORE-05)', () => {
 
     it('focuses the new h1 and announces the screen exactly once on navigation', async () => {
       const user = userEvent.setup()
+      const reset = vi.spyOn(Element.prototype, 'scrollTo')
       renderApp(['/missing'], signedIn())
 
       expect(announcer()).toBeEmptyDOMElement()
@@ -69,6 +70,7 @@ describe('AppChrome (CORE-05)', () => {
       expect(status).toHaveAttribute('aria-live', 'polite')
       expect(status).toHaveTextContent(/^CLEAR$/)
       expect(status.childNodes).toHaveLength(1)
+      expect(reset).toHaveBeenCalledWith({ top: 0, left: 0 })
     })
 
     it('updates the document title on navigation', async () => {

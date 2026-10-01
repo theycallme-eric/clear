@@ -1,0 +1,64 @@
+/* =============================================================================
+   CONTAINED APPLICATION SHELL — CLEAR 0.9.7
+
+   The browser document never becomes an accidental second scroll owner. The
+   fixed shell follows the visual viewport through `dvh`; each Screen fills the
+   remaining space and gives vertical overflow to the public ScrollRegion.
+   Headers are siblings above Screen, so transparent chrome never needs an
+   opaque surface to hide content moving underneath it.
+   ============================================================================= */
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.clr-shell--contained > .clr-shell__content {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: max(var(--spacing-500), env(safe-area-inset-top));
+  padding-right: max(var(--spacing-400), env(safe-area-inset-right));
+  padding-bottom: max(var(--spacing-500), env(safe-area-inset-bottom));
+  padding-left: max(var(--spacing-400), env(safe-area-inset-left));
+}
+
+.clr-shell--contained > .clr-shell__content > header {
+  flex: 0 0 auto;
+}
+
+.clr-screen {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.clr-screen__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-400);
+  min-height: 100%;
+  padding: var(--spacing-100) var(--spacing-300) var(--spacing-300);
+}
+
+/* The public component owns the scroll behavior. This local rule only keeps
+   browser focus geometry inside the hard edge when the scroller itself is the
+   keyboard target. */
+.clr-screen > .clr-scroll-region > .clr-scroll-region__scroller:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: calc(var(--focus-ring-width) * -1);
+}
+
+@media (min-width: 1440px) {
+  .clr-screen__content {
+    padding-right: var(--spacing-400);
+    padding-left: var(--spacing-400);
+  }
+}
