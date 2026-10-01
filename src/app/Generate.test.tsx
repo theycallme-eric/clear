@@ -30,18 +30,32 @@ import {
   makeGenerationError,
   makeGenerationOutput,
   makeSessionAcceptance,
+  makeSessionRow,
 } from '../test/factories'
 import { createWorkoutDouble } from '../test/workout-double'
-import type { AnchorEvidenceRow, Location, Profile } from '../state/schemas'
+import type { HistoryPage } from '../data/history'
+import { historyQueryKey } from '../state/history-queries'
+import type {
+  AnchorEvidenceRow,
+  Location,
+  Profile,
+  WorkoutSessionRow,
+} from '../state/schemas'
+import { suggestionDay } from '../state/session-suggestion'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, renderWithProviders, signedIn } from '../test/render'
 import {
   CHANGE_GOAL_LABEL,
+  FIRST_WORKOUT_MESSAGE,
   Generate,
   GOAL_CORRECTION_ACTION,
   GOAL_CORRECTION_TITLE,
+  HISTORY_ERROR_MESSAGE,
+  HISTORY_LOADING_LABEL,
+  HISTORY_RETRY_LABEL,
   LEGACY_GOAL_MESSAGE,
+  MANUAL_FOCUS_MESSAGE,
   MISSING_GOAL_MESSAGE,
 } from './Generate'
 import {
@@ -61,13 +75,26 @@ const GYM = fixtureLocation({
 /** The Goals a profile may stand on: onboarding's four. */
 const STANDING_GOALS = ['strength', 'hypertrophy', 'conditioning', 'balanced'] as const
 
+/**
+ * `history` is the page the shared history query already holds: nothing
+ * completed unless a test says otherwise, so the form opens on the manual
+ * first-workout choice. `null` leaves it unread, for the tests that are about
+ * the read itself.
+ */
 function warmCache(
   locations: readonly Location[],
   goal: Profile['goal_preset'] = 'strength',
+  history: readonly WorkoutSessionRow[] | null = [],
 ) {
   const cache = new QueryClient()
   cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile({ goal_preset: goal }))
   cache.setData(locationsQueryKey(FIXTURE_USER_ID), [...locations])
+  if (history !== null) {
+    cache.setData(historyQueryKey(FIXTURE_USER_ID, 1), {
+      sessions: [...history],
+      hasMore: false,
+    })
+  }
   return cache
 }
 
@@ -76,15 +103,17 @@ function renderGenerate({
   locations = [fixtureLocation(), GYM],
   workout,
   goal = 'strength',
+  history = [],
 }: {
   locations?: readonly Location[]
   workout?: WorkoutClients
   goal?: Profile['goal_preset']
+  history?: readonly WorkoutSessionRow[] | null
 } = {}) {
   const generation = createFakeGenerationClient()
   const rendered = renderApp(
     ['/generate'],
-    signedIn({ queryClient: warmCache(locations, goal), generation, workout }),
+    signedIn({ queryClient: warmCache(locations, goal, history), generation, workout }),
   )
 
   return { ...rendered, generation, user: userEvent.setup() }
@@ -265,6 +294,293 @@ describe('REQ-002 — the correction state', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument()
     expect(generation.calls).toEqual([])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-004 / REQ-005 / REQ-006 — the Focus, as history can or cannot recommend it
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Days are counted back from today rather than pinned to a date: the
+ * recommendation is only made from recent history, so a fixture with a
+ * written-down date would go stale while the suite kept passing.
+ */
+function daysAgo(days: number): string {
+  const [year, month, date] = suggestionDay().split('-').map(Number)
+  return new Date(Date.UTC(year, month - 1, date - days)).toISOString().slice(0, 10)
+}
+
+function session(
+  index: number,
+  daysBack: number,
+  overrides: Partial<WorkoutSessionRow> = {},
+): WorkoutSessionRow {
+  const day = daysAgo(daysBack)
+
+  return makeSessionRow({
+    id: `c000000${index}-0000-4000-8000-000000000000`,
+    date: day,
+    created_at: `${day}T08:00:00.000Z`,
+    started_at: `${day}T09:00:00.000Z`,
+    completed_at: `${day}T10:00:00.000Z`,
+    session_focus: 'upper_body',
+    effective_intensity: 7,
+    requested_intensity: 7,
+    ...overrides,
+  })
+}
+
+/** Upper body twice this week and lower body 16 days back: Lower body is stalest. */
+function lowerBodyDue(intensity = 7): WorkoutSessionRow[] {
+  const at = { effective_intensity: intensity, requested_intensity: intensity }
+
+  return [
+    session(1, 1, at),
+    session(2, 3, at),
+    session(3, 16, { ...at, session_focus: 'lower_body' }),
+  ]
+}
+
+/** Generated and never started, and started and given up: neither is completed. */
+function nothingCompleted(): WorkoutSessionRow[] {
+  return [
+    session(1, 1, { started_at: null, completed_at: null }),
+    session(2, 2, { completed_at: null, abandoned_at: `${daysAgo(2)}T09:30:00.000Z` }),
+  ]
+}
+
+const LOWER_BODY_REASON = /^No \w+ in 16 days\.$/
+const HISTORY_CLAIM =
+  /suggested|recommended|your last \d+ sessions|no \w+ in \d+ days|sessions you’ve logged/i
+
+function expectFourUnselected() {
+  const chips = within(group('Anchor')).getAllByRole('button')
+  expect(chips.map((chip) => chip.textContent)).toEqual([
+    'Upper body',
+    'Lower body',
+    'Full body',
+    'Power',
+  ])
+  for (const chip of chips) expect(chip).toHaveAttribute('aria-pressed', 'false')
+}
+
+describe('REQ-004 — the recommended Focus and its intensity', () => {
+  it('opens on the recommended Focus, its reason and the history intensity, ready to generate', async () => {
+    const { user, generation } = renderGenerate({ history: lowerBodyDue(7) })
+
+    expect(screen.getByText('Lower body')).toBeInTheDocument()
+    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
+    expect(slider()).toHaveValue('7')
+    expect(cta()).toBeEnabled()
+
+    // Nothing is asked of the generation client until the athlete presses.
+    expect(generation.calls).toEqual([])
+
+    await user.click(cta())
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'strength',
+      focus: 'lower_body',
+      requested_intensity: 7,
+    })
+  })
+
+  it.each([
+    [10, INTENSITY_BY_GOAL.hypertrophy.max],
+    [2, INTENSITY_BY_GOAL.hypertrophy.min],
+  ])('clamps a history averaging %i to the standing goal’s range, at %i', async (average, clamped) => {
+    const { user, generation } = renderGenerate({
+      goal: 'hypertrophy',
+      history: lowerBodyDue(average),
+    })
+
+    expect(slider()).toHaveValue(String(clamped))
+
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'hypertrophy',
+      focus: 'lower_body',
+      requested_intensity: clamped,
+    })
+  })
+
+  it.each(STANDING_GOALS)('starts a %s profile with no recommendation on the goal’s start', (goal) => {
+    renderGenerate({ goal })
+
+    expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL[goal].start))
+  })
+
+  it('takes no Focus from the URL: the recommendation is today’s history', () => {
+    const generation = createFakeGenerationClient()
+    renderApp(
+      ['/generate?focus=power&intensity=3'],
+      signedIn({
+        queryClient: warmCache([fixtureLocation(), GYM], 'strength', lowerBodyDue(7)),
+        generation,
+      }),
+    )
+
+    expect(screen.getByText('Lower body')).toBeInTheDocument()
+    expect(slider()).toHaveValue('7')
+    expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('REQ-005 — a manual Focus before the first completed workout, or on stale history', () => {
+  it('asks for one of four with nothing selected, and says CLEAR needs a starting workout', async () => {
+    const { user } = renderGenerate({ history: [] })
+
+    expectFourUnselected()
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toHaveTextContent(/starting workout/i)
+    expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
+    expect(cta()).toBeDisabled()
+
+    await user.click(chipIn('Anchor', 'Full body'))
+    expect(cta()).toBeEnabled()
+  })
+
+  it('asks for a manual Focus on history 30 days old, with no history-backed reason', () => {
+    renderGenerate({ history: [session(1, 30)] })
+
+    expectFourUnselected()
+    expect(screen.getByText(MANUAL_FOCUS_MESSAGE)).toBeInTheDocument()
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
+    expect(cta()).toBeDisabled()
+  })
+
+  it('stays in the first-workout state on unstarted and abandoned sessions alone', () => {
+    renderGenerate({ history: nothingCompleted() })
+
+    expectFourUnselected()
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+    expect(cta()).toBeDisabled()
+  })
+
+  it('recommends on the next visit once one of them is completed', () => {
+    const [unstarted, abandoned] = nothingCompleted()
+    renderGenerate({ history: [session(1, 1), abandoned] })
+
+    expect(unstarted.completed_at).toBeNull()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+    expect(screen.getByText(/^Focus:/)).toBeInTheDocument()
+    expect(screen.getByText(/^No .+ in the sessions you’ve logged\.$/)).toBeInTheDocument()
+    expect(cta()).toBeEnabled()
+  })
+})
+
+describe('REQ-006 — a history read that fails or is still in flight', () => {
+  /** A history read the test answers, on a cache that has not read it. */
+  function renderReading(page: () => Promise<Result<HistoryPage>>) {
+    const calls = { count: 0 }
+    const workout = createWorkoutDouble({
+      history: {
+        page: () => {
+          calls.count += 1
+          return page()
+        },
+      },
+    }).clients
+
+    return { ...renderGenerate({ workout, history: null }), calls }
+  }
+
+  const readFailure = () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED))
+  const retry = () => screen.getByRole('button', { name: HISTORY_RETRY_LABEL })
+
+  it('shows the Focus area loading, and no CTA to press on an unresolved Focus', async () => {
+    const { generation, calls } = renderReading(() => new Promise(() => {}))
+
+    await waitFor(() => expect(calls.count).toBeGreaterThan(0))
+
+    // By its text: `role="status"` is not unique on a screen.
+    expect(screen.getByText(HISTORY_LOADING_LABEL).closest('[role="status"]')).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+    expect(cta()).toBeDisabled()
+    expect(generation.calls).toEqual([])
+  })
+
+  it('says history could not be read, offers Retry, and is not the first-workout state', async () => {
+    renderReading(() => Promise.resolve(readFailure()))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(HISTORY_ERROR_MESSAGE)
+    expect(HISTORY_ERROR_MESSAGE).toMatch(/history could not be read/i)
+    expect(retry()).toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(/starting workout/i)
+    expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
+    expectFourUnselected()
+    expect(cta()).toBeDisabled()
+  })
+
+  it('lets a Focus be chosen by hand and sends it', async () => {
+    const { user, generation } = renderReading(() => Promise.resolve(readFailure()))
+
+    await screen.findByRole('alert')
+    await user.click(chipIn('Anchor', 'Power'))
+    expect(cta()).toBeEnabled()
+
+    await user.click(cta())
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'strength',
+      focus: 'power',
+      requested_intensity: INTENSITY_BY_GOAL.strength.start,
+    })
+  })
+
+  it('reads again on Retry, and shows the recommendation when the read succeeds', async () => {
+    let failing = true
+    const { user, calls } = renderReading(() =>
+      Promise.resolve(
+        failing ? readFailure() : ok<HistoryPage>({ sessions: lowerBodyDue(7), hasMore: false }),
+      ),
+    )
+
+    await screen.findByRole('alert')
+    const reads = calls.count
+    failing = false
+    await user.click(retry())
+
+    expect(await screen.findByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(calls.count).toBe(reads + 1)
+    expect(screen.getByText('Lower body')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(slider()).toHaveValue('7')
+    expect(cta()).toBeEnabled()
+  })
+
+  it('keeps a Focus already chosen by hand when Retry succeeds', async () => {
+    let failing = true
+    const { user, generation, calls } = renderReading(() =>
+      Promise.resolve(
+        failing ? readFailure() : ok<HistoryPage>({ sessions: lowerBodyDue(7), hasMore: false }),
+      ),
+    )
+
+    await screen.findByRole('alert')
+    await user.click(chipIn('Anchor', 'Power'))
+    const reads = calls.count
+    failing = false
+    await user.click(retry())
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    expect(calls.count).toBe(reads + 1)
+    expect(chipIn('Anchor', 'Power')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
+
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({ focus: 'power' })
   })
 })
 

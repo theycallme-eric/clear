@@ -94,8 +94,9 @@ describe('app router', () => {
     const generation = createFakeGenerationClient()
     const { container } = renderApp(['/generate'], signedIn({ queryClient: cache, generation }))
 
+    // The Focus choices follow the history read: nothing completed, so they are asked for.
     await user.click(
-      within(screen.getByRole('group', { name: 'Anchor' })).getByRole('button', {
+      within(await screen.findByRole('group', { name: 'Anchor' })).getByRole('button', {
         name: /upper body/i,
       }),
     )
