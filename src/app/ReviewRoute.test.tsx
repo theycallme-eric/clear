@@ -7,7 +7,7 @@
  * answers when a test says so. `RootLayout` is in the tree, so the atmosphere
  * the Loading screen restores is the one the route itself resolved.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -183,6 +183,63 @@ describe('ReviewRoute · confirming runs the Loading-to-Review transition', () =
         deload: false,
       },
     ])
+  })
+
+  // REQ-009: a Recovery session regenerates as one, on the Focus it was
+  // accepted with — nothing is re-resolved from the standing Goal or history.
+  it('sends an accepted Recovery session’s Goal and Focus unchanged', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(
+      client,
+      acceptanceTitled('Original session', {
+        goal_preset: 'active_recovery',
+        session_focus: 'upper_body',
+        requested_intensity: 2,
+      }),
+    )
+
+    await confirmRegenerate(user)
+
+    expect(client.calls).toEqual([
+      {
+        goal: 'active_recovery',
+        focus: 'upper_body',
+        requested_intensity: 2,
+        requested_duration_mins: 50,
+        location_id: LOCATION_ID,
+        notes: null,
+        deload: false,
+      },
+    ])
+  })
+
+  it('resends that request on Retry after a typed failure, once', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(
+      client,
+      acceptanceTitled('Original session', {
+        goal_preset: 'active_recovery',
+        session_focus: 'upper_body',
+        requested_intensity: 2,
+      }),
+    )
+
+    await confirmRegenerate(user)
+    await act(async () => {
+      client.fail(makeGenerationError())
+    })
+    const alert = await screen.findByRole('alert')
+    const retry = within(alert).getByRole('button', { name: 'Retry' })
+    // Two presses in one tick: the second lands while the retry is in flight.
+    fireEvent.click(retry)
+    fireEvent.click(retry)
+
+    expect(client.calls).toHaveLength(2)
+    expect(client.outstanding).toBe(1)
+    expect(client.calls[1]).toEqual(client.calls[0])
+    expect(client.calls[1]).toMatchObject({ goal: 'active_recovery', focus: 'upper_body' })
   })
 
   it('stays up for the whole run, with no progress it does not know', async () => {

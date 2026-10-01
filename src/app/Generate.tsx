@@ -261,11 +261,21 @@ export function Generate() {
   // read, because no place makes that profile able to generate.
   const needsSettings = profileSettled && standingGoalFrom(goalPreset) === null
 
+  // REQ-009: cancel returns to the draft's own address — the override and
+  // Recovery it was sent with, beside whatever else the query string carried —
+  // so the form that comes back and a refresh of it resolve the same intent.
+  const [searchParams] = useSearchParams()
+  const draftSearch =
+    composition === null
+      ? searchParams.toString()
+      : searchWithIntent(searchParams, composition.draft).toString()
+  const cancelTo = draftSearch === '' ? GENERATE_PATH : `${GENERATE_PATH}?${draftSearch}`
+
   // GEN-05's screen has no route of its own: while a run this screen started is
   // in flight — or has failed and is being answered — the shared host makes it
   // the screen, and cancelling puts the form back where the user left it.
   return (
-    <GenerationLoadingHost generation={generation} cancelTo={GENERATE_PATH}>
+    <GenerationLoadingHost generation={generation} cancelTo={cancelTo}>
       <AppHeader
         actions={
           <Button
