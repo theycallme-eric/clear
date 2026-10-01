@@ -515,6 +515,117 @@ describe('the soft record', () => {
   })
 })
 
+/**
+ * The valid fixture's main work under upper-body names. Each candidate keeps its
+ * captured row — equipment included, so every hard check still passes — and
+ * takes a press or a pull as its only pattern, which is the one fact Focus fit
+ * reads.
+ */
+const UPPER_BODY_MAIN_WORK = {
+  'back-squat': { exerciseId: 'bench-press', pattern: 'press' },
+  'bulgarian-split-squat': { exerciseId: 'dumbbell-row', pattern: 'pull' },
+  'glute-bridge': { exerciseId: 'push-up', pattern: 'press' },
+} as const
+
+/** A `lower_body` request whose composed main work only presses and pulls. */
+function focusMismatch(): { workout: GenerationOutput; input: PromptInput } {
+  const renamed = (exerciseId: string) =>
+    Object.entries(UPPER_BODY_MAIN_WORK).find(([lower]) => lower === exerciseId)?.[1]
+
+  const workout = composed()
+  for (const section of workout.sections) {
+    for (const block of section.blocks) {
+      for (const exercise of block.exercises) {
+        exercise.exercise_id = renamed(exercise.exercise_id)?.exerciseId ?? exercise.exercise_id
+      }
+    }
+  }
+
+  const input = promptInput({
+    sections: INPUT.sections.map((section) => ({
+      ...section,
+      candidates: section.candidates.map((candidate) => {
+        const upper = renamed(candidate.exerciseId)
+        if (upper === undefined) return candidate
+
+        return {
+          ...candidate,
+          exerciseId: upper.exerciseId,
+          patterns: [upper.pattern],
+          primaryPatterns: [upper.pattern],
+        }
+      }),
+    })),
+  })
+
+  return { workout, input }
+}
+
+describe('Focus fit', () => {
+  it('records one observation naming the Focus when the main work only presses and pulls', () => {
+    const { workout, input } = focusMismatch()
+    const record = observeQuality(workout, input)
+    const focusFit = record.observations.filter(
+      (observation) => observation.check === SoftCheck.FOCUS_FIT,
+    )
+
+    expect(focusFit).toHaveLength(1)
+    expect(focusFit[0].status).toBe('outside')
+    expect(focusFit[0].summary).toContain('lower_body')
+    expect(focusFit[0].metrics).toEqual({ mainWork: 3, matching: 0 })
+    expect(focusFit[0].detail).toEqual(['focus:lower_body', 'pattern:press', 'pattern:pull'])
+    expect(qualityFields(record)[SoftCheck.FOCUS_FIT]).toBe('outside')
+  })
+
+  it('records nothing for a workout that matches its Focus', () => {
+    const record = observeQuality(composed(), INPUT)
+
+    expect(observationFor(record, SoftCheck.FOCUS_FIT)).toBeUndefined()
+    expect(qualityFields(record)[SoftCheck.FOCUS_FIT]).toBe('within')
+  })
+
+  it('records nothing when the same main work is what the Focus asked for', () => {
+    const { workout, input } = focusMismatch()
+    const upper = { ...input, request: { ...input.request, focus: 'upper_body' as const } }
+
+    expect(observationFor(observeQuality(workout, upper), SoftCheck.FOCUS_FIT)).toBeUndefined()
+  })
+
+  it('records nothing when one main-work exercise carries the Focus', () => {
+    const { workout, input } = focusMismatch()
+    const sections = input.sections.map((section) => ({
+      ...section,
+      candidates: section.candidates.map((candidate) =>
+        candidate.exerciseId === 'bench-press'
+          ? { ...candidate, patterns: ['squat' as const] }
+          : candidate,
+      ),
+    }))
+
+    expect(
+      observationFor(observeQuality(workout, { ...input, sections }), SoftCheck.FOCUS_FIT),
+    ).toBeUndefined()
+  })
+
+  it('records nothing when no Focus was requested', () => {
+    const { workout, input } = focusMismatch()
+    const unfocused = { ...input, request: { ...input.request, focus: null } }
+
+    expect(observationFor(observeQuality(workout, unfocused), SoftCheck.FOCUS_FIT)).toBeUndefined()
+  })
+
+  it('never rejects: the mismatch validates with no violation', () => {
+    const { workout, input } = focusMismatch()
+    const validated = validateComposition(workout, input)
+
+    expect(validated.ok).toBe(true)
+    if (!validated.ok) return
+
+    expect(validated.value.violations).toEqual([])
+    expect(observationFor(validated.value.quality, SoftCheck.FOCUS_FIT)?.status).toBe('outside')
+  })
+})
+
 describe('Claude’s duration estimate', () => {
   it('is recorded as a diagnostic and read by nothing (D5)', () => {
     const optimistic = composed()
@@ -586,6 +697,27 @@ describe('validation inside the composer’s one retry', () => {
 
     expect(composition.value.attempts).toBe(1)
     expect(composition.value.validation?.quality.observations).toHaveLength(6)
+  })
+
+  it('does not spend the retry on a Focus mismatch', async () => {
+    const { workout, input } = focusMismatch()
+    const fetch = stubFetch([claudeResponse(JSON.stringify(workout))])
+
+    const composition = await createComposer({
+      apiKey: API_KEY,
+      fetch: fetch.send,
+      validate,
+    }).compose(input, REQUEST_ID)
+
+    expect(fetch.calls).toHaveLength(1)
+    expect(composition.ok).toBe(true)
+    if (!composition.ok) return
+
+    expect(composition.value.attempts).toBe(1)
+    expect(composition.value.retriedAfter).toBeNull()
+    expect(
+      composition.value.validation?.quality.observations.map((observation) => observation.check),
+    ).toContain(SoftCheck.FOCUS_FIT)
   })
 
   it('costs one corrected retry, and the correction names the contract’s code', async () => {

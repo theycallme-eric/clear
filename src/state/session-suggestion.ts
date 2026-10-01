@@ -57,6 +57,7 @@ import {
   generatePath,
   type GenerationPrefill,
 } from './generation-form'
+import { FOCUS_PATTERNS } from './focus-patterns'
 import { formatFocus, historyEntries, type HistoryEntry, type HistorySessionEntry } from './history'
 import type { WorkoutSessionRow } from './schemas'
 import { localDayIn, type LocalDay } from './streak'
@@ -71,23 +72,8 @@ export type MovementPattern = Enums<'movement_pattern'>
 /** The four focuses, in the enum's declared order — which is also the tie-break. */
 export const SESSION_FOCUSES: readonly SessionFocus[] = Constants.public.Enums.session_focus
 
-/**
- * `focus_pattern_map`, as the catalog migration seeds it. Mirrored rather than
- * fetched because it is a vocabulary rather than data: eleven rows that change
- * only when the taxonomy does, and `session-suggestion.test.ts` fails if this
- * and the migration ever disagree.
- *
- * `conditioning` is deliberately not reachable from any focus — it derives from
- * `cardio-output` and maps to no session focus, recorded as open question 5 in
- * DATA_MODEL §13 — so it is absent from `SUGGESTIBLE_PATTERNS` too rather than
- * appearing as a pattern the user has permanently neglected.
- */
-export const FOCUS_PATTERNS: Readonly<Record<SessionFocus, readonly MovementPattern[]>> = {
-  upper_body: ['press', 'pull'],
-  lower_body: ['squat', 'hinge', 'unilateral'],
-  full_body: ['squat', 'hinge', 'press', 'pull', 'unilateral'],
-  power: ['power'],
-}
+/** `focus_pattern_map`, declared once in `focus-patterns.ts` and shared with validation. */
+export { FOCUS_PATTERNS }
 
 /** Every pattern some focus admits, in `movement_pattern`'s declared order. */
 export const SUGGESTIBLE_PATTERNS: readonly MovementPattern[] =

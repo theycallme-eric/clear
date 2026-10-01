@@ -40,6 +40,7 @@
 
 import type { Candidate, SectionType } from '../../../src/data/candidates.ts'
 import type { Enums } from '../../../src/data/database.types.ts'
+import { FOCUS_PATTERNS } from '../../../src/state/focus-patterns.ts'
 import type { Logger } from '../../../src/state/logger.ts'
 import { err, ok, type Result } from '../../../src/state/errors.ts'
 import {
@@ -411,6 +412,8 @@ export const SoftCheck = {
   NARRATED_LOAD: 'narrated_load',
   /** OVR-02: what the session directive asked of set counts and of the cues. */
   DIRECTIVE_COMPLIANCE: 'directive_compliance',
+  /** REQ-013: main work that shares no movement pattern with the requested Focus. */
+  FOCUS_FIT: 'focus_fit',
 } as const
 
 export type SoftCheck = (typeof SoftCheck)[keyof typeof SoftCheck]
@@ -956,8 +959,64 @@ function observeDirectiveCompliance(
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-013 — the Focus the request asked for, against the main work composed
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Preparation and recovery are not what a Focus is asked of, so they are not read. */
+const FOCUS_EXEMPT_SECTIONS: ReadonlySet<SectionType> = new Set<SectionType>([
+  'warmup',
+  'cooldown',
+])
+
 /**
- * The six observations, together. Pure, and deliberately called only after the
+ * The obvious mismatch and nothing subtler: a Focus was requested, the main work
+ * carries movement patterns, and not one of them is a pattern that Focus maps to
+ * — a `lower_body` session whose main work only presses and pulls.
+ *
+ * It is the candidates' own `patterns` read against `FOCUS_PATTERNS`, the same
+ * two facts retrieval filtered on, so there is no second opinion here about what
+ * a Focus means. A candidate with no pattern is the focus-exempt row retrieval
+ * keeps for its role, and is left out of the count rather than held against it.
+ *
+ * Returns `null` when there is nothing to note. Unlike the six above, this one is
+ * recorded only when it has something to say: one off-focus exercise among
+ * matching ones is a composition choice, not a finding.
+ */
+function observeFocusFit(
+  input: PromptInput,
+  prescriptions: readonly PrescriptionEntry[],
+): SoftObservation | null {
+  const { focus } = input.request
+  if (focus === null) return null
+
+  const expected = FOCUS_PATTERNS[focus]
+  const mainWork = prescriptions.filter(
+    (entry) =>
+      !FOCUS_EXEMPT_SECTIONS.has(entry.sectionType) && (entry.candidate?.patterns.length ?? 0) > 0,
+  )
+  const matches = mainWork.some((entry) =>
+    entry.candidate?.patterns.some((pattern) => expected.includes(pattern)),
+  )
+
+  if (mainWork.length === 0 || matches) return null
+
+  const composed = [
+    ...new Set(mainWork.flatMap((entry) => entry.candidate?.patterns ?? [])),
+  ].sort()
+
+  return {
+    check: SoftCheck.FOCUS_FIT,
+    status: 'outside',
+    summary: `focus ${focus} requested, but no main-work exercise carries ${expected.join(', ')}; composed ${composed.join(', ')}`,
+    metrics: { mainWork: mainWork.length, matching: 0 },
+    detail: [`focus:${focus}`, ...composed.map((pattern) => `pattern:${pattern}`)],
+  }
+}
+
+/**
+ * The six observations, together, then REQ-013's Focus-fit note when there is a
+ * mismatch to note. Pure, and deliberately called only after the
  * hard verdict is already `ok`: nothing it returns can change that verdict
  * because the verdict was reached first.
  */
@@ -970,6 +1029,7 @@ export function observeQuality(
   const index = candidateIndex(input)
   const prescriptions = entries(workout, index)
   const enabled = new Set(input.request.effectiveSections)
+  const focusFit = observeFocusFit(input, prescriptions)
 
   return {
     contractVersion: CONTRACT_VERSION,
@@ -982,6 +1042,7 @@ export function observeQuality(
       observeRepetition(workout, input, prescriptions),
       observeNarratedLoads(workout),
       observeDirectiveCompliance(workout, input, prescriptions),
+      ...(focusFit === null ? [] : [focusFit]),
     ],
   }
 }
@@ -996,6 +1057,8 @@ export function qualityFields(record: QualityRecord): Record<string, unknown> {
     contractVersion: record.contractVersion,
     modelEstimateMins: record.modelEstimateMins,
     computedDurationMins: record.computedDurationMins,
+    // Focus fit is recorded only on a mismatch, so its absence reads as `within`.
+    [SoftCheck.FOCUS_FIT]: 'within',
     ...Object.fromEntries(
       record.observations.map((observation) => [observation.check, observation.status]),
     ),
