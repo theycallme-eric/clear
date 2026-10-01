@@ -3,25 +3,27 @@
  *
  * `src/app/Generate.tsx` renders this and owns nothing else about it. The split
  * is what makes the requirement's two interesting sentences testable without a
- * browser: "selecting a goal clamps the intensity slider to its valid range" is
- * `withGoal`, and "the payload validates against the CORE-03 request schema
- * before send" is `requestFrom` — one function from the draft to the thing the
- * generation client receives, which refuses rather than sends.
+ * browser: "Generate uses the standing Goal and the recommended Focus" is
+ * `resolveGeneration`, and "the payload validates against the CORE-03 request
+ * schema before send" is `requestFrom` — one function from the draft to the
+ * thing the generation client receives, which refuses rather than sends.
  *
  * Three decisions this module makes, none of them obvious:
  *
- *   * **The goal is asked first and has no default.** The v3 delta (Part 2 §2.1)
- *     says so explicitly, and the reason is the cascade: a goal fixes the
- *     intensity range and which anchors are offered, so a prefilled goal would
- *     be a range and an anchor set the user never chose. The profile's stored
- *     `goal_preset` is a setup preference — "what I generally train for" — and
- *     this screen asks "what is today", which is a different question. The
- *     default *place* does prefill, because that one is the same question.
+ *   * **Goal and Focus are resolved, not asked.** The Goal is the profile's
+ *     standing `goal_preset` — chosen in onboarding, changed in Settings — and
+ *     the Focus is the one recent history recommends. `resolveGeneration` is the
+ *     only place either is decided: it reads the standing Goal, the shared
+ *     eligibility rule's answer and the draft's own choices, and says what would
+ *     be sent. A Focus is asked for only when history cannot recommend one, and
+ *     a missing or legacy standing Goal is `needs-settings` — corrected in
+ *     Settings, never guessed here. The draft holds no Goal at all, only whether
+ *     this one workout is a Recovery session.
  *   * **Intensity is a value the goal constrains, not one the goal owns.** It
- *     starts absent; the first goal chosen supplies its default position; every
- *     later goal change keeps the number the user set and snaps it into the new
- *     range (§2.2). Resetting to the new goal's default instead would discard a
- *     deliberate choice every time somebody compared two goals.
+ *     starts where recent history averaged, or at the Goal's own start when
+ *     there is no recommendation, and is always clamped to the effective Goal's
+ *     range (§2.2). A number the athlete set is kept and snapped into the range
+ *     rather than reset, so switching Recovery on and off discards nothing.
  *   * **A draft is never partially valid.** `requestFrom` either answers a
  *     parsed `GenerationRequest` or an `AppError` carrying the field paths
  *     CORE-03 named. There is no third answer where a screen sends something it
@@ -29,7 +31,7 @@
  *     for.
  *
  * The vocabularies come from `state/onboarding.ts` and the generated enums
- * rather than from a list here: one goal vocabulary, asked in three places
+ * rather than from a list here: one goal vocabulary, used in three places
  * (onboarding, settings, generation), plus the fifth preset this screen is the
  * only one to offer.
  *
@@ -98,7 +100,7 @@ export const INTENSITY_BY_GOAL: Record<GoalPreset, IntensityRange> = {
   active_recovery: { min: 1, max: 3, start: 2 },
 }
 
-/** The slider's bounds while no goal has been chosen: the schema's own. */
+/** The slider's bounds while no goal is resolved: the schema's own. */
 export const FULL_INTENSITY_RANGE: IntensityRange = { min: 1, max: 10, start: 5 }
 
 /** The time target the screen opens on, in minutes. */
@@ -196,9 +198,11 @@ export function prefillFrom(search: string | URLSearchParams): GenerationPrefill
  * number for them instead.
  */
 export interface GenerationDraft {
-  readonly goal: GoalPreset | null
+  /** Whether this one workout is a Recovery session. Never the standing Goal. */
+  readonly recovery: boolean
+  /** The Focus the athlete chose by hand. Null leaves it to the recommendation. */
   readonly anchor: SessionFocus | null
-  /** Absent until a goal supplies its first position. */
+  /** The intensity the athlete set. Null leaves it to history or the Goal's start. */
   readonly intensity: number | null
   readonly locationId: string | null
   readonly durationMins: string
@@ -209,18 +213,16 @@ export interface GenerationDraft {
  * The screen's opening state: the profile's default place, plus whatever
  * HOME-03's suggestion prefilled and nothing else.
  *
- * A prefill supplies the anchor and the intensity — never the goal. The goal is
- * still asked first and still has no default (§2.1): a suggestion is read off
- * history, and history cannot say what today is *for*. So a prefilled draft
- * still cannot generate until the user answers that, which is the same
- * criterion an empty one is held to.
+ * It carries no Goal and no recommended Focus — those are `resolveGeneration`'s
+ * to supply from the profile and from history, so a draft nobody has touched
+ * resolves to whatever they say today rather than to a copy taken at open.
  */
 export function initialDraft(
   defaultLocationId: string | null,
   prefill: GenerationPrefill | null = null,
 ): GenerationDraft {
   return {
-    goal: null,
+    recovery: false,
     anchor: prefill?.focus ?? null,
     intensity: prefill?.intensity ?? null,
     locationId: defaultLocationId,
@@ -229,7 +231,7 @@ export function initialDraft(
   }
 }
 
-/** The range the slider offers right now. Full while no goal is chosen. */
+/** The range the slider offers right now. Full while no goal is resolved. */
 export function intensityRange(goal: GoalPreset | null): IntensityRange {
   return goal === null ? FULL_INTENSITY_RANGE : INTENSITY_BY_GOAL[goal]
 }
@@ -246,23 +248,144 @@ export function anchorAllowed(goal: GoalPreset | null, anchor: SessionFocus): bo
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Resolving
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A Goal a profile may stand on: onboarding's four, never Recovery. */
+export type StandingGoal = Exclude<GoalPreset, 'active_recovery'>
+
+/**
+ * The profile's `goal_preset` as a standing Goal, or `null` when it cannot be
+ * one: absent, or a legacy `active_recovery`. Recovery is a way to train one
+ * workout, not a preference to store, so a profile holding it is corrected in
+ * Settings rather than generated from.
+ */
+export function standingGoalFrom(
+  goalPreset: GoalPreset | null | undefined,
+): StandingGoal | null {
+  if (goalPreset == null || goalPreset === 'active_recovery') return null
+  return GOALS.some((goal) => goal.value === goalPreset) ? goalPreset : null
+}
+
+/**
+ * What history says about a Focus, as this module needs it. The first three are
+ * `suggestionEligibility`'s own answers — its result is passed straight in —
+ * and `history-error` is the query layer's: a read that failed is not a
+ * first-workout state, though it asks for a Focus the same way.
+ */
+export type FocusHistory =
+  | {
+      readonly status: 'recommended'
+      readonly focus: SessionFocus
+      readonly intensity: number
+      readonly reason: string
+    }
+  | { readonly status: 'no-completed-history' }
+  | { readonly status: 'stale-history' }
+  | { readonly status: 'history-error' }
+
+/** What the resolver is given besides the draft: the profile and the history. */
+export interface GenerationContext {
+  /** The loaded profile's `goal_preset`, exactly as stored. */
+  readonly goalPreset: GoalPreset | null
+  readonly history: FocusHistory
+}
+
+/**
+ * What a draft resolves to.
+ *
+ *   * `ready` — a Goal and a Focus, so a request can be built.
+ *   * `needs-focus` — a Goal, and no Focus until the athlete chooses one. `why`
+ *     is the reason there is none to offer, so a screen can say it truthfully.
+ *   * `needs-settings` — no usable standing Goal. Nothing can be sent.
+ */
+export type GenerationResolution =
+  | {
+      readonly status: 'ready'
+      readonly goal: GoalPreset
+      readonly focus: SessionFocus
+      /** Whether history recommended the Focus or the athlete chose it. */
+      readonly focusSource: 'recommended' | 'manual'
+      /** The recommendation's history-backed reason. Null for a manual Focus. */
+      readonly reason: string | null
+      readonly intensity: number
+    }
+  | {
+      readonly status: 'needs-focus'
+      readonly goal: GoalPreset
+      readonly focus: null
+      readonly why: FocusHistory['status'] | 'power-refused'
+      readonly intensity: number
+    }
+  | {
+      readonly status: 'needs-settings'
+      readonly goal: null
+      readonly focus: null
+      readonly intensity: null
+    }
+
+/**
+ * The one place Goal, Focus and intensity are decided.
+ *
+ * The Goal is the standing one, or Recovery when the draft asks for it for this
+ * workout. The Focus is the athlete's own choice when they made one and the
+ * recommendation otherwise; Power under Recovery is refused rather than
+ * swapped for another Focus (§2.3). The intensity is the athlete's number, else
+ * the history-derived one, else the Goal's start — clamped to the Goal's range
+ * whichever it was.
+ */
+export function resolveGeneration(
+  draft: GenerationDraft,
+  context: GenerationContext,
+): GenerationResolution {
+  const standing = standingGoalFrom(context.goalPreset)
+  if (standing === null) {
+    return { status: 'needs-settings', goal: null, focus: null, intensity: null }
+  }
+
+  const { history } = context
+  const goal: GoalPreset = draft.recovery ? 'active_recovery' : standing
+  const recommended = history.status === 'recommended' ? history : null
+  const intensity = clampIntensity(
+    goal,
+    draft.intensity ?? recommended?.intensity ?? INTENSITY_BY_GOAL[goal].start,
+  )
+
+  const focus = draft.anchor ?? recommended?.focus ?? null
+  if (focus === null) {
+    return { status: 'needs-focus', goal, focus: null, why: history.status, intensity }
+  }
+  if (!anchorAllowed(goal, focus)) {
+    return { status: 'needs-focus', goal, focus: null, why: 'power-refused', intensity }
+  }
+
+  const manual = draft.anchor !== null
+  return {
+    status: 'ready',
+    goal,
+    focus,
+    focusSource: manual ? 'manual' : 'recommended',
+    reason: manual ? null : (recommended?.reason ?? null),
+    intensity,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Edits
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The cascade, in one function: the new goal's range clamps the intensity, and
- * an anchor the new goal does not offer is deselected rather than sent. §2.3 is
- * explicit that the anchor is left blank rather than substituted — the user
- * chooses again, because no other anchor is the one they meant.
+ * Recovery for this one workout, on or off. An anchor Recovery does not offer
+ * is deselected rather than sent: §2.3 is explicit that the anchor is left
+ * blank rather than substituted — the user chooses again, because no other
+ * anchor is the one they meant. The intensity is left alone; the resolver
+ * clamps it to whichever range is in force.
  */
-export function withGoal(draft: GenerationDraft, goal: GoalPreset): GenerationDraft {
+export function withRecovery(draft: GenerationDraft, recovery: boolean): GenerationDraft {
+  const goal = recovery ? 'active_recovery' : null
   return {
     ...draft,
-    goal,
-    intensity:
-      draft.intensity === null
-        ? INTENSITY_BY_GOAL[goal].start
-        : clampIntensity(goal, draft.intensity),
+    recovery,
     anchor:
       draft.anchor !== null && anchorAllowed(goal, draft.anchor) ? draft.anchor : null,
   }
@@ -273,13 +396,17 @@ export function withAnchor(
   draft: GenerationDraft,
   anchor: SessionFocus,
 ): GenerationDraft {
-  if (!anchorAllowed(draft.goal, anchor)) return draft
+  if (!anchorAllowed(draft.recovery ? 'active_recovery' : null, anchor)) return draft
   return { ...draft, anchor: draft.anchor === anchor ? null : anchor }
 }
 
-/** The slider cannot leave its goal's range, whatever it is handed. */
+/**
+ * The number the athlete set, held inside the schema's own bounds. The Goal's
+ * narrower range is the resolver's to apply, so the number survives a change of
+ * Goal instead of being rewritten by it.
+ */
 export function withIntensity(draft: GenerationDraft, value: number): GenerationDraft {
-  const { min, max } = intensityRange(draft.goal)
+  const { min, max } = FULL_INTENSITY_RANGE
   return { ...draft, intensity: Math.min(max, Math.max(min, Math.round(value))) }
 }
 
@@ -303,14 +430,14 @@ export function withNotes(draft: GenerationDraft, notes: string): GenerationDraf
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The CTA's enabled state, and exactly what the requirement says it is: goal
- * *and* anchor. Intensity has a default per goal, so it is always chosen; the
- * time target opens on 45; the place prefills. Anything else wrong with the
- * draft is a refusal with a sentence, not a disabled button — a control that is
- * disabled for an unexplained reason is the failure mode this avoids.
+ * The CTA's enabled state: a valid standing Goal and an effective Focus, both
+ * as the resolver sees them. The time target opens on 45; the place prefills.
+ * Anything else wrong with the draft is a refusal with a sentence, not a
+ * disabled button — a control that is disabled for an unexplained reason is the
+ * failure mode this avoids.
  */
-export function canGenerate(draft: GenerationDraft): boolean {
-  return draft.goal !== null && draft.anchor !== null
+export function canGenerate(draft: GenerationDraft, context: GenerationContext): boolean {
+  return resolveGeneration(draft, context).status === 'ready'
 }
 
 /** A whole number of minutes, or null. The schema refuses everything else. */
@@ -327,31 +454,37 @@ function minutesFrom(text: string): number | null {
  * Every value is handed to `generationRequestSchema` rather than checked here:
  * the bounds that matter are `workout_sessions`' CHECK constraints, and a
  * second copy of them in a screen is a second contract that can disagree with
- * the row. An unchosen anchor, a blank time target and a note over its ceiling
- * therefore all refuse the same way — with the field path the schema named —
- * and the screen shows that path rather than a sentence of its own invention.
+ * the row. Goal, focus and intensity are the resolver's and nothing else's, so
+ * a draft that resolved to `needs-settings` or `needs-focus` hands the schema
+ * the nulls it resolved to. A missing Goal, an unchosen anchor, a blank time
+ * target and a note over its ceiling therefore all refuse the same way — with
+ * the field path the schema named — and the screen shows that path rather than
+ * a sentence of its own invention.
  *
  * `requestId` is the caller's, so the id a screen validated with is the id it
  * can put beside a refusal.
  */
 export function requestFrom(
   draft: GenerationDraft,
+  context: GenerationContext,
   requestId: string,
   /** OVR-04: whether the user applied the suggested deload. Never inferred. */
   deload = false,
   /** The user's calendar day. The server cannot infer the browser's zone. */
   date = new Date().toISOString().slice(0, 10),
 ): Result<GenerationRequest, AppError> {
+  const resolved = resolveGeneration(draft, context)
+
   return parseBoundary<GenerationRequest>(
     generationRequestSchema,
     {
       request_id: requestId,
-      goal: draft.goal,
+      goal: resolved.goal,
       // `GenerationClient` replaces this from its own local-day clock at send
       // time; carrying it here keeps this preflight on the exact wire schema.
       date,
-      focus: draft.anchor,
-      requested_intensity: draft.intensity,
+      focus: resolved.focus,
+      requested_intensity: resolved.intensity,
       requested_duration_mins: minutesFrom(draft.durationMins),
       location_id: draft.locationId,
       notes: draft.notes.trim() === '' ? null : draft.notes.trim(),
@@ -374,8 +507,9 @@ export function requestFrom(
  * the error's own message rather than being swallowed.
  */
 const FIELD_REFUSALS: Record<string, string> = {
+  goal: 'Set your goal in Settings.',
   focus: 'Choose an anchor.',
-  requested_intensity: 'Choose a goal — it sets the intensity.',
+  requested_intensity: 'Set your goal in Settings — it sets the intensity.',
   requested_duration_mins: 'Give the time available as a whole number of minutes.',
   location_id: 'Choose where you are training.',
   notes: `Keep notes under ${NOTES_MAX_LENGTH} characters.`,
