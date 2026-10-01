@@ -22,7 +22,12 @@ import { QueryClient } from '../state/query'
 import { GOALS, EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboarding'
 import { constraintsQueryKey } from '../state/constraint-queries'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
-import { LAST_SECTION_REASON, LOCKED_SECTIONS_REASON } from '../state/settings'
+import {
+  LAST_SECTION_REASON,
+  LEGACY_GOAL_REASON,
+  LOCKED_SECTIONS_REASON,
+  MISSING_GOAL_REASON,
+} from '../state/settings'
 import { createFakeAuthClient, signedInEvent } from '../test/auth-double'
 import { createFakeConstraintsClient } from '../test/constraints-double'
 import { renderApp, signedIn, type ProviderOptions } from '../test/render'
@@ -304,8 +309,91 @@ describe('section toggles respect goal constraints', () => {
     for (const section of SECTIONS) {
       expect(screen.getByRole('checkbox', { name: section.label })).toBeDisabled()
     }
-    // And the goal it holds is still shown as the answer it is.
-    expect(screen.getByRole('radio', { name: 'Active recovery' })).toBeChecked()
+    // The goal it holds is not a choice: it is named as needing correction.
+    expect(screen.getByText(LEGACY_GOAL_REASON)).toBeVisible()
+    expect(screen.queryByRole('radio', { name: /recovery/i })).toBeNull()
+  })
+})
+
+describe('the standing goal is one of onboarding’s four', () => {
+  const FOUR = ['Strength', 'Hypertrophy', 'Conditioning', 'Balanced']
+  const LEGACY_SECTIONS = ['warmup', 'mobility', 'cooldown'] as const
+
+  /** The Goal group's own radios, so Experience's are not counted. */
+  async function goalRadios() {
+    const group = await screen.findByRole('group', { name: 'Goal' })
+    return within(group).getAllByRole('radio')
+  }
+
+  it('lists exactly the four goals for a strength profile', async () => {
+    renderSettings({ profile: onboardedProfile({ goal_preset: 'strength' }) })
+
+    const radios = await goalRadios()
+    expect(radios).toHaveLength(FOUR.length)
+    FOUR.forEach((label, index) => {
+      expect(radios[index]).toHaveAccessibleName(label)
+    })
+    expect(screen.getByRole('radio', { name: 'Strength' })).toBeChecked()
+    expect(screen.queryByText(LEGACY_GOAL_REASON)).toBeNull()
+    expect(screen.queryByText(MISSING_GOAL_REASON)).toBeNull()
+  })
+
+  it.each([
+    ['active_recovery', LEGACY_GOAL_REASON],
+    [null, MISSING_GOAL_REASON],
+  ] as const)('corrects a %s goal by choosing one of the four', async (stored, reason) => {
+    const user = userEvent.setup()
+    const { userData, cache } = renderSettings({
+      profile: onboardedProfile({
+        goal_preset: stored,
+        enabled_sections: [...LEGACY_SECTIONS],
+      }),
+    })
+
+    expect(await screen.findByText(reason)).toBeVisible()
+    const radios = await goalRadios()
+    expect(radios).toHaveLength(FOUR.length)
+    for (const radio of radios) expect(radio).not.toBeChecked()
+
+    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+
+    await waitFor(() => {
+      expect(userData.preferenceWrites).toHaveLength(1)
+    })
+    expect(userData.preferenceWrites[0]?.goal_preset).toBe('strength')
+    await waitFor(() => {
+      const state = cache.getState<Profile>(profileQueryKey(FIXTURE_USER_ID))
+      expect(state.status === 'ready' && state.data.goal_preset).toBe('strength')
+    })
+    expect(screen.queryByText(reason)).toBeNull()
+    expect(screen.queryByText(LOCKED_SECTIONS_REASON)).toBeNull()
+    expect(screen.getByRole('radio', { name: 'Strength' })).toBeChecked()
+  })
+
+  it('puts the correction back when the write fails', async () => {
+    const user = userEvent.setup()
+    const userData = createFakeUserDataClient({
+      updatePreferences: () =>
+        Promise.resolve(err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))),
+    })
+    const { cache } = renderSettings({
+      userData,
+      profile: onboardedProfile({
+        goal_preset: 'active_recovery',
+        enabled_sections: [...LEGACY_SECTIONS],
+      }),
+    })
+
+    await user.click(await screen.findByRole('radio', { name: 'Strength' }))
+
+    expect(await screen.findByText('Could not save. Try again.')).toBeVisible()
+    await waitFor(() => {
+      expect(screen.getByText(LEGACY_GOAL_REASON)).toBeVisible()
+    })
+    expect(screen.getByRole('radio', { name: 'Strength' })).not.toBeChecked()
+    expect(screen.getByText(LOCKED_SECTIONS_REASON)).toBeVisible()
+    const state = cache.getState<Profile>(profileQueryKey(FIXTURE_USER_ID))
+    expect(state.status === 'ready' && state.data.goal_preset).toBe('active_recovery')
   })
 })
 
