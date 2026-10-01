@@ -5,8 +5,8 @@
  *
  * `WorkoutListItem` is the IA's name for the first one. It renders one entry of
  * the chronology — a session with its date and what became of it, or a run of
- * rest days — over the DS-04a `Card`, so a history row is the same frame as
- * every other card in the app.
+ * rest days — as a `ListRow`; `HistoryList` owns the one closed `ListFrame`
+ * around the related collection.
  *
  * Two rules the list is built to keep:
  *
@@ -17,7 +17,7 @@
  *   · **The status is a word before it is anything else.** `Completed`,
  *     `Partial`, `Not started` — a glyph beside each, never a glyph alone.
  */
-import type { CSSProperties, ReactNode } from 'react'
+import type { CSSProperties, ElementType, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 
 import { CircleCheck, CircleX, Pause, Rest } from '../design-system/index'
@@ -31,7 +31,7 @@ import {
   type HistorySessionEntry,
   type HistorySessionStatus,
 } from '../state/history'
-import { Card } from './card'
+import { ListFrame, ListRow } from './composition'
 import { Heading } from './Heading'
 
 /** The glyph each status carries. Colour is never the only cue. */
@@ -82,76 +82,105 @@ export interface WorkoutListItemProps {
    * can say so. A rest run is never a link — there is no session behind it.
    */
   to?: string
+  /** Resolve a session activation before the detail-route fallback is used. */
+  onOpen?: (entry: HistorySessionEntry) => void
+  /** The stored prescription is being checked for direct Review entry. */
+  opening?: boolean
+  /** Semantic element used by a containing real list. */
+  as?: ElementType
 }
 
 /** One entry of the chronology: a workout, or the gap before it. */
-export function WorkoutListItem({ entry, to }: WorkoutListItemProps) {
+export function WorkoutListItem({
+  entry,
+  to,
+  onOpen,
+  opening = false,
+  as,
+}: WorkoutListItemProps) {
   return entry.kind === 'rest' ? (
-    <RestItem entry={entry} />
+    <RestItem entry={entry} as={as} />
   ) : (
-    <SessionItem entry={entry} to={to} />
+    <SessionItem entry={entry} to={to} onOpen={onOpen} opening={opening} as={as} />
   )
 }
 
-function SessionItem({ entry, to }: { entry: HistorySessionEntry; to?: string }) {
+function SessionItem({
+  entry,
+  to,
+  onOpen,
+  opening,
+  as,
+}: {
+  entry: HistorySessionEntry
+  to?: string
+  onOpen?: (entry: HistorySessionEntry) => void
+  opening: boolean
+  as?: ElementType
+}) {
   return (
     // A list row is a top-level section of both History and Home's recent
     // panel. `Screen` has already established h2 for this content; deepening
-    // here skipped directly from the screen's h1 to h3.
-    <section>
-      <Card>
-        <p style={META_STYLE}>{formatDay(entry.day)}</p>
-        {/* The title carries the link rather than the whole card: an
-            accessible name is the name of the workout, not every fact
-            printed beside it. */}
-        <Heading style={TITLE_STYLE}>
-          {to === undefined ? entry.title : <Link to={to}>{entry.title}</Link>}
-        </Heading>
-        <p style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-200)' }}>
-          <span style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)' }}>
-            <span aria-hidden="true" style={{ display: 'flex' }}>
-              {STATUS_GLYPH[entry.status]}
-            </span>
-            {HISTORY_STATUS_LABELS[entry.status]}
+    // here would skip directly from the screen's h1 to h3.
+    <ListRow as={as ?? 'section'} aria-busy={opening || undefined}>
+      <p style={META_STYLE}>{formatDay(entry.day)}</p>
+      {/* The title carries the link rather than the whole card: an accessible
+          name is the workout, not every fact printed beside it. */}
+      <Heading style={TITLE_STYLE}>
+        {to === undefined ? (
+          entry.title
+        ) : (
+          <Link
+            to={to}
+            onClick={(event) => {
+              if (onOpen === undefined) return
+              event.preventDefault()
+              if (!opening) onOpen(entry)
+            }}
+            aria-disabled={opening || undefined}
+          >
+            {entry.title}
+          </Link>
+        )}
+      </Heading>
+      <p style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-200)' }}>
+        <span style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)' }}>
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            {STATUS_GLYPH[entry.status]}
           </span>
-          <span>{formatFocus(entry.focus)}</span>
-          {entry.durationMins !== null && <span>{entry.durationMins} min</span>}
-          <span>Intensity {entry.intensity}/10</span>
-        </p>
-      </Card>
-    </section>
+          {HISTORY_STATUS_LABELS[entry.status]}
+        </span>
+        <span>{formatFocus(entry.focus)}</span>
+        {entry.durationMins !== null && <span>{entry.durationMins} min</span>}
+        <span>Intensity {entry.intensity}/10</span>
+      </p>
+    </ListRow>
   )
 }
 
 /**
- * A run of untrained days. It is a card like any other rather than a divider,
- * because a rest day is part of the chronology the user is reading — but it is
- * quiet: the accent bar and the type step down, so a screen of rest does not
- * look like a screen of workouts.
+ * A run of untrained days. It is a real row rather than a divider, because a
+ * rest day is part of the chronology the user is reading — but its surface and
+ * type step down, so a screen of rest does not look like a screen of workouts.
  */
-function RestItem({ entry }: { entry: HistoryRestEntry }) {
+function RestItem({ entry, as }: { entry: HistoryRestEntry; as?: ElementType }) {
   return (
-    <section>
-      <Card
-        style={
-          {
-            // The chamfer's own two hooks, exactly as `ErrorView` sets them:
-            // surface and border move together, so the quiet card is a quiet
-            // frame rather than a normal one wearing a different fill.
-            '--surface': 'var(--surface-frame-structure-quiet)',
-            '--surface-card-accent': 'var(--surface-rail-cue)',
-          } as CSSProperties
-        }
-      >
-        <p style={META_STYLE}>{formatRestRange(entry)}</p>
-        <Heading style={{ ...TITLE_STYLE, ...GLYPH_STYLE, color: 'var(--text-rail-cue)' }}>
-          <span aria-hidden="true" style={{ display: 'flex' }}>
-            <Rest />
-          </span>
-          Rest
-        </Heading>
-      </Card>
-    </section>
+    <ListRow
+      as={as ?? 'section'}
+      style={
+        {
+          background: 'var(--surface-frame-structure-quiet)',
+        } as CSSProperties
+      }
+    >
+      <p style={META_STYLE}>{formatRestRange(entry)}</p>
+      <Heading style={{ ...TITLE_STYLE, ...GLYPH_STYLE, color: 'var(--text-rail-cue)' }}>
+        <span aria-hidden="true" style={{ display: 'flex' }}>
+          <Rest />
+        </span>
+        Rest
+      </Heading>
+    </ListRow>
   )
 }
 
@@ -161,29 +190,35 @@ export interface HistoryListProps {
   label: string
   /** Where each session row opens. Omitted, no row is a link. */
   linkTo?: (entry: HistorySessionEntry) => string
+  /** Optional activation resolver used before the detail-route fallback. */
+  onOpen?: (entry: HistorySessionEntry) => void
+  openingId?: string | null
 }
 
 /** The chronology, newest first, as a real list. */
-export function HistoryList({ entries, label, linkTo }: HistoryListProps) {
+export function HistoryList({
+  entries,
+  label,
+  linkTo,
+  onOpen,
+  openingId = null,
+}: HistoryListProps) {
   return (
-    <ul
+    <ListFrame
+      as="ul"
       aria-label={label}
-      style={{
-        listStyle: 'none',
-        margin: 0,
-        padding: 0,
-        display: 'grid',
-        gap: 'var(--spacing-300)',
-      }}
+      style={{ listStyle: 'none', margin: 0, padding: 0 }}
     >
       {entries.map((entry) => (
-        <li key={entry.key}>
-          <WorkoutListItem
-            entry={entry}
-            to={entry.kind === 'session' ? linkTo?.(entry) : undefined}
-          />
-        </li>
+        <WorkoutListItem
+          key={entry.key}
+          as="li"
+          entry={entry}
+          to={entry.kind === 'session' ? linkTo?.(entry) : undefined}
+          onOpen={onOpen}
+          opening={entry.kind === 'session' && entry.id === openingId}
+        />
       ))}
-    </ul>
+    </ListFrame>
   )
 }

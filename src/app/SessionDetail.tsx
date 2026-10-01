@@ -52,6 +52,7 @@ import {
 } from '../state/session-restart'
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { MoodReading } from '../ui/mood'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
@@ -137,18 +138,30 @@ export function SessionDetail() {
       >
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title={SESSION_DETAIL_TITLE} heading={view?.title}>
+      <Screen
+        title={SESSION_DETAIL_TITLE}
+        heading={view?.title}
+        pinnedFoot={
+          query.state.status === 'error' ? (
+            <SessionDetailErrorAction
+              error={query.state.error}
+              onRetry={query.refetch}
+              onOpenHistory={() => void navigate(HISTORY_PATH)}
+            />
+          ) : payload !== null ? (
+            <SessionActions record={payload} />
+          ) : null
+        }
+      >
         {query.state.status === 'loading' ? (
           <LoadingView label={SESSION_DETAIL_LOADING_LABEL} />
         ) : query.state.status === 'error' ? (
           <SessionDetailError
             error={query.state.error}
-            onRetry={query.refetch}
-            onOpenHistory={() => void navigate(HISTORY_PATH)}
           />
         ) : (
           payload !== null &&
-          view !== null && <SessionDetailBody view={view} record={payload} />
+          view !== null && <SessionDetailBody view={view} />
         )}
       </Screen>
     </>
@@ -157,6 +170,21 @@ export function SessionDetail() {
 
 function SessionDetailError({
   error,
+}: {
+  error: AppError
+}) {
+  return error.code === ErrorCode.PERSISTENCE_NOT_FOUND ? (
+    <ErrorView
+      error={error}
+      title={SESSION_DETAIL_NOT_FOUND_TITLE}
+    />
+  ) : (
+    <ErrorView error={error} title={SESSION_DETAIL_ERROR_TITLE} />
+  )
+}
+
+function SessionDetailErrorAction({
+  error,
   onRetry,
   onOpenHistory,
 }: {
@@ -164,25 +192,23 @@ function SessionDetailError({
   onRetry: () => void
   onOpenHistory: () => void
 }) {
-  return error.code === ErrorCode.PERSISTENCE_NOT_FOUND ? (
-    <ErrorView
-      error={error}
-      title={SESSION_DETAIL_NOT_FOUND_TITLE}
-      actionLabel={SESSION_DETAIL_NOT_FOUND_ACTION}
-      onRetry={onOpenHistory}
-    />
-  ) : (
-    <ErrorView error={error} title={SESSION_DETAIL_ERROR_TITLE} onRetry={onRetry} />
+  const notFound = error.code === ErrorCode.PERSISTENCE_NOT_FOUND
+  return (
+    <PhoneFooter>
+      <ActionRow>
+        <Button variant="primary" onClick={notFound ? onOpenHistory : onRetry}>
+          {notFound ? SESSION_DETAIL_NOT_FOUND_ACTION : 'Retry'}
+        </Button>
+      </ActionRow>
+    </PhoneFooter>
   )
 }
 
 /** The populated record: what it was, where the answer came from, and each section. */
 function SessionDetailBody({
   view,
-  record,
 }: {
   view: SessionDetailView
-  record: SessionReconstruction
 }) {
   return (
     <div style={STACK_STYLE}>
@@ -194,8 +220,6 @@ function SessionDetailBody({
         <span>Intensity {view.intensity}/10</span>
       </p>
       <SessionProvenance provenance={view.provenance} />
-
-      <SessionActions record={record} />
 
       <Card>
         <div style={STACK_STYLE}>
@@ -276,38 +300,42 @@ function SessionActions({ record }: { record: SessionReconstruction }) {
   }
 
   return (
-    <Card>
+    <PhoneFooter>
       <div style={STACK_STYLE}>
-        <div className="clr-stack clr-stack--tight">
-          <span className="label">{SESSION_DETAIL_RESTART_LABEL}</span>
-          {failure !== null && (
-            <p role="alert" style={{ ...NOTICE_STYLE, color: 'var(--text-negative)' }}>
-              <span aria-hidden="true" style={{ display: 'flex' }}>
-                <AlertCircle size={16} />
-              </span>
-              {failure}
-            </p>
-          )}
-          {eligibility.available ? (
-            <Button
-              variant="primary"
-              icon={<Play size={20} />}
-              loading={restarting}
-              onClick={() => void restart()}
-            >
-              {SESSION_DETAIL_RESTART_LABEL}
-            </Button>
-          ) : (
-            <p style={NOTICE_STYLE}>
-              <span aria-hidden="true" style={{ display: 'flex' }}>
-                <Info size={16} />
-              </span>
-              {eligibility.message}
-            </p>
-          )}
-        </div>
-        {record.state === 'completed' && <FavoriteToggle sessionId={sessionId} />}
+        {failure !== null && (
+          <p role="alert" style={{ ...NOTICE_STYLE, color: 'var(--text-negative)' }}>
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <AlertCircle size={16} />
+            </span>
+            {failure}
+          </p>
+        )}
+        {!eligibility.available && (
+          <p style={NOTICE_STYLE}>
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <Info size={16} />
+            </span>
+            {eligibility.message}
+          </p>
+        )}
+        {(eligibility.available || record.state === 'completed') && (
+          <ActionRow>
+            {eligibility.available && (
+              <Button
+                variant="primary"
+                icon={<Play size={20} />}
+                loading={restarting}
+                onClick={() => void restart()}
+              >
+                {SESSION_DETAIL_RESTART_LABEL}
+              </Button>
+            )}
+            {record.state === 'completed' && (
+              <FavoriteToggle sessionId={sessionId} compact />
+            )}
+          </ActionRow>
+        )}
       </div>
-    </Card>
+    </PhoneFooter>
   )
 }

@@ -7,8 +7,8 @@ import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
 import { backend } from './support/backend'
 
 /**
- * REQ-010 / JOURNEY-017 — History list to Session Detail, in a browser, on the
- * phone.
+ * REQ-010 / JOURNEY-017 — History list to Review or Session Detail, in a
+ * browser, on the phone.
  *
  * The unit suite proves the list derives rest runs and the detail screen reads
  * a reconstruction. What neither can prove is that a signed-in person on the
@@ -44,8 +44,8 @@ const HISTORY_FILTER = 'Show'
 const NOT_FOUND_TITLE = 'Workout not found'
 
 test.describe('history-detail — the inventory names this walk', () => {
-  test('Home, History, Session Detail — each a required screen', () => {
-    expect(JOURNEY?.steps).toEqual(['Home', 'History', 'Session Detail'])
+  test('Home, History, Review, Session Detail — each a required screen', () => {
+    expect(JOURNEY?.steps).toEqual(['Home', 'History', 'Review', 'Session Detail'])
 
     for (const step of JOURNEY?.steps ?? []) {
       const screen = REQUIRED_SCREENS.find((candidate) => candidate.screen === step)
@@ -55,7 +55,7 @@ test.describe('history-detail — the inventory names this walk', () => {
   })
 })
 
-test.describe('history-detail — History list to Session Detail on the deployed build', () => {
+test.describe('history-detail — History list to Review or Session Detail on the deployed build', () => {
   test.skip(!backend.available, backend.reason)
   test.describe.configure({ mode: 'serial' })
   // The list places today in the browser's zone and the rows carry their own
@@ -68,8 +68,11 @@ test.describe('history-detail — History list to Session Detail on the deployed
   let owner: Actor | null = null
   let other: Actor | null = null
 
-  const ownerEmail = `clear-e2e-${namespaceId()}-history@example.com`
-  const otherEmail = `clear-e2e-${namespaceId()}-history-other@example.com`
+  // Assigned per Playwright project in beforeAll. A local phone+desktop run
+  // executes both projects concurrently, so sharing the same disposable auth
+  // user lets one project's teardown delete the other's fixture mid-journey.
+  let ownerEmail = ''
+  let otherEmail = ''
 
   /** Distinct titles, so a row, a heading and a leak are each unambiguous. */
   const TITLES = {
@@ -218,8 +221,13 @@ test.describe('history-detail — History list to Session Detail on the deployed
 
   type Catalogued = { id: string; default_equipment: string }
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browserName }, testInfo) => {
+    void browserName
     client = backend.client()
+
+    const fixtureNamespace = `${namespaceId()}-${testInfo.project.name}`
+    ownerEmail = `clear-e2e-${fixtureNamespace}-history@example.com`
+    otherEmail = `clear-e2e-${fixtureNamespace}-history-other@example.com`
 
     const catalog = must<Catalogued[]>(
       await client.selectAsService('exercise_definitions', {
@@ -327,19 +335,28 @@ test.describe('history-detail — History list to Session Detail on the deployed
     )
   })
 
-  test('Home → View history → filter → a session, its sections and its sets', async ({
+  test('Home → History → compatible Review and non-reviewable Detail', async ({
     page,
     visit,
     checkA11y,
   }) => {
     // The production entry point: Home, not `/history` typed in.
     await visit('/')
+    await expect(page.locator('main .clr-scroll-region__foot .clr-footer')).toContainText(
+      'Generate workout',
+    )
+    await expect(
+      page.locator('.clr-band').filter({ has: page.getByRole('tablist') }),
+    ).toHaveCount(1)
+    await expect(page.getByRole('list', { name: 'Recent workouts' })).toHaveClass(/clr-list/)
     await page.getByRole('link', { name: VIEW_HISTORY, exact: true }).click()
 
     await expect(page).toHaveURL(/\/history$/)
     await expect(page.locator('main h1')).toHaveText('History')
 
     const list = page.getByRole('list', { name: HISTORY_LIST })
+    await expect(list).toHaveClass(/clr-list/)
+    await expect(list.locator(':scope > .clr-list__row')).toHaveCount(3)
     const completedRow = list.getByRole('link', { name: TITLES.completed })
     const unstartedRow = list.getByRole('link', { name: TITLES.unstarted })
     // A rest run is not a link — there is no session behind it — and it reads
@@ -367,17 +384,32 @@ test.describe('history-detail — History list to Session Detail on the deployed
 
     await completedRow.click()
 
-    await expect(page).toHaveURL(new RegExp(`/history/${seeded.completedId}$`))
+    // A completed current-contract session uses its stored prescription and
+    // enters Review directly. It does not need a generation call or a detail
+    // detour.
+    await expect(page).toHaveURL(/\/review$/)
     await expect(page.locator('main h1')).toHaveText(TITLES.completed)
+    await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
+    await checkA11y()
 
-    const sections = page.getByRole('region', { name: 'Sections' })
-    const disclosure = sections.getByRole('button', { name: 'Primary' })
-    await expect(disclosure).toHaveAttribute('aria-expanded', 'true')
+    await page.goBack()
+    await expect(page).toHaveURL(/\/history$/)
+    await expect(page.locator('main h1')).toHaveText('History')
 
-    const sets = sections.getByRole('table', { name: /^Sets logged for / })
-    await expect(sets).toBeVisible()
-    await expect(sets.locator('tbody tr')).toHaveCount(2)
-    await expect(sets.locator('tbody th')).toHaveText(['1', '2'])
+    // A never-started record is history, but it is not a workout that can be
+    // restarted. Its durable information view remains Session Detail.
+    await page.getByLabel(HISTORY_FILTER).selectOption({ label: 'Not started' })
+    const unstartedAfterBack = page
+      .getByRole('list', { name: HISTORY_LIST })
+      .getByRole('link', { name: TITLES.unstarted })
+    await unstartedAfterBack.click()
+
+    await expect(page).toHaveURL(new RegExp(`/history/${seeded.unstartedId}$`))
+    await expect(page.locator('main h1')).toHaveText(TITLES.unstarted)
+    await expect(page.getByRole('region', { name: 'Sections' })).toBeVisible()
+    await expect(page.locator('main .clr-scroll-region__foot .clr-footer')).toContainText(
+      'Only a completed workout can be restarted.',
+    )
     await checkA11y()
   })
 

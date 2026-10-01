@@ -1,12 +1,10 @@
 /**
  * FAV-01's list, as the one app-owned domain component it needs.
  *
- * `FavoriteListItem` is the favorites-v2 §"Favorites Tab" card: the same frame
- * as a history row, with the progression the favorite is *for* printed on it —
- * title with its star, anchor · duration · intensity, and how many times it has
- * been done. It is deliberately the same `Card` as `WorkoutListItem` rather than
- * a second list idiom, because a favorite is a workout and the tab beside it is
- * showing the same kind of thing.
+ * `FavoriteListItem` is the favorites-v2 §"Favorites Tab" row: the same shared
+ * list composition as history, with the progression the favorite is *for*
+ * printed on it — title with its star, anchor · duration · intensity, and how
+ * many times it has been done.
  *
  * Two rules it keeps:
  *
@@ -21,7 +19,7 @@
  *     lies, and a button that failed on press would be the obscure failure the
  *     requirement exists to prevent.
  */
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ElementType } from 'react'
 
 import { AlertCircle, Button, Play, Star, Trash } from '../design-system/index'
 import {
@@ -29,8 +27,8 @@ import {
   OUTDATED_SNAPSHOT_MESSAGE,
   type FavoriteEntry,
 } from '../state/favorites'
-import { Card } from './card'
-import { Heading, HeadingSection } from './Heading'
+import { ActionRow, ListFrame, ListRow } from './composition'
+import { Heading } from './Heading'
 
 export const START_FAVORITE_LABEL = 'Start'
 export const REMOVE_FAVORITE_LABEL = 'Remove from favorites'
@@ -75,6 +73,8 @@ export interface FavoriteListItemProps {
   onRemove: (entry: FavoriteEntry) => void
   /** This one's removal is in flight. */
   removing?: boolean
+  /** Semantic element used by a containing real list. */
+  as?: ElementType
 }
 
 export function FavoriteListItem({
@@ -82,52 +82,51 @@ export function FavoriteListItem({
   onStart,
   onRemove,
   removing = false,
+  as,
 }: FavoriteListItemProps) {
   return (
-    <HeadingSection>
-      <Card>
-        <Heading style={TITLE_STYLE}>
+    <ListRow as={as ?? 'section'}>
+      <Heading style={TITLE_STYLE}>
+        <span aria-hidden="true" style={{ display: 'flex' }}>
+          <Star size={16} />
+        </span>
+        {entry.title}
+      </Heading>
+      <p style={{ ...META_STYLE, marginTop: 'var(--spacing-200)' }}>{entry.meta}</p>
+      <p style={META_STYLE}>{completionSummary(entry)}</p>
+
+      {!entry.restorable && (
+        <p style={OUTDATED_STYLE} role="note">
           <span aria-hidden="true" style={{ display: 'flex' }}>
-            <Star size={16} />
+            <AlertCircle size={16} />
           </span>
-          {entry.title}
-        </Heading>
-        <p style={{ ...META_STYLE, marginTop: 'var(--spacing-200)' }}>{entry.meta}</p>
-        <p style={META_STYLE}>{completionSummary(entry)}</p>
+          {OUTDATED_SNAPSHOT_MESSAGE}
+        </p>
+      )}
 
-        {!entry.restorable && (
-          <p style={OUTDATED_STYLE} role="note">
-            <span aria-hidden="true" style={{ display: 'flex' }}>
-              <AlertCircle size={16} />
-            </span>
-            {OUTDATED_SNAPSHOT_MESSAGE}
-          </p>
-        )}
-
-        <div className="clr-row" style={ACTIONS_STYLE}>
-          {entry.restorable && (
-            <Button
-              variant="secondary"
-              icon={<Play size={16} />}
-              disabled={removing}
-              onClick={() => onStart(entry)}
-            >
-              {START_FAVORITE_LABEL}
-            </Button>
-          )}
-          {/* Quiet, and second: removing a favorite deletes the progression it
-              was kept for, so it is not offered as a peer of starting it. */}
+      <ActionRow style={ACTIONS_STYLE}>
+        {entry.restorable && (
           <Button
-            variant="quiet"
-            icon={<Trash size={16} />}
-            loading={removing}
-            onClick={() => onRemove(entry)}
+            variant="secondary"
+            icon={<Play size={16} />}
+            disabled={removing}
+            onClick={() => onStart(entry)}
           >
-            {REMOVE_FAVORITE_LABEL}
+            {START_FAVORITE_LABEL}
           </Button>
-        </div>
-      </Card>
-    </HeadingSection>
+        )}
+        {/* Quiet, and second: removing a favorite deletes the progression it
+            was kept for, so it is not offered as a peer of starting it. */}
+        <Button
+          variant="quiet"
+          icon={<Trash size={16} />}
+          loading={removing}
+          onClick={() => onRemove(entry)}
+        >
+          {REMOVE_FAVORITE_LABEL}
+        </Button>
+      </ActionRow>
+    </ListRow>
   )
 }
 
@@ -150,26 +149,21 @@ export function FavoriteList({
   removingId = null,
 }: FavoriteListProps) {
   return (
-    <ul
+    <ListFrame
+      as="ul"
       aria-label={label}
-      style={{
-        listStyle: 'none',
-        margin: 0,
-        padding: 0,
-        display: 'grid',
-        gap: 'var(--spacing-300)',
-      }}
+      style={{ listStyle: 'none', margin: 0, padding: 0 }}
     >
       {entries.map((entry) => (
-        <li key={entry.key}>
-          <FavoriteListItem
-            entry={entry}
-            onStart={onStart}
-            onRemove={onRemove}
-            removing={entry.id === removingId}
-          />
-        </li>
+        <FavoriteListItem
+          key={entry.key}
+          as="li"
+          entry={entry}
+          onStart={onStart}
+          onRemove={onRemove}
+          removing={entry.id === removingId}
+        />
       ))}
-    </ul>
+    </ListFrame>
   )
 }

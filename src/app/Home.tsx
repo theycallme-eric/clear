@@ -6,8 +6,8 @@
  * (`src/design-system/templates/app-shell/AppShell.dc.html`) read through the
  * IA's own line — `AppLayout › PageHeader + Card(Train Today/active) +
  * Card(This Week/rest) + TabbedPanel` — so the shell and its atmosphere are
- * `RootLayout`'s, `PageHeader` is `AppHeader` with the wordmark, and every
- * region below is a `Card`.
+ * `RootLayout`'s, `PageHeader` is `AppHeader` with the wordmark, semantic daily
+ * regions use Cards, and collections use the system tab band and list frame.
  *
  * **One read answers three questions.** The week strip, the recent three and
  * Quick Start's plan are all derivations of HIST-01's first page
@@ -34,8 +34,9 @@
  *      session's snapshot: the reused intensity is clamped to it, the label
  *      names it, and a missing or legacy Goal sends nothing and points at
  *      Settings. While the profile is loading or failed there is no plan.
- *   4. **The recents link into the chronology.** Each of the three opens
- *      HIST-01's detail for that session.
+ *   4. **The recents link into the chronology.** A completed compatible row
+ *      opens its stored prescription in Review; every other row falls back to
+ *      HIST-01's durable detail for that session.
  *   5. **The suggestion is read off the same rows, and it is refusable.**
  *      HOME-03's least-recently-trained focus and history-averaged intensity
  *      (`src/state/session-suggestion.ts`) are a fourth derivation of the one
@@ -50,12 +51,9 @@
  *      written on the way — Review's own Start is where the session begins to
  *      exist, exactly as it is for a generated workout.
  *
- * Recent workouts open `/history/:id`, HIST-01's Session Detail, by the IA's own
- * path (`sessionDetailPath`) — the same one History's rows use. `/review` *is* routed now, because
- * FAV-01's restart has to land there; carrying a *generated* workout across
- * that hand-off is still REV-01's to own, because GEN-03's state belongs to
- * whoever owns the Generate → Loading → Review journey and that owner is not
- * this screen.
+ * Recent workouts retain `/history/:id` as their durable fallback and use the
+ * same direct-Review resolver as History. Favorites restore through their own
+ * saved snapshot path. Neither entry makes a generation request.
  */
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -65,7 +63,7 @@ import {
   AppHeader,
   Button,
   ClearLogo,
-  EmptyState,
+  Play,
   Streak as StreakGlyph,
   TabBar,
   TabPanel,
@@ -126,18 +124,30 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
-import { useWorkoutClients } from '../state/workout-queries'
+import {
+  isActiveSession,
+  useActiveSessionQuery,
+  useWorkoutClients,
+} from '../state/workout-queries'
 import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
+import {
+  ActionRow,
+  ListMessage,
+  PhoneFooter,
+  TabBand,
+} from '../ui/composition'
 import { FavoriteList } from '../ui/favorite-list'
 import { Heading } from '../ui/Heading'
-import { WorkoutListItem } from '../ui/history-list'
+import { HistoryList } from '../ui/history-list'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { ResumableSession } from './ResumableSession'
 import { Screen } from './Screen'
+import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
+import { useOpenHistorySession } from './useOpenHistorySession'
 
 /** Home's own path: where cancelling a Quick Start run returns. */
 export const HOME_ROUTE = '/'
@@ -167,8 +177,16 @@ export function Home() {
   const history = useHistoryQuery()
   const restDays = useRestDaysQuery()
   const profile = useProfileQuery()
+  const activeSession = useActiveSessionQuery()
   const generation = useGeneration()
   const navigate = useNavigate()
+
+  const resumable =
+    activeSession.state.status === 'ready' &&
+    activeSession.state.data !== null &&
+    isActiveSession(activeSession.state.data)
+      ? activeSession.state.data
+      : null
 
   const sessions: readonly WorkoutSessionRow[] | null =
     history.state.status === 'ready' ? history.state.data.sessions : null
@@ -225,11 +243,31 @@ export function Home() {
       <AppHeader actions={<Link to={SETTINGS_ROUTE}>Settings</Link>}>
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="CLEAR" heading={HOME_HEADING}>
+      <Screen
+        title="CLEAR"
+        heading={HOME_HEADING}
+        pinnedFoot={
+          <PhoneFooter>
+            <ActionRow>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={resumable === null ? <Zap /> : <Play />}
+                onClick={() =>
+                  void navigate(resumable === null ? GENERATE_ROUTE : WORKOUT_ROUTE)
+                }
+              >
+                {resumable === null ? 'Generate workout' : 'Resume workout'}
+              </Button>
+            </ActionRow>
+          </PhoneFooter>
+        }
+      >
         <div className="clr-stack">
           {/* One top slot: an active workout replaces Train Today, while an
               empty active-session read renders the ordinary actions. */}
           <ResumableSession
+            query={activeSession}
             fallback={
               <QuickActions
                 plan={plan}
@@ -539,7 +577,8 @@ function SuggestedSession({
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Generate, always — and Quick Start only when there is a session to repeat.
+ * The semantic Train Today context, plus Quick Start when there is a session
+ * to repeat. Generate itself is Home's measured primary footer action.
  *
  * Not a data-driven view of its own: Generate is available whatever the history
  * says, including while it is still being read, so this card has no loading
@@ -557,7 +596,6 @@ function QuickActions({
   suggestion: SessionSuggestion | null
   onQuickStart: () => void
 }) {
-  const navigate = useNavigate()
   // Set by activating Quick Start on a Goal it cannot use; the refusal is an
   // answer to that press, not a standing notice on the card.
   const [refused, setRefused] = useState(false)
@@ -571,15 +609,6 @@ function QuickActions({
           Compose a session from how you feel today, or repeat the last one.
         </p>
         <SuggestedSession query={query} suggestion={suggestion} />
-        <Button
-          variant="primary"
-          size="lg"
-          icon={<Zap />}
-          onClick={() => void navigate(GENERATE_ROUTE)}
-        >
-          Generate workout
-        </Button>
-
         {plan !== null && (
           <>
             <Button
@@ -648,22 +677,22 @@ function WorkoutTabs({
   const idBase = 'home-workout-tabs'
 
   return (
-    <Card>
-      <div className="clr-stack clr-stack--tight">
+    <div className="clr-stack clr-stack--tight">
+      <TabBand>
         <TabBar
           tabs={[RECENT_WORKOUTS_LABEL, FAVORITES_LABEL]}
           active={active}
           onChange={setActive}
           idBase={idBase}
         />
+      </TabBand>
         <TabPanel idBase={idBase} index={0} active={active}>
           <RecentWorkouts query={query} entries={entries} />
         </TabPanel>
         <TabPanel idBase={idBase} index={1} active={active}>
           <FavoriteWorkouts />
         </TabPanel>
-      </div>
-    </Card>
+    </div>
   )
 }
 
@@ -674,6 +703,7 @@ function RecentWorkouts({
   query: HistoryQuery
   entries: readonly HistorySessionEntry[]
 }) {
+  const session = useOpenHistorySession()
   const state: ViewState<readonly HistorySessionEntry[]> =
     query.state.status === 'loading'
       ? viewLoading()
@@ -691,29 +721,20 @@ function RecentWorkouts({
         errorTitle="Your recent workouts didn’t load"
         onRetry={query.refetch}
         empty={
-          <EmptyState
+          <ListMessage
             title="No workouts yet"
             message="The workouts you finish appear here, newest first."
           />
         }
       >
         {(recents) => (
-          <ul
-            aria-label={RECENT_WORKOUTS_LABEL}
-            style={{
-              listStyle: 'none',
-              margin: 0,
-              padding: 0,
-              display: 'grid',
-              gap: 'var(--spacing-300)',
-            }}
-          >
-            {recents.map((entry) => (
-              <li key={entry.key}>
-                <WorkoutListItem entry={entry} to={sessionDetailPath(entry.id)} />
-              </li>
-            ))}
-          </ul>
+          <HistoryList
+            entries={recents}
+            label={RECENT_WORKOUTS_LABEL}
+            linkTo={(entry) => sessionDetailPath(entry.id)}
+            onOpen={(entry) => void session.open(entry)}
+            openingId={session.openingId}
+          />
         )}
       </ViewStateSwitch>
       {/* The recents are the head of the chronology; the whole of it is one
@@ -822,7 +843,7 @@ function FavoriteWorkouts() {
         loadingLabel="Reading your favorites"
         errorTitle="Your favorites didn’t load"
         onRetry={query.refetch}
-        empty={<EmptyState title="No favorites yet" message={FAVORITES_EMPTY} />}
+        empty={<ListMessage title="No favorites yet" message={FAVORITES_EMPTY} />}
       >
         {(favorited) => (
           <FavoriteList

@@ -40,7 +40,11 @@ import {
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
-import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
+import {
+  createWorkoutDouble,
+  reconstructionFixture,
+  savedWorkoutFixture,
+} from '../test/workout-double'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { resolveAtmosphere } from './atmosphere'
 import {
@@ -59,8 +63,10 @@ describe('Home', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Today' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Generate workout' }).closest('.clr-footer')).not.toBeNull()
     expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
     expect(await screen.findByText('No workouts yet')).toBeInTheDocument()
+    expect(screen.getByRole('tablist').closest('.clr-band')).not.toBeNull()
     expect(screen.getByRole('list', { name: 'This week' }).children).toHaveLength(7)
 
     const trainToday = screen.getByRole('heading', { name: 'Train today' }).closest('.clr-card')
@@ -136,6 +142,26 @@ describe('Home', () => {
       await screen.findByRole('heading', { level: 1, name: 'History' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Today' })).not.toBeInTheDocument()
+  })
+
+  it('renders Favorites as one list frame and restores one directly into Review', async () => {
+    const user = userEvent.setup()
+    const workout = createWorkoutDouble({
+      session: null,
+      favorites: [savedWorkoutFixture()],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients }))
+
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+
+    const favorites = await screen.findByRole('list', { name: 'Favorites' })
+    expect(favorites).toHaveClass('clr-list', 'clr-chamfer')
+    expect(favorites.querySelectorAll(':scope > .clr-list__row')).toHaveLength(1)
+
+    await user.click(within(favorites).getByRole('button', { name: 'Start' }))
+
+    expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: 'Today' })).toBeNull()
   })
 
   it('opens a recent workout into its Session Detail rather than Not Found', async () => {

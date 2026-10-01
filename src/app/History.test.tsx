@@ -7,7 +7,7 @@ import { createError, err, ok, ErrorCode } from '../state/errors'
 import type { WorkoutSessionRow } from '../state/schemas'
 import { makeSessionRow } from '../test/factories'
 import { renderApp, signedIn } from '../test/render'
-import { createWorkoutDouble } from '../test/workout-double'
+import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
 import { screenAtmosphere } from './atmosphere'
 import {
   HISTORY_BACK_LABEL,
@@ -80,6 +80,8 @@ describe('History route', () => {
       await screen.findByRole('heading', { level: 1, name: 'History' }),
     ).toBeInTheDocument()
     expect(await historyList()).toBeInTheDocument()
+    expect((await historyList()).closest('.clr-list')).toBe(await historyList())
+    expect((await historyList()).querySelectorAll(':scope > .clr-list__row').length).toBeGreaterThan(0)
     expect(
       screen.getByRole('heading', { level: 2, name: 'Session 1' }),
     ).toBeInTheDocument()
@@ -211,5 +213,28 @@ describe('History route', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Today' }),
     ).toBeInTheDocument()
+  })
+
+  it('opens a compatible completed session directly in Review without generating', async () => {
+    const user = userEvent.setup()
+    const intended = reconstructionFixture({
+      sessionId: 'b0000001-0000-4000-8000-000000000000',
+      title: 'Session 1',
+      state: 'completed',
+      reconstruction: 'intended_at_start',
+      session: { completed_at: '2026-09-24T09:45:00.000Z' },
+      sections: [{ title: 'Main', blocks: [{ exercises: ['completed'] }] }],
+    })
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [intended.session],
+      sessions: { asIntendedAtStart: async () => ok(intended) },
+    })
+    renderApp(['/history'], signedIn({ workout: workout.clients }))
+
+    await user.click(await screen.findByRole('link', { name: 'Session 1' }))
+
+    expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { level: 1, name: 'History' })).toBeNull()
   })
 })

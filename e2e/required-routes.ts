@@ -49,8 +49,8 @@ export const REQUIRED_JOURNEYS: readonly RequiredJourney[] = [
   },
   {
     id: 'history-detail',
-    summary: 'History list to session detail',
-    steps: ['Home', 'History', 'Session Detail'],
+    summary: 'History list to Review for compatible sessions and Session Detail otherwise',
+    steps: ['Home', 'History', 'Review', 'Session Detail'],
   },
   {
     id: 'settings-appearance',
@@ -146,7 +146,7 @@ export const REQUIRED_SCREENS: readonly RequiredScreen[] = [
     route: '/review',
     path: '/review',
     guard: 'protected',
-    journeys: ['new-user'],
+    journeys: ['new-user', 'history-detail'],
   },
   {
     screen: 'Workout',
