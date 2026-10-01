@@ -76,15 +76,52 @@ test('a short phone keeps the last action reachable and shows only transient har
     await scroller.evaluate((element) => element.clientHeight),
   )
 
-  await scroller.evaluate((element) => {
-    element.scrollTop = element.scrollHeight
-    element.dispatchEvent(new Event('scroll'))
+  // Capture the transient state inside the browser. A round trip from a remote
+  // preview can take longer than the 420ms feedback window and would otherwise
+  // turn a correct disappearance into a timing-dependent failure.
+  const activeFeedback = await region.evaluate(async (wrapper) => {
+    const owner = wrapper.querySelector<HTMLElement>(
+      '.clr-scroll-region__scroller',
+    )
+    const edge = wrapper.querySelector<HTMLElement>(
+      '.clr-scroll-region__streak--bottom',
+    )
+    const thumb = wrapper.querySelector<HTMLElement>('.clr-scroll-region__bar')
+    if (!owner || !edge || !thumb) {
+      throw new Error('ScrollRegion feedback elements are missing')
+    }
+
+    const activated = await new Promise<boolean>((resolve) => {
+      const observer = new MutationObserver(() => {
+        if (wrapper.hasAttribute('data-scrolling')) {
+          observer.disconnect()
+          resolve(true)
+        }
+      })
+      observer.observe(wrapper, { attributes: true })
+      owner.scrollTop = owner.scrollHeight
+      owner.dispatchEvent(new Event('scroll'))
+      window.setTimeout(() => {
+        observer.disconnect()
+        resolve(wrapper.hasAttribute('data-scrolling'))
+      }, 300)
+    })
+
+    // The visual arrives in three 200ms steps. Sample after the last step but
+    // before the 420ms settle timer clears the state.
+    await new Promise((resolve) => window.setTimeout(resolve, 250))
+    return {
+      activated,
+      edgeOpacity: Number(getComputedStyle(edge).opacity),
+      barOpacity: Number(getComputedStyle(thumb).opacity),
+      barWidth: getComputedStyle(thumb).width,
+    }
   })
 
-  await expect(region).toHaveAttribute('data-scrolling', '')
-  await expect(streak).toHaveCSS('opacity', '0.7')
-  await expect(bar).toHaveCSS('width', '2px')
-  await expect(bar).toHaveCSS('opacity', '0.7')
+  expect(activeFeedback.activated).toBe(true)
+  expect(activeFeedback.edgeOpacity).toBeGreaterThan(0)
+  expect(activeFeedback.barOpacity).toBeGreaterThan(0)
+  expect(activeFeedback.barWidth).toBe('2px')
 
   const lastAction = page.getByRole('button', { name: 'Create account' })
   const isInsideViewport = await lastAction.evaluate((element) => {
