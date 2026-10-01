@@ -5,8 +5,8 @@
  * Review. Composition is the export's Form Screen template — a stack inside the
  * shell, the standing Goal as context, the Focus — recommended, or a label plus
  * a wrapping row of chips to choose one — the `IntensitySlider`, the inputs,
- * and one full-width primary action at the bottom — rendered through `Card`, which is how every other
- * CLEAR screen wears that template.
+ * and one full-width primary action in the measured pinned footer. The form is
+ * direct on the atmosphere; 0.9.7 does not use a generic card as form padding.
  *
  * The form itself is `state/generation-form.ts`: this file renders a draft and
  * the edits that can be made to it, and decides nothing about them. Four
@@ -118,10 +118,10 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppDialog } from '../ui/app-dialog'
-import { Card } from '../ui/card'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
-import { LoadingView, ViewStateSwitch } from '../ui/view-state'
+import { ErrorView, LoadingView } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
 
@@ -289,44 +289,85 @@ export function Generate() {
       >
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="Generate workout">
-        {needsSettings ? (
+      {needsSettings ? (
+        <Screen
+          title="Generate workout"
+          pinnedFoot={
+            <PhoneFooter>
+              <ActionRow>
+                <Button
+                  variant="primary"
+                  onClick={() => void navigate(SETTINGS_ROUTE)}
+                >
+                  {GOAL_CORRECTION_ACTION}
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          }
+        >
           <EmptyState
             icon={<AlertCircle />}
             title={GOAL_CORRECTION_TITLE}
             message={goalPreset === null ? MISSING_GOAL_MESSAGE : LEGACY_GOAL_MESSAGE}
-            actionLabel={GOAL_CORRECTION_ACTION}
-            onAction={() => void navigate(SETTINGS_ROUTE)}
           />
-        ) : (
-          <ViewStateSwitch
-            state={state}
-            loadingLabel={profileSettled ? 'Reading your places' : 'Reading your profile'}
-            errorTitle={
-              profileSettled ? 'Your places didn’t load' : 'Your profile didn’t load'
-            }
-            onRetry={profileSettled ? locations.refetch : profile.refetch}
-            empty={
-              <EmptyState
-                title="No places yet"
-                message="Generation composes from the equipment at a place you train, so add one first."
-                actionLabel="Add a place"
-                onAction={() => void navigate('/settings/locations')}
-              />
-            }
-          >
-            {(loaded) => (
-              <GenerateForm
-                goalPreset={loaded.goalPreset}
-                places={loaded.places}
-                generation={generation}
-                composition={composition}
-                onCompose={setComposition}
-              />
-            )}
-          </ViewStateSwitch>
-        )}
-      </Screen>
+        </Screen>
+      ) : state.status === 'loading' ? (
+        <Screen title="Generate workout">
+          <LoadingView
+            label={profileSettled ? 'Reading your places' : 'Reading your profile'}
+          />
+        </Screen>
+      ) : state.status === 'error' ? (
+        <Screen
+          title="Generate workout"
+          pinnedFoot={
+            <PhoneFooter>
+              <ActionRow>
+                <Button
+                  variant="primary"
+                  onClick={profileSettled ? locations.refetch : profile.refetch}
+                >
+                  Retry
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          }
+        >
+          <ErrorView
+            error={state.error}
+            title={profileSettled ? 'Your places didn’t load' : 'Your profile didn’t load'}
+          />
+        </Screen>
+      ) : state.status === 'empty' ? (
+        <Screen
+          title="Generate workout"
+          pinnedFoot={
+            <PhoneFooter>
+              <ActionRow>
+                <Button
+                  variant="primary"
+                  onClick={() => void navigate('/settings/locations')}
+                >
+                  Add a place
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          }
+        >
+          <EmptyState
+            title="No places yet"
+            message="Generation composes from the equipment at a place you train, so add one first."
+          />
+        </Screen>
+      ) : (
+        <GenerateForm
+          goalPreset={state.data.goalPreset}
+          places={state.data.places}
+          generation={generation}
+          composition={composition}
+          onCompose={setComposition}
+        />
+      )}
     </GenerationLoadingHost>
   )
 }
@@ -493,13 +534,30 @@ function GenerateForm({
   }
 
   return (
-    <Card>
-      <div className="clr-stack">
-        {refusal !== null && (
-          <p role="alert" style={{ color: 'var(--text-negative)' }}>
-            {refusal.message}
-          </p>
-        )}
+    <>
+      <Screen
+        title="Generate workout"
+        pinnedFoot={
+          <PhoneFooter>
+            <ActionRow>
+              <Button
+                variant="primary"
+                size="lg"
+                disabled={!canGenerate(draft, context)}
+                onClick={submit}
+              >
+                Generate workout
+              </Button>
+            </ActionRow>
+          </PhoneFooter>
+        }
+      >
+        <div className="clr-stack">
+          {refusal !== null && (
+            <p role="alert" style={{ color: 'var(--text-negative)' }}>
+              {refusal.message}
+            </p>
+          )}
 
         {/* Goal — the profile's standing one, as context. It is changed in
             Settings, never asked per workout (REQ-001). */}
@@ -677,28 +735,19 @@ function GenerateForm({
           onChange={(value) => setDraft(withDuration(draft, value))}
         />
 
-        <Input
-          label="Notes"
-          multiline
-          rows={3}
-          value={draft.notes}
-          placeholder="Bad left shoulder from years ago. Overhead press feels sketchy sometimes."
-          helperText="Optional. Context for today — something to work around every session belongs in Settings."
-          errorText={refusal?.fields.notes}
-          maxLength={NOTES_MAX_LENGTH}
-          onChange={(value) => setDraft(withNotes(draft, value))}
-        />
-
-        <Button
-          variant="primary"
-          size="lg"
-          style={{ width: '100%' }}
-          disabled={!canGenerate(draft, context)}
-          onClick={submit}
-        >
-          Generate workout
-        </Button>
-      </div>
+          <Input
+            label="Notes"
+            multiline
+            rows={3}
+            value={draft.notes}
+            placeholder="Bad left shoulder from years ago. Overhead press feels sketchy sometimes."
+            helperText="Optional. Context for today — something to work around every session belongs in Settings."
+            errorText={refusal?.fields.notes}
+            maxLength={NOTES_MAX_LENGTH}
+            onChange={(value) => setDraft(withNotes(draft, value))}
+          />
+        </div>
+      </Screen>
 
       {/* §4: confirm once, then honour it. The user knows things the app doesn't. */}
       <AppDialog
@@ -736,7 +785,7 @@ function GenerateForm({
           flagged. You know things it doesn’t — this is the only time it asks.
         </p>
       </AppDialog>
-    </Card>
+    </>
   )
 }
 

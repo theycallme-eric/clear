@@ -110,6 +110,8 @@ describe('the hub answers every question onboarding asked', () => {
       expect(screen.getByRole('checkbox', { name: pattern.label })).toBeVisible()
     }
     expect(screen.getByLabelText(/note/i)).toBeVisible()
+    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
+    expect(screen.getByRole('main').querySelectorAll('.clr-list')).toHaveLength(1)
   })
 
   it('shows what is stored rather than an empty form', async () => {

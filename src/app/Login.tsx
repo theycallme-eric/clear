@@ -3,10 +3,11 @@
  *
  * IA.md §4: atmosphere `full`, public-only, in from Welcome, out to `/` (the
  * onboarding question is a profile question, and this screen reads no profile).
- * Composition is `AuthLayout › PageHeader + Card › Input + CTAButton` — the
- * shell and its atmosphere come from `RootLayout`, `PageHeader` is `AppHeader`,
- * and the two steps share one card. `?mode=create` keeps first-run intent
- * explicit through refresh and history while using the same OTP backend.
+ * Composition is 0.9.7's direct Form Screen: the shell and its atmosphere come
+ * from `RootLayout`, `PageHeader` is `AppHeader`, the current field sits on the
+ * atmosphere, and the actions use the measured pinned footer. `?mode=create`
+ * keeps first-run intent explicit through refresh and history while using the
+ * same OTP backend.
  *
  * Two things here are the requirement rather than decoration:
  *
@@ -43,7 +44,7 @@ import { isCodeLike, isEmailLike, otpError } from '../data/otp'
 import { AlertCircle, AppHeader, Button, ClearLogo, Input } from '../design-system/index'
 import { useCountdown } from '../state/cooldown'
 import { useSignInClients } from '../state/sign-in-context'
-import { Card } from '../ui/card'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { Screen } from './Screen'
 
@@ -53,6 +54,9 @@ import { Screen } from './Screen'
  * the project's configuration, not a guess about the network.
  */
 export const RESEND_COOLDOWN_SECONDS = 60
+
+const REQUEST_FORM_ID = 'clear-auth-request'
+const VERIFY_FORM_ID = 'clear-auth-verify'
 
 type Step = 'request' | 'verify'
 
@@ -175,7 +179,55 @@ function LoginScreen() {
       <AppHeader>
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title={screenTitle}>
+      <Screen
+        title={screenTitle}
+        pinnedFoot={
+          <PhoneFooter>
+            <ActionRow>
+              {step === 'request' ? (
+                <Button
+                  type="submit"
+                  form={REQUEST_FORM_ID}
+                  variant="primary"
+                  size="lg"
+                  loading={busy === 'sending'}
+                  disabled={cooldown.active}
+                >
+                  {sendLabel}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="submit"
+                    form={VERIFY_FORM_ID}
+                    variant="primary"
+                    size="lg"
+                    loading={busy === 'verifying'}
+                  >
+                    Verify
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={onResend}
+                    disabled={cooldown.active || busy !== null}
+                  >
+                    {resendLabel}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="quiet"
+                    onClick={onUseAnotherEmail}
+                    disabled={busy !== null}
+                  >
+                    Use a different email
+                  </Button>
+                </>
+              )}
+            </ActionRow>
+          </PhoneFooter>
+        }
+      >
         <div className="clr-stack">
           <p>
             {isCreatingAccount
@@ -183,101 +235,66 @@ function LoginScreen() {
               : 'We email a one-time code. No password to forget.'}
           </p>
 
-          <Card>
-            {/* Outside the keyed subtree: a failure must not animate in. */}
-            {error !== null && (
-              <div role="alert" className="clr-row">
-                <span
-                  aria-hidden="true"
-                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-                >
-                  <AlertCircle />
-                </span>
-                <span>{error.message}</span>
-              </div>
-            )}
-
-            <div key={step} className="clr-interlace clr-stack">
-              {step === 'request' ? (
-                <form
-                  className="clr-stack"
-                  onSubmit={onSubmit(onRequest)}
-                  noValidate
-                >
-                  <Input
-                    label="Email"
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={setEmail}
-                    placeholder="you@example.com"
-                    invalid={error?.failure === 'invalid-email'}
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    loading={busy === 'sending'}
-                    disabled={cooldown.active}
-                  >
-                    {sendLabel}
-                  </Button>
-                </form>
-              ) : (
-                <form
-                  className="clr-stack"
-                  onSubmit={onSubmit(onVerify)}
-                  noValidate
-                >
-                  <Input
-                    label="Code"
-                    type="text"
-                    name="one-time-code"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    value={code}
-                    onChange={setCode}
-                    placeholder="6–10 digits"
-                    helperText={`Sent to ${email.trim()}`}
-                    invalid={
-                      error?.failure === 'invalid-code' ||
-                      error?.failure === 'expired-code'
-                    }
-                    inputRef={codeRef}
-                    required
-                  />
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    loading={busy === 'verifying'}
-                  >
-                    Verify
-                  </Button>
-                  <div className="clr-row">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={onResend}
-                      disabled={cooldown.active || busy !== null}
-                    >
-                      {resendLabel}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="quiet"
-                      onClick={onUseAnotherEmail}
-                      disabled={busy !== null}
-                    >
-                      Use a different email
-                    </Button>
-                  </div>
-                </form>
-              )}
+          {/* Outside the keyed subtree: a failure must not animate in. */}
+          {error !== null && (
+            <div role="alert" className="clr-row">
+              <span
+                aria-hidden="true"
+                style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
+              >
+                <AlertCircle />
+              </span>
+              <span>{error.message}</span>
             </div>
-          </Card>
+          )}
+
+          <div key={step} className="clr-interlace clr-stack">
+            {step === 'request' ? (
+              <form
+                id={REQUEST_FORM_ID}
+                className="clr-stack"
+                onSubmit={onSubmit(onRequest)}
+                noValidate
+              >
+                <Input
+                  label="Email"
+                  type="email"
+                  name="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={setEmail}
+                  placeholder="you@example.com"
+                  invalid={error?.failure === 'invalid-email'}
+                  required
+                />
+              </form>
+            ) : (
+              <form
+                id={VERIFY_FORM_ID}
+                className="clr-stack"
+                onSubmit={onSubmit(onVerify)}
+                noValidate
+              >
+                <Input
+                  label="Code"
+                  type="text"
+                  name="one-time-code"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={code}
+                  onChange={setCode}
+                  placeholder="6–10 digits"
+                  helperText={`Sent to ${email.trim()}`}
+                  invalid={
+                    error?.failure === 'invalid-code' ||
+                    error?.failure === 'expired-code'
+                  }
+                  inputRef={codeRef}
+                  required
+                />
+              </form>
+            )}
+          </div>
 
           {/* Polite, and only ever one sentence: the step swap is visible, so
               this exists for the person who cannot see it. */}

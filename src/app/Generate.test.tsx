@@ -159,6 +159,8 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(screen.getByLabelText(/time available/i)).toHaveValue(45)
     expect(screen.getByLabelText(/notes/i)).toHaveValue('')
     expect(cta()).toBeInTheDocument()
+    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(cta())
   })
 
   it('prefills the default place rather than the first one listed', () => {

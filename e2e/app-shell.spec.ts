@@ -51,7 +51,7 @@ test('the skip link is the first thing a keyboard reaches', async ({
   await expect(focused).toHaveAttribute('href', '#main')
 })
 
-test('welcome exposes both auth paths inside a card', async ({ page, visit }) => {
+test('welcome keeps its semantic entry card and auth uses a direct form', async ({ page, visit }) => {
   await visit('/welcome')
 
   const card = page.locator('.clr-card')
@@ -64,7 +64,9 @@ test('welcome exposes both auth paths inside a card', async ({ page, visit }) =>
   await expect(
     page.getByRole('heading', { level: 1, name: 'Create account' }),
   ).toBeVisible()
-  await expect(page.locator('main .clr-card')).toHaveCount(1)
+  await expect(page.locator('main .clr-card')).toHaveCount(0)
+  await expect(page.locator('main .clr-footer')).toHaveCount(1)
+  await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
 })
 
 test('the full atmosphere keeps every colored layer in the viewport', async ({

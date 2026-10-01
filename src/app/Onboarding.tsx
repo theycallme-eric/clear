@@ -3,9 +3,10 @@
  *
  * IA.md §4: atmosphere `full`, guard `authed + not onboarded`, in from the
  * first verified login, out to `/` on the atomic commit. Composition is
- * `OnboardingLayout › PageHeader + Card › RadioButton · Chip · Textarea ·
- * CTAButton` — the shell and its atmosphere are `RootLayout`'s, the header is
- * `Screen`'s single `<h1>`, and each step is one `Card`.
+ * 0.9.7's direct Form Screen — the shell and its atmosphere are `RootLayout`'s,
+ * the header is `Screen`'s single `<h1>`, the question is direct content, and
+ * navigation is in the measured pinned footer. The confirmation alone is a
+ * framed list because it is a related collection rather than an input panel.
  *
  * Everything about the wizard as data is `state/onboarding.ts`: the five steps,
  * the vocabularies, the reducer and `toAnswers`. This file renders that and owns
@@ -63,8 +64,8 @@ import {
 import { useQueryClient } from '../state/query'
 import type { Location } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey, useUserData } from '../state/user-queries'
-import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
+import { ActionRow, ListFrame, ListRow, PhoneFooter } from '../ui/composition'
 import { Heading } from '../ui/Heading'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { AUTHENTICATED_HOME } from './guards'
@@ -138,7 +139,46 @@ export function Onboarding() {
   }
 
   return (
-    <Screen title={ONBOARDING_TITLE}>
+    <Screen
+      title={ONBOARDING_TITLE}
+      pinnedFoot={
+        <PhoneFooter>
+          <ActionRow>
+            {step === 'confirm' ? (
+              <Button
+                disabled={answers === null}
+                onClick={() => {
+                  void submit()
+                }}
+              >
+                {commit.status === 'failed' ? 'Try again' : 'Finish setup'}
+              </Button>
+            ) : (
+              <Button
+                disabled={blocked !== null}
+                icon={<ChevronRight size={20} />}
+                onClick={() => {
+                  go(index + 1, 'forward')
+                }}
+              >
+                {step === 'limitations' && draft.avoidPatterns.length === 0 ? 'Skip' : 'Next'}
+              </Button>
+            )}
+            {index > 0 && (
+              <Button
+                variant="secondary"
+                icon={<ChevronLeft size={20} />}
+                onClick={() => {
+                  go(index - 1, 'back')
+                }}
+              >
+                Back
+              </Button>
+            )}
+          </ActionRow>
+        </PhoneFooter>
+      }
+    >
       <div className="clr-stack">
         <Progress
           value={stepNumber(step)}
@@ -152,10 +192,6 @@ export function Onboarding() {
             <ErrorView
               error={commit.error}
               title={COMMIT_FAILED_TITLE}
-              actionLabel="Try again"
-              onRetry={() => {
-                void submit()
-              }}
             />
             <p>{COMMIT_FAILED_MESSAGE}</p>
           </>
@@ -166,49 +202,11 @@ export function Onboarding() {
           key={step}
           className={direction === 'forward' ? 'route-enter-forward' : 'route-enter-back'}
         >
-          <Card>
-            <div className="clr-stack">
-              <Heading>{STEP_TITLES[step]}</Heading>
-              <StepView step={step} draft={draft} dispatch={dispatch} />
-              {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
-
-              <CardActions>
-                {index > 0 && (
-                  <Button
-                    variant="secondary"
-                    icon={<ChevronLeft size={20} />}
-                    onClick={() => {
-                      go(index - 1, 'back')
-                    }}
-                  >
-                    Back
-                  </Button>
-                )}
-                {step === 'confirm' ? (
-                  commit.status !== 'failed' && (
-                    <Button
-                      disabled={answers === null}
-                      onClick={() => {
-                        void submit()
-                      }}
-                    >
-                      Finish setup
-                    </Button>
-                  )
-                ) : (
-                  <Button
-                    disabled={blocked !== null}
-                    icon={<ChevronRight size={20} />}
-                    onClick={() => {
-                      go(index + 1, 'forward')
-                    }}
-                  >
-                    {step === 'limitations' && draft.avoidPatterns.length === 0 ? 'Skip' : 'Next'}
-                  </Button>
-                )}
-              </CardActions>
-            </div>
-          </Card>
+          <div className="clr-stack">
+            <Heading>{STEP_TITLES[step]}</Heading>
+            <StepView step={step} draft={draft} dispatch={dispatch} />
+            {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
+          </div>
         </div>
       </div>
     </Screen>
@@ -339,14 +337,14 @@ function Summary({ draft }: { draft: OnboardingDraft }) {
   ]
 
   return (
-    <dl className="clr-stack clr-stack--tight">
+    <ListFrame as="dl">
       {rows.map(([term, value]) => (
-        <div key={term}>
+        <ListRow key={term}>
           <dt className="label">{term}</dt>
           <dd>{value}</dd>
-        </div>
+        </ListRow>
       ))}
-    </dl>
+    </ListFrame>
   )
 }
 
