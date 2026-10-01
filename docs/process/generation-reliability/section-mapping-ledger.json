@@ -1,0 +1,421 @@
+{
+  "version": 1,
+  "notes": [
+    "REQ-003 / TASK-003 (issue #290). A proposal: no seed file or migration is changed by this ledger. A later task applies it.",
+    "Reviewed, not generated. src/test/generation-reliability/section-mapping-ledger.test.ts holds it to the capture, the seed and the cited sources.",
+    "One row per exercise whose section membership or primary eligibility changes. before is the pre-change capture; after is before plus the proposed tags. Every row here is additive and none changes canBePrimary.",
+    "Evidence is kind:value. component and role are the reviewed workout-anatomy tags in docs/backend/evidence/previous-migrations/00031_tag_exercises.sql; legacy-anchor and cue are the pre-change capture; name is the exercise name; ref is an entry in references, whose quote must be present in its path.",
+    "The rule for a row is the section's own onboarding description plus an independent catalog fact that agrees with it. skill_power: a jump or an Olympic lift or pull by name, tagged triple-extension. carries: a carry by name, in the reviewed stability batch headed 'anti-motion core, carries'. stability_balance: tagged single-leg-stability and not an Olympic lift.",
+    "ambiguous lists the exercises where the evidence points both ways, each with a recommendation. A recommendation of add is the default disposition unless the owner overrides it; it takes effect only by becoming a row, because the seed may not differ from the capture without one.",
+    "An exercise absent from both lists has no evidence for any of the three sections and is not proposed.",
+    "Not established here: whether each section has enough candidates at every equipment tier. Every carry needs dumbbells or kettlebells, so carries stays empty at the Minimal tier under this proposal. That is GR-02/GR-03's viability decision (support it or prevent the selection), not a reason to tag something that is not a carry."
+  ],
+  "capture": "docs/backend/snapshot/2026-09-18T162821Z/catalog/exercise_definitions.csv",
+  "references": {
+    "onboarding.skill_power": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Explosive movements — jumps, throws, Olympic lifts"
+    },
+    "onboarding.carries": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Loaded carries — farmer’s walks, suitcase carry"
+    },
+    "onboarding.stability_balance": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Single-leg work, proprioception focus"
+    },
+    "onboarding.core": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Rotational and stability work for your midsection"
+    },
+    "onboarding.conditioning": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Cardio, circuits, or higher-intensity finishers"
+    },
+    "wireframe.skill_power": {
+      "path": "docs/specs/screens/onboarding-wireframe.md",
+      "quote": "SKILL / POWER"
+    },
+    "wireframe.carries": {
+      "path": "docs/specs/screens/onboarding-wireframe.md",
+      "quote": "Loaded carries — farmer's"
+    },
+    "wireframe.stability_balance": {
+      "path": "docs/specs/screens/onboarding-wireframe.md",
+      "quote": "STABILITY / BALANCE"
+    },
+    "anatomy.triple-extension": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Simultaneous extension of hips, knees, ankles. Underlies all power movements (clean, snatch, jump)."
+    },
+    "anatomy.landing-mechanics": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Absorbing force with control. Trained by box step-downs, controlled jump landings."
+    },
+    "anatomy.cardio-output": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Trained by general conditioning work (jumping jacks, jump rope, light rowing)."
+    },
+    "anatomy.single-leg-stability": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Unilateral lower-body balance. Trained by single-leg RDLs, split squats, balance work."
+    },
+    "anatomy.grip": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Forearm and hand endurance under load. Trained by dead hangs, farmer carries, heavy holds."
+    },
+    "anatomy.anti-lateral-flexion": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Resisting sideways bending. Trained by side planks, suitcase carries."
+    },
+    "anatomy.role-stability": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Movement that trains anti-motion qualities (brace, anti-rotation, anti-lateral-flexion). | Planks, Pallof presses, suitcase carries."
+    },
+    "anatomy.role-conditioning": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Full-body or sustained-effort movement that builds work capacity. | Burpees, mountain climbers, rowing intervals."
+    },
+    "tags.compound-lifts": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- COMPOUND LIFTS (can_be_primary = true, heavy multi-joint)"
+    },
+    "tags.power-accessories": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- Power accessories"
+    },
+    "tags.squat-accessories": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- Squat accessories"
+    },
+    "tags.hinge-accessories": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- Hinge accessories"
+    },
+    "tags.conditioning": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- CONDITIONING (full-body / sustained effort)"
+    },
+    "tags.stability-and-carries": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- STABILITY (anti-motion core, carries)"
+    }
+  },
+  "rows": [
+    {
+      "id": "box-jumps",
+      "change": "add skill_power",
+      "before": { "sections": ["conditioning", "warmup"], "canBePrimary": false },
+      "after": { "sections": ["conditioning", "warmup", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "ref:wireframe.skill_power", "name:Jumps", "component:triple-extension", "ref:anatomy.triple-extension", "component:landing-mechanics", "legacy-anchor:power", "cue:Swing arms for power"],
+      "rationale": "A jump, which the section description names first. The reviewed tags give it triple-extension, the primitive the anatomy spec says underlies every power movement, and the old catalog anchored it to power."
+    },
+    {
+      "id": "squat-jumps",
+      "change": "add skill_power",
+      "before": { "sections": ["conditioning", "warmup"], "canBePrimary": false },
+      "after": { "sections": ["conditioning", "warmup", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "ref:wireframe.skill_power", "name:Jumps", "component:triple-extension", "ref:anatomy.triple-extension", "component:landing-mechanics", "legacy-anchor:power", "cue:Explosive jump"],
+      "rationale": "A jump, which the section description names first, cued as explosive. Tagged triple-extension and anchored to power in the old catalog. It needs no equipment."
+    },
+    {
+      "id": "power-clean",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Clean", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Triple extension", "ref:tags.compound-lifts"],
+      "rationale": "An Olympic lift, which the section description names. The anatomy spec's own example of a power movement is the clean; the tags and the old power anchor agree."
+    },
+    {
+      "id": "hang-clean",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Clean", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Explosive hip drive", "ref:tags.compound-lifts"],
+      "rationale": "An Olympic lift variation started from the hang. Tagged triple-extension, anchored to power, cued as explosive."
+    },
+    {
+      "id": "squat-clean",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Clean", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Fast elbows", "ref:tags.compound-lifts"],
+      "rationale": "The full Olympic clean. Tagged triple-extension and anchored to power in the old catalog."
+    },
+    {
+      "id": "hang-snatch",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Snatch", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Catch overhead", "ref:tags.compound-lifts"],
+      "rationale": "An Olympic lift variation. The anatomy spec's own example of a power movement is the snatch; the tags and the old power anchor agree."
+    },
+    {
+      "id": "snatch",
+      "change": "add skill_power",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "name:Snatch", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Hip snap", "ref:tags.compound-lifts"],
+      "rationale": "The dumbbell or kettlebell snatch: the Olympic movement with a single implement. Tagged triple-extension and anchored to power. It is the section's Olympic-style lift where there is no barbell."
+    },
+    {
+      "id": "push-jerk",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Jerk", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Dip, drive, dip under", "ref:tags.compound-lifts"],
+      "rationale": "The jerk is the second half of the Olympic clean and jerk. Tagged triple-extension and anchored to power."
+    },
+    {
+      "id": "split-jerk",
+      "change": "add skill_power",
+      "before": { "sections": ["primary_lift", "accessory"], "canBePrimary": true },
+      "after": { "sections": ["primary_lift", "accessory", "skill_power"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.skill_power", "name:Jerk", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Split stance catch", "ref:tags.compound-lifts"],
+      "rationale": "The competition jerk. Tagged triple-extension and anchored to power. Its single-leg-stability tag is handled under ambiguous."
+    },
+    {
+      "id": "clean-pull",
+      "change": "add skill_power",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "ref:tags.power-accessories", "name:Clean", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Triple extension"],
+      "rationale": "An Olympic pull. The reviewed tags file it under Power accessories, give it triple-extension, and the old catalog anchored it to power."
+    },
+    {
+      "id": "muscle-clean",
+      "change": "add skill_power",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "ref:tags.power-accessories", "name:Clean", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Pull and turn over"],
+      "rationale": "An Olympic lift drill. The reviewed tags file it under Power accessories, give it triple-extension, and the old catalog anchored it to power."
+    },
+    {
+      "id": "high-pulls",
+      "change": "add skill_power",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "skill_power"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.skill_power", "name:Pulls", "component:triple-extension", "ref:anatomy.triple-extension", "cue:Explosive hip drive", "cue:Elbows high"],
+      "rationale": "The high pull is the Olympic pull taken to the elbows-high finish, here with a kettlebell or dumbbell. Tagged triple-extension and cued as explosive. The old catalog anchored it to pull rather than power, which the name and the tag outweigh: it is the same movement as clean-pull."
+    },
+    {
+      "id": "farmers-carry",
+      "change": "add carries",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "carries"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.carries", "ref:wireframe.carries", "name:Carry", "ref:tags.stability-and-carries", "role:stability", "component:grip", "ref:anatomy.grip", "cue:Controlled steps"],
+      "rationale": "The section description names it: farmer's walks. A carry by name, in the reviewed batch headed carries, and the anatomy spec's example for grip."
+    },
+    {
+      "id": "suitcase-carry",
+      "change": "add carries",
+      "before": { "sections": ["accessory", "conditioning", "core"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "core", "carries"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.carries", "ref:wireframe.carries", "name:Carry", "ref:tags.stability-and-carries", "role:stability", "component:anti-lateral-flexion", "ref:anatomy.anti-lateral-flexion", "ref:anatomy.role-stability"],
+      "rationale": "The section description names it. A carry by name, in the reviewed batch headed carries, and the anatomy spec's example for both anti-lateral-flexion and the stability role."
+    },
+    {
+      "id": "overhead-carry",
+      "change": "add carries",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "carries"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.carries", "name:Carry", "ref:tags.stability-and-carries", "role:stability", "component:brace", "cue:Weight locked overhead", "cue:Controlled steps"],
+      "rationale": "A loaded carry by name, in the reviewed batch headed carries."
+    },
+    {
+      "id": "rack-carry",
+      "change": "add carries",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "carries"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.carries", "name:Carry", "ref:tags.stability-and-carries", "role:stability", "component:grip", "cue:Bells in rack position"],
+      "rationale": "A loaded carry by name (Front Rack Carry), in the reviewed batch headed carries."
+    },
+    {
+      "id": "single-leg-rdl",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "name:Single-Leg", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Back leg extends for balance", "ref:tags.hinge-accessories"],
+      "rationale": "Single-leg work by name, and the anatomy spec's first example for single-leg-stability. Its own cue is about balance."
+    },
+    {
+      "id": "single-leg-glute-bridge",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory", "core"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "core", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Single-Leg", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Level hips", "role:activation"],
+      "rationale": "Single-leg work by name, tagged single-leg-stability. Keeping the hips level on one leg is the control the section is for, and it needs no equipment."
+    },
+    {
+      "id": "bulgarian-split-squat",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Rear foot elevated", "ref:tags.squat-accessories"],
+      "rationale": "A split squat, which the anatomy spec names as training single-leg-stability, with the rear foot elevated so the front leg carries the balance."
+    },
+    {
+      "id": "split-squat",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Static stance", "ref:tags.squat-accessories"],
+      "rationale": "The anatomy spec names split squats as training single-leg-stability, and the reviewed tags carry it."
+    },
+    {
+      "id": "reverse-lunges",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Front knee stable", "ref:tags.squat-accessories"],
+      "rationale": "Unilateral lower-body work tagged single-leg-stability; each rep is finished on one leg and its cue is knee stability."
+    },
+    {
+      "id": "goblet-reverse-lunges",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Front knee stable", "ref:tags.squat-accessories"],
+      "rationale": "The reverse lunge with the load held at the chest. Same tag and same cue as reverse-lunges, so the same disposition."
+    },
+    {
+      "id": "walking-lunges",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Knee tracks over toe", "ref:tags.squat-accessories"],
+      "rationale": "Unilateral lower-body work tagged single-leg-stability; every step is a single-leg stance under load."
+    },
+    {
+      "id": "walking-lunges-oh",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "component:brace", "cue:Controlled steps", "ref:tags.squat-accessories"],
+      "rationale": "The walking lunge with the load overhead, which raises the balance demand. Tagged single-leg-stability. Whether it is also a carry is handled under ambiguous."
+    },
+    {
+      "id": "lateral-lunges",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Sit back into hip", "ref:tags.squat-accessories"],
+      "rationale": "Unilateral lower-body work in the frontal plane, tagged single-leg-stability."
+    },
+    {
+      "id": "box-step-ups",
+      "change": "add stability_balance",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "stability_balance"], "canBePrimary": false },
+      "evidence": ["ref:onboarding.stability_balance", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Minimal push from rear leg", "ref:tags.squat-accessories"],
+      "rationale": "Tagged single-leg-stability, and its cue makes the point: the working leg does the lift alone. Single-leg work in everything but the name."
+    }
+  ],
+  "ambiguous": [
+    {
+      "id": "push-press",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "legacy-anchor:press", "cue:Dip and drive", "cue:Quick hip extension", "ref:tags.compound-lifts"],
+      "recommendation": "add",
+      "rationale": "For: tagged triple-extension, anchored to power in the old catalog (as its secondary anchor, behind press), cued as a dip and drive — the jerk's leg drive without the catch. Against: it is not a jump, a throw or a competition Olympic lift, and it is primarily a press. Recommend adding: two independent catalog tags call it a power movement and the addition takes nothing away from primary_lift."
+    },
+    {
+      "id": "thruster",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Use leg drive", "ref:tags.compound-lifts"],
+      "recommendation": "add",
+      "rationale": "For: tagged triple-extension and anchored to power as its primary anchor in the old catalog, so the old power day already served it. Against: a squat into a press is none of the description's jumps, throws or Olympic lifts. Recommend adding, on the strength of the primary power anchor."
+    },
+    {
+      "id": "db-thruster",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "name:Thruster"],
+      "recommendation": "add",
+      "rationale": "The dumbbell form of thruster with the same tags and the same primary power anchor. Recommend the same disposition as thruster, whichever way that goes."
+    },
+    {
+      "id": "swing",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "component:triple-extension", "ref:anatomy.triple-extension", "cue:Hip snap, not arm pull", "legacy-anchor:hinge"],
+      "recommendation": "add",
+      "rationale": "For: tagged triple-extension and cued as a hip snap, a ballistic movement. Against: the old catalog anchored it to hinge only, and it is not a jump, a throw or an Olympic lift. Recommend adding: the reviewed tag is the later and more specific judgement, and it gives the section a kettlebell-only option."
+    },
+    {
+      "id": "burpees",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "component:triple-extension", "ref:anatomy.triple-extension", "legacy-anchor:power", "cue:Explosive jump", "role:conditioning", "ref:anatomy.role-conditioning", "ref:tags.conditioning"],
+      "recommendation": "add",
+      "rationale": "For: every rep ends in a jump cued as explosive, it is tagged triple-extension, and the old catalog anchored it to power. Against: its role is conditioning and the anatomy spec uses it as the example of conditioning work, so it is usually programmed for work capacity rather than power. Recommend adding: it stays in conditioning, and with squat-jumps it is the only no-equipment candidate the section would have."
+    },
+    {
+      "id": "sotts-press",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "ref:wireframe.skill_power", "ref:tags.power-accessories", "legacy-anchor:power", "cue:Press from squat bottom", "cue:Mobility required"],
+      "recommendation": "add",
+      "rationale": "For: the reviewed tags file it under Power accessories and the old catalog anchored it to power as its primary anchor; it is an Olympic-lifting skill drill, and the section is Skill / power. Against: it is slow and strict, with no triple-extension tag — skill, not power. Recommend adding, as the skill half of the section."
+    },
+    {
+      "id": "snatch-grip-deadlift",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "legacy-anchor:power", "name:Snatch", "cue:Upper back work", "ref:tags.compound-lifts"],
+      "recommendation": "leave",
+      "rationale": "For: the old catalog anchored it to power as its primary anchor, and it is an Olympic-lifting assistance lift. Against: the reviewed tags give it hip-hinge and no triple-extension and file it with the heavy compound lifts, not under Power accessories; nothing in it is explosive. Recommend leaving it out: a slow strength pull is what the section description excludes."
+    },
+    {
+      "id": "jump-rope",
+      "section": "skill_power",
+      "evidence": ["ref:onboarding.skill_power", "name:Jump", "component:landing-mechanics", "ref:anatomy.landing-mechanics", "role:cardio", "component:cardio-output", "ref:anatomy.cardio-output"],
+      "recommendation": "leave",
+      "rationale": "For: it is a jump by name and tagged landing-mechanics. Against: no triple-extension tag, no power anchor, its role is cardio, and the anatomy spec uses it as the example of sustained cardio-output. Recommend leaving it out: it is low-amplitude and sustained, not explosive."
+    },
+    {
+      "id": "walking-lunges-oh",
+      "section": "carries",
+      "evidence": ["ref:onboarding.carries", "cue:Weight locked overhead", "cue:Controlled steps", "component:single-leg-stability", "ref:tags.squat-accessories"],
+      "recommendation": "leave",
+      "rationale": "For: it is loaded locomotion, and two of its three cues are word for word overhead-carry's. Against: it is a lunge by name, the reviewed tags file it under Squat accessories with single-leg-stability, and it is not in the batch headed carries. Recommend leaving it out of carries; a row adds it to stability_balance."
+    },
+    {
+      "id": "sled-push",
+      "section": "carries",
+      "evidence": ["ref:onboarding.carries", "role:conditioning", "ref:tags.conditioning", "component:cardio-output", "cue:Short powerful steps"],
+      "recommendation": "leave",
+      "rationale": "For: loaded locomotion, which coaches often programme beside carries, and it would give the section a candidate that needs no dumbbell or kettlebell. Against: the load is pushed, not carried; its role is conditioning; it is not in the batch headed carries; and the catalog lists its equipment as bodyweight although it needs a sled, so tagging it would offer it where no sled exists. Recommend leaving it out."
+    },
+    {
+      "id": "sled-pull",
+      "section": "carries",
+      "evidence": ["ref:onboarding.carries", "role:conditioning", "ref:tags.conditioning", "component:cardio-output", "cue:Hand over hand or backward drag"],
+      "recommendation": "leave",
+      "rationale": "The same case as sled-push: loaded locomotion, but dragged rather than carried, tagged conditioning, and listed as bodyweight although it needs a sled. Recommend leaving it out."
+    },
+    {
+      "id": "split-jerk",
+      "section": "stability_balance",
+      "evidence": ["ref:onboarding.stability_balance", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Split stance catch", "ref:tags.compound-lifts", "legacy-anchor:power"],
+      "recommendation": "leave",
+      "rationale": "For: it is the only single-leg-stability exercise the rows do not add, because it is caught in a split stance. Against: it is a maximal Olympic lift that can be the session's primary lift; the stance is how the bar is received, not what is trained. Recommend leaving it out of stability_balance; a row adds it to skill_power."
+    },
+    {
+      "id": "side-plank",
+      "section": "stability_balance",
+      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "role:stability", "ref:anatomy.role-stability", "ref:tags.stability-and-carries", "ref:onboarding.core"],
+      "recommendation": "leave",
+      "rationale": "For: its reviewed role is stability, and the section is labelled Stability / balance. Against: the role means anti-motion trunk work, which the Core description already claims (rotational and stability work for your midsection) and where the exercise already sits; the Stability / balance description is single-leg work and proprioception. Recommend leaving it in core only."
+    },
+    {
+      "id": "pallof-press",
+      "section": "stability_balance",
+      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "role:stability", "ref:anatomy.role-stability", "ref:tags.stability-and-carries", "ref:onboarding.core"],
+      "recommendation": "leave",
+      "rationale": "The same case as side-plank: role stability, but trunk anti-rotation that Core already describes and already holds. Recommend leaving it in core only."
+    },
+    {
+      "id": "ab-wheel-rollout",
+      "section": "stability_balance",
+      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "role:stability", "ref:tags.stability-and-carries", "ref:onboarding.core"],
+      "recommendation": "leave",
+      "rationale": "The same case as side-plank: role stability, but trunk bracing that Core already describes and already holds. Recommend leaving it in core only."
+    }
+  ]
+}
