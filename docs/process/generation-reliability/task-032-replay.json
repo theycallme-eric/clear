@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "id": "task-032-empty-optional-sections",
+  "requirement": "REQ-030",
+  "specification": "docs/process/generation-reliability/agent-runner-prevention.md",
+  "target": {
+    "project": "/Users/eric/Documents/Projects/support-tooling/agent-runner",
+    "replayCommand": "npm run replay -- --scenario \"$CLEAR_REPO/docs/process/generation-reliability/task-032-replay.json\"",
+    "replayCommandStatus": "to be implemented in the target project; it does not exist until that work lands"
+  },
+  "source": {
+    "journal": "docs/journal/2026-09-22.md",
+    "heading": "## TASK-032 / GEN-02a — Candidate resolution + retrieval (issue #33)",
+    "quote": "The seed tags no exercise for `skill_power`, `carries` or `stability_balance`. A profile that enables one of those would fail with `GENERATION_NO_CANDIDATES` for it. That is out of scope here and is not worked around; the default six sections are all populated."
+  },
+  "task": {
+    "id": "TASK-032",
+    "issue": 33,
+    "requirement": "GEN-02a"
+  },
+  "finding": {
+    "kind": "dependency_violation",
+    "summary": "Three optional sections have no catalog rows, so a profile that enables one of them cannot be generated for.",
+    "sections": ["skill_power", "carries", "stability_balance"],
+    "failure": "GENERATION_NO_CANDIDATES",
+    "affectedBehavior": "a profile that enables skill_power, carries or stability_balance",
+    "affectedDependents": ["generation", "onboarding"],
+    "recordedDisposition": "out_of_scope",
+    "behaviorRemovedFromDependents": false
+  },
+  "observedOutcome": {
+    "taskClosed": true,
+    "recoveryItemCreated": false,
+    "graphStopped": false,
+    "dependentsCompleted": true
+  },
+  "expectedOutcome": {
+    "findingStatus": "unresolved",
+    "outOfScopeAccepted": false,
+    "taskClosed": false,
+    "graphStopped": true,
+    "dependentsCompleted": false,
+    "recoveryItem": {
+      "created": true,
+      "blocking": true,
+      "blockedTask": "TASK-032",
+      "blocksDependents": ["generation", "onboarding"],
+      "dependencyRecorded": true
+    }
+  }
+}
