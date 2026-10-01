@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   AppHeader,
-  ArrowLeft,
   Button,
   Check,
   Checkbox,
@@ -53,6 +52,7 @@ import {
 import { Card } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { Heading } from '../ui/Heading'
+import { HeaderBackButton } from '../ui/header-back-button'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ConfirmDialog } from '../ui/blocking-dialog'
 import { ActionRow, PhoneFooter } from '../ui/composition'
@@ -109,13 +109,9 @@ export function LocationSettings() {
     <>
       <AppHeader
         actions={
-          <Button
-            variant="quiet"
-            icon={<ArrowLeft size={20} />}
-            onClick={() => void navigate('/settings')}
-          >
+          <HeaderBackButton onClick={() => void navigate('/settings')}>
             Settings
-          </Button>
+          </HeaderBackButton>
         }
       >
         <ClearLogo size="md" />

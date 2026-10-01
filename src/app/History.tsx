@@ -25,7 +25,6 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   AppHeader,
-  ArrowLeft,
   Button,
   ClearLogo,
 } from '../design-system/index'
@@ -47,6 +46,7 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { HistoryList } from '../ui/history-list'
+import { HeaderBackButton } from '../ui/header-back-button'
 import { ActionRow, ListMessage, PhoneFooter } from '../ui/composition'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
@@ -109,13 +109,9 @@ export function History() {
     <>
       <AppHeader
         actions={
-          <Button
-            variant="quiet"
-            icon={<ArrowLeft size={20} />}
-            onClick={() => void navigate('/')}
-          >
+          <HeaderBackButton onClick={() => void navigate('/')}>
             {HISTORY_BACK_LABEL}
-          </Button>
+          </HeaderBackButton>
         }
       >
         <ClearLogo size="md" />
