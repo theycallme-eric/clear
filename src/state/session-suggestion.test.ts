@@ -3,8 +3,8 @@
  *
  * Four criteria live here: the focus matches least-recent-focus logic against
  * fixture rows, pattern-level staleness is available and is a pattern rather
- * than a region, the suggestion carries the prefilled destination, and thin
- * history produces nothing at all. The screen half — tapping and dismissing —
+ * than a region, the suggestion carries the prefilled destination, and history
+ * with nothing completed or nothing recent produces a named non-recommendation. The screen half — tapping and dismissing —
  * is `src/app/Home.test.tsx`.
  */
 import { describe, expect, it } from 'vitest'
@@ -23,7 +23,9 @@ import {
   SESSION_FOCUSES,
   SUGGESTIBLE_PATTERNS,
   suggestedIntensity,
+  SUGGESTION_RECENCY_DAYS,
   suggestionDismissed,
+  suggestionEligibility,
   suggestSession,
   suggestSessionFocus,
   writeSuggestionDismissal,
@@ -190,28 +192,89 @@ describe('suggestedIntensity', () => {
   })
 })
 
-describe('insufficient history', () => {
-  it('suggests nothing below the minimum number of completed sessions', () => {
-    const rows = upperBodyOnly().slice(0, MIN_SUGGESTION_SESSIONS - 1)
+describe('suggestionEligibility', () => {
+  const unstarted = () =>
+    session('2026-09-24', { session_focus: 'power', started_at: null, completed_at: null })
+  const abandoned = () =>
+    session('2026-09-23', {
+      session_focus: 'full_body',
+      completed_at: null,
+      abandoned_at: '2026-09-23T09:40:00.000Z',
+    })
 
-    expect(hasEnoughHistory(rows, OPTIONS)).toBe(false)
-    expect(suggestSessionFocus(rows, OPTIONS)).toBeNull()
-    expect(suggestSession(rows, OPTIONS)).toBeNull()
+  it('keeps the threshold at one completed session inside 21 days', () => {
+    expect(MIN_SUGGESTION_SESSIONS).toBe(1)
+    expect(SUGGESTION_RECENCY_DAYS).toBe(21)
   })
 
-  it('suggests nothing when the history is long but cold', () => {
+  it('recommends from exactly one completed session dated today', () => {
+    const rows = [session('2026-09-25', { session_focus: 'upper_body', effective_intensity: 6 })]
+    const eligibility = suggestionEligibility(rows, OPTIONS)
+
+    expect(eligibility).toMatchObject({
+      status: 'recommended',
+      focus: 'lower_body',
+      reason: 'No squat in the sessions you’ve logged.',
+      intensity: 6,
+      intensityReason: 'Your last 1 session averaged intensity 6.',
+    })
+    expect(hasEnoughHistory(rows, OPTIONS)).toBe(true)
+    expect(suggestSessionFocus(rows, OPTIONS)).toBe('lower_body')
+    expect(suggestSession(rows, OPTIONS)).toMatchObject({
+      focus: 'lower_body',
+      intensity: 6,
+      path: '/generate?focus=lower_body&intensity=6',
+    })
+  })
+
+  it('is what suggestSession answers, less the status', () => {
+    const rows = upperBodyOnly()
+    const eligibility = suggestionEligibility(rows, OPTIONS)
+
+    expect(eligibility.status).toBe('recommended')
+    expect(eligibility).toEqual({ status: 'recommended', ...suggestSession(rows, OPTIONS) })
+  })
+
+  it('reads no rows at all as no completed history', () => {
+    expect(suggestionEligibility([], OPTIONS)).toEqual({ status: 'no-completed-history' })
+    expect(suggestSession([], OPTIONS)).toBeNull()
+  })
+
+  it('does not count unstarted or abandoned sessions as completed evidence', () => {
+    for (const rows of [[unstarted()], [abandoned()], [unstarted(), abandoned()]]) {
+      expect(suggestionEligibility(rows, OPTIONS)).toEqual({ status: 'no-completed-history' })
+      expect(hasEnoughHistory(rows, OPTIONS)).toBe(false)
+      expect(suggestSessionFocus(rows, OPTIONS)).toBeNull()
+      expect(suggestSession(rows, OPTIONS)).toBeNull()
+    }
+  })
+
+  it('reads completed history whose newest session is 22 days old as stale', () => {
     const rows = [
-      session('2026-06-01', { session_focus: 'upper_body' }),
+      session('2026-09-03', { session_focus: 'upper_body' }),
       session('2026-06-03', { session_focus: 'lower_body' }),
       session('2026-06-05', { session_focus: 'full_body' }),
     ]
 
+    expect(suggestionEligibility(rows, OPTIONS)).toEqual({ status: 'stale-history' })
     expect(hasEnoughHistory(rows, OPTIONS)).toBe(false)
     expect(suggestSession(rows, OPTIONS)).toBeNull()
   })
 
-  it('suggests nothing at all with no history', () => {
-    expect(suggestSession([], OPTIONS)).toBeNull()
+  it('still recommends when the newest completed session is 21 days old', () => {
+    const rows = [session('2026-09-04', { session_focus: 'upper_body', effective_intensity: 5 })]
+
+    expect(suggestionEligibility(rows, OPTIONS)).toMatchObject({
+      status: 'recommended',
+      intensity: 5,
+    })
+    expect(suggestSession(rows, OPTIONS)).not.toBeNull()
+  })
+
+  it('stays stale when only an abandoned session is recent', () => {
+    const rows = [session('2026-08-01', { session_focus: 'upper_body' }), abandoned()]
+
+    expect(suggestionEligibility(rows, OPTIONS)).toEqual({ status: 'stale-history' })
   })
 })
 
