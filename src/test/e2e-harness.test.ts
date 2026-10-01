@@ -146,7 +146,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
 
     expect(
       [...jobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
-    ).toEqual(['preview-e2e', 'backend-e2e', 'deployed-journeys'])
+    ).toEqual(['preview-e2e', 'backend-e2e', 'deployed-journeys', 'live-model-canary'])
     expect(
       [...rlsJobs.matchAll(/^ {2}([a-z][a-z0-9-]*):$/gm)].map((match) => match[1]),
     ).toEqual(['rls-standing'])
@@ -186,7 +186,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
   const backendJobOf = (source: string) =>
     source.slice(source.indexOf('  backend-e2e:'), source.indexOf('  deployed-journeys:'))
 
-  it('runs privileged OTP, RLS and generation checks only from trusted main', () => {
+  it('runs privileged no-model backend checks only from trusted main', () => {
     const backendJob = backendJobOf(workflow)
 
     expect(backendJob).toContain("github.event_name == 'push'")
@@ -194,7 +194,8 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob).toContain('SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}')
     expect(backendJob).not.toContain('VERCEL_AUTOMATION_BYPASS_SECRET')
     expect(backendJob).toContain('e2e/auth-otp.spec.ts e2e/rls.spec.ts')
-    expect(backendJob).toContain('e2e/generation-persistence.spec.ts')
+    expect(backendJob).not.toContain('e2e/generation-persistence.spec.ts')
+    expect(backendJob).not.toContain('e2e/core-loop.spec.ts')
     expect(backendJob.match(/npm run e2e:reset/g)).toHaveLength(2)
   })
 
@@ -215,8 +216,11 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(backendJob).toContain('e2e/settings-appearance.spec.ts')
   })
 
-  it('walks the core loop against the production deployment of main’s exact head (REQ-010)', () => {
-    const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
+  it('keeps automatic deployment journeys model-free', () => {
+    const deployedJob = workflow.slice(
+      workflow.indexOf('  deployed-journeys:'),
+      workflow.indexOf('  live-model-canary:'),
+    )
 
     // Only a finished production deployment, and only once its SHA is main's.
     expect(deployedJob).toContain("github.event_name == 'deployment_status'")
@@ -236,13 +240,39 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(deployedJob).toContain(
       'SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}',
     )
-    expect(deployedJob).toContain(
+    expect(deployedJob).not.toContain('e2e/core-loop.spec.ts')
+    expect(deployedJob).not.toContain('e2e/generation-persistence.spec.ts')
+  })
+
+  it('allows one paid model call only through an explicit release canary', () => {
+    const canary = workflow.slice(workflow.indexOf('  live-model-canary:'))
+
+    expect(workflow).toContain('workflow_dispatch:')
+    expect(canary).toContain("github.event_name == 'workflow_dispatch'")
+    expect(canary).toContain('group: clear-paid-model-canary')
+    expect(canary).toContain('cancel-in-progress: false')
+    expect(canary).toContain("LIVE_MODEL_TESTS: '1'")
+    expect(canary).toContain('Paid workout generations: exactly 1.')
+    expect(canary).toContain('2 maximum only for a retryable failure.')
+    expect(canary).toContain(
       'npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0',
     )
+    expect(canary).not.toContain('e2e/generation-persistence.spec.ts')
+  })
+
+  it('requires an explicit opt-in inside every paid spec', () => {
+    for (const spec of ['e2e/core-loop.spec.ts', 'e2e/generation-persistence.spec.ts']) {
+      const source = read(spec)
+      expect(source).toContain("from './support/live-model'")
+      expect(source).toContain('test.skip(!liveModelEnabled, liveModelReason)')
+    }
   })
 
   it('walks History to session detail against the deployed merged head (REQ-010)', () => {
-    const deployedJob = workflow.slice(workflow.indexOf('  deployed-journeys:'))
+    const deployedJob = workflow.slice(
+      workflow.indexOf('  deployed-journeys:'),
+      workflow.indexOf('  live-model-canary:'),
+    )
 
     // Only the Production deployment Vercel builds from reviewed `main`, never
     // a preview: this job holds the service-role key.

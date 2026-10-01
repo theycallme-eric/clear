@@ -5,6 +5,7 @@ import { namespaceId } from '../scripts/e2e/namespace.mjs'
 import { expect, test } from './fixtures'
 import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
 import { backend } from './support/backend'
+import { liveModelEnabled, liveModelReason } from './support/live-model'
 
 /**
  * REQ-010 / TASK-018 — the new-user core loop, walked in a browser on the
@@ -78,6 +79,7 @@ async function reachByKeyboard(page: Page, name: string) {
 
 test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
   test.skip(!backend.available, backend.reason)
+  test.skip(!liveModelEnabled, liveModelReason)
   test.describe.configure({ mode: 'serial', retries: 0 })
 
   let email = ''

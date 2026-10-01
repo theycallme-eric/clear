@@ -2,6 +2,7 @@ import { namespaceId } from '../scripts/e2e/namespace.mjs'
 
 import { expect, test } from './fixtures'
 import { backend } from './support/backend'
+import { liveModelEnabled, liveModelReason } from './support/live-model'
 
 /**
  * TASK-072 — the rebuilt generation path, proved against the reused project.
@@ -14,6 +15,7 @@ import { backend } from './support/backend'
  */
 test.describe('live generation → persistence → reconstruction', () => {
   test.skip(!backend.available, backend.reason)
+  test.skip(!liveModelEnabled, liveModelReason)
   test.describe.configure({ mode: 'serial' })
 
   let client: ReturnType<typeof backend.client>
