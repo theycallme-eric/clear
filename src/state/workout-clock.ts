@@ -49,7 +49,7 @@ export function elapsedSeconds(startedAt: string | null, now: number): number {
 
 /**
  * `MM:SS`, or `H:MM:SS` once an hour has passed — the readout is glanceable at
- * arm's length (IA.md §4, atmosphere `operational`), and an hour-long session
+ * arm's length (IA.md §4), and an hour-long session
  * reading `72:15` is a number the user has to do arithmetic on.
  */
 export function formatElapsed(seconds: number): string {

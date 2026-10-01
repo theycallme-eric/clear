@@ -201,7 +201,7 @@ function ElapsedReadout({ view }: { view: ForTimeView }) {
         low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer',
         // Only while the seconds are actually running out. A capped block is
         // over; pulsing it would animate a number that has stopped moving.
-        view.urgent ? 'pulse-micro' : null,
+        view.urgent ? 'clr-pulse-micro' : null,
       ]
         .filter(Boolean)
         .join(' ')}

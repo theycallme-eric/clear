@@ -25,7 +25,7 @@
   line-height: var(--label-sm-line-height);
   font-weight: var(--font-weight-bold);
   text-transform: uppercase;
-  letter-spacing: var(--tracking-data-wide);
+  letter-spacing: var(--tracking-data);
   color: var(--text-card-label);
 }
 

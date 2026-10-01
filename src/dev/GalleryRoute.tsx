@@ -62,10 +62,9 @@ function SkinSwitcher() {
 }
 
 /**
- * All three atmosphere levels, live, on the attribute ATOMIC.md §7.2 puts them
- * on. `RootLayout` only reapplies the route's level when that level changes, so
- * the override survives navigation inside the gallery — and is handed back on
- * the way out, because an override must not outlive the screen that asked for it.
+ * The package still defines all three atmosphere levels for comparison even
+ * though production always uses Full. This dev-only override survives gallery
+ * navigation and hands the production default back when the gallery unmounts.
  */
 function AtmosphereSwitcher() {
   const { pathname } = useLocation()

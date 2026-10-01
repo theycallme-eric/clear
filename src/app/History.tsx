@@ -1,7 +1,7 @@
 /**
  * History — `/history` (HIST-01). The chronology.
  *
- * IA.md §4: atmosphere `quiet`, guard protected, and all four states — with the
+ * IA.md §4: atmosphere `full`, guard protected, and all four states — with the
  * empty one splitting two ways, which is the part this screen is careful about.
  * *No workouts yet* and *no results for these filters* are different facts and
  * they get different copy: the first is a user who has not trained, the second

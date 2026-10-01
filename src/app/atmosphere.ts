@@ -1,19 +1,17 @@
 /**
- * DS-06 — atmosphere assignment.
+ * CLEAR 0.9.7 atmosphere assignment.
  *
  * The five-layer ground, the overlays, the keyframes, the reduced-motion
- * fallback and the three intensity levels all ship in the export
- * (`.clr-atmosphere` + `data-atmosphere`, ATOMIC.md §7.2). What this module
- * owns is the *assignment*: the level each screen declares in
- * `docs/specs/IA.md` §4, as data the app can resolve from a pathname.
+ * fallback and the available intensity values all ship in the export. The
+ * application contract is deliberately narrower: every production screen uses
+ * Full. Quiet and Operational remain available to the development gallery for
+ * comparison, but route selection cannot opt into them.
  *
  * The table below is a transcription of IA.md §4 and nothing else. When a
  * screen's documented level changes there, it changes here — never the other
  * way round.
  */
-import { matchPath } from 'react-router-dom'
-
-/** `data-atmosphere` values defined by ATOMIC.md §7.2. */
+/** Values still defined by the vendored package and shown in the dev gallery. */
 export type AtmosphereLevel = 'full' | 'quiet' | 'operational'
 
 export interface ScreenAtmosphere {
@@ -21,8 +19,8 @@ export interface ScreenAtmosphere {
   screen: string
   /** Route pattern, or null for a screen that has no route of its own. */
   path: string | null
-  /** The level IA.md §4 records for that screen. */
-  level: AtmosphereLevel
+  /** The production level IA.md §4 records for that screen. */
+  level: typeof DEFAULT_ATMOSPHERE
   /**
    * True for an extra route pattern covering an entry IA.md §4 writes as one
    * screen — Settings "+ 4 sub-views", the gallery's two sections. Not a screen
@@ -32,31 +30,29 @@ export interface ScreenAtmosphere {
 }
 
 /**
- * Every screen in IA.md §4, in document order. Screens whose routes have not
- * been built yet still declare their level: the root layout resolves by
- * pathname, so each screen inherits its documented atmosphere on the day its
- * route lands rather than having to remember to set one.
+ * Every screen in IA.md §4, in document order. Keeping the inventory makes the
+ * source document testable while one literal type prevents route-level drift.
  */
 export const SCREEN_ATMOSPHERE: readonly ScreenAtmosphere[] = [
   { screen: 'Welcome', path: '/welcome', level: 'full' },
-  { screen: 'OTP Login', path: '/login', level: 'quiet' },
-  { screen: 'Onboarding', path: '/onboarding', level: 'quiet' },
+  { screen: 'OTP Login', path: '/login', level: 'full' },
+  { screen: 'Onboarding', path: '/onboarding', level: 'full' },
   { screen: 'Home', path: '/', level: 'full' },
-  { screen: 'Generate', path: '/generate', level: 'quiet' },
+  { screen: 'Generate', path: '/generate', level: 'full' },
   // Transient: GEN-05 renders it inside whichever route started generation.
   { screen: 'Loading', path: null, level: 'full' },
-  { screen: 'Review', path: '/review', level: 'quiet' },
-  { screen: 'Workout', path: '/workout', level: 'operational' },
-  { screen: 'Summary', path: '/summary', level: 'quiet' },
-  { screen: 'History', path: '/history', level: 'quiet' },
-  { screen: 'Session Detail', path: '/history/:id', level: 'quiet' },
-  { screen: 'Settings', path: '/settings', level: 'quiet' },
-  { screen: 'Settings sub-views', path: '/settings/*', level: 'quiet', alias: true },
-  { screen: 'Component Gallery', path: '/dev/gallery', level: 'quiet' },
+  { screen: 'Review', path: '/review', level: 'full' },
+  { screen: 'Workout', path: '/workout', level: 'full' },
+  { screen: 'Summary', path: '/summary', level: 'full' },
+  { screen: 'History', path: '/history', level: 'full' },
+  { screen: 'Session Detail', path: '/history/:id', level: 'full' },
+  { screen: 'Settings', path: '/settings', level: 'full' },
+  { screen: 'Settings sub-views', path: '/settings/*', level: 'full', alias: true },
+  { screen: 'Component Gallery', path: '/dev/gallery', level: 'full' },
   {
     screen: 'Component Gallery sections',
     path: '/dev/gallery/*',
-    level: 'quiet',
+    level: 'full',
     alias: true,
   },
   // Declared last: `*` claims anything the screens above did not.
@@ -70,27 +66,14 @@ export const SCREEN_ATMOSPHERE: readonly ScreenAtmosphere[] = [
  */
 export const DEFAULT_ATMOSPHERE: AtmosphereLevel = 'full'
 
-const ROUTED_SCREENS = SCREEN_ATMOSPHERE.filter(
-  (entry): entry is ScreenAtmosphere & { path: string } => entry.path !== null,
-)
-
-/** Exact patterns win over splat patterns: `/settings` is not a sub-view. */
-const EXACT_SCREENS = ROUTED_SCREENS.filter((entry) => !entry.path.includes('*'))
-const SPLAT_SCREENS = ROUTED_SCREENS.filter((entry) => entry.path.includes('*'))
-
-/** The documented level for a pathname, or `full` for anything unrouted. */
-export function resolveAtmosphere(pathname: string): AtmosphereLevel {
-  for (const entry of [...EXACT_SCREENS, ...SPLAT_SCREENS]) {
-    if (matchPath(entry.path, pathname) !== null) {
-      return entry.level
-    }
-  }
-
+/** Every pathname resolves to the one production atmosphere. */
+export function resolveAtmosphere(_pathname: string): typeof DEFAULT_ATMOSPHERE {
+  void _pathname
   return DEFAULT_ATMOSPHERE
 }
 
 /** The documented level for a screen that renders without a route of its own. */
-export function screenAtmosphere(screen: string): AtmosphereLevel {
+export function screenAtmosphere(screen: string): typeof DEFAULT_ATMOSPHERE {
   const entry = SCREEN_ATMOSPHERE.find((candidate) => candidate.screen === screen)
 
   if (entry === undefined) {

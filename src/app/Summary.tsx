@@ -1,7 +1,7 @@
 /**
  * Summary — `/summary` (SUM-01).
  *
- * IA.md §4: atmosphere `quiet`, protected plus a completed session, in from
+ * IA.md §4: atmosphere `full`, protected plus a completed session, in from
  * Workout completion, out to Home. Composition is
  * `AppLayout › PageHeader + Card › MoodIcon(×5) + Textarea + WeekStreakDisplay
  * + CTAButton` — the shell and its atmosphere come from `RootLayout`,

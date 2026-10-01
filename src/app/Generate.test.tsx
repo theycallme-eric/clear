@@ -883,10 +883,10 @@ await user.click(chipIn('Anchor', 'Upper body'))
     expect(liveToasts()).toEqual([])
   })
 
-  it('renders at the full atmosphere and gives the form its quiet back when it leaves', async () => {
+  it('keeps the Full atmosphere through generation and cancel', async () => {
     const { user } = renderGenerate()
 
-    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
 
     await composeAndSubmit(user)
     expect(document.documentElement.dataset.atmosphere).toBe('full')
@@ -896,7 +896,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     )
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
   })
 })
 

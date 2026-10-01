@@ -51,7 +51,7 @@ const TODAY_STYLE: CSSProperties = {
 const LETTER_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data-wide)',
+  letterSpacing: 'var(--tracking-data)',
   textTransform: 'uppercase',
   color: 'var(--text-card-label)',
 }

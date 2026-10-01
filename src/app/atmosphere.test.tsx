@@ -1,9 +1,4 @@
-/**
- * The owner-supplied 0.9.7 contract changes every production screen to Full.
- * Issue #268 imports that contract without redesigning routes; issue #270 owns
- * the shared runtime migration. Until #270 lands this file records both sides:
- * the authoritative IA rule and the legacy assignments the app still renders.
- */
+/** CLEAR 0.9.7 uses one Full atmosphere across every production screen. */
 import { readFileSync } from 'node:fs'
 
 import { act, render } from '@testing-library/react'
@@ -21,29 +16,26 @@ import {
   SCREEN_ATMOSPHERE,
   resolveAtmosphere,
   screenAtmosphere,
-  type AtmosphereLevel,
 } from './atmosphere'
 
-/** Legacy runtime assignments, kept explicit until #270 migrates them to Full. */
-const CURRENT_ROUTE_ASSIGNMENTS: ReadonlyArray<[string, AtmosphereLevel]> = [
-  ['/welcome', 'full'],
-  ['/login', 'quiet'],
-  ['/onboarding', 'quiet'],
-  ['/', 'full'],
-  ['/generate', 'quiet'],
-  ['/review', 'quiet'],
-  ['/workout', 'operational'],
-  ['/summary', 'quiet'],
-  ['/history', 'quiet'],
-  ['/history/a4f1c8e2', 'quiet'],
-  ['/settings', 'quiet'],
-  ['/settings/locations', 'quiet'],
-  ['/settings/structures', 'quiet'],
-  ['/dev/gallery', 'quiet'],
-  ['/dev/gallery/ds', 'quiet'],
-  ['/dev/gallery/app', 'quiet'],
-  // IA.md §4, Not Found — `*` is a brand moment.
-  ['/no-such-screen', 'full'],
+const PRODUCTION_PATHS = [
+  '/welcome',
+  '/login',
+  '/onboarding',
+  '/',
+  '/generate',
+  '/review',
+  '/workout',
+  '/summary',
+  '/history',
+  '/history/a4f1c8e2',
+  '/settings',
+  '/settings/locations',
+  '/settings/structures',
+  '/dev/gallery',
+  '/dev/gallery/ds',
+  '/dev/gallery/app',
+  '/no-such-screen',
 ]
 
 /**
@@ -117,12 +109,9 @@ afterEach(() => {
 })
 
 describe('atmosphere assignment', () => {
-  it.each(CURRENT_ROUTE_ASSIGNMENTS)(
-    'resolves %s to its pre-0.9.7 runtime assignment until #270',
-    (pathname, level) => {
-      expect(resolveAtmosphere(pathname)).toBe(level)
-    },
-  )
+  it.each(PRODUCTION_PATHS)('resolves %s to Full', (pathname) => {
+    expect(resolveAtmosphere(pathname)).toBe('full')
+  })
 
   it('records Full for every screen in the authoritative IA contract', () => {
     const ia = readFileSync('docs/specs/IA.md', 'utf8')
@@ -146,24 +135,24 @@ describe('atmosphere assignment', () => {
     expect(resolveAtmosphere('/deep/unknown/path')).toBe(DEFAULT_ATMOSPHERE)
   })
 
-  it('never assigns a level outside ATOMIC.md §7.2', () => {
+  it('never assigns a production level other than Full', () => {
     for (const entry of SCREEN_ATMOSPHERE) {
-      expect(['full', 'quiet', 'operational']).toContain(entry.level)
+      expect(entry.level).toBe('full')
     }
   })
 })
 
 describe('atmosphere rendering', () => {
-  it.each(CURRENT_ROUTE_ASSIGNMENTS)('renders %s with the current data-atmosphere="%s"', (pathname, level) => {
+  it.each(PRODUCTION_PATHS)('renders %s with data-atmosphere="full"', (pathname) => {
     const { container } = renderApp([pathname], providersFor(pathname))
 
     // IA.md §3 layer 2 — the shell carries the level…
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
-      level,
+      'full',
     )
     // …and ATOMIC.md §7 puts the global attribute on <html>.
-    expect(document.documentElement.dataset.atmosphere).toBe(level)
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
   })
 
   it('mounts the atmosphere layer once at the app root', () => {
@@ -174,8 +163,7 @@ describe('atmosphere rendering', () => {
     expect(container.querySelector('.clr-shell .clr-atmosphere')).toBeNull()
   })
 
-  it('changes level on navigation without remounting the layer', async () => {
-    // `/welcome` → `/login` is `full` → `quiet` for the same anonymous visitor.
+  it('keeps the Full layer mounted across navigation', async () => {
     // It used to start on `/workout`, which EXE-01 has since made both
     // protected and a focus mode — a navigation off it is intercepted by the
     // abandon confirm, which is `Workout.test.tsx`'s subject and would prove
@@ -201,35 +189,9 @@ describe('atmosphere rendering', () => {
 
     // The same DOM node, so the ground never restarts mid-navigation.
     expect(container.querySelector('.clr-atmosphere')).toBe(layer)
-    expect(container.querySelector('.clr-shell')).toHaveAttribute(
-      'data-atmosphere',
-      'quiet',
-    )
-    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
-    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute(
-      'data-context',
-      'entry-form',
-    )
-  })
-
-  it('scopes the stronger quiet presentation to login and onboarding', () => {
-    const authRender = renderApp(['/login'])
-    const auth = authRender.container.querySelector('.clr-atmosphere')
-    expect(auth).toHaveAttribute('data-context', 'entry-form')
-    authRender.unmount()
-
-    const onboardingRender = renderApp(
-      ['/onboarding'],
-      providersFor('/onboarding'),
-    )
-    expect(onboardingRender.container.querySelector('.clr-atmosphere')).toHaveAttribute(
-      'data-context',
-      'entry-form',
-    )
-    onboardingRender.unmount()
-
-    const welcome = renderApp(['/welcome']).container.querySelector('.clr-atmosphere')
-    expect(welcome).not.toHaveAttribute('data-context')
+    expect(container.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'full')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
+    expect(container.querySelector('.clr-atmosphere')).not.toHaveAttribute('data-context')
   })
 
   it('renders the export five-layer ground and hides it from assistive tech', () => {

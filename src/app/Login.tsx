@@ -1,7 +1,7 @@
 /**
  * OTP Login — `/login` (AUTH-02).
  *
- * IA.md §4: atmosphere `quiet`, public-only, in from Welcome, out to `/` (the
+ * IA.md §4: atmosphere `full`, public-only, in from Welcome, out to `/` (the
  * onboarding question is a profile question, and this screen reads no profile).
  * Composition is `AuthLayout › PageHeader + Card › Input + CTAButton` — the
  * shell and its atmosphere come from `RootLayout`, `PageHeader` is `AppHeader`,

@@ -1,7 +1,7 @@
 /**
  * Onboarding — `/onboarding` (ONB-01).
  *
- * IA.md §4: atmosphere `quiet`, guard `authed + not onboarded`, in from the
+ * IA.md §4: atmosphere `full`, guard `authed + not onboarded`, in from the
  * first verified login, out to `/` on the atomic commit. Composition is
  * `OnboardingLayout › PageHeader + Card › RadioButton · Chip · Textarea ·
  * CTAButton` — the shell and its atmosphere are `RootLayout`'s, the header is

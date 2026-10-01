@@ -421,13 +421,13 @@ describe('ReviewRoute · cancel returns to Review and discards the abandoned run
 })
 
 describe('ReviewRoute · the atmosphere swap', () => {
-  it('renders the Loading screen at full and restores Review’s level when it leaves', async () => {
+  it('keeps the Full atmosphere through Loading and Review', async () => {
     const user = userEvent.setup()
     const client = createFakeGenerationClient()
     mount(client)
 
     await briefing('Original session')
-    expect(atmosphere()).toBe('quiet')
+    expect(atmosphere()).toBe('full')
 
     await confirmRegenerate(user)
     expect(atmosphere()).toBe('full')
@@ -437,7 +437,7 @@ describe('ReviewRoute · the atmosphere swap', () => {
       client.succeed({ acceptance: acceptanceTitled('Regenerated session') })
     })
     await briefing('Regenerated session')
-    expect(atmosphere()).toBe('quiet')
+    expect(atmosphere()).toBe('full')
   })
 
   it('restores Review’s level on cancel', async () => {
@@ -449,7 +449,7 @@ describe('ReviewRoute · the atmosphere swap', () => {
     expect(atmosphere()).toBe('full')
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(atmosphere()).toBe('quiet')
+    expect(atmosphere()).toBe('full')
   })
 })
 

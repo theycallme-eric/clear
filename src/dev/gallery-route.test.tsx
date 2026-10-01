@@ -81,8 +81,7 @@ describe('/dev/gallery', () => {
 
     unmount()
     await waitFor(() =>
-      // IA.md §4 gives the gallery `quiet`; an override must not outlive it.
-      expect(document.documentElement.dataset.atmosphere).toBe('quiet'),
+      expect(document.documentElement.dataset.atmosphere).toBe('full'),
     )
   })
 })

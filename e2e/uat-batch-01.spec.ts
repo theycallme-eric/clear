@@ -61,7 +61,7 @@ async function stubSupabase(page: Page, onboarded: boolean) {
   await page.route('**/functions/v1/**', (route) => answer(route, {}))
 }
 
-test('onboarding applies one atmospheric, card-contained composition to every step', async ({
+test('onboarding applies the Full atmosphere and one card-contained composition to every step', async ({
   page,
   visit,
 }) => {
@@ -70,12 +70,12 @@ test('onboarding applies one atmospheric, card-contained composition to every st
   await visit('/onboarding')
 
   const atmosphere = page.locator('.clr-atmosphere')
-  await expect(atmosphere).toHaveAttribute('data-context', 'entry-form')
+  await expect(atmosphere).not.toHaveAttribute('data-context')
   expect(
     await atmosphere.evaluate((layer) =>
       Number(getComputedStyle(layer).getPropertyValue('--atmosphere-opacity')),
     ),
-  ).toBe(0.26)
+  ).toBe(0.4)
 
   const stepCard = () => page.locator('main .clr-card')
   await expect(stepCard()).toHaveCount(1)
