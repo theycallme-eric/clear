@@ -53,6 +53,7 @@ import { EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboard
 import { useQueryClient } from '../state/query'
 import type { Profile, ProfilePreferences } from '../state/schemas'
 import {
+  goalCorrection,
   goalOptions,
   limitationFor,
   LOCKED_SECTIONS_REASON,
@@ -157,6 +158,7 @@ function PreferencesCard({ profile }: { profile: Profile }) {
 
   const preferences = preferencesOf(profile)
   const locked = sectionsLocked(preferences.goal_preset)
+  const correction = goalCorrection(preferences.goal_preset)
 
   async function store(next: ProfilePreferences) {
     if (user === null || next === preferences) return
@@ -182,16 +184,19 @@ function PreferencesCard({ profile }: { profile: Profile }) {
 
         <ChoiceGroup
           legend="Goal"
-          options={goalOptions(preferences.goal_preset).map((goal) => ({
+          options={goalOptions().map((goal) => ({
             value: goal.value,
             label: goal.label,
           }))}
-          value={preferences.goal_preset ?? undefined}
+          // A goal that needs correcting is not one of the options, so nothing
+          // is shown as chosen and the sentence below says what to do.
+          value={correction === null ? (preferences.goal_preset ?? undefined) : undefined}
           onChange={(next) => {
             const goal = single(next) as Enums<'goal_preset'>
             void store(withGoal(preferences, goal))
           }}
         />
+        {correction !== null && <p>{correction}</p>}
 
         <ChoiceGroup
           legend="Experience"

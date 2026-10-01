@@ -16,8 +16,16 @@ import {
   withRetryCorrection,
   type PromptInput,
 } from '../../supabase/functions/_shared/prompt.ts'
-import { ACTIVE_RECOVERY_SECTIONS } from '../data/candidates'
+import {
+  ACTIVE_RECOVERY_SECTIONS,
+  SESSION_FOCUSES,
+  createCandidatesClient,
+  type Candidate,
+  type SessionFocus,
+} from '../data/candidates'
 import { CONTRACT_VERSION } from '../state/schemas'
+import { FOCUS_PATTERNS } from '../state/session-suggestion'
+import { createCandidatesDouble } from './candidates-double'
 import {
   CANDIDATE_LIBRARY,
   legacyLibraryBlock,
@@ -387,6 +395,168 @@ describe('prompt 5.1.0 measured against the captured v4.0.0 baseline', () => {
     expect(v5.reduce((total, line) => total + byteLength(line), 0)).toBeLessThan(
       legacy.reduce((total, line) => total + byteLength(line), 0),
     )
+  })
+})
+
+describe('the Goal/Focus recovery against the prompt it inherited', () => {
+  // REQ-012. The recovery restores an explicit Goal and Focus to the request; it
+  // is not allowed to pay for that in prompt. The REQUEST block already states
+  // both, so the only honest size for the recovery's fixture prompt is the size
+  // it had before the recovery began.
+  //
+  // The baseline is the fixture's `totalBytes` at prompt 5.1.0, measured on
+  // `main` before any recovery change to `prompt.ts`. The tolerance is 256 bytes
+  // — about 2% of the fixture, and roughly three lines of prompt prose. That
+  // is room to reword a line or rename a REQUEST field without touching this
+  // number, and not room for a new section, a second statement of Goal or Focus,
+  // or a paragraph of instruction: the smallest of those costs more than it.
+  const PRE_RECOVERY_TOTAL_BYTES = 12_340
+  const RECOVERY_TOLERANCE_BYTES = 256
+
+  const assembled = assemblePrompt(promptInput())
+  const userLines = assembled.user.split('\n')
+
+  it('does not materially grow the fixture prompt', () => {
+    expect(assembled.measurement.totalBytes).toBeLessThanOrEqual(
+      PRE_RECOVERY_TOTAL_BYTES + RECOVERY_TOLERANCE_BYTES,
+    )
+  })
+
+  it('states the goal and the focus once each, in the user message', () => {
+    expect(userLines.filter((line) => /^\s*goal:/.test(line))).toEqual(['goal: strength'])
+    expect(userLines.filter((line) => /^\s*focus:/.test(line))).toEqual(['focus: lower_body'])
+    // Once as a line is not enough if the value is restated in prose elsewhere.
+    // `recent_focuses` is history, not the request, and is the one other place
+    // a focus value may legitimately appear.
+    const restated = userLines.filter(
+      (line) => line.includes('lower_body') && !line.startsWith('recent_focuses:'),
+    )
+    expect(restated).toEqual(['focus: lower_body'])
+  })
+
+  it('keeps the request’s goal and focus out of the system prompt', () => {
+    // GOAL SHAPES describes every goal, so a goal's name is in the system prompt
+    // as vocabulary. What must not be there is the request: no `goal:` or
+    // `focus:` line, no focus value at all, and nothing that changes when the
+    // request does.
+    expect(assembled.system).not.toMatch(/^\s*(goal|focus):/m)
+    for (const focus of SESSION_FOCUSES) expect(assembled.system).not.toContain(focus)
+
+    const other = assemblePrompt(
+      promptInput({
+        request: resolveEffectiveRequest({
+          requestId: 'req_abc123_def456',
+          goal: 'hypertrophy',
+          focus: 'upper_body',
+          requestedIntensity: 8,
+          durationTargetMins: 45,
+          enabledSections: ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown'],
+        }),
+      }),
+    )
+
+    expect(other.system).toBe(assembled.system)
+    expect(other.user).toContain('goal: hypertrophy\nfocus: upper_body')
+  })
+})
+
+describe('what Focus does to the candidates that can reach the model', () => {
+  // REQ-013. Focus is not a word in the prompt that the model is asked to
+  // honour; it is a predicate applied before the prompt exists. These run the
+  // retrieval — the migration's rules, transcribed in src/test/candidates-double
+  // — over the committed seed for the same user, location and sections, changing
+  // only the focus, and compare what comes back.
+  const URL_ = 'https://project.supabase.co'
+  const ANON_KEY = 'anon-key'
+  const TOKEN = 'user-token'
+  const USER = 'user-1'
+
+  const client = createCandidatesClient({
+    url: URL_,
+    anonKey: ANON_KEY,
+    accessToken: TOKEN,
+    fetch: createCandidatesDouble({
+      url: URL_,
+      anonKey: ANON_KEY,
+      users: { [TOKEN]: USER },
+      profiles: {
+        [USER]: {
+          goalPreset: 'strength',
+          enabledSections: ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown'],
+          locations: [
+            {
+              id: 'location-home',
+              isDefault: true,
+              equipment: ['bodyweight', 'barbell', 'dumbbells', 'kettlebells', 'pullup_bar'],
+            },
+          ],
+        },
+      },
+    }).fetch,
+  })
+
+  /** The primaries one focus admits, from a section the floor did not widen. */
+  const primaries = async (focus: SessionFocus): Promise<Candidate[]> => {
+    const result = await client.retrieve({ userId: USER, focus })
+    if (!result.ok) throw new Error(`retrieval failed: ${result.error.code}`)
+
+    const section = result.value.find((candidate) => candidate.section === 'primary_lift')
+    if (!section) throw new Error(`${focus} resolved no primary_lift section`)
+    // A relaxed section has dropped the focus predicate, and would prove nothing.
+    expect(section.relaxed).toBe(false)
+
+    return section.candidates.filter((candidate) => candidate.canBePrimary)
+  }
+
+  const ids = (candidates: readonly Candidate[]) =>
+    candidates.map((candidate) => candidate.exerciseId)
+
+  it('admits different primaries for lower_body and upper_body', async () => {
+    const lower = ids(await primaries('lower_body'))
+    const upper = ids(await primaries('upper_body'))
+
+    expect(lower).not.toEqual(upper)
+    // Each side has primaries the other never sees, and they are most of it.
+    const lowerOnly = lower.filter((id) => !upper.includes(id))
+    const upperOnly = upper.filter((id) => !lower.includes(id))
+    const shared = lower.filter((id) => upper.includes(id))
+
+    expect(lowerOnly.length).toBeGreaterThan(shared.length)
+    expect(upperOnly.length).toBeGreaterThan(shared.length)
+  })
+
+  it('excludes from each what the other admits', async () => {
+    const lower = await primaries('lower_body')
+    const upper = await primaries('upper_body')
+
+    // Named rather than counted: the lifts a reader would expect to see move.
+    expect(ids(lower)).toContain('back-squat')
+    expect(ids(upper)).not.toContain('back-squat')
+    expect(ids(upper)).toContain('bench-press')
+    expect(ids(lower)).not.toContain('bench-press')
+  })
+
+  it('admits a primary only for a pattern its focus maps to', async () => {
+    const lower = await primaries('lower_body')
+    const upper = await primaries('upper_body')
+    const admittedBy = (focus: SessionFocus) => (candidate: Candidate) =>
+      candidate.patterns.some((pattern) => FOCUS_PATTERNS[focus].includes(pattern))
+
+    expect(lower.every(admittedBy('lower_body'))).toBe(true)
+    expect(upper.every(admittedBy('upper_body'))).toBe(true)
+
+    // The overlap is not a leak. A lift both focuses admit is one the catalog
+    // gives a pattern from each — a barbell row is a pull held in a hinge — and
+    // an upper-body-only primary never reaches a lower_body request, or back.
+    const upperIds = ids(upper)
+    const lowerIds = ids(lower)
+
+    for (const candidate of lower) {
+      expect(upperIds.includes(candidate.exerciseId)).toBe(admittedBy('upper_body')(candidate))
+    }
+    for (const candidate of upper) {
+      expect(lowerIds.includes(candidate.exerciseId)).toBe(admittedBy('lower_body')(candidate))
+    }
   })
 })
 

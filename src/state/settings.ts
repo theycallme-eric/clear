@@ -37,6 +37,14 @@ type MovementPattern = Enums<'movement_pattern'>
 export const LOCKED_SECTIONS_REASON =
   'Active recovery is composed from warm-up, mobility and cooldown. Choose another goal to change its sections.'
 
+/** Why a profile with no goal has to choose one before a workout can be generated. */
+export const MISSING_GOAL_REASON =
+  'Your goal needs to be set. Choose one below before generating a workout.'
+
+/** Why a legacy `active_recovery` profile has to choose one of the four. */
+export const LEGACY_GOAL_REASON =
+  'Active recovery is no longer a standing goal. Choose one below before generating a workout.'
+
 /** Why the last enabled section cannot be turned off (`profiles_enabled_sections_not_empty`). */
 export const LAST_SECTION_REASON = 'A workout needs at least one section.'
 
@@ -65,33 +73,29 @@ export function withPreferences(
 }
 
 /**
- * The goals offered, plus the one already stored if it is not among them.
+ * The goals offered: onboarding's four, and nothing else.
  *
- * The four presets are onboarding's (`active_recovery` is a way to train today,
- * not a default to set up), but a profile can hold it — generation writes the
- * day's focus, and an earlier release may have stored it. Showing a picker that
- * omits the current answer would say the user has chosen nothing, so the stored
- * goal is always one of the options, and choosing another is how they leave it.
+ * `active_recovery` is a way to train today, not a standing goal, so it is never
+ * a choice here — not even for a legacy profile that still stores it. That
+ * profile's answer is not hidden: `goalCorrection` says it has to change, and
+ * choosing one of these is how it does.
  */
-export function goalOptions(current: GoalPreset | null): readonly Option<GoalPreset>[] {
-  if (current === null || GOALS.some((goal) => goal.value === current)) return GOALS
-
-  return [
-    ...GOALS,
-    {
-      value: current,
-      label: goalLabel(current),
-      description: 'Composed from a fixed set of sections.',
-    },
-  ]
+export function goalOptions(): readonly Option<GoalPreset>[] {
+  return GOALS
 }
 
-/** A goal's own name, from the enum, with no list of its own to drift. */
-function goalLabel(goal: GoalPreset): string {
-  return (
-    GOALS.find((option) => option.value === goal)?.label ??
-    goal.replace(/_/g, ' ').replace(/^./, (first) => first.toUpperCase())
-  )
+/**
+ * Why the stored goal has to be chosen again, or null when it stands.
+ *
+ * Ordinary generation refuses a profile with no goal, and one whose goal is the
+ * legacy `active_recovery`, and sends the user here. A sentence next to the
+ * control, so an unselected picker reads as a question rather than a fault.
+ */
+export function goalCorrection(current: GoalPreset | null): string | null {
+  if (current === null) return MISSING_GOAL_REASON
+  if (GOALS.some((goal) => goal.value === current)) return null
+
+  return LEGACY_GOAL_REASON
 }
 
 /** True while the goal, not the user, decides which sections run. */
