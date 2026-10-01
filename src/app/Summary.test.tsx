@@ -162,6 +162,17 @@ describe('Summary — the debrief', () => {
     expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
   })
 
+  it('frames each result and keeps completion associated with the scrolling form', async () => {
+    await debrief()
+
+    expect(screen.getByText('Duration').closest('.clr-metric-frame')).toBeInTheDocument()
+    expect(screen.getByText('Streak').closest('.clr-metric-frame')).toBeInTheDocument()
+    const done = screen.getByRole('button', { name: DONE })
+    expect(done).toHaveAttribute('form', 'summary-debrief')
+    expect(done.closest('.clr-scroll-region__foot')).toBeInTheDocument()
+    expect(document.getElementById('summary-debrief')).toHaveAttribute('novalidate')
+  })
+
   it('persists the mood and notes to the session row, then returns Home', async () => {
     const user = userEvent.setup()
     const { summary, router } = await debrief()

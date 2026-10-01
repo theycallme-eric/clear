@@ -300,6 +300,14 @@ describe('Workout — navigation and progress', () => {
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
   })
 
+  it('reserves the measured footer for section navigation', async () => {
+    await shell()
+
+    const navigation = screen.getByRole('navigation', { name: 'Workout sections' })
+    expect(navigation).toHaveClass('clr-actions')
+    expect(navigation.closest('.clr-scroll-region__foot')).toBeInTheDocument()
+  })
+
   it('jumps straight to a section from the progress tracker', async () => {
     const user = userEvent.setup()
     await shell()

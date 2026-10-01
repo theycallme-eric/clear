@@ -7,6 +7,8 @@ import {
   ListFrame,
   ListMessage,
   ListRow,
+  MetricFrame,
+  MetricGrid,
   PhoneFooter,
   TabBand,
 } from './composition'
@@ -58,6 +60,27 @@ describe('0.9.7 composition wrappers', () => {
     expect(message.closest('.clr-list')).toHaveClass('clr-list', 'clr-chamfer')
     expect(message.closest('.clr-list__row')).toBeInTheDocument()
     expect(screen.getByText('Generate one first.')).toBeInTheDocument()
+  })
+
+  it('composes compact facts as individual frames in one responsive grid', () => {
+    renderWithProviders(
+      <MetricGrid as="dl" aria-label="Workout facts" data-testid="metrics">
+        <MetricFrame>
+          <dt>Goal</dt>
+          <dd>Strength</dd>
+        </MetricFrame>
+        <MetricFrame>
+          <dt>Duration</dt>
+          <dd>45 min</dd>
+        </MetricFrame>
+      </MetricGrid>,
+    )
+
+    expect(screen.getByTestId('metrics')).toHaveClass('clr-metric-grid')
+    expect(screen.getByText('Goal').closest('.clr-metric-frame')).toHaveClass(
+      'clr-chamfer',
+      'clr-chamfer--sm',
+    )
   })
 
   it('merges caller classes and native attributes on the selected element', () => {

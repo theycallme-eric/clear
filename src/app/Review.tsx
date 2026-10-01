@@ -46,7 +46,9 @@ import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
+  AppHeader,
   Button,
+  ClearLogo,
   Clock,
   Crosshair,
   Gauge,
@@ -84,6 +86,7 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import {
   LoadSuggestionButton,
   LoadSuggestionDialog,
@@ -236,7 +239,37 @@ export function Review({
   }
 
   return (
-    <Screen title={REVIEW_TITLE} heading={briefing.title}>
+    <>
+      <AppHeader>
+        <ClearLogo size="md" />
+      </AppHeader>
+      <Screen
+        title={REVIEW_TITLE}
+        heading={briefing.title}
+        pinnedFoot={
+          <PhoneFooter>
+            <ActionRow>
+              <Button
+                variant="secondary"
+                icon={<RefreshCw />}
+                disabled={starting}
+                onClick={() => setConfirmingRegenerate(true)}
+              >
+                {REGENERATE_LABEL}
+              </Button>
+              <Button
+                variant="primary"
+                size="lg"
+                icon={<Play />}
+                loading={starting}
+                onClick={() => void start()}
+              >
+                {START_LABEL}
+              </Button>
+            </ActionRow>
+          </PhoneFooter>
+        }
+      >
       <div
         className="clr-stack"
         style={{ display: 'flex', flexDirection: 'column' }}
@@ -276,31 +309,6 @@ export function Review({
             onExplain={setExplaining}
           />
         ))}
-
-        <div className="clr-row">
-          <Button
-            variant="primary"
-            size="lg"
-            icon={<Play />}
-            loading={starting}
-            onClick={() => void start()}
-          >
-            {START_LABEL}
-          </Button>
-          {/*
-            Second, and quiet. Regenerating is not a peer of starting: it throws
-            away a composition the user has just been shown, so it does not sit
-            beside the forward action as an equal offer.
-          */}
-          <Button
-            variant="quiet"
-            icon={<RefreshCw />}
-            disabled={starting}
-            onClick={() => setConfirmingRegenerate(true)}
-          >
-            {REGENERATE_LABEL}
-          </Button>
-        </div>
       </div>
 
       {explained !== undefined && (
@@ -333,7 +341,8 @@ export function Review({
           onDismiss={() => setFailure(null)}
         />
       )}
-    </Screen>
+      </Screen>
+    </>
   )
 }
 
@@ -407,44 +416,31 @@ function BriefingHeader({
   movementCount: number
 }) {
   return (
-    <Card barWidth="lg">
-      <div className="clr-stack--tight" style={STACK_STYLE}>
-        <dl
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(7rem, 1fr))',
-            gap: 'var(--spacing-300)',
-            margin: 0,
-          }}
-        >
-          {facts.map((fact) => (
-            <div key={fact.label} style={STACK_STYLE}>
+    <div className="clr-stack--tight" style={STACK_STYLE}>
+      <MetricGrid as="dl" aria-label="Workout facts" style={{ margin: 0 }}>
+        {facts.map((fact) => (
+          <MetricFrame key={fact.label}>
               <dt style={LABEL_STYLE}>
                 {FACT_GLYPHS[fact.label]}
                 {fact.label}
               </dt>
               <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{fact.value}</dd>
-            </div>
-          ))}
-        </dl>
+          </MetricFrame>
+        ))}
+        <MetricFrame>
+          <dt style={LABEL_STYLE}>Movements</dt>
+          <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{movementCount}</dd>
+        </MetricFrame>
+      </MetricGrid>
 
-        <p style={DATA_STYLE}>
-          {movementCount} {movementCount === 1 ? 'movement' : 'movements'}
+      {/* A clamp that moved the session says so in words and with a glyph. */}
+      {adjustment !== null && (
+        <p style={{ ...DATA_STYLE, display: 'flex', gap: 'var(--spacing-200)' }}>
+          <Info size={16} />
+          {adjustment}
         </p>
-
-        {/*
-          A clamp that moved the session says so. The glyph carries it as well
-          as the words — an adjustment is a difference from what was asked for,
-          and a difference that only reads as a quieter colour is not a cue.
-        */}
-        {adjustment !== null && (
-          <p style={{ ...DATA_STYLE, display: 'flex', gap: 'var(--spacing-200)' }}>
-            <Info size={16} />
-            {adjustment}
-          </p>
-        )}
-      </div>
-    </Card>
+      )}
+    </div>
   )
 }
 
@@ -466,7 +462,7 @@ function ReviewSectionCard({
   ...suggestion
 }: { section: ReviewSectionView } & SuggestionProps) {
   return (
-    <Card>
+    <Card barWidth="md">
       <CollapsibleSection
         // A plain label rather than a `Heading`: the trigger *is* a button, and
         // a heading nested inside one is read as part of the control's name

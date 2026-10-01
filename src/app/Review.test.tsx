@@ -173,6 +173,19 @@ describe('all generated content renders', () => {
     ).toBeInTheDocument()
   })
 
+  it('keeps the facts individually framed and both decisions at the measured edge', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    expect(
+      screen.getByText('Strength', { selector: 'dd' }).closest('.clr-metric-frame'),
+    ).toBeInTheDocument()
+    const footer = screen.getByRole('contentinfo')
+    expect(footer.closest('.clr-scroll-region__foot')).toBeInTheDocument()
+    expect(within(footer).getByRole('button', { name: START_LABEL })).toBeInTheDocument()
+    expect(within(footer).getByRole('button', { name: REGENERATE_LABEL })).toBeInTheDocument()
+  })
+
   it('renders every section, in the order it will be performed', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })

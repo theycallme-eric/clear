@@ -43,7 +43,7 @@
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { EmptyState, Zap } from '../design-system/index'
+import { AppHeader, Button, ClearLogo, EmptyState, Zap } from '../design-system/index'
 import {
   deloadInEffect,
   favoriteProgression,
@@ -65,6 +65,7 @@ import {
 } from '../state/view-state'
 import { useWorkoutClients } from '../state/workout-queries'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { ViewStateSwitch } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
@@ -101,15 +102,35 @@ export function ReviewRoute() {
   return (
     <GenerationLoadingHost generation={generation} cancelTo={REVIEW_PATH}>
       {handoff === null ? (
-        <Screen title={REVIEW_TITLE} heading={NO_REVIEW_TITLE}>
-          <EmptyState
-            title={NO_REVIEW_TITLE}
-            message={NO_REVIEW_MESSAGE}
-            icon={<Zap size={24} />}
-            actionLabel="Generate workout"
-            onAction={() => void navigate(GENERATE_PATH)}
-          />
-        </Screen>
+        <>
+          <AppHeader>
+            <ClearLogo size="md" />
+          </AppHeader>
+          <Screen
+            title={REVIEW_TITLE}
+            heading={NO_REVIEW_TITLE}
+            pinnedFoot={
+              <PhoneFooter>
+                <ActionRow>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    icon={<Zap />}
+                    onClick={() => void navigate(GENERATE_PATH)}
+                  >
+                    Generate workout
+                  </Button>
+                </ActionRow>
+              </PhoneFooter>
+            }
+          >
+            <EmptyState
+              title={NO_REVIEW_TITLE}
+              message={NO_REVIEW_MESSAGE}
+              icon={<Zap size={24} />}
+            />
+          </Screen>
+        </>
       ) : (
         <Review
           // Keyed by the composition, so arriving with a different workout is a

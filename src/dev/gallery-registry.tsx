@@ -62,6 +62,8 @@ import {
   ListFrame,
   ListMessage,
   ListRow,
+  MetricFrame,
+  MetricGrid,
   PhoneFooter,
   TabBand,
 } from '../ui/composition'
@@ -249,6 +251,51 @@ function TabBandWithRail() {
     <TabBand>
       <div className="clr-rail">Recent · Favorites · Progress</div>
     </TabBand>
+  )
+}
+
+function MetricGridFacts() {
+  return (
+    <MetricGrid>
+      <MetricFrame>
+        <span className="label">Goal</span>
+        <strong>Strength</strong>
+      </MetricFrame>
+      <MetricFrame>
+        <span className="label">Duration</span>
+        <strong>45 min</strong>
+      </MetricFrame>
+    </MetricGrid>
+  )
+}
+
+function MetricGridOddCount() {
+  return (
+    <MetricGrid>
+      <MetricFrame>
+        <span className="label">Duration</span>
+        <strong>32 min</strong>
+      </MetricFrame>
+      <MetricFrame>
+        <span className="label">Streak</span>
+        <strong>4 days</strong>
+      </MetricFrame>
+      <MetricFrame>
+        <span className="label">Movements</span>
+        <strong>7</strong>
+      </MetricFrame>
+    </MetricGrid>
+  )
+}
+
+function MetricFrameLoading() {
+  return (
+    <MetricGrid>
+      <MetricFrame>
+        <span className="label">Streak</span>
+        <strong>Reading your streak…</strong>
+      </MetricFrame>
+    </MetricGrid>
   )
 }
 
@@ -1937,6 +1984,26 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'single primary action', Render: PhoneFooterSingle },
       { state: 'paired actions', Render: PhoneFooterPaired },
+    ],
+  },
+  {
+    component: 'MetricGrid',
+    requirement: 'DS-097-C',
+    module: 'src/ui/composition.tsx',
+    summary: 'The shared responsive grid for terse workout facts and completed-result readouts.',
+    specimens: [
+      { state: 'two framed facts', Render: MetricGridFacts },
+      { state: 'odd fact count', Render: MetricGridOddCount },
+    ],
+  },
+  {
+    component: 'MetricFrame',
+    requirement: 'DS-097-C',
+    module: 'src/ui/composition.tsx',
+    summary: 'One compact labelled value in the system small closed frame.',
+    specimens: [
+      { state: 'resolved values', Render: MetricGridFacts },
+      { state: 'loading value', Render: MetricFrameLoading },
     ],
   },
   {

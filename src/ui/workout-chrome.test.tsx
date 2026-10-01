@@ -338,6 +338,7 @@ describe('RestTimerBar', () => {
     returnToForeground()
     expect(restBar()).toHaveAttribute('data-urgent', 'true')
     expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
   })
 
   it('enters with no list or route motion — it appears in the tap that logs a set', async () => {
