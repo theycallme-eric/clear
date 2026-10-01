@@ -73,13 +73,15 @@ import {
   prefillFrom,
   refusalFrom,
   requestFrom,
+  resolveGeneration,
   withAnchor,
   withDuration,
-  withGoal,
   withIntensity,
   withLocation,
   withNotes,
+  withRecovery,
   type DraftRefusal,
+  type GenerationContext,
   type GenerationDraft,
   type GenerationPrefill,
 } from '../state/generation-form'
@@ -114,8 +116,25 @@ type Places = readonly Location[]
  */
 interface Composition {
   readonly draft: GenerationDraft
+  /** The goal chip chosen on this screen, standing in for the profile's Goal. */
+  readonly goal: GoalPreset | null
   readonly applied: DeloadSuggestion | null
   readonly overridden: boolean
+}
+
+type GoalPreset = (typeof GENERATION_GOALS)[number]['value']
+
+/**
+ * What `resolveGeneration` is told while this screen still asks the Goal
+ * itself: the chosen chip as the standing Goal, and no history, so the anchor
+ * stays the user's to choose. Recovery is the draft's one-workout mode rather
+ * than a standing Goal, so its chip resolves over a stand-in that is never sent.
+ */
+function contextFrom(goal: GoalPreset | null): GenerationContext {
+  return {
+    goalPreset: goal === 'active_recovery' ? 'balanced' : goal,
+    history: { status: 'no-completed-history' },
+  }
 }
 
 /** Said once, where a suggestion filled the anchor and the intensity in. */
@@ -226,10 +245,13 @@ function GenerateForm({
 }) {
   const untouched = (): Composition => ({
     draft: initialDraft(defaultLocationId(places), prefill),
+    goal: null,
     applied: null,
     overridden: false,
   })
-  const { draft, applied, overridden } = composition ?? untouched()
+  const { draft, goal: chosen, applied, overridden } = composition ?? untouched()
+  const context = contextFrom(chosen)
+  const resolved = resolveGeneration(draft, context)
 
   /** One edit to what the user composed, laid over whatever is already held. */
   function compose(change: Partial<Composition>) {
@@ -263,8 +285,9 @@ function GenerateForm({
   const suggestion = applied ?? deload.suggestion
 
   const intensityHint = useId()
-  const range = intensityRange(draft.goal)
-  const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === draft.goal)
+  const range = intensityRange(resolved.goal)
+  const intensity = resolved.intensity ?? draft.intensity ?? range.start
+  const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === resolved.goal)
 
   /**
    * §4's Apply: the intensity is clamped and the directive rides on the request.
@@ -275,7 +298,7 @@ function GenerateForm({
     if (deload.suggestion === null) return
     compose({
       applied: deload.suggestion,
-      draft: withIntensity(draft, clampedIntensity(draft.intensity ?? range.start)),
+      draft: withIntensity(draft, clampedIntensity(intensity)),
     })
     deload.answer('applied')
   }
@@ -294,7 +317,13 @@ function GenerateForm({
   }
 
   function submit() {
-    const request = requestFrom(draft, generateRequestId(), applied !== null, today)
+    const request = requestFrom(
+      draft,
+      context,
+      generateRequestId(),
+      applied !== null,
+      today,
+    )
 
     // The one path to the client, and it is a total function: a refused draft
     // becomes sentences on the fields that caused it and nothing is sent.
@@ -337,8 +366,13 @@ function GenerateForm({
             {GENERATION_GOALS.map((goal) => (
               <Chip
                 key={goal.value}
-                selected={draft.goal === goal.value}
-                onClick={() => setDraft(withGoal(draft, goal.value))}
+                selected={resolved.goal === goal.value}
+                onClick={() =>
+                  compose({
+                    goal: goal.value,
+                    draft: withRecovery(draft, goal.value === 'active_recovery'),
+                  })
+                }
               >
                 {goal.label}
               </Chip>
@@ -350,7 +384,7 @@ function GenerateForm({
         <FormField
           label="Anchor"
           required
-          helperText={draft.goal === 'active_recovery' ? POWER_REFUSAL : undefined}
+          helperText={resolved.goal === 'active_recovery' ? POWER_REFUSAL : undefined}
           errorText={refusal?.fields.focus}
         >
           <div className="clr-row" role="group" aria-label="Anchor" style={CHIP_ROW}>
@@ -358,7 +392,7 @@ function GenerateForm({
               <Chip
                 key={anchor.value}
                 selected={draft.anchor === anchor.value}
-                disabled={!anchorAllowed(draft.goal, anchor.value)}
+                disabled={!anchorAllowed(resolved.goal, anchor.value)}
                 onClick={() => setDraft(withAnchor(draft, anchor.value))}
               >
                 {anchor.label}
@@ -384,14 +418,14 @@ function GenerateForm({
             min={range.min}
             max={range.max}
             step={1}
-            value={draft.intensity ?? range.start}
-            disabled={draft.goal === null}
-            valueText={`${draft.intensity ?? range.start} of ${range.max}`}
+            value={intensity}
+            disabled={resolved.goal === null}
+            valueText={`${intensity} of ${range.max}`}
             aria-describedby={intensityHint}
             onChange={chooseIntensity}
           />
           <p id={intensityHint}>
-            {draft.goal === null
+            {resolved.goal === null
               ? 'Choose a goal first — it sets the range.'
               : `${chosenGoal?.label} runs ${range.min} to ${range.max}.`}
           </p>
@@ -436,7 +470,7 @@ function GenerateForm({
           variant="primary"
           size="lg"
           style={{ width: '100%' }}
-          disabled={!canGenerate(draft)}
+          disabled={!canGenerate(draft, context)}
           onClick={submit}
         >
           Generate workout
