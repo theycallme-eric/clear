@@ -118,6 +118,12 @@ CI enforces the mechanical half on its own:
 That leaves review for what a machine cannot check: does it do the thing, and does it feel
 like CLEAR.
 
+**Read the journal before closing.** The completion check inspects the task's journal entry and
+process log for unresolved findings, and an unresolved finding prevents closure even when every
+command passes. A finding is resolved when it is fixed and verified, raised as a blocking recovery
+item (§6), removed from dependents (§6), or shown to touch neither an acceptance criterion nor a
+dependent. "Out of scope", "not worked around" and "for a later task" are not resolutions.
+
 ---
 
 ## 6. When the requirement is wrong
@@ -135,6 +141,20 @@ another issue's output — if that happens, the graph is wrong, and *that* is th
 
 Eric decides: amend the issue, cut a new one, or close it as not-needed. Amending an issue
 is cheap. Discovering three weeks later that four agents each guessed differently is not.
+
+**A discovered violation is a blocking recovery item.** If the work turns up a defect that
+invalidates one of the task's own acceptance criteria, or that a dependent task would build on,
+raise it as a blocking recovery item and record which tasks it blocks. The task may not close
+while it is unresolved, and the affected dependents do not start.
+
+**"Out of scope" is valid only when the affected behavior is removed from dependents** — nothing
+downstream offers, accepts or relies on it, and the finding cites the change that removed it.
+Otherwise the finding is unresolved. TASK-032 recorded three selectable sections with no catalog
+rows, called it out of scope and closed; generation and onboarding were then built on top of it.
+
+The rules the Agent Runner enforces, the split between what it recovers automatically and what
+still needs an explicit safety gate, and the TASK-032 replay are in
+`docs/process/generation-reliability/agent-runner-prevention.md`.
 
 ---
 
@@ -210,6 +230,9 @@ Record:
 - corrections made, including any script or process change that prevents a repeat;
 - verification performed and its exact result;
 - unresolved questions, assumptions, and the next safe action.
+
+Give every finding its disposition where it is recorded. The completion check (§5) reads this
+entry, and a finding without one keeps the task open.
 
 Keep secrets, one-time codes, tokens, email contents, and personal data out of the journal.
 Prefer facts over a minute-by-minute transcript. When a verification method is wrong, record
