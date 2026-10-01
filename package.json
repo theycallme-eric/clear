@@ -19,6 +19,7 @@
     "e2e:reset": "node scripts/e2e/reset.mjs",
     "e2e:seed": "node scripts/e2e/seed.mjs",
     "e2e:server": "vite --port 5173 --strictPort",
+    "gr:auth-template": "node scripts/generation-reliability/auth-email-template.mjs",
     "gen:types": "node scripts/gen-types/gen-types.mjs",
     "gr:matrix": "node scripts/generation-reliability/legal-state-matrix.mjs",
     "lint": "eslint .",

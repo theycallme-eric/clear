@@ -18,6 +18,11 @@ To compare the live project with the committed contract:
 SUPABASE_ACCESS_TOKEN=… npm run backend:auth-template
 ```
 
+`npm run gr:auth-template -- --check` runs the same read-only comparison and also works without the
+token: it then checks only the committed template and prints that the hosted comparison was not run.
+Add `--require-hosted` to make a missing token a failure, as the release checklist at
+`docs/process/generation-reliability/release-checklist.md` does.
+
 The access token is read from the process environment only. Do not commit it, pass it as a command
 argument, or paste it into a journal. A successful admin-generated OTP test is not a substitute for
 this check: that test never renders or delivers an email.

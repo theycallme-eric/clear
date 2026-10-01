@@ -24,13 +24,25 @@
  * @property {typeof globalThis.fetch} [fetch]
  */
 
-/** Thrown for every non-2xx response, carrying status but never the secret. */
+/**
+ * Thrown for every non-2xx response, carrying status but never the secret.
+ *
+ * `code` is GoTrue's machine-readable `error_code` (`otp_expired`, …) when the
+ * response had one. A refusal is asserted on that rather than on the prose
+ * beside it, which GoTrue rewords between releases.
+ */
 export class AdminError extends Error {
-  /** @param {string} what @param {number} status @param {string} detail */
-  constructor(what, status, detail) {
+  /**
+   * @param {string} what
+   * @param {number} status
+   * @param {string} detail
+   * @param {string | null} [code]
+   */
+  constructor(what, status, detail, code = null) {
     super(`${what} failed with ${status}${detail ? `: ${detail}` : ''}`)
     this.name = 'AdminError'
     this.status = status
+    this.code = code
   }
 }
 
@@ -79,7 +91,8 @@ export function createAdminClient(options) {
       // `message`. None of the three ever contains a credential.
       const detail =
         r.body?.msg ?? r.body?.error_description ?? r.body?.message ?? ''
-      throw new AdminError(what, r.status, String(detail))
+      const code = typeof r.body?.error_code === 'string' ? r.body.error_code : null
+      throw new AdminError(what, r.status, String(detail), code)
     }
     return r.body
   }
