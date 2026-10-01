@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Usage rules</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:32px;max-width:1180px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:860px;color:var(--text-secondary)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.opt{display:flex;flex-direction:column;gap:10px;min-width:0}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--selection-400)}
+.scr{position:relative;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;border:var(--border-width) solid var(--border-frame-structure);min-height:340px}
+.scr>.clr-atmosphere{z-index:0}.scr>:not(.clr-atmosphere){position:relative;z-index:1}
+.h{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.card{padding:12px;display:flex;flex-direction:column;gap:6px}
+.t{font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.b14{font-size:14px;line-height:1.25;color:var(--text-secondary)}
+.grp{display:flex;flex-direction:column;gap:6px}
+/* Section 1: surface rungs */
+.s-one .card{--surface:var(--surface-frame-structure)}
+.s-two .card{--surface:var(--surface-frame-structure)}.s-two .card.hi{--surface:var(--surface-frame-structure-strong)}
+.s-three .card.lo{--surface:var(--surface-frame-structure-quiet)}.s-three .card{--surface:var(--surface-frame-structure)}.s-three .card.hi{--surface:var(--surface-frame-structure-strong)}
+.s-one .card.hi .t::after,.s-two .card.hi .t::after,.s-three .card.hi .t::after{content:'  · next';color:var(--text-card-label);font-size:12px;letter-spacing:.05em}
+</style></head><body><div class="pg">
+<div class="ttl">Usage rules: two questions</div>
+<div class="sub">The last two questions from the consistency scan. The third, the 32px corner, needed no comparison: nothing outside one example page uses it, and your corner rule is three sizes (8, 12, 24). It will be marked deprecated.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+
+<section>
+<h2>1 · How many surface strengths</h2>
+<div class="sub">Each role has three tint strengths: quiet 5%, default 10%, strong 15%. Nothing says which to use when. This is a session screen with the next exercise highlighted and a group of notes at the bottom.</div>
+<div class="grid">
+ <div class="opt s-one"><div class="badge"><b>A</b><span>One strength</span></div><div class="scr" data-at="1"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card hi"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div></div><div class="clr-chamfer clr-chamfer--md card lo"><div class="lb">Notes</div><div class="b14">Keep the bar path over mid-foot.</div></div></div><div class="desc">Every card is 10%. Emphasis comes from the label and position, never the surface.</div><div class="flag">Recommended: calmest, and nothing to remember</div></div>
+ <div class="opt s-two"><div class="badge"><b>B</b><span>Default + strong</span></div><div class="scr" data-at="1"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card hi"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div></div><div class="clr-chamfer clr-chamfer--md card lo"><div class="lb">Notes</div><div class="b14">Keep the bar path over mid-foot.</div></div></div><div class="desc">10% everywhere, 15% for the one card that needs attention right now.</div></div>
+ <div class="opt s-three"><div class="badge"><b>C</b><span>All three</span></div><div class="scr" data-at="1"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card hi"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div></div><div class="clr-chamfer clr-chamfer--md card lo"><div class="lb">Notes</div><div class="b14">Keep the bar path over mid-foot.</div></div></div><div class="desc">5% for secondary content like notes, 10% for cards, 15% for the one that needs attention.</div></div>
+</div>
+</section>
+
+<section>
+<h2>2 · Atmosphere on a working screen</h2>
+<div class="sub">There are three atmosphere strengths. You set Full to 40%, and so far every comparison has used Full. This is the same working screen in each. Brand moments (boot, empty states) would stay Full whichever you pick.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Full · 40%</span></div><div class="scr" data-mode="full"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Split squat</div><div class="b14">3 × 10 · 20kg</div></div></div></div><div class="desc">Full everywhere. What you've been looking at in every comparison, and closest to your reference screen.</div><div class="flag">Recommended: matches every pick so far</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Quiet · 10%</span></div><div class="scr" data-mode="quiet"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Split squat</div><div class="b14">3 × 10 · 20kg</div></div></div></div><div class="desc">Working screens are Quiet; Full is kept for brand moments.</div></div>
+ <div class="opt"><div class="badge"><b>C</b><span>Operational · 6%</span></div><div class="scr" data-mode="operational"><div class="h">Today</div><div class="grp"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="b14">Done · 5 × 5</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Romanian deadlift</div><div class="b14">3 × 8 · 70kg</div></div><div class="clr-chamfer clr-chamfer--md card"><div class="t">Split squat</div><div class="b14">3 × 10 · 20kg</div></div></div></div><div class="desc">The current documented rule for product screens: almost no atmosphere.</div></div>
+</div>
+</section>
+</div>
+<script>
+const host=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip';b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...host.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};host.appendChild(b)});
+const ATM='<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--selection"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>';
+document.querySelectorAll('[data-at]').forEach(s=>{s.setAttribute('data-atmosphere','full');s.insertAdjacentHTML('afterbegin',ATM)});
+document.querySelectorAll('[data-mode]').forEach(s=>{s.setAttribute('data-atmosphere',s.dataset.mode);s.insertAdjacentHTML('afterbegin',ATM)});
+</script>
+</body></html>

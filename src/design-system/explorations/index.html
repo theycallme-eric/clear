@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Decision record</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-300);text-decoration:underline;text-underline-offset:3px;border:0}a:hover{color:var(--interaction-100)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:24px;max-width:960px}
+.ttl{font-family:var(--font-display);font-size:24px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:14px;line-height:1.4;color:var(--text-secondary);max-width:720px}
+.grp{display:flex;flex-direction:column;gap:6px}
+#g{display:flex;flex-direction:column;gap:16px}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.clr-list__row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,2fr);gap:12px;align-items:baseline;font-size:14px;line-height:1.25}
+.clr-list__row span{color:var(--text-secondary)}
+@media (max-width:640px){.clr-list__row{grid-template-columns:1fr}}
+</style></head><body><div class="pg">
+<div class="ttl">Decision record</div>
+<div class="sub">Every side-by-side comparison used to calibrate CLEAR, in the order they were run, with what each one decided. The decisions themselves live in the README and the project's preferences; these pages show why.</div>
+<div id="g"></div>
+</div>
+<script>
+const G=[
+ ['Foundations',[['calibration.html','Round 1','Pinned layers transparent, subtle glow, medium density, row stagger, framed groups'],['calibration-round4.html','Round 4','2px borders, 70% secondary text, 0.05em labels, 20px headings, 1.25 line height, 20 progress segments'],['atmosphere-through-frames.html','Atmosphere through frames','Frames keep a solid ground'],['atmosphere-strength.html','Atmosphere strength','Full atmosphere at 40%']]],
+ ['Motion',[['motion-press-interruption.html','Press and interruption','Press is a hard cut; interruption cuts and interlaces'],['timer-low-colour.html','Timer low','Steps to red over 400ms in 4 steps'],['contained-scroll-options.html','Contained scroll','Hard edge, transparent layer, streaks only while scrolling'],['scrollbar-with-streaks.html','Scrollbar with streaks','Scrollbar behaves like the streaks']]],
+ ['Focus',[['focus-style.html','Focus style','Corner brackets'],['focus-vs-selected.html','Focus vs selected','Brackets, because a lit border collides with selected'],['focus-touch.html','Focus on touch','Lit border on touch fields'],['focus-one-rule.html','One rule','Split by control type: brackets for selectable, lit border for fields']]],
+ ['Single controls',[['calibration-components.html','Round 2','90% borders, tint + border secondary, framed fields, block checkbox'],['calibration-frames.html','Cards and frames','40% selected chip, one corner cut bottom right, scanlines in the surface'],['followups-corners-scanlines.html','Corners and scanlines','8/12/24 corners by height; scanlines under text'],['calibration-round3.html','Round 3','6px glow, underline tabs, segmented progress, 16px gaps, square radio'],['calibration-round5.html','Round 5','40px controls, 16px icons, surface-only hover, border-only disabled, 55% placeholder, glyph on invalid'],['calibration-round6.html','Round 6','No links in text, square slider, framed icon buttons, scan on loading buttons'],['followups-chip-scrollbar.html','Unselected chip','5% tint, 90% border, scanlines'],['followups-scrollbar.html','Scrollbar','2px, visible only while scrolling'],['accent-card.html','Accent card','8px accent column restored, reading the card\u2019s own colours']]],
+ ['Combinations',[['calibration-round7.html','Round 7','Labels above fields, button row under content, one-frame lists, 45% backdrop'],['followups-round7.html','Round 7 follow-ups','Inset list rules, unit end cap, stacked-then-row button rule']]],
+ ['Conflicts and rules',[['four-conflicts.html','Four conflicts','Glow helpers removed, one backdrop, scan everywhere, one card component, 2px bleed'],['loading-placeholder.html','Loading placeholder','Heading plus one line ending in a cursor'],['scan-followups.html','Scan follow-ups','Pulse only for urgency at 80%, chips keep tick and flicker, titles inside cards'],['usage-rules.html','Usage rules','One surface strength; Full atmosphere everywhere']]],
+ ['Layouts',[['layouts-round1.html','Round 1','Labels above frames, pinned footer, per-section loading, fields on the atmosphere'],['layouts-empty.html','Empty screen','The list keeps its frame with a plain message'],['empty-and-templates.html','Templates','EmptyState, App Shell, Form Screen and Boot Sequence brought in line']]]
+];
+document.getElementById('g').innerHTML=G.map(([h,rows])=>`<div class="grp"><span class="lb">${h}</span><div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--md clr-list">${rows.map(([f,t,d])=>`<div class="clr-list__row"><a href="${f}">${t}</a><span>${d}</span></div>`).join('')}</div></div></div>`).join('');
+</script>
+</body></html>

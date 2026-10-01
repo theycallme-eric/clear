@@ -1,0 +1,32 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="styles.css">
+<style>
+  html,body{margin:0;padding:0;width:1280px;height:854px;overflow:hidden}
+  .tile{display:flex;width:1280px;height:854px}
+  .main{flex:1;background:#171717;display:flex;align-items:center;justify-content:center;position:relative}
+  .wordmark{position:relative;font-family:'Oxanium',monospace;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;font-size:190px;color:#fff;line-height:1}
+  .wordmark .bottom{position:absolute;left:0;right:0;top:0;color:#fff;opacity:0.55;clip-path:inset(56% 0 0 0)}
+  .wordmark .top{position:relative;display:inline-block;clip-path:inset(0 0 44% 0)}
+  .wordmark .ghost{visibility:hidden}
+  .scan{position:absolute;left:-6%;right:-6%;top:57%;height:8px;background:#F87823;box-shadow:0 0 24px rgba(248,120,35,0.6),0 0 60px rgba(248,120,35,0.3)}
+  .strip{width:320px;height:854px;display:flex;flex-direction:column}
+  .strip div{flex:1}
+</style>
+</head><body>
+<div class="tile">
+  <div class="main">
+    <div class="wordmark">
+      <span class="ghost">CLEAR</span>
+      <span class="top" style="position:absolute;left:0;right:0;top:0">CLEAR</span>
+      <span class="bottom">CLEAR</span>
+      <span class="scan"></span>
+    </div>
+  </div>
+  <div class="strip">
+    <div style="background:#99DD39"></div>
+    <div style="background:#00A9F4"></div>
+    <div style="background:#F87823"></div>
+    <div style="background:#CD1958"></div>
+  </div>
+</div>
+</body></html>

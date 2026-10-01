@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Accent card, revisited</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:20px;max-width:1240px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:880px;color:var(--text-secondary)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+.grid{display:flex;gap:18px;flex-wrap:wrap}
+.opt{display:flex;flex-direction:column;gap:10px;width:360px;max-width:100%}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.scr{position:relative;overflow:hidden;width:360px;max-width:100%;height:600px;border:var(--border-width) solid var(--border-frame-structure);display:flex;flex-direction:column}
+.scr>.clr-atmosphere{z-index:0}.body{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;gap:16px;padding:16px}
+.h1{font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.t20{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.b14{font-size:14px;line-height:1.25;color:var(--text-secondary)}
+.stack{display:flex;flex-direction:column;gap:6px}
+.card{padding:12px;display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+/* Accent card: a column joined to the frame's left edge, sharing its border. */
+.acc{display:flex}
+.acc .col{flex:0 0 8px;background:var(--structure-a400);box-shadow:inset 0 0 0 var(--border-width) var(--border-frame-structure);margin-right:calc(var(--border-width) * -1)}
+.acc.sel .col{background:var(--selection-a400);box-shadow:inset 0 0 0 var(--border-width) var(--selection-500)}
+.acc.sel .card{--brd:var(--selection-500)}
+.thin .col{flex-basis:4px}
+.plain.sel .card{--brd:var(--selection-500)}
+</style></head><body><div class="pg">
+<div class="ttl">Accent card, revisited</div>
+<div class="sub">Where it went: in calibration round 3 ("Card heading"), you picked <b>title only</b> over the accent column and a rule under the title, with the reason "calmer". That rule is why the accent column was removed everywhere. It was tested on its own, on two cards. Here it's on a real screen, with one card in the current state, so you can judge whether you miss it in context. Nothing is deleted until you decide.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div class="grid" id="g"></div>
+</div>
+<script>
+const host=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip';b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...host.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};host.appendChild(b)});
+const ATM='<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>';
+const D=[['Session 09 · 42 min','Lower Push','Squat focus. Barbell, bands.',1],['Optional · 12 min','Mobility Block','Hips and ankles. Low intensity.',0],['Mon · Complete','Upper Pull','38 min. All sections cleared.',0]];
+const card=(k,[m,t,s,sel])=>{const inner=`<div class="clr-chamfer clr-chamfer--md card"><span class="lb">${m}</span><span class="t20">${t}</span><span class="b14">${s}</span></div>`;
+ if(k==='plain')return `<div class="clr-bleed clr-bleed--block plain ${sel?'sel':''}">${inner}</div>`;
+ return `<div class="clr-bleed clr-bleed--block"><div class="acc ${k==='thin'?'thin':''} ${sel?'sel':''}"><span class="col"></span>${inner}</div></div>`};
+const O=[['A','Title only (current)','plain','One closed frame. The current card is marked by its selection border.'],['B','Accent column, 8px','acc','The original: a filled column joined to the left edge. The current card\u2019s column turns to the selection colour.'],['C','Accent column, 4px','thin','The same, thinner, so it reads more as a lit edge than a block.']];
+document.getElementById('g').innerHTML=O.map(([o,l,k,d])=>`<div class="opt"><div class="badge"><b>${o}</b><span>${l}</span></div><div class="scr" data-atmosphere="full">${ATM}<div class="body"><div class="h1">Today</div><div class="stack"><span class="lb">Sessions</span>${D.map(x=>card(k,x)).join('')}</div></div></div><div class="desc">${d}</div></div>`).join('');
+</script>
+</body></html>

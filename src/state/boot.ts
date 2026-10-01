@@ -2,7 +2,7 @@
  * REQ-057 — what the boot sequence is, as arithmetic over the app's real
  * initialization.
  *
- * Pattern 7 (`docs/design/exports/clear-design-system-0.6.0/docs/patterns.md`)
+ * Pattern 7 (`docs/design/exports/clear-design-system-0.9.7/docs/patterns.md`)
  * and the Boot Sequence template state the rule this module exists to make
  * structural: **the sequence is as long as the work is.** There is no timer
  * here, no minimum duration, and no step that resolves on anything but a read

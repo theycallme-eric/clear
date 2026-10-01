@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Timer low: colour change</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:18px;max-width:1100px}
+.ttl{font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:780px;color:color-mix(in srgb,var(--text-paragraph) 80%,transparent)}
+.bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.seg{display:flex;gap:6px}
+.seg button{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.seg button.on{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+.go{min-height:40px;padding:var(--spacing-200) var(--spacing-400)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.opt{display:flex;flex-direction:column;gap:10px;min-width:0;padding:14px;border:var(--border-width) solid var(--structure-a300);background:var(--structure-a050)}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent);min-height:54px}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.flag.ok{color:var(--selection-400)}.flag.warn{color:var(--text-negative)}
+.timer{height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.timer .lb{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-card-label)}
+.timer .d{font-family:var(--font-data);font-size:40px;font-weight:700;letter-spacing:.06em;color:var(--text-timer,var(--selection-100))}
+.timer.clr-chamfer--timer-low .d{color:var(--text-timer-low,var(--text-negative))}
+/* The three treatments differ only in how the frame's two layers move to the
+   low state. Text colour follows the same timing so the option is judged as
+   one change, not two. */
+.A .timer::before,.A .timer::after,.A .timer .d{transition-property:box-shadow,background-color,color;transition-duration:var(--dur-hover);transition-timing-function:linear}
+.B .timer::before,.B .timer::after,.B .timer .d{transition-property:box-shadow,background-color,color;transition-duration:var(--dur-atmos);transition-timing-function:ease}
+.C .timer::before,.C .timer::after,.C .timer .d{transition-property:box-shadow,background-color,color;transition-duration:var(--dur-slow);transition-timing-function:steps(4, end)}
+.foot{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 72%,transparent);max-width:780px}
+</style></head><body><div class="pg">
+<div class="ttl">Timer low: colour change</div>
+<div class="sub">When a rest timer drops below its threshold, the frame turns from green to red. Before 0.8.0 that change took 1s and eased; now it takes 200ms. Press <b>Run</b> and watch each timer cross from 00:11 to 00:10.</div>
+<div class="bar"><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary go" type="button" id="run">Run</button><span class="l">Skin</span><span class="seg" id="skins"></span></div>
+<div class="grid">
+  <div class="opt A"><div class="badge"><b>A</b><span>200ms, linear</span></div><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer timer"><div class="lb">Rest</div><div class="d">00:14</div></div><div class="desc">What ships now. It uses the same timing as every other interface state change, so it reads as the display switching mode.</div><div class="flag ok">Recommended: consistent with the rules</div></div>
+  <div class="opt B"><div class="badge"><b>B</b><span>1s, eased</span></div><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer timer"><div class="lb">Rest</div><div class="d">00:14</div></div><div class="desc">What shipped before 0.8.0. A slow bleed from green to red. Softer, but it adds a third eased exception to the motion rules.</div><div class="flag warn">Breaks "interface never eases"</div></div>
+  <div class="opt C"><div class="badge"><b>C</b><span>400ms, 4 steps</span></div><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer timer"><div class="lb">Rest</div><div class="d">00:14</div></div><div class="desc">Slower than A so the change registers, but stepped rather than eased, so it stays within the rules. It reads like a lamp warming through four states.</div><div class="flag ok">Within the rules, more noticeable</div></div>
+</div>
+<div class="foot">In all three, colour isn't the only signal. The label and the pulse also mark the low state, so the choice is about feel, not about whether the user notices.</div>
+</div>
+<script>
+const skins=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.textContent=s;if(!i)b.className='on';b.onclick=()=>{[...skins.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');document.documentElement.setAttribute('data-skin',s)};skins.appendChild(b)});
+const timers=[...document.querySelectorAll('.timer')];
+let iv;
+const set=(n)=>timers.forEach(t=>{t.querySelector('.d').textContent='00:'+String(n).padStart(2,'0');
+  const low=n<=10;t.classList.toggle('clr-chamfer--timer-low',low);t.classList.toggle('clr-chamfer--timer',!low);t.querySelector('.lb').textContent=low?'Low':'Rest';
+  t.classList.toggle('clr-pulse-micro',low)});
+document.getElementById('run').onclick=()=>{clearInterval(iv);let n=14;set(n);iv=setInterval(()=>{n--;set(n);if(n<=7)clearInterval(iv)},1000)};
+set(14);
+</script>
+</body></html>

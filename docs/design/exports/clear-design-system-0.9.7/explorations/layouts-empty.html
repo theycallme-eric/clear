@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Layouts: empty screen</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:36px;max-width:1280px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:880px;color:var(--text-secondary)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;padding:10px 0;background:var(--bg)}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.grid{display:flex;gap:18px;flex-wrap:wrap}
+.opt{display:flex;flex-direction:column;gap:10px;width:360px;max-width:100%}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--selection-400)}
+/* A phone-sized screen with the real atmosphere. */
+.scr{position:relative;overflow:hidden;width:360px;max-width:100%;height:640px;border:var(--border-width) solid var(--border-frame-structure);display:flex;flex-direction:column}
+.scr>.clr-atmosphere{z-index:0}.body{position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;padding:16px;overflow:hidden}
+.foot{position:relative;z-index:1;padding:12px 16px;border-top:var(--border-width) solid var(--border-region-rule);display:grid;gap:8px}
+.h1{font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.hrow{display:flex;align-items:center;gap:12px;min-height:var(--control-height)}.hrow .h1{flex:1 1 auto;min-width:0}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.t20{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.b14{font-size:14px;line-height:1.25;color:var(--text-secondary)}
+.p14{font-size:14px;line-height:1.25;color:var(--text-paragraph)}
+.frame{padding:12px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;line-height:1.25;color:var(--text-paragraph)}
+.row span{font-family:var(--font-data);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
+.ruled{padding-bottom:8px;border-bottom:1px solid var(--structure-a300)}
+.btn{min-height:var(--control-height);padding:0 16px;width:100%}
+.bl{display:flex;flex-direction:column}
+.fld{display:flex;flex-direction:column;gap:4px}
+.cur::after{content:"_";margin-left:2px;color:var(--text-header);animation:cb 1s steps(1) infinite}@keyframes cb{50%{opacity:0}}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.tabs{display:flex;gap:20px;box-shadow:inset 0 -2px 0 var(--border-tab-rail)}
+.tab{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:10px 0;color:var(--text-tab-inactive)}
+.tab.on{color:var(--text-tab-active);box-shadow:inset 0 -2px 0 var(--border-tab-active)}
+</style></head><body><div class="pg">
+<div class="ttl">Layouts: empty screen</div>
+<div class="sub">Full screens, built from the parts you've already decided, at phone size. Each section still changes one thing. Pick a letter, or say what it depends on.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div id="secs"></div>
+</div>
+<script>
+const host=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip';b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...host.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};host.appendChild(b)});
+const ATM='<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--selection"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>';
+const F=(inner,cls='',sz='md')=>`<div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--${sz} frame ${cls}">${inner}</div></div>`;
+const P=t=>`<span class="clr-bleed clr-glow bl"><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary btn" type="button">${t}</button></span>`;
+const S=t=>`<span class="clr-bleed bl"><button class="clr-chamfer clr-chamfer--sm clr-btn btn" type="button">${t}</button></span>`;
+const IB=`<span class="clr-bleed"><button class="clr-chamfer clr-chamfer--sm clr-btn" type="button" aria-label="Back" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 3h-4L4 12l8 9h4l-8-9z"/></svg></button></span>`;
+const rows=(r)=>r.map(([a,b])=>`<div class="row">${a}<span>${b}</span></div>`).join('');
+const SESS=[['Back squat','5 × 5'],['Romanian deadlift','3 × 8'],['Split squat','3 × 10']];
+const NOTES=[['Keep the bar path over mid-foot','Coach']];
+const scr=(body,foot)=>`<div class="scr" data-atmosphere="full">${ATM}<div class="body">${body}</div>${foot?`<div class="foot">${foot}</div>`:''}</div>`;
+const SECTIONS=[
+ {t:'Empty screen, follow-up',s:'Your idea: treat it like a terminal with no session running. The list keeps its frame, the message sits inside it, and the action is in the pinned footer, the same as every other screen. Only the message changes.',o:[
+  ['A','Plain message','The empty list frame says what\u2019s missing and what to do.',scr(`<div class="h1">History</div><div class="fld"><span class="lb">Sessions</span>${F(`<div class="p14">No sessions logged.</div><div class="b14">Start one and it will appear here.</div>`)}</div>`,P('Start a session')),'Recommended: calm, and the screen looks the same when it fills'],
+  ['B','Terminal status','Reads like a terminal\u2019s status lines. No cursor, because a blinking cursor already means "loading".',scr(`<div class="h1">History</div><div class="fld"><span class="lb">Sessions</span>${F(`<div class="row">Sessions logged<span>0</span></div><div class="row">Last session<span>--</span></div><div class="b14">Start one and it will appear here.</div>`)}</div>`,P('Start a session'))],
+  ['C','Centred frame, footer action','The centred frame you liked, with the action moved to the footer so it matches the other screens.',scr(`<div class="h1">History</div><div class="center" style="width:100%">${F(`<div class="t20">No sessions yet</div><div class="b14">Start one and it will appear here.</div>`,'','lg')}</div>`,P('Start a session'))]]}
+];
+document.getElementById('secs').innerHTML=SECTIONS.map(x=>`<section><h2>${x.t}</h2><div class="sub">${x.s}</div><div class="grid">${x.o.map(([o,l,d,body,flag])=>`<div class="opt"><div class="badge"><b>${o}</b><span>${l}</span></div>${body}<div class="desc">${d}</div>${flag?`<div class="flag">${flag}</div>`:''}</div>`).join('')}</div></section>`).join('');
+</script>
+</body></html>

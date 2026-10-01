@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Motion" name="Motion Rules" subtitle="Every rule, live · hover, press, toggle, focus · effect meanings · interruption · one loop · reduced motion" viewport="780x980" --><html data-skin="clear"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden;color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:16px 20px;box-sizing:border-box;height:980px;display:flex;flex-direction:column;gap:14px}
+.ttl{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:10.5px;line-height:1.45;color:color-mix(in srgb,var(--text-paragraph) 78%,transparent);max-width:720px}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sh{display:flex;justify-content:space-between;gap:10px;font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--structure-300);border-bottom:1px solid var(--structure-a300);padding-bottom:3px}
+.sh em{font-style:normal;letter-spacing:.04em;text-transform:none;color:color-mix(in srgb,var(--text-paragraph) 72%,transparent)}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.cell{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 150px}
+.lbl{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-card-label)}
+.note{font-size:10px;line-height:1.4;color:color-mix(in srgb,var(--text-paragraph) 78%,transparent)}
+code{font-family:var(--font-data);font-size:9.5px;color:var(--text-card-label)}
+.btn{min-height:40px;padding:var(--spacing-200) var(--spacing-400)}
+.tile{position:relative;height:66px;display:flex;align-items:center;justify-content:center;font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-header);overflow:hidden}
+.panel{height:118px;border:var(--border-width) solid var(--structure-a300);background:var(--base);padding:8px;display:flex;flex-direction:column;gap:5px;overflow:hidden}
+.panel .st{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-card-label)}
+.pr{padding:5px 8px;border:var(--border-width) solid var(--structure-a300);background:var(--surface-frame-structure);font-family:var(--font-data);font-size:9px;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-header)}
+.pr.b{border-color:var(--interaction-500);background:var(--surface-frame-interaction)}
+.ok{color:var(--selection-400)}.no{color:var(--text-negative)}
+.tag{font-family:var(--font-data);font-size:8.5px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase}
+.mini{height:54px;display:flex;align-items:center;justify-content:center;gap:10px;border:var(--border-width) solid var(--structure-a300);background:var(--base)}
+.dot{width:10px;height:10px;background:var(--urgency)}
+.dot.s{background:var(--structure)}
+.low{font-family:var(--font-data);font-size:16px;font-weight:700;letter-spacing:var(--tracking-data);color:var(--text-timer-low,var(--text-negative))}
+/* Card-local stand-in for prefers-reduced-motion, so the rule can be seen
+   without changing the OS setting. It mirrors the system block exactly. */
+.rm .clr-cursor::after,.rm .clr-pulse-micro,.rm .clr-progress-indet{animation:none!important}
+.rm .clr-scan-band{display:none}
+.rm .sk.lit{opacity:.5!important;box-shadow:none!important;transition:none!important}
+.sk{position:absolute;left:0;right:0;height:1px;background:var(--border-region-streak);opacity:0;transition:opacity var(--dur-enter) var(--step-3),box-shadow var(--dur-enter) var(--step-3)}
+.sk.lit{opacity:.7;box-shadow:0 0 7px var(--border-region-streak)}
+.toggle{display:flex;gap:6px;align-items:center}
+</style></head><body><div class="pg">
+<div class="ttl">Motion Rules</div>
+<div class="sub">Every rule on this card is shown working, not described. Interface motion is linear or stepped, never eased. Motion can reinforce state, but it is never the only cue.</div>
+
+<div class="sec">
+<div class="sh"><span>1 · Interaction timing</span><em>Hover over a button, hold it, tab to it</em></div>
+<div class="row">
+  <div class="cell"><div class="lbl">Hover · --dur-hover 200ms</div><button class="clr-chamfer clr-chamfer--sm clr-btn btn" type="button">Hover me</button><div class="note">Surface and border step to the hover rung over 200ms, linear.</div></div>
+  <div class="cell"><div class="lbl">Press · --dur-press 0ms</div><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary btn" type="button">Hold me</button><div class="note">Hard cut to one rung above hover. No transition, no shrink, no movement.</div></div>
+  <div class="cell"><div class="lbl">Toggle · --dur-state 100ms</div><button class="clr-chamfer clr-chamfer--sm clr-btn btn" type="button" aria-pressed="false" id="tg">Off</button><div class="note">A control that holds a state changes over 100ms.</div></div>
+  <div class="cell"><div class="lbl">Focus · never animated</div><button class="clr-chamfer clr-chamfer--sm clr-btn btn" type="button">Tab to me</button><div class="note">The ring snaps on. Focus has to be visible the moment it lands.</div></div>
+</div>
+</div>
+
+<div class="sec">
+<div class="sh"><span>2 · Each effect has one meaning</span><em>Click a tile. Don't borrow an effect for a different meaning.</em></div>
+<div class="row">
+  <div class="cell"><div class="clr-chamfer clr-chamfer--sm clr-chamfer--urgency tile" data-fx="clr-glitch" data-ms="260">Set failed</div><div class="lbl">Glitch = failure</div></div>
+  <div class="cell"><div class="clr-chamfer clr-chamfer--sm tile" data-fx="clr-crt-off" data-ms="700" data-restore="">Sensor</div><div class="lbl">CRT off = switched off</div></div>
+  <div class="cell"><div class="clr-chamfer clr-chamfer--sm tile" data-fx="clr-phosphor-out" data-ms="700" data-restore="">Old entry</div><div class="lbl">Phosphor decay = leaving</div></div>
+  <div class="cell"><div class="clr-chamfer clr-chamfer--sm clr-chamfer--interaction tile clr-scan" data-scan="">Reading<div class="clr-scan-band clr-scan-band--cta" style="display:none"></div></div><div class="lbl">Scan = loading or reading</div></div>
+</div>
+</div>
+
+<div class="sec">
+<div class="sh"><span>3 · A state change interrupts: cut, then interlace</span><em>Nothing waits on an animation</em></div>
+<div class="row">
+  <div class="cell" style="flex:2 1 300px"><div class="panel" id="ip"><div class="st" id="ist">Idle</div><div id="il" style="display:flex;flex-direction:column;gap:5px"></div></div></div>
+  <div class="cell"><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary btn" type="button" id="irun">Run</button><div class="note">A list starts to reveal and new data arrives partway through. The reveal is dropped at once, and the new state arrives with a 100ms <code>.clr-interlace</code> re-sync. The old animation never finishes and never reverses.</div></div>
+</div>
+</div>
+
+<div class="sec">
+<div class="sh"><span>4 · One interface loop in view</span><em>Atmosphere doesn't count. One-shot effects are unlimited.</em></div>
+<div class="row">
+  <div class="cell"><div class="mini"><span class="dot clr-pulse-micro"></span><span class="low">00:12</span></div><div class="tag ok">Do · one loop, and it carries state</div></div>
+  <div class="cell"><div class="mini"><span class="dot clr-pulse-micro"></span><span class="low">00:12</span><span class="dot s clr-pulse-micro"></span><span class="lbl clr-cursor">Loading</span></div><div class="tag no">Don't · three loops competing</div></div>
+</div>
+</div>
+
+<div class="sec" id="rmsec">
+<div class="sh"><span>5 · Reduced motion: decoration goes, signals stay static</span><span class="toggle"><button class="clr-chamfer clr-chamfer--sm clr-btn" type="button" aria-pressed="false" id="rmt" style="min-height:28px;padding:2px 8px;font-size:9px">Simulate reduced motion</button></span></div>
+<div class="row" id="rmrow">
+  <div class="cell"><div class="mini"><span class="lbl clr-cursor">Reading history</span></div><div class="note">Loading cursor. <b>Signal:</b> stays, static.</div></div>
+  <div class="cell"><div class="mini" style="position:relative;overflow:hidden"><span class="lbl">Region</span><span class="sk lit" style="top:0"></span><span class="sk lit" style="bottom:0"></span></div><div class="note">Scroll streaks. <b>Signal:</b> stay at 0.5, no glow.</div></div>
+  <div class="cell"><div class="mini clr-scan" style="position:relative;overflow:hidden"><span class="lbl">Panel</span><div class="clr-scan-band"></div></div><div class="note">Scan band. <b>Decoration:</b> removed.</div></div>
+  <div class="cell"><div class="mini"><span class="dot clr-pulse-micro"></span><span class="low">00:12</span></div><div class="note">Low-timer pulse. <b>Signal:</b> stays, static. Colour and label still say "low".</div></div>
+</div>
+</div>
+</div>
+<script>
+const tg=document.getElementById('tg');
+tg.onclick=()=>{const on=tg.getAttribute('aria-pressed')!=='true';tg.setAttribute('aria-pressed',on);tg.textContent=on?'On':'Off'};
+
+document.querySelectorAll('[data-fx]').forEach(t=>t.addEventListener('click',()=>{
+  const fx=t.dataset.fx;t.classList.remove(fx);void t.offsetWidth;t.classList.add(fx);
+  setTimeout(()=>{t.classList.remove(fx)},+t.dataset.ms);
+}));
+document.querySelectorAll('[data-scan]').forEach(t=>t.addEventListener('click',()=>{
+  const b=t.querySelector('.clr-scan-band');b.style.display='block';b.classList.add('clr-scan--once');b.style.animationIterationCount='1';
+  b.style.animation='none';void b.offsetWidth;b.style.animation='';setTimeout(()=>{b.style.display='none'},2100);
+}));
+
+const il=document.getElementById('il'),ist=document.getElementById('ist');
+const fill=(rows,c)=>{il.innerHTML=rows.map(r=>`<div class="pr ${c}">${r}</div>`).join('')};
+fill(['Entry 01','Entry 02','Entry 03'],'');
+let anims=[];
+document.getElementById('irun').onclick=()=>{
+  anims.forEach(a=>a.cancel());fill(['Entry 01','Entry 02','Entry 03','Entry 04'],'');ist.textContent='Loading';
+  anims=[...il.children].map((r,i)=>r.animate([{opacity:0,transform:'scale(0.98)'},{opacity:1,transform:'scale(1)'}],{duration:400,delay:i*120,easing:'steps(3, end)',fill:'both'}));
+  setTimeout(()=>{anims.forEach(a=>a.cancel());fill(['Updated 01','Updated 02','Updated 03'],'b');ist.textContent='Updated';
+    il.classList.remove('clr-interlace');void il.offsetWidth;il.classList.add('clr-interlace');},330);
+};
+
+const rmt=document.getElementById('rmt'),rmrow=document.getElementById('rmrow');
+rmt.onclick=()=>{const on=rmt.getAttribute('aria-pressed')!=='true';rmt.setAttribute('aria-pressed',on);rmrow.classList.toggle('rm',on)};
+</script>
+</body></html>

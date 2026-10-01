@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Focus: one rule</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:18px;max-width:1180px}
+.ttl{font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.55;max-width:860px;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.pill{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px}
+.opt{display:flex;flex-direction:column;gap:12px;min-width:0;padding:14px;border:var(--border-width) solid var(--structure-a300);background:radial-gradient(120% 60% at 20% 0%,var(--structure-a150),transparent 60%),var(--base)}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.rule{font-family:var(--font-data);font-size:11px;letter-spacing:.04em;line-height:1.5;padding:8px 10px;background:var(--structure-a050);border-left:2px solid var(--structure-500);color:var(--text-paragraph)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.flag.ok{color:var(--selection-400)}.flag.warn{color:var(--text-negative)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ch{font-family:var(--font-data);font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.fld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;font-family:var(--font-body);font-size:14px;color:var(--text-input);background:var(--surface-input);border:var(--border-width) solid var(--border-input);display:flex;align-items:center}
+.chip{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 12px;min-height:44px;box-sizing:border-box;display:inline-flex;align-items:center;color:var(--text-header)}
+.chip.clr-chamfer--selected{color:var(--text-selected)}
+.btn{min-height:44px;padding:0 16px;display:inline-flex;align-items:center}
+.fw{position:relative;display:inline-flex}.fw.full{display:flex;width:100%}
+.brk::after{content:'';position:absolute;inset:-5px;pointer-events:none;--k:8px;--t:2px;--c:var(--interaction-300);
+ background:linear-gradient(var(--c),var(--c)) top left/var(--k) var(--t),linear-gradient(var(--c),var(--c)) top left/var(--t) var(--k),linear-gradient(var(--c),var(--c)) top right/var(--k) var(--t),linear-gradient(var(--c),var(--c)) top right/var(--t) var(--k),linear-gradient(var(--c),var(--c)) bottom left/var(--k) var(--t),linear-gradient(var(--c),var(--c)) bottom left/var(--t) var(--k),linear-gradient(var(--c),var(--c)) bottom right/var(--k) var(--t),linear-gradient(var(--c),var(--c)) bottom right/var(--t) var(--k);background-repeat:no-repeat}
+.lit{border-color:var(--interaction-300)!important}
+</style></head><body><div class="pg">
+<div class="ttl">Focus: combining A and B</div>
+<div class="sub">Two ways to make brackets and a lit border into one rule. Each shows a focused text field and a focused selected chip, on keyboard (desktop) and touch (phone). The chip is the hard case for keeping focus and selected apart.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Split by control type</span></div>
+  <div class="rule">Controls that can be selected (chips, tabs, buttons) get brackets. Controls that can't be selected (text fields) light their border. Same on every device.</div>
+  <div class="cols">
+   <div class="col"><div class="ch">Keyboard</div><div class="fw full"><div class="fld lit">Felt heavy</div></div><div><span class="fw brk"><span class="clr-chamfer clr-chamfer--sm clr-chamfer--selected chip">Hard</span></span></div></div>
+   <div class="col"><div class="ch">Touch</div><div class="fw full"><div class="fld lit">Felt heavy</div></div><div><span class="fw"><span class="clr-chamfer clr-chamfer--sm clr-chamfer--selected chip">Hard</span></span></div></div>
+  </div>
+  <div class="desc">Each control has exactly one focus style, whatever the device. Fields look the same on desktop and phone. On touch, chips show no focus at all, as browsers intend.</div>
+  <div class="flag ok">Recommended: simplest rule, still keeps focus and selected apart</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Fields get both</span></div>
+  <div class="rule">Everything that takes focus gets brackets. Text fields also light their border, on every device.</div>
+  <div class="cols">
+   <div class="col"><div class="ch">Keyboard</div><div class="fw full brk"><div class="fld lit">Felt heavy</div></div><div><span class="fw brk"><span class="clr-chamfer clr-chamfer--sm clr-chamfer--selected chip">Hard</span></span></div></div>
+   <div class="col"><div class="ch">Touch</div><div class="fw full brk"><div class="fld lit">Felt heavy</div></div><div><span class="fw"><span class="clr-chamfer clr-chamfer--sm clr-chamfer--selected chip">Hard</span></span></div></div>
+  </div>
+  <div class="desc">Brackets stay the one focus signal for everything. Fields get a lit border on top, which is the part you liked on touch. It's the strongest cue, but also the busiest on a small screen.</div>
+  <div class="flag ok">Brackets everywhere, fields extra-clear</div></div>
+</div>
+</div>
+<script>
+const skins=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.className='pill';b.type='button';b.textContent=s;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...skins.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};skins.appendChild(b)});
+</script>
+</body></html>

@@ -2,7 +2,7 @@
  * GEN-05 — what the generation loading screen says, as a function of what the
  * call is actually doing.
  *
- * Pattern 2 (`docs/design/exports/clear-design-system-0.6.0/docs/patterns.md`)
+ * Pattern 2 (`docs/design/exports/clear-design-system-0.9.7/docs/patterns.md`)
  * is the acceptance criteria for this screen, and two of its rules are the
  * reason this module exists rather than a `useState` in the component:
  *

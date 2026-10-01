@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="FocusBrackets" subtitle="Keyboard focus as corner brackets · fields light their border · press Tab" viewport="700x200" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+.card{padding:18px 22px;box-sizing:border-box;height:200px;display:flex;flex-direction:column;gap:14px}
+.note{font-family:var(--font-body);font-size:12px;line-height:1.4;color:var(--text-secondary)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-400);letter-spacing:.05em;text-transform:uppercase}</style></head>
+<body><div class="card"><div class="note">Press Tab to move through the controls. Selectable controls get corner brackets; the text field lights its own border instead. Focus snaps on and is never animated.</div><div id="m"><span class="fb">Bundle compiling… reload in a moment</span></div></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;let m=document.getElementById('m');
+if(NS.FocusBrackets&&NS.Button&&NS.Chip&&NS.Input){
+ if(Object.keys(m).some(k=>k.startsWith('__reactContainer'))){const f=m.cloneNode(false);m.replaceWith(f);m=f}
+ function D(){const [on,setOn]=React.useState(true);
+  return e('div',{className:'row'},e(NS.FocusBrackets),
+   e(NS.Button,{variant:'primary'},'Log set'),e(NS.Button,null,'Skip'),
+   e(NS.Chip,{selected:on,onClick:()=>setOn(!on)},'Hard'),
+   e('div',{style:{flex:'1 1 200px',minWidth:0}},e(NS.Input,{placeholder:'What happened in that set?','aria-label':'Note'})))}
+ ReactDOM.createRoot(m).render(e(D));}
+</script></body></html>

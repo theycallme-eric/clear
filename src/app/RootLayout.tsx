@@ -17,6 +17,7 @@
 import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
+import { FocusBrackets } from '../design-system/index'
 import { AtmosphereLayer } from '../ui/atmosphere'
 import { resolveAtmosphere } from './atmosphere'
 
@@ -32,6 +33,7 @@ export function RootLayout() {
 
   return (
     <>
+      <FocusBrackets />
       <AtmosphereLayer context={atmosphereContext} />
       <div className="clr-shell" data-atmosphere={atmosphere}>
         <div className="clr-shell__content">

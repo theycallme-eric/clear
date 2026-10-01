@@ -1,5 +1,5 @@
 /**
- * "The export's 38 specimen cards served **unmodified**" — both halves, proved
+ * "The export's 43 preview/component review pages served **unmodified**" — both halves, proved
  * against the vendored tree rather than against a list.
  *
  * The catalogue half checks that the glob reaches every specimen file the export
@@ -49,17 +49,17 @@ describe('the specimen catalogue', () => {
     )
   })
 
-  it('finds a descriptor on the 38 cards REQ-029 counts', () => {
+  it('finds a descriptor on every marked 0.9.7 review page', () => {
     // The count is derived, not asserted into existence: every file carrying a
-    // `@dsCard` comment, which is 38 of the 40 the 0.6.0 export ships. The two
+    // `@dsCard` comment, which is 41 of the 43 the 0.9.7 export ships. The two
     // without one are the legacy previews the per-component cards superseded.
     const marked = specimenFilesOnDisk().filter((file) =>
       readFileSync(resolve(VENDOR_ROOT, file), 'utf-8').includes('@dsCard'),
     )
 
     expect(DESCRIBED_SPECIMENS).toHaveLength(marked.length)
-    expect(DESCRIBED_SPECIMENS).toHaveLength(38)
-    expect(SPECIMENS).toHaveLength(40)
+    expect(DESCRIBED_SPECIMENS).toHaveLength(41)
+    expect(SPECIMENS).toHaveLength(43)
   })
 
   it('reads a descriptor exactly as the export wrote it', () => {

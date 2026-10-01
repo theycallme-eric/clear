@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Layouts: round 1</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:36px;max-width:1280px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:880px;color:var(--text-secondary)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:5;padding:10px 0;background:var(--bg)}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.grid{display:flex;gap:18px;flex-wrap:wrap}
+.opt{display:flex;flex-direction:column;gap:10px;width:360px;max-width:100%}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--selection-400)}
+/* A phone-sized screen with the real atmosphere. */
+.scr{position:relative;overflow:hidden;width:360px;max-width:100%;height:640px;border:var(--border-width) solid var(--border-frame-structure);display:flex;flex-direction:column}
+.scr>.clr-atmosphere{z-index:0}.body{position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;gap:16px;padding:16px;overflow:hidden}
+.foot{position:relative;z-index:1;padding:12px 16px;border-top:var(--border-width) solid var(--border-region-rule);display:grid;gap:8px}
+.h1{font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.hrow{display:flex;align-items:center;gap:12px;min-height:var(--control-height)}.hrow .h1{flex:1 1 auto;min-width:0}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.t20{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.b14{font-size:14px;line-height:1.25;color:var(--text-secondary)}
+.p14{font-size:14px;line-height:1.25;color:var(--text-paragraph)}
+.frame{padding:12px;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;line-height:1.25;color:var(--text-paragraph)}
+.row span{font-family:var(--font-data);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
+.ruled{padding-bottom:8px;border-bottom:1px solid var(--structure-a300)}
+.btn{min-height:var(--control-height);padding:0 16px;width:100%}
+.bl{display:flex;flex-direction:column}
+.fld{display:flex;flex-direction:column;gap:4px}
+.cur::after{content:"_";margin-left:2px;color:var(--text-header);animation:cb 1s steps(1) infinite}@keyframes cb{50%{opacity:0}}
+.center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center}
+.tabs{display:flex;gap:20px;box-shadow:inset 0 -2px 0 var(--border-tab-rail)}
+.tab{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:10px 0;color:var(--text-tab-inactive)}
+.tab.on{color:var(--text-tab-active);box-shadow:inset 0 -2px 0 var(--border-tab-active)}
+</style></head><body><div class="pg">
+<div class="ttl">Layouts: round 1</div>
+<div class="sub">Full screens, built from the parts you've already decided, at phone size. Each section still changes one thing. Pick a letter, or say what it depends on.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div id="secs"></div>
+</div>
+<script>
+const host=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip';b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...host.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};host.appendChild(b)});
+const ATM='<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--selection"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>';
+const F=(inner,cls='',sz='md')=>`<div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--${sz} frame ${cls}">${inner}</div></div>`;
+const P=t=>`<span class="clr-bleed clr-glow bl"><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary btn" type="button">${t}</button></span>`;
+const S=t=>`<span class="clr-bleed bl"><button class="clr-chamfer clr-chamfer--sm clr-btn btn" type="button">${t}</button></span>`;
+const IB=`<span class="clr-bleed"><button class="clr-chamfer clr-chamfer--sm clr-btn" type="button" aria-label="Back" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M16 3h-4L4 12l8 9h4l-8-9z"/></svg></button></span>`;
+const rows=(r)=>r.map(([a,b])=>`<div class="row">${a}<span>${b}</span></div>`).join('');
+const SESS=[['Back squat','5 × 5'],['Romanian deadlift','3 × 8'],['Split squat','3 × 10']];
+const NOTES=[['Keep the bar path over mid-foot','Coach']];
+const scr=(body,foot)=>`<div class="scr" data-atmosphere="full">${ATM}<div class="body">${body}</div>${foot?`<div class="foot">${foot}</div>`:''}</div>`;
+const SECTIONS=[
+ {t:'1 · Section labels',s:'A screen with several groups. Your reference screen labels each group above its frame. Your card rule says a title lives inside the card. Which applies to a whole section?',o:[
+  ['A','Label above the frame','Like your reference: a plain label, no frame, then the frame below. The label names the section, not the card.',scr(`<div class="h1">Today</div><div class="fld"><span class="lb">Session</span>${F(rows(SESS))}</div><div class="fld"><span class="lb">Notes</span>${F(rows(NOTES))}</div>`),'Recommended: matches your reference, and the frame still holds only content'],
+  ['B','Label inside the frame','The section label is the frame\u2019s first line, with a rule under it, as with sub-groups.',scr(`<div class="h1">Today</div>${F(`<span class="lb ruled">Session</span>${rows(SESS)}`)}${F(`<span class="lb ruled">Notes</span>${rows(NOTES)}`)}`)]]},
+ {t:'2 · Where the primary action lives',s:'A session detail screen with one main action.',o:[
+  ['A','Pinned footer','The action sits in a pinned footer, always reachable while the content scrolls.',scr(`<div class="hrow">${IB}<div class="h1">Lower push</div></div><div class="fld"><span class="lb">Exercises</span>${F(rows(SESS))}</div><div class="fld"><span class="lb">Notes</span>${F(rows(NOTES))}</div>`,P('Start session')),'Recommended: easiest to reach on a phone'],
+  ['B','Header, top right','Like your reference\u2019s action button: in the title row.',scr(`<div class="hrow">${IB}<div class="h1">Lower push</div><span class="clr-bleed clr-glow"><button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary" type="button" style="min-height:40px;padding:0 14px">Start</button></span></div><div class="fld"><span class="lb">Exercises</span>${F(rows(SESS))}</div><div class="fld"><span class="lb">Notes</span>${F(rows(NOTES))}</div>`)],
+  ['C','End of the content','After the last section, scrolling with everything else.',scr(`<div class="hrow">${IB}<div class="h1">Lower push</div></div><div class="fld"><span class="lb">Exercises</span>${F(rows(SESS))}</div><div class="fld"><span class="lb">Notes</span>${F(rows(NOTES))}</div>${P('Start session')}`)]]},
+ {t:'3 · An empty screen',s:'The history screen before anything has been logged.',o:[
+  ['A','Framed, centred','One frame in the middle of the screen with a title, a line and the action.',scr(`<div class="h1">History</div><div class="center">${F(`<div class="t20">No sessions yet</div><div class="b14">Log a session and it will appear here.</div>${P('Start a session')}`,'','lg')}</div>`),'Recommended: one clear thing to do'],
+  ['B','In the list frame','The empty list keeps its frame and shows the message in place, so the layout is the same as when it fills.',scr(`<div class="h1">History</div><div class="fld"><span class="lb">Sessions</span>${F(`<div class="b14">No sessions yet. Log a session and it will appear here.</div>`)}</div><div style="margin-top:auto">${P('Start a session')}</div>`)],
+  ['C','Unframed, centred','Just text and the action on the atmosphere, no frame.',scr(`<div class="h1">History</div><div class="center"><div class="t20">No sessions yet</div><div class="b14">Log a session and it will appear here.</div><div style="width:220px">${P('Start a session')}</div></div>`)]]},
+ {t:'4 · A screen that is loading',s:'The detail screen while its content loads. Scan and cursor are decided; this is about how much of the screen shows them.',o:[
+  ['A','Each section loads','Every section has its frame and label, and each frame scans with its own line.',scr(`<div class="hrow">${IB}<div class="h1">Lower push</div></div><div class="fld"><span class="lb">Exercises</span><div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--md frame" aria-busy="true"><span class="p14 cur">Reading exercises</span></div></div></div><div class="fld"><span class="lb">Notes</span><div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--md frame" aria-busy="true"><span class="p14 cur">Reading notes</span></div></div></div>`),'Recommended: sections can arrive one by one'],
+  ['B','One loader for the screen','A single frame says what\u2019s loading; the sections appear together when it\u2019s done.',scr(`<div class="hrow">${IB}<div class="h1">Lower push</div></div><div class="center"><div style="width:100%"><div class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--lg frame" aria-busy="true"><span class="lb">Loading</span><span class="p14 cur">Reading session</span></div></div></div></div>`)]]},
+ {t:'5 · A form screen',s:'Logging a set: four fields and a save action, on a phone.',o:[
+  ['A','One frame, fields inside','The form is one framed panel; fields sit in it with labels above.',scr(`<div class="hrow">${IB}<div class="h1">Log set</div></div>${F(`<div class="fld"><span class="lb">Exercise</span><div class="clr-field"><input class="clr-input" value="Back squat" aria-label="Exercise"></div></div><div class="fld"><span class="lb">Load</span><div class="clr-field"><input class="clr-input" value="90" aria-label="Load"><span class="clr-field__unit">kg</span></div></div><div class="fld"><span class="lb">Reps</span><div class="clr-field"><input class="clr-input" value="5" aria-label="Reps"></div></div><div class="fld"><span class="lb">Note</span><div class="clr-field"><input class="clr-input" placeholder="What happened in that set?" aria-label="Note"></div></div>`)}`,P('Save set'))],
+  ['B','Fields on the atmosphere','No panel: the fields are already framed, so they sit directly on the screen.',scr(`<div class="hrow">${IB}<div class="h1">Log set</div></div><div class="fld"><span class="lb">Exercise</span><div class="clr-field"><input class="clr-input" value="Back squat" aria-label="Exercise"></div></div><div class="fld"><span class="lb">Load</span><div class="clr-field"><input class="clr-input" value="90" aria-label="Load"><span class="clr-field__unit">kg</span></div></div><div class="fld"><span class="lb">Reps</span><div class="clr-field"><input class="clr-input" value="5" aria-label="Reps"></div></div><div class="fld"><span class="lb">Note</span><div class="clr-field"><input class="clr-input" placeholder="What happened in that set?" aria-label="Note"></div></div>`,P('Save set')),'Recommended: no frame around frames'],
+  ['C','Grouped panels','Fields split into two framed groups with labels above.',scr(`<div class="hrow">${IB}<div class="h1">Log set</div></div><div class="fld"><span class="lb">What</span>${F(`<div class="fld"><span class="lb">Exercise</span><div class="clr-field"><input class="clr-input" value="Back squat" aria-label="Exercise"></div></div>`)}</div><div class="fld"><span class="lb">How</span>${F(`<div class="fld"><span class="lb">Load</span><div class="clr-field"><input class="clr-input" value="90" aria-label="Load"><span class="clr-field__unit">kg</span></div></div><div class="fld"><span class="lb">Reps</span><div class="clr-field"><input class="clr-input" value="5" aria-label="Reps"></div></div>`)}</div>`,P('Save set'))]]}
+];
+document.getElementById('secs').innerHTML=SECTIONS.map(x=>`<section><h2>${x.t}</h2><div class="sub">${x.s}</div><div class="grid">${x.o.map(([o,l,d,body,flag])=>`<div class="opt"><div class="badge"><b>${o}</b><span>${l}</span></div>${body}<div class="desc">${d}</div>${flag?`<div class="flag">${flag}</div>`:''}</div>`).join('')}</div></section>`).join('');
+</script>
+</body></html>

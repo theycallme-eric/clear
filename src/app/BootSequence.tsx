@@ -2,7 +2,7 @@
  * REQ-057 — the boot and re-entry sequence, and the gate that is not one.
  *
  * Composition is the Boot Sequence template's
- * (`docs/design/exports/clear-design-system-0.6.0/templates/boot-sequence/BootSequence.dc.html`):
+ * (`docs/design/exports/clear-design-system-0.9.7/templates/boot-sequence/BootSequence.dc.html`):
  * the atmosphere, the shell, `ClearLogo` booting once, and `ScanLoader`
  * carrying the system checks as they finish. What the template shows with a
  * `simulateWork` stand-in, `useAppBoot` supplies for real — and the template's

@@ -1,0 +1,16 @@
+Copyright (c) 2026 CLEAR. All rights reserved.
+
+This design system and its source are proprietary and confidential. No licence,
+express or implied, is granted to copy, modify, distribute, or use any part of
+this work outside the organisation that owns it.
+
+Third-party material used here keeps its own terms:
+
+  Oxanium, Chakra Petch, Share Tech Mono — SIL Open Font License 1.1, loaded
+  from Google Fonts. Not redistributed by this project.
+
+  React — MIT, a peer dependency. Not redistributed by this project.
+
+  Icon set — original work drawn for CLEAR. A subset began as geometry study
+  from Zondicons (MIT), but every shipped glyph was redrawn to CLEAR's
+  construction rules; no Zondicons path data remains.
