@@ -20,6 +20,8 @@ import { describe, expect, it } from 'vitest'
 import { Route, Routes } from 'react-router-dom'
 
 import type { AnchorsClient } from '../data/anchors'
+import type { GenerationInput } from '../data/generation'
+import { regenerationInput } from '../state/review-handoff'
 import { Constants } from '../data/database.types'
 import type { SessionsClient } from '../data/sessions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
@@ -53,6 +55,8 @@ import {
 import { renderWithProviders, signedIn } from '../test/render'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import { REGENERATE_LABEL, Review, START_LABEL } from './Review'
+
+const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
 const ACCEPTANCE = makeSessionAcceptance({
   session_focus: 'lower_body',
@@ -405,6 +409,40 @@ describe('Regenerate confirms before discarding', () => {
     )
 
     expect(regenerated).toBe(1)
+  })
+
+  // REQ-009: the request a regeneration restates is the accepted session's
+  // own, so a Recovery session regenerates as one and the Focus does not move.
+  it.each([
+    ['a standing Goal', 'strength', 'lower_body'],
+    ['a Recovery session', 'active_recovery', 'upper_body'],
+  ] as const)('restates the accepted Goal and Focus for %s', async (_, goal, focus) => {
+    const user = userEvent.setup()
+    const acceptance = makeSessionAcceptance({
+      ...ACCEPTANCE,
+      goal_preset: goal,
+      session_focus: focus,
+      location_id: LOCATION_ID,
+    })
+    const restated: (GenerationInput | null)[] = []
+    renderReview({
+      acceptance,
+      onRegenerate: () => restated.push(regenerationInput(acceptance)),
+    })
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    await user.click(screen.getByRole('button', { name: REGENERATE_LABEL }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Discard and regenerate' }),
+    )
+
+    expect(restated).toHaveLength(1)
+    expect(restated[0]).toMatchObject({
+      goal,
+      focus,
+      requested_intensity: acceptance.requested_intensity,
+    })
   })
 
   it('writes nothing on the way out — a discarded workout leaves no session', async () => {

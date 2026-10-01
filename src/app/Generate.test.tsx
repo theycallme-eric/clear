@@ -19,7 +19,10 @@ import type { WorkoutClients } from '../data/workout'
 import { DELOAD_DECISIONS_STORAGE_KEY } from '../state/deload-decisions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import {
+  GENERATE_PATH,
+  generatePath,
   INTENSITY_BY_GOAL,
+  intentFrom,
   POWER_REFUSAL,
   REFUSAL_SUMMARY,
 } from '../state/generation-form'
@@ -1394,5 +1397,142 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     await user.click(cta())
     expect(generation.calls[0]).toMatchObject({ goal: 'strength' })
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-009 — one resolved intent across handoff, refresh, cancel and retry
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('REQ-009 — the same Goal and Focus however the draft is reached', () => {
+  beforeEach(() => {
+    toastQueue.clear()
+  })
+
+  /** A Recovery session on an overridden Focus, at an intensity of the athlete's own. */
+  async function composeRecoveryOverride(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(recovery())
+    await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
+    fireEvent.change(slider(), { target: { value: '2' } })
+  }
+
+  const RECOVERY_OVERRIDE = {
+    goal: 'active_recovery',
+    focus: 'upper_body',
+    requested_intensity: 2,
+  }
+
+  it.each([
+    ['the Focus history recommends', generatePath({ focus: 'lower_body', intensity: 7 })],
+    ['a Focus history no longer recommends', generatePath({ focus: 'power', intensity: 9 })],
+  ])('sends from a Home handoff carrying %s what a direct visit sends', async (_, handoff) => {
+    const direct = renderDraft()
+    await direct.user.click(cta())
+    direct.unmount()
+
+    const handedOff = renderDraft({ entry: handoff })
+    await handedOff.user.click(cta())
+
+    expect(direct.generation.calls).toHaveLength(1)
+    expect(handedOff.generation.calls).toEqual(direct.generation.calls)
+    expect(handedOff.generation.calls[0]).toMatchObject({
+      goal: 'strength',
+      focus: 'lower_body',
+      requested_intensity: 7,
+    })
+  })
+
+  it('cancels from Loading back to the draft with Recovery, the override and the intensity kept', async () => {
+    const { user, generation, url } = renderDraft()
+
+    await composeRecoveryOverride(user)
+    const drafted = url()
+    await user.click(cta())
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(url()).toBe(drafted)
+    expect(intentFrom(url().slice(GENERATE_PATH.length))).toEqual({
+      override: 'upper_body',
+      recovery: true,
+    })
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(focusLine()).toHaveTextContent('Upper body')
+    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(slider()).toHaveValue('2')
+
+    // And the same request goes out again.
+    await user.click(cta())
+    expect(generation.calls).toHaveLength(2)
+    expect(generation.calls[0]).toMatchObject(RECOVERY_OVERRIDE)
+    expect(generation.calls[1]).toEqual(generation.calls[0])
+  })
+
+  it('keeps the handoff’s own parameters in the address through cancel', async () => {
+    const handoff = generatePath({ focus: 'lower_body', intensity: 7 })
+    const { user, url } = renderDraft({ entry: handoff })
+
+    await user.click(cta())
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(url()).toBe(handoff)
+    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(focusLine()).not.toHaveTextContent(OVERRIDE_SCOPE)
+  })
+
+  it('resolves the same request from a refresh of the cancelled draft’s address', async () => {
+    const first = renderDraft()
+
+    await composeRecoveryOverride(first.user)
+    await first.user.click(cta())
+    await first.user.click(screen.getByRole('button', { name: 'Cancel' }))
+    const address = first.url()
+    first.unmount()
+
+    const reloaded = renderDraft({ entry: address })
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(focusLine()).toHaveTextContent('Upper body')
+    await reloaded.user.click(cta())
+
+    // The intensity is the draft's and not the address's, so a reload resolves
+    // it again from the Goal; Goal and Focus are the ones that were sent.
+    const { goal, focus } = first.generation.calls[0] ?? {}
+    expect(reloaded.generation.calls).toHaveLength(1)
+    expect(reloaded.generation.calls[0]).toMatchObject({ goal, focus })
+    expect(goal).toBe('active_recovery')
+    expect(focus).toBe('upper_body')
+  })
+
+  it('resends the same Goal and Focus on Retry after a typed failure, once', async () => {
+    const { user, generation } = renderDraft()
+
+    await composeRecoveryOverride(user)
+    await user.click(cta())
+    await act(async () => {
+      generation.fail(makeGenerationError({ requestId: 'req_generate_9' }))
+    })
+    const alert = await screen.findByRole('alert')
+    const retry = within(alert).getByRole('button', { name: 'Retry' })
+    // Two presses in one tick: the second lands while the retry is in flight.
+    fireEvent.click(retry)
+    fireEvent.click(retry)
+
+    expect(generation.calls).toHaveLength(2)
+    expect(generation.outstanding).toBe(1)
+    expect(generation.calls[0]).toMatchObject(RECOVERY_OVERRIDE)
+    expect(generation.calls[1]).toEqual(generation.calls[0])
+  })
+
+  it('starts one run for a Recovery draft however often the submit is pressed', async () => {
+    const { user, generation } = renderDraft()
+
+    await composeRecoveryOverride(user)
+    const button = cta()
+    fireEvent.click(button)
+    fireEvent.click(button)
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.outstanding).toBe(1)
+    expect(generation.calls[0]).toMatchObject(RECOVERY_OVERRIDE)
   })
 })

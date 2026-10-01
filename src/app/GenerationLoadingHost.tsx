@@ -36,7 +36,9 @@ export interface GenerationLoadingHostProps {
   readonly generation: GenerationMutation
   /**
    * Where cancel returns to: the route that started the run. When the user is
-   * already there, cancelling simply takes the Loading screen down.
+   * already there, cancelling simply takes the Loading screen down. A target
+   * carrying a query string is a draft's own address (REQ-009): it is restored
+   * unless the address is already exactly that.
    */
   readonly cancelTo: string
   /** The route's own screen, rendered whenever no run is being watched. */
@@ -52,13 +54,13 @@ export function GenerationLoadingHost({
   slowThresholdMs,
 }: GenerationLoadingHostProps) {
   const navigate = useNavigate()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const { state, stage, cancel, retry } = generation
 
   const leave = useCallback(() => {
     cancel()
-    if (pathname !== cancelTo) void navigate(cancelTo)
-  }, [cancel, cancelTo, navigate, pathname])
+    if (pathname !== cancelTo && `${pathname}${search}` !== cancelTo) void navigate(cancelTo)
+  }, [cancel, cancelTo, navigate, pathname, search])
 
   if (state.status === 'pending' || state.status === 'error') {
     return (

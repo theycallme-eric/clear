@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { act, screen, within } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
@@ -48,6 +48,7 @@ function WhereAmI() {
   return (
     <>
       <p data-testid="location">{useLocation().pathname}</p>
+      <p data-testid="search">{useLocation().search}</p>
       <Link to="/elsewhere">Leave</Link>
     </>
   )
@@ -69,23 +70,33 @@ function StartingRoute({ cancelTo }: { cancelTo: string }) {
 
 function mount(
   client: FakeGenerationClient,
-  { path = '/review', cancelTo = path }: { path?: string; cancelTo?: string } = {},
+  {
+    path = '/review',
+    cancelTo = path,
+    route = path,
+  }: { path?: string; cancelTo?: string; route?: string } = {},
 ) {
+  // A cancel target may carry a draft's query string; the route is its path.
+  const cancelPath = cancelTo.split('?')[0]
+
   return renderWithProviders(
     <GenerationClientContext value={client}>
       <WhereAmI />
       <Routes>
         <Route path={path} element={<StartingRoute cancelTo={cancelTo} />} />
         <Route path="/elsewhere" element={<p>elsewhere</p>} />
-        {cancelTo !== path && <Route path={cancelTo} element={<p>cancel destination</p>} />}
+        {cancelPath !== path && (
+          <Route path={cancelPath} element={<p>cancel destination</p>} />
+        )}
       </Routes>
     </GenerationClientContext>,
-    { route: path },
+    { route },
   )
 }
 
 const loader = () => screen.queryByRole('status')
 const location = () => screen.getByTestId('location').textContent
+const search = () => screen.getByTestId('search').textContent
 
 /** Toasts still showing or waiting to show — a `leaving` one is on its way out. */
 function liveToasts(): ToastMessage[] {
@@ -195,6 +206,93 @@ describe('GenerationLoadingHost · cancel returns to the route that started the 
 
     expect(location()).toBe('/origin')
     expect(client.calls).toHaveLength(1)
+  })
+})
+
+describe('GenerationLoadingHost · REQ-009 — cancel keeps the draft address, and a run is one call', () => {
+  const DRAFT = '/generate?override=upper_body&recovery=1'
+
+  it('leaves the draft’s query string in place when cancel is that address', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client, { path: '/generate', cancelTo: DRAFT, route: DRAFT })
+
+    await startRun(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(loader()).not.toBeInTheDocument()
+    expect(screen.getByText(ROUTE_CONTENT)).toBeInTheDocument()
+    expect(location()).toBe('/generate')
+    expect(search()).toBe('?override=upper_body&recovery=1')
+  })
+
+  it('keeps whatever query string is there when the target names only the path', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client, { path: '/generate', cancelTo: '/generate', route: DRAFT })
+
+    await startRun(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByText(ROUTE_CONTENT)).toBeInTheDocument()
+    expect(search()).toBe('?override=upper_body&recovery=1')
+  })
+
+  it('restores the draft’s query string when the address had lost it', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client, { path: '/generate', cancelTo: DRAFT, route: '/generate' })
+
+    await startRun(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByText(ROUTE_CONTENT)).toBeInTheDocument()
+    expect(location()).toBe('/generate')
+    expect(search()).toBe('?override=upper_body&recovery=1')
+  })
+
+  it('carries the draft’s query string to a destination on another route', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client, { path: '/start', cancelTo: DRAFT })
+
+    await startRun(user)
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.getByText('cancel destination')).toBeInTheDocument()
+    expect(location()).toBe('/generate')
+    expect(search()).toBe('?override=upper_body&recovery=1')
+  })
+
+  it('starts one call when the run is started twice in one tick', async () => {
+    const client = createFakeGenerationClient()
+    mount(client)
+
+    const start = screen.getByRole('button', { name: START })
+    fireEvent.click(start)
+    fireEvent.click(start)
+
+    expect(client.calls).toEqual([INPUT])
+    expect(client.outstanding).toBe(1)
+  })
+
+  it('resends the same input on retry, and once however often Retry is pressed', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client)
+
+    await startRun(user)
+    await act(async () => {
+      client.fail(makeGenerationError())
+    })
+    const alert = await screen.findByRole('alert')
+    const retry = within(alert).getByRole('button', { name: 'Retry' })
+    // Two presses in one tick: the second lands while the retry is in flight.
+    fireEvent.click(retry)
+    fireEvent.click(retry)
+
+    expect(client.calls).toEqual([INPUT, INPUT])
+    expect(client.outstanding).toBe(1)
   })
 })
 
