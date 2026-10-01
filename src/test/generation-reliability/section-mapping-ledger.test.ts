@@ -8,6 +8,11 @@
  * the sources the row cites, and it is the check REQ-003 asks for: a seed whose
  * section tags differ from the capture for an exercise with no row fails here.
  *
+ * REQ-005 added the Minimal-tier main-work rows: `primary_lift`, and primary
+ * eligibility, for exercises that need nothing but the athlete's own body. The
+ * `Minimal main work` block holds those rows to that — usable with the Minimal
+ * preset alone, and taking nothing away from the tiers above it.
+ *
  * The ledger is a proposal. The seed is untouched by it, and the last block
  * says so — it is expected to be rewritten by the task that applies the ledger,
  * not relaxed.
@@ -20,11 +25,15 @@ import { describe, expect, it } from 'vitest'
 import { REPO_ROOT, loadSnapshot } from '../../../scripts/catalog-seed/sources.mjs'
 import {
   LEDGER_SECTIONS,
+  MAIN_WORK_SECTION,
+  PROPOSED_SECTIONS,
   addedSections,
   loadLedger,
+  projectCatalog,
   validateLedger,
 } from '../../../scripts/generation-reliability/section-ledger.mjs'
 import { Constants } from '../../data/database.types'
+import { EQUIPMENT_BY_TIER } from '../../state/onboarding'
 import { seededCatalog } from '../seed-catalog'
 
 const SECTION_TYPES = [...Constants.public.Enums.section_type] as string[]
@@ -55,6 +64,7 @@ const facts = new Map(
         .filter((anchor) => anchor.exerciseId === row.id)
         .map((anchor) => anchor.anchor),
       cues: snapshot.definitions.find((definition) => definition.id === row.id)?.coachingCues ?? [],
+      equipment: row.equipmentOptions,
     },
   ]),
 )
@@ -132,14 +142,21 @@ describe('the committed ledger', () => {
     }
   })
 
-  it('adds only to the three empty sections and removes no existing tag', () => {
+  it('adds only to the three empty sections and primary_lift, and removes no existing tag', () => {
     for (const row of ledger.rows) {
       expect(addedSections(row).length, row.id).toBeGreaterThan(0)
-      for (const section of addedSections(row)) expect(LEDGER_SECTIONS, row.id).toContain(section)
+      for (const section of addedSections(row)) expect(PROPOSED_SECTIONS, row.id).toContain(section)
       for (const section of row.before.sections) {
         expect(row.after.sections, `${row.id} keeps ${section}`).toContain(section)
       }
-      expect(row.after.canBePrimary, row.id).toBe(row.before.canBePrimary)
+    }
+  })
+
+  it('changes primary eligibility only upward, and only with primary_lift', () => {
+    for (const row of ledger.rows) {
+      const becomesPrimary = addedSections(row).includes(MAIN_WORK_SECTION)
+
+      expect(row.after.canBePrimary, row.id).toBe(row.before.canBePrimary || becomesPrimary)
     }
   })
 
@@ -149,7 +166,7 @@ describe('the committed ledger', () => {
     expect(ledger.ambiguous.length).toBeLessThan(ledger.rows.length)
 
     for (const entry of ledger.ambiguous) {
-      expect(LEDGER_SECTIONS, entry.id).toContain(entry.section)
+      expect(PROPOSED_SECTIONS, entry.id).toContain(entry.section)
       expect(['add', 'leave'], entry.id).toContain(entry.recommendation)
 
       const row = ledger.rows.find((candidate) => candidate.id === entry.id)
@@ -221,6 +238,7 @@ describe('the check', () => {
       ['legacy-anchor:not-an-anchor', /legacy anchor "not-an-anchor"/],
       ['name:Not In The Name', /in a name that is/],
       ['cue:Not a cue', /coaching cue "Not a cue"/],
+      ['equipment:trampoline', /equipment "trampoline" it cannot be done with/],
       ['ref:not.defined', /reference "not.defined" the ledger does not define/],
       ['because I said so', /is not kind:value/],
       ['hunch:strong', /unknown evidence kind/],
@@ -306,6 +324,111 @@ describe('the check', () => {
     const undecided = structuredClone(ledger)
     undecided.ambiguous[0].recommendation = 'ask the owner'
     expect(validateLedger(undecided, context).join('\n')).toMatch(/has no recommendation from/)
+  })
+})
+
+describe('Minimal main work', () => {
+  const MINIMAL = EQUIPMENT_BY_TIER.minimal
+  /** Anything that is not the athlete, a band or a roller. */
+  const HEAVY = /\b(barbell|dumbbells?|kettlebells?|bar|bench|machine|cable|rack|sled)\b/i
+
+  const mainWorkRows = ledger.rows.filter((row) => addedSections(row).includes(MAIN_WORK_SECTION))
+  const projected = projectCatalog(catalog, ledger)
+
+  /** `generation_candidates`' section and equipment predicates, relaxed. */
+  const candidates = (rows: typeof catalog, section: string, tier: keyof typeof EQUIPMENT_BY_TIER) =>
+    rows
+      .filter(
+        (row) =>
+          row.sections.includes(section) &&
+          row.equipmentOptions.some((item) => EQUIPMENT_BY_TIER[tier].includes(item)),
+      )
+      .map((row) => row.id)
+      .sort()
+
+  it('is exactly bodyweight, resistance bands and a foam roller', () => {
+    expect([...MINIMAL]).toEqual(['bodyweight', 'resistance_bands', 'foam_roller'])
+  })
+
+  it('has no candidate in the seed, which is what the rows repair', () => {
+    expect(candidates(catalog, MAIN_WORK_SECTION, 'minimal')).toEqual([])
+  })
+
+  it('has rows, each making its exercise primary on the owner’s decision', () => {
+    expect(mainWorkRows.length).toBeGreaterThan(0)
+
+    for (const row of mainWorkRows) {
+      expect(row.after.canBePrimary, row.id).toBe(true)
+      expect(row.evidence, row.id).toContain('ref:decision.minimal-main-work')
+    }
+  })
+
+  it('has no row that needs a barbell or any other heavy implement', () => {
+    for (const row of mainWorkRows) {
+      const exercise = catalog.find((candidate) => candidate.id === row.id)
+      const cited = row.evidence
+        .filter((evidence) => evidence.startsWith('equipment:'))
+        .map((evidence) => evidence.slice('equipment:'.length))
+
+      // The row says which Minimal equipment it is done with, and the catalog agrees.
+      expect(cited.length, row.id).toBeGreaterThan(0)
+      for (const item of cited) expect(MINIMAL, row.id).toContain(item)
+      expect(exercise?.equipmentOptions.some((item) => MINIMAL.includes(item)), row.id).toBe(true)
+
+      // And nothing the catalog says about it asks for more than that.
+      expect(exercise?.name, row.id).not.toMatch(HEAVY)
+      for (const cue of facts.get(row.id)?.cues ?? []) expect(cue, row.id).not.toMatch(HEAVY)
+    }
+  })
+
+  it('makes those rows, and nothing else, the Minimal main-work candidates', () => {
+    expect(candidates(projected, MAIN_WORK_SECTION, 'minimal')).toEqual(
+      mainWorkRows.map((row) => row.id).sort(),
+    )
+  })
+
+  it('covers a squat, a hinge and a press without an implement', () => {
+    const patterns = new Set(
+      projected
+        .filter((row) => mainWorkRows.some((entry) => entry.id === row.id))
+        .flatMap((row) => row.movementPatterns),
+    )
+
+    for (const pattern of ['squat', 'hinge', 'press']) expect(patterns, pattern).toContain(pattern)
+  })
+
+  it('keeps apparatus-dependent exercises out, however the catalog lists their equipment', () => {
+    for (const id of ['pull-ups', 'chin-ups', 'inverted-rows', 'dips']) {
+      expect(mainWorkRows.map((row) => row.id)).not.toContain(id)
+      expect(
+        ledger.ambiguous.find((entry) => entry.id === id && entry.section === MAIN_WORK_SECTION)
+          ?.recommendation,
+        id,
+      ).toBe('leave')
+    }
+  })
+
+  it('takes no candidate away from any tier in any section', () => {
+    for (const tier of Constants.public.Enums.equipment_tier) {
+      for (const section of SECTION_TYPES) {
+        const after = candidates(projected, section, tier)
+
+        for (const id of candidates(catalog, section, tier)) {
+          expect(after, `${tier}/${section} keeps ${id}`).toContain(id)
+        }
+      }
+    }
+  })
+
+  it('refuses a row that makes an exercise primary without the section', () => {
+    const copy = structuredClone(ledger)
+    const row = copy.rows.find((entry) => !entry.after.sections.includes(MAIN_WORK_SECTION))
+    expect(row).toBeDefined()
+    if (row !== undefined) row.after.canBePrimary = true
+
+    expect(validateLedger(copy, context).join('\n')).toMatch(
+      /makes it primary without adding primary_lift/,
+    )
   })
 })
 

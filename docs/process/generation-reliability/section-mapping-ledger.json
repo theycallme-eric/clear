@@ -3,12 +3,15 @@
   "notes": [
     "REQ-003 / TASK-003 (issue #290). A proposal: no seed file or migration is changed by this ledger. A later task applies it.",
     "Reviewed, not generated. src/test/generation-reliability/section-mapping-ledger.test.ts holds it to the capture, the seed and the cited sources.",
-    "One row per exercise whose section membership or primary eligibility changes. before is the pre-change capture; after is before plus the proposed tags. Every row here is additive and none changes canBePrimary.",
-    "Evidence is kind:value. component and role are the reviewed workout-anatomy tags in docs/backend/evidence/previous-migrations/00031_tag_exercises.sql; legacy-anchor and cue are the pre-change capture; name is the exercise name; ref is an entry in references, whose quote must be present in its path.",
+    "REQ-005 / TASK-004 (issue #291) adds the Minimal-tier main-work rows: primary_lift and canBePrimary for eight exercises that need nothing but the athlete's own body. Still a proposal; the seed is unchanged.",
+    "One row per exercise whose section membership or primary eligibility changes. before is the pre-change capture; after is before plus the proposed tags. Every row here is additive: no tag is removed, and canBePrimary changes only from false to true, only on a row that adds primary_lift.",
+    "Evidence is kind:value. component and role are the reviewed workout-anatomy tags in docs/backend/evidence/previous-migrations/00031_tag_exercises.sql; legacy-anchor and cue are the pre-change capture; name is the exercise name; equipment is an entry in the exercise's seeded equipment_options; ref is an entry in references, whose quote must be present in its path.",
+    "The rule for a primary_lift row: the owner's decision that Minimal main work is low/no-equipment training, plus the section's own description (squats, deadlifts, presses), plus three catalog facts that agree — a reviewed component that is the squat, hinge or press pattern itself, the old catalog's primary anchor for the same pattern, and bodyweight among its equipment options with nothing in its name or cues that asks for a bar, a bench or an anchor point. An exercise the catalog lists as bodyweight but that needs apparatus (pull-ups, chin-ups, inverted rows, dips) is under ambiguous with a recommendation to leave: retrieval filters on equipment_options, so tagging it would offer it where the apparatus does not exist.",
+    "The primary_lift rows are not Minimal-only. Each of them is offered as main work at every tier, beside the loaded lifts already there; nothing is removed from any tier.",
     "The rule for a row is the section's own onboarding description plus an independent catalog fact that agrees with it. skill_power: a jump or an Olympic lift or pull by name, tagged triple-extension. carries: a carry by name, in the reviewed stability batch headed 'anti-motion core, carries'. stability_balance: tagged single-leg-stability and not an Olympic lift.",
     "ambiguous lists the exercises where the evidence points both ways, each with a recommendation. A recommendation of add is the default disposition unless the owner overrides it; it takes effect only by becoming a row, because the seed may not differ from the capture without one.",
     "An exercise absent from both lists has no evidence for any of the three sections and is not proposed.",
-    "Not established here: whether each section has enough candidates at every equipment tier. Every carry needs dumbbells or kettlebells, so carries stays empty at the Minimal tier under this proposal. That is GR-02/GR-03's viability decision (support it or prevent the selection), not a reason to tag something that is not a carry."
+    "Every carry needs dumbbells or kettlebells, so carries stays empty at the Minimal tier under this proposal. That is not a reason to tag something that is not a carry: docs/process/generation-reliability/configuration-dispositions.json records the selection as prevented at the preference boundary, with its reason, and every other legal configuration as supported."
   ],
   "capture": "docs/backend/snapshot/2026-09-18T162821Z/catalog/exercise_definitions.csv",
   "references": {
@@ -31,6 +34,58 @@
     "onboarding.conditioning": {
       "path": "src/state/onboarding.ts",
       "quote": "Cardio, circuits, or higher-intensity finishers"
+    },
+    "onboarding.primary_lift": {
+      "path": "src/state/onboarding.ts",
+      "quote": "The main heavy movement — squats, deadlifts, presses"
+    },
+    "onboarding.minimal-tier": {
+      "path": "src/state/onboarding.ts",
+      "quote": "Bodyweight, bands, a roller"
+    },
+    "decision.minimal-main-work": {
+      "path": "docs/process/generation-reliability/owner-decisions.md",
+      "quote": "Bodyweight, calisthenics, plyometrics, bands, and similarly appropriate work should form a useful workout. Minimal is not a degraded barbell program and should not disable ordinary Goals merely because no heavy implement exists."
+    },
+    "decision.minimal-primary-gap": {
+      "path": "docs/process/generation-reliability/owner-decisions.md",
+      "quote": "the repaired taxonomy/preset must support meaningful main work without treating a barbell lift as the only possible session anchor."
+    },
+    "journal.bodyweight-primary-gap": {
+      "path": "docs/journal/2026-09-22.md",
+      "quote": "every primary lift in the seeded catalog needs a barbell, dumbbell, kettlebell or bar."
+    },
+    "anatomy.knee-flexion": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Knee bending under load. Underlies squats, lunges, step-ups."
+    },
+    "anatomy.hip-hinge": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Hip-dominant flexion/extension with neutral spine. The motion underlying deadlifts, RDLs, swings."
+    },
+    "anatomy.horizontal-press": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Forward pressing pattern. Underlies bench press, push-ups, dips."
+    },
+    "anatomy.role-compound-lift": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Multi-joint loaded movement that can serve as a primary lift. | Deadlift, back squat, bench press, pull-up."
+    },
+    "anatomy.role-activation": {
+      "path": "docs/specs/generation/workout-anatomy.md",
+      "quote": "Light bodyweight exercise that trains a specific primitive for movement prep."
+    },
+    "tags.press-accessories": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- Press accessories"
+    },
+    "tags.pull-accessories": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- Pull accessories"
+    },
+    "tags.activation": {
+      "path": "docs/backend/evidence/previous-migrations/00031_tag_exercises.sql",
+      "quote": "-- ACTIVATION (bodyweight movement prep)"
     },
     "wireframe.skill_power": {
       "path": "docs/specs/screens/onboarding-wireframe.md",
@@ -232,11 +287,11 @@
     },
     {
       "id": "single-leg-rdl",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "name:Single-Leg", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Back leg extends for balance", "ref:tags.hinge-accessories"],
-      "rationale": "Single-leg work by name, and the anatomy spec's first example for single-leg-stability. Its own cue is about balance."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "name:Single-Leg", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Back leg extends for balance", "ref:tags.hinge-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "name:RDL", "component:hip-hinge", "ref:anatomy.hip-hinge", "legacy-anchor:hinge", "cue:Hinge at hip"],
+      "rationale": "Stability: single-leg work by name, and the anatomy spec's first example for single-leg-stability. Its own cue is about balance. Main work: the section description names deadlifts, and this is the one hip-hinge in the catalog that needs no implement — tagged hip-hinge, the primitive the anatomy spec says underlies deadlifts and RDLs, anchored to hinge in the old catalog, with bodyweight among its equipment. On one leg, bodyweight is a real load. It is the Minimal tier's hinge."
     },
     {
       "id": "single-leg-glute-bridge",
@@ -248,27 +303,27 @@
     },
     {
       "id": "bulgarian-split-squat",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Rear foot elevated", "ref:tags.squat-accessories"],
-      "rationale": "A split squat, which the anatomy spec names as training single-leg-stability, with the rear foot elevated so the front leg carries the balance."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Rear foot elevated", "ref:tags.squat-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "name:Squat", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "cue:Control the descent"],
+      "rationale": "Stability: a split squat, which the anatomy spec names as training single-leg-stability, with the rear foot elevated so the front leg carries the balance. Main work: the section description names squats; this is a squat by name, tagged knee-flexion, anchored to squat in the old catalog, with bodyweight among its equipment. With the rear foot raised nearly all of the athlete's weight is on one leg, which makes it the heaviest squat available without an implement."
     },
     {
       "id": "split-squat",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Static stance", "ref:tags.squat-accessories"],
-      "rationale": "The anatomy spec names split squats as training single-leg-stability, and the reviewed tags carry it."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "name:Split Squat", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Static stance", "ref:tags.squat-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "name:Squat", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "cue:Back knee toward floor"],
+      "rationale": "Stability: the anatomy spec names split squats as training single-leg-stability, and the reviewed tags carry it. Main work: the section description names squats; this is a squat by name, tagged knee-flexion, anchored to squat in the old catalog, with bodyweight among its equipment. It is the entry-level single-leg squat, the one a newer athlete can load by tempo and range before the rear foot goes up."
     },
     {
       "id": "reverse-lunges",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Front knee stable", "ref:tags.squat-accessories"],
-      "rationale": "Unilateral lower-body work tagged single-leg-stability; each rep is finished on one leg and its cue is knee stability."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Front knee stable", "ref:tags.squat-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "cue:Drive through front heel"],
+      "rationale": "Stability: unilateral lower-body work tagged single-leg-stability; each rep is finished on one leg and its cue is knee stability. Main work: tagged knee-flexion, the primitive the anatomy spec says underlies squats and lunges, anchored to squat in the old catalog, with bodyweight among its equipment. A lunge is the squat pattern one leg at a time, which is how the pattern is loaded when there is nothing to hold."
     },
     {
       "id": "goblet-reverse-lunges",
@@ -280,11 +335,11 @@
     },
     {
       "id": "walking-lunges",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Knee tracks over toe", "ref:tags.squat-accessories"],
-      "rationale": "Unilateral lower-body work tagged single-leg-stability; every step is a single-leg stance under load."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Knee tracks over toe", "ref:tags.squat-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "cue:Long stride"],
+      "rationale": "Stability: unilateral lower-body work tagged single-leg-stability; every step is a single-leg stance under load. Main work: tagged knee-flexion, anchored to squat in the old catalog, with bodyweight among its equipment. The same case as reverse-lunges, so the same disposition."
     },
     {
       "id": "walking-lunges-oh",
@@ -296,11 +351,27 @@
     },
     {
       "id": "lateral-lunges",
-      "change": "add stability_balance",
+      "change": "add stability_balance; add primary_lift and make it primary",
       "before": { "sections": ["accessory"], "canBePrimary": false },
-      "after": { "sections": ["accessory", "stability_balance"], "canBePrimary": false },
-      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Sit back into hip", "ref:tags.squat-accessories"],
-      "rationale": "Unilateral lower-body work in the frontal plane, tagged single-leg-stability."
+      "after": { "sections": ["accessory", "stability_balance", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.stability_balance", "name:Lunges", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Sit back into hip", "ref:tags.squat-accessories", "ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "cue:Push back to start"],
+      "rationale": "Stability: unilateral lower-body work in the frontal plane, tagged single-leg-stability. Main work: tagged knee-flexion, anchored to squat in the old catalog, with bodyweight among its equipment. The squat pattern on one leg, sideways; the same case as reverse-lunges."
+    },
+    {
+      "id": "push-ups",
+      "change": "add primary_lift and make it primary",
+      "before": { "sections": ["accessory", "conditioning", "warmup"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "warmup", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "ref:onboarding.minimal-tier", "equipment:bodyweight", "name:Push-ups", "component:horizontal-press", "ref:anatomy.horizontal-press", "component:brace", "legacy-anchor:press", "cue:Chest to floor", "ref:tags.press-accessories"],
+      "rationale": "The section description names presses, and the anatomy spec names push-ups beside the bench press as what horizontal-press underlies. Tagged horizontal-press, anchored to press in the old catalog, bodyweight only. It is the calisthenic press the owner's decision describes, and the only pressing pattern the Minimal tier has."
+    },
+    {
+      "id": "decline-push-ups",
+      "change": "add primary_lift and make it primary",
+      "before": { "sections": ["accessory", "conditioning"], "canBePrimary": false },
+      "after": { "sections": ["accessory", "conditioning", "primary_lift"], "canBePrimary": true },
+      "evidence": ["ref:onboarding.primary_lift", "ref:decision.minimal-main-work", "ref:decision.minimal-primary-gap", "ref:journal.bodyweight-primary-gap", "equipment:bodyweight", "name:Push-ups", "component:horizontal-press", "ref:anatomy.horizontal-press", "component:brace", "legacy-anchor:press", "cue:Feet elevated", "ref:tags.press-accessories"],
+      "rationale": "The push-up with the feet raised, which the capture records as the progression of push-ups: more of the athlete's weight on the hands. Same tag and same anchor as push-ups, so the same disposition, and it gives the Minimal press a harder step. The feet go on whatever is there; no listed equipment is involved."
     },
     {
       "id": "box-step-ups",
@@ -416,6 +487,55 @@
       "evidence": ["ref:onboarding.stability_balance", "ref:wireframe.stability_balance", "role:stability", "ref:tags.stability-and-carries", "ref:onboarding.core"],
       "recommendation": "leave",
       "rationale": "The same case as side-plank: role stability, but trunk bracing that Core already describes and already holds. Recommend leaving it in core only."
+    },
+    {
+      "id": "pull-ups",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "role:compound_lift", "ref:anatomy.role-compound-lift", "legacy-anchor:pull", "component:vertical-pull", "equipment:bodyweight", "equipment:pullup_bar", "cue:Chin over bar", "cue:Dead hang start"],
+      "recommendation": "leave",
+      "rationale": "For: its reviewed role is compound_lift, the anatomy spec names the pull-up as an example of a movement that can serve as a primary lift, and it would give the Minimal tier a pull. Against: it hangs from a bar, as its own cues say, yet the catalog lists bodyweight among its equipment — so retrieval offers it to anyone, bar or not. Tagging it primary_lift would make a bar-dependent exercise Minimal main work, which REQ-005 rules out. Recommend leaving it until its equipment says pullup_bar only; that correction is outside this ledger, which records section membership and primary eligibility, and once made the exercise is a sound primary_lift row for the Home tier and above."
+    },
+    {
+      "id": "chin-ups",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "role:compound_lift", "ref:anatomy.role-compound-lift", "legacy-anchor:pull", "component:vertical-pull", "equipment:bodyweight", "equipment:pullup_bar", "cue:Chin over bar"],
+      "recommendation": "leave",
+      "rationale": "The same case as pull-ups: role compound_lift, but done from a bar while listed as bodyweight. Recommend the same disposition as pull-ups, whichever way that goes."
+    },
+    {
+      "id": "inverted-rows",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "ref:tags.pull-accessories", "legacy-anchor:pull", "component:horizontal-pull", "equipment:bodyweight", "equipment:barbell", "cue:Pull chest to bar"],
+      "recommendation": "leave",
+      "rationale": "For: a multi-joint bodyweight pull, and the Minimal tier has no pulling main work. Against: its cue is to pull the chest to a bar, the reviewed tags file it under Pull accessories, and the catalog lists it as bodyweight although it needs something to hang under. Recommend leaving it out for the same reason as pull-ups."
+    },
+    {
+      "id": "dips",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "ref:tags.press-accessories", "legacy-anchor:press", "component:horizontal-press", "component:vertical-press", "ref:anatomy.horizontal-press", "equipment:bodyweight", "cue:Full range of motion"],
+      "recommendation": "leave",
+      "rationale": "For: a heavy calisthenic press, which the anatomy spec names beside push-ups, tagged with both pressing primitives. Against: it is done between parallel bars or on a dip station, which the catalog does not record — it lists bodyweight only — and the Minimal preset has no such apparatus. Recommend leaving it out; push-ups and decline-push-ups carry the Minimal press."
+    },
+    {
+      "id": "air-squat",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "name:Squat", "component:knee-flexion", "ref:anatomy.knee-flexion", "legacy-anchor:squat", "equipment:bodyweight", "role:activation", "ref:anatomy.role-activation", "ref:tags.activation"],
+      "recommendation": "leave",
+      "rationale": "For: it is the squat itself, the first movement the section description names, and it needs nothing. Against: its reviewed role is activation — light bodyweight movement prep — it sits in warmup and conditioning, and the capture records it as the regression of split-squat. It is what the main work is rehearsed with, not the main work. Recommend leaving it out; the split squats and lunges are the Minimal squat pattern under real load."
+    },
+    {
+      "id": "nordic-curl",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "legacy-anchor:hinge", "component:posterior-chain-activation", "ref:tags.hinge-accessories", "equipment:bodyweight", "cue:Progress slowly", "cue:Use hands to push back up"],
+      "recommendation": "leave",
+      "rationale": "For: one of the hardest bodyweight posterior-chain movements, anchored to hinge in the old catalog. Against: the reviewed tags give it posterior-chain-activation and no hip-hinge — it is a knee-flexion curl for the hamstrings, single-joint — and the feet have to be held down by something the catalog does not record. Recommend leaving it as an accessory."
+    },
+    {
+      "id": "sissy-squat",
+      "section": "primary_lift",
+      "evidence": ["ref:onboarding.primary_lift", "name:Squat", "component:knee-flexion", "legacy-anchor:squat", "equipment:bodyweight", "cue:Quad isolation", "ref:tags.squat-accessories"],
+      "recommendation": "leave",
+      "rationale": "For: a squat by name, tagged knee-flexion, bodyweight only. Against: its own cue calls it quad isolation, and a movement that isolates one muscle is the opposite of the section's main movement. Recommend leaving it as an accessory."
     }
   ]
 }
