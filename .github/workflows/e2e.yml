@@ -27,7 +27,9 @@ concurrency:
 
 jobs:
   preview-e2e:
-    name: Preview E2E (phone + tablet + desktop)
+    # This is a protected status-check identifier. Keep the legacy name stable
+    # even though the job now also exercises the touch-tablet project.
+    name: Preview E2E (mobile + desktop)
     # Only a successful preview. This job runs pull-request code, so it must
     # never receive the service-role key or mutate the shared test namespace.
     if: >-
