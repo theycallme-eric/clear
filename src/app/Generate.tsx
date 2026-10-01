@@ -22,7 +22,7 @@
  *      to reject, and `Generate.test.tsx` holds it to that.
  *   3. **A prefill fills in the anchor and the intensity, and says so.** HOME-03
  *      opens this screen with its suggestion in the query string; `prefillFrom`
- *      parses it, `initialDraft` seeds the draft with it, and a notice states
+ *      parses it, the resolver reads it as the recommendation, and a notice states
  *      that two fields were not chosen here. The goal is still unset, so a
  *      prefilled form is still one answer short of generating — the suggestion
  *      is read off history, and history does not know what today is for.
@@ -126,14 +126,23 @@ type GoalPreset = (typeof GENERATION_GOALS)[number]['value']
 
 /**
  * What `resolveGeneration` is told while this screen still asks the Goal
- * itself: the chosen chip as the standing Goal, and no history, so the anchor
- * stays the user's to choose. Recovery is the draft's one-workout mode rather
- * than a standing Goal, so its chip resolves over a stand-in that is never sent.
+ * itself: the chosen chip as the standing Goal, and no history of its own, so
+ * the anchor stays the user's to choose. A HOME-03 prefill is what history
+ * recommended when Home built the link, so it stands in as the recommendation
+ * — never as the draft's own choice, which is the one-workout override.
+ * Recovery is the draft's one-workout mode rather than a standing Goal, so its
+ * chip resolves over a stand-in that is never sent.
  */
-function contextFrom(goal: GoalPreset | null): GenerationContext {
+function contextFrom(
+  goal: GoalPreset | null,
+  prefill: GenerationPrefill | null,
+): GenerationContext {
   return {
     goalPreset: goal === 'active_recovery' ? 'balanced' : goal,
-    history: { status: 'no-completed-history' },
+    history:
+      prefill === null
+        ? { status: 'no-completed-history' }
+        : { status: 'recommended', ...prefill, reason: '' },
   }
 }
 
@@ -250,7 +259,7 @@ function GenerateForm({
     overridden: false,
   })
   const { draft, goal: chosen, applied, overridden } = composition ?? untouched()
-  const context = contextFrom(chosen)
+  const context = contextFrom(chosen, prefill)
   const resolved = resolveGeneration(draft, context)
 
   /** One edit to what the user composed, laid over whatever is already held. */
@@ -391,7 +400,7 @@ function GenerateForm({
             {ANCHORS.map((anchor) => (
               <Chip
                 key={anchor.value}
-                selected={draft.anchor === anchor.value}
+                selected={(draft.anchor ?? prefill?.focus) === anchor.value}
                 disabled={!anchorAllowed(resolved.goal, anchor.value)}
                 onClick={() => setDraft(withAnchor(draft, anchor.value))}
               >

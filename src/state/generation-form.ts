@@ -123,6 +123,8 @@ export const POWER_REFUSAL =
 
 /**
  * What another screen may open this one *with*: an anchor and an intensity.
+ * The anchor is the suggestion's own and never becomes the draft's Focus — see
+ * `GenerationIntent` for the parameter that does.
  *
  * Deliberately a pair and not a draft. A prefill is a suggestion about what to
  * train, so it carries the two things history can support — HOME-03's
@@ -188,6 +190,83 @@ export function prefillFrom(search: string | URLSearchParams): GenerationPrefill
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// One-workout intent in the URL (REQ-007, REQ-008)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The two things an athlete may decide for this workout only, as a URL carries
+ * them: a Focus other than the recommended one, and a Recovery session.
+ *
+ * Deliberately not the prefill. `?focus=` is a suggestion another screen made
+ * and proves nothing about what the athlete chose, so the override has its own
+ * parameter; a URL holding neither resolves from the standing Goal and current
+ * history, which is what a fresh visit is.
+ */
+export interface GenerationIntent {
+  readonly override: SessionFocus | null
+  readonly recovery: boolean
+}
+
+export const OVERRIDE_FOCUS_PARAM = 'override'
+export const RECOVERY_PARAM = 'recovery'
+
+/** The only value `RECOVERY_PARAM` is read as on. Anything else is off. */
+const RECOVERY_ON = '1'
+
+const NO_INTENT: GenerationIntent = { override: null, recovery: false }
+
+/**
+ * The intent a URL carries. Parsed rather than trusted, like the prefill: an
+ * unknown Focus is no override, and a Power override beside Recovery is dropped
+ * the way `withRecovery` drops it — left blank, never substituted (§2.3).
+ */
+export function intentFrom(search: string | URLSearchParams): GenerationIntent {
+  const params = typeof search === 'string' ? new URLSearchParams(search) : search
+
+  const recovery = params.get(RECOVERY_PARAM) === RECOVERY_ON
+  const focus = sessionFocusSchema.safeParse(params.get(OVERRIDE_FOCUS_PARAM))
+  const override =
+    focus.success && anchorAllowed(recovery ? 'active_recovery' : null, focus.data)
+      ? focus.data
+      : null
+
+  return { override, recovery }
+}
+
+/** What a draft would put in the URL: its chosen Focus and its Recovery flag. */
+export function intentOf(draft: GenerationDraft): GenerationIntent {
+  return { override: draft.anchor, recovery: draft.recovery }
+}
+
+/**
+ * A query string with the draft's intent written into it, and every other
+ * parameter left as it was — the prefill a notice is reading stays put. An
+ * intent that is off is removed rather than written as off, so cancelling an
+ * override takes its parameter with it.
+ */
+export function searchWithIntent(
+  search: string | URLSearchParams,
+  draft: GenerationDraft,
+): URLSearchParams {
+  const params = new URLSearchParams(search)
+  const { override, recovery } = intentOf(draft)
+
+  if (override === null) params.delete(OVERRIDE_FOCUS_PARAM)
+  else params.set(OVERRIDE_FOCUS_PARAM, override)
+
+  if (recovery) params.set(RECOVERY_PARAM, RECOVERY_ON)
+  else params.delete(RECOVERY_PARAM)
+
+  return params
+}
+
+/** Where this draft lives: the path a refresh, or a cancel from Loading, reopens. */
+export function draftPath(draft: GenerationDraft): string {
+  const query = searchWithIntent('', draft).toString()
+  return query === '' ? GENERATE_PATH : `${GENERATE_PATH}?${query}`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // The draft
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -200,7 +279,11 @@ export function prefillFrom(search: string | URLSearchParams): GenerationPrefill
 export interface GenerationDraft {
   /** Whether this one workout is a Recovery session. Never the standing Goal. */
   readonly recovery: boolean
-  /** The Focus the athlete chose by hand. Null leaves it to the recommendation. */
+  /**
+   * The Focus the athlete chose by hand, for this workout only: an override
+   * where history recommends one, the manual choice where it cannot. Null
+   * leaves it to the recommendation.
+   */
   readonly anchor: SessionFocus | null
   /** The intensity the athlete set. Null leaves it to history or the Goal's start. */
   readonly intensity: number | null
@@ -210,20 +293,29 @@ export interface GenerationDraft {
 }
 
 /**
- * The screen's opening state: the profile's default place, plus whatever
- * HOME-03's suggestion prefilled and nothing else.
+ * The screen's opening state: the profile's default place, the intensity
+ * HOME-03's suggestion prefilled, and whatever one-workout intent the URL
+ * carried.
  *
  * It carries no Goal and no recommended Focus — those are `resolveGeneration`'s
  * to supply from the profile and from history, so a draft nobody has touched
- * resolves to whatever they say today rather than to a copy taken at open.
+ * resolves to whatever they say today rather than to a copy taken at open. A
+ * prefilled Focus is for that reason not taken: it is what history recommended
+ * when the link was built, and only the explicit override is a choice.
  */
 export function initialDraft(
   defaultLocationId: string | null,
   prefill: GenerationPrefill | null = null,
+  intent: GenerationIntent = NO_INTENT,
 ): GenerationDraft {
   return {
-    recovery: false,
-    anchor: prefill?.focus ?? null,
+    recovery: intent.recovery,
+    // `intentFrom` already drops a refused Power; a hand-built intent may not have.
+    anchor:
+      intent.override !== null &&
+      anchorAllowed(intent.recovery ? 'active_recovery' : null, intent.override)
+        ? intent.override
+        : null,
     intensity: prefill?.intensity ?? null,
     locationId: defaultLocationId,
     durationMins: String(DEFAULT_DURATION_MINS),
@@ -304,9 +396,12 @@ export type GenerationResolution =
       readonly status: 'ready'
       readonly goal: GoalPreset
       readonly focus: SessionFocus
-      /** Whether history recommended the Focus or the athlete chose it. */
-      readonly focusSource: 'recommended' | 'manual'
-      /** The recommendation's history-backed reason. Null for a manual Focus. */
+      /**
+       * Whether history recommended the Focus, the athlete chose another for
+       * this workout only, or chose one because history had none to recommend.
+       */
+      readonly focusSource: 'recommended' | 'override' | 'manual'
+      /** The recommendation's history-backed reason. Null for a chosen Focus. */
       readonly reason: string | null
       readonly intensity: number
     }
@@ -359,13 +454,13 @@ export function resolveGeneration(
     return { status: 'needs-focus', goal, focus: null, why: 'power-refused', intensity }
   }
 
-  const manual = draft.anchor !== null
+  const chosen = draft.anchor !== null
   return {
     status: 'ready',
     goal,
     focus,
-    focusSource: manual ? 'manual' : 'recommended',
-    reason: manual ? null : (recommended?.reason ?? null),
+    focusSource: !chosen ? 'recommended' : recommended === null ? 'manual' : 'override',
+    reason: chosen ? null : (recommended?.reason ?? null),
     intensity,
   }
 }
@@ -398,6 +493,21 @@ export function withAnchor(
 ): GenerationDraft {
   if (!anchorAllowed(draft.recovery ? 'active_recovery' : null, anchor)) return draft
   return { ...draft, anchor: draft.anchor === anchor ? null : anchor }
+}
+
+/**
+ * A Focus for this workout only, or `null` to cancel it and return to whatever
+ * history recommends. Unlike `withAnchor` it sets rather than toggles: an
+ * override restored from a URL is applied once, not flipped.
+ */
+export function withOverride(
+  draft: GenerationDraft,
+  focus: SessionFocus | null,
+): GenerationDraft {
+  if (focus !== null && !anchorAllowed(draft.recovery ? 'active_recovery' : null, focus)) {
+    return draft
+  }
+  return { ...draft, anchor: focus }
 }
 
 /**
@@ -492,6 +602,48 @@ export function requestFrom(
     },
     { code: ErrorCode.GENERATION_INVALID_PARAMS, requestId },
   )
+}
+
+/** What an accepted request says about the draft that produced it. */
+export type AcceptedRequest = Pick<
+  GenerationRequest,
+  | 'goal'
+  | 'focus'
+  | 'requested_intensity'
+  | 'requested_duration_mins'
+  | 'location_id'
+  | 'notes'
+>
+
+/**
+ * The draft an accepted request came from, for Regenerate and for cancelling
+ * Loading back to the form.
+ *
+ * Recovery is read off the request's Goal, since `active_recovery` is only ever
+ * sent by a Recovery draft; any other Goal was the standing one and is the
+ * resolver's to supply again. The Focus is held as a choice only where it is
+ * not what history recommends now — a recommendation that was simply accepted
+ * comes back as the recommendation, without an override marker it never had.
+ */
+export function draftFromRequest(
+  request: AcceptedRequest,
+  context: GenerationContext,
+): GenerationDraft {
+  const recovery = request.goal === 'active_recovery'
+  const { history } = context
+  const isRecommended = history.status === 'recommended' && history.focus === request.focus
+
+  return {
+    recovery,
+    anchor:
+      !isRecommended && anchorAllowed(recovery ? 'active_recovery' : null, request.focus)
+        ? request.focus
+        : null,
+    intensity: request.requested_intensity,
+    locationId: request.location_id,
+    durationMins: String(request.requested_duration_mins),
+    notes: request.notes ?? '',
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
