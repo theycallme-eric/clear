@@ -278,6 +278,8 @@ export interface GenerationContext {
   readonly userId: string
   readonly requestId: string
   readonly logger?: Logger
+  /** Injected in tests; `Date.now` otherwise. Only the elapsed time is logged. */
+  readonly now?: () => number
 }
 
 /** Candidates → context → prompt → model → validation → hydration → Review. */
@@ -287,6 +289,8 @@ export async function performGeneration(
   deps: GenerationDependencies,
 ): Promise<Result<Omit<GenerationSuccess, 'requestId'>, AppError>> {
   const { requestId, logger, userId } = context
+  const now = context.now ?? (() => Date.now())
+  const startedAt = now()
 
   const [candidateResult, constraintResult, historyResult, anchorResult, conditioningResult] =
     await Promise.all([
@@ -344,13 +348,18 @@ export async function performGeneration(
 
   logger?.info('generation context resolved', {
     requestId,
+    // The request's own values, beside the counts they scoped: a retrieval that
+    // answered for another goal or focus is diagnosable from this one line. The
+    // notes are deliberately absent — they are the athlete's prose (CORE-02).
     goal: request.goal,
+    focus: request.focus,
     sections: input.sections.length,
     candidates: input.sections.reduce((total, section) => total + section.candidates.length, 0),
     history: input.history.focuses.length,
     anchors: input.training.anchors.length,
     conditioningTrend: conditioning?.conditioning_trend ?? null,
     conditioningReason: conditioning?.reason ?? null,
+    elapsedMs: now() - startedAt,
   })
 
   const composed = await deps
@@ -378,6 +387,21 @@ export async function performGeneration(
     isDeload: request.deload,
   })
   if (!acceptance.ok) return err({ ...acceptance.error, requestId })
+
+  logger?.info('generation complete', {
+    requestId,
+    goal: acceptance.value.goal_preset,
+    focus: acceptance.value.session_focus,
+    attempts: composed.value.attempts,
+    promptBytes: composed.value.measurement.totalBytes,
+    // Not `inputTokens`/`outputTokens`: CORE-02's denylist masks any key
+    // containing `token`, and a masked count diagnoses nothing.
+    usage: {
+      input: composed.value.usage.inputTokens,
+      output: composed.value.usage.outputTokens,
+    },
+    elapsedMs: now() - startedAt,
+  })
 
   return ok({ acceptance: acceptance.value })
 }
