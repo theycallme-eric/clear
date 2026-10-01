@@ -46,7 +46,10 @@ a `VITE_` prefix:
 | `SUPABASE_ANON_KEY` | anon/public key (`VITE_SUPABASE_ANON_KEY` is accepted) | same page |
 | `SUPABASE_SERVICE_ROLE_KEY` | **secret.** Creates and deletes users | same page, `service_role` |
 
-Locally they go in `.env.local`; in CI they are repository secrets. The preview
+Locally they go in `.env.local`. Agent Runner workspaces also read the ignored
+`.env.runner.local` and `.env.audit.local` files copied by the external Runner
+contract. Explicit process and CI variables take precedence over either local
+file source; in CI they are repository secrets. The preview
 job deliberately receives **none** of them because it executes pull-request
 code. Accessibility, shell and viewport checks run against that preview while
 the backend specs skip with the missing-credential reason printed.
