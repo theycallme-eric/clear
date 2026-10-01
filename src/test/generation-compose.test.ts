@@ -275,8 +275,9 @@ describe('an upstream failure', () => {
     const send = vi.fn(async () =>
       new Response('overloaded', { status: 529 }),
     ) as unknown as typeof globalThis.fetch
+    const { logger, lines } = collectLogs()
 
-    const composed = await createComposer({ apiKey: API_KEY, fetch: send }).compose(
+    const composed = await createComposer({ apiKey: API_KEY, fetch: send, logger }).compose(
       promptInput(),
       REQUEST_ID,
     )
@@ -288,6 +289,28 @@ describe('an upstream failure', () => {
     expect(composed.error.code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
     expect(composed.error.details?.generationCode).toBe(GenerationFailure.EXHAUSTED)
     expect(composed.error.details?.detail).toBe('The API answered 529.')
+
+    const warnings = lines
+      .filter((entry) => entry.level === 'warn')
+      .map((entry) => JSON.parse(entry.line) as Record<string, unknown>)
+    expect(warnings).toHaveLength(2)
+    expect(warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          attempt: 1,
+          code: GenerationFailure.UPSTREAM,
+          detail: 'The API answered 529.',
+        }),
+        expect.objectContaining({
+          attempt: 2,
+          code: GenerationFailure.UPSTREAM,
+          detail: 'The API answered 529.',
+        }),
+      ]),
+    )
+    const logged = lines.map((entry) => entry.line).join('\n')
+    expect(logged).not.toContain('overloaded')
+    expect(logged).not.toContain(API_KEY)
   })
 
   it('is what a thrown fetch becomes — never an exception out of compose', async () => {
