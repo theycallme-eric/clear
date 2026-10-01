@@ -43,7 +43,6 @@ import { createFakeRestDayClient } from '../test/rest-day-double'
 import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { resolveAtmosphere } from './atmosphere'
-import { PREFILL_NOTICE } from './Generate'
 import {
   HISTORY_ROUTE,
   HOME_HEADING,
@@ -651,19 +650,15 @@ describe('Home’s suggestion (HOME-03)', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
     ).toBeInTheDocument()
-    expect(screen.getByText(PREFILL_NOTICE)).toBeInTheDocument()
-
-    const anchor = within(screen.getByRole('group', { name: 'Anchor' }))
-    expect(anchor.getByRole('button', { name: 'Upper body' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
+    // Generate recommends from the same history rather than claiming a prefill:
+    // the Focus and its reason are stated, and no Focus is asked for.
+    expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
+    expect(screen.getByText('Upper body')).toBeInTheDocument()
+    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.getByRole('slider')).toHaveValue('7')
 
-    // The goal is still unanswered, so a prefilled form still cannot generate.
-    expect(screen.getByRole('button', { name: /generate workout/i })).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: 'Strength' }))
-    expect(screen.getByRole('slider')).toHaveValue('7')
+    // The Goal is the profile's standing one, so the form can generate as it opens.
     expect(screen.getByRole('button', { name: /generate workout/i })).toBeEnabled()
   })
 
@@ -681,12 +676,11 @@ describe('Home’s suggestion (HOME-03)', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
     ).toBeInTheDocument()
-    expect(screen.queryByText(PREFILL_NOTICE)).not.toBeInTheDocument()
-    for (const chip of within(screen.getByRole('group', { name: 'Anchor' })).getAllByRole(
-      'button',
-    )) {
-      expect(chip).toHaveAttribute('aria-pressed', 'false')
-    }
+    // Dismissing is Home's prompt only. Generate derives today's recommendation
+    // from history itself, whichever way it was opened.
+    expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
+    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
   })
 
   it('stays dismissed when Home is opened again the same day', async () => {
