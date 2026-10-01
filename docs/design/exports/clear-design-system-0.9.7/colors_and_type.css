@@ -1,0 +1,6 @@
+/* =============================================================================
+   Kept as an alias so existing specimens and consumers keep resolving.
+   The system now lives in styles.css → css/{foundation,motion,skin-clear}.css.
+   Point new work at styles.css.
+   ============================================================================= */
+@import './styles.css';

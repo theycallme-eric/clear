@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="ScrollRegion" subtitle="Vertical region under pinned layers · hard edge, streaks while scrolling · measured, all four skins" viewport="760x560" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>
+html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:14px 18px;box-sizing:border-box;height:560px;display:flex;flex-direction:column;gap:10px}
+.ttl{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-family:var(--font-body);font-size:9.5px;line-height:1.45;color:color-mix(in srgb,var(--text-paragraph) 70%,transparent);max-width:720px}
+.bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:7px 10px;}
+.grp{display:flex;align-items:center;gap:6px}
+.grp>span{font-family:var(--font-data);font-size:7.5px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+.bar .clr-chip.on{color:var(--text-selected)}.bar .clr-chip.on::before{box-shadow:inset 0 0 0 100vmax var(--surface-selected)}.bar .clr-chip.on::after{background-color:var(--border-selected)}
+.bar .clr-slider{width:150px}
+.stage{height:330px;border:var(--border-width) solid var(--structure-a300);box-sizing:border-box;max-width:100%;
+ background:radial-gradient(120% 70% at 20% 0%,var(--structure-a150),transparent 60%),radial-gradient(90% 60% at 100% 100%,var(--interaction-a100),transparent 60%),var(--base)}
+.list{display:flex;flex-direction:column;gap:6px;padding:12px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:var(--border-width) solid var(--structure-a300);background:var(--surface-frame-structure)}
+.row b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:var(--tracking-data);text-transform:uppercase;color:var(--text-header)}
+.row span{font-family:var(--font-data);font-size:11px;color:var(--text-card-label)}
+.h3{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.ft{display:flex;align-items:center;justify-content:space-between;min-height:36px;font-family:var(--font-data);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--text-card-label)}
+.rd{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--font-data);font-size:8px;letter-spacing:.04em;padding:6px 10px;background:var(--structure-a050);color:var(--text-paragraph)}
+.rd b{font-weight:700;color:var(--text-card-label)}
+.ok{color:var(--selection-400)}.bad{color:var(--text-negative)}
+.fb{font-family:var(--font-data);font-size:10px;color:var(--neutral-300);letter-spacing:var(--tracking-data);text-transform:uppercase}
+</style></head><body><div class="pg">
+<div class="ttl">ScrollRegion</div>
+<div class="sub">The region scrolls; its pinned layers don't. Content is clipped at a hard rule and never passes under a layer, so the layers have no surface. Scroll it: a streak lights up on both edges and settles when you stop. The readout below comes from the live DOM.</div>
+<div class="bar">
+  <div class="grp"><span>Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+  <div class="grp"><span>Width</span><input id="w" class="clr-slider" type="range" aria-label="Container width" min="240" max="720" value="720"><span id="wv" style="font-family:var(--font-data);font-size:9px;color:var(--text-paragraph)">720px</span></div>
+</div>
+<div id="root"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<div class="rd" id="readout"></div>
+</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS = window.CLEARDesignSystem_4ee044 || {};
+const e = React.createElement;
+const skins = document.getElementById('skins');
+skins.innerHTML = '';
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip'+(i===0?' on':'');
+ b.onclick=()=>{[...skins.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');document.documentElement.setAttribute('data-skin',s);requestAnimationFrame(measure)};skins.appendChild(b)});
+
+let root = document.getElementById('root');
+const readout = document.getElementById('readout');
+const slider = document.getElementById('w'), wv = document.getElementById('wv');
+
+function measure(){
+  const reg = document.querySelector('.clr-scroll-region'); if(!reg) return;
+  const cs = getComputedStyle(reg);
+  const head = reg.querySelector('.clr-scroll-region__head');
+  const sc = reg.querySelector('.clr-scroll-region__scroller');
+  const first = sc.firstElementChild && sc.firstElementChild.firstElementChild;
+  const streak = reg.querySelector('.clr-scroll-region__streak');
+  const headH = head.getBoundingClientRect().height, pub = parseFloat(cs.getPropertyValue('--head-h'));
+  const inset = first ? Math.round(first.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop) : NaN;
+  const hOver = sc.scrollWidth - sc.clientWidth;
+  const pageOver = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+  const zS = +getComputedStyle(streak).zIndex, zH = +getComputedStyle(head).zIndex;
+  const c=(l,v,g)=>`<span><b>${l}</b> <span class="${g?'ok':'bad'}">${v}</span></span>`;
+  readout.innerHTML =
+    c('measured', reg.hasAttribute('data-measured')?'yes':'no', reg.hasAttribute('data-measured')) +
+    c('layer vs --head-h', `${headH.toFixed(1)} / ${pub.toFixed(1)}px`, Math.abs(headH-pub)<0.5) +
+    c('first-row inset at rest', inset+'px', inset>=0) +
+    c('region h-overflow', hOver<=0?'none':hOver+'px', hOver<=0) +
+    c('page h-overflow', pageOver<=0?'none':pageOver+'px', pageOver<=0) +
+    c('streak under layer', `z ${zS} < ${zH}`, zS<zH) +
+    c('streak', reg.hasAttribute('data-scrolling')?'lit':'at rest', true);
+}
+
+if (NS.ScrollRegion && NS.TabBar && NS.Button) {
+  const rows = Array.from({length:18},(_,i)=>e('div',{className:'row',key:i},e('b',null,'Entry '+String(i+1).padStart(2,'0')),e('span',null,`${(i*7+3)%60}:${String((i*13)%60).padStart(2,'0')}`)));
+  function Demo({width}){
+    const [t,setT]=React.useState(0);
+    return e('div',{className:'stage',style:{width}},
+      e(NS.ScrollRegion,{
+        title:e('span',{className:'h3'},'Session log with a long title'),
+        actions:e(NS.Button,{variant:'secondary'},'Add'),
+        head:e(NS.TabBar,{idBase:'sr',tabs:['All','Flagged','Recent'],active:t,onChange:setT}),
+        headRule:false,
+        foot:e('div',{className:'ft'},e('span',null,'18 entries'),e('span',null,'Synced')),
+        scrollerProps:{'aria-label':'Entries',tabIndex:0,onScroll:()=>requestAnimationFrame(measure)}
+      }, e('div',{className:'list'},rows)));
+  }
+  // Mount into a node React doesn't already own (host may run this script twice).
+  if (Object.keys(root).some(k=>k.startsWith('__reactContainer'))) { const f=root.cloneNode(false); root.replaceWith(f); root=f; }
+  const r = ReactDOM.createRoot(root);
+  const render=()=>{r.render(e(Demo,{width:Number(slider.value)}));wv.textContent=slider.value+'px';setTimeout(measure,60)};
+  slider.addEventListener('input',render);
+  new MutationObserver(()=>measure()).observe(root,{subtree:true,attributes:true,attributeFilter:['data-measured','data-scrolling']});
+  render();
+}
+</script>
+</body></html>

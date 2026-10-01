@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Contained scroll — edge options</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:18px;max-width:1100px}
+.ttl{font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:760px;color:color-mix(in srgb,var(--text-paragraph) 78%,transparent)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bar span{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.bar button{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.bar button.on{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+.opt{display:flex;flex-direction:column;gap:8px;min-width:0}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 80%,transparent);min-height:54px}
+.verdict{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.verdict.ok{color:var(--selection-400)}.verdict.no{color:var(--text-negative)}
+/* The region frame. The "atmosphere" is a stand-in so continuity through the
+   pinned layer is visible; in product it's the real .clr-atmosphere layer. */
+.region{position:relative;height:340px;border:var(--border-width) solid var(--structure-a300);overflow:hidden;min-width:0;
+ background:radial-gradient(120% 70% at 20% 0%,var(--structure-a150),transparent 60%),radial-gradient(90% 60% at 100% 100%,var(--interaction-a100),transparent 60%),var(--base)}
+.scroller{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--structure-a300) transparent}
+.scroller *{min-width:0}
+.list{display:flex;flex-direction:column;gap:6px;padding:12px}
+.row{display:flex;justify-content:space-between;gap:10px;padding:10px 12px;border:var(--border-width) solid var(--structure-a300);background:var(--surface-frame-structure)}
+.row b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-header)}
+.row span{font-family:var(--font-data);font-size:11px;color:var(--text-card-label)}
+.head{position:absolute;left:0;right:0;top:0;z-index:2;max-height:45%;overflow-y:auto;padding:0 12px}
+.head .t{display:flex;align-items:center;gap:10px;min-height:40px}
+.head .t h3{flex:1 1 auto;min-width:0;margin:0;font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.head .t button{flex:0 0 auto;font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;min-height:28px;background:transparent;color:var(--interaction-300);border:var(--border-width) solid var(--interaction-500);cursor:pointer}
+.head .rule{height:var(--border-width);background:var(--structure-a300);margin:0 -12px}
+/* Streak: 1px, full-strength structure, sits under the layer in z-order. */
+/* Absolute children are placed from the padding box, which already sits
+   inside the frame's border, so 0 is flush. Offsetting by --border-width again
+   left a dark strip between the streak and the frame. */
+.streak{position:absolute;left:0;right:0;top:var(--head-h,0px);height:1px;z-index:1;background:var(--structure-500);opacity:0;pointer-events:none;transition:opacity var(--dur-base) steps(3,end),box-shadow var(--dur-base) steps(3,end)}
+.streak.bot{top:auto;bottom:0}
+.region.scrolling .streak{opacity:.7;box-shadow:0 0 7px var(--structure-500)}
+@media (prefers-reduced-motion:reduce){.streak{transition:none}.region.scrolling .streak{opacity:.5;box-shadow:none}}
+
+/* A — the pinned layer carries the ground surface. */
+.A .head{background:var(--ground,var(--base))}
+.A .list{padding-top:calc(var(--head-h,0px) + 12px)}
+/* B — the scroller begins below the layer. Nothing ever sits under it, so the
+   layer needs no surface and the atmosphere reads straight through. At rest the
+   rule stays quiet; motion is signalled only by the streaks, top and bottom. */
+.B .scroller{top:var(--head-h,0px)}
+/* C — surface-less layer over content. The failure case. */
+.C .list{padding-top:calc(var(--head-h,0px) + 12px)}
+.region:not([data-measured]) .scroller{visibility:hidden}
+.foot{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 70%,transparent);max-width:760px}
+</style></head><body><div class="pg">
+<div class="ttl">Contained scroll: edge options</div>
+<div class="sub">Three ways to handle the pinned layer now that the edge is a hard rule instead of a fade. Scroll each one. While you scroll, a streak lights up along the top and bottom edges and settles once you stop. It works the same in all three. The difference is what happens to content once it reaches the layer.</div>
+<div class="bar"><span>Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div class="grid">
+  <div class="opt">
+    <div class="badge"><b>A</b><span>Layer takes the ground</span></div>
+    <div class="desc">Content scrolls under the layer and the layer's own fill hides it. Simple and robust, but the fill is flat, so the atmosphere stops at the layer's edge.</div>
+    <div class="region A" data-region=""><div class="scroller"><div class="list"></div></div><div class="streak"></div><div class="streak bot"></div><div class="head"><div class="t"><h3>Session log</h3><button type="button">Add</button></div><div class="rule"></div></div></div>
+    <div class="verdict no">Breaks atmosphere continuity</div>
+  </div>
+  <div class="opt">
+    <div class="badge"><b>B</b><span>Scroller starts below the layer</span></div>
+    <div class="desc">Content is clipped at the rule and never goes under the layer. The layer has no surface, so the atmosphere reads through it. At rest the rule stays quiet. While you scroll, both edges light up, then settle about 420ms after you stop.</div>
+    <div class="region B" data-region=""><div class="scroller"><div class="list"></div></div><div class="streak"></div><div class="streak bot"></div><div class="head"><div class="t"><h3>Session log</h3><button type="button">Add</button></div><div class="rule"></div></div></div>
+    <div class="verdict ok">Recommended: hard edge, no surface, continuity kept</div>
+  </div>
+  <div class="opt">
+    <div class="badge"><b>C</b><span>Surface-less, content shows through</span></div>
+    <div class="desc">What the original request produces once the mask is removed. Scrolled rows run straight through the title and action.</div>
+    <div class="region C" data-region=""><div class="scroller"><div class="list"></div></div><div class="streak"></div><div class="streak bot"></div><div class="head"><div class="t"><h3>Session log</h3><button type="button">Add</button></div><div class="rule"></div></div></div>
+    <div class="verdict no">The failure case</div>
+  </div>
+</div>
+<div class="foot">Shell height isn't shown here because the difference is invisible on desktop. My default: the region fills its parent, and a separate shell primitive owns the viewport at <code>100dvh</code>. <code>100vh</code> overshoots on mobile browsers while the address bar is visible, which cuts off the bottom of the region.</div>
+</div>
+<script>
+const skins=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.textContent=s;if(!i)b.className='on';
+ b.onclick=()=>{[...skins.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');document.documentElement.setAttribute('data-skin',s)};skins.appendChild(b)});
+const rows=Array.from({length:18},(_,i)=>`<div class="row"><b>Entry ${String(i+1).padStart(2,'0')}</b><span>${(i*7+3)%60}:${String((i*13)%60).padStart(2,'0')}</span></div>`).join('');
+document.querySelectorAll('[data-region]').forEach(r=>{
+  r.querySelector('.list').innerHTML=rows;
+  const head=r.querySelector('.head'),sc=r.querySelector('.scroller');
+  // Measured, never guessed. A mounted-but-zero head is unresolved layout: do not publish it.
+  const pub=()=>{const h=head.getBoundingClientRect().height;if(!h)return false;r.style.setProperty('--head-h',h+'px');r.setAttribute('data-measured','');return true};
+  if(!pub())requestAnimationFrame(pub);
+  new ResizeObserver(pub).observe(head);
+  document.fonts&&document.fonts.ready.then(pub);
+  let t;sc.addEventListener('scroll',()=>{r.classList.add('scrolling');clearTimeout(t);t=setTimeout(()=>r.classList.remove('scrolling'),420)},{passive:true});
+  sc.scrollTop=90;
+});
+</script>
+</body></html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Motion: press and interruption</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:22px;max-width:1120px}
+.ttl{font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.h2{font-family:var(--font-display);font-size:15px;font-weight:700;text-transform:uppercase;color:var(--text-header);margin:0}
+.sub{font-size:13px;line-height:1.5;max-width:780px;color:color-mix(in srgb,var(--text-paragraph) 80%,transparent)}
+.bar{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.seg{display:flex;gap:6px}
+.seg button{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.seg button.on{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.opt{display:flex;flex-direction:column;gap:10px;min-width:0;padding:14px;border:var(--border-width) solid var(--structure-a300);background:var(--structure-a050)}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.flag.ok{color:var(--selection-400)}.flag.warn{color:var(--text-negative)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+code{font-family:var(--font-data);font-size:11px;color:var(--text-card-label)}
+/* --- Press variants. Built the way <Button> is: .clr-chamfer paints both
+   layers from --surface and --brd, so a state is a change to those two
+   variables. Hover is 200ms everywhere (decided). --- */
+.dbtn{--surface:var(--surface-cta-secondary);--brd:var(--border-cta-secondary);font-family:var(--font-data);font-size:var(--label-sm-size,12px);font-weight:700;letter-spacing:var(--tracking-data,.08em);text-transform:uppercase;color:var(--interaction-100);background:transparent;border:0;padding:var(--spacing-200) var(--spacing-400);min-height:40px;cursor:pointer}
+.dbtn:hover{--surface:var(--surface-cta-secondary-hover);--brd:var(--border-cta-primary-hover)}
+.dbtn--primary{--surface:var(--surface-cta-primary);--brd:var(--border-cta-primary)}
+.dbtn--primary:hover{--surface:var(--surface-cta-primary-hover)}
+.pA .dbtn:active,.pC .dbtn:active,.pD .dbtn:active{--surface:var(--interaction-a400)}
+.pA .dbtn--primary:active,.pC .dbtn--primary:active,.pD .dbtn--primary:active{--surface:var(--interaction-a800,var(--interaction-a600));--brd:var(--interaction-300)}
+.pC .dbtn:active{animation:pc-step var(--dur-state) var(--step-3)}
+@keyframes pc-step{0%{filter:brightness(1.5)}100%{filter:none}}
+.pD .dbtn:active{transform:translateY(1px)}
+/* --- Interruption demo --- */
+.panel{height:196px;position:relative;border:var(--border-width) solid var(--structure-a300);background:var(--base);overflow:hidden;padding:10px;display:flex;flex-direction:column;gap:6px}
+.st{font-family:var(--font-data);font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label);display:flex;justify-content:space-between}
+.row{display:flex;justify-content:space-between;padding:7px 9px;border:var(--border-width) solid var(--structure-a300);background:var(--surface-frame-structure);font-family:var(--font-data);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-header)}
+.row.b{border-color:var(--interaction-500);background:var(--surface-frame-interaction)}
+.go{align-self:flex-start}
+.foot{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 72%,transparent);max-width:780px}
+</style></head><body><div class="pg">
+<div class="ttl">Motion: press and interruption</div>
+<div class="sub">Two decisions that are easier to judge in motion than from a description. Nothing here is in the system yet. Hover stays at 200ms on every button, as you decided.</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<h2 class="h2">1 · Press</h2>
+<div class="sub">What a button does <em>while it's held down</em>. Hold each one, then tap it quickly. This is separate from the toggle state (<code>aria-pressed</code>), which already has its own surface.</div>
+<div class="grid">
+  <div class="opt pA"><div class="badge"><b>A</b><span>Hard cut</span></div><div class="btns"><button class="clr-chamfer clr-chamfer--sm dbtn" type="button">Log set</button><button class="clr-chamfer clr-chamfer--sm dbtn dbtn--primary" type="button">Start</button></div><div class="desc">Surface jumps one rung darker the instant you press. No transition, no movement.</div><div class="flag ok">Most in character: a hard cut between states</div></div>
+  <div class="opt pB"><div class="badge"><b>B</b><span>No press state</span></div><div class="btns"><button class="clr-chamfer clr-chamfer--sm dbtn" type="button">Log set</button><button class="clr-chamfer clr-chamfer--sm dbtn dbtn--primary" type="button">Start</button></div><div class="desc">What ships today. The hover surface is all you get, so on touch screens there is no visible press at all.</div><div class="flag warn">No feedback on touch</div></div>
+  <div class="opt pC"><div class="badge"><b>C</b><span>Stepped flash</span></div><div class="btns"><button class="clr-chamfer clr-chamfer--sm dbtn" type="button">Log set</button><button class="clr-chamfer clr-chamfer--sm dbtn dbtn--primary" type="button">Start</button></div><div class="desc">Cuts to the pressed surface and fires a 3-step brightness flash over 100ms. It reads as the button "taking" the input.</div><div class="flag ok">Clearest feedback on quick taps</div></div>
+  <div class="opt pD"><div class="badge"><b>D</b><span>Cut and 1px drop</span></div><div class="btns"><button class="clr-chamfer clr-chamfer--sm dbtn" type="button">Log set</button><button class="clr-chamfer clr-chamfer--sm dbtn dbtn--primary" type="button">Start</button></div><div class="desc">Hard cut plus the button sits 1px lower while held. Physical, like a key. It's movement rather than a shrink.</div><div class="flag warn">Adds position change, which CLEAR otherwise avoids</div></div>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:10px">
+<h2 class="h2">2 · State changes mid-animation</h2>
+<div class="sub">Each panel starts a staggered list reveal. Partway through, new data arrives and the panel must switch to it. Press <b>Run all</b> and compare. Slow motion makes the moment of interruption easier to see.</div>
+<div class="bar"><button class="clr-chamfer clr-chamfer--sm dbtn dbtn--primary go" id="runall" type="button">Run all</button><span class="l">Speed</span><span class="seg" id="speed"></span></div>
+<div class="grid" id="ints"></div>
+</div>
+
+<div class="foot"><b>On using glitch for interruptions (E):</b> you set glitch to mean failure. If it also plays on every interrupted animation, users learn to read it as noise, and it stops working as a failure signal. <b>D</b> gives the same "the display caught the change" feel with interlace, which is already defined as "the display re-syncs when state changes". If you like E's feel better, the rule would need to change: glitch would mean "something unexpected happened", covering both failures and interruptions.</div>
+</div>
+<script>
+const speeds=[['1×',1],['0.5×',2],['0.25×',4]];let slow=2;
+const sp=document.getElementById('speed');
+speeds.forEach(([l,v])=>{const b=document.createElement('button');b.textContent=l;if(v===slow)b.className='on';b.onclick=()=>{slow=v;[...sp.children].forEach(x=>x.classList.remove('on'));b.classList.add('on')};sp.appendChild(b)});
+
+const VARIANTS=[
+ ['A','Cut in','The old reveal is dropped and the new state appears at once.','ok','Fastest; can feel abrupt'],
+ ['B','Finish, then switch','The old reveal plays out, then the new one runs.','warn','Shows stale data; the interface waits on an animation'],
+ ['C','Reverse','The old reveal runs backwards from where it was, then the new one runs.','warn','Slow, and reversing reads as undo'],
+ ['D','Cut + interlace','Old reveal dropped; the new state arrives with a 100ms interlace re-sync.','ok','Recommended: immediate, and it marks the change'],
+ ['E','Cut + glitch','Old reveal dropped; the new state arrives with a 200ms glitch.','warn','Conflicts with glitch = failure (see note)']];
+const A_ROWS=['Entry 01','Entry 02','Entry 03','Entry 04','Entry 05'];
+const B_ROWS=['Updated 01','Updated 02','Updated 03'];
+const STEP='steps(3, end)',DUR=200,STAG=60;
+const host=document.getElementById('ints');
+const panels=VARIANTS.map(([id,name,desc,kind,flag])=>{
+  const o=document.createElement('div');o.className='opt';
+  o.innerHTML=`<div class="badge"><b>${id}</b><span>${name}</span></div><div class="panel"><div class="st"><span class="s">Idle</span><span class="t"></span></div><div class="list"></div></div><div class="desc">${desc}</div><div class="flag ${kind}">${flag}</div>`;
+  host.appendChild(o);return {id,el:o.querySelector('.panel'),list:o.querySelector('.list'),st:o.querySelector('.s'),t:o.querySelector('.t'),anims:[]};
+});
+panels.forEach(p=>{p.list.style.cssText='display:flex;flex-direction:column;gap:6px'});
+
+function fill(p,rows,cls){p.list.innerHTML=rows.map(r=>`<div class="row ${cls}"><span>${r}</span><span>${cls?'new':'—'}</span></div>`).join('')}
+function reveal(p,k){
+  p.anims=[...p.list.children].map((r,i)=>r.animate([{opacity:0,transform:'scale(0.98)'},{opacity:1,transform:'scale(1)'}],{duration:DUR*k,delay:i*STAG*k,easing:STEP,fill:'both'}));
+  return Promise.all(p.anims.map(a=>a.finished.catch(()=>{})));
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function run(p){
+  const k=slow;p.anims.forEach(a=>a.cancel());p.el.getAnimations().forEach(a=>a.cancel());
+  fill(p,A_ROWS,'');p.st.textContent='Loading';p.t.textContent='';
+  const done=reveal(p,k);
+  const total=(DUR+STAG*(A_ROWS.length-1))*k;
+  await wait(total*0.4);
+  p.t.textContent='new data ↓';
+  if(p.id==='A'||p.id==='D'||p.id==='E'){
+    p.anims.forEach(a=>a.cancel());fill(p,B_ROWS,'b');p.st.textContent='Updated';
+    if(p.id==='D')p.list.animate([{opacity:1},{opacity:.55,transform:'translateY(-1px)'},{opacity:1},{opacity:.7,transform:'translateY(1px)'},{opacity:1,transform:'none'}],{duration:100*k,easing:'steps(4, end)'});
+    if(p.id==='E')p.list.animate([{transform:'translateX(0)'},{transform:'translateX(-3px)',filter:'brightness(1.35) saturate(.55)'},{transform:'translateX(4px)',filter:'brightness(1.1)'},{transform:'translateX(-2px)',filter:'brightness(1.4) saturate(.7)'},{transform:'translateX(2px)'},{transform:'translateX(-1px)'},{transform:'translateX(0)'}],{duration:200*k,easing:'steps(6, end)'});
+  } else if(p.id==='B'){
+    await done;fill(p,B_ROWS,'b');p.st.textContent='Updated';await reveal(p,k);
+  } else if(p.id==='C'){
+    p.anims.forEach(a=>{a.playbackRate=-1});await Promise.all(p.anims.map(a=>a.finished.catch(()=>{})));
+    fill(p,B_ROWS,'b');p.st.textContent='Updated';await reveal(p,k);
+  }
+  setTimeout(()=>{p.t.textContent=''},600*k);
+}
+document.getElementById('runall').onclick=()=>panels.forEach(run);
+panels.forEach(p=>{fill(p,A_ROWS,'')});
+</script>
+</body></html>

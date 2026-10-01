@@ -45,6 +45,36 @@
   white-space: nowrap;
 }
 
+/*
+ * CLEAR 0.9.7 intends forced-colours focus to return to the operating system,
+ * but its bracket-mode suppression selector outranks the later vendor rule.
+ * Keep the imported package immutable and restore the documented outcome in
+ * the app layer loaded after it. The global bracket drawing is unnecessary
+ * when the system outline owns the same job.
+ */
+@media (forced-colors: active) {
+  html[data-clr-focus='brackets']
+    :is(
+      button,
+      a,
+      summary,
+      input,
+      textarea,
+      select,
+      [role='tab'],
+      [role='checkbox'],
+      [role='radio'],
+      [tabindex]
+    ):focus-visible {
+    outline: var(--focus-ring-width) solid Highlight !important;
+    outline-offset: var(--focus-ring-offset) !important;
+  }
+
+  .clr-focus-brackets {
+    display: none;
+  }
+}
+
 /* Reduced motion means the end state renders immediately — never a skipped
    animation that leaves content invisible or blocks interactivity. Durations
    collapse instead of `animation: none` so fill states still resolve; the

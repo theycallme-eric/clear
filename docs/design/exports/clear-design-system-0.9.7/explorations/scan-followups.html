@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Scan follow-ups</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:32px;max-width:1180px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.5;max-width:860px;color:var(--text-secondary)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.bar .clr-chip{min-height:32px;padding:4px 10px;font-size:var(--label-xs-size)}
+.clr-chip.on{color:var(--text-selected)}.clr-chip.on::before{box-shadow:inset 0 0 0 100vmax var(--surface-selected)}.clr-chip.on::after{background-color:var(--border-selected)}
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.opt{display:flex;flex-direction:column;gap:10px;min-width:0}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:var(--text-secondary)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--selection-400)}
+.scr{position:relative;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:12px;border:var(--border-width) solid var(--border-frame-structure)}
+.scr>.clr-atmosphere{z-index:0}.scr>:not(.clr-atmosphere){position:relative;z-index:1}
+.lb{font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-card-label)}
+.b14{font-size:14px;line-height:1.25;color:var(--text-secondary)}
+.timer{padding:10px 16px;display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px}
+.timer .d{font-family:var(--font-data);font-size:32px;font-weight:700;letter-spacing:.06em;color:var(--text-timer-low)}
+.scan{padding:12px;display:flex;flex-direction:column;gap:6px}
+.p85{animation:pz85 4s steps(2,end) infinite}@keyframes pz85{0%,100%{opacity:1}50%{opacity:.85}}
+.p60{animation:pz60 2s steps(2,end) infinite}@keyframes pz60{0%,100%{opacity:1}50%{opacity:.6}}
+.pfl::after{animation:pzf 2s steps(4,end) infinite}@keyframes pzf{0%,100%{background-color:var(--border-timer-low)}50%{background-color:color-mix(in oklab,var(--urgency) 55%,var(--ink))}}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.mk{display:inline-block;flex:0 0 auto}
+.mk-b{width:8px;height:8px;background:currentColor}
+.panel{padding:12px;display:flex;flex-direction:column;gap:6px}
+.hdr{padding:10px 12px;font-family:var(--font-data);font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--text-header)}
+.joined{display:flex;flex-direction:column}
+.e2 .joined .hdr{--surface:var(--structure-a150)}
+.e2 .joined .panel{margin-top:calc(var(--border-width) * -1)}
+.e3 .joined{gap:0}
+</style></head><body><div class="pg">
+<div class="ttl">Consistency scan: four questions</div>
+<div class="sub">From the scan in <code>docs/consistency-scan-0.9.1.md</code>. Each is a place where a rule and the system disagree, or where nothing says what to do. Everything you've decided is applied throughout.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+
+<section>
+<h2>1 · The micro-pulse, made visible</h2>
+<div class="sub">You saw no difference last time, and that's the answer to part of the question: today's pulse dips to 85% opacity once every two seconds, which is close to invisible. This shows it on the low timer only, where it carries meaning, at strengths you can actually see. Watch each for a few seconds.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>No pulse</span></div><div class="scr" data-at="1"><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer-low timer "><span class="lb">Low</span><span class="d">00:08</span></div></div><div class="desc">The low state is shown by colour, the label and the 400ms step into red.</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Today · 85%</span></div><div class="scr" data-at="1"><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer-low timer p85"><span class="lb">Low</span><span class="d">00:08</span></div></div><div class="desc">What ships now. Present, but you couldn't see it.</div></div>
+ <div class="opt"><div class="badge"><b>C</b><span>Dim to 60%</span></div><div class="scr" data-at="1"><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer-low timer p60"><span class="lb">Low</span><span class="d">00:08</span></div></div><div class="desc">The whole frame dims once every two seconds, in two hard steps.</div></div>
+ <div class="opt"><div class="badge"><b>D</b><span>Border flare</span></div><div class="scr" data-at="1"><div class="clr-chamfer clr-chamfer--md clr-chamfer--timer-low timer pfl"><span class="lb">Low</span><span class="d">00:08</span></div></div><div class="desc">The frame stays put; only the border brightens and settles, like a lamp catching. Uses the same stepped timing.</div></div>
+</div>
+</section>
+
+<section>
+<h2>2 · What marks a selected chip</h2>
+<div class="sub">Chips use a tick as the non-colour cue; checkboxes moved to a solid block. "Hard" is selected.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Tick (today)</span></div><div class="scr" data-at="1"><div class="chips"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Easy</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="true"><svg class="mk" viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M9.6 20.4 2.4 13.2l3.4-3.4 3.8 3.8L18.2 3l3.4 3.4z"></path></svg>Hard</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Max</button></div></div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Solid block, like the checkbox</span></div><div class="scr" data-at="1"><div class="chips"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Easy</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="true"><span class="mk mk-b"></span>Hard</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Max</button></div></div><div class="desc">The same mark as a checked checkbox, so "selected" looks the same everywhere.</div><div class="flag">Recommended: consistent with the checkbox</div></div>
+ <div class="opt"><div class="badge"><b>C</b><span>No mark</span></div><div class="scr" data-at="1"><div class="chips"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Easy</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="true">Hard</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Max</button></div></div><div class="desc">Tint and border only. Cleanest, but it relies on colour, which fails for colour-blind users.</div></div>
+</div>
+</section>
+
+<section>
+<h2>3 · When two frames meet</h2>
+<div class="sub">A header joined to the panel under it. The system can open one edge of a frame, but nothing says when.</div>
+<div class="grid">
+ <div class="opt e1"><div class="badge"><b>A</b><span>Two closed frames</span></div><div class="scr" data-at="1"><div class="joined" style="gap:6px"><div class="clr-chamfer clr-chamfer--sm hdr">Session</div><div class="clr-chamfer clr-chamfer--md panel"><span class="b14">Rest timer · 90s</span><span class="b14">Sound · On</span></div></div></div><div class="desc">Always closed, with a gap between. No open-edge rule needed.</div><div class="flag">Recommended: simplest, no special case</div></div>
+ <div class="opt e2"><div class="badge"><b>B</b><span>Shared edge</span></div><div class="scr" data-at="1"><div class="joined"><div class="clr-chamfer clr-chamfer--sm hdr" style="clip-path:none">Session</div><div class="clr-chamfer clr-chamfer--md panel"><span class="b14">Rest timer · 90s</span><span class="b14">Sound · On</span></div></div></div><div class="desc">They share one line, so they read as one object. Needs a rule for when frames may open an edge.</div></div>
+ <div class="opt e3"><div class="badge"><b>C</b><span>One frame, rule under heading</span></div><div class="scr" data-at="1"><div class="clr-chamfer clr-chamfer--md panel"><span class="lb" style="padding-bottom:6px;border-bottom:1px solid var(--structure-a300)">Session</span><span class="b14">Rest timer · 90s</span><span class="b14">Sound · On</span></div></div><div class="desc">Your existing rule for sub-groups inside a frame, applied here. The open-edge modifiers would be retired.</div></div>
+</div>
+</section>
+
+<section>
+<h2>4 · Flicker when a chip is clicked</h2>
+<div class="sub">Clicking a chip plays the interlace flicker. Interlace means "the display re-synced after a state change". Click each chip.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Interlace on toggle (today)</span></div><div class="scr" data-at="1"><div class="chips" data-flick="1"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Easy</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="true">Hard</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Max</button></div></div><div class="desc">The 100ms toggle timing plus a 100ms flicker on every toggle.</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Hard cut</span></div><div class="scr" data-at="1"><div class="chips" data-flick="0"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Easy</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="true">Hard</button><button type="button" class="clr-chamfer clr-chamfer--sm clr-chip" aria-pressed="false">Max</button></div></div><div class="desc">The state changes with the normal 100ms toggle timing, the same as a checkbox. No flicker. Interlace stays for content that updates on its own.</div><div class="flag">Recommended: a click already shows the change</div></div>
+</div>
+</section>
+</div>
+<script>
+const host=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.textContent=s;b.className='clr-chamfer clr-chamfer--sm clr-chip'+(i?'':' on');
+ b.onclick=()=>{[...host.children].forEach(x=>x.classList.remove('on'));b.classList.add('on');document.documentElement.setAttribute('data-skin',s)};host.appendChild(b)});
+document.querySelectorAll('[data-at]').forEach(s=>{s.setAttribute('data-atmosphere','full');s.insertAdjacentHTML('afterbegin','<div class="clr-atmosphere"><span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span><span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span><span class="clr-atmosphere__overlay"></span><span class="clr-atmosphere__scan"></span></div>')});
+document.querySelectorAll('[data-flick]').forEach(g=>g.querySelectorAll('.clr-chip').forEach(c=>c.addEventListener('click',()=>{
+ g.querySelectorAll('.clr-chip').forEach(x=>x.setAttribute('aria-pressed','false'));c.setAttribute('aria-pressed','true');
+ if(g.dataset.flick==='1'){c.classList.remove('clr-interlace');void c.offsetWidth;c.classList.add('clr-interlace')}})));
+</script>
+</body></html>

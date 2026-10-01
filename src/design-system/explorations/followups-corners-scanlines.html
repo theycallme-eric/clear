@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Follow-ups: corners and scanlines</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:28px;max-width:1120px}
+.ttl{font-family:var(--font-display);font-size:20px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.55;max-width:820px;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.pill{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+section{display:flex;flex-direction:column;gap:12px}
+h2{margin:0;font-family:var(--font-display);font-size:16px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.opt{display:flex;flex-direction:column;gap:10px;min-width:0;padding:12px;border:var(--border-width) solid var(--structure-a300)}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--selection-400)}
+.stage{position:relative;overflow:hidden;border:var(--border-width) solid var(--structure-a300);padding:16px;display:flex;flex-direction:column;gap:12px;
+ background:radial-gradient(120% 70% at 20% 0%,var(--structure-a150),transparent 60%),radial-gradient(90% 60% at 100% 100%,var(--interaction-a100),transparent 60%),var(--base)}
+.card{--brd:rgb(from var(--structure) r g b / .9);display:flex;flex-direction:column;gap:6px;padding:12px}
+.card .t{font-family:var(--font-display);font-size:14px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.card .m{display:flex;gap:12px;font-family:var(--font-data);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-card-label)}
+.card .d{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.rowc{display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.tag{font-family:var(--font-data);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-card-label)}
+/* Section 1: corner size by card size */
+.sz-s{width:110px;min-height:56px}.sz-m{flex:1 1 180px;min-height:96px}.sz-l{width:100%;min-height:150px}
+.fix .card{--c:12px}
+.stp .sz-s{--c:8px}.stp .sz-m{--c:12px}.stp .sz-l{--c:24px}
+.flu .card{--c:clamp(8px, 8%, 24px)}
+/* Section 2: where the scanlines sit. Surface-only: drawn in the ::before
+   (surface) layer, under the text, inset from the border. */
+.scanA .card::before{box-shadow:inset 0 0 0 100vmax var(--surface);background-image:repeating-linear-gradient(to bottom,rgb(0 0 0 / .18) 0 1px,transparent 1px 3px)}
+.scanB .card{position:relative}
+.scanB .card .ov{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,rgb(0 0 0 / .18) 0 1px,transparent 1px 3px)}
+</style></head><body><div class="pg">
+<div class="ttl">Follow-ups: corners and scanlines</div>
+<div class="sub">Two of your answers each open one more question. Everything you've decided is applied throughout: one corner cut, 90% borders, title only.</div>
+<div class="bar"><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+
+<section>
+<h2>1 · Corner size by card size</h2>
+<div class="sub">You said it depends on the card's size. Each option shows the same small, medium and large card.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Fixed · 12px</span></div><div class="stage fix"><div class="rowc"><div class="clr-chamfer card sz-s"><div class="t">Set 3</div></div><div class="clr-chamfer card sz-m"><div class="t">Back squat</div><div class="m"><span>5 × 5</span><span>90kg</span></div></div></div><div class="clr-chamfer card sz-l"><div class="t">This week</div><div class="d">Four sessions, two rest days. Volume is up 8% on last week.</div></div></div><div class="desc">The baseline. One size everywhere, so it looks large on a small card and small on a large one.</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Three steps</span></div><div class="stage stp"><div class="rowc"><div class="clr-chamfer card sz-s"><div class="t">Set 3</div></div><div class="clr-chamfer card sz-m"><div class="t">Back squat</div><div class="m"><span>5 × 5</span><span>90kg</span></div></div></div><div class="clr-chamfer card sz-l"><div class="t">This week</div><div class="d">Four sessions, two rest days. Volume is up 8% on last week.</div></div></div><div class="desc">8px under 80px tall, 12px up to 140px, 24px above. Three fixed sizes, so corners on similar cards always match.</div><div class="flag">Recommended: predictable, and matches the three sizes already in the system</div></div>
+ <div class="opt"><div class="badge"><b>C</b><span>Scales smoothly</span></div><div class="stage flu"><div class="rowc"><div class="clr-chamfer card sz-s"><div class="t">Set 3</div></div><div class="clr-chamfer card sz-m"><div class="t">Back squat</div><div class="m"><span>5 × 5</span><span>90kg</span></div></div></div><div class="clr-chamfer card sz-l"><div class="t">This week</div><div class="d">Four sessions, two rest days. Volume is up 8% on last week.</div></div></div><div class="desc">The corner is 8% of the card's width, kept between 8 and 24px. Always in proportion, but two cards side by side can have slightly different corners.</div></div>
+</div>
+</section>
+
+<section>
+<h2>2 · Where scanlines sit</h2>
+<div class="sub">You wanted them on the surface only, never on the border or over the text. Look at the border and the text in each.</div>
+<div class="grid">
+ <div class="opt"><div class="badge"><b>A</b><span>Surface layer only</span></div><div class="stage scanA"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="m"><span>5 × 5</span><span>90kg</span></div><div class="d">Keep the bar path over mid-foot.</div></div></div><div class="desc">The lines are part of the surface, underneath the text, and stop inside the border. What you described.</div><div class="flag">Recommended</div></div>
+ <div class="opt"><div class="badge"><b>B</b><span>Overlay (last round)</span></div><div class="stage scanB"><div class="clr-chamfer clr-chamfer--md card"><div class="t">Back squat</div><div class="m"><span>5 × 5</span><span>90kg</span></div><div class="d">Keep the bar path over mid-foot.</div><span class="ov"></span></div></div><div class="desc">What you saw last round: the lines sit on top of everything, including the border and the text.</div></div>
+</div>
+</section>
+</div>
+<script>
+const skins=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.className='pill';b.type='button';b.textContent=s;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...skins.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};skins.appendChild(b)});
+</script>
+</body></html>

@@ -1,7 +1,8 @@
 /**
- * DS-06 acceptance. The table in `atmosphere.ts` is a transcription of
- * IA.md §4, so these tests restate IA.md §4 independently — if the two ever
- * disagree, one of them is a typo and the test says which screen.
+ * The owner-supplied 0.9.7 contract changes every production screen to Full.
+ * Issue #268 imports that contract without redesigning routes; issue #270 owns
+ * the shared runtime migration. Until #270 lands this file records both sides:
+ * the authoritative IA rule and the legacy assignments the app still renders.
  */
 import { readFileSync } from 'node:fs'
 
@@ -23,8 +24,8 @@ import {
   type AtmosphereLevel,
 } from './atmosphere'
 
-/** Every screen in IA.md §4 with a route, and the level documented for it. */
-const DOCUMENTED_ROUTES: ReadonlyArray<[string, AtmosphereLevel]> = [
+/** Legacy runtime assignments, kept explicit until #270 migrates them to Full. */
+const CURRENT_ROUTE_ASSIGNMENTS: ReadonlyArray<[string, AtmosphereLevel]> = [
   ['/welcome', 'full'],
   ['/login', 'quiet'],
   ['/onboarding', 'quiet'],
@@ -116,14 +117,14 @@ afterEach(() => {
 })
 
 describe('atmosphere assignment', () => {
-  it.each(DOCUMENTED_ROUTES)(
-    'resolves %s to the level IA.md §4 documents',
+  it.each(CURRENT_ROUTE_ASSIGNMENTS)(
+    'resolves %s to its pre-0.9.7 runtime assignment until #270',
     (pathname, level) => {
       expect(resolveAtmosphere(pathname)).toBe(level)
     },
   )
 
-  it('covers every screen IA.md §4 declares, and invents none', () => {
+  it('records Full for every screen in the authoritative IA contract', () => {
     const ia = readFileSync('docs/specs/IA.md', 'utf8')
     const documented = [...ia.matchAll(/^\*\*Atmosphere:\*\* `(\w+)`/gm)].map(
       (match) => match[1],
@@ -131,10 +132,7 @@ describe('atmosphere assignment', () => {
     const screens = SCREEN_ATMOSPHERE.filter((entry) => entry.alias !== true)
 
     expect(screens).toHaveLength(documented.length)
-    // Same multiset of levels, so a mistranscribed level fails here.
-    expect([...screens.map((entry) => entry.level)].sort()).toEqual(
-      [...documented].sort(),
-    )
+    expect(new Set(documented)).toEqual(new Set(['full']))
   })
 
   it('gives a routeless screen its documented level', () => {
@@ -156,7 +154,7 @@ describe('atmosphere assignment', () => {
 })
 
 describe('atmosphere rendering', () => {
-  it.each(DOCUMENTED_ROUTES)('renders %s with data-atmosphere="%s"', (pathname, level) => {
+  it.each(CURRENT_ROUTE_ASSIGNMENTS)('renders %s with the current data-atmosphere="%s"', (pathname, level) => {
     const { container } = renderApp([pathname], providersFor(pathname))
 
     // IA.md §3 layer 2 — the shell carries the level…

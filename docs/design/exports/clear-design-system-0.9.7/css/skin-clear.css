@@ -1,0 +1,164 @@
+/* =============================================================================
+   SKIN — CLEAR
+   The first skin on the foundation. A second app replaces THIS FILE ONLY:
+   six role hexes and three font families. Everything else is inherited.
+   Extracted from theycallme-eric/clear-app @ main (src/index.css).
+   ============================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap');
+
+:root {
+  /* --- The six values that define a skin ---------------------------------- */
+  --skin-name: 'CLEAR'; /* @kind other */
+  --structure: #F87823;   /* orange */
+  --interaction: #00A9F4; /* blue */
+  --selection: #99DD39;
+  --urgency: #CD1958;
+  --info: #A368FF;
+  --base: #171717;
+  --ink: #F1F1F1;
+
+  /* --- Fonts ------------------------------------------------------------- */
+  --font-display: 'Rajdhani', sans-serif;
+  --font-data: 'Oxanium', monospace;
+  --font-body: 'Space Grotesk', sans-serif;
+
+  /* --- Legacy font aliases ----------------------------------------------- */
+  --font-headings: var(--font-display);
+  --font-label: var(--font-data);
+  --font-paragraph: var(--font-body);
+}
+
+/* =============================================================================
+   PINNED RAMPS — CLEAR only.
+
+   The foundation derives every ramp from the role hue with color-mix. CLEAR has
+   hand-tuned brand hexes from the app, and they differ from the derived values
+   by enough to matter (up to ΔsRGB 37 on the interaction ramp), so they are
+   pinned here.
+
+   SCOPED, not at :root. Sibling skins declare only their seven values and let
+   the foundation derive the rest; if these pins sat at :root they would load
+   after foundation.css and leak CLEAR's orange ramp into every other skin.
+   `:root:not([data-skin])` covers the default case where no attribute is set.
+
+   A new skin needs none of this — delete nothing, just don't add it.
+   ============================================================================= */
+[data-skin="clear"],
+:root:not([data-skin]) {
+  --structure-100: #FEE4D3;
+  --structure-300: #FBAE7B;
+  --structure-400: #F9934F;
+  --structure-600: #C6601C;
+  --structure-900: #321807;
+
+  --interaction-100: #CCEEFD;
+  --interaction-300: #66CBF8;
+  --interaction-400: #33BAF6;
+  --interaction-600: #0087C3;
+  --interaction-900: #002231;
+
+  --selection-400: #ADE461;
+  --selection-900: #1F2C0B;
+}
+
+:root {
+
+  /* =========================================================================
+     LEGACY PRIMITIVE ALIASES
+     The original token names, kept so existing specimens and any code written
+     against CLEAR's palette keeps working. These are PRIMITIVES — they name a
+     hue, so they do not swap with the role layer. Prefer --structure-* /
+     --interaction-* in anything new.
+     ========================================================================= */
+  --color-orange-50: #FEF1E9;
+  --color-orange-100: #FEE4D3;
+  --color-orange-200: #FCC9A7;
+  --color-orange-300: #FBAE7B;
+  --color-orange-400: #F9934F;
+  --color-orange-500: #F87823;
+  --color-orange-600: #C6601C;
+  --color-orange-700: #954815;
+  --color-orange-800: #63300E;
+  --color-orange-900: #321807;
+  --color-orange-alpha-050: rgba(248, 120, 35, 0.05);
+  --color-orange-alpha-100: rgba(248, 120, 35, 0.10);
+  --color-orange-alpha-150: rgba(248, 120, 35, 0.15);
+  --color-orange-alpha-200: rgba(248, 120, 35, 0.20);
+  --color-orange-alpha-300: rgba(248, 120, 35, 0.30);
+  --color-orange-alpha-400: rgba(248, 120, 35, 0.40);
+  --color-orange-alpha-500: rgba(248, 120, 35, 0.50);
+  --color-orange-alpha-600: rgba(248, 120, 35, 0.60);
+  --color-orange-alpha-700: rgba(248, 120, 35, 0.70);
+  --color-orange-alpha-800: rgba(248, 120, 35, 0.80);
+  --color-orange-alpha-900: rgba(248, 120, 35, 0.90);
+
+  --color-blue-50: #E5F6FE;
+  --color-blue-100: #CCEEFD;
+  --color-blue-200: #99DDFB;
+  --color-blue-300: #66CBF8;
+  --color-blue-400: #33BAF6;
+  --color-blue-500: #00A9F4;
+  --color-blue-600: #0087C3;
+  --color-blue-700: #006592;
+  --color-blue-800: #004462;
+  --color-blue-900: #002231;
+  --color-blue-alpha-050: rgba(0, 169, 244, 0.05);
+  --color-blue-alpha-100: rgba(0, 169, 244, 0.10);
+  --color-blue-alpha-150: rgba(0, 169, 244, 0.15);
+  --color-blue-alpha-200: rgba(0, 169, 244, 0.20);
+  --color-blue-alpha-300: rgba(0, 169, 244, 0.30);
+  --color-blue-alpha-400: rgba(0, 169, 244, 0.40);
+  --color-blue-alpha-500: rgba(0, 169, 244, 0.50);
+  --color-blue-alpha-600: rgba(0, 169, 244, 0.60);
+  --color-blue-alpha-700: rgba(0, 169, 244, 0.70);
+  --color-blue-alpha-800: rgba(0, 169, 244, 0.80);
+  --color-blue-alpha-900: rgba(0, 169, 244, 0.90);
+
+  --color-green-500: #99DD39;
+  --color-green-400: #ADE461;
+  --color-green-900: #1F2C0B;
+  --color-green-alpha-100: rgba(153, 221, 57, 0.10);
+  --color-green-alpha-200: rgba(153, 221, 57, 0.20);
+  --color-green-alpha-400: rgba(153, 221, 57, 0.40);
+  --color-green-alpha-600: rgba(153, 221, 57, 0.60);
+  --color-green-alpha-800: rgba(153, 221, 57, 0.80);
+
+  --color-red-500: #CD1958;
+  --color-red-900: #290512;
+  --color-red-alpha-400: rgba(205, 25, 88, 0.40);
+  --color-red-alpha-600: rgba(205, 25, 88, 0.60);
+
+  --color-purple-500: #A368FF;
+  --color-purple-900: #211533;
+  --color-purple-alpha-400: rgba(163, 104, 255, 0.40);
+  --color-purple-alpha-600: rgba(163, 104, 255, 0.60);
+
+  --color-neutral-50: #F1F1F1;
+  --color-neutral-100: #E3E3E3;
+  --color-neutral-400: #8E8E90;
+  --color-neutral-500: #727274;
+  --color-neutral-800: #2E2E2E;
+  --color-neutral-900: #171717;
+  --color-neutral-alpha-100: rgba(114, 114, 116, 0.10);
+  --color-neutral-alpha-200: rgba(114, 114, 116, 0.20);
+  --color-neutral-alpha-300: rgba(114, 114, 116, 0.30);
+}
+
+/* =============================================================================
+   RESPONSIVE TYPE — 834px tablet, 1440px desktop.
+   ============================================================================= */
+@media (min-width: 834px) {
+  :root {
+    --heading-h1-size: 40px; --heading-h1-line-height: 48px;
+    --heading-h2-size: 32px; --heading-h2-line-height: 40px;
+    --heading-h3-size: 28px; --heading-h3-line-height: 32px;
+  }
+}
+@media (min-width: 1440px) {
+  :root {
+    --heading-h1-size: 48px; --heading-h1-line-height: 56px;
+    --heading-h2-size: 40px; --heading-h2-line-height: 48px;
+    --heading-h3-size: 32px; --heading-h3-line-height: 40px;
+  }
+}

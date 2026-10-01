@@ -114,6 +114,16 @@ Inline style objects are present across many route and UI files. They are not au
 violations: token-driven dynamic measurements can be appropriate. The rendered audit must
 classify them rather than mechanically delete them.
 
+### Upstream 0.9.7 contradiction found during protected verification
+
+The package's forced-colours prose and final media query say focus geometry returns to the
+operating system. In bracket mode, however, the earlier `html[data-clr-focus="brackets"]`
+suppression selector has greater specificity than the later forced-colours rule, so Chromium
+computes no outline. The exact imported package remains byte-identical to the supplied archive.
+The application restores the documented result in its later-loaded accessibility layer and hides
+the decorative bracket layer while forced colours are active. This should be corrected in the
+next source package rather than silently editing the 0.9.7 evidence.
+
 ## Reconciliation work packages
 
 ### DS-097-A — exact source import and contract sync

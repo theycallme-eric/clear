@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html data-skin="clear"><head><meta charset="utf-8"><title>Focus style</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+html,body{margin:0;background:var(--bg);color:var(--text-paragraph);font-family:var(--font-body)}
+a{color:var(--interaction-400)}a:hover{color:var(--interaction-300)}
+.pg{padding:24px;display:flex;flex-direction:column;gap:18px;max-width:1120px}
+.ttl{font-family:var(--font-display);font-size:18px;font-weight:700;text-transform:uppercase;color:var(--text-header)}
+.sub{font-size:13px;line-height:1.55;max-width:800px;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .l{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--text-card-label)}
+.pill{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:6px 10px;min-height:32px;background:transparent;color:var(--text-tab-inactive);border:var(--border-width) solid var(--structure-a300);cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--surface-frame-interaction);color:var(--text-tab-active);border-color:var(--interaction-500)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.opt{display:flex;flex-direction:column;gap:12px;min-width:0;padding:14px;border:var(--border-width) solid var(--structure-a300);
+ background:radial-gradient(120% 70% at 20% 0%,var(--structure-a150),transparent 60%),var(--base)}
+.badge{display:flex;gap:8px;align-items:baseline}
+.badge b{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;padding:2px 6px;border:var(--border-width) solid var(--structure-500);color:var(--text-header)}
+.badge span{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-header)}
+.desc{font-size:12px;line-height:1.5;color:color-mix(in srgb,var(--text-paragraph) 82%,transparent)}
+.flag{font-family:var(--font-data);font-size:10px;letter-spacing:.05em;text-transform:uppercase}
+.flag.ok{color:var(--selection-400)}.flag.warn{color:var(--text-negative)}
+.ctl{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.ctl .rowx{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+/* The controls, built as the system builds them. */
+.fld{width:100%;box-sizing:border-box;min-height:40px;padding:8px 12px;font-family:var(--font-body);font-size:14px;color:var(--text-input);background:var(--surface-input);border:var(--border-width) solid var(--border-input)}
+.fld::placeholder{color:color-mix(in srgb,var(--text-input) 55%,transparent)}
+.btn{min-height:40px;padding:var(--spacing-200) var(--spacing-400)}
+.chip{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;min-height:36px;display:inline-flex;align-items:center;color:var(--text-header);background:transparent;border:0;cursor:pointer}
+.tabs{display:flex;gap:18px;border-bottom:var(--border-width) solid var(--border-tab-rail)}
+.tab{font-family:var(--font-data);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;background:transparent;border:var(--border-width) solid transparent;border-bottom-color:transparent;padding:8px 4px;margin-bottom:calc(var(--border-width) * -1);color:var(--text-tab-inactive);cursor:pointer;min-height:40px}
+.tab[aria-selected="true"]{color:var(--text-tab-active);border-bottom-color:var(--border-tab-active)}
+/* Every option starts from no system ring, then adds its own. .ff forces the
+   focused look so all four can be compared at once. */
+.opt :focus-visible{outline:none}
+/* A: the current system ring. */
+.oA :is(:focus-visible,.ff){outline:var(--focus-ring-width) solid var(--focus-ring);outline-offset:var(--focus-ring-offset)}
+/* B: the control's own border lights up. Same width, no outline. */
+.oB .fld:is(:focus-visible,.ff){border-color:var(--interaction-300)}
+.oB .clr-chamfer:is(:focus-visible,.ff)::after{background-color:var(--interaction-300)}
+.oB .tab:is(:focus-visible,.ff){border-color:var(--interaction-300)}
+/* C: border lights up, plus a 1px inner line: a double rule. */
+.oC .fld:is(:focus-visible,.ff){border-color:var(--interaction-300);box-shadow:inset 0 0 0 1px var(--interaction-300)}
+.oC .clr-chamfer:is(:focus-visible,.ff)::after{background-color:var(--interaction-300)}
+.oC .clr-chamfer:is(:focus-visible,.ff)::before{box-shadow:inset 0 0 0 1px var(--interaction-300),inset 0 0 0 100vmax var(--surface)}
+.oC .btn.clr-btn:is(:focus-visible,.ff)::before{box-shadow:inset 0 0 0 1px var(--interaction-300),inset 0 0 0 100vmax var(--surface-cta-secondary)}
+.oC .btn.clr-btn--primary:is(:focus-visible,.ff)::before{box-shadow:inset 0 0 0 1px var(--interaction-300),inset 0 0 0 100vmax var(--surface-cta-primary)}
+.oC .tab:is(:focus-visible,.ff){border-color:var(--interaction-300);box-shadow:inset 0 0 0 1px var(--interaction-300)}
+/* D: targeting brackets on the four corners, just outside the control. */
+.fw{position:relative;display:inline-flex}
+.fw.full{display:flex;width:100%}
+.oD .fw::after{content:'';position:absolute;inset:-5px;pointer-events:none;opacity:0;
+ --k:8px;--t:2px;--c:var(--interaction-300);
+ background:
+  linear-gradient(var(--c),var(--c)) top left/var(--k) var(--t),linear-gradient(var(--c),var(--c)) top left/var(--t) var(--k),
+  linear-gradient(var(--c),var(--c)) top right/var(--k) var(--t),linear-gradient(var(--c),var(--c)) top right/var(--t) var(--k),
+  linear-gradient(var(--c),var(--c)) bottom left/var(--k) var(--t),linear-gradient(var(--c),var(--c)) bottom left/var(--t) var(--k),
+  linear-gradient(var(--c),var(--c)) bottom right/var(--k) var(--t),linear-gradient(var(--c),var(--c)) bottom right/var(--t) var(--k);
+ background-repeat:no-repeat}
+.oD .fw:has(:focus-visible,.ff)::after{opacity:1}
+.foot{font-size:12px;line-height:1.55;color:color-mix(in srgb,var(--text-paragraph) 75%,transparent);max-width:800px}
+</style></head><body><div class="pg">
+<div class="ttl">Focus style</div>
+<div class="sub">This is what keyboard users see on the control they're about to use. Each option shows the same four controls, with only the focus treatment changing. <b>Show all focused</b> is on so you can compare at a glance. Turn it off and press Tab to move through them for real. In every option focus snaps on; it's never animated.</div>
+<div class="bar"><button class="pill" type="button" id="force" aria-pressed="true">Show all focused</button><span class="l">Skin</span><span id="skins" style="display:flex;gap:6px"></span></div>
+<div class="grid" id="grid"></div>
+<div class="foot"><b>A has a second problem beyond looking jarring.</b> Chamfered controls are cut to shape, and that cut also clips anything drawn outside them, including this outline. On the button and chip in A you'll likely see no ring at all, which fails keyboard users. The other three draw inside the shape (B, C) or on a wrapper (D), so they aren't clipped.<br><br><b>Requirement for any pick:</b> the focused state must differ from the unfocused state by at least 3:1. B and C change a border that is sometimes already bright, so they don't always clear it; <code>focus-vs-selected.html</code> measures this.</div>
+</div>
+<script>
+const skins=document.getElementById('skins');
+['clear','vapour','signal','mono'].forEach((s,i)=>{const b=document.createElement('button');b.className='pill';b.type='button';b.textContent=s;b.setAttribute('aria-pressed',i===0);
+ b.onclick=()=>{[...skins.children].forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');document.documentElement.setAttribute('data-skin',s)};skins.appendChild(b)});
+const OPTS=[
+ ['A','Current: offset outline','A light outline 2px outside each control. What ships now.','warn','Jarring, and clipped on chamfered controls'],
+ ['B','Border lights up','The control\'s own border switches to the bright interaction colour. Nothing is added around it.','ok','Recommended: quietest, stays in the frame\'s own line'],
+ ['C','Border + inner line','The border lights up and a thin second line runs just inside it, like a double rule on an instrument.','ok','More noticeable than B, still inside the shape'],
+ ['D','Corner brackets','Targeting brackets appear at the four corners, just outside the control.','ok','Most HUD-like; needs a wrapper around each control']];
+const grid=document.getElementById('grid');
+const W=(inner,full)=>`<span class="fw${full?' full':''}">${inner}</span>`;
+OPTS.forEach(([id,name,desc,kind,flag])=>{
+ const o=document.createElement('div');o.className='opt o'+id;
+ o.innerHTML=`<div class="badge"><b>${id}</b><span>${name}</span></div>
+ <div class="ctl">
+  ${W(`<input class="fld" placeholder="What happened in that set?" aria-label="Note">`,true)}
+  <div class="rowx">${W(`<button class="clr-chamfer clr-chamfer--sm clr-btn clr-btn--primary btn" type="button">Log set</button>`)}${W(`<button class="clr-chamfer clr-chamfer--sm chip" type="button" aria-pressed="false">Legs</button>`)}</div>
+  <div class="tabs" role="tablist">${W(`<button class="tab" role="tab" aria-selected="true" type="button">All</button>`)}${W(`<button class="tab" role="tab" aria-selected="false" type="button">Flagged</button>`)}</div>
+ </div>
+ <div class="desc">${desc}</div><div class="flag ${kind}">${flag}</div>`;
+ grid.appendChild(o);
+});
+const force=document.getElementById('force');
+const apply=()=>{const on=force.getAttribute('aria-pressed')==='true';document.querySelectorAll('.ctl input,.ctl button').forEach(el=>el.classList.toggle('ff',on))};
+force.onclick=()=>{force.setAttribute('aria-pressed',force.getAttribute('aria-pressed')!=='true');apply()};
+apply();
+</script>
+</body></html>
