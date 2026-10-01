@@ -32,6 +32,18 @@ describe('Card composition', () => {
     expect(bar).toHaveAttribute('aria-hidden', 'true')
     expect(bar).toBeEmptyDOMElement()
   })
+
+  it('keeps the body and accent bar on one semantic role', () => {
+    renderWithProviders(
+      <Card data-testid="card" barWidth="md" role="info">
+        Content
+      </Card>,
+    )
+
+    const card = screen.getByTestId('card')
+    expect(card.querySelector('.clr-card__body')).toHaveClass('clr-chamfer--info')
+    expect(card.querySelector('.clr-card__bar')).toBeInTheDocument()
+  })
 })
 
 describe('Card barWidth', () => {

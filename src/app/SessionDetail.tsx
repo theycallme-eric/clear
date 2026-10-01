@@ -32,7 +32,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   AlertCircle,
   AppHeader,
-  ArrowLeft,
   Button,
   ClearLogo,
   Info,
@@ -53,6 +52,7 @@ import {
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
+import { HeaderBackButton } from '../ui/header-back-button'
 import { MoodReading } from '../ui/mood'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
@@ -131,9 +131,9 @@ export function SessionDetail() {
     <>
       <AppHeader
         actions={
-          <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
+          <HeaderBackButton onClick={goBack}>
             {SESSION_DETAIL_BACK_LABEL}
-          </Button>
+          </HeaderBackButton>
         }
       >
         <ClearLogo size="md" />

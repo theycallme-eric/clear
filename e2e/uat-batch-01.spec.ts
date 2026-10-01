@@ -15,6 +15,35 @@ const LOCATION = {
   is_default: true,
 }
 
+const COMPLETED_SESSION = {
+  id: '00000000-0000-4000-8000-00000000ba03',
+  user_id: USER_ID,
+  location_id: LOCATION.id,
+  created_at: '2026-09-30T08:00:00.000+00:00',
+  updated_at: '2026-09-30T10:00:00.000+00:00',
+  date: '2026-09-30',
+  title: 'Completed session',
+  overview: null,
+  session_focus: 'upper_body',
+  goal_preset: 'balanced',
+  requested_duration_mins: 45,
+  effective_duration_target_mins: 45,
+  computed_duration_mins: 42,
+  actual_duration_mins: 41,
+  requested_intensity: 5,
+  effective_intensity: 5,
+  adjustment_reason: null,
+  generation_notes: null,
+  prompt_version: 'e2e',
+  contract_version: '4.1.0',
+  started_at: '2026-09-30T09:00:00.000+00:00',
+  completed_at: '2026-09-30T09:41:00.000+00:00',
+  abandoned_at: null,
+  mood: null,
+  session_notes: null,
+  counts_for_streak: true,
+}
+
 const CORS = {
   'access-control-allow-origin': '*',
   'access-control-allow-headers': '*',
@@ -48,7 +77,11 @@ async function seedSession(page: Page) {
   }, USER_ID)
 }
 
-async function stubSupabase(page: Page, onboarded: boolean) {
+async function stubSupabase(
+  page: Page,
+  onboarded: boolean,
+  history: readonly unknown[] = [],
+) {
   const answer = async (route: Route, body: unknown) => {
     if (route.request().method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: CORS })
@@ -65,6 +98,9 @@ async function stubSupabase(page: Page, onboarded: boolean) {
     }
     if (url.pathname.endsWith('/rest/v1/locations')) {
       return answer(route, onboarded ? [LOCATION] : [])
+    }
+    if (url.pathname.endsWith('/rest/v1/workout_sessions')) {
+      return answer(route, history)
     }
     if (url.pathname.endsWith('/rest/v1/rpc/resume_session')) {
       return answer(route, null)
@@ -123,7 +159,7 @@ test('onboarding uses direct questions, a pinned footer, and one framed confirma
   await page.screenshot({ path: testInfo.outputPath('vibe-d-onboarding-confirmation.png') })
 })
 
-test('Generate and Settings follow the direct-form and measured-footer rulings', async ({
+test('Generate restores one chamfered instrument while Settings keeps the measured composition', async ({
   page,
   visit,
 }, testInfo) => {
@@ -132,8 +168,26 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   await visit('/generate')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeVisible()
-  await expect(page.locator('main .clr-card')).toHaveCount(0)
+  await expect(page.locator('main .clr-card')).toHaveCount(1)
+  const panel = page.locator('main .generate-composition')
+  await expect(panel.locator('.clr-card__body')).toHaveClass(/clr-chamfer--info/)
+  await expect(panel.locator('.clr-card__bar')).toHaveCount(1)
+  await expect(panel.getByText('Goal', { exact: true })).toBeVisible()
+  await expect(panel.getByText('Balanced', { exact: true })).toBeVisible()
+  await expect(panel.getByText(/a little of everything/i)).toHaveCount(0)
+  await expect(panel.getByRole('link', { name: /settings/i })).toHaveCount(0)
+
+  const home = page.getByRole('button', { name: 'Home', exact: true })
+  await expect(home).toHaveClass(/clr-btn/)
+  await expect(home).not.toHaveClass(/clr-btn--quiet/)
+
+  const intensity = page.getByRole('slider', { name: 'Intensity' })
+  await expect(intensity).toHaveAttribute('min', '1')
+  await expect(intensity).toHaveAttribute('max', '10')
+  await expect(page.getByText(/runs \d+ to \d+/i)).toHaveCount(0)
   await expect(page.getByLabel('Place')).toHaveValue(LOCATION.id)
+  await expect(page.getByText(/equipment saved with this place/i)).toHaveCount(0)
+  await expect(page.getByText(/context for today/i)).toHaveCount(0)
 
   const footer = page.locator('main .clr-scroll-region__foot')
   const scroller = page.locator('main .clr-scroll-region__scroller')
@@ -156,6 +210,27 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   await expect(page.getByRole('heading', { name: 'Training' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Places and equipment' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('vibe-d-settings.png') })
+})
+
+test('returning Generate keeps the recommended Anchor collapsed until Edit', async ({
+  page,
+  visit,
+}, testInfo) => {
+  await seedSession(page)
+  await stubSupabase(page, true, [COMPLETED_SESSION])
+  await visit('/generate')
+
+  const panel = page.locator('main .generate-composition')
+  const edit = panel.getByRole('button', { name: 'Edit', exact: true })
+  await expect(edit).toHaveAttribute('aria-expanded', 'false')
+  await expect(panel.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
+  await expect(panel).not.toContainText(/sessions you’ve logged|no .+ in \d+ days/i)
+
+  await edit.click()
+  const choices = panel.getByRole('group', { name: 'Focus for this workout' })
+  await expect(choices).toBeVisible()
+  await expect(choices.getByRole('button')).toHaveCount(4)
+  await page.screenshot({ path: testInfo.outputPath('uat-generate-anchor-edit.png') })
 })
 
 test('generation loading and failure remain honest at every supported width', async ({

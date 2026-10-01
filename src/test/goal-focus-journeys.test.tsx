@@ -21,10 +21,8 @@ import { RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  CHANGE_FOCUS_LABEL,
-  FIRST_WORKOUT_MESSAGE,
+  EDIT_ANCHOR_LABEL,
   OVERRIDE_GROUP_LABEL,
-  OVERRIDE_SCOPE,
   RECOVERY_LABEL,
 } from '../app/Generate'
 import { REGENERATE_LABEL, START_LABEL } from '../app/Review'
@@ -85,7 +83,6 @@ function lowerBodyDue(): WorkoutSessionRow[] {
   return [completed(1, 1), completed(2, 3), completed(3, 16, { session_focus: 'lower_body' })]
 }
 
-const LOWER_BODY_REASON = /^No \w+ in 16 days\.$/
 const HISTORY_CLAIM =
   /suggested|recommended|your last \d+ sessions|no \w+ in \d+ days|sessions you’ve logged/i
 
@@ -184,7 +181,7 @@ const chipIn = (name: string, label: string) =>
   within(group(name)).getByRole('button', { name: new RegExp(label, 'i') })
 const cta = () => screen.getByRole('button', { name: /generate workout/i })
 const slider = () => screen.getByRole('slider')
-const focusLine = () => screen.getByText(/^Focus:/)
+const anchorSummary = () => screen.getByText(/^Anchor$/).closest('.clr-row')
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
 
 /** Start on Review: the session is accepted, then begun. */
@@ -221,8 +218,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted } = journey
 
     expect(screen.getByText('Strength')).toBeInTheDocument()
-    expect(focusLine()).toHaveTextContent('Lower body')
-    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(anchorSummary()).toHaveTextContent('Lower body')
+    expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     // Neither the Goal nor the Focus is a question.
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
@@ -254,17 +251,16 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     expect(generation.calls).toHaveLength(1)
   })
 
-  it('journey 2: Change focus overrides the request and the stored session, and leaves Settings alone', async () => {
+  it('journey 2: Edit Anchor overrides the request and stored session, and leaves Settings alone', async () => {
     const journey = visit({ goal: 'strength' })
     const { user, generation, accepted } = journey
 
-    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(anchorSummary()).toHaveTextContent('Lower body')
 
-    await user.click(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL }))
+    await user.click(screen.getByRole('button', { name: EDIT_ANCHOR_LABEL }))
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
-    expect(focusLine()).toHaveTextContent('Upper body')
-    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(anchorSummary()).toHaveTextContent('Upper body')
 
     await user.click(cta())
 
@@ -324,7 +320,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const chips = within(group('Anchor')).getAllByRole('button')
     expect(chips.map((chip) => chip.textContent)).toEqual(ANCHORS.map((anchor) => anchor.label))
     for (const chip of chips) expect(chip).toHaveAttribute('aria-pressed', 'false')
-    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(/starting workout/i)
     expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     expect(cta()).toBeDisabled()
     expect(first.generation.calls).toEqual([])
@@ -358,11 +354,9 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     })
 
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
-    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
-    // Now the explanation is history's own, and there is history behind it.
-    expect(screen.getByText(/^No .+ in (\d+ days?|the sessions you’ve logged)\.$/)).toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     expect(cta()).toBeEnabled()
-    const shown = focusLine().textContent
+    const shown = anchorSummary()?.textContent
 
     await next.user.click(cta())
 
@@ -380,7 +374,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     const { user, generation, accepted, router } = journey
     const INTENT = { goal: 'strength', focus: 'upper_body' }
 
-    await user.click(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL }))
+    await user.click(screen.getByRole('button', { name: EDIT_ANCHOR_LABEL }))
     await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
 
     // Generation one: two presses in one tick are one call.
@@ -392,8 +386,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     // Cancel: back on the draft as it was, and the abandoned answer goes nowhere.
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
-    expect(focusLine()).toHaveTextContent('Upper body')
-    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(anchorSummary()).toHaveTextContent('Upper body')
     await answer(generation, 'Abandoned')
     expect(screen.queryByText('Abandoned')).not.toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/generate')
@@ -455,7 +448,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     // Pressing the disabled Power changes nothing.
     fireEvent.click(chipIn(OVERRIDE_GROUP_LABEL, 'Power'))
-    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(anchorSummary()).toHaveTextContent('Lower body')
 
     await user.click(cta())
 

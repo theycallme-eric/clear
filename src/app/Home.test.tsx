@@ -677,10 +677,11 @@ describe('Home’s suggestion (HOME-03)', () => {
       await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
     ).toBeInTheDocument()
     // Generate recommends from the same history rather than claiming a prefill:
-    // the Focus and its reason are stated, and no Focus is asked for.
+    // the compact Anchor is stated, its explanation stays on Home, and no
+    // Anchor is asked for until Edit is opened.
     expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
     expect(screen.getByText('Upper body')).toBeInTheDocument()
-    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
+    expect(screen.queryByText('No press in 20 days.')).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.getByRole('slider')).toHaveValue('7')
 
@@ -705,7 +706,8 @@ describe('Home’s suggestion (HOME-03)', () => {
     // Dismissing is Home's prompt only. Generate derives today's recommendation
     // from history itself, whichever way it was opened.
     expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
-    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
+    expect(screen.getByText('Upper body')).toBeInTheDocument()
+    expect(screen.queryByText('No press in 20 days.')).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
   })
 

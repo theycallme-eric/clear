@@ -10,6 +10,7 @@
  * on its content (CORE-05) — the screen that composes it decides.
  */
 import type { HTMLAttributes } from 'react'
+import type { ChamferedFrameProps } from '../design-system/index'
 
 import { ActionRow } from './composition'
 
@@ -18,10 +19,13 @@ export type CardBarWidth = 'md' | 'lg'
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   /** Add the optional accent bar. md → 8px · lg → 12px. Omit for a plain card. */
   barWidth?: CardBarWidth
+  /** Keep the body and optional accent on one semantic frame role. */
+  role?: ChamferedFrameProps['role']
 }
 
 export function Card({
   barWidth,
+  role,
   className,
   children,
   ...props
@@ -39,7 +43,16 @@ export function Card({
           }
         />
       ) : null}
-      <div className="clr-card__body clr-chamfer clr-chamfer--md">
+      <div
+        className={[
+          'clr-card__body',
+          'clr-chamfer',
+          'clr-chamfer--md',
+          role ? `clr-chamfer--${role}` : null,
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         {children}
       </div>
     </div>

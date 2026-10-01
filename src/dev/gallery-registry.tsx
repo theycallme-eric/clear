@@ -78,6 +78,7 @@ import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
+import { HeaderBackButton } from '../ui/header-back-button'
 import { LadderRungs } from '../ui/ladder-rungs'
 import { MoodReading } from '../ui/mood'
 import { Select } from '../ui/select'
@@ -1645,11 +1646,30 @@ function AppearancePickerChosenSkin() {
   return <ReviewablePicker initial="mono" />
 }
 
+function HeaderBackButtonDefault() {
+  return <HeaderBackButton>Home</HeaderBackButton>
+}
+
+function HeaderBackButtonDisabled() {
+  return <HeaderBackButton disabled>Home</HeaderBackButton>
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  {
+    component: 'HeaderBackButton',
+    requirement: 'UAT-286',
+    module: 'src/ui/header-back-button.tsx',
+    summary:
+      'The shared framed route-exit action used in app headers; quiet buttons remain subordinate in-content actions.',
+    specimens: [
+      { state: 'default', Render: HeaderBackButtonDefault },
+      { state: 'disabled', Render: HeaderBackButtonDisabled },
+    ],
+  },
   {
     component: 'WorkoutListItem',
     requirement: 'HIST-01',
