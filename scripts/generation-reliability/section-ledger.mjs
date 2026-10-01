@@ -18,7 +18,12 @@
  *   * the seed differs from the capture only where a row says so, and then only
  *     by landing on that row's `after`;
  *   * an ambiguous exercise is listed apart from the rows, with the same
- *     evidence rule and a recommendation from a closed set.
+ *     evidence rule and a recommendation from a closed set;
+ *   * a row that makes an exercise primary also puts it in `primary_lift`, so
+ *     the flag and the section cannot be proposed apart.
+ *
+ * `projectCatalog` is the catalog as it would be with every row applied — the
+ * input the dispositions (`dispositions.mjs`) are computed from.
  *
  * This module changes nothing. Applying the ledger to the seed is a later task.
  */
@@ -28,6 +33,15 @@ export const LEDGER_PATH = 'docs/process/generation-reliability/section-mapping-
 
 /** The three sections the preserved catalog left empty. */
 export const LEDGER_SECTIONS = Object.freeze(['skill_power', 'carries', 'stability_balance'])
+
+/**
+ * REQ-005: the section Minimal-tier main work is proposed for. Not empty in the
+ * catalog — empty at the Minimal tier, which is a different finding.
+ */
+export const MAIN_WORK_SECTION = 'primary_lift'
+
+/** Every section a row may add to. */
+export const PROPOSED_SECTIONS = Object.freeze([...LEDGER_SECTIONS, MAIN_WORK_SECTION])
 
 /** The closed set. `add` carries the proposed `after`; `leave` proposes nothing. */
 export const RECOMMENDATIONS = Object.freeze(['add', 'leave'])
@@ -77,6 +91,7 @@ export const RECOMMENDATIONS = Object.freeze(['add', 'leave'])
  * @property {string} role                      Reviewed `exercise_role`.
  * @property {readonly string[]} legacyAnchors  Captured `exercise_anchors`.
  * @property {readonly string[]} cues           Captured `coaching_cues`.
+ * @property {readonly string[]} equipment      Seeded `equipment_options`.
  */
 
 /**
@@ -149,6 +164,10 @@ function unresolved(evidence, facts, ledger, context) {
         : `cites "${value}" in a name that is "${facts.name}"`
     case 'cue':
       return facts.cues.includes(value) ? null : `cites coaching cue "${value}" it does not carry`
+    case 'equipment':
+      return facts.equipment.includes(value)
+        ? null
+        : `cites equipment "${value}" it cannot be done with`
     case 'ref': {
       const reference = ledger.references?.[value]
       if (reference === undefined) return `cites reference "${value}" the ledger does not define`
@@ -234,6 +253,14 @@ export function validateLedger(ledger, context) {
       errors.push(`${label} after repeats a section`)
     }
 
+    if (
+      row.after.canBePrimary &&
+      !row.before.canBePrimary &&
+      !row.after.sections.includes(MAIN_WORK_SECTION)
+    ) {
+      errors.push(`${label} makes it primary without adding ${MAIN_WORK_SECTION}`)
+    }
+
     const removed = row.before.sections.filter((section) => !row.after.sections.includes(section))
     if (removed.length > 0 && !filled(row.removalRationale)) {
       errors.push(`${label} removes ${removed.join(', ')} without a removalRationale`)
@@ -307,4 +334,29 @@ export function validateLedger(ledger, context) {
  */
 export function addedSections(row) {
   return row.after.sections.filter((section) => !row.before.sections.includes(section))
+}
+
+/**
+ * The catalog as it would be with every row applied: what the ledger proposes,
+ * as the retrieval predicates would read it. The seed files are not touched.
+ *
+ * @template {{ id: string, sections: readonly string[], canBePrimary: boolean }} T
+ * @param {readonly T[]} catalog
+ * @param {Pick<Ledger, 'rows'>} ledger
+ * @returns {T[]}
+ */
+export function projectCatalog(catalog, ledger) {
+  const rows = new Map(ledger.rows.map((row) => [row.id, row]))
+  for (const id of rows.keys()) {
+    if (!catalog.some((exercise) => exercise.id === id)) {
+      throw new Error(`ledger row "${id}" names an exercise the catalog does not have`)
+    }
+  }
+
+  return catalog.map((exercise) => {
+    const row = rows.get(exercise.id)
+    if (row === undefined) return exercise
+
+    return { ...exercise, sections: [...row.after.sections], canBePrimary: row.after.canBePrimary }
+  })
 }

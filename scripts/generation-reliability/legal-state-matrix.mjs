@@ -63,7 +63,7 @@ const SEED_READER_MODULE = 'src/test/seed-catalog.ts'
  * @returns {Promise<Pick<import('./matrix.mjs').MatrixInputs,
  *   'catalog' | 'equipmentByTier' | 'sectionsByGoal' | 'equipment'>>}
  */
-async function loadVocabularies() {
+export async function loadVocabularies() {
   const { runnerImport } = await import('vite')
   const load = async (/** @type {string} */ path) =>
     (
