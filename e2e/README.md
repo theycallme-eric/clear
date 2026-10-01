@@ -93,7 +93,8 @@ create an already-confirmed user, then mints a session directly through
 
 The OTP path itself is exercised **once**, in `e2e/auth-otp.spec.ts` — a real
 project-configured numeric code, verified through the public endpoint with the anon key, and
-proved unusable a second time. Every other spec takes a minted session. When
+proved unusable a second time or once it has expired. It provisions and deletes its own
+namespaced user, so it leaves nothing behind. Every other spec takes a minted session. When
 AUTH-02 builds the send-and-verify screen, its browser half belongs in that file
 and nowhere else.
 
