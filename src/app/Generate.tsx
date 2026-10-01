@@ -3,9 +3,9 @@
  *
  * IA.md §4: atmosphere `quiet`, protected, in from Home, out to Loading →
  * Review. Composition is the export's Form Screen template — a stack inside the
- * shell, the standing Goal as context, a label plus a wrapping row of chips for
- * the anchor, the `IntensitySlider`, the inputs, and one full-width primary
- * action at the bottom — rendered through `Card`, which is how every other
+ * shell, the standing Goal as context, the Focus — recommended, or a label plus
+ * a wrapping row of chips to choose one — the `IntensitySlider`, the inputs,
+ * and one full-width primary action at the bottom — rendered through `Card`, which is how every other
  * CLEAR screen wears that template.
  *
  * The form itself is `state/generation-form.ts`: this file renders a draft and
@@ -17,18 +17,24 @@
  *      the profile is loading there is no form; when the read fails there is an
  *      error with Retry; and a missing or legacy `active_recovery` Goal is a
  *      correction state that routes to Settings. None of the three can send.
- *   2. **The CTA is disabled until an anchor is chosen.** Nothing else disables
- *      it. A blank time target or a missing place refuses at submit with a
- *      sentence on the field, because a button that is disabled for an
- *      unexplained reason has told the user nothing.
+ *   2. **The CTA is disabled until there is a Focus.** Nothing else disables
+ *      it, and the Focus area says why there is none. A blank time target or a
+ *      missing place refuses at submit with a sentence on the field, because a
+ *      button that is disabled for an unexplained reason has told the user
+ *      nothing.
  *   3. **Nothing is sent that CORE-03 has not parsed.** `requestFrom` is the
  *      only path to `generate`, and a refusal renders on the field the schema
  *      named instead. The screen cannot send a payload the function would have
  *      to reject, and `Generate.test.tsx` holds it to that.
- *   4. **A prefill fills in the anchor and the intensity, and says so.** HOME-03
- *      opens this screen with its suggestion in the query string; `prefillFrom`
- *      parses it, `initialDraft` seeds the draft with it, and a notice states
- *      that two fields were not chosen here.
+ *   4. **The Focus is history's to recommend, and the screen says only what is
+ *      true.** History is read through the shared `useHistoryQuery` and handed
+ *      to the shared eligibility rule on the client, before any request. A
+ *      recommendation is shown with its reason and its intensity; with nothing
+ *      completed, or nothing recent, the four choices are asked for with no
+ *      claim about history; a read still in flight is a loading state; and a
+ *      read that failed says so, offers Retry, and still lets a Focus be
+ *      chosen. A Focus in the URL is not a choice the athlete made here, so
+ *      the query string seeds nothing.
  *
  * Pressing Generate hands the screen to the shared Loading host (REQ-004): the
  * Loading screen is the screen for the whole run, success lands on Review with
@@ -41,7 +47,7 @@
  * every visit, so a Goal changed in Settings is the Goal the next request sends.
  */
 import { useEffect, useId, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -74,7 +80,6 @@ import {
   intensityRange,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
-  prefillFrom,
   refusalFrom,
   requestFrom,
   resolveGeneration,
@@ -85,12 +90,14 @@ import {
   withLocation,
   withNotes,
   type DraftRefusal,
+  type FocusHistory,
   type GenerationContext,
   type GenerationDraft,
-  type GenerationPrefill,
 } from '../state/generation-form'
+import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
 import type { Location, Profile } from '../state/schemas'
 import { reviewHandoff } from '../state/review-handoff'
+import { suggestionEligibility } from '../state/session-suggestion'
 import { localDayIn } from '../state/streak'
 import { useLocationsQuery, useProfileQuery } from '../state/user-queries'
 import {
@@ -104,7 +111,7 @@ import { AppDialog } from '../ui/app-dialog'
 import { Card } from '../ui/card'
 import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
-import { ViewStateSwitch } from '../ui/view-state'
+import { LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
 
@@ -133,13 +140,29 @@ interface Composition {
 type GoalPreset = NonNullable<Profile['goal_preset']>
 
 /**
- * What `resolveGeneration` is told: the profile's standing Goal as stored, and
- * no history, so the anchor stays the user's to choose.
+ * What the history read says about a Focus. The rows in hand go to the shared
+ * eligibility rule — the one Home uses — and a failed read is `history-error`,
+ * never the first-workout state. A read still in flight is `null`: there is no
+ * answer yet, and the screen shows that rather than one of the others.
  */
-function contextFrom(goalPreset: GoalPreset | null): GenerationContext {
+function focusHistoryFrom(state: HistoryQuery['state']): FocusHistory | null {
+  if (state.status === 'loading') return null
+  if (state.status === 'error') return { status: 'history-error' }
+  return suggestionEligibility(state.data.sessions)
+}
+
+/**
+ * What `resolveGeneration` is told: the profile's standing Goal as stored, and
+ * what history says. While history is unread there is nothing recommended, so
+ * the resolver is told so — the Focus stays unresolved and nothing can send.
+ */
+function contextFrom(
+  goalPreset: GoalPreset | null,
+  history: FocusHistory | null,
+): GenerationContext {
   return {
     goalPreset,
-    history: { status: 'no-completed-history' },
+    history: history ?? { status: 'no-completed-history' },
   }
 }
 
@@ -157,21 +180,25 @@ export const LEGACY_GOAL_MESSAGE =
   'Active recovery is no longer a standing goal. Choose a goal in Settings first.'
 export const GOAL_CORRECTION_ACTION = 'Open Settings'
 
-/** Said once, where a suggestion filled the anchor and the intensity in. */
-export const PREFILL_NOTICE =
-  'Prefilled from today’s suggestion. Change anything before you generate.'
+/** The Focus area while the history read is in flight. */
+export const HISTORY_LOADING_LABEL = 'Reading your history'
+
+/** Why a Focus is asked for before anything has been completed (REQ-005). */
+export const FIRST_WORKOUT_MESSAGE =
+  'CLEAR needs a starting workout. Choose the focus for this one.'
+
+/** Asked with no claim about history: stale history, or a choice already made. */
+export const MANUAL_FOCUS_MESSAGE = 'Choose the focus for this workout.'
+
+/** A failed history read is said as one, and does not block generation (REQ-006). */
+export const HISTORY_ERROR_MESSAGE =
+  'Your history could not be read. Retry, or choose the focus for this workout.'
+export const HISTORY_RETRY_LABEL = 'Retry'
 
 export function Generate() {
   const navigate = useNavigate()
   const profile = useProfileQuery()
   const locations = useLocationsQuery()
-  const [params] = useSearchParams()
-
-  // HOME-03's hand-off, and the only thing this screen takes from outside: the
-  // suggested anchor and intensity, parsed rather than trusted. A URL with no
-  // usable prefill — including the plain `/generate` the Generate button opens
-  // after the suggestion was dismissed — is a screen on its defaults.
-  const prefill = prefillFrom(params)
 
   // The run and the composition both live above the host: the Loading screen
   // replaces everything below it, and the form it hands back on cancel is the
@@ -262,7 +289,6 @@ export function Generate() {
               <GenerateForm
                 goalPreset={loaded.goalPreset}
                 places={loaded.places}
-                prefill={prefill}
                 generation={generation}
                 composition={composition}
                 onCompose={setComposition}
@@ -278,26 +304,35 @@ export function Generate() {
 function GenerateForm({
   goalPreset,
   places,
-  prefill,
   generation,
   composition,
   onCompose,
 }: {
   goalPreset: GoalPreset | null
   places: Places
-  prefill: GenerationPrefill | null
   generation: GenerationMutation
   composition: Composition | null
   onCompose: (update: (previous: Composition | null) => Composition) => void
 }) {
   const untouched = (): Composition => ({
-    draft: initialDraft(defaultLocationId(places), prefill),
+    draft: initialDraft(defaultLocationId(places)),
     applied: null,
     overridden: false,
   })
   const { draft, applied, overridden } = composition ?? untouched()
-  const context = contextFrom(goalPreset)
+
+  // REQ-004: the recommendation is derived here, from the shared history read,
+  // before any request — no model decides the Goal or the Focus.
+  const history = useHistoryQuery()
+  const focusHistory = useMemo(() => focusHistoryFrom(history.state), [history.state])
+  const context = contextFrom(goalPreset, focusHistory)
   const resolved = resolveGeneration(draft, context)
+
+  // A Focus the athlete chose is theirs and is shown as chosen, whatever the
+  // read is doing: a retry that succeeds does not take it back (REQ-006).
+  const focusLoading = focusHistory === null && draft.anchor === null
+  const recommended =
+    resolved.status === 'ready' && resolved.focusSource === 'recommended' ? resolved : null
 
   /** One edit to what the user composed, laid over whatever is already held. */
   function compose(change: Partial<Composition>) {
@@ -394,14 +429,6 @@ function GenerateForm({
           </p>
         )}
 
-        {/* HOME-03: a prefilled form says so. A field filled in by something
-            other than the user, silently, is a field they did not choose. */}
-        {prefill !== null && (
-          <p role="status" style={{ margin: 0 }}>
-            {PREFILL_NOTICE}
-          </p>
-        )}
-
         {/* Goal — the profile's standing one, as context. It is changed in
             Settings, never asked per workout (REQ-001). */}
         <div className="clr-stack clr-stack--tight">
@@ -414,26 +441,65 @@ function GenerateForm({
           </p>
         </div>
 
-        {/* Anchor — §2.3: Recovery offers no Power, and says why */}
-        <FormField
-          label="Anchor"
-          required
-          helperText={resolved.goal === 'active_recovery' ? POWER_REFUSAL : undefined}
-          errorText={refusal?.fields.focus}
-        >
-          <div className="clr-row" role="group" aria-label="Anchor" style={CHIP_ROW}>
-            {ANCHORS.map((anchor) => (
-              <Chip
-                key={anchor.value}
-                selected={draft.anchor === anchor.value}
-                disabled={!anchorAllowed(resolved.goal, anchor.value)}
-                onClick={() => setDraft(withAnchor(draft, anchor.value))}
-              >
-                {anchor.label}
-              </Chip>
-            ))}
+        {/* Focus — recommended from history when history can, asked for when it
+            cannot, and never drawn before the read has answered */}
+        {focusLoading ? (
+          <LoadingView label={HISTORY_LOADING_LABEL} />
+        ) : recommended !== null ? (
+          <div className="clr-stack clr-stack--tight">
+            <p style={{ margin: 0 }}>
+              Focus:{' '}
+              <strong>
+                {ANCHORS.find((anchor) => anchor.value === recommended.focus)?.label}
+              </strong>
+            </p>
+            <p style={{ margin: 0 }}>{recommended.reason}</p>
           </div>
-        </FormField>
+        ) : (
+          <>
+            {focusHistory?.status === 'history-error' && (
+              <div className="clr-stack clr-stack--tight">
+                <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+                  {HISTORY_ERROR_MESSAGE}
+                </p>
+                <div className="clr-row">
+                  <Button variant="quiet" onClick={history.refetch}>
+                    {HISTORY_RETRY_LABEL}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* §2.3: Recovery offers no Power, and says why */}
+            <FormField
+              label="Anchor"
+              required
+              helperText={
+                resolved.goal === 'active_recovery'
+                  ? POWER_REFUSAL
+                  : focusHistory?.status === 'no-completed-history'
+                    ? FIRST_WORKOUT_MESSAGE
+                    : focusHistory?.status === 'history-error'
+                      ? undefined
+                      : MANUAL_FOCUS_MESSAGE
+              }
+              errorText={refusal?.fields.focus}
+            >
+              <div className="clr-row" role="group" aria-label="Anchor" style={CHIP_ROW}>
+                {ANCHORS.map((anchor) => (
+                  <Chip
+                    key={anchor.value}
+                    selected={draft.anchor === anchor.value}
+                    disabled={!anchorAllowed(resolved.goal, anchor.value)}
+                    onClick={() => setDraft(withAnchor(draft, anchor.value))}
+                  >
+                    {anchor.label}
+                  </Chip>
+                ))}
+              </div>
+            </FormField>
+          </>
+        )}
 
         {/* Deload — above the intensity selector (IA §4), and only when §4 fired */}
         {suggestion !== null && (
