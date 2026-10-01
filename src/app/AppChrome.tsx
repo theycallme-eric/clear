@@ -32,6 +32,8 @@ export function AppChrome() {
   // announces itself — do nothing.
   useEffect(() => {
     if (location.key === initialKey.current) return
+    const scroller = document.querySelector('.clr-scroll-region__scroller')
+    scroller?.scrollTo({ top: 0, left: 0 })
     const main = document.querySelector('main')
     const target = main?.querySelector('h1') ?? main
     if (target instanceof HTMLElement) {

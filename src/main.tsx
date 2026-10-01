@@ -12,6 +12,7 @@ import './styles/app-motion.css'
 // DS-06 atmosphere override; must follow the design-system motion layer.
 import './styles/atmosphere.css'
 import './styles/a11y.css'
+import './styles/shell.css'
 
 import { appAuthClients } from './app/auth-client'
 import { BootGate } from './app/BootSequence'

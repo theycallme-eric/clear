@@ -66,7 +66,10 @@ export function BootSequence({ view, onRetry }: BootSequenceProps) {
   return (
     <>
       <AtmosphereLayer />
-      <div className="clr-shell" data-atmosphere={DEFAULT_ATMOSPHERE}>
+      <div
+        className="clr-shell clr-shell--fixed clr-shell--contained"
+        data-atmosphere={DEFAULT_ATMOSPHERE}
+      >
         <div className="clr-shell__content">
           <Screen title="CLEAR" heading={<ClearLogo size="lg" boot />}>
             {view.status === 'checking' ? (

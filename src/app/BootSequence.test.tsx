@@ -218,10 +218,13 @@ describe('REQ-057 · the sequence is the brand moment, once', () => {
     renderBoot()
 
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('CLEAR')
-    expect(document.querySelector('.clr-shell')).toHaveAttribute(
+    const shell = document.querySelector('.clr-shell')
+    expect(shell).toHaveClass('clr-shell--fixed', 'clr-shell--contained')
+    expect(shell).toHaveAttribute(
       'data-atmosphere',
       'full',
     )
+    expect(shell?.querySelectorAll('.clr-scroll-region__scroller')).toHaveLength(1)
   })
 
   it('is not shown to a returning user whose data is already in hand', () => {

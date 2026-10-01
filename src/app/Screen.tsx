@@ -7,6 +7,7 @@
  */
 import { useEffect, type ReactNode } from 'react'
 
+import { ScrollRegion } from '../design-system/index'
 import { Heading, HeadingLevelProvider } from '../ui/Heading'
 import { useScreenRegistry } from './screen-registry'
 
@@ -17,10 +18,23 @@ export interface ScreenProps {
   title: string
   /** Visible h1 content when it differs from `title` (e.g. a wordmark). */
   heading?: ReactNode
+  /** Optional transparent layer pinned above this screen's scrolling content. */
+  pinnedHead?: ReactNode
+  /** Optional transparent layer pinned below this screen's scrolling content. */
+  pinnedFoot?: ReactNode
+  /** Omit the head rule when pinnedHead already draws its own closing rule. */
+  pinnedHeadRule?: boolean
   children?: ReactNode
 }
 
-export function Screen({ title, heading, children }: ScreenProps) {
+export function Screen({
+  title,
+  heading,
+  pinnedHead,
+  pinnedFoot,
+  pinnedHeadRule = true,
+  children,
+}: ScreenProps) {
   const registry = useScreenRegistry()
 
   useEffect(() => {
@@ -29,11 +43,24 @@ export function Screen({ title, heading, children }: ScreenProps) {
   }, [title, registry])
 
   return (
-    <main id="main" tabIndex={-1}>
-      <HeadingLevelProvider level={1}>
-        <Heading tabIndex={-1}>{heading ?? title}</Heading>
-      </HeadingLevelProvider>
-      <HeadingLevelProvider level={2}>{children}</HeadingLevelProvider>
+    <main id="main" className="clr-screen" tabIndex={-1}>
+      <ScrollRegion
+        head={pinnedHead}
+        headRule={pinnedHeadRule}
+        foot={pinnedFoot}
+        scrollerProps={{
+          'aria-label': `${title} content`,
+          role: 'region',
+          tabIndex: 0,
+        }}
+      >
+        <div className="clr-screen__content">
+          <HeadingLevelProvider level={1}>
+            <Heading tabIndex={-1}>{heading ?? title}</Heading>
+          </HeadingLevelProvider>
+          <HeadingLevelProvider level={2}>{children}</HeadingLevelProvider>
+        </div>
+      </ScrollRegion>
     </main>
   )
 }
