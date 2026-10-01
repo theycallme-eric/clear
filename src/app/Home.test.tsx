@@ -660,10 +660,7 @@ describe('Home’s suggestion (HOME-03)', () => {
     )
     expect(screen.getByRole('slider')).toHaveValue('7')
 
-    // The goal is still unanswered, so a prefilled form still cannot generate.
-    expect(screen.getByRole('button', { name: /generate workout/i })).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: 'Strength' }))
-    expect(screen.getByRole('slider')).toHaveValue('7')
+    // The Goal is the profile's standing one, so a prefilled form can generate.
     expect(screen.getByRole('button', { name: /generate workout/i })).toBeEnabled()
   })
 

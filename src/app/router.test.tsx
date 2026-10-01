@@ -95,11 +95,6 @@ describe('app router', () => {
     const { container } = renderApp(['/generate'], signedIn({ queryClient: cache, generation }))
 
     await user.click(
-      within(screen.getByRole('group', { name: 'Goal' })).getByRole('button', {
-        name: /strength/i,
-      }),
-    )
-    await user.click(
       within(screen.getByRole('group', { name: 'Anchor' })).getByRole('button', {
         name: /upper body/i,
       }),
