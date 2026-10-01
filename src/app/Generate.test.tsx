@@ -1,10 +1,14 @@
 /**
  * GEN-04's acceptance, on the real route tree.
  *
- * Two criteria: the screen is the export's Form Screen template — goal chips
- * first, anchor chips, the intensity slider, the place, the time target and the
- * notes, one full-width primary action — and no payload the CORE-03 request
- * schema would refuse ever reaches the generation client.
+ * Two criteria: the screen is the export's Form Screen template — the standing
+ * Goal as context, anchor chips, the intensity slider, the place, the time
+ * target and the notes, one full-width primary action — and no payload the
+ * CORE-03 request schema would refuse ever reaches the generation client.
+ *
+ * And REQ-001/REQ-002's: the Goal is the profile's and is never asked here, the
+ * profile read has its own loading and error states, and a missing or legacy
+ * Goal is a correction state that sends nothing.
  */
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -28,10 +32,18 @@ import {
   makeSessionAcceptance,
 } from '../test/factories'
 import { createWorkoutDouble } from '../test/workout-double'
-import type { AnchorEvidenceRow, Location } from '../state/schemas'
+import type { AnchorEvidenceRow, Location, Profile } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import { createFakeGenerationClient } from '../test/generation-double'
-import { renderApp, signedIn } from '../test/render'
+import { renderApp, renderWithProviders, signedIn } from '../test/render'
+import {
+  CHANGE_GOAL_LABEL,
+  Generate,
+  GOAL_CORRECTION_ACTION,
+  GOAL_CORRECTION_TITLE,
+  LEGACY_GOAL_MESSAGE,
+  MISSING_GOAL_MESSAGE,
+} from './Generate'
 import {
   createFakeUserDataClient,
   FIXTURE_USER_ID,
@@ -46,27 +58,38 @@ const GYM = fixtureLocation({
   is_default: false,
 })
 
-function warmCache(locations: readonly Location[]) {
+/** The Goals a profile may stand on: onboarding's four. */
+const STANDING_GOALS = ['strength', 'hypertrophy', 'conditioning', 'balanced'] as const
+
+function warmCache(
+  locations: readonly Location[],
+  goal: Profile['goal_preset'] = 'strength',
+) {
   const cache = new QueryClient()
-  cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+  cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile({ goal_preset: goal }))
   cache.setData(locationsQueryKey(FIXTURE_USER_ID), [...locations])
   return cache
 }
 
-function renderGenerate(
-  locations: readonly Location[] = [fixtureLocation(), GYM],
-  workout?: WorkoutClients,
-) {
+/** A returning athlete on `/generate`, standing on Strength unless a test says otherwise. */
+function renderGenerate({
+  locations = [fixtureLocation(), GYM],
+  workout,
+  goal = 'strength',
+}: {
+  locations?: readonly Location[]
+  workout?: WorkoutClients
+  goal?: Profile['goal_preset']
+} = {}) {
   const generation = createFakeGenerationClient()
   const rendered = renderApp(
     ['/generate'],
-    signedIn({ queryClient: warmCache(locations), generation, workout }),
+    signedIn({ queryClient: warmCache(locations, goal), generation, workout }),
   )
 
   return { ...rendered, generation, user: userEvent.setup() }
 }
 
-const goalChip = (label: string) => screen.getByRole('button', { name: new RegExp(label, 'i') })
 const group = (name: string) => screen.getByRole('group', { name })
 const chipIn = (name: string, label: string) =>
   within(group(name)).getByRole('button', { name: new RegExp(label, 'i') })
@@ -74,19 +97,11 @@ const cta = () => screen.getByRole('button', { name: /generate workout/i })
 const slider = () => screen.getByRole('slider')
 
 describe('the screen’s composition (Form Screen template)', () => {
-  it('asks the goal first, then the anchor, the intensity, the place, the time and the notes', () => {
+  it('states the goal, then asks the anchor, the intensity, the place, the time and the notes', () => {
     renderGenerate()
 
     expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
-
-    const goals = within(group('Goal')).getAllByRole('button')
-    expect(goals.map((chip) => chip.textContent)).toEqual([
-      'Strength',
-      'Hypertrophy',
-      'Conditioning',
-      'Balanced',
-      'Recovery',
-    ])
+    expect(screen.getByText('Strength')).toBeInTheDocument()
 
     const anchors = within(group('Anchor')).getAllByRole('button')
     expect(anchors.map((chip) => chip.textContent)).toEqual([
@@ -104,27 +119,16 @@ describe('the screen’s composition (Form Screen template)', () => {
   })
 
   it('prefills the default place rather than the first one listed', () => {
-    renderGenerate([GYM, fixtureLocation()])
+    renderGenerate({ locations: [GYM, fixtureLocation()] })
 
     expect(screen.getByLabelText(/place/i)).toHaveValue(fixtureLocation().id)
-  })
-
-  it('chooses no goal for the user', () => {
-    renderGenerate()
-
-    for (const chip of within(group('Goal')).getAllByRole('button')) {
-      expect(chip).toHaveAttribute('aria-pressed', 'false')
-    }
   })
 })
 
 describe('the CTA', () => {
-  it('stays disabled until a goal and an anchor are both chosen', async () => {
+  it('waits for an anchor and for nothing else — the Goal is already the profile’s', async () => {
     const { user } = renderGenerate()
 
-    expect(cta()).toBeDisabled()
-
-    await user.click(goalChip('Strength'))
     expect(cta()).toBeDisabled()
 
     await user.click(chipIn('Anchor', 'Upper body'))
@@ -133,59 +137,134 @@ describe('the CTA', () => {
 })
 
 describe('goal → intensity (v3 delta §2.2)', () => {
-  it('clamps the slider to the chosen goal’s range and lands on its start', async () => {
-    const { user } = renderGenerate()
-
-    expect(slider()).toBeDisabled()
-
-    await user.click(goalChip('Conditioning'))
+  it('clamps the slider to the standing goal’s range and lands on its start', () => {
+    renderGenerate({ goal: 'conditioning' })
 
     expect(slider()).toBeEnabled()
     expect(slider()).toHaveAttribute('min', String(INTENSITY_BY_GOAL.conditioning.min))
     expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.conditioning.max))
     expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.conditioning.start))
   })
-
-  it('snaps a chosen intensity into the new goal’s range', async () => {
-    const { user } = renderGenerate()
-
-    await user.click(goalChip('Balanced'))
-    // A real range input, dragged: jsdom has no pointer geometry, so the drag
-    // is the change event it would have produced.
-    fireEvent.change(slider(), { target: { value: '10' } })
-    expect(slider()).toHaveValue('10')
-
-    await user.click(goalChip('Recovery'))
-
-    expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.active_recovery.max))
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
-  })
 })
 
 describe('goal → anchor (v3 delta §2.3)', () => {
-  it('disables Power for Recovery and leaves the anchor blank rather than substituting one', async () => {
-    const { user } = renderGenerate()
-
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Power'))
-    expect(chipIn('Anchor', 'Power')).toHaveAttribute('aria-pressed', 'true')
-
-    await user.click(goalChip('Recovery'))
-
-    expect(chipIn('Anchor', 'Power')).toBeDisabled()
-    for (const chip of within(group('Anchor')).getAllByRole('button')) {
-      expect(chip).toHaveAttribute('aria-pressed', 'false')
-    }
-    expect(cta()).toBeDisabled()
-    expect(screen.getByText(/Recovery sessions are gentle movement/i)).toBeInTheDocument()
-  })
-
-  it('offers Power to every other goal', async () => {
-    const { user } = renderGenerate()
-
-    await user.click(goalChip('Hypertrophy'))
+  it.each(STANDING_GOALS)('offers Power to a standing %s goal', (goal) => {
+    renderGenerate({ goal })
 
     expect(chipIn('Anchor', 'Power')).toBeEnabled()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-001 — the standing Goal, read from the profile
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('REQ-001 — the standing Goal is context, not a question', () => {
+  it('shows the profile’s Goal and a route to Settings, and no Goal choice', async () => {
+    const { user } = renderGenerate({ goal: 'strength' })
+
+    expect(screen.getByText('Strength')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument()
+    for (const label of ['Hypertrophy', 'Conditioning', 'Balanced', 'Recovery']) {
+      expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument()
+    }
+
+    await user.click(screen.getByRole('link', { name: CHANGE_GOAL_LABEL }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument()
+  })
+
+  it('sends the Goal a fresh visit finds on the profile, with no Goal interaction', async () => {
+    const { user, generation } = renderGenerate({ goal: 'hypertrophy' })
+
+    expect(screen.getByText('Hypertrophy')).toBeInTheDocument()
+
+    await user.click(chipIn('Anchor', 'Lower body'))
+    await user.click(cta())
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'hypertrophy',
+      focus: 'lower_body',
+      requested_intensity: INTENSITY_BY_GOAL.hypertrophy.start,
+    })
+  })
+})
+
+/**
+ * The screen's own profile states. Mounted without the route's guard, which
+ * reads the same profile and would answer for it first: what is proved here is
+ * that Generate itself never draws a form on a profile it does not have.
+ */
+describe('REQ-001 — the profile read', () => {
+  function renderScreen(profile: (userId: string) => Promise<Result<Profile | null>>) {
+    const generation = createFakeGenerationClient()
+    const cache = new QueryClient()
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation(), GYM])
+    const userData = createFakeUserDataClient({ profile })
+    renderWithProviders(<Generate />, {
+      route: '/generate',
+      ...signedIn({ queryClient: cache, generation, userData }),
+    })
+    return { generation, userData, user: userEvent.setup() }
+  }
+
+  it('shows the profile loading, with no Generate CTA', async () => {
+    const { generation, userData } = renderScreen(() => new Promise(() => {}))
+
+    await waitFor(() => expect(userData.profileCalls.length).toBeGreaterThan(0))
+
+    expect(screen.getByText(/reading your profile/i)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+  })
+
+  it('shows the failure with a Retry that reads again, and sends nothing', async () => {
+    let failing = true
+    const { generation, userData, user } = renderScreen(() =>
+      Promise.resolve(
+        failing
+          ? err(createError(ErrorCode.PERSISTENCE_READ_FAILED))
+          : ok<Profile | null>(onboardedProfile({ goal_preset: 'strength' })),
+      ),
+    )
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/your profile didn’t load/i)
+    expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+
+    const reads = userData.profileCalls.length
+    failing = false
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+
+    expect(await screen.findByText('Strength')).toBeInTheDocument()
+    expect(userData.profileCalls.length).toBe(reads + 1)
+    expect(cta()).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-002 — a missing or legacy standing Goal is corrected in Settings
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('REQ-002 — the correction state', () => {
+  it.each([
+    ['no goal', null, MISSING_GOAL_MESSAGE],
+    ['the legacy active_recovery goal', 'active_recovery', LEGACY_GOAL_MESSAGE],
+  ] as const)('names Settings and sends nothing for a profile with %s', async (_, goal, message) => {
+    const { user, generation } = renderGenerate({ goal })
+
+    expect(screen.getByText(GOAL_CORRECTION_TITLE)).toBeInTheDocument()
+    expect(screen.getByText(message)).toHaveTextContent(/settings/i)
+    expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: GOAL_CORRECTION_ACTION }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
   })
 })
 
@@ -193,7 +272,6 @@ describe('what is sent', () => {
   it('sends the request the user composed, once', async () => {
     const { user, generation } = renderGenerate()
 
-    await user.click(goalChip('Strength'))
     await user.click(chipIn('Anchor', 'Upper body'))
     await user.selectOptions(screen.getByLabelText(/place/i), GYM.id)
     await user.clear(screen.getByLabelText(/time available/i))
@@ -218,7 +296,6 @@ describe('what is sent', () => {
   it('sends no note rather than an empty one', async () => {
     const { user, generation } = renderGenerate()
 
-    await user.click(goalChip('Balanced'))
     await user.click(chipIn('Anchor', 'Full body'))
     await user.click(cta())
 
@@ -228,8 +305,7 @@ describe('what is sent', () => {
   it('blocks a payload the request schema refuses, and says which field', async () => {
     const { user, generation } = renderGenerate()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
     await user.clear(screen.getByLabelText(/time available/i))
     await user.click(cta())
 
@@ -241,8 +317,7 @@ describe('what is sent', () => {
   it('sends once the refused field is fixed', async () => {
     const { user, generation } = renderGenerate()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
     await user.clear(screen.getByLabelText(/time available/i))
     await user.click(cta())
     expect(generation.calls).toEqual([])
@@ -274,8 +349,7 @@ describe('REQ-004 — the Loading screen for a Generate run', () => {
 
   /** Every run here is composed the same way, with edits away from the defaults. */
   async function composeAndSubmit(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
     await user.selectOptions(screen.getByLabelText(/place/i), GYM.id)
     await user.clear(screen.getByLabelText(/time available/i))
     await user.type(screen.getByLabelText(/time available/i), '30')
@@ -317,8 +391,7 @@ describe('REQ-004 — the Loading screen for a Generate run', () => {
   it('starts one run however often the submit is pressed', async () => {
     const { user, generation } = renderGenerate()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
     // Two presses in one tick: the second lands before the form has gone.
     const button = cta()
     fireEvent.click(button)
@@ -357,7 +430,6 @@ describe('REQ-004 — the Loading screen for a Generate run', () => {
       )
       const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
 
-      await user.click(goalChip('Strength'))
       await user.click(chipIn('Anchor', 'Upper body'))
       await user.click(cta())
 
@@ -417,7 +489,7 @@ describe('REQ-004 — the Loading screen for a Generate run', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
     expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
-    expect(chipIn('Goal', 'Strength')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Strength')).toBeInTheDocument()
     expect(chipIn('Anchor', 'Upper body')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText(/place/i)).toHaveValue(GYM.id)
     expect(screen.getByLabelText(/time available/i)).toHaveValue(30)
@@ -619,7 +691,7 @@ describe('OVR-04 — the deload suggestion', () => {
 
   /** The banner is a query, so every test waits for the read before asserting. */
   async function renderStalled() {
-    const rendered = renderGenerate([fixtureLocation(), GYM], stalling())
+    const rendered = renderGenerate({ workout: stalling() })
     await waitFor(() => expect(reason()).toBeInTheDocument())
     return rendered
   }
@@ -650,10 +722,9 @@ describe('OVR-04 — the deload suggestion', () => {
   it('changes nothing until Apply is pressed, and never sends a deload nobody asked for', async () => {
     const { user, generation } = await renderStalled()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
 
-    // The suggestion is on the screen and the slider is still where the goal
+    // The suggestion is on the screen and the slider is still where the Goal
     // put it: the app has advised, and done nothing.
     expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.strength.start))
 
@@ -666,8 +737,7 @@ describe('OVR-04 — the deload suggestion', () => {
   it('clamps the intensity and carries the directive once the user applies it', async () => {
     const { user, generation } = await renderStalled()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
     await user.click(applyButton())
 
     expect(slider()).toHaveValue('5')
@@ -701,7 +771,7 @@ describe('OVR-04 — the deload suggestion', () => {
     await waitFor(() => expect(reason()).not.toBeInTheDocument())
     unmount()
 
-    renderGenerate([fixtureLocation(), GYM], stalling())
+    renderGenerate({ workout: stalling() })
 
     await waitFor(() => expect(cta()).toBeInTheDocument())
     expect(reason()).not.toBeInTheDocument()
@@ -710,8 +780,7 @@ describe('OVR-04 — the deload suggestion', () => {
   it('confirms a hard intensity once on a flagged day, then honours it', async () => {
     const { user, generation } = await renderStalled()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
 
     // Choosing 9 on a flagged day is a contradiction of the advice, so it costs
     // one question — and the slider does not move until it is answered.
@@ -738,8 +807,7 @@ describe('OVR-04 — the deload suggestion', () => {
   it('lets the user back out of a hard intensity without changing anything', async () => {
     const { user } = await renderStalled()
 
-    await user.click(goalChip('Strength'))
-    await user.click(chipIn('Anchor', 'Upper body'))
+await user.click(chipIn('Anchor', 'Upper body'))
 
     fireEvent.change(slider(), { target: { value: '9' } })
     await user.click(await screen.findByRole('button', { name: /keep it easier/i }))

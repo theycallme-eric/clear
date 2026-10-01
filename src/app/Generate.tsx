@@ -3,29 +3,32 @@
  *
  * IA.md §4: atmosphere `quiet`, protected, in from Home, out to Loading →
  * Review. Composition is the export's Form Screen template — a stack inside the
- * shell, a label plus a wrapping row of chips per selector, the
- * `IntensitySlider`, the inputs, and one full-width primary action at the
- * bottom — rendered through `Card`, which is how every other CLEAR screen wears
- * that template.
+ * shell, the standing Goal as context, a label plus a wrapping row of chips for
+ * the anchor, the `IntensitySlider`, the inputs, and one full-width primary
+ * action at the bottom — rendered through `Card`, which is how every other
+ * CLEAR screen wears that template.
  *
  * The form itself is `state/generation-form.ts`: this file renders a draft and
- * the four edits that can be made to it, and decides nothing about them. Two
+ * the edits that can be made to it, and decides nothing about them. Four
  * properties are the requirement rather than decoration:
  *
- *   1. **The CTA is disabled until goal and anchor are both chosen.** Nothing
- *      else disables it. A blank time target or a missing place refuses at
- *      submit with a sentence on the field, because a button that is disabled
- *      for an unexplained reason has told the user nothing.
- *   2. **Nothing is sent that CORE-03 has not parsed.** `requestFrom` is the
+ *   1. **The Goal is the profile's, and is not asked here.** The standing
+ *      `goal_preset` is read, shown as context, and changed in Settings. While
+ *      the profile is loading there is no form; when the read fails there is an
+ *      error with Retry; and a missing or legacy `active_recovery` Goal is a
+ *      correction state that routes to Settings. None of the three can send.
+ *   2. **The CTA is disabled until an anchor is chosen.** Nothing else disables
+ *      it. A blank time target or a missing place refuses at submit with a
+ *      sentence on the field, because a button that is disabled for an
+ *      unexplained reason has told the user nothing.
+ *   3. **Nothing is sent that CORE-03 has not parsed.** `requestFrom` is the
  *      only path to `generate`, and a refusal renders on the field the schema
  *      named instead. The screen cannot send a payload the function would have
  *      to reject, and `Generate.test.tsx` holds it to that.
- *   3. **A prefill fills in the anchor and the intensity, and says so.** HOME-03
+ *   4. **A prefill fills in the anchor and the intensity, and says so.** HOME-03
  *      opens this screen with its suggestion in the query string; `prefillFrom`
  *      parses it, `initialDraft` seeds the draft with it, and a notice states
- *      that two fields were not chosen here. The goal is still unset, so a
- *      prefilled form is still one answer short of generating — the suggestion
- *      is read off history, and history does not know what today is for.
+ *      that two fields were not chosen here.
  *
  * Pressing Generate hands the screen to the shared Loading host (REQ-004): the
  * Loading screen is the screen for the whole run, success lands on Review with
@@ -33,14 +36,15 @@
  * composed is held above the host — the Loading screen replaces the form's
  * components, and cancelling must not replace the user's answers with defaults.
  *
- * The goal the user picks is part of the wire contract. It scopes candidate
- * retrieval as well as the client-side cascade, so the workout cannot be
- * composed for a stale profile default after the user chose something else.
+ * The standing Goal is part of the wire contract. It scopes candidate retrieval
+ * as well as the client-side cascade, and it is read from the loaded profile on
+ * every visit, so a Goal changed in Settings is the Goal the next request sends.
  */
 import { useEffect, useId, useMemo, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
+  AlertCircle,
   AppHeader,
   ArrowLeft,
   Button,
@@ -74,21 +78,21 @@ import {
   refusalFrom,
   requestFrom,
   resolveGeneration,
+  standingGoalFrom,
   withAnchor,
   withDuration,
   withIntensity,
   withLocation,
   withNotes,
-  withRecovery,
   type DraftRefusal,
   type GenerationContext,
   type GenerationDraft,
   type GenerationPrefill,
 } from '../state/generation-form'
-import type { Location } from '../state/schemas'
+import type { Location, Profile } from '../state/schemas'
 import { reviewHandoff } from '../state/review-handoff'
 import { localDayIn } from '../state/streak'
-import { useLocationsQuery } from '../state/user-queries'
+import { useLocationsQuery, useProfileQuery } from '../state/user-queries'
 import {
   viewError,
   viewEmpty,
@@ -104,8 +108,14 @@ import { ViewStateSwitch } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
 
-/** What the form needs before it can be filled in: the places and their default. */
 type Places = readonly Location[]
+
+/** What the form needs before it can be filled in: the standing Goal and the places. */
+interface Loaded {
+  /** The loaded profile's `goal_preset`, exactly as stored. */
+  readonly goalPreset: GoalPreset | null
+  readonly places: Places
+}
 
 /**
  * What the user has composed, and what they agreed to while composing it.
@@ -116,26 +126,36 @@ type Places = readonly Location[]
  */
 interface Composition {
   readonly draft: GenerationDraft
-  /** The goal chip chosen on this screen, standing in for the profile's Goal. */
-  readonly goal: GoalPreset | null
   readonly applied: DeloadSuggestion | null
   readonly overridden: boolean
 }
 
-type GoalPreset = (typeof GENERATION_GOALS)[number]['value']
+type GoalPreset = NonNullable<Profile['goal_preset']>
 
 /**
- * What `resolveGeneration` is told while this screen still asks the Goal
- * itself: the chosen chip as the standing Goal, and no history, so the anchor
- * stays the user's to choose. Recovery is the draft's one-workout mode rather
- * than a standing Goal, so its chip resolves over a stand-in that is never sent.
+ * What `resolveGeneration` is told: the profile's standing Goal as stored, and
+ * no history, so the anchor stays the user's to choose.
  */
-function contextFrom(goal: GoalPreset | null): GenerationContext {
+function contextFrom(goalPreset: GoalPreset | null): GenerationContext {
   return {
-    goalPreset: goal === 'active_recovery' ? 'balanced' : goal,
+    goalPreset,
     history: { status: 'no-completed-history' },
   }
 }
+
+/** Where the standing Goal is set and changed. */
+export const SETTINGS_ROUTE = '/settings'
+
+/** The route out of the Goal context: the Goal is changed there, not here. */
+export const CHANGE_GOAL_LABEL = 'Change in Settings'
+
+/** The correction state, for a profile with no Goal and for a legacy one. */
+export const GOAL_CORRECTION_TITLE = 'Set your goal in Settings'
+export const MISSING_GOAL_MESSAGE =
+  'Generation needs your goal, and none is set. Choose one in Settings first.'
+export const LEGACY_GOAL_MESSAGE =
+  'Active recovery is no longer a standing goal. Choose a goal in Settings first.'
+export const GOAL_CORRECTION_ACTION = 'Open Settings'
 
 /** Said once, where a suggestion filled the anchor and the intensity in. */
 export const PREFILL_NOTICE =
@@ -143,6 +163,7 @@ export const PREFILL_NOTICE =
 
 export function Generate() {
   const navigate = useNavigate()
+  const profile = useProfileQuery()
   const locations = useLocationsQuery()
   const [params] = useSearchParams()
 
@@ -167,20 +188,31 @@ export function Generate() {
     })
   }, [generation.state, navigate])
 
-  // The places are the screen's data, and the profile deliberately is not: the
-  // goal has no default to read from it (§2.1), the guard already answers
-  // whether this account finished onboarding, and a query nothing renders would
-  // be a loading state with no reason to exist. The empty case here is real
-  // rather than theoretical — a user with no place has nothing to send as
-  // `location_id`, so this screen sends them to the one that fixes it.
-  const state: ViewState<Places> =
-    locations.state.status === 'loading'
+  // The profile is read first because the Goal is its: a form drawn before it
+  // answered would be composing on a guessed Goal. The places follow, and their
+  // empty case is real rather than theoretical — a user with no place has
+  // nothing to send as `location_id`, so this screen sends them to the one that
+  // fixes it.
+  const profileSettled = profile.state.status === 'ready'
+  const goalPreset =
+    profile.state.status === 'ready' ? (profile.state.data?.goal_preset ?? null) : null
+  const state: ViewState<Loaded> =
+    profile.state.status === 'loading'
       ? viewLoading()
-      : locations.state.status === 'error'
-        ? viewError(locations.state.error)
-        : locations.state.data.length === 0
-          ? viewEmpty()
-          : viewReady(locations.state.data)
+      : profile.state.status === 'error'
+        ? viewError(profile.state.error)
+        : locations.state.status === 'loading'
+          ? viewLoading()
+          : locations.state.status === 'error'
+            ? viewError(locations.state.error)
+            : locations.state.data.length === 0
+              ? viewEmpty()
+              : viewReady({ goalPreset, places: locations.state.data })
+
+  // REQ-002: a profile with no Goal, or with the legacy `active_recovery`, has
+  // nothing ordinary generation may send. It is said before the places are
+  // read, because no place makes that profile able to generate.
+  const needsSettings = profileSettled && standingGoalFrom(goalPreset) === null
 
   // GEN-05's screen has no route of its own: while a run this screen started is
   // in flight — or has failed and is being answered — the shared host makes it
@@ -201,42 +233,57 @@ export function Generate() {
         <ClearLogo size="md" />
       </AppHeader>
       <Screen title="Generate workout">
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your places"
-          errorTitle="Your places didn’t load"
-          onRetry={locations.refetch}
-          empty={
-            <EmptyState
-              title="No places yet"
-              message="Generation composes from the equipment at a place you train, so add one first."
-              actionLabel="Add a place"
-              onAction={() => void navigate('/settings/locations')}
-            />
-          }
-        >
-          {(places) => (
-            <GenerateForm
-              places={places}
-              prefill={prefill}
-              generation={generation}
-              composition={composition}
-              onCompose={setComposition}
-            />
-          )}
-        </ViewStateSwitch>
+        {needsSettings ? (
+          <EmptyState
+            icon={<AlertCircle />}
+            title={GOAL_CORRECTION_TITLE}
+            message={goalPreset === null ? MISSING_GOAL_MESSAGE : LEGACY_GOAL_MESSAGE}
+            actionLabel={GOAL_CORRECTION_ACTION}
+            onAction={() => void navigate(SETTINGS_ROUTE)}
+          />
+        ) : (
+          <ViewStateSwitch
+            state={state}
+            loadingLabel={profileSettled ? 'Reading your places' : 'Reading your profile'}
+            errorTitle={
+              profileSettled ? 'Your places didn’t load' : 'Your profile didn’t load'
+            }
+            onRetry={profileSettled ? locations.refetch : profile.refetch}
+            empty={
+              <EmptyState
+                title="No places yet"
+                message="Generation composes from the equipment at a place you train, so add one first."
+                actionLabel="Add a place"
+                onAction={() => void navigate('/settings/locations')}
+              />
+            }
+          >
+            {(loaded) => (
+              <GenerateForm
+                goalPreset={loaded.goalPreset}
+                places={loaded.places}
+                prefill={prefill}
+                generation={generation}
+                composition={composition}
+                onCompose={setComposition}
+              />
+            )}
+          </ViewStateSwitch>
+        )}
       </Screen>
     </GenerationLoadingHost>
   )
 }
 
 function GenerateForm({
+  goalPreset,
   places,
   prefill,
   generation,
   composition,
   onCompose,
 }: {
+  goalPreset: GoalPreset | null
   places: Places
   prefill: GenerationPrefill | null
   generation: GenerationMutation
@@ -245,12 +292,11 @@ function GenerateForm({
 }) {
   const untouched = (): Composition => ({
     draft: initialDraft(defaultLocationId(places), prefill),
-    goal: null,
     applied: null,
     overridden: false,
   })
-  const { draft, goal: chosen, applied, overridden } = composition ?? untouched()
-  const context = contextFrom(chosen)
+  const { draft, applied, overridden } = composition ?? untouched()
+  const context = contextFrom(goalPreset)
   const resolved = resolveGeneration(draft, context)
 
   /** One edit to what the user composed, laid over whatever is already held. */
@@ -356,29 +402,17 @@ function GenerateForm({
           </p>
         )}
 
-        {/* Goal — first on the page, and with no default (v3 delta §2.1) */}
-        <FormField
-          label="Goal"
-          required
-          helperText={chosenGoal?.description ?? 'What is today for? It sets the intensity range.'}
-        >
-          <div className="clr-row" role="group" aria-label="Goal" style={CHIP_ROW}>
-            {GENERATION_GOALS.map((goal) => (
-              <Chip
-                key={goal.value}
-                selected={resolved.goal === goal.value}
-                onClick={() =>
-                  compose({
-                    goal: goal.value,
-                    draft: withRecovery(draft, goal.value === 'active_recovery'),
-                  })
-                }
-              >
-                {goal.label}
-              </Chip>
-            ))}
-          </div>
-        </FormField>
+        {/* Goal — the profile's standing one, as context. It is changed in
+            Settings, never asked per workout (REQ-001). */}
+        <div className="clr-stack clr-stack--tight">
+          <p style={{ margin: 0 }}>
+            Goal: <strong>{chosenGoal?.label}</strong>
+            {chosenGoal?.description === undefined ? '' : ` — ${chosenGoal.description}`}
+          </p>
+          <p style={{ margin: 0 }}>
+            <Link to={SETTINGS_ROUTE}>{CHANGE_GOAL_LABEL}</Link>
+          </p>
+        </div>
 
         {/* Anchor — §2.3: Recovery offers no Power, and says why */}
         <FormField
@@ -426,7 +460,7 @@ function GenerateForm({
           />
           <p id={intensityHint}>
             {resolved.goal === null
-              ? 'Choose a goal first — it sets the range.'
+              ? 'Your goal sets the range.'
               : `${chosenGoal?.label} runs ${range.min} to ${range.max}.`}
           </p>
         </div>
@@ -517,7 +551,7 @@ function GenerateForm({
   )
 }
 
-/** The chip rows wrap on a phone: five goals never fit one line (§2.1). */
+/** The chip row wraps on a phone rather than overflowing it. */
 const CHIP_ROW = { flexWrap: 'wrap', gap: 'var(--spacing-100)' } as const
 
 /** The profile's default place, or the first one — never nothing when one exists. */
