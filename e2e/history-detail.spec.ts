@@ -221,8 +221,8 @@ test.describe('history-detail — History list to Review or Session Detail on th
 
   type Catalogued = { id: string; default_equipment: string }
 
-  test.beforeAll(async (fixtures, testInfo) => {
-    void fixtures
+  test.beforeAll(async ({ browserName }, testInfo) => {
+    void browserName
     client = backend.client()
 
     const fixtureNamespace = `${namespaceId()}-${testInfo.project.name}`
