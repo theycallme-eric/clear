@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { describe, expect, it } from 'vitest'
 
 import { Constants } from '../data/database.types'
@@ -8,6 +11,12 @@ import {
   canGenerate,
   clampIntensity,
   DEFAULT_DURATION_MINS,
+  draftFromRequest,
+  draftPath,
+  intentFrom,
+  intentOf,
+  searchWithIntent,
+  withOverride,
   FULL_INTENSITY_RANGE,
   GENERATE_PATH,
   generatePath,
@@ -227,14 +236,14 @@ describe('the resolver (REQ-001, REQ-004, REQ-005)', () => {
     expect(resolved.status === 'needs-focus' && resolved.why).toBe('no-completed-history')
   })
 
-  it('lets a manual Focus override the recommendation, without its reason', () => {
+  it('lets a chosen Focus override the recommendation, without its reason', () => {
     const draft = withAnchor(initialDraft(LOCATION), 'power')
     const resolved = resolveGeneration(draft, contextFor('strength', recommended(7)))
 
     expect(resolved).toMatchObject({
       status: 'ready',
       focus: 'power',
-      focusSource: 'manual',
+      focusSource: 'override',
       reason: null,
       // The history intensity still stands: the override is of the Focus alone.
       intensity: 7,
@@ -310,17 +319,20 @@ describe('intensity (REQ-004, v3 delta §2.2)', () => {
 })
 
 describe('a prefilled draft (HOME-03)', () => {
-  it('takes the anchor and the intensity, and leaves the goal to the profile', () => {
+  it('takes the intensity, and leaves the goal to the profile and the Focus to history', () => {
     const draft = initialDraft(LOCATION, { focus: 'lower_body', intensity: 7 })
 
-    expect(draft.anchor).toBe('lower_body')
+    // REQ-007: a bare Focus prefill is a suggestion, not the athlete's choice.
+    expect(draft.anchor).toBeNull()
     expect(draft.intensity).toBe(7)
     expect(draft.recovery).toBe(false)
     expect(draft.durationMins).toBe(String(DEFAULT_DURATION_MINS))
     expect(draft.notes).toBe('')
-    // No prefill stands in for a standing Goal the profile does not have.
+    // No prefill stands in for a standing Goal the profile does not have, nor
+    // for a recommendation current history does not make.
     expect(canGenerate(draft, contextFor(null))).toBe(false)
-    expect(canGenerate(draft, STRENGTH)).toBe(true)
+    expect(canGenerate(draft, STRENGTH)).toBe(false)
+    expect(canGenerate(draft, contextFor('strength', recommended(7)))).toBe(true)
   })
 
   it('keeps the prefilled intensity, clamped to the effective goal’s range', () => {
@@ -415,6 +427,296 @@ describe('Recovery for one workout (v3 delta §2.3)', () => {
     const draft = withAnchor(initialDraft(LOCATION), 'power')
 
     expect(withAnchor(draft, 'power').anchor).toBeNull()
+  })
+})
+
+describe('one-workout intent in the URL (REQ-007, REQ-008)', () => {
+  const LOWER = contextFor('strength', recommended(7))
+  const POWER: GenerationContext = contextFor('strength', {
+    status: 'recommended',
+    focus: 'power',
+    intensity: 8,
+    reason: REASON,
+  })
+
+  /** A draft through its own URL and back, as a refresh does it. */
+  function reloaded(draft: GenerationDraft): GenerationDraft {
+    const path = draftPath(draft)
+    const search = path.slice(GENERATE_PATH.length)
+    return initialDraft(LOCATION, prefillFrom(search), intentFrom(search))
+  }
+
+  it('reads no override out of a bare prefill', () => {
+    const search = '?focus=power&intensity=8'
+
+    expect(prefillFrom(search)).toEqual({ focus: 'power', intensity: 8 })
+    expect(prefillFrom(search)).not.toHaveProperty('override')
+    expect(intentFrom(search)).toEqual({ override: null, recovery: false })
+
+    const draft = initialDraft(LOCATION, prefillFrom(search), intentFrom(search))
+    expect(resolveGeneration(draft, LOWER)).toMatchObject({
+      focus: 'lower_body',
+      focusSource: 'recommended',
+      reason: REASON,
+    })
+  })
+
+  it('resolves a Home handoff and a direct visit to the same request', () => {
+    const handoff = generatePath({ focus: 'lower_body', intensity: 7 })
+    const search = handoff.slice(GENERATE_PATH.length)
+
+    expect(
+      requestFrom(initialDraft(LOCATION, prefillFrom(search), intentFrom(search)), LOWER, REQUEST_ID),
+    ).toEqual(requestFrom(initialDraft(LOCATION), LOWER, REQUEST_ID))
+  })
+
+  it('keeps the override Focus and the Recovery flag through the URL', () => {
+    const override = withOverride(initialDraft(LOCATION), 'upper_body')
+    const recovery = withRecovery(initialDraft(LOCATION), true)
+    const both = withRecovery(override, true)
+
+    expect(draftPath(override)).toBe('/generate?override=upper_body')
+    expect(draftPath(recovery)).toBe('/generate?recovery=1')
+    expect(draftPath(initialDraft(LOCATION))).toBe(GENERATE_PATH)
+
+    for (const draft of [override, recovery, both, initialDraft(LOCATION)]) {
+      expect(reloaded(draft)).toEqual(draft)
+      expect(intentFrom(draftPath(draft).slice(GENERATE_PATH.length))).toEqual(intentOf(draft))
+    }
+
+    expect(resolveGeneration(reloaded(override), LOWER)).toMatchObject({
+      goal: 'strength',
+      focus: 'upper_body',
+      focusSource: 'override',
+    })
+    expect(resolveGeneration(reloaded(both), LOWER)).toMatchObject({
+      goal: 'active_recovery',
+      focus: 'upper_body',
+      focusSource: 'override',
+    })
+  })
+
+  it('writes the intent beside the prefill and takes it away again', () => {
+    const search = '?focus=lower_body&intensity=7'
+    const draft = withRecovery(withOverride(initialDraft(LOCATION), 'full_body'), true)
+
+    expect(searchWithIntent(search, draft).toString()).toBe(
+      'focus=lower_body&intensity=7&override=full_body&recovery=1',
+    )
+    expect(
+      searchWithIntent(
+        searchWithIntent(search, draft),
+        withRecovery(withOverride(draft, null), false),
+      ).toString(),
+    ).toBe('focus=lower_body&intensity=7')
+  })
+
+  it('refuses intent it cannot parse rather than guessing', () => {
+    const none = { override: null, recovery: false }
+
+    expect(intentFrom('')).toEqual(none)
+    expect(intentFrom('?override=legs')).toEqual(none)
+    expect(intentFrom('?recovery=true')).toEqual(none)
+    expect(intentFrom('?recovery=0')).toEqual(none)
+    // Power is not one of Recovery's anchors: blank, never substituted.
+    expect(intentFrom('?override=power&recovery=1')).toEqual({ override: null, recovery: true })
+    expect(initialDraft(LOCATION, null, { override: 'power', recovery: true }).anchor).toBeNull()
+  })
+
+  it('restores the recommended Focus when the override is cleared', () => {
+    const overridden = withOverride(initialDraft(LOCATION), 'upper_body')
+    const cleared = withOverride(overridden, null)
+
+    expect(resolveGeneration(overridden, LOWER)).toMatchObject({ focus: 'upper_body' })
+    expect(resolveGeneration(cleared, LOWER)).toMatchObject({
+      focus: 'lower_body',
+      focusSource: 'recommended',
+      reason: REASON,
+    })
+    expect(draftPath(cleared)).toBe(GENERATE_PATH)
+  })
+
+  it('sets an override rather than toggling it, and refuses Power under Recovery', () => {
+    const once = withOverride(initialDraft(LOCATION), 'upper_body')
+    const recovering = withRecovery(initialDraft(LOCATION), true)
+
+    expect(withOverride(once, 'upper_body').anchor).toBe('upper_body')
+    expect(withOverride(recovering, 'power')).toBe(recovering)
+  })
+
+  it('clears the Focus when Recovery meets a Power recommendation', () => {
+    const recovering = withRecovery(initialDraft(LOCATION), true)
+    const resolved = resolveGeneration(recovering, POWER)
+
+    expect(resolved).toMatchObject({
+      status: 'needs-focus',
+      goal: 'active_recovery',
+      focus: null,
+      why: 'power-refused',
+    })
+    expect(resolved.intensity).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL.active_recovery.min)
+    expect(resolved.intensity).toBeLessThanOrEqual(INTENSITY_BY_GOAL.active_recovery.max)
+    expect(canGenerate(recovering, POWER)).toBe(false)
+    expect(canGenerate(withOverride(recovering, 'full_body'), POWER)).toBe(true)
+  })
+
+  it('clears a Power override when Recovery is switched on, and does not bring it back', () => {
+    const recovering = withRecovery(withOverride(initialDraft(LOCATION), 'power'), true)
+
+    expect(recovering.anchor).toBeNull()
+    // Switching Recovery off returns to the standing Goal and the recommendation.
+    expect(resolveGeneration(withRecovery(recovering, false), LOWER)).toMatchObject({
+      goal: 'strength',
+      focus: 'lower_body',
+      focusSource: 'recommended',
+      intensity: 7,
+    })
+  })
+})
+
+describe('the resolver’s sources (REQ-009)', () => {
+  const GOAL_SOURCES = [
+    { name: 'standing', recovery: false, goal: 'strength' },
+    { name: 'Recovery', recovery: true, goal: 'active_recovery' },
+  ] as const
+
+  describe.each(GOAL_SOURCES)('a $name Goal', ({ recovery, goal }) => {
+    const base = withRecovery(initialDraft(LOCATION), recovery)
+    const intensity = clampIntensity(goal, 7)
+
+    it('with the recommended Focus', () => {
+      expect(resolveGeneration(base, contextFor('strength', recommended(7)))).toMatchObject({
+        status: 'ready',
+        goal,
+        focus: 'lower_body',
+        focusSource: 'recommended',
+        intensity,
+      })
+    })
+
+    it('with an override Focus', () => {
+      const draft = withOverride(base, 'upper_body')
+
+      expect(resolveGeneration(draft, contextFor('strength', recommended(7)))).toMatchObject({
+        status: 'ready',
+        goal,
+        focus: 'upper_body',
+        focusSource: 'override',
+        intensity,
+      })
+    })
+
+    it.each(MANUAL_HISTORIES)('with a manual Focus on $status', (history) => {
+      const draft = withAnchor(base, 'full_body')
+      const context = contextFor('strength', history)
+      const request = requestFrom(draft, context, REQUEST_ID)
+
+      expect(resolveGeneration(draft, context)).toMatchObject({
+        status: 'ready',
+        goal,
+        focus: 'full_body',
+        focusSource: 'manual',
+        intensity: INTENSITY_BY_GOAL[goal].start,
+      })
+      expect(isOk(request) && request.value).toMatchObject({
+        goal,
+        focus: 'full_body',
+        requested_intensity: INTENSITY_BY_GOAL[goal].start,
+      })
+    })
+  })
+})
+
+describe('a draft rebuilt from an accepted request (REQ-008, REQ-009)', () => {
+  const LOWER = contextFor('strength', recommended(7))
+
+  /** What the client was handed for a ready draft. */
+  function accepted(draft: GenerationDraft, context: GenerationContext) {
+    const request = requestFrom(draft, context, REQUEST_ID)
+    if (!isOk(request)) throw new Error('the draft was refused')
+    return inputFrom(request.value)
+  }
+
+  it('resolves an accepted Recovery request to Recovery and its Focus', () => {
+    const draft = draftFromRequest(
+      {
+        goal: 'active_recovery',
+        focus: 'lower_body',
+        requested_intensity: 2,
+        requested_duration_mins: 30,
+        location_id: LOCATION,
+        notes: null,
+      },
+      LOWER,
+    )
+
+    expect(draft.recovery).toBe(true)
+    expect(resolveGeneration(draft, LOWER)).toMatchObject({
+      status: 'ready',
+      goal: 'active_recovery',
+      focus: 'lower_body',
+      intensity: 2,
+    })
+    expect(draftPath(draft)).toBe('/generate?recovery=1')
+  })
+
+  it('keeps that Focus when history has since stopped recommending it', () => {
+    const request = accepted(withRecovery(initialDraft(LOCATION), true), LOWER)
+
+    for (const history of MANUAL_HISTORIES) {
+      const context = contextFor('strength', history)
+
+      expect(resolveGeneration(draftFromRequest(request, context), context)).toMatchObject({
+        goal: 'active_recovery',
+        focus: 'lower_body',
+      })
+    }
+  })
+
+  it.each([
+    ['a recommendation', initialDraft(LOCATION)],
+    ['an override', withOverride(initialDraft(LOCATION), 'upper_body')],
+    ['Recovery', withRecovery(initialDraft(LOCATION), true)],
+    ['Recovery with an override', withRecovery(withOverride(initialDraft(LOCATION), 'full_body'), true)],
+    [
+      'a filled-in form',
+      withNotes(withDuration(withIntensity(initialDraft(LOCATION), 5), '30'), 'Tight hips.'),
+    ],
+  ])('rebuilds %s to the same request and the same markers', (_name, draft) => {
+    const rebuilt = draftFromRequest(accepted(draft, LOWER), LOWER)
+
+    expect(accepted(rebuilt, LOWER)).toEqual(accepted(draft, LOWER))
+    expect(intentOf(rebuilt)).toEqual(intentOf(draft))
+    expect(resolveGeneration(rebuilt, LOWER)).toEqual(resolveGeneration(draft, LOWER))
+  })
+})
+
+describe('purity', () => {
+  it('writes to no profile and no storage', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/state/generation-form.ts'), 'utf-8')
+    const imports = [...source.matchAll(/^import (type )?[^;]*? from '([^']+)'$/gms)]
+    const runtime = imports.filter((match) => match[1] === undefined).map((match) => match[2])
+
+    // Everything it runs is the state layer's own: no client, no query, no store.
+    expect(runtime.sort()).toEqual(['./errors', './onboarding', './schemas'])
+    expect(source).not.toMatch(/localStorage|sessionStorage|indexedDB|supabase\s*[.(]|fetch\(/)
+  })
+
+  it('leaves the draft and the context it was given as they were', () => {
+    const draft = Object.freeze(withOverride(initialDraft(LOCATION), 'upper_body'))
+    const context = Object.freeze(contextFor('strength', Object.freeze(recommended(7))))
+
+    expect(() => {
+      withRecovery(draft, true)
+      withOverride(draft, null)
+      withAnchor(draft, 'power')
+      withIntensity(draft, 3)
+      resolveGeneration(draft, context)
+      searchWithIntent('?focus=power&intensity=8', draft)
+      const request = requestFrom(draft, context, REQUEST_ID)
+      if (isOk(request)) draftFromRequest(request.value, context)
+    }).not.toThrow()
+    expect(context.goalPreset).toBe('strength')
   })
 })
 
