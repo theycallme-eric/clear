@@ -1,4 +1,4 @@
-import { MOBILE_VIEWPORT } from '../playwright.config'
+import { MOBILE_VIEWPORT, TABLET_VIEWPORT } from '../playwright.config'
 
 import { expect, test } from './fixtures'
 
@@ -49,4 +49,23 @@ test('desktop is additional coverage, not the baseline', async ({
   }))
 
   expect(input).toEqual({ fine: true, hover: true })
+})
+
+test('tablet is a representative touch viewport, not a resized desktop', async ({
+  page,
+  visit,
+}) => {
+  test.skip(test.info().project.name !== 'tablet', 'asserts the tablet project')
+
+  await visit('/')
+
+  expect(page.viewportSize()).toEqual(TABLET_VIEWPORT)
+
+  const input = await page.evaluate(() => ({
+    touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    coarse: window.matchMedia('(pointer: coarse)').matches,
+    hoverless: window.matchMedia('(hover: none)').matches,
+  }))
+
+  expect(input).toEqual({ touch: true, coarse: true, hoverless: true })
 })

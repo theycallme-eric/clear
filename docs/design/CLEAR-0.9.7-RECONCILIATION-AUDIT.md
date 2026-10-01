@@ -1,6 +1,7 @@
 # CLEAR Design System 0.9.7 Reconciliation Audit
 
-**Status:** authoritative comparison complete; reconciliation in progress
+**Status:** authoritative comparison complete; route reconciliation complete; final exact-head
+verification in progress
 **Received:** 2026-09-30  
 **Source artifact:** `CLEAR Design System 0.9.7..zip`  
 **SHA-256:** `12620dc5d9b6d7de965f25b80f86a90b8ee3e6a5eeea813eb1b85b0563d74790`
@@ -24,9 +25,11 @@ already been visually reconciled.
 | --- | --- | --- |
 | DS-097-A | Merged | Exact 0.9.7 evidence/runtime import, active contract sync, identity/API/adherence tests; PR #275 |
 | DS-097-B | Merged | Shared atmosphere, Card, focus, token/motion, action/list/band/footer substrate; PR #276 |
-| DS-097-C | In progress | Fixed shell and public `ScrollRegion`; issue #269 |
-| VIBE-A / B / C | Pending | Route-family reconciliation; issues #271–#273 |
-| VIBE-D | Pending | Final rendered audit and exception ledger; issue #274 |
+| DS-097-C | Merged | Fixed shell and public `ScrollRegion`; PR #277 |
+| VIBE-A | Merged | Entry, onboarding, generation, and Settings; PR #278 |
+| VIBE-B | Merged | Home, History, Favorites, and Session Detail; PR #279 |
+| VIBE-C | Merged | Review, Workout, and Summary; PR #280 |
+| VIBE-D | In progress | Final rendered audit, tablet lane, screenshot evidence, and exception ledger; issue #274 |
 
 ## Executive conclusion
 

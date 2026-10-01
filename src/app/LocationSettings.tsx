@@ -55,6 +55,8 @@ import { CheckboxGroup } from '../ui/checkbox-group'
 import { Heading } from '../ui/Heading'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ConfirmDialog } from '../ui/blocking-dialog'
+import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ErrorView } from '../ui/view-state'
 import { Screen } from './Screen'
 
 type EditorTarget = Location | 'new' | null
@@ -118,7 +120,24 @@ export function LocationSettings() {
       >
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="Places and equipment">
+      <Screen
+        title="Places and equipment"
+        pinnedFoot={
+          query.state.status === 'ready' && editor === null ? (
+            <PhoneFooter>
+              <ActionRow>
+                <Button
+                  variant="primary"
+                  icon={<Plus size={20} />}
+                  onClick={() => setEditor('new')}
+                >
+                  Add place
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          ) : undefined
+        }
+      >
         <div className="clr-stack">
           <p>Generation uses the default place and the equipment saved with it.</p>
 
@@ -126,11 +145,10 @@ export function LocationSettings() {
 
           {query.state.status === 'loading' && <p role="status">Reading your places…</p>}
           {query.state.status === 'error' && (
-            <EmptyState
+            <ErrorView
+              error={query.state.error}
               title="Your places didn’t load"
-              message={query.state.error.message}
-              actionLabel="Try again"
-              onAction={query.refetch}
+              onRetry={query.refetch}
             />
           )}
           {query.state.status === 'ready' && (
@@ -139,8 +157,6 @@ export function LocationSettings() {
                 <EmptyState
                   title="No places yet"
                   message="Add where you train and what equipment is available there."
-                  actionLabel="Add place"
-                  onAction={() => setEditor('new')}
                 />
               ) : (
                 <div className="clr-stack">
@@ -160,13 +176,6 @@ export function LocationSettings() {
                       }}
                     />
                   ))}
-                  <Button
-                    variant="secondary"
-                    icon={<Plus size={20} />}
-                    onClick={() => setEditor('new')}
-                  >
-                    Add place
-                  </Button>
                 </div>
               )}
 
@@ -256,11 +265,10 @@ function LocationEditor({
   }
   if (location !== null && equipmentQuery.state.status === 'error') {
     return (
-      <EmptyState
+      <ErrorView
+        error={equipmentQuery.state.error}
         title="This equipment list didn’t load"
-        message={equipmentQuery.state.error.message}
-        actionLabel="Try again"
-        onAction={equipmentQuery.refetch}
+        onRetry={equipmentQuery.refetch}
       />
     )
   }

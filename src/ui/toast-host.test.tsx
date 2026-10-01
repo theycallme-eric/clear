@@ -231,3 +231,38 @@ describe('announcement severity', () => {
     expect(alert).toHaveAttribute('aria-live', 'assertive')
   })
 })
+
+describe('pinned action clearance', () => {
+  it('places a toast above the measured screen footer', () => {
+    const queue = createToastQueue()
+    const { container } = renderWithProviders(
+      <>
+        <main>
+          <div className="clr-scroll-region__foot" data-testid="pinned-footer" />
+        </main>
+        <ToastHost queue={queue} />
+      </>,
+    )
+    const footer = screen.getByTestId('pinned-footer')
+    vi.spyOn(footer, 'getBoundingClientRect').mockReturnValue({
+      x: 0,
+      y: 680,
+      top: 680,
+      right: 800,
+      bottom: 760,
+      left: 0,
+      width: 800,
+      height: 80,
+      toJSON: () => ({}),
+    })
+
+    act(() => {
+      queue.show({ variant: 'negative', message: 'Sync failed.' })
+    })
+
+    expect(container.querySelector('[data-clear-toast-host]')).toHaveStyle({
+      bottom: 'calc(88px + var(--spacing-300))',
+      zIndex: '3',
+    })
+  })
+})

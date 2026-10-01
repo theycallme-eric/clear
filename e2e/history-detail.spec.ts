@@ -360,7 +360,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     page,
     visit,
     checkA11y,
-  }) => {
+  }, testInfo) => {
     // The production entry point: Home, not `/history` typed in.
     await visit('/')
     await expect(page.locator('main .clr-scroll-region__foot .clr-footer')).toContainText(
@@ -390,6 +390,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(restRow).toHaveCount(1)
     await expect(restRow.getByRole('link')).toHaveCount(0)
     await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-d-history.png') })
 
     const filter = page.getByLabel(HISTORY_FILTER)
 
@@ -412,6 +413,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(page.locator('main h1')).toHaveText(TITLES.completed)
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-d-history-review.png') })
 
     await page.goBack()
     await expect(page).toHaveURL(/\/history$/)
@@ -432,6 +434,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
       'Only a completed workout can be restarted.',
     )
     await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-d-session-detail.png') })
   })
 
   test('a compatible completed session restarts into Review without generation', async ({
@@ -458,6 +461,47 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     expect(generationRequests, 'Restart called the model-backed generation endpoint').toEqual([])
+    await checkA11y()
+  })
+
+  test('Home → Favorites restores the saved workout into Review without generation', async ({
+    page,
+    visit,
+    checkA11y,
+  }, testInfo) => {
+    const generationRequests: string[] = []
+    page.on('request', (request) => {
+      if (
+        request.method() === 'POST' &&
+        request.url().includes('/functions/v1/generate-workout')
+      ) {
+        generationRequests.push(request.url())
+      }
+    })
+
+    // Create the favorite through the same reconstruction and validation path
+    // the product uses. A hand-built row can look plausible while carrying a
+    // snapshot the app correctly refuses to restore.
+    await visit(`/history/${seeded.completedId}`)
+    await page.getByRole('button', { name: 'Save as favorite', exact: true }).click()
+    await expect(page.getByText('Saved to favorites', { exact: true })).toBeVisible()
+
+    await visit('/')
+    await page.getByRole('tab', { name: 'Favorites', exact: true }).click()
+
+    const favorites = page.getByRole('list', { name: 'Favorites' })
+    await expect(favorites).toHaveClass(/clr-list/)
+    await expect(favorites.getByText(TITLES.completed, { exact: true })).toBeVisible()
+    await favorites.scrollIntoViewIfNeeded()
+    await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-d-favorites.png') })
+
+    await favorites.getByRole('button', { name: 'Start', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/review$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
+    expect(generationRequests, 'Favorite Start called the model-backed endpoint').toEqual([])
     await checkA11y()
   })
 
