@@ -30,6 +30,10 @@
  *      the last completed session's own request through GEN-03, watched on
  *      GEN-05's loading screen. A failure is that screen's pattern-3 handoff —
  *      a typed error and one honest recovery action — never a workout.
+ *      The Goal it sends is the profile's standing one (REQ-010), not that
+ *      session's snapshot: the reused intensity is clamped to it, the label
+ *      names it, and a missing or legacy Goal sends nothing and points at
+ *      Settings. While the profile is loading or failed there is no plan.
  *   4. **The recents link into the chronology.** Each of the three opens
  *      HIST-01's detail for that session.
  *   5. **The suggestion is read off the same rows, and it is refusable.**
@@ -80,6 +84,7 @@ import { useGeneration } from '../state/generation'
 import { GENERATE_PATH } from '../state/generation-form'
 import {
   daysTrained,
+  QUICK_START_SETTINGS_LABEL,
   quickStartPlan,
   recentWorkouts,
   sessionDetailPath,
@@ -112,6 +117,7 @@ import {
   type SessionSuggestion,
 } from '../state/session-suggestion'
 import { useStreakQuery } from '../state/summary-queries'
+import { useProfileQuery } from '../state/user-queries'
 import type { Streak } from '../state/streak'
 import {
   viewEmpty,
@@ -140,6 +146,7 @@ export const HOME_ROUTE = '/'
 export const GENERATE_ROUTE = GENERATE_PATH
 export const REVIEW_ROUTE = '/review'
 export const HISTORY_ROUTE = '/history'
+export const SETTINGS_ROUTE = '/settings'
 
 /** The Recent panel's way into the whole chronology. */
 export const VIEW_HISTORY_LABEL = 'View history'
@@ -159,6 +166,7 @@ export const FAVORITES_EMPTY =
 export function Home() {
   const history = useHistoryQuery()
   const restDays = useRestDaysQuery()
+  const profile = useProfileQuery()
   const generation = useGeneration()
   const navigate = useNavigate()
 
@@ -179,9 +187,19 @@ export function Home() {
     [marks, sessions],
   )
   const recents = useMemo(() => recentWorkouts(sessions ?? []), [sessions])
+  // The standing Goal is the profile's, read now — never the one the last
+  // session was stored with. `undefined` is "not known": while the profile is
+  // loading or failed there is no plan, so nothing generates on a guess.
+  const standingGoal =
+    profile.state.status === 'ready'
+      ? (profile.state.data?.goal_preset ?? null)
+      : undefined
   const plan = useMemo(
-    () => (sessions === null ? null : quickStartPlan(sessions)),
-    [sessions],
+    () =>
+      sessions === null || standingGoal === undefined
+        ? null
+        : quickStartPlan(sessions, standingGoal),
+    [sessions, standingGoal],
   )
   const suggestion = useMemo(
     () => (sessions === null ? null : suggestSession(sessions)),
@@ -204,7 +222,7 @@ export function Home() {
   // — the shared host makes it the screen, and cancelling puts Home back.
   return (
     <GenerationLoadingHost generation={generation} cancelTo={HOME_ROUTE}>
-      <AppHeader actions={<Link to="/settings">Settings</Link>}>
+      <AppHeader actions={<Link to={SETTINGS_ROUTE}>Settings</Link>}>
         <ClearLogo size="md" />
       </AppHeader>
       <Screen title="CLEAR" heading={HOME_HEADING}>
@@ -218,7 +236,9 @@ export function Home() {
                 query={history}
                 suggestion={suggestion}
                 onQuickStart={() => {
-                  if (plan !== null) generation.generate(plan.input)
+                  if (plan !== null && plan.input !== null) {
+                    generation.generate(plan.input)
+                  }
                 }}
               />
             }
@@ -538,6 +558,10 @@ function QuickActions({
   onQuickStart: () => void
 }) {
   const navigate = useNavigate()
+  // Set by activating Quick Start on a Goal it cannot use; the refusal is an
+  // answer to that press, not a standing notice on the card.
+  const [refused, setRefused] = useState(false)
+  const refusal = refused ? (plan?.refusal ?? null) : null
 
   return (
     <Card>
@@ -558,16 +582,36 @@ function QuickActions({
 
         {plan !== null && (
           <>
-            <Button variant="secondary" onClick={onQuickStart}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                if (plan.input === null) setRefused(true)
+                else onQuickStart()
+              }}
+            >
               Quick start
             </Button>
             {/* What repeating actually asks for, stated before it is sent: the
-                same focus, minutes and intensity that session was requested
-                with, at the same place. */}
+                same focus and minutes that session was requested with, at the
+                same place — under the standing Goal, with the intensity that
+                Goal allows. */}
             <p style={{ margin: 0 }}>
               Repeats {plan.title}: {plan.summary}
               {plan.goalLabel === null ? '' : ` · ${plan.goalLabel} goal`}.
             </p>
+            {refusal !== null && (
+              <div role="alert" className="clr-stack clr-stack--tight">
+                <p style={QUICK_START_REFUSAL_STYLE}>
+                  <span aria-hidden="true" style={{ display: 'flex' }}>
+                    <AlertCircle size={16} />
+                  </span>
+                  {refusal}
+                </p>
+                <p style={{ margin: 0 }}>
+                  <Link to={SETTINGS_ROUTE}>{QUICK_START_SETTINGS_LABEL}</Link>
+                </p>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -816,6 +860,9 @@ const FAVORITE_FAILURE_STYLE: CSSProperties = {
   gap: 'var(--spacing-200)',
   color: 'var(--text-negative)',
 }
+
+/** The same glyph-and-sentence refusal, for a Quick Start with no usable Goal. */
+const QUICK_START_REFUSAL_STYLE = FAVORITE_FAILURE_STYLE
 
 /** The two answers side by side, wrapping on a narrow phone. */
 const SUGGESTION_ACTIONS: CSSProperties = {

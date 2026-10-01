@@ -20,12 +20,15 @@
  *     `requested_duration_mins` — rather than the effective values a deload may
  *     have adjusted to (OVR-04). Repeating an adjustment would apply it twice;
  *     the next generation adjusts the fresh request on its own terms.
+ *     The Goal is the exception: it is the profile's standing one, never the
+ *     one snapshotted on that session, and what is reused is held to it.
  *
  * Full streak logic — pauses, rest-day allowances, the week's target — is
  * HOME-02's and is deliberately absent. This strip renders session data.
  */
 import type { GenerationInput } from '../data/generation'
 import type { Enums } from '../data/database.types'
+import { anchorAllowed, clampIntensity } from './generation-form'
 import {
   formatFocus,
   historyEntries,
@@ -34,6 +37,7 @@ import {
 } from './history'
 import type { RestDayReason, WorkoutSessionRow } from './schemas'
 import type { RestDayIndex } from './rest-days'
+import { goalCorrection, goalOptions } from './settings'
 import { localDayIn, previousDay, type LocalDay } from './streak'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -166,16 +170,36 @@ export function sessionDetailPath(sessionId: string): string {
 // Quick Start
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** Why Quick Start sent nothing for a profile with no standing Goal. */
+export const QUICK_START_MISSING_GOAL =
+  'Quick start needs your goal. Set one in Settings first.'
+
+/** The same, for a legacy profile whose standing Goal is `active_recovery`. */
+export const QUICK_START_LEGACY_GOAL =
+  'Active recovery is no longer a standing goal. Choose a goal in Settings first.'
+
+/** The route out of either refusal. */
+export const QUICK_START_SETTINGS_LABEL = 'Set your goal in Settings'
+
 export interface QuickStartPlan {
-  /** The generation request, ready to send. Contract §1's five fields. */
-  readonly input: GenerationInput
+  /**
+   * The generation request, ready to send. Contract §1's five fields — or
+   * `null` when the standing Goal cannot be generated on, and `refusal` says why.
+   */
+  readonly input: GenerationInput | null
+  /**
+   * Why Quick Start will not generate: the standing Goal is missing or the
+   * legacy `active_recovery`, and Settings is where that is corrected. `null`
+   * exactly when `input` is not.
+   */
+  readonly refusal: string | null
   /** The session it was read off, for the copy that says what is repeated. */
   readonly sessionId: string
   readonly title: string
   readonly day: LocalDay
   /** `Full body · 45 min · intensity 6` — what the button promises. */
   readonly summary: string
-  /** The goal that session was composed for and Quick Start repeats. */
+  /** The standing Goal Quick Start will use; `null` while it needs correcting. */
   readonly goal: Enums<'goal_preset'> | null
   readonly goalLabel: string | null
 }
@@ -192,42 +216,70 @@ export interface QuickStartPlan {
  * choosing one on the user's behalf would compose a different workout under
  * the name of repeating theirs. The scan continues to the next completed
  * session, which is still reuse rather than invention.
+ *
+ * `standingGoal` is the profile's `goal_preset`, and it is the only Goal this
+ * reads: the session's own snapshot — which may be an older preference or a
+ * one-workout Recovery — is never sent. The reused intensity is clamped into
+ * the standing Goal's range and a focus that Goal does not offer is refused,
+ * the same two rules Generate applies. A Goal that is missing or legacy still
+ * answers a plan, with no `input`: there is something to repeat, and what
+ * stands in the way is said rather than guessed around.
  */
 export function quickStartPlan(
   rows: readonly WorkoutSessionRow[],
+  standingGoal: Enums<'goal_preset'> | null,
   options: HomeOptions = {},
 ): QuickStartPlan | null {
   const byId = new Map(rows.map((row) => [row.id, row]))
+  // Settings' own judgement of which goals stand; the sentence is Home's,
+  // because Settings' one points at a control that is not on this screen.
+  const goal = goalCorrection(standingGoal) === null ? standingGoal : null
+  const refusal =
+    goal !== null
+      ? null
+      : standingGoal === null
+        ? QUICK_START_MISSING_GOAL
+        : QUICK_START_LEGACY_GOAL
 
   for (const entry of historyEntries(rows, options)) {
     if (!isSessionEntry(entry) || entry.status !== 'completed') continue
 
     const row = byId.get(entry.id)
-    if (row === undefined || row.location_id === null || row.goal_preset === null) continue
+    if (row === undefined || row.location_id === null) continue
+    if (goal !== null && !anchorAllowed(goal, row.session_focus)) continue
+
+    const intensity =
+      goal === null
+        ? row.requested_intensity
+        : clampIntensity(goal, row.requested_intensity)
 
     return {
-      input: {
-        goal: row.goal_preset,
-        focus: row.session_focus,
-        requested_intensity: row.requested_intensity,
-        requested_duration_mins: row.requested_duration_mins,
-        location_id: row.location_id,
-        // Notes were context for that composition, not a standing preference.
-        notes: null,
-        // Quick Start has no deload prompt. OVR-04 forbids applying one without
-        // the user's explicit choice, so repeating a request is an ordinary day.
-        deload: false,
-      },
+      input:
+        goal === null
+          ? null
+          : {
+              goal,
+              focus: row.session_focus,
+              requested_intensity: intensity,
+              requested_duration_mins: row.requested_duration_mins,
+              location_id: row.location_id,
+              // Notes were context for that composition, not a standing preference.
+              notes: null,
+              // Quick Start has no deload prompt. OVR-04 forbids applying one without
+              // the user's explicit choice, so repeating a request is an ordinary day.
+              deload: false,
+            },
+      refusal,
       sessionId: row.id,
       title: row.title,
       day: entry.day,
       summary: [
         formatFocus(row.session_focus),
         `${row.requested_duration_mins} min`,
-        `intensity ${row.requested_intensity}`,
+        `intensity ${intensity}`,
       ].join(' · '),
-      goal: row.goal_preset,
-      goalLabel: row.goal_preset === null ? null : readEnum(row.goal_preset),
+      goal,
+      goalLabel: goal === null ? null : goalLabel(goal),
     }
   }
 
@@ -242,10 +294,9 @@ function isSessionEntry(entry: HistoryEntry): entry is HistorySessionEntry {
   return entry.kind === 'session'
 }
 
-/** `strength_endurance` → `Strength endurance`. The enum, read rather than listed. */
-function readEnum(value: string): string {
-  const words = value.replace(/_/g, ' ')
-  return words.charAt(0).toUpperCase() + words.slice(1)
+/** The standing Goal by the name Settings gives it. */
+function goalLabel(goal: Enums<'goal_preset'>): string {
+  return goalOptions().find((option) => option.value === goal)?.label ?? goal
 }
 
 function todayIn({ now, timeZone }: HomeOptions): LocalDay {
