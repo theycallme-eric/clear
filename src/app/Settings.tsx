@@ -2,9 +2,9 @@
  * Settings — `/settings` (SET-01).
  *
  * IA.md §4: atmosphere `full`, protected, in from Home, out to Home and the
- * sub-views. Composition is `AppLayout › PageHeader + Card rows › SettingsHub`
- * — the shell and its atmosphere are `RootLayout`'s, `PageHeader` is
- * `AppHeader`, and each row is a `Card`.
+ * sub-views. The editors use 0.9.7's direct-form composition. Places and the
+ * session destination share one framed list with inset row rules instead of
+ * becoming one generic card per block.
  *
  * What this screen is for is one resolved decision (IA.md §6): **onboarding is
  * strictly first-run**. Every question the wizard asks is answered again here
@@ -78,10 +78,10 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppearancePicker } from '../ui/appearance-picker'
-import { Card } from '../ui/card'
+import { ActionRow, ListFrame, ListRow, PhoneFooter } from '../ui/composition'
 import { Heading } from '../ui/Heading'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
-import { ViewStateSwitch } from '../ui/view-state'
+import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
 import { ANONYMOUS_HOME } from './guards'
 
@@ -109,29 +109,40 @@ export function Settings() {
       <AppHeader>
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="Settings">
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your settings"
-          errorTitle="Your settings didn’t load"
-          onRetry={query.refetch}
-          empty={
-            <EmptyState
-              title="No preferences to show"
-              message="This account has no profile yet, so there is nothing to change."
-            />
-          }
-        >
-          {(profile) => (
-            <div className="clr-stack">
-              <PreferencesCard profile={profile} />
-              <LimitationsCard />
-              <AppearanceCard />
-              <TrainingPlacesCard />
-              <SignOutCard />
-            </div>
-          )}
-        </ViewStateSwitch>
+      <Screen
+        title="Settings"
+        pinnedFoot={
+          state.status === 'error' ? (
+            <PhoneFooter>
+              <ActionRow>
+                <Button variant="primary" onClick={query.refetch}>
+                  Retry
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          ) : undefined
+        }
+      >
+        {state.status === 'loading' ? (
+          <LoadingView label="Reading your settings" />
+        ) : state.status === 'error' ? (
+          <ErrorView error={state.error} title="Your settings didn’t load" />
+        ) : state.status === 'empty' ? (
+          <EmptyState
+            title="No preferences to show"
+            message="This account has no profile yet, so there is nothing to change."
+          />
+        ) : (
+          <div className="clr-stack">
+            <PreferencesSection profile={state.data} />
+            <LimitationsSection />
+            <AppearanceSection />
+            <ListFrame>
+              <TrainingPlacesRow />
+              <SignOutRow />
+            </ListFrame>
+          </div>
+        )}
       </Screen>
     </>
   )
@@ -149,7 +160,7 @@ export function Settings() {
  * Goal, experience and sections — the three columns of `profiles` a person
  * answered during onboarding, editable one tap at a time.
  */
-function PreferencesCard({ profile }: { profile: Profile }) {
+function PreferencesSection({ profile }: { profile: Profile }) {
   const { user } = useAuth()
   const userData = useUserData()
   const cache = useQueryClient()
@@ -178,11 +189,10 @@ function PreferencesCard({ profile }: { profile: Profile }) {
   }
 
   return (
-    <Card>
-      <div className="clr-stack">
-        <Heading>Training</Heading>
+    <section className="clr-stack" aria-labelledby="settings-training">
+      <Heading id="settings-training">Training</Heading>
 
-        <ChoiceGroup
+      <ChoiceGroup
           legend="Goal"
           options={goalOptions().map((goal) => ({
             value: goal.value,
@@ -195,10 +205,10 @@ function PreferencesCard({ profile }: { profile: Profile }) {
             const goal = single(next) as Enums<'goal_preset'>
             void store(withGoal(preferences, goal))
           }}
-        />
-        {correction !== null && <p>{correction}</p>}
+      />
+      {correction !== null && <p>{correction}</p>}
 
-        <ChoiceGroup
+      <ChoiceGroup
           legend="Experience"
           options={EXPERIENCE_LEVELS.map((level) => ({
             value: level.value,
@@ -210,9 +220,9 @@ function PreferencesCard({ profile }: { profile: Profile }) {
               withExperience(preferences, single(next) as Enums<'experience_level'>),
             )
           }}
-        />
+      />
 
-        <CheckboxGroup legend="Sections">
+      <CheckboxGroup legend="Sections">
           {locked && <p>{LOCKED_SECTIONS_REASON}</p>}
           {SECTIONS.map((section) => (
             <Checkbox
@@ -233,11 +243,10 @@ function PreferencesCard({ profile }: { profile: Profile }) {
             />
           ))}
           {refusal !== null && <p role="alert">{refusal}</p>}
-        </CheckboxGroup>
+      </CheckboxGroup>
 
-        <SaveStatusLine status={status} />
-      </div>
-    </Card>
+      <SaveStatusLine status={status} />
+    </section>
   )
 }
 
@@ -259,7 +268,7 @@ function single(value: string | string[]): string {
  * not cost the user their preferences card, and an empty set is not a failure —
  * it is the ordinary answer, and the editor is still the content.
  */
-function LimitationsCard() {
+function LimitationsSection() {
   const query = useConstraintsQuery()
 
   const state: ViewState<readonly UserConstraint[]> =
@@ -272,22 +281,20 @@ function LimitationsCard() {
           : viewReady(query.state.data)
 
   return (
-    <Card>
-      <div className="clr-stack">
-        <Heading>Limitations</Heading>
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your limitations"
-          errorTitle="Your limitations didn’t load"
-          onRetry={query.refetch}
-          // Nothing recorded is a state of this editor, not a screen instead of
-          // it: the same controls, with nothing ticked and a line saying so.
-          empty={<LimitationsEditor constraints={[]} />}
-        >
-          {(constraints) => <LimitationsEditor constraints={constraints} />}
-        </ViewStateSwitch>
-      </div>
-    </Card>
+    <section className="clr-stack" aria-labelledby="settings-limitations">
+      <Heading id="settings-limitations">Limitations</Heading>
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your limitations"
+        errorTitle="Your limitations didn’t load"
+        onRetry={query.refetch}
+        // Nothing recorded is a state of this editor, not a screen instead of
+        // it: the same controls, with nothing ticked and a line saying so.
+        empty={<LimitationsEditor constraints={[]} />}
+      >
+        {(constraints) => <LimitationsEditor constraints={constraints} />}
+      </ViewStateSwitch>
+    </section>
   )
 }
 
@@ -420,16 +427,14 @@ function LimitationsEditor({
  * picker's derived list; none is named here. The favicon follows `data-skin`
  * through `startFaviconSync`, so choosing here moves it with nothing to call.
  */
-function AppearanceCard() {
+function AppearanceSection() {
   const [appearance, choose] = useAppearance()
 
   return (
-    <Card>
-      <div className="clr-stack">
-        <Heading>Appearance</Heading>
-        <AppearancePicker legend="Skin" value={appearance} onChange={choose} />
-      </div>
-    </Card>
+    <section className="clr-stack" aria-labelledby="settings-appearance">
+      <Heading id="settings-appearance">Appearance</Heading>
+      <AppearancePicker legend="Skin" value={appearance} onChange={choose} />
+    </section>
   )
 }
 
@@ -442,11 +447,11 @@ function AppearanceCard() {
  * this row says where the answer lives and offers no control — a disabled
  * button now would be an affordance that lies.
  */
-function TrainingPlacesCard() {
+function TrainingPlacesRow() {
   const navigate = useNavigate()
 
   return (
-    <Card>
+    <ListRow>
       <div className="clr-stack">
         <Heading>Places and equipment</Heading>
         <p>Manage where you train and the equipment available at each place.</p>
@@ -458,17 +463,17 @@ function TrainingPlacesCard() {
           Manage places
         </Button>
       </div>
-    </Card>
+    </ListRow>
   )
 }
 
-function SignOutCard() {
+function SignOutRow() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)
 
   return (
-    <Card>
+    <ListRow>
       <div className="clr-stack">
         <Heading>Session</Heading>
         <p>Signing out clears this device’s copy of your data.</p>
@@ -491,6 +496,6 @@ function SignOutCard() {
           Sign out
         </Button>
       </div>
-    </Card>
+    </ListRow>
   )
 }

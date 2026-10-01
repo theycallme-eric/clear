@@ -110,10 +110,11 @@ describe('ONB-01 onboarding wizard', () => {
 
     await onStep('location')
     expect(next()).toBeDisabled()
-    const firstCard = screen.getByRole('heading', { name: STEP_TITLES.location }).closest('.clr-card')
+    const firstStep = screen.getByRole('heading', { name: STEP_TITLES.location }).parentElement
     const blocked = screen.getByText('Choose the setup closest to yours.')
-    expect(firstCard).toContainElement(blocked)
-    expect(firstCard).toContainElement(next())
+    expect(firstStep).toContainElement(blocked)
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(next())
+    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
 
     await answerEverything(user)
 
@@ -235,7 +236,7 @@ describe('ONB-01 onboarding wizard', () => {
       data: [],
     })
 
-    await user.click(within(alert).getByRole('button', { name: 'Try again' }))
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
 
     expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
     expect(userData.onboardingCalls).toHaveLength(2)

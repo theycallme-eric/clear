@@ -57,6 +57,7 @@ import {
 import { showErrorToast, toastQueue } from '../state/toasts'
 import { SLOW_THRESHOLD_MS } from '../state/view-state'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { screenAtmosphere } from './atmosphere'
 import { Screen } from './Screen'
 
@@ -152,8 +153,19 @@ export function GenerationLoading({
   }, [failure])
 
   return (
-    <div data-atmosphere={LOADING_ATMOSPHERE}>
-      <Screen title={GENERATION_LOADING_TITLE}>
+    <div data-atmosphere={LOADING_ATMOSPHERE} style={{ display: 'contents' }}>
+      <Screen
+        title={GENERATION_LOADING_TITLE}
+        pinnedFoot={
+          <PhoneFooter>
+            <ActionRow>
+              <Button variant="secondary" onClick={onCancel}>
+                {GENERATION_CANCEL_LABEL}
+              </Button>
+            </ActionRow>
+          </PhoneFooter>
+        }
+      >
         <div
           style={{
             display: 'flex',
@@ -173,11 +185,6 @@ export function GenerationLoading({
             status={view.status}
             lines={[...view.lines]}
           />
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <Button variant="secondary" onClick={onCancel}>
-              {GENERATION_CANCEL_LABEL}
-            </Button>
-          </div>
         </div>
       </Screen>
     </div>

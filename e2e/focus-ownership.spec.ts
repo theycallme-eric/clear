@@ -9,7 +9,7 @@ import { expect, test } from './fixtures'
  *
  * - one root-level bracket layer follows keyboard focus on selectable controls;
  * - text fields light their own border and never summon the bracket layer;
- * - a Card around either kind of control keeps its resting paint;
+ * - any chamfered ancestor around a control keeps its resting paint;
  * - forced colours hand the indicator back to the operating system.
  *
  * The network is stubbed at the browser edge because focus does not depend on
@@ -267,15 +267,6 @@ function expectNormalFocus(stop: Stop) {
   }
 }
 
-function expectCardCoverage(stops: readonly Stop[]) {
-  expect(
-    stops.some((stop) =>
-      stop.ancestors.some((ancestor) => ancestor.name.includes('clr-card__body')),
-    ),
-    'no Tab stop was inside a Card',
-  ).toBe(true)
-}
-
 async function openCodeStep(page: Page, visit: (path: string) => Promise<void>, edge: Edge) {
   await visit('/login')
   await page.getByLabel('Email').fill('clear-e2e-focus@example.com')
@@ -311,7 +302,8 @@ for (const skin of SKINS) {
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       expect(stops.some((stop) => stop.kind === 'brackets')).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      expectCardCoverage(stops)
+      await expect(page.locator('main .clr-card')).toHaveCount(0)
+      await expect(page.locator('main .clr-footer')).toHaveCount(1)
     })
 
     test('the one-time code step follows the 0.9.7 focus contract', async ({ page, visit }) => {
@@ -322,7 +314,8 @@ for (const skin of SKINS) {
 
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      expectCardCoverage(stops)
+      await expect(page.locator('main .clr-card')).toHaveCount(0)
+      await expect(page.locator('main .clr-footer')).toHaveCount(1)
     })
 
     test('Settings follows the 0.9.7 focus contract', async ({ page, visit }) => {
@@ -334,7 +327,8 @@ for (const skin of SKINS) {
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       expect(stops.some((stop) => stop.kind === 'brackets')).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      expectCardCoverage(stops)
+      await expect(page.locator('main .clr-card')).toHaveCount(0)
+      await expect(page.locator('main .clr-list')).toHaveCount(1)
     })
   })
 }

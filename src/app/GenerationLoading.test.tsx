@@ -358,6 +358,9 @@ describe('GEN-05 · the brand moment, and the route underneath it', () => {
 
     expect(document.documentElement.dataset.atmosphere).toBe('full')
     expect(document.querySelector('[data-atmosphere="full"]')).toBeInTheDocument()
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(
+      screen.getByRole('button', { name: 'Cancel' }),
+    )
 
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 

@@ -56,6 +56,10 @@ describe('OTP login — requesting a code', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
     expect(emailField()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
+    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(
+      screen.getByRole('button', { name: 'Send code' }),
+    )
   })
 
   it('renders an explicit account-creation intent over the same passwordless flow', () => {

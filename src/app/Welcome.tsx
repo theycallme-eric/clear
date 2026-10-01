@@ -19,6 +19,7 @@ import type { CSSProperties } from 'react'
 
 import { Button, ClearLogo } from '../design-system/index'
 import { Card } from '../ui/card'
+import { ActionRow } from '../ui/composition'
 import { Screen } from './Screen'
 
 export const LOGIN_ROUTE = '/login'
@@ -39,7 +40,7 @@ export function Welcome() {
       <div className="clr-stack clr-boot">
         <p className="label">Strength training, simplified.</p>
         <Card barWidth="lg">
-          <div className="clr-stack">
+          <ActionRow>
             <Button
               variant="primary"
               size="lg"
@@ -58,7 +59,7 @@ export function Welcome() {
             >
               Create account
             </Button>
-          </div>
+          </ActionRow>
         </Card>
       </div>
     </Screen>

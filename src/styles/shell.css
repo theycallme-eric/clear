@@ -56,6 +56,35 @@ body,
   outline-offset: calc(var(--focus-ring-width) * -1);
 }
 
+/* ScrollRegion already owns the measured foot, its hard edge, and its side
+   inset. Keep the public footer vocabulary without drawing that structure a
+   second time inside the slot. */
+.clr-scroll-region__foot > .clr-footer {
+  position: static;
+  margin: 0;
+  padding: var(--spacing-300) 0;
+  border-top: 0;
+}
+
+/* Button's public component includes a bleed wrapper. That wrapper, rather
+   than the nested button, is the direct action-grid item. These adapters make
+   it carry the system's full-width and primary-right rules without changing
+   the imported 0.9.7 package. */
+.clr-actions > .clr-bleed {
+  display: flex;
+}
+
+.clr-actions > .clr-bleed > .clr-btn {
+  width: 100%;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 560px) {
+  .clr-actions > .clr-bleed:has(> .clr-btn--primary) {
+    order: 2;
+  }
+}
+
 @media (min-width: 1440px) {
   .clr-screen__content {
     padding-right: var(--spacing-400);
