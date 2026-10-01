@@ -11,11 +11,14 @@ import { onboardedProfile } from '../test/user-data-double'
 import { GOALS, SECTIONS_BY_GOAL } from './onboarding'
 import type { ProfilePreferences } from './schemas'
 import {
+  goalCorrection,
   goalOptions,
   LAST_SECTION_REASON,
+  LEGACY_GOAL_REASON,
   limitationFor,
   limitationsFrom,
   LOCKED_SECTIONS_REASON,
+  MISSING_GOAL_REASON,
   noteValue,
   patternLimitations,
   preferencesOf,
@@ -78,16 +81,26 @@ describe('the preferences a profile hands the hub', () => {
 
 describe('the goal picker', () => {
   it('offers every goal onboarding asks for, and invents none', () => {
-    expect(goalOptions('balanced')).toEqual(GOALS)
+    expect(goalOptions()).toEqual(GOALS)
   })
 
-  it('shows a stored goal the four presets do not include', () => {
-    const options = goalOptions('active_recovery')
-
-    expect(options).toHaveLength(GOALS.length + 1)
-    expect(options.at(-1)?.value).toBe('active_recovery')
-    // Every goal the enum has is therefore reachable as a current answer.
+  it('never offers active recovery as a standing goal', () => {
+    expect(goalOptions().map((goal) => goal.value)).toEqual([
+      'strength',
+      'hypertrophy',
+      'conditioning',
+      'balanced',
+    ])
+    // The enum still has it — it is the one-workout action's, not this picker's.
     expect(Constants.public.Enums.goal_preset).toContain('active_recovery')
+  })
+
+  it('asks for a missing or legacy goal to be chosen again, and no other', () => {
+    expect(goalCorrection(null)).toBe(MISSING_GOAL_REASON)
+    expect(goalCorrection('active_recovery')).toBe(LEGACY_GOAL_REASON)
+    for (const goal of GOALS) {
+      expect(goalCorrection(goal.value)).toBeNull()
+    }
   })
 
   it('presets the sections a goal runs', () => {
