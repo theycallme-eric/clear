@@ -76,6 +76,7 @@ import {
 } from '../state/workout-queries'
 import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
+import { PhoneFooter } from '../ui/composition'
 import { SetSyncNotice } from '../ui/set-sync-notice'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
@@ -420,7 +421,24 @@ function WorkoutShell({
               <ClearLogo size="sm" />
             </AppHeader>
 
-            <Screen title={SCREEN_TITLE}>
+            <Screen
+              title={SCREEN_TITLE}
+              pinnedFoot={
+                <PhoneFooter>
+                  <div className="clr-stack clr-stack--tight">
+                    <RestTimerBar />
+                    <WorkoutNavigation
+                      canGoBack={canGoBack}
+                      canGoForward={canGoForward}
+                      onPrevious={() => section.setIndex(index - 1)}
+                      onNext={() => section.setIndex(index + 1)}
+                      onFinish={() => void finish()}
+                      busy={ending}
+                    />
+                  </div>
+                </PhoneFooter>
+              }
+            >
               <div className="clr-stack">
                 {/*
                   EXE-07's one statement about unsynced work. It is here rather
@@ -449,17 +467,6 @@ function WorkoutShell({
                   </>
                 )}
 
-                {/* Between the work and the way on, where IA.md §4 composes it. */}
-                <RestTimerBar />
-
-                <WorkoutNavigation
-                  canGoBack={canGoBack}
-                  canGoForward={canGoForward}
-                  onPrevious={() => section.setIndex(index - 1)}
-                  onNext={() => section.setIndex(index + 1)}
-                  onFinish={() => void finish()}
-                  busy={ending}
-                />
               </div>
             </Screen>
 

@@ -54,6 +54,7 @@ import type {
   StructureIdentity,
 } from '../state/workout-progress'
 import { ConfirmDialog } from './blocking-dialog'
+import { ActionRow } from './composition'
 import { Heading } from './Heading'
 import './rest-timer-bar.css'
 
@@ -411,6 +412,15 @@ export function RestTimerBar() {
         </p>
         <TimerDisplay seconds={remainingSeconds} lowThreshold={REST_URGENT_SECONDS} />
       </div>
+      {urgent && (
+        <p
+          role="status"
+          aria-live="polite"
+          style={{ ...labelStyle, color: 'var(--text-timer-low)' }}
+        >
+          Final 10 seconds
+        </p>
+      )}
       <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
 
       <div className="clr-rest-bar__track" aria-hidden="true">
@@ -462,10 +472,9 @@ export function WorkoutNavigation({
   busy = false,
 }: WorkoutNavigationProps) {
   return (
-    <nav
+    <ActionRow
+      as="nav"
       aria-label="Workout sections"
-      className="clr-row"
-      style={{ justifyContent: 'space-between' }}
     >
       <Button
         variant="secondary"
@@ -485,6 +494,6 @@ export function WorkoutNavigation({
           Finish workout
         </Button>
       )}
-    </nav>
+    </ActionRow>
   )
 }

@@ -66,8 +66,9 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { Card } from '../ui/card'
+import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
-import { ViewStateSwitch } from '../ui/view-state'
+import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { FavoriteToggle } from './FavoriteToggle'
 import { AUTHENTICATED_HOME } from './guards'
 import { Screen } from './Screen'
@@ -89,6 +90,9 @@ export const NOTES_MAX_LENGTH = 2000
 /** How many days the week display shows, ending today. */
 export const STREAK_WEEK_DAYS = 7
 
+/** Lets the hard-edge footer submit the form that remains in the scroller. */
+export const SUMMARY_FORM_ID = 'summary-debrief'
+
 /**
  * The 1–5 scale, worst to best. The four middle words are the export's own
  * (`DebriefScreen`, `MOODS`); `Spent` is the fifth the 1–5 range needs and the
@@ -105,39 +109,32 @@ const MOODS = [
 export function Summary() {
   const query = useCompletedSessionQuery()
 
-  // QueryState has three states; the fourth is this view's own judgement, and
-  // here "none" is not a screen — a visitor with nothing to debrief did not
-  // come from a workout, so they are sent where they were going anyway.
-  const state: ViewState<CompletedSession> =
-    query.state.status === 'loading'
-      ? viewLoading()
-      : query.state.status === 'error'
-        ? viewError(query.state.error)
-        : query.state.data === null
-          ? viewEmpty()
-          : viewReady(query.state.data)
-
   return (
     <>
       <AppHeader>
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title="Summary" heading="Nice work">
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your session"
-          errorTitle="That session didn’t load"
-          onRetry={query.refetch}
-          empty={<Navigate to={AUTHENTICATED_HOME} replace />}
-        >
-          {(completed) => (
-            // Keyed by the session: the form's initial mood and notes are the
-            // stored ones, so a debrief opened twice shows what was saved
-            // rather than an empty form over a written row.
-            <Debrief key={completed.session.id} completed={completed} />
-          )}
-        </ViewStateSwitch>
-      </Screen>
+      {query.state.status === 'loading' ? (
+        <Screen title="Summary" heading="Nice work">
+          <LoadingView label="Reading your session" />
+        </Screen>
+      ) : query.state.status === 'error' ? (
+        <Screen title="Summary" heading="Nice work">
+          <ErrorView
+            error={query.state.error}
+            title="That session didn’t load"
+            actionLabel="Retry"
+            onRetry={query.refetch}
+          />
+        </Screen>
+      ) : query.state.data === null ? (
+        <Navigate to={AUTHENTICATED_HOME} replace />
+      ) : (
+        // Keyed by the session: the form's initial mood and notes are the
+        // stored ones, so a debrief opened twice shows what was saved rather
+        // than an empty form over a written row.
+        <Debrief key={query.state.data.session.id} completed={query.state.data} />
+      )}
     </>
   )
 }
@@ -198,23 +195,50 @@ function Debrief({ completed }: { completed: CompletedSession }) {
   }
 
   return (
-    <div className="clr-stack">
-      {/* The acknowledgment, and then straight to the debrief. */}
-      <p>{session.title}, done.</p>
+    <Screen
+      title="Summary"
+      heading="Nice work"
+      pinnedFoot={
+        <PhoneFooter>
+          <ActionRow>
+            <Button
+              type="submit"
+              form={SUMMARY_FORM_ID}
+              variant="primary"
+              size="lg"
+              loading={saving}
+              icon={<Check size={20} />}
+            >
+              Save and close
+            </Button>
+          </ActionRow>
+        </PhoneFooter>
+      }
+    >
+      <div className="clr-stack">
+        {/* The acknowledgment, and then straight to the debrief. */}
+        <p>{session.title}, done.</p>
 
-      <Card className="clr-boot">
-        <div className="clr-stack">
-          {durationMins !== null && (
-            <Stat label="Duration" value={`${durationMins} min`} />
-          )}
-          <StreakPanel />
-          {/* FAV-01: beside the facts about the session, which is where
-              favorites-v2 §"Summary Screen" puts it. */}
-          <FavoriteToggle sessionId={session.id} />
+        <div className="clr-stack clr-boot">
+          <MetricGrid>
+            {durationMins !== null && (
+              <Stat label="Duration" value={`${durationMins} min`} />
+            )}
+            <StreakPanel />
+          </MetricGrid>
+          {/* FAV-01 remains distinct from the result readouts: it is an action,
+              not a statistic, and it keeps its one-tap behavior. */}
+          <Card barWidth="md">
+            <FavoriteToggle sessionId={session.id} />
+          </Card>
         </div>
-      </Card>
 
-      <form className="clr-stack" onSubmit={onSubmit(save)} noValidate>
+        <form
+          id={SUMMARY_FORM_ID}
+          className="clr-stack"
+          onSubmit={onSubmit(save)}
+          noValidate
+        >
         {error !== null && (
           <div role="alert" className="clr-row">
             <span
@@ -259,32 +283,19 @@ function Debrief({ completed }: { completed: CompletedSession }) {
           }
         />
 
-        {/*
-          One CTA, and it is the whole of "done". FAV-01 adds save-as-favorite
-          in M2 — the button and the behaviour in the same change, which is why
-          there is no disabled one here to explain.
-        */}
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          loading={saving}
-          icon={<Check size={20} />}
-        >
-          Save and close
-        </Button>
-      </form>
-    </div>
+        </form>
+      </div>
+    </Screen>
   )
 }
 
 /** One figure with its stencilled label — the export's `Stat`, in app markup. */
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="clr-stack clr-stack--tight">
+    <MetricFrame>
       <span className="label">{label}</span>
       <p>{value}</p>
-    </div>
+    </MetricFrame>
   )
 }
 
@@ -310,20 +321,22 @@ function StreakPanel() {
           : viewReady(query.state.data)
 
   return (
-    <ViewStateSwitch
-      state={state}
-      loadingLabel="Reading your streak"
-      errorTitle="Your streak didn’t load"
-      onRetry={query.refetch}
-      empty={
-        <div className="clr-stack clr-stack--tight">
-          <span className="label">Streak</span>
-          <p>No streak yet. Sessions on consecutive days build one.</p>
-        </div>
-      }
-    >
-      {(streak) => <WeekStreak streak={streak} />}
-    </ViewStateSwitch>
+    <MetricFrame>
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your streak"
+        errorTitle="Your streak didn’t load"
+        onRetry={query.refetch}
+        empty={
+          <div className="clr-stack clr-stack--tight">
+            <span className="label">Streak</span>
+            <p>No streak yet. Sessions on consecutive days build one.</p>
+          </div>
+        }
+      >
+        {(streak) => <WeekStreak streak={streak} />}
+      </ViewStateSwitch>
+    </MetricFrame>
   )
 }
 

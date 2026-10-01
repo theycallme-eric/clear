@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { Page } from '@playwright/test'
 
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
 
@@ -42,6 +43,26 @@ const VIEW_HISTORY = 'View history'
 const HISTORY_LIST = 'Workout history'
 const HISTORY_FILTER = 'Show'
 const NOT_FOUND_TITLE = 'Workout not found'
+
+async function expectPinnedAction(page: Page, name: string) {
+  const action = page.getByRole('button', { name, exact: true })
+  const foot = action.locator('xpath=ancestor::*[contains(@class,"clr-scroll-region__foot")]')
+  await expect(foot, `${name} stays in the measured footer`).toBeVisible()
+  const box = await foot.boundingBox()
+  const viewport = page.viewportSize()
+  expect(box, `${name}'s footer has no box`).not.toBeNull()
+  expect(viewport, 'the project has no fixed viewport').not.toBeNull()
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual((viewport?.height ?? 0) + 1)
+}
+
+async function reachByKeyboard(page: Page, name: string) {
+  const action = page.getByRole('button', { name, exact: true })
+  for (let step = 0; step < 60; step += 1) {
+    if (await action.evaluate((node) => node === document.activeElement)) return
+    await page.keyboard.press('Tab')
+  }
+  expect(await action.evaluate((node) => node === document.activeElement), `${name} is keyboard reachable`).toBe(true)
+}
 
 test.describe('history-detail — the inventory names this walk', () => {
   test('Home, History, Review, Session Detail — each a required screen', () => {
@@ -438,6 +459,48 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     expect(generationRequests, 'Restart called the model-backed generation endpoint').toEqual([])
     await checkA11y()
+  })
+
+  test('Review → Workout → Summary → Home keeps every primary action visible', async ({
+    page,
+    visit,
+    checkA11y,
+  }, testInfo) => {
+    // VIBE-C's deterministic visual walk starts from the same real, persisted
+    // prescription as History's restart coverage. It deliberately makes no
+    // paid model call: core-loop.spec.ts owns the generation boundary, while
+    // this walk keeps the three post-generation screens reviewable even when
+    // the external model service is unavailable.
+    await visit(`/history/${seeded.completedId}`)
+    await page.getByRole('button', { name: 'Restart', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/review$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expectPinnedAction(page, 'Start workout')
+    await reachByKeyboard(page, 'Start workout')
+    await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-review.png') })
+    await page.getByRole('button', { name: 'Start workout', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/workout$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName('Workout')
+    await expectPinnedAction(page, 'Finish workout')
+    await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-workout.png') })
+    await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/summary$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName('Nice work')
+    await expect(page.getByText(`${TITLES.completed}, done.`)).toBeVisible()
+    await page.getByRole('radio', { name: /Ready/ }).click()
+    await expectPinnedAction(page, 'Save and close')
+    await reachByKeyboard(page, 'Save and close')
+    await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-summary.png') })
+    await page.getByRole('button', { name: 'Save and close', exact: true }).click()
+
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.locator('main h1')).toHaveAccessibleName('Today')
   })
 
   test("another user's session id renders the error state, not their workout", async ({

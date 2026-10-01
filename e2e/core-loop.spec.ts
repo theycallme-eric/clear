@@ -56,14 +56,36 @@ interface GeneratedWorkout {
   }
 }
 
+async function expectPinnedAction(page: Page, name: string) {
+  const action = page.getByRole('button', { name, exact: true })
+  const foot = action.locator('xpath=ancestor::*[contains(@class,"clr-scroll-region__foot")]')
+  await expect(foot, `${name} stays in the measured footer`).toBeVisible()
+  const box = await foot.boundingBox()
+  const viewport = page.viewportSize()
+  expect(box, `${name}'s footer has no box`).not.toBeNull()
+  expect(viewport, 'the project has no fixed viewport').not.toBeNull()
+  expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual((viewport?.height ?? 0) + 1)
+}
+
+async function reachByKeyboard(page: Page, name: string) {
+  const action = page.getByRole('button', { name, exact: true })
+  for (let step = 0; step < 60; step += 1) {
+    if (await action.evaluate((node) => node === document.activeElement)) return
+    await page.keyboard.press('Tab')
+  }
+  expect(await action.evaluate((node) => node === document.activeElement), `${name} is keyboard reachable`).toBe(true)
+}
+
 test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
   test.skip(!backend.available, backend.reason)
   test.describe.configure({ mode: 'serial', retries: 0 })
 
-  const email = `clear-e2e-${namespaceId()}-core-loop@example.com`
+  let email = ''
   let client: ReturnType<typeof backend.client>
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browserName }, testInfo) => {
+    void browserName
+    email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-core-loop@example.com`
     client = backend.client()
     // A cancelled prior run may have left this exact address behind. Only it
     // is deleted; auth deletion cascades to everything the user owned.
@@ -83,7 +105,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     page,
     visit,
     checkA11y,
-  }) => {
+  }, testInfo) => {
     // One paid model call plus a dozen screens; the bound is explicit.
     test.setTimeout(300_000)
 
@@ -175,9 +197,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Generate ───────────────────────────────────────────────────────────
     await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
 
-    const goal = page.getByRole('group', { name: 'Goal', exact: true })
-    await goal.getByRole('button', { name: 'Strength', exact: true }).click()
+    // Onboarding persisted Strength as the standing Goal. Generate deliberately
+    // shows that Goal as context instead of asking for it again; a first-time
+    // athlete only supplies the unresolved Focus (labelled Anchor in the UI).
+    await expect(page.getByText(/^Goal: Strength/)).toBeVisible({ timeout: 30_000 })
     const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
+    await expect(anchor).toBeVisible({ timeout: 30_000 })
     await anchor.getByRole('button', { name: 'Full body', exact: true }).click()
 
     // Every generation request the page makes is counted: one press, one call.
@@ -227,16 +252,27 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     for (const section of workout.sections) {
       await expect(page.getByText(section.section_title, { exact: true }).first()).toBeVisible()
     }
+    await expectPinnedAction(page, 'Start workout')
+    await reachByKeyboard(page, 'Start workout')
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-review.png') })
     await page.getByRole('button', { name: 'Start workout', exact: true }).click()
 
     // ── Workout ────────────────────────────────────────────────────────────
     await expectScreen('Workout', routeOf('Workout'), 'Workout')
+    await expectPinnedAction(
+      page,
+      workout.sections.length > 1 ? 'Next section' : 'Finish workout',
+    )
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-workout.png') })
     await walkToFinish(page, workout.sections.length)
 
     // ── Summary ────────────────────────────────────────────────────────────
     await expectScreen('Summary', routeOf('Summary'), 'Nice work')
     await expect(page.getByText(`${workout.title}, done.`)).toBeVisible()
     await page.getByRole('radio', { name: /Ready/ }).click()
+    await expectPinnedAction(page, 'Save and close')
+    await reachByKeyboard(page, 'Save and close')
+    await page.screenshot({ path: testInfo.outputPath('vibe-c-summary.png') })
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()
 
     // ── Home, with the session in recents ──────────────────────────────────

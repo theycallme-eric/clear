@@ -65,6 +65,16 @@ export function TabBand(props: CompositionProps) {
   return composition('div', 'clr-band', props)
 }
 
+/** Responsive grid for terse facts and completed-result readouts. */
+export function MetricGrid(props: CompositionProps) {
+  return composition('div', 'clr-metric-grid', props)
+}
+
+/** One small closed frame within a MetricGrid. */
+export function MetricFrame(props: CompositionProps) {
+  return composition('div', 'clr-metric-frame clr-chamfer clr-chamfer--sm', props)
+}
+
 /** Pinned screen action area with the system's full-width top rule. */
 export function PhoneFooter(props: CompositionProps) {
   return composition('footer', 'clr-footer', props)
