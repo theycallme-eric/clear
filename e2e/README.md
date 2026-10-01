@@ -4,7 +4,7 @@ Playwright, mobile-first, against a running app — the dev server locally, the
 pull request's Vercel preview deployment in CI.
 
 ```sh
-npm run e2e            # both projects; starts the dev server if no target is set
+npm run e2e            # phone, tablet and desktop; starts the dev server if no target is set
 npm run e2e -- --project=mobile
 npm run e2e:report     # open the HTML report from the last run
 ```
@@ -13,11 +13,11 @@ npm run e2e:report     # open the HTML report from the last run
 
 `mobile` is the **first** project in `playwright.config.ts`, so `npm run e2e`
 with no arguments runs a 390×844 viewport with touch and a coarse pointer.
-`desktop` is additional coverage, listed second. ~80% of CLEAR is used on a
+`tablet` and `desktop` are additional coverage, listed after it. ~80% of CLEAR is used on a
 handset in a gym; a suite whose baseline is a 1280px window proves the minority
 case and calls it done.
 
-`e2e/viewport.spec.ts` asserts both, in a browser, so the claim cannot quietly
+`e2e/viewport.spec.ts` asserts all three, in a browser, so the claim cannot quietly
 stop being true.
 
 ## Where it runs

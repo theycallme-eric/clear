@@ -12,12 +12,31 @@
  * Focus is never managed here: arrival does not steal it, and dismissal is a
  * plain labelled button inside the Toast, reachable by keyboard in place.
  */
-import { useEffect, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
 
 import { Toast } from '../design-system/index'
 import { toastQueue, type ToastQueue } from '../state/toasts'
 
 const PHOSPHOR_OUT = 'clr-phosphor-out'
+const DEFAULT_BOTTOM = 'var(--spacing-500)'
+
+/**
+ * A toast must not cover the screen's pinned action. ScrollRegion measures the
+ * footer for its own scroller, but the root toast host is its sibling and does
+ * not inherit that measurement. Read the rendered edge instead of guessing a
+ * button height, so one rule works for wrapped actions and every viewport.
+ */
+function pinnedFooterBottom(): string {
+  const footer = document.querySelector<HTMLElement>('main .clr-scroll-region__foot')
+  if (footer === null) return DEFAULT_BOTTOM
+
+  const viewport = window.visualViewport
+  const viewportBottom = viewport
+    ? viewport.offsetTop + viewport.height
+    : window.innerHeight
+  const inset = Math.max(0, viewportBottom - footer.getBoundingClientRect().top)
+  return `calc(${Math.ceil(inset)}px + var(--spacing-300))`
+}
 
 /** True when the element's computed style actually runs the named animation. */
 function runsAnimation(element: Element, name: string): boolean {
@@ -36,6 +55,28 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
   const { current, phase } = state
   const leaving = phase === 'leaving'
   const leavingId = leaving && current ? current.id : null
+  const [bottom, setBottom] = useState(DEFAULT_BOTTOM)
+
+  useLayoutEffect(() => {
+    if (current === null) return
+
+    const update = () => setBottom(pinnedFooterBottom())
+    update()
+
+    const footer = document.querySelector<HTMLElement>('main .clr-scroll-region__foot')
+    const observer = footer !== null && typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(update)
+      : null
+    if (footer !== null) observer?.observe(footer)
+    window.addEventListener('resize', update)
+    window.visualViewport?.addEventListener('resize', update)
+
+    return () => {
+      observer?.disconnect()
+      window.removeEventListener('resize', update)
+      window.visualViewport?.removeEventListener('resize', update)
+    }
+  }, [current])
 
   // Settle on the phosphor decay's own end. A native listener, not the React
   // prop: the animation runs on this DOM element, and the native event is
@@ -61,14 +102,15 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
 
   return (
     <div
+      data-clear-toast-host
       style={{
         position: 'fixed',
-        bottom: 'var(--spacing-500)',
+        bottom,
         left: '50%',
         transform: 'translateX(-50%)',
         width: 'calc(100% - var(--spacing-400) * 2)',
         maxWidth: 440,
-        zIndex: 2,
+        zIndex: 3,
       }}
     >
       {/* The Toast bakes .clr-phosphor-in into its own class list, so the exit

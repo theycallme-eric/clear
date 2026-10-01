@@ -77,7 +77,7 @@ async function stubSupabase(page: Page, onboarded: boolean) {
 test('onboarding uses direct questions, a pinned footer, and one framed confirmation list', async ({
   page,
   visit,
-}) => {
+}, testInfo) => {
   await seedSession(page)
   await stubSupabase(page, false)
   await visit('/onboarding')
@@ -94,6 +94,7 @@ test('onboarding uses direct questions, a pinned footer, and one framed confirma
   await expect(page.locator('main .clr-card')).toHaveCount(0)
   await expect(page.getByText('Choose the setup closest to yours.')).toBeVisible()
   await expect(footer().getByRole('button', { name: 'Next' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-onboarding-question.png') })
 
   await page.getByRole('radio', { name: 'Home gym' }).click()
   const equipment = page.getByRole('group', { name: 'Equipment' })
@@ -119,12 +120,13 @@ test('onboarding uses direct questions, a pinned footer, and one framed confirma
   await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
   await expect(page.locator('main .clr-list')).toHaveCount(1)
   await expect(footer().getByRole('button', { name: 'Finish setup' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-onboarding-confirmation.png') })
 })
 
 test('Generate and Settings follow the direct-form and measured-footer rulings', async ({
   page,
   visit,
-}) => {
+}, testInfo) => {
   await seedSession(page)
   await stubSupabase(page, true)
   await visit('/generate')
@@ -145,6 +147,7 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   })
   expect(separated).toBe(true)
   await expect(scroller).toHaveCSS('overflow-y', 'auto')
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-generate.png') })
 
   await visit('/settings')
   await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
@@ -152,12 +155,68 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   await expect(page.locator('main .clr-list')).toHaveCount(1)
   await expect(page.getByRole('heading', { name: 'Training' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Places and equipment' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-settings.png') })
+})
+
+test('generation loading and failure remain honest at every supported width', async ({
+  page,
+  visit,
+}, testInfo) => {
+  await seedSession(page)
+  await stubSupabase(page, true)
+
+  let answerGeneration!: () => void
+  const heldGeneration = new Promise<void>((resolve) => {
+    answerGeneration = resolve
+  })
+
+  await page.route('**/functions/v1/generate-workout', async (route) => {
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: CORS })
+      return
+    }
+
+    await heldGeneration
+    const requestId = route.request().headers()['x-request-id'] ?? 'req_vibe_d'
+    await route.fulfill({
+      status: 502,
+      headers: CORS,
+      json: {
+        code: 'GENERATION_MODEL_ERROR',
+        message: 'Generation service error. Try again.',
+        requestId,
+        failure: 'generation.upstream',
+      },
+    })
+  })
+
+  await visit('/generate')
+  const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
+  await anchor.getByRole('button', { name: 'Upper body', exact: true }).click()
+  await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
+
+  await expect(page.locator('main h1')).toHaveAccessibleName('Generating session')
+  await expect(page).toHaveURL((url) => url.pathname === '/generate')
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-loading.png') })
+
+  answerGeneration()
+  await expect(
+    page.locator('main').getByRole('status').filter({ hasText: 'Generation failed' }),
+  ).toBeVisible()
+  await expect(page.getByRole('alert')).toContainText(
+    'The generation service did not answer. Try again in a moment.',
+  )
+  await expect(page.getByRole('button', { name: 'Retry', exact: true })).toBeVisible()
+  await page.screenshot({
+    path: testInfo.outputPath('vibe-d-generation-error.png'),
+    animations: 'disabled',
+  })
 })
 
 test('Home renders one ordered card hierarchy with no empty active-session surface', async ({
   page,
   visit,
-}) => {
+}, testInfo) => {
   await seedSession(page)
   await stubSupabase(page, true)
   await visit('/')
@@ -171,4 +230,5 @@ test('Home renders one ordered card hierarchy with no empty active-session surfa
     cards.map((card) => card.querySelector('h2')?.textContent?.trim() ?? null),
   )
   expect(cardHeadings.slice(0, 2)).toEqual(['Train today', 'This week'])
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-home.png') })
 })

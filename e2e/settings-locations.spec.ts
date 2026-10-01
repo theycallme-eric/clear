@@ -28,7 +28,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
   test.skip(!backend.available, backend.reason)
   test.describe.configure({ mode: 'serial' })
 
-  const email = `clear-e2e-${namespaceId()}-locations@example.com`
+  let email = ''
   const originalName = `Home base ${namespaceId()}`
   const createdName = `Travel gym ${namespaceId()}`
   const renamedName = `Hotel gym ${namespaceId()}`
@@ -41,7 +41,9 @@ test.describe('settings locations — live CRUD and generation default', () => {
     refreshToken: string
   } | null = null
 
-  test.beforeAll(async () => {
+  test.beforeAll(async ({ browserName }, testInfo) => {
+    void browserName
+    email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-locations@example.com`
     client = backend.client()
     const prior = await client.findUserByEmail(email)
     if (prior) await client.deleteUser(prior.id)
@@ -102,7 +104,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
     page,
     visit,
     checkA11y,
-  }) => {
+  }, testInfo) => {
     test.setTimeout(120_000)
 
     await visit('/')
@@ -174,6 +176,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await expect(reloaded.getByText(/Default for generation/)).toBeVisible()
     await expect(page.getByRole('heading', { name: originalName, exact: true })).toHaveCount(0)
     await checkA11y()
+    await page.screenshot({ path: testInfo.outputPath('vibe-d-location-settings.png') })
 
     const locations = await client.selectAsService('locations', {
       select: 'id,name,tier,is_default',

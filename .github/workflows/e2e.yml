@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   preview-e2e:
-    name: Preview E2E (mobile + desktop)
+    name: Preview E2E (phone + tablet + desktop)
     # Only a successful preview. This job runs pull-request code, so it must
     # never receive the service-role key or mutate the shared test namespace.
     if: >-
@@ -48,7 +48,7 @@ jobs:
 
       - run: npm ci
 
-      # Browsers only, and only the ones the two projects use.
+      # Chromium only; the phone, tablet and desktop projects all use it.
       - run: npx playwright install --with-deps chromium
 
       - name: Run the suite against the preview deployment
@@ -58,6 +58,14 @@ jobs:
           # it is not a Vercel account token and grants no Supabase access.
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: npm run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vibe-audit-${{ github.event.deployment.sha }}
+          path: test-results/**/vibe-*.png
+          if-no-files-found: ignore
+          retention-days: 14
 
       # The requirement's second artefact requirement: a failure leaves a trace
       # and a screenshot, downloadable from the run, not a stack in a log.
@@ -180,6 +188,14 @@ jobs:
 
       - name: Walk History list to session detail on the deployed head
         run: npx playwright test e2e/history-detail.spec.ts --project=mobile
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployed-vibe-audit-${{ github.event.deployment.sha }}
+          path: test-results/**/vibe-*.png
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Walk location management against the deployed head
         run: npx playwright test e2e/settings-locations.spec.ts --project=mobile

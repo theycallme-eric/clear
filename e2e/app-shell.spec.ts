@@ -51,13 +51,14 @@ test('the skip link is the first thing a keyboard reaches', async ({
   await expect(focused).toHaveAttribute('href', '#main')
 })
 
-test('welcome keeps its semantic entry card and auth uses a direct form', async ({ page, visit }) => {
+test('welcome keeps its semantic entry card and auth uses a direct form', async ({ page, visit }, testInfo) => {
   await visit('/welcome')
 
   const card = page.locator('.clr-card')
   await expect(card).toHaveCount(1)
   await expect(card.getByRole('button', { name: 'Sign in' })).toBeVisible()
   await expect(card.getByRole('button', { name: 'Create account' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-welcome.png') })
 
   await card.getByRole('button', { name: 'Create account' }).click()
   await expect(page).toHaveURL(/\/login\?mode=create$/)
@@ -67,6 +68,7 @@ test('welcome keeps its semantic entry card and auth uses a direct form', async 
   await expect(page.locator('main .clr-card')).toHaveCount(0)
   await expect(page.locator('main .clr-footer')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-create-account.png') })
 })
 
 test('the full atmosphere keeps every colored layer in the viewport', async ({

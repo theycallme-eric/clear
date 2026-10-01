@@ -12,7 +12,7 @@
  */
 import type { CSSProperties, ReactNode } from 'react'
 
-import { AlertTriangle, EmptyState, ScanLoader } from '../design-system/index'
+import { AlertTriangle, Button, EmptyState, ScanLoader } from '../design-system/index'
 import type { AppError } from '../state/errors'
 import { useSlowThreshold, type ViewState } from '../state/view-state'
 
@@ -86,7 +86,7 @@ export function ErrorView({
   onRetry,
 }: ErrorViewProps) {
   return (
-    <div role="alert">
+    <div role="alert" className="clr-stack clr-stack--tight">
       <EmptyState
         icon={
           <span
@@ -114,8 +114,6 @@ export function ErrorView({
             )}
           </>
         }
-        actionLabel={onRetry ? actionLabel : undefined}
-        onAction={onRetry}
         style={
           {
             '--surface': 'var(--surface-toast-negative)',
@@ -123,6 +121,11 @@ export function ErrorView({
           } as CSSProperties
         }
       />
+      {onRetry === undefined ? null : (
+        <Button variant="secondary" onClick={onRetry}>
+          {actionLabel}
+        </Button>
+      )}
     </div>
   )
 }

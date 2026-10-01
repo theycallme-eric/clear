@@ -7,6 +7,7 @@ import { SCREENS } from '../../e2e/screens'
 import playwrightConfig, {
   browserSupabaseEnv,
   MOBILE_VIEWPORT,
+  TABLET_VIEWPORT,
   vercelProtectionHeaders,
 } from '../../playwright.config'
 import { routes } from '../app/router'
@@ -49,10 +50,13 @@ describe('the default Playwright project is a phone (ENV-07)', () => {
     expect(mobile?.isMobile).toBe(true)
   })
 
-  it('keeps desktop as additional coverage rather than the baseline', () => {
+  it('keeps tablet and desktop as additional coverage rather than the baseline', () => {
     const names = projects.map((project) => project.name)
 
+    expect(TABLET_VIEWPORT).toEqual({ width: 768, height: 1024 })
+    expect(names).toContain('tablet')
     expect(names).toContain('desktop')
+    expect(names.indexOf('tablet')).toBeGreaterThan(names.indexOf('mobile'))
     expect(names.indexOf('desktop')).toBeGreaterThan(names.indexOf('mobile'))
   })
 })

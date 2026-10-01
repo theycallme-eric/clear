@@ -333,7 +333,10 @@ for (const skin of SKINS) {
   })
 }
 
-test('forced colours return focus geometry to the operating system', async ({ page, visit }) => {
+test('forced colours return focus geometry to the operating system', async (
+  { page, visit },
+  testInfo,
+) => {
   await stubSupabase(page)
   await visit('/login')
   await page.emulateMedia({ forcedColors: 'active' })
@@ -361,4 +364,5 @@ test('forced colours return focus geometry to the operating system', async ({ pa
   })
   expect(style.outlineStyle).not.toBe('none')
   expect(style.outlineWidth).toBeGreaterThan(0)
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-forced-colours-exception.png') })
 })

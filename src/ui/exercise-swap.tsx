@@ -22,12 +22,12 @@
  * indistinguishable from one that found nothing.
  */
 import { AppDialog } from './app-dialog'
-import { AlertTriangle, Button, EmptyState, RefreshCw } from '../design-system/index'
+import { Button, EmptyState, RefreshCw } from '../design-system/index'
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
 import type { ExerciseProgress } from '../state/workout-progress'
-import { LoadingView } from './view-state'
+import { ErrorView, LoadingView } from './view-state'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // On the movement's card
@@ -143,19 +143,12 @@ function SwapOptionsView({
 
     case 'error':
       return (
-        <div role="alert">
-          <EmptyState
-            icon={
-              <span style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}>
-                <AlertTriangle />
-              </span>
-            }
-            title="Alternatives didn’t load"
-            message={options.error.message}
-            actionLabel="Try again"
-            onAction={onRetry}
-          />
-        </div>
+        <ErrorView
+          error={options.error}
+          title="Alternatives didn’t load"
+          actionLabel="Try again"
+          onRetry={onRetry}
+        />
       )
 
     case 'empty':
