@@ -5,7 +5,21 @@ import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ok } from '../state/errors'
+import { createError, err, ErrorCode, ok } from '../state/errors'
+import {
+  QUICK_START_LEGACY_GOAL,
+  QUICK_START_MISSING_GOAL,
+  QUICK_START_SETTINGS_LABEL,
+} from '../state/home'
+import { QueryClient } from '../state/query'
+import type { Profile } from '../state/schemas'
+import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
+import {
+  createFakeUserDataClient,
+  fixtureLocation,
+  FIXTURE_USER_ID,
+  onboardedProfile,
+} from '../test/user-data-double'
 import {
   GENERATION_CANCEL_LABEL,
   GENERATION_FAILED_LABEL,
@@ -34,6 +48,7 @@ import {
   HISTORY_ROUTE,
   HOME_HEADING,
   HOME_ROUTE,
+  SETTINGS_ROUTE,
   VIEW_HISTORY_LABEL,
 } from './Home'
 
@@ -418,6 +433,147 @@ describe('Home’s Quick Start (REQ-004)', () => {
     expect(screen.getByRole('link', { name: /Abandoned only/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
+  })
+})
+
+/**
+ * REQ-010: the Goal Quick Start sends is the profile's standing one, read now.
+ * The last session's snapshot — an older preference, or a one-workout Recovery
+ * — supplies the focus, minutes, intensity and place, and never the Goal.
+ */
+describe('Home’s Quick Start uses the standing Goal (REQ-010)', () => {
+  const SESSION_ID = 'b0000006-0000-4000-8000-000000000000'
+
+  function renderHome(
+    goal: Profile['goal_preset'],
+    last: Parameters<typeof makeSessionRow>[0],
+  ) {
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile({ goal_preset: goal }))
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
+
+    const generation = createFakeGenerationClient()
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: SESSION_ID,
+          location_id: LOCATION_ID,
+          date: '2026-09-24',
+          title: 'Last session',
+          session_focus: 'upper_body',
+          requested_duration_mins: 35,
+          ...last,
+        }),
+      ],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients, generation, queryClient: cache }))
+
+    return { user: userEvent.setup(), generation }
+  }
+
+  it('sends the standing Goal, not the one the last session was stored with', async () => {
+    const { user, generation } = renderHome('strength', {
+      goal_preset: 'hypertrophy',
+      requested_intensity: 7,
+    })
+
+    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
+    // The label names the Goal that will be used before anything is sent.
+    expect(
+      screen.getByText('Repeats Last session: Upper body · 35 min · intensity 7 · Strength goal.'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/Hypertrophy goal/)).not.toBeInTheDocument()
+
+    await user.click(quickStart)
+
+    await waitFor(() => {
+      expect(generation.calls).toEqual([
+        {
+          goal: 'strength',
+          focus: 'upper_body',
+          requested_duration_mins: 35,
+          requested_intensity: 7,
+          location_id: LOCATION_ID,
+          notes: null,
+          deload: false,
+        },
+      ])
+    })
+  })
+
+  it('clamps a Recovery session’s intensity into the standing Goal’s range', async () => {
+    const { user, generation } = renderHome('strength', {
+      goal_preset: 'active_recovery',
+      requested_intensity: 2,
+      effective_intensity: 2,
+    })
+
+    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
+    expect(
+      screen.getByText('Repeats Last session: Upper body · 35 min · intensity 3 · Strength goal.'),
+    ).toBeInTheDocument()
+
+    await user.click(quickStart)
+
+    await waitFor(() => expect(generation.calls).toHaveLength(1))
+    expect(generation.calls[0]).toMatchObject({ goal: 'strength', requested_intensity: 3 })
+  })
+
+  it.each([
+    ['a missing Goal', null, QUICK_START_MISSING_GOAL],
+    ['the legacy active_recovery Goal', 'active_recovery', QUICK_START_LEGACY_GOAL],
+  ] as const)('sends nothing for %s and offers a route to Settings', async (_, goal, reason) => {
+    const { user, generation } = renderHome(goal, { goal_preset: 'hypertrophy' })
+
+    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
+    // No Goal is named, because none will be used.
+    expect(screen.queryByText(/ goal\.$/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+
+    await user.click(quickStart)
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(reason)
+    const link = within(alert).getByRole('link', { name: QUICK_START_SETTINGS_LABEL })
+    expect(link).toHaveAttribute('href', SETTINGS_ROUTE)
+    expect(generation.calls).toEqual([])
+    expect(screen.getByRole('heading', { level: 1, name: HOME_HEADING })).toBeInTheDocument()
+
+    await user.click(link)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Settings' }),
+    ).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+  })
+
+  it.each([
+    ['still loading', () => new Promise<never>(() => {})],
+    ['failed', async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED))],
+  ] as const)('offers no Quick Start while the profile read is %s', async (_, profile) => {
+    const generation = createFakeGenerationClient()
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({ id: SESSION_ID, location_id: LOCATION_ID, goal_preset: 'hypertrophy' }),
+      ],
+    })
+    // A cold cache: the profile is whatever this read answers, and it never
+    // answers with a Goal.
+    const cache = new QueryClient()
+    const userData = createFakeUserDataClient({ profile })
+    renderApp(
+      ['/'],
+      signedIn({ workout: workout.clients, generation, queryClient: cache, userData }),
+    )
+
+    await waitFor(() => expect(userData.profileCalls.length).toBeGreaterThan(0))
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
+    expect(generation.calls).toEqual([])
   })
 })
 

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest'
 import { makeSessionRow } from '../test/factories'
 import {
   daysTrained,
+  QUICK_START_LEGACY_GOAL,
+  QUICK_START_MISSING_GOAL,
   quickStartPlan,
   recentWorkouts,
   sessionDetailPath,
@@ -93,16 +95,77 @@ describe('recentWorkouts', () => {
 
 describe('quickStartPlan', () => {
   it('is absent until a completed workout with a location exists', () => {
-    expect(quickStartPlan([], OPTIONS)).toBeNull()
+    expect(quickStartPlan([], 'strength', OPTIONS)).toBeNull()
     expect(
       quickStartPlan(
         [session('2026-09-24', 1, { completed_at: null, abandoned_at: '2026-09-24T09:30:00.000Z' })],
+        'strength',
         OPTIONS,
       ),
     ).toBeNull()
     expect(
-      quickStartPlan([session('2026-09-24', 1, { location_id: null })], OPTIONS),
+      quickStartPlan([session('2026-09-24', 1, { location_id: null })], 'strength', OPTIONS),
     ).toBeNull()
+    // Nothing to repeat is still nothing, whatever the standing Goal says.
+    expect(quickStartPlan([], null, OPTIONS)).toBeNull()
+  })
+
+  it('sends the standing Goal and clamps the reused intensity into its range', () => {
+    const stale = quickStartPlan(
+      [session('2026-09-23', 1, { goal_preset: 'hypertrophy', requested_intensity: 7 })],
+      'strength',
+      OPTIONS,
+    )
+    expect(stale).toMatchObject({
+      goal: 'strength',
+      goalLabel: 'Strength',
+      refusal: null,
+      input: { goal: 'strength', requested_intensity: 7 },
+    })
+
+    const recovery = quickStartPlan(
+      [
+        session('2026-09-23', 1, {
+          goal_preset: 'active_recovery',
+          session_focus: 'full_body',
+          requested_duration_mins: 30,
+          requested_intensity: 2,
+        }),
+      ],
+      'strength',
+      OPTIONS,
+    )
+    expect(recovery).toMatchObject({
+      goalLabel: 'Strength',
+      summary: 'Full body · 30 min · intensity 3',
+      input: { goal: 'strength', requested_intensity: 3 },
+    })
+
+    // The upper bound too: hypertrophy stops at 9.
+    expect(
+      quickStartPlan(
+        [session('2026-09-23', 1, { goal_preset: 'strength', requested_intensity: 10 })],
+        'hypertrophy',
+        OPTIONS,
+      )?.input,
+    ).toMatchObject({ goal: 'hypertrophy', requested_intensity: 9 })
+  })
+
+  it('answers a plan with no request when the standing Goal is missing or legacy', () => {
+    const rows = [session('2026-09-23', 1, { goal_preset: 'hypertrophy' })]
+
+    expect(quickStartPlan(rows, null, OPTIONS)).toMatchObject({
+      input: null,
+      goal: null,
+      goalLabel: null,
+      refusal: QUICK_START_MISSING_GOAL,
+    })
+    expect(quickStartPlan(rows, 'active_recovery', OPTIONS)).toMatchObject({
+      input: null,
+      goal: null,
+      goalLabel: null,
+      refusal: QUICK_START_LEGACY_GOAL,
+    })
   })
 
   it('reuses the latest completed request, not deload-adjusted results or old notes', () => {
@@ -118,6 +181,7 @@ describe('quickStartPlan', () => {
           generation_notes: 'Old one-off context',
         }),
       ],
+      'strength',
       OPTIONS,
     )
 
