@@ -135,6 +135,21 @@ VIBE-D should not be marked fully closed until the exact implementation head has
 CI and the live generation signal succeeds. The design reconciliation itself is not waiting on a
 new visual decision.
 
+### Post-merge evidence
+
+The exact VIBE-D head passed the pull request's protected checks and merged normally as
+`bb33cff49bd4dc15b5f2765de8c3ddd92c5c6f9b`. On `main`, the trusted backend lane passed 102 checks
+and stopped only at its real generation assertion; the exact production deployment reached the
+same boundary and received the same typed 502. Supabase's function logs prove that request context
+resolution and prompt assembly completed (152 candidates; prompt 5.1.0 / contract 4.1.0), after
+which both model attempts failed immediately as `generation.upstream`.
+
+The only deployed custom model secret is `ANTHROPIC_API_KEY`, and Supabase reports that its current
+value was last updated on 21 January 2026. Funding a different Anthropic account or workspace does
+not change that stored credential. A follow-up observability repair records the already-sanitized
+provider status in function logs so future 400/401/429/529 failures do not all look identical at
+the application's 502 boundary; it never logs a provider body, prompt, header, or key.
+
 ## Final disposition
 
 The application has one current visual source of truth: CLEAR Design System 0.9.7. The old design

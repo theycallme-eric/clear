@@ -519,6 +519,14 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
           requestId,
           attempt: count,
           code: outcome.error.code,
+          // AttemptFailure.detail is deliberately safe observability: an
+          // upstream status / exception name, a schema path, or a validator
+          // explanation. callClaude never copies the provider response body,
+          // request headers, prompt, or API key into it. Without this field a
+          // 400 (bad request / billing), 401 (key), 429 (quota), and 529
+          // (overload) all collapse into the same un-actionable 502 in the
+          // hosted logs.
+          detail: outcome.error.detail,
         })
 
         const correction = correctionFor(outcome.error)
