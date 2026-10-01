@@ -1,7 +1,7 @@
 /**
  * Settings — `/settings` (SET-01).
  *
- * IA.md §4: atmosphere `quiet`, protected, in from Home, out to Home and the
+ * IA.md §4: atmosphere `full`, protected, in from Home, out to Home and the
  * sub-views. Composition is `AppLayout › PageHeader + Card rows › SettingsHub`
  * — the shell and its atmosphere are `RootLayout`'s, `PageHeader` is
  * `AppHeader`, and each row is a `Card`.

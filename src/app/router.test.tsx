@@ -30,7 +30,7 @@ describe('app router', () => {
     expect(screen.getByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
   })
 
-  it('mounts /onboarding behind the onboarding guard, at the quiet atmosphere', async () => {
+  it('mounts /onboarding behind the onboarding guard, at the Full atmosphere', async () => {
     const userData = createFakeUserDataClient({
       profile: async () => ok(notOnboardedProfile()),
     })
@@ -41,10 +41,10 @@ describe('app router', () => {
     ).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 1, name: ONBOARDING_TITLE })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
-    expect(document.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'quiet')
+    expect(document.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'full')
   })
 
-  it('mounts /history as a protected route at the quiet atmosphere', async () => {
+  it('mounts /history as a protected route at the Full atmosphere', async () => {
     const { container } = renderApp(['/history'], signedIn())
 
     expect(
@@ -53,11 +53,11 @@ describe('app router', () => {
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
-      'quiet',
+      'full',
     )
   })
 
-  it('mounts /history/:id as a protected route at the quiet atmosphere', async () => {
+  it('mounts /history/:id as a protected route at the Full atmosphere', async () => {
     const record = reconstructionFixture({ title: 'Routed session' })
     const workout = createWorkoutDouble({
       session: null,
@@ -74,7 +74,7 @@ describe('app router', () => {
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
-      'quiet',
+      'full',
     )
   })
 
@@ -116,7 +116,7 @@ describe('app router', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Routed session' }),
     ).toBeInTheDocument()
-    expect(document.documentElement.dataset.atmosphere).not.toBe('full')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
       document.documentElement.dataset.atmosphere,

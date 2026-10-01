@@ -39,7 +39,7 @@
   font-family: var(--font-data);
   font-size: var(--label-xs-size);
   line-height: var(--label-xs-line-height);
-  letter-spacing: var(--tracking-data-wide);
+  letter-spacing: var(--tracking-data);
   text-transform: uppercase;
   color: var(--text-card-header);
 }

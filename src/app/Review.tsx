@@ -38,7 +38,7 @@
  * and starts as normal. An override is folded into the payload `accept`
  * persists, through `applyLoadOverrides`, and no anchor is written here.
  *
- * Atmosphere is `quiet` and is the route's, not this screen's: `/review` is
+ * Atmosphere is `full` and is the route's, not this screen's: `/review` is
  * already in `SCREEN_ATMOSPHERE`, so `RootLayout` resolves it from the pathname
  * the day the journey that owns this screen routes it.
  */

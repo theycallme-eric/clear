@@ -1,7 +1,7 @@
 /**
  * Generate — `/generate` (GEN-04).
  *
- * IA.md §4: atmosphere `quiet`, protected, in from Home, out to Loading →
+ * IA.md §4: atmosphere `full`, protected, in from Home, out to Loading →
  * Review. Composition is the export's Form Screen template — a stack inside the
  * shell, the standing Goal as context, the Focus — recommended, or a label plus
  * a wrapping row of chips to choose one — the `IntensitySlider`, the inputs,

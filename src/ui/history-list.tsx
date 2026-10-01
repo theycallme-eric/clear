@@ -62,7 +62,7 @@ const GLYPH_STYLE: CSSProperties = {
   gap: 'var(--spacing-100)',
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data-wide)',
+  letterSpacing: 'var(--tracking-data)',
   textTransform: 'uppercase',
 }
 

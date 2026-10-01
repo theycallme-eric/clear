@@ -57,6 +57,7 @@ import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { ActionRow, ListFrame, ListRow, PhoneFooter, TabBand } from '../ui/composition'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { DeloadBanner } from '../ui/deload-banner'
 import {
@@ -129,7 +130,7 @@ function CardBody() {
 
 function CardDefault() {
   return (
-    <Card>
+    <Card barWidth="md">
       <CardBody />
     </Card>
   )
@@ -174,6 +175,79 @@ function CardActionsBackAndForward() {
       <Button variant="secondary">Back</Button>
       <Button>Continue</Button>
     </CardActions>
+  )
+}
+
+function ActionRowSingle() {
+  return (
+    <ActionRow>
+      <Button variant="primary">Continue</Button>
+    </ActionRow>
+  )
+}
+
+function ActionRowPaired() {
+  return (
+    <ActionRow>
+      <Button variant="secondary">Back</Button>
+      <Button variant="primary">Continue</Button>
+    </ActionRow>
+  )
+}
+
+function ListFramePopulated() {
+  return (
+    <ListFrame>
+      <ListRow>Monday · Full body</ListRow>
+      <ListRow>Wednesday · Lower body</ListRow>
+    </ListFrame>
+  )
+}
+
+function ListFrameEmpty() {
+  return <ListFrame>No sessions logged.</ListFrame>
+}
+
+function ListRowPlain() {
+  return <ListRow>Monday · Full body</ListRow>
+}
+
+function ListRowAction() {
+  return (
+    <ListRow>
+      <Button variant="quiet">Open Monday session</Button>
+    </ListRow>
+  )
+}
+
+function TabBandShort() {
+  return <TabBand>Recent · Favorites</TabBand>
+}
+
+function TabBandWithRail() {
+  return (
+    <TabBand>
+      <div className="clr-rail">Recent · Favorites · Progress</div>
+    </TabBand>
+  )
+}
+
+function PhoneFooterSingle() {
+  return (
+    <PhoneFooter>
+      <Button variant="primary">Generate workout</Button>
+    </PhoneFooter>
+  )
+}
+
+function PhoneFooterPaired() {
+  return (
+    <PhoneFooter>
+      <ActionRow>
+        <Button variant="secondary">Back</Button>
+        <Button variant="primary">Save</Button>
+      </ActionRow>
+    </PhoneFooter>
   )
 }
 
@@ -1749,7 +1823,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'DS-04a',
     module: 'src/ui/card.tsx',
     summary:
-      'The accent bar plus chamfered body the export ships as CSS only. Bar width comes from the bar class; the card imposes no heading level on its content.',
+      'A closed chamfered body with an optional accent bar. Bar width comes from the bar class; the card imposes no heading level on its content.',
     specimens: [
       { state: 'barWidth="md"', Render: CardDefault },
       { state: 'barWidth="lg"', Render: CardWideBar },
@@ -1760,7 +1834,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       },
       {
         state: 'no children',
-        note: 'Bar and body still draw — a card is a frame, not its content.',
+        note: 'The closed body still draws — a card is a frame, not its content.',
         Render: CardEmpty,
       },
       {
@@ -1779,6 +1853,59 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'forward action', Render: CardActionsForwardOnly },
       { state: 'back and forward actions', Render: CardActionsBackAndForward },
+    ],
+  },
+  {
+    component: 'ActionRow',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'The 0.9.7 action pattern: full-width stack on phones and an equal-width row on wider screens, with the primary action ordered consistently.',
+    specimens: [
+      { state: 'single primary action', Render: ActionRowSingle },
+      { state: 'back and primary actions', Render: ActionRowPaired },
+    ],
+  },
+  {
+    component: 'ListFrame',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'One closed frame for a related list, with rows separated inside rather than nested in individual cards.',
+    specimens: [
+      { state: 'populated list', Render: ListFramePopulated },
+      { state: 'empty list message', Render: ListFrameEmpty },
+    ],
+  },
+  {
+    component: 'ListRow',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary: 'One row inside the system list frame, preserving the caller’s content semantics.',
+    specimens: [
+      { state: 'read-only row', Render: ListRowPlain },
+      { state: 'action row', Render: ListRowAction },
+    ],
+  },
+  {
+    component: 'TabBand',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary: 'The full-width ruled band used to make a tab rail read as one screen-level region.',
+    specimens: [
+      { state: 'plain content', Render: TabBandShort },
+      { state: 'containing a rail', Render: TabBandWithRail },
+    ],
+  },
+  {
+    component: 'PhoneFooter',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'The pinned primary-action area: transparent atmosphere underneath, one full-width rule above.',
+    specimens: [
+      { state: 'single primary action', Render: PhoneFooterSingle },
+      { state: 'paired actions', Render: PhoneFooterPaired },
     ],
   },
   {

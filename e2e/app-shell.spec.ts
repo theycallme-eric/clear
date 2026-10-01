@@ -96,7 +96,7 @@ test('the full atmosphere keeps every colored layer in the viewport', async ({
   }
 })
 
-test('the quiet entry-form atmosphere remains materially visible', async ({
+test('entry forms use the same Full atmosphere as every production screen', async ({
   page,
   visit,
 }) => {
@@ -105,16 +105,14 @@ test('the quiet entry-form atmosphere remains materially visible', async ({
   const presentation = await page.locator('.clr-atmosphere').evaluate((layer) => {
     const style = getComputedStyle(layer)
     return {
-      context: (layer as HTMLElement).dataset.context,
       opacity: Number(style.getPropertyValue('--atmosphere-opacity')),
       dim: Number(style.getPropertyValue('--atmosphere-dim')),
     }
   })
 
   expect(presentation).toEqual({
-    context: 'entry-form',
-    opacity: 0.26,
-    dim: 0.58,
+    opacity: 0.4,
+    dim: 0.5,
   })
 
   const visibleFractions = await page

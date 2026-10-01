@@ -84,13 +84,12 @@ describe('History route', () => {
       screen.getByRole('heading', { level: 2, name: 'Session 1' }),
     ).toBeInTheDocument()
 
-    // No new level: whatever SCREEN_ATMOSPHERE says for History, and that is quiet.
-    expect(screenAtmosphere('History')).toBe('quiet')
+    expect(screenAtmosphere('History')).toBe('full')
     expect(container.querySelector('.clr-shell')).toHaveAttribute(
       'data-atmosphere',
       screenAtmosphere('History'),
     )
-    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
   })
 
   it('survives a refresh: a fresh router on the same URL renders History again', async () => {

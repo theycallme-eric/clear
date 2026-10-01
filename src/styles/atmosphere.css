@@ -7,23 +7,11 @@
    the media query and the JS-resolved preference agreeing at every instant —
    they are read from the same signal, and this makes the DOM the record of it.
 
-   Nothing else here: intensity belongs to `data-atmosphere` in foundation.css.
+   Nothing else here changes intensity: 0.9.7 uses Full on every screen.
    ============================================================================= */
 
 .clr-atmosphere[data-static='true'] .clr-atmosphere__blob {
   animation: none;
-}
-
-/*
- * Entry forms remain quiet and readable, but they are also the handoff from
- * CLEAR's full brand entry. The exported quiet values leave less than two
- * percent effective role colour after dimming, which reads as no atmosphere at
- * all on a phone. Scope the stronger quiet treatment to login and onboarding
- * so ordinary reading and settings screens keep the export's lower intensity.
- */
-.clr-atmosphere[data-context='entry-form'] {
-  --atmosphere-opacity: 0.26;
-  --atmosphere-dim: 0.58;
 }
 
 /*

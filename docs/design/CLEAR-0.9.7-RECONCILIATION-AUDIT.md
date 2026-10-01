@@ -1,6 +1,6 @@
 # CLEAR Design System 0.9.7 Reconciliation Audit
 
-**Status:** authoritative comparison complete; implementation pending  
+**Status:** authoritative comparison complete; reconciliation in progress
 **Received:** 2026-09-30  
 **Source artifact:** `CLEAR Design System 0.9.7..zip`  
 **SHA-256:** `12620dc5d9b6d7de965f25b80f86a90b8ee3e6a5eeea813eb1b85b0563d74790`
@@ -17,6 +17,16 @@ current.
 
 This audit records the contract difference. It does not claim that the current application has
 already been visually reconciled.
+
+## Implementation status
+
+| Work package | Status | Evidence |
+| --- | --- | --- |
+| DS-097-A | Merged | Exact 0.9.7 evidence/runtime import, active contract sync, identity/API/adherence tests; PR #275 |
+| DS-097-B | In progress | Shared atmosphere, Card, focus, token/motion, action/list/band/footer substrate; issue #270 |
+| DS-097-C | Pending | Fixed shell and public `ScrollRegion`; issue #269 |
+| VIBE-A / B / C | Pending | Route-family reconciliation; issues #271–#273 |
+| VIBE-D | Pending | Final rendered audit and exception ledger; issue #274 |
 
 ## Executive conclusion
 

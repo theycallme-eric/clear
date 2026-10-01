@@ -126,9 +126,8 @@ export const routes: RouteObject[] = [
               </Protected>
             ),
           },
-          // HIST-01 — `protected` (IA.md §1), at the `quiet` the atmosphere
-          // table already records for `/history`. In from Home's recents, out
-          // to Home.
+          // HIST-01 — `protected` (IA.md §1), at the Full atmosphere every
+          // production screen uses. In from Home's recents, out to Home.
           {
             path: '/history',
             element: (
@@ -137,8 +136,8 @@ export const routes: RouteObject[] = [
               </Protected>
             ),
           },
-          // HIST-01's detail — `protected`, at the `quiet` the atmosphere
-          // table records for `/history/:id`. In from History's rows and
+          // HIST-01's detail — protected, at the shared Full atmosphere. In
+          // from History's rows and
           // Home's recents. Whether the id names one of the user's sessions is
           // a fact about the rows (RLS), so the screen answers it with its
           // error state rather than the route with a redirect.

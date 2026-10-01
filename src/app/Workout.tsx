@@ -1,7 +1,7 @@
 /**
  * Workout — `/workout` (EXE-01). The focus mode.
  *
- * IA.md §4: atmosphere `operational`, guard protected + active session, and
+ * IA.md §4: atmosphere `full`, guard protected + active session, and
  * exactly two exits — completion and abandonment. This file is the shell that
  * enforces that, and it is worth being precise about what "focus mode" means
  * here, because the requirement is emphatic that it is not a trap on the user:

@@ -135,7 +135,7 @@ function renderDetail(sessions: Partial<SessionsClient>, path = DETAIL_PATH) {
 }
 
 describe('Session Detail route', () => {
-  it('mounts /history/:id behind Protected at the quiet atmosphere', async () => {
+  it('mounts /history/:id behind Protected at the Full atmosphere', async () => {
     const { container } = renderDetail(recordingSessions(async () => ok(fullRecord())).sessions)
 
     expect(
@@ -143,9 +143,9 @@ describe('Session Detail route', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Page not found' })).toBeNull()
 
-    expect(screenAtmosphere('Session Detail')).toBe('quiet')
-    expect(container.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'quiet')
-    expect(document.documentElement.dataset.atmosphere).toBe('quiet')
+    expect(screenAtmosphere('Session Detail')).toBe('full')
+    expect(container.querySelector('.clr-shell')).toHaveAttribute('data-atmosphere', 'full')
+    expect(document.documentElement.dataset.atmosphere).toBe('full')
   })
 
   it('does not render for a signed-out visitor', async () => {

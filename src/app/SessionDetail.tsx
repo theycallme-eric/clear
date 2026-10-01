@@ -1,7 +1,7 @@
 /**
  * Session Detail — `/history/:id` (HIST-01). One past workout, disclosed.
  *
- * IA.md §4: atmosphere `quiet`, guard protected, and three states rather than
+ * IA.md §4: atmosphere `full`, guard protected, and three states rather than
  * four — a session always has content, so there is no empty. The error splits
  * two ways, because they are different facts with different recoveries:
  *
@@ -90,7 +90,7 @@ const META_STYLE: CSSProperties = {
 const LABEL_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data-wide)',
+  letterSpacing: 'var(--tracking-data)',
   textTransform: 'uppercase',
   color: 'var(--text-card-label)',
   margin: 0,

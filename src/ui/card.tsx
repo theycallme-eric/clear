@@ -1,10 +1,9 @@
 /**
  * Card — the DS-04a React wrapper over the export's `.clr-card` CSS.
  *
- * The export ships the card as CSS only (ATOMIC.md §11): an accent bar plus a
- * chamfered body, composed. The bar owns the left edge — the body's chamfer is
- * `--open-left`, so it draws no left border of its own and the bar's bright
- * right edge reads as the divider (see foundation.css).
+ * The export ships the card as CSS only: a closed chamfered body with an
+ * optional accent bar joined to its left edge. The body always keeps all four
+ * edges; the bar is decoration, never the card's missing border.
  *
  * Width comes from `--accent-bar-width` / `--accent-bar-width-lg` through the
  * bar classes; the component never sets one. The card imposes no heading level
@@ -12,15 +11,17 @@
  */
 import type { HTMLAttributes } from 'react'
 
+import { ActionRow } from './composition'
+
 export type CardBarWidth = 'md' | 'lg'
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  /** Accent bar width. md → --accent-bar-width (8px) · lg → --accent-bar-width-lg (12px). Default "md". */
+  /** Add the optional accent bar. md → 8px · lg → 12px. Omit for a plain card. */
   barWidth?: CardBarWidth
 }
 
 export function Card({
-  barWidth = 'md',
+  barWidth,
   className,
   children,
   ...props
@@ -30,13 +31,15 @@ export function Card({
       className={['clr-card', className].filter(Boolean).join(' ')}
       {...props}
     >
-      <div
-        aria-hidden="true"
-        className={
-          barWidth === 'lg' ? 'clr-card__bar clr-card__bar--lg' : 'clr-card__bar'
-        }
-      />
-      <div className="clr-card__body clr-chamfer clr-chamfer--open-left clr-chamfer--md">
+      {barWidth ? (
+        <div
+          aria-hidden="true"
+          className={
+            barWidth === 'lg' ? 'clr-card__bar clr-card__bar--lg' : 'clr-card__bar'
+          }
+        />
+      ) : null}
+      <div className="clr-card__body clr-chamfer clr-chamfer--md">
         {children}
       </div>
     </div>
@@ -50,9 +53,9 @@ export function Card({
  */
 export function CardActions({ className, style, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div
-      className={['clr-row', className].filter(Boolean).join(' ')}
-      style={{ justifyContent: 'flex-end', flexWrap: 'wrap', ...style }}
+    <ActionRow
+      className={className}
+      style={style}
       {...props}
     />
   )

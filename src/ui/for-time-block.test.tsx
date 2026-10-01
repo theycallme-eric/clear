@@ -171,7 +171,7 @@ describe('while the clock runs', () => {
 
     expect(readout().className).toContain('clr-chamfer--timer')
     expect(readout().className).not.toContain('clr-chamfer--timer-low')
-    expect(readout().className).not.toContain('pulse-micro')
+    expect(readout()).not.toHaveClass('clr-pulse-micro')
   })
 
   it('turns urgent in the last ten seconds — words, pulse and hue together', async () => {
@@ -186,7 +186,7 @@ describe('while the clock runs', () => {
     // `prefers-reduced-motion`, so the words have to carry it too.
     expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
     expect(readout().className).toContain('clr-chamfer--timer-low')
-    expect(readout().className).toContain('pulse-micro')
+    expect(readout()).toHaveClass('clr-pulse-micro')
   })
 })
 
@@ -234,7 +234,7 @@ describe('the first completion path: finished under the cap', () => {
     await user.click(screen.getByRole('button', { name: 'Finish' }))
 
     expect(readout().className).not.toContain('clr-chamfer--timer-low')
-    expect(readout().className).not.toContain('pulse-micro')
+    expect(readout()).not.toHaveClass('clr-pulse-micro')
   })
 })
 
@@ -263,7 +263,7 @@ describe('the second completion path: the cap is reached', () => {
     expect(screen.queryByText('Finished under cap')).not.toBeInTheDocument()
     expect(readout().className).toContain('clr-chamfer--timer-low')
     // The clock has stopped: nothing is running out, so nothing pulses.
-    expect(readout().className).not.toContain('pulse-micro')
+    expect(readout()).not.toHaveClass('clr-pulse-micro')
   })
 
   it('supplies the cap and the cap-expiry outcome to the shell', async () => {
