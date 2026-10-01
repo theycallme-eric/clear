@@ -43,7 +43,14 @@ export const SAVE_FAVORITE_FAILED =
  * Rendering a retry for a list nobody asked to see would be asking the user to
  * repair a read they did not make.
  */
-export function FavoriteToggle({ sessionId }: { sessionId: string }) {
+export function FavoriteToggle({
+  sessionId,
+  compact = false,
+}: {
+  sessionId: string
+  /** Omit the repeated field label when a footer already establishes context. */
+  compact?: boolean
+}) {
   const { user } = useAuth()
   const { sessions, favorites } = useWorkoutClients()
   const query = useFavoritesQuery()
@@ -97,9 +104,9 @@ export function FavoriteToggle({ sessionId }: { sessionId: string }) {
     ])
   }
 
-  return (
-    <div className="clr-stack clr-stack--tight">
-      <span className="label">Favorite</span>
+  const content = (
+    <>
+      {!compact && <span className="label">Favorite</span>}
       {failed && (
         <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
           {SAVE_FAVORITE_FAILED}
@@ -125,8 +132,10 @@ export function FavoriteToggle({ sessionId }: { sessionId: string }) {
           {SAVE_FAVORITE_LABEL}
         </Button>
       )}
-    </div>
+    </>
   )
+
+  return compact ? content : <div className="clr-stack clr-stack--tight">{content}</div>
 }
 
 const SAVED_STYLE: CSSProperties = {

@@ -57,7 +57,14 @@ import { ConfirmDialog, ErrorDialog } from '../ui/blocking-dialog'
 import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { CollapsibleSection } from '../ui/collapsible-section'
-import { ActionRow, ListFrame, ListRow, PhoneFooter, TabBand } from '../ui/composition'
+import {
+  ActionRow,
+  ListFrame,
+  ListMessage,
+  ListRow,
+  PhoneFooter,
+  TabBand,
+} from '../ui/composition'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
 import { DeloadBanner } from '../ui/deload-banner'
 import {
@@ -206,6 +213,19 @@ function ListFramePopulated() {
 
 function ListFrameEmpty() {
   return <ListFrame>No sessions logged.</ListFrame>
+}
+
+function ListMessageTitleOnly() {
+  return <ListMessage title="No sessions logged" />
+}
+
+function ListMessageWithGuidance() {
+  return (
+    <ListMessage
+      title="No sessions logged"
+      message="Generated workouts appear here after they are saved."
+    />
+  )
 }
 
 function ListRowPlain() {
@@ -1885,6 +1905,17 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'read-only row', Render: ListRowPlain },
       { state: 'action row', Render: ListRowAction },
+    ],
+  },
+  {
+    component: 'ListMessage',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'A factual empty collection rendered in the same one-row frame the populated list occupies.',
+    specimens: [
+      { state: 'title only', Render: ListMessageTitleOnly },
+      { state: 'with guidance', Render: ListMessageWithGuidance },
     ],
   },
   {

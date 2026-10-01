@@ -30,9 +30,8 @@
  * actions; a confirmed active session replaces them with the resume card.
  */
 import { useCallback, useState, type CSSProperties, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
 
-import { Button, LogOut, Play, Progress, Pulse } from '../design-system/index'
+import { Button, LogOut, Progress, Pulse } from '../design-system/index'
 import { isErr } from '../state/errors'
 import type { SessionSnapshot } from '../state/schemas'
 import { showErrorToast } from '../state/toasts'
@@ -48,11 +47,14 @@ import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
 import { ErrorView } from '../ui/view-state'
 import { AbandonConfirmDialog, GlobalTimer } from '../ui/workout-chrome'
-import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 
-export function ResumableSession({ fallback = null }: { fallback?: ReactNode }) {
-  const query = useActiveSessionQuery()
-
+export function ResumableSession({
+  fallback = null,
+  query,
+}: {
+  fallback?: ReactNode
+  query: ReturnType<typeof useActiveSessionQuery>
+}) {
   if (query.state.status === 'error') {
     return (
       <section className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -101,7 +103,6 @@ function ResumableCard({
   /** Publishes the end, so nothing else on the app agrees a session is running. */
   onSessionEnded: () => void
 }) {
-  const navigate = useNavigate()
   const { sessions } = useWorkoutClients()
 
   // The same wall-clock reading the shell shows: a tab closed for an hour comes
@@ -154,14 +155,6 @@ function ResumableCard({
           {next !== undefined && <p style={{ margin: 0 }}>Picks up at {next.title}.</p>}
 
           <div className="clr-row">
-            <Button
-              variant="primary"
-              size="lg"
-              icon={<Play />}
-              onClick={() => void navigate(WORKOUT_ROUTE)}
-            >
-              Resume workout
-            </Button>
             {/* Quiet, and second: the destructive answer never sits beside the
                 forward one as an equal. The critical framing belongs to the
                 confirm, which is where the consequence is actually taken. */}

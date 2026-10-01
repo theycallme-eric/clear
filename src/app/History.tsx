@@ -15,9 +15,10 @@
  * loaded window keeps one ordering, one page boundary and one derivation, and
  * "load more" widens the window rather than the filter.
  *
- * Each session row links into `/history/:id` — the Session Detail screen, the
- * other half of HIST-01 — through the same `sessionDetailPath` Home's recents
- * use, so both entries name the same route for the same session.
+ * Each session row retains `/history/:id` as its durable fallback. A completed
+ * record whose stored prescription validates opens directly in Review; every
+ * other record follows the fallback into Session Detail. Home's recents use
+ * the same resolver, so the two entry points cannot drift.
  */
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -27,7 +28,6 @@ import {
   ArrowLeft,
   Button,
   ClearLogo,
-  EmptyState,
 } from '../design-system/index'
 import {
   filterHistory,
@@ -47,9 +47,11 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { HistoryList } from '../ui/history-list'
+import { ActionRow, ListMessage, PhoneFooter } from '../ui/composition'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
+import { useOpenHistorySession } from './useOpenHistorySession'
 
 const SCREEN_TITLE = 'History'
 
@@ -74,6 +76,7 @@ export const HISTORY_LOAD_MORE_LABEL = 'Load older workouts'
 export function History() {
   const navigate = useNavigate()
   const query = useHistoryQuery()
+  const session = useOpenHistorySession()
   const [filter, setFilter] = useState<HistoryFilter>('all')
 
   const sessions = query.state.status === 'ready' ? query.state.data.sessions : null
@@ -88,6 +91,19 @@ export function History() {
 
   const state = resolveHistoryState(query.state.status, query.state, entries, visible)
   const filtered = state.status === 'empty' && entries.length > 0
+
+  const footerAction =
+    query.state.status === 'error' ? (
+      <Button variant="primary" onClick={query.refetch}>Retry</Button>
+    ) : filtered ? (
+      <Button variant="primary" onClick={() => setFilter('all')}>
+        {HISTORY_NO_MATCH_ACTION}
+      </Button>
+    ) : state.status === 'ready' && query.canLoadMore ? (
+      <Button variant="primary" onClick={query.loadMore}>
+        {HISTORY_LOAD_MORE_LABEL}
+      </Button>
+    ) : null
 
   return (
     <>
@@ -104,7 +120,14 @@ export function History() {
       >
         <ClearLogo size="md" />
       </AppHeader>
-      <Screen title={SCREEN_TITLE}>
+      <Screen
+        title={SCREEN_TITLE}
+        pinnedFoot={
+          footerAction === null ? null : (
+            <PhoneFooter><ActionRow>{footerAction}</ActionRow></PhoneFooter>
+          )
+        }
+      >
         {/* The control belongs to a history that exists. With none, there is
             nothing to narrow, and an inert dropdown above "No workouts yet"
             would be the screen offering an action that cannot do anything. */}
@@ -121,17 +144,14 @@ export function History() {
           state={state}
           loadingLabel={HISTORY_LOADING_LABEL}
           errorTitle={HISTORY_ERROR_TITLE}
-          onRetry={query.refetch}
           empty={
             filtered ? (
-              <EmptyState
+              <ListMessage
                 title={HISTORY_NO_MATCH_TITLE}
                 message={HISTORY_NO_MATCH_MESSAGE}
-                actionLabel={HISTORY_NO_MATCH_ACTION}
-                onAction={() => setFilter('all')}
               />
             ) : (
-              <EmptyState title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
+              <ListMessage title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
             )
           }
         >
@@ -141,12 +161,9 @@ export function History() {
                 entries={data}
                 label={HISTORY_LIST_LABEL}
                 linkTo={(entry) => sessionDetailPath(entry.id)}
+                onOpen={(entry) => void session.open(entry)}
+                openingId={session.openingId}
               />
-              {query.canLoadMore && (
-                <Button variant="secondary" onClick={query.loadMore}>
-                  {HISTORY_LOAD_MORE_LABEL}
-                </Button>
-              )}
             </>
           )}
         </ViewStateSwitch>

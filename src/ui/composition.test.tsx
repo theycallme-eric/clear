@@ -2,7 +2,14 @@ import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
 import { renderWithProviders } from '../test/render'
-import { ActionRow, ListFrame, ListRow, PhoneFooter, TabBand } from './composition'
+import {
+  ActionRow,
+  ListFrame,
+  ListMessage,
+  ListRow,
+  PhoneFooter,
+  TabBand,
+} from './composition'
 
 describe('0.9.7 composition wrappers', () => {
   it('exposes the responsive action-row vocabulary without changing its children', () => {
@@ -42,6 +49,15 @@ describe('0.9.7 composition wrappers', () => {
 
     expect(screen.getByTestId('band')).toHaveClass('clr-band')
     expect(screen.getByRole('contentinfo', { name: 'Screen actions' })).toHaveClass('clr-footer')
+  })
+
+  it('puts factual empty copy in the same one-row list frame', () => {
+    renderWithProviders(<ListMessage title="No workouts yet" message="Generate one first." />)
+
+    const message = screen.getByText('No workouts yet')
+    expect(message.closest('.clr-list')).toHaveClass('clr-list', 'clr-chamfer')
+    expect(message.closest('.clr-list__row')).toBeInTheDocument()
+    expect(screen.getByText('Generate one first.')).toBeInTheDocument()
   })
 
   it('merges caller classes and native attributes on the selected element', () => {

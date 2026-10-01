@@ -38,6 +38,28 @@ export function ListRow(props: CompositionProps) {
   return composition('div', 'clr-list__row', props)
 }
 
+/** Factual empty/loading copy occupying the same frame as populated rows. */
+export function ListMessage({
+  title,
+  message,
+}: {
+  title: ReactNode
+  message?: ReactNode
+}) {
+  return (
+    <ListFrame>
+      <ListRow>
+        <div className="clr-stack clr-stack--tight">
+          <p style={{ margin: 0 }}>{title}</p>
+          {message === undefined ? null : (
+            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{message}</p>
+          )}
+        </div>
+      </ListRow>
+    </ListFrame>
+  )
+}
+
 /** Full-width ruled band, typically around a tab rail. */
 export function TabBand(props: CompositionProps) {
   return composition('div', 'clr-band', props)
