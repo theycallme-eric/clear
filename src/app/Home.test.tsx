@@ -424,7 +424,8 @@ describe('Home’s Quick Start (REQ-004)', () => {
 /**
  * HOME-03 on the real route tree: the suggestion is read off the same history,
  * taking it opens Generate prefilled, dismissing it leaves Generate on its
- * defaults, and thin history produces an empty state instead of a focus.
+ * defaults, and history with nothing completed or nothing recent produces no
+ * prompt instead of a focus.
  *
  * Days are counted back from today rather than pinned to a date, because the
  * suggestion is only made for recent history — a fixture dated in 2026 would
@@ -540,10 +541,38 @@ describe('Home’s suggestion (HOME-03)', () => {
     expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
   })
 
-  it('omits the smart prompt rather than guessing when the history is too thin', async () => {
+  it('suggests from a single completed session dated today', async () => {
+    renderHome([completed(1, 0, { session_focus: 'lower_body' })])
+    const card = within(await suggestionPrompt())
+
+    expect(card.getByText('Upper body · intensity 7')).toBeInTheDocument()
+    expect(
+      card.getByText(
+        'No press in the sessions you’ve logged. Your last 1 session averaged intensity 7.',
+      ),
+    ).toBeInTheDocument()
+    expect(card.getByRole('button', { name: 'Use this' })).toBeInTheDocument()
+  })
+
+  it('omits the smart prompt when nothing has been completed', async () => {
     renderHome([
-      completed(1, 1, { session_focus: 'lower_body' }),
-      completed(2, 4, { session_focus: 'lower_body' }),
+      completed(1, 0, { title: 'Prescribed only', started_at: null, completed_at: null }),
+      completed(2, 1, {
+        title: 'Abandoned only',
+        completed_at: null,
+        abandoned_at: `${daysAgo(1)}T09:30:00.000Z`,
+      }),
+    ])
+
+    await screen.findByRole('link', { name: /Abandoned only/i })
+    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument()
+  })
+
+  it('omits the smart prompt rather than guessing when the completed history is stale', async () => {
+    renderHome([
+      completed(1, 22, { session_focus: 'lower_body' }),
+      completed(2, 30, { session_focus: 'upper_body' }),
     ])
 
     await screen.findByRole('button', { name: 'Quick start' })

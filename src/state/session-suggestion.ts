@@ -36,13 +36,15 @@
  *     (`session_performed` joined to `exercise_pattern_ranked`) attaches to
  *     later, and every consumer here is written against it rather than against
  *     the focus.
- *   * **Thin history answers nothing.** Under `MIN_SUGGESTION_SESSIONS`
- *     completed sessions, or with nothing completed inside
- *     `SUGGESTION_RECENCY_DAYS`, there is no suggestion at all: `null`, which
- *     Home renders as its empty state. A "least-recently-trained" focus
- *     computed from one session is arithmetic on noise, and an intensity
- *     averaged from a training block three months old is a claim about a person
- *     who has since stopped.
+ *   * **No completed history answers nothing, and says which nothing.** One
+ *     completed session inside `SUGGESTION_RECENCY_DAYS` is enough to recommend
+ *     from. With nothing completed at all, or with the newest completed session
+ *     older than that, there is no suggestion — and `suggestionEligibility`
+ *     tells the two apart (`no-completed-history`, `stale-history`) so that no
+ *     caller has to infer the reason from a `null`. An unstarted or abandoned
+ *     session is not completed evidence, and an intensity averaged from a
+ *     training block three months old is a claim about a person who has since
+ *     stopped.
  *
  * Nothing here navigates or remembers. The prefilled destination is
  * `generatePath` in `state/generation-form.ts`, because what a prefilled draft
@@ -95,8 +97,8 @@ export const SUGGESTIBLE_PATTERNS: readonly MovementPattern[] =
     SESSION_FOCUSES.some((focus) => FOCUS_PATTERNS[focus].includes(pattern)),
   )
 
-/** Completed sessions before "least recently trained" means anything. */
-export const MIN_SUGGESTION_SESSIONS = 3
+/** Completed sessions before a recommendation is made at all. */
+export const MIN_SUGGESTION_SESSIONS = 1
 
 /** How recent the newest completed session must be for any of this to hold. */
 export const SUGGESTION_RECENCY_DAYS = 21
@@ -236,8 +238,75 @@ export interface SessionSuggestion {
 }
 
 /**
- * The least-recently-trained focus, or `null` when the history is too thin to
- * name one. The client's `suggest_session_focus`.
+ * Whether there is a recommendation, and when there is not, why not.
+ *
+ * `no-completed-history` is the first-workout state: nothing has been finished,
+ * whatever was generated or abandoned along the way. `stale-history` is
+ * completed history whose newest session is more than
+ * `SUGGESTION_RECENCY_DAYS` old. A read that failed is neither — it is the
+ * query layer's to report, because these are answers about rows in hand.
+ */
+export type SuggestionEligibility =
+  | ({ readonly status: 'recommended' } & SessionSuggestion)
+  | { readonly status: 'no-completed-history' }
+  | { readonly status: 'stale-history' }
+
+/**
+ * The one eligibility rule, shared by every screen that offers a Focus:
+ * `MIN_SUGGESTION_SESSIONS` completed sessions, the newest of them inside
+ * `SUGGESTION_RECENCY_DAYS`. Only `completed` counts toward either half.
+ */
+export function suggestionEligibility(
+  rows: readonly WorkoutSessionRow[],
+  options: SuggestionOptions = {},
+): SuggestionEligibility {
+  const outcome = recommend(rows, options)
+
+  return typeof outcome === 'string'
+    ? { status: outcome }
+    : { status: 'recommended', ...outcome }
+}
+
+/** The rule itself: the suggestion, or the name of the reason there is none. */
+function recommend(
+  rows: readonly WorkoutSessionRow[],
+  options: SuggestionOptions,
+): SessionSuggestion | 'no-completed-history' | 'stale-history' {
+  const completed = completedSessions(rows, options)
+  if (completed.length < MIN_SUGGESTION_SESSIONS) return 'no-completed-history'
+
+  const newest = completed[0]
+  if (daysBetween(newest.day, todayIn(options)) > SUGGESTION_RECENCY_DAYS) {
+    return 'stale-history'
+  }
+
+  const focusStale = focusStaleness(rows, options)[0]
+  const focus = focusStale.value
+  const admitted = FOCUS_PATTERNS[focus]
+  const patternStale = patternStaleness(rows, options).filter((candidate) =>
+    admitted.includes(candidate.value),
+  )[0]
+
+  const recent = completed.slice(0, INTENSITY_HISTORY_COUNT)
+  const intensity = meanIntensity(recent)
+  const prefill: GenerationPrefill = { focus, intensity }
+
+  return {
+    focus,
+    focusLabel: formatFocus(focus),
+    intensity,
+    focusStaleness: focusStale,
+    patternStaleness: patternStale,
+    reason: stalenessSentence(patternStale),
+    intensityReason: `Your last ${countWord(recent.length, 'session')} averaged intensity ${intensity}.`,
+    prefill,
+    path: generatePath(prefill),
+  }
+}
+
+/**
+ * The least-recently-trained focus, or `null` when there is no recent completed
+ * history to name one from. The client's `suggest_session_focus`.
  */
 export function suggestSessionFocus(
   rows: readonly WorkoutSessionRow[],
@@ -265,10 +334,7 @@ export function suggestedIntensity(
   const recent = completedSessions(rows, options).slice(0, INTENSITY_HISTORY_COUNT)
   if (recent.length === 0) return null
 
-  const total = recent.reduce((sum, entry) => sum + entry.intensity, 0)
-  const mean = Math.round(total / recent.length)
-
-  return Math.min(INTENSITY_MAX, Math.max(INTENSITY_MIN, mean))
+  return meanIntensity(recent)
 }
 
 /**
@@ -280,48 +346,21 @@ export function hasEnoughHistory(
   rows: readonly WorkoutSessionRow[],
   options: SuggestionOptions = {},
 ): boolean {
-  const completed = completedSessions(rows, options)
-  if (completed.length < MIN_SUGGESTION_SESSIONS) return false
-
-  const newest = completed[0]
-  return daysBetween(newest.day, todayIn(options)) <= SUGGESTION_RECENCY_DAYS
+  return suggestionEligibility(rows, options).status === 'recommended'
 }
 
 /**
- * What Home offers, or `null` for "not enough history to say" — and `null` is
+ * What Home offers, or `null` for "nothing to recommend from" — and `null` is
  * the whole of the requirement's "no suggestion shown with insufficient
  * history". There is no hedged suggestion and no default focus to fall back on.
+ * A caller that needs to say *why* asks `suggestionEligibility` instead.
  */
 export function suggestSession(
   rows: readonly WorkoutSessionRow[],
   options: SuggestionOptions = {},
 ): SessionSuggestion | null {
-  const focus = suggestSessionFocus(rows, options)
-  const intensity = suggestedIntensity(rows, options)
-  if (focus === null || intensity === null) return null
-
-  const focusStale =
-    focusStaleness(rows, options).find((candidate) => candidate.value === focus) ?? null
-  const patternStale = stalestPatternOf(focus, rows, options)
-  if (focusStale === null || patternStale === null) return null
-
-  const prefill: GenerationPrefill = { focus, intensity }
-  const sessionCount = Math.min(
-    completedSessions(rows, options).length,
-    INTENSITY_HISTORY_COUNT,
-  )
-
-  return {
-    focus,
-    focusLabel: formatFocus(focus),
-    intensity,
-    focusStaleness: focusStale,
-    patternStaleness: patternStale,
-    reason: stalenessSentence(patternStale),
-    intensityReason: `Your last ${countWord(sessionCount, 'session')} averaged intensity ${intensity}.`,
-    prefill,
-    path: generatePath(prefill),
-  }
+  const outcome = recommend(rows, options)
+  return typeof outcome === 'string' ? null : outcome
 }
 
 /** The stalest pattern a focus would train, which is why it is being suggested. */
@@ -448,6 +487,14 @@ function completedSessions(
   return historyEntries(rows, options)
     .filter(isSessionEntry)
     .filter((entry) => entry.status === 'completed')
+}
+
+/** The rounded mean of a non-empty run of sessions, inside the column's bound. */
+function meanIntensity(sessions: readonly HistorySessionEntry[]): number {
+  const total = sessions.reduce((sum, entry) => sum + entry.intensity, 0)
+  const mean = Math.round(total / sessions.length)
+
+  return Math.min(INTENSITY_MAX, Math.max(INTENSITY_MIN, mean))
 }
 
 function isSessionEntry(entry: HistoryEntry): entry is HistorySessionEntry {
