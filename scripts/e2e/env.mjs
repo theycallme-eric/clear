@@ -14,7 +14,27 @@
  * a suite nobody runs.
  */
 
-import { resolveEnv } from '../dev-preflight/env.mjs'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import { parseEnvFile, resolveEnv } from '../dev-preflight/env.mjs'
+
+const RUNNER_ENV_FILES = ['.env.runner.local', '.env.audit.local']
+
+function resolveE2eEnv(root, processEnv) {
+  const runnerValues = {}
+
+  for (const file of RUNNER_ENV_FILES) {
+    try {
+      Object.assign(runnerValues, parseEnvFile(readFileSync(resolve(root, file), 'utf8')))
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error
+    }
+  }
+
+  const { values } = resolveEnv(root, processEnv)
+  return { ...runnerValues, ...values }
+}
 
 /** Server-side name first, browser name second. */
 const SOURCES = {
@@ -38,7 +58,7 @@ export const LOCAL_BASE_URL = 'http://localhost:5173'
  * @param {string} [root]
  */
 export function readE2eEnv(processEnv = process.env, root = process.cwd()) {
-  const { values } = resolveEnv(root, processEnv)
+  const values = resolveE2eEnv(root, processEnv)
 
   /** @param {string[]} names */
   const first = (names) => {
