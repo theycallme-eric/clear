@@ -10,14 +10,19 @@
  * profile read has its own loading and error states, and a missing or legacy
  * Goal is a correction state that sends nothing.
  */
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WorkoutClients } from '../data/workout'
 import { DELOAD_DECISIONS_STORAGE_KEY } from '../state/deload-decisions'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
-import { INTENSITY_BY_GOAL, REFUSAL_SUMMARY } from '../state/generation-form'
+import {
+  INTENSITY_BY_GOAL,
+  POWER_REFUSAL,
+  REFUSAL_SUMMARY,
+} from '../state/generation-form'
 import {
   GENERATION_FAILED_LABEL,
   GENERATION_LOADING_TITLE,
@@ -44,8 +49,10 @@ import type {
 import { suggestionDay } from '../state/session-suggestion'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import { createFakeGenerationClient } from '../test/generation-double'
-import { renderApp, renderWithProviders, signedIn } from '../test/render'
+import { AppProviders, renderApp, renderWithProviders, signedIn } from '../test/render'
+import { createTestRouter } from './router'
 import {
+  CHANGE_FOCUS_LABEL,
   CHANGE_GOAL_LABEL,
   FIRST_WORKOUT_MESSAGE,
   Generate,
@@ -57,6 +64,10 @@ import {
   LEGACY_GOAL_MESSAGE,
   MANUAL_FOCUS_MESSAGE,
   MISSING_GOAL_MESSAGE,
+  OVERRIDE_CANCEL_LABEL,
+  OVERRIDE_GROUP_LABEL,
+  OVERRIDE_SCOPE,
+  RECOVERY_LABEL,
 } from './Generate'
 import {
   createFakeUserDataClient,
@@ -575,7 +586,9 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
 
     await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
     expect(calls.count).toBe(reads + 1)
-    expect(chipIn('Anchor', 'Power')).toHaveAttribute('aria-pressed', 'true')
+    // History now recommends Lower body, so the kept choice is an override of it.
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(/^Focus:/)).toHaveTextContent(`Power — ${OVERRIDE_SCOPE}`)
     expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
 
     await user.click(cta())
@@ -1131,5 +1144,255 @@ await user.click(chipIn('Anchor', 'Upper body'))
     await waitFor(() => expect(confirmDialog()).not.toBeInTheDocument())
     expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.strength.start))
     expect(reason()).toBeInTheDocument()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-007 / REQ-008 — what is decided for this workout only
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * `/generate` on a router the test holds, so the address the draft wrote is
+ * read back and a second render from it is the reload the requirement names.
+ */
+function renderDraft({
+  entry = '/generate',
+  history = lowerBodyDue(7),
+}: {
+  entry?: string
+  history?: readonly WorkoutSessionRow[]
+} = {}) {
+  const generation = createFakeGenerationClient()
+  const userData = createFakeUserDataClient()
+  const router = createTestRouter([entry])
+  const rendered = render(
+    <AppProviders
+      {...signedIn({
+        queryClient: warmCache([fixtureLocation(), GYM], 'strength', history),
+        generation,
+        userData,
+      })}
+    >
+      <RouterProvider router={router} />
+    </AppProviders>,
+  )
+  const url = () => `${router.state.location.pathname}${router.state.location.search}`
+
+  return { ...rendered, generation, userData, url, user: userEvent.setup() }
+}
+
+const changeFocus = () => screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })
+const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
+const focusLine = () => screen.getByText(/^Focus:/)
+
+/** The other three this week and Power 16 days back: Power is stalest. */
+function powerDue(): WorkoutSessionRow[] {
+  return [
+    session(1, 1),
+    session(2, 2, { session_focus: 'lower_body' }),
+    session(3, 3, { session_focus: 'full_body' }),
+    session(4, 16, { session_focus: 'power' }),
+  ]
+}
+
+describe('REQ-007 — a Focus for this workout only', () => {
+  it('reveals the four choices under Change focus, and says whether they are open', async () => {
+    const { user } = renderDraft()
+
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('group', { name: OVERRIDE_GROUP_LABEL })).not.toBeInTheDocument()
+
+    await user.click(changeFocus())
+
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'true')
+    const choices = within(group(OVERRIDE_GROUP_LABEL)).getAllByRole('button')
+    expect(choices.map((chip) => chip.textContent)).toEqual([
+      'Upper body',
+      'Lower body',
+      'Full body',
+      'Power',
+    ])
+  })
+
+  it('marks the chosen Focus as this workout only, writes it to the URL, and sends it', async () => {
+    const { user, generation, url } = renderDraft()
+
+    await user.click(changeFocus())
+    await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
+
+    expect(focusLine()).toHaveTextContent('Upper body')
+    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(url()).toBe('/generate?override=upper_body')
+
+    await user.click(cta())
+
+    expect(generation.calls).toHaveLength(1)
+    expect(generation.calls[0]).toMatchObject({ goal: 'strength', focus: 'upper_body' })
+  })
+
+  it.each([
+    ['cancelling', OVERRIDE_CANCEL_LABEL],
+    ['dismissing the choices', CHANGE_FOCUS_LABEL],
+  ])('restores the recommendation on %s', async (_, label) => {
+    const { user, generation, url } = renderDraft()
+
+    await user.click(changeFocus())
+    await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
+    await user.click(screen.getByRole('button', { name: label }))
+
+    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(screen.queryByText(new RegExp(OVERRIDE_SCOPE))).not.toBeInTheDocument()
+    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(url()).toBe('/generate')
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ focus: 'lower_body' })
+  })
+
+  it('restores the override and its marker when the page is reloaded', async () => {
+    const first = renderDraft()
+
+    await first.user.click(changeFocus())
+    await first.user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
+    const reloaded = first.url()
+    first.unmount()
+
+    const { user, generation } = renderDraft({ entry: reloaded })
+
+    expect(focusLine()).toHaveTextContent('Upper body')
+    expect(focusLine()).toHaveTextContent(OVERRIDE_SCOPE)
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body')).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ focus: 'upper_body' })
+  })
+
+  it('does not read a bare Focus prefill as an override', () => {
+    renderDraft({ entry: '/generate?focus=power&intensity=8' })
+
+    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(screen.queryByText(new RegExp(OVERRIDE_SCOPE))).not.toBeInTheDocument()
+    expect(changeFocus()).toHaveAttribute('aria-expanded', 'false')
+  })
+
+  it('writes nothing to the profile when generating with an override', async () => {
+    const { user, generation, userData } = renderDraft()
+
+    await user.click(changeFocus())
+    await user.click(chipIn(OVERRIDE_GROUP_LABEL, 'Upper body'))
+    await user.click(cta())
+
+    expect(generation.calls).toHaveLength(1)
+    expect(userData.preferenceWrites).toEqual([])
+    expect(userData.onboardingCalls).toEqual([])
+  })
+})
+
+describe('REQ-008 — a Recovery session for this workout only', () => {
+  it('sends active_recovery and limits the intensity to 1–3, with the standing Goal still shown', async () => {
+    const { user, generation, url } = renderDraft()
+
+    await user.click(recovery())
+
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText('Strength')).toBeInTheDocument()
+    expect(slider()).toHaveAttribute('min', String(INTENSITY_BY_GOAL.active_recovery.min))
+    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(url()).toBe('/generate?recovery=1')
+
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'active_recovery',
+      focus: 'lower_body',
+      requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+    })
+  })
+
+  it('keeps Power visible and disabled, with the refusal in text', async () => {
+    const { user } = renderDraft()
+
+    await user.click(recovery())
+
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
+    expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
+  })
+
+  it('clears a recommended Power rather than substituting it, and waits for another Focus', async () => {
+    const { user, generation } = renderDraft({ history: powerDue() })
+
+    expect(focusLine()).toHaveTextContent('Power')
+
+    await user.click(recovery())
+
+    expect(cta()).toBeDisabled()
+    expect(chipIn('Anchor', 'Power')).toBeDisabled()
+    for (const chip of within(group('Anchor')).getAllByRole('button')) {
+      expect(chip).toHaveAttribute('aria-pressed', 'false')
+    }
+    expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
+
+    await user.click(chipIn('Anchor', 'Full body'))
+    expect(cta()).toBeEnabled()
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'active_recovery', focus: 'full_body' })
+  })
+
+  it('keeps Recovery when Loading is cancelled, and restores it from that URL', async () => {
+    const first = renderDraft()
+
+    await first.user.click(recovery())
+    await first.user.click(cta())
+    await first.user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(first.url()).toBe('/generate?recovery=1')
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    const reloaded = first.url()
+    first.unmount()
+
+    const { user, generation } = renderDraft({ entry: reloaded })
+
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
+  })
+
+  it('returns to the standing Goal when Recovery is switched off', async () => {
+    const { user, generation, url } = renderDraft()
+
+    await user.click(recovery())
+    await user.click(recovery())
+
+    expect(recovery()).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByText(new RegExp(POWER_REFUSAL))).not.toBeInTheDocument()
+    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.strength.max))
+    expect(url()).toBe('/generate')
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'strength', requested_intensity: 7 })
+  })
+
+  it('opens a fresh visit on the standing Goal, and never wrote the profile', async () => {
+    const first = renderDraft()
+
+    await first.user.click(recovery())
+    await first.user.click(cta())
+    expect(first.generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
+    expect(first.userData.preferenceWrites).toEqual([])
+    expect(first.userData.onboardingCalls).toEqual([])
+    first.unmount()
+
+    const { user, generation } = renderDraft()
+
+    expect(screen.getByText('Strength')).toBeInTheDocument()
+    expect(recovery()).toHaveAttribute('aria-pressed', 'false')
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'strength' })
   })
 })

@@ -33,8 +33,14 @@
  *      completed, or nothing recent, the four choices are asked for with no
  *      claim about history; a read still in flight is a loading state; and a
  *      read that failed says so, offers Retry, and still lets a Focus be
- *      chosen. A Focus in the URL is not a choice the athlete made here, so
- *      the query string seeds nothing.
+ *      chosen. A bare Focus in the URL is not a choice the athlete made here,
+ *      so the prefill seeds nothing.
+ *   5. **What is decided for this workout only is said as that, and lives in
+ *      the URL.** `Change focus` reveals the four choices beside a
+ *      recommendation, and a chosen one is marked `this workout only` until it
+ *      is dismissed; `Recovery session` makes this one draft a Recovery one,
+ *      with Power refused in text. Both are the draft's explicit intent
+ *      parameters, so a refresh restores them, and neither writes the profile.
  *
  * Pressing Generate hands the screen to the shared Loading host (REQ-004): the
  * Loading screen is the screen for the whole run, success lands on Review with
@@ -47,7 +53,7 @@
  * every visit, so a Goal changed in Settings is the Goal the next request sends.
  */
 import { useEffect, useId, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -78,17 +84,21 @@ import {
   initialDraft,
   inputFrom,
   intensityRange,
+  intentFrom,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
   refusalFrom,
   requestFrom,
   resolveGeneration,
+  searchWithIntent,
   standingGoalFrom,
   withAnchor,
   withDuration,
   withIntensity,
   withLocation,
   withNotes,
+  withOverride,
+  withRecovery,
   type DraftRefusal,
   type FocusHistory,
   type GenerationContext,
@@ -194,6 +204,16 @@ export const MANUAL_FOCUS_MESSAGE = 'Choose the focus for this workout.'
 export const HISTORY_ERROR_MESSAGE =
   'Your history could not be read. Retry, or choose the focus for this workout.'
 export const HISTORY_RETRY_LABEL = 'Retry'
+
+/** The deliberate way off a recommendation, and the way back to it (REQ-007). */
+export const CHANGE_FOCUS_LABEL = 'Change focus'
+export const OVERRIDE_GROUP_LABEL = 'Focus for this workout'
+export const OVERRIDE_SCOPE = 'this workout only'
+export const OVERRIDE_CANCEL_LABEL = 'Use the recommended focus'
+
+/** The one-workout Recovery mode, and what it says while it is on (REQ-008). */
+export const RECOVERY_LABEL = 'Recovery session'
+export const RECOVERY_SCOPE = 'Recovery applies to this workout only.'
 
 export function Generate() {
   const navigate = useNavigate()
@@ -314,8 +334,12 @@ function GenerateForm({
   composition: Composition | null
   onCompose: (update: (previous: Composition | null) => Composition) => void
 }) {
+  // REQ-007/REQ-008: the one-workout intent is the URL's, so an untouched form
+  // opens on whatever override or Recovery the address carries, and nothing
+  // else in the query string — a bare Focus prefill least of all — seeds it.
+  const [searchParams, setSearchParams] = useSearchParams()
   const untouched = (): Composition => ({
-    draft: initialDraft(defaultLocationId(places)),
+    draft: initialDraft(defaultLocationId(places), null, intentFrom(searchParams)),
     applied: null,
     overridden: false,
   })
@@ -333,6 +357,24 @@ function GenerateForm({
   const focusLoading = focusHistory === null && draft.anchor === null
   const recommended =
     resolved.status === 'ready' && resolved.focusSource === 'recommended' ? resolved : null
+  // A Focus chosen over a recommendation history still makes. With no
+  // recommendation the same choice is the manual one and carries no marker.
+  const override =
+    resolved.status === 'ready' && resolved.focusSource === 'override' ? resolved : null
+
+  // The choices under `Change focus` open with an override in force — a
+  // refreshed one included — and with Recovery, whose refused Power stays seen.
+  const focusChoices = useId()
+  const [changing, setChanging] = useState(draft.anchor !== null || draft.recovery)
+  const expanded = changing || override !== null
+
+  // The draft's intent is written where a refresh will find it. Replaced rather
+  // than pushed: an edit to a draft is not a place to go back to.
+  const intendedSearch = searchWithIntent(searchParams, draft).toString()
+  const search = searchParams.toString()
+  useEffect(() => {
+    if (intendedSearch !== search) setSearchParams(intendedSearch, { replace: true })
+  }, [intendedSearch, search, setSearchParams])
 
   /** One edit to what the user composed, laid over whatever is already held. */
   function compose(change: Partial<Composition>) {
@@ -369,6 +411,26 @@ function GenerateForm({
   const range = intensityRange(resolved.goal)
   const intensity = resolved.intensity ?? draft.intensity ?? range.start
   const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === resolved.goal)
+  const standingGoal = GENERATION_GOALS.find((goal) => goal.value === goalPreset)
+
+  /** Dismissing the choices takes the override with them (REQ-007). */
+  function toggleChanging() {
+    if (expanded) setDraft(withOverride(draft, null))
+    setChanging(!expanded)
+  }
+
+  /** The recommended Focus chosen again is the recommendation, not an override. */
+  function chooseOverride(focus: GenerationDraft['anchor']) {
+    const isRecommended =
+      focusHistory?.status === 'recommended' && focusHistory.focus === focus
+    setDraft(withOverride(draft, isRecommended ? null : focus))
+  }
+
+  /** §2.3: a Power choice is cleared, not substituted, so the choices are shown. */
+  function toggleRecovery() {
+    if (!draft.recovery) setChanging(true)
+    setDraft(withRecovery(draft, !draft.recovery))
+  }
 
   /**
    * §4's Apply: the intensity is clamped and the directive rides on the request.
@@ -433,27 +495,80 @@ function GenerateForm({
             Settings, never asked per workout (REQ-001). */}
         <div className="clr-stack clr-stack--tight">
           <p style={{ margin: 0 }}>
-            Goal: <strong>{chosenGoal?.label}</strong>
-            {chosenGoal?.description === undefined ? '' : ` — ${chosenGoal.description}`}
+            Goal: <strong>{standingGoal?.label}</strong>
+            {standingGoal?.description === undefined ? '' : ` — ${standingGoal.description}`}
           </p>
           <p style={{ margin: 0 }}>
             <Link to={SETTINGS_ROUTE}>{CHANGE_GOAL_LABEL}</Link>
           </p>
         </div>
 
+        {/* Recovery — the secondary, one-workout mode. The standing Goal above
+            is untouched by it, and Power's refusal is said in text (§2.3). */}
+        <div className="clr-stack clr-stack--tight">
+          <div className="clr-row" style={CHIP_ROW}>
+            <Chip selected={draft.recovery} onClick={toggleRecovery}>
+              {RECOVERY_LABEL}
+            </Chip>
+          </div>
+          {draft.recovery && (
+            <p style={{ margin: 0 }}>
+              {RECOVERY_SCOPE} {POWER_REFUSAL}
+            </p>
+          )}
+        </div>
+
         {/* Focus — recommended from history when history can, asked for when it
             cannot, and never drawn before the read has answered */}
         {focusLoading ? (
           <LoadingView label={HISTORY_LOADING_LABEL} />
-        ) : recommended !== null ? (
+        ) : recommended !== null || override !== null ? (
           <div className="clr-stack clr-stack--tight">
             <p style={{ margin: 0 }}>
               Focus:{' '}
               <strong>
-                {ANCHORS.find((anchor) => anchor.value === recommended.focus)?.label}
+                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
               </strong>
+              {override !== null && ` — ${OVERRIDE_SCOPE}`}
             </p>
-            <p style={{ margin: 0 }}>{recommended.reason}</p>
+            {recommended !== null && <p style={{ margin: 0 }}>{recommended.reason}</p>}
+            <div className="clr-row" style={CHIP_ROW}>
+              <Button
+                variant="quiet"
+                aria-expanded={expanded}
+                aria-controls={expanded ? focusChoices : undefined}
+                onClick={toggleChanging}
+              >
+                {CHANGE_FOCUS_LABEL}
+              </Button>
+              {override !== null && (
+                <Button variant="quiet" onClick={() => chooseOverride(null)}>
+                  {OVERRIDE_CANCEL_LABEL}
+                </Button>
+              )}
+            </div>
+            {/* The override's choices. Power stays visible under Recovery,
+                disabled, with the refusal said beside the Recovery action. */}
+            {expanded && (
+              <div
+                id={focusChoices}
+                className="clr-row"
+                role="group"
+                aria-label={OVERRIDE_GROUP_LABEL}
+                style={CHIP_ROW}
+              >
+                {ANCHORS.map((anchor) => (
+                  <Chip
+                    key={anchor.value}
+                    selected={resolved.focus === anchor.value}
+                    disabled={!anchorAllowed(resolved.goal, anchor.value)}
+                    onClick={() => chooseOverride(anchor.value)}
+                  >
+                    {anchor.label}
+                  </Chip>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>
@@ -470,18 +585,16 @@ function GenerateForm({
               </div>
             )}
 
-            {/* §2.3: Recovery offers no Power, and says why */}
+            {/* §2.3: Recovery offers no Power, and the Recovery action says why */}
             <FormField
               label="Anchor"
               required
               helperText={
-                resolved.goal === 'active_recovery'
-                  ? POWER_REFUSAL
-                  : focusHistory?.status === 'no-completed-history'
-                    ? FIRST_WORKOUT_MESSAGE
-                    : focusHistory?.status === 'history-error'
-                      ? undefined
-                      : MANUAL_FOCUS_MESSAGE
+                focusHistory?.status === 'no-completed-history'
+                  ? FIRST_WORKOUT_MESSAGE
+                  : focusHistory?.status === 'history-error'
+                    ? undefined
+                    : MANUAL_FOCUS_MESSAGE
               }
               errorText={refusal?.fields.focus}
             >
