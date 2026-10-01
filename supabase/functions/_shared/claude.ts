@@ -188,6 +188,8 @@ export interface AttemptFailure {
   readonly code: GenerationFailure
   /** The specific invalid field or the upstream status. Never a raw response. */
   readonly detail: string | null
+  /** False when repeating the same request cannot change the provider's answer. */
+  readonly retryable?: boolean
   /** Present when the response parsed as JSON and failed the schema. */
   readonly issues?: readonly SchemaIssue[]
 }
@@ -296,6 +298,47 @@ interface Completion {
   readonly usage: TokenUsage
 }
 
+export const ProviderFailureKind = {
+  CREDIT: 'credit',
+  AUTHENTICATION: 'authentication',
+  REQUEST: 'request',
+  RATE_LIMIT: 'rate_limit',
+  OVERLOADED: 'overloaded',
+  SERVICE: 'service',
+} as const
+
+export type ProviderFailureKind =
+  (typeof ProviderFailureKind)[keyof typeof ProviderFailureKind]
+
+function providerMessage(value: unknown): string {
+  const error = (value as { error?: unknown } | null)?.error
+  if (typeof error !== 'object' || error === null) return ''
+  const message = (error as { message?: unknown }).message
+  return typeof message === 'string' ? message.toLowerCase() : ''
+}
+
+/** Classify without retaining the provider body, prompt, notes, headers or key. */
+export function classifyProviderFailure(status: number, body: unknown): {
+  readonly kind: ProviderFailureKind
+  readonly retryable: boolean
+} {
+  const message = providerMessage(body)
+
+  if (/credit|billing|balance|spend limit/.test(message)) {
+    return { kind: ProviderFailureKind.CREDIT, retryable: false }
+  }
+  if (status === 401 || status === 403 || /api key|authentication|unauthorized|forbidden/.test(message)) {
+    return { kind: ProviderFailureKind.AUTHENTICATION, retryable: false }
+  }
+  if (status === 429) return { kind: ProviderFailureKind.RATE_LIMIT, retryable: true }
+  if (status === 529) return { kind: ProviderFailureKind.OVERLOADED, retryable: true }
+  if (status >= 500 || status === 408 || status === 409) {
+    return { kind: ProviderFailureKind.SERVICE, retryable: true }
+  }
+
+  return { kind: ProviderFailureKind.REQUEST, retryable: false }
+}
+
 function usageFrom(value: unknown): TokenUsage {
   const usage = (value as { usage?: Record<string, unknown> } | null)?.usage
 
@@ -357,13 +400,17 @@ async function callClaude(
       // The reason, not the request: a thrown fetch carries the URL it was
       // called with, and nothing about this one is worth a log line.
       detail: cause instanceof Error ? cause.name : 'The request did not complete.',
+      retryable: true,
     })
   }
 
   if (!response.ok) {
+    const body: unknown = await response.json().catch(() => null)
+    const failure = classifyProviderFailure(response.status, body)
     return err({
       code: GenerationFailure.UPSTREAM,
-      detail: `The API answered ${response.status}.`,
+      detail: `The API answered ${response.status} (${failure.kind}).`,
+      retryable: failure.retryable,
     })
   }
 
@@ -374,12 +421,17 @@ async function callClaude(
     return err({
       code: GenerationFailure.UPSTREAM,
       detail: 'The API answered with a body that was not JSON.',
+      retryable: true,
     })
   }
 
   const text = textFrom(body)
   if (text === null) {
-    return err({ code: GenerationFailure.UPSTREAM, detail: 'The API answered with no content.' })
+    return err({
+      code: GenerationFailure.UPSTREAM,
+      detail: 'The API answered with no content.',
+      retryable: true,
+    })
   }
 
   return ok({ text, usage: usageFrom(body) })
@@ -531,6 +583,11 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
 
         const correction = correctionFor(outcome.error)
         if (correction) message = withRetryCorrection(prompt.user, correction)
+
+        // A second identical request cannot repair bad parameters, a rejected
+        // key, or an unfunded account. Preserve the one retry for network,
+        // rate-limit and provider-service failures only.
+        if (outcome.error.retryable === false) break
       }
 
       // Two failures, and the loop ends. There is no third call, no partial

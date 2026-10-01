@@ -17,6 +17,16 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      deployment_url:
+        description: Production deployment URL to verify
+        required: true
+        type: string
+      deployed_sha:
+        description: Exact deployed commit SHA (must equal main)
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -81,7 +91,7 @@ jobs:
           retention-days: 7
 
   backend-e2e:
-    name: Trusted backend E2E (OTP + RLS + generation + D6)
+    name: Trusted backend E2E (OTP + RLS + D6)
     # The service-role key is available only to code already reviewed and
     # merged to main. Pull-request/deployment code never enters this job.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -106,15 +116,14 @@ jobs:
       - name: Reset the deterministic E2E namespace
         run: npm run e2e:reset
 
-      # The D6 regression joins these two because it needs what they need: a
+      # The D6 regression joins these checks because it needs what they need: a
       # real project, a real session, and a token that is somebody's. Its
       # schema half runs in every other lane; this is the half that proves it
       # by doing (SES-01b). The Settings to appearance journey (REQ-010) needs
       # a seeded, signed-in user, which only this job can mint.
-      - name: Prove OTP, RLS, generation/persistence and D6 on the reused project
+      - name: Prove OTP, RLS and D6 on the reused project
         run: >-
           npx playwright test e2e/auth-otp.spec.ts e2e/rls.spec.ts
-          e2e/generation-persistence.spec.ts
           e2e/d6-swap-persistence.spec.ts
           e2e/settings-appearance.spec.ts
           --project=mobile
@@ -133,7 +142,7 @@ jobs:
           retention-days: 7
 
   deployed-journeys:
-    name: Deployed exact-head journeys (mobile)
+    name: Deployed exact-head no-model journeys (mobile)
     # REQ-010: the core journeys walked in a browser against the deployment of
     # the merged head itself. Only a successful Production deployment — which
     # Vercel builds from reviewed `main` — so the service-role key never meets
@@ -178,11 +187,6 @@ jobs:
 
       - run: npx playwright install --with-deps chromium
 
-      # No retries: a generation failure fails the gate rather than being
-      # retried into a pass (the spec also pins retries to 0).
-      - name: Walk the new-user core loop against the deployment
-        run: npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0
-
       # Each spec creates and deletes its own users; the sweep clears what a
       # cancelled run left behind.
       - name: Sweep abandoned E2E namespaces
@@ -213,3 +217,71 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  live-model-canary:
+    name: Paid release canary (one generation)
+    # A model call is a release decision, not routine CI. This job exists only
+    # when a person or release operator explicitly dispatches it with the
+    # production URL and exact deployed SHA.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: clear-paid-model-canary
+      cancel-in-progress: false
+    env:
+      E2E_BASE_URL: ${{ inputs.deployment_url }}
+      E2E_NAMESPACE: canary-${{ inputs.deployed_sha }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      LIVE_MODEL_TESTS: '1'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.deployed_sha }}
+
+      - name: Verify the requested deployment is main's exact head
+        env:
+          DEPLOYED_SHA: ${{ inputs.deployed_sha }}
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          MAIN_SHA="$(git rev-parse FETCH_HEAD)"
+          if [ "$MAIN_SHA" != "$DEPLOYED_SHA" ]; then
+            echo "::error::Requested $DEPLOYED_SHA is not main's head $MAIN_SHA"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx playwright install --with-deps chromium
+
+      - name: Declare the paid-call budget
+        run: |
+          echo "### Paid model canary" >> "$GITHUB_STEP_SUMMARY"
+          echo "Paid workout generations: exactly 1." >> "$GITHUB_STEP_SUMMARY"
+          echo "Provider attempts: 1 normally; 2 maximum only for a retryable failure." >> "$GITHUB_STEP_SUMMARY"
+          echo "Playwright retries: 0. Concurrent canaries: 1." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Walk the release core loop with one real generation
+        run: npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0
+
+      - name: Sweep the canary namespace
+        if: always()
+        run: npm run e2e:reset -- --stale
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paid-canary-${{ inputs.deployed_sha }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14

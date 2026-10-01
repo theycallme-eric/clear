@@ -6,7 +6,9 @@ import {
   DEFAULT_MODEL,
   GenerationFailure,
   MAX_ATTEMPTS,
+  ProviderFailureKind,
   apiKeyFromEnv,
+  classifyProviderFailure,
   createComposer,
   parseCompletion,
   stripCodeFence,
@@ -240,6 +242,60 @@ describe('a recorded invalid response', () => {
 })
 
 describe('an upstream failure', () => {
+  it('classifies provider failures without retaining their response body', () => {
+    expect(
+      classifyProviderFailure(400, {
+        error: { message: 'Your credit balance is too low. Secret note: cranky shoulder.' },
+      }),
+    ).toEqual({ kind: ProviderFailureKind.CREDIT, retryable: false })
+    expect(classifyProviderFailure(401, { error: { message: 'invalid x-api-key' } })).toEqual({
+      kind: ProviderFailureKind.AUTHENTICATION,
+      retryable: false,
+    })
+    expect(classifyProviderFailure(429, null)).toEqual({
+      kind: ProviderFailureKind.RATE_LIMIT,
+      retryable: true,
+    })
+    expect(classifyProviderFailure(529, null)).toEqual({
+      kind: ProviderFailureKind.OVERLOADED,
+      retryable: true,
+    })
+  })
+
+  it('does not retry a deterministic 400 response or log its body', async () => {
+    const providerBody = JSON.stringify({
+      type: 'error',
+      error: {
+        type: 'invalid_request_error',
+        message: 'Your credit balance is too low. Secret note: cranky shoulder.',
+      },
+    })
+    const send = vi.fn(async () =>
+      new Response(providerBody, {
+        status: 400,
+        headers: { 'content-type': 'application/json' },
+      }),
+    ) as unknown as typeof globalThis.fetch
+    const { logger, lines } = collectLogs()
+
+    const composed = await createComposer({ apiKey: API_KEY, fetch: send, logger }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.details?.attempts).toBe(1)
+    expect(composed.error.details?.detail).toBe('The API answered 400 (credit).')
+
+    const logged = lines.map((entry) => entry.line).join('\n')
+    expect(logged).toContain('The API answered 400 (credit).')
+    expect(logged).not.toContain('cranky shoulder')
+    expect(logged).not.toContain('credit balance is too low')
+    expect(logged).not.toContain(API_KEY)
+  })
+
   it('is retried once, without a correction there is nothing to correct', async () => {
     const send = vi
       .fn()
@@ -273,7 +329,7 @@ describe('an upstream failure', () => {
 
   it('twice is the service error, not a composition failure', async () => {
     const send = vi.fn(async () =>
-      new Response('overloaded', { status: 529 }),
+      new Response('raw-provider-payload-do-not-log', { status: 529 }),
     ) as unknown as typeof globalThis.fetch
     const { logger, lines } = collectLogs()
 
@@ -288,7 +344,7 @@ describe('an upstream failure', () => {
 
     expect(composed.error.code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
     expect(composed.error.details?.generationCode).toBe(GenerationFailure.EXHAUSTED)
-    expect(composed.error.details?.detail).toBe('The API answered 529.')
+    expect(composed.error.details?.detail).toBe('The API answered 529 (overloaded).')
 
     const warnings = lines
       .filter((entry) => entry.level === 'warn')
@@ -299,17 +355,17 @@ describe('an upstream failure', () => {
         expect.objectContaining({
           attempt: 1,
           code: GenerationFailure.UPSTREAM,
-          detail: 'The API answered 529.',
+          detail: 'The API answered 529 (overloaded).',
         }),
         expect.objectContaining({
           attempt: 2,
           code: GenerationFailure.UPSTREAM,
-          detail: 'The API answered 529.',
+          detail: 'The API answered 529 (overloaded).',
         }),
       ]),
     )
     const logged = lines.map((entry) => entry.line).join('\n')
-    expect(logged).not.toContain('overloaded')
+    expect(logged).not.toContain('raw-provider-payload-do-not-log')
     expect(logged).not.toContain(API_KEY)
   })
 

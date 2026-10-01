@@ -56,8 +56,9 @@ Two other jobs are privileged, and they are privileged for different reasons:
 | Job | When | Runs | Why it may hold the key |
 |---|---|---|---|
 | `rls-standing` | every pull request, branches of this repository only | `rls.spec.ts` | REQ-007 asks for the cross-user matrix *before* a merge, not after. It starts no browser against an untrusted origin and works in its own namespace |
-| `backend-e2e` | push to `main` | OTP + RLS + generation/persistence + D6 | reviewed and merged code, so the full trusted run including the OTP and model-backed generation flows |
-| `deployed-journeys` | successful Vercel **Production** deployment | `core-loop.spec.ts` (no retries), `history-detail.spec.ts`, `settings-locations.spec.ts`, and `settings-appearance.spec.ts` against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; each journey owns and deletes its users (REQ-010 / SET-02) |
+| `backend-e2e` | push to `main` | OTP + RLS + D6 + Settings | reviewed and merged code, with no paid model call |
+| `deployed-journeys` | successful Vercel **Production** deployment | History, locations, and appearance against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; every automatic journey is model-free |
+| `live-model-canary` | explicit workflow dispatch for a release | `core-loop.spec.ts` with no retries | one declared Anthropic call, one canary at a time, against the supplied production URL and exact `main` SHA |
 
 A pull request **from a fork** receives no secret from GitHub, so `rls-standing`
 skips rather than failing confusingly. What still runs there is the half that
@@ -96,12 +97,29 @@ proved unusable a second time. Every other spec takes a minted session. When
 AUTH-02 builds the send-and-verify screen, its browser half belongs in that file
 and nowhere else.
 
-`e2e/generation-persistence.spec.ts` is the matching once-only check for the
-model-backed path. A disposable fresh user completes onboarding, proves that
-the request's chosen goal controls its section set, invokes `generate-workout`,
-persists the exact acceptance payload returned to Review, and reconstructs the
-session through History's API. Its auth user is deleted in teardown, which
-cascades every row the walk created.
+## Paid model boundary
+
+The ordinary unit, integration, preview, trusted-backend, and automatic
+Production-deployment suites make **zero Anthropic calls**. Model behavior is
+covered there with deterministic response fixtures and request interception.
+Even on a machine with all Supabase credentials, paid specs skip unless
+`LIVE_MODEL_TESTS=1` is explicitly present. A broad `npm run e2e` therefore
+cannot multiply paid calls across the phone, tablet, and desktop projects.
+
+The sole recurring paid proof is the manually dispatched `live-model-canary`
+job. It runs `e2e/core-loop.spec.ts` once, with Playwright retries disabled,
+and declares an expected budget of exactly one workout generation before it
+starts. The deployed function normally makes one provider attempt and may make
+one corrected/transient retry, so the honest provider-call ceiling is two.
+That walk covers the deployed function, Review, persistence, Workout, Summary,
+and Home, so a second generation-only job would pay twice for overlapping
+evidence.
+
+`e2e/generation-persistence.spec.ts` remains a targeted operator diagnostic for
+the backend boundary. It is not part of routine CI and must not be run in a
+loop. Its invocation must include `LIVE_MODEL_TESTS=1`. One-off requirements
+such as TASK-014 may still authorize a small, explicit number of paid journeys;
+their issue must state that count.
 
 ## Seed and reset
 
