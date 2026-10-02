@@ -13,6 +13,7 @@
  * - SESSION_*: Workout session lifecycle refusals
  * - PERSISTENCE_*: Data storage failures
  */
+import type { FailureClass, SectionFailure } from '../data/candidates.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Error Codes
@@ -127,11 +128,13 @@ export function createError(
   options?: {
     requestId?: string
     details?: Record<string, unknown>
+    /** A more specific user-safe sentence than the code's own, when there is one. */
+    message?: string
   }
 ): AppError {
   return {
     code,
-    message: getErrorMessage(code),
+    message: options?.message ?? getErrorMessage(code),
     requestId: options?.requestId,
     details: options?.details,
   }
@@ -191,6 +194,59 @@ const errorMessages: Record<ErrorCode, string> = {
  */
 export function getErrorMessage(code: ErrorCode): string {
   return errorMessages[code]
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Eligibility refusals
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GR-04 / REQ-014. One sentence per failure class, given the sections that
+ * failed that way. Each names the section and the choice that emptied it, and
+ * says what to change where the athlete can change it. A catalog defect is not
+ * theirs to fix, so it says the selection is unsupported and suggests nothing.
+ *
+ * The record is total over `FailureClass`, so a class added to the closed set
+ * without a sentence here does not compile.
+ */
+const eligibilityMessages: Record<FailureClass, (sections: string) => string> = {
+  catalog_defect: (sections) => `${sections}: this selection is not currently supported.`,
+  athlete_constraint: (sections) =>
+    `${sections}: your exclusions remove every exercise. Remove one under Work around in Settings.`,
+  missing_equipment: (sections) =>
+    `${sections}: nothing can be done with the equipment at this place. Add equipment in Places and equipment, or choose another place.`,
+  empty_profile: () => 'Your profile has no sections turned on. Turn on sections in Settings.',
+  undetermined: (sections) =>
+    `${sections}: no exercises match these options. Change equipment or exclusions.`,
+}
+
+/** Every class the mapping holds a sentence for. */
+export const ELIGIBILITY_MESSAGE_CLASSES = Object.keys(eligibilityMessages) as FailureClass[]
+
+/** `primary_lift` as a person reads it. */
+function sectionName(section: string): string {
+  return section.replaceAll('_', ' ')
+}
+
+/**
+ * The user-safe sentence for an eligibility refusal: one sentence per class
+ * present, each listing its sections. No failures is the code's general line.
+ */
+export function eligibilityRefusalMessage(failures: readonly SectionFailure[]): string {
+  const sentences = ELIGIBILITY_MESSAGE_CLASSES.flatMap((failureClass) => {
+    const matching = failures.filter((failure) => failure.failureClass === failureClass)
+    if (matching.length === 0) return []
+
+    const listed = matching
+      .flatMap((failure) => (failure.section === null ? [] : [sectionName(failure.section)]))
+      .join(', ')
+
+    return [eligibilityMessages[failureClass](listed.charAt(0).toUpperCase() + listed.slice(1))]
+  })
+
+  return sentences.length === 0
+    ? getErrorMessage(ErrorCode.GENERATION_NO_CANDIDATES)
+    : sentences.join(' ')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
