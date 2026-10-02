@@ -316,10 +316,22 @@ Goal, section toggles, exclusions and one location's equipment as arguments — 
 and `focus_pattern_map` and no row a user owns — and applies retrieval's predicates and floor to
 every goal × focus Generate offers, active recovery's fixed sections included. No rows is viable;
 otherwise each failing section carries a class and the incompatible choice (the section, the
-equipment set, or the exclusions). `src/data/viability.ts` is the only reader and no screen calls it
-yet. The predicates are restated rather than shared, because retrieval resolves them from saved rows;
+equipment set, or the exclusions). `src/data/viability.ts` is the only reader. The predicates are
+restated rather than shared, because retrieval resolves them from saved rows;
 `src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and the
 answers to the legal-state matrix.
+
+REQ-012 is the first caller, and it is the database rather than a screen.
+`20261002000022_settings_viability_guard.sql` puts one trigger on `profiles` (Goal, enabled sections)
+and one on `user_constraints` (a persistent `exclude`): each runs `generation_viability` for every
+location the user has, before and after the change, and raises `settings_not_viable` when the change
+introduces a failure — so a refused write stores nothing, whichever client made it, and a
+configuration that was already failing stays editable. Onboarding's commit and the location writes
+are not guarded. The raise carries the introduced failures and their locations as its detail;
+`supabase.ts` keeps a raise's message and detail, `viability.ts` (`settingsRefusalFrom`) reads them,
+and `errors.ts` (`settingsRefusalMessage`) composes the sentence. `user-data.ts`'s
+`updatePreferences` and `constraints.ts`'s `add` answer that error, and Settings shows it through the
+inline save it already had — `src/app/Settings.tsx` is unchanged.
 
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`
