@@ -221,6 +221,114 @@ export const SECTION_MEMBERSHIP = Object.freeze({
 })
 
 /**
+ * GR-03 / REQ-007: what candidate retrieval returns for every `session_focus`,
+ * at each onboarding tier's preset equipment, for each section — `[strict,
+ * relaxed]`. Strict is the count with the focus pattern predicate; relaxed is
+ * the count without it, which is what a section under the floor is served.
+ *
+ * Recorded so a change to either is a decision: retagging an exercise, adding
+ * one, or moving a tier's equipment fails `viability.mjs` until the new counts
+ * are written here. Relaxed does not depend on the focus and is repeated so
+ * each focus reads on its own.
+ *
+ * The zeros are known and are not defects of the seed. `carries` at `minimal`
+ * has no candidate even relaxed — every carry needs dumbbells or kettlebells —
+ * and `configuration-dispositions.json` prevents that configuration at the
+ * preference boundary. A strict zero with a relaxed count is a section the
+ * focus does not reach, served relaxed and recorded as such.
+ */
+export const FOCUS_RETRIEVAL = Object.freeze({
+  upper_body: Object.freeze({
+    minimal: Object.freeze({
+      warmup: [26, 28], mobility: [14, 14], primary_lift: [2, 8], accessory: [9, 23],
+      skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [1, 7],
+      conditioning: [11, 13], cooldown: [6, 6],
+    }),
+    home: Object.freeze({
+      warmup: [26, 29], mobility: [14, 14], primary_lift: [5, 13], accessory: [30, 59],
+      skill_power: [1, 3], carries: [4, 4], core: [10, 19], stability_balance: [1, 10],
+      conditioning: [17, 23], cooldown: [6, 6],
+    }),
+    building: Object.freeze({
+      warmup: [28, 31], mobility: [14, 14], primary_lift: [13, 32], accessory: [45, 92],
+      skill_power: [4, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
+      conditioning: [19, 25], cooldown: [6, 6],
+    }),
+    full: Object.freeze({
+      warmup: [28, 31], mobility: [14, 14], primary_lift: [13, 33], accessory: [46, 97],
+      skill_power: [4, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
+      conditioning: [21, 27], cooldown: [6, 6],
+    }),
+  }),
+  lower_body: Object.freeze({
+    minimal: Object.freeze({
+      warmup: [25, 28], mobility: [14, 14], primary_lift: [6, 8], accessory: [12, 23],
+      skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [7, 7],
+      conditioning: [9, 13], cooldown: [6, 6],
+    }),
+    home: Object.freeze({
+      warmup: [26, 29], mobility: [14, 14], primary_lift: [8, 13], accessory: [27, 59],
+      skill_power: [2, 3], carries: [4, 4], core: [10, 19], stability_balance: [10, 10],
+      conditioning: [17, 23], cooldown: [6, 6],
+    }),
+    building: Object.freeze({
+      warmup: [28, 31], mobility: [14, 14], primary_lift: [23, 32], accessory: [46, 92],
+      skill_power: [9, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
+      conditioning: [19, 25], cooldown: [6, 6],
+    }),
+    full: Object.freeze({
+      warmup: [28, 31], mobility: [14, 14], primary_lift: [24, 33], accessory: [49, 97],
+      skill_power: [9, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
+      conditioning: [21, 27], cooldown: [6, 6],
+    }),
+  }),
+  full_body: Object.freeze({
+    minimal: Object.freeze({
+      warmup: [26, 28], mobility: [14, 14], primary_lift: [8, 8], accessory: [18, 23],
+      skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [7, 7],
+      conditioning: [11, 13], cooldown: [6, 6],
+    }),
+    home: Object.freeze({
+      warmup: [27, 29], mobility: [14, 14], primary_lift: [13, 13], accessory: [48, 59],
+      skill_power: [2, 3], carries: [4, 4], core: [10, 19], stability_balance: [10, 10],
+      conditioning: [20, 23], cooldown: [6, 6],
+    }),
+    building: Object.freeze({
+      warmup: [29, 31], mobility: [14, 14], primary_lift: [32, 32], accessory: [78, 92],
+      skill_power: [10, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
+      conditioning: [22, 25], cooldown: [6, 6],
+    }),
+    full: Object.freeze({
+      warmup: [29, 31], mobility: [14, 14], primary_lift: [33, 33], accessory: [82, 97],
+      skill_power: [10, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
+      conditioning: [24, 27], cooldown: [6, 6],
+    }),
+  }),
+  power: Object.freeze({
+    minimal: Object.freeze({
+      warmup: [25, 28], mobility: [14, 14], primary_lift: [0, 8], accessory: [3, 23],
+      skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [1, 7],
+      conditioning: [9, 13], cooldown: [6, 6],
+    }),
+    home: Object.freeze({
+      warmup: [25, 29], mobility: [14, 14], primary_lift: [1, 13], accessory: [12, 59],
+      skill_power: [3, 3], carries: [4, 4], core: [10, 19], stability_balance: [1, 10],
+      conditioning: [17, 23], cooldown: [6, 6],
+    }),
+    building: Object.freeze({
+      warmup: [27, 31], mobility: [14, 14], primary_lift: [8, 32], accessory: [21, 92],
+      skill_power: [12, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
+      conditioning: [19, 25], cooldown: [6, 6],
+    }),
+    full: Object.freeze({
+      warmup: [27, 31], mobility: [14, 14], primary_lift: [8, 33], accessory: [21, 97],
+      skill_power: [12, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
+      conditioning: [21, 27], cooldown: [6, 6],
+    }),
+  }),
+})
+
+/**
  * DATA_MODEL §3 step 3: "Compare candidate sets … derived versus original,
  * across all four focuses."
  *
