@@ -23,7 +23,7 @@ confirmation-link token.
 
 | Date | Run by | Result (pass / fail) |
 | ---- | ------ | -------------------- |
-|      |        |                      |
+| 2026-10-02 | Agent Runner recovery supervisor, under owner approval | pass |
 
 ### 1.2 Hosted template drift — automated, read-only
 
@@ -61,3 +61,48 @@ and nothing from the email itself.
 | Date | Run by | Result (pass / fail) | Failed sub-step, if any |
 | ---- | ------ | -------------------- | ----------------------- |
 |      |        |                      |                         |
+
+## 2. Pre-change snapshot (REQ-027)
+
+Run once, after the deterministic lanes are green and **before** the catalog section repair
+migration is applied to the hosted project. It reads; it never writes to the hosted project.
+
+### 2.1 Capture — a person or a trusted job, read-only
+
+```sh
+npm run gr:snapshot -- --out <directory outside the repository>
+```
+
+It needs `SUPABASE_URL` and `VERCEL_TOKEN` (`.env.runner.local`) and `SUPABASE_SERVICE_ROLE_KEY`
+(`.env.audit.local`), or the same names in the process environment. Every request it makes is a
+GET. The captured rows of the catalog tables and `profiles`, and the full deployed matrix, are
+written to the directory given, which must be empty and outside the repository; keep it with the
+off-machine backup. **Never copy a capture file into the repository.**
+
+It writes `docs/process/generation-reliability/pre-change-snapshot.json`: the deployed commit, a
+row count and SHA-256 per capture file, the pre-change deployed matrix (hash, summary, every
+section × tier row, and how many rows differ from the committed seed's), and the rollback
+rehearsal. Commit the manifest.
+
+The command refuses, writing nothing, if the hosted catalog already carries the repair (the
+capture would not be pre-change) or if the committed migration followed by the committed rollback
+does not give the captured section tags back.
+
+| Date | Run by | Result (pass / fail) |
+| ---- | ------ | -------------------- |
+|      |        |                      |
+
+### 2.2 Committed manifest — automated, no credentials
+
+```sh
+npx vitest run src/test/generation-reliability/pre-change-snapshot.test.ts
+npm run gr:snapshot -- --check
+```
+
+Fails while the manifest is absent, if it carries anything but counts, hashes, instants and
+enumerated values, or if the rollback it records as verified was rehearsed against a migration or
+rollback script other than the committed ones. A changed migration means a new capture.
+
+| Date | Run by | Result (pass / fail) |
+| ---- | ------ | -------------------- |
+|      |        |                      |
