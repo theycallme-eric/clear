@@ -1,6 +1,11 @@
 import type { Page, Request, Response } from '@playwright/test'
 
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
+import {
+  assertReleaseGate,
+  buildReleaseEvidence,
+  writeReleaseEvidence,
+} from '../scripts/generation-reliability/release-gate.mjs'
 
 import { expect, test } from './fixtures'
 import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
@@ -17,8 +22,18 @@ import { liveModelEnabled, liveModelReason } from './support/live-model'
  * deployment's SHA is `main`'s exact head. Locally it drives the dev server
  * against the same project.
  *
- * Four properties are the point, and each is asserted rather than assumed:
+ * Six properties are the point, and each is asserted rather than assumed:
  *
+ *  * **Last, not first (REQ-026).** Before a user is provisioned the release
+ *    gate is asked whether the fast contract, composition and critical browser
+ *    lanes have passed for the exact commit checked out (`npm run gr:lanes`
+ *    records them). If one has not, the journey refuses with that lane's name
+ *    and nothing is created or requested.
+ *  * **Evidence either way (REQ-024).** Pass or fail, the request id, HTTP
+ *    status, typed error code and failure class are written to
+ *    `release-evidence/<commit>/release-journey.json` and attached to the
+ *    report. The artifact is built from an allow-list: no address, token,
+ *    message or response body reaches it.
  *  * **Its own user.** A namespaced `example.com` address is provisioned before
  *    the walk and deleted after it, whatever the outcome. Nothing depends on a
  *    pre-seeded account.
@@ -84,9 +99,21 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
 
   let email = ''
   let client: ReturnType<typeof backend.client>
+  let commit = ''
+
+  /** What the journey saw of its one generation; only this reaches the evidence. */
+  const observed = {
+    generationRequests: 0,
+    requestId: null as string | null,
+    status: null as number | null,
+    code: null as string | null,
+    accepted: false,
+  }
 
   test.beforeAll(async ({ browserName }, testInfo) => {
     void browserName
+    // Refuses, naming the lane, before anything is provisioned or requested.
+    commit = assertReleaseGate().commit
     email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-core-loop@example.com`
     client = backend.client()
     // A cancelled prior run may have left this exact address behind. Only it
@@ -101,6 +128,17 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     const provisioned = await client.findUserByEmail(email)
     if (provisioned) await client.deleteUser(provisioned.id)
     expect(await client.findUserByEmail(email), 'the namespaced user outlived the run').toBeFalsy()
+  })
+
+  test.afterEach(async ({ browserName }, testInfo) => {
+    void browserName
+    const evidence = buildReleaseEvidence({
+      ...observed,
+      commit,
+      passed: testInfo.status === 'passed',
+    })
+    const path = writeReleaseEvidence(process.cwd(), evidence)
+    await testInfo.attach('release-evidence', { path, contentType: 'application/json' })
   })
 
   test('walks every screen on the path and lands Home with the session in recents', async ({
@@ -213,6 +251,8 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     page.on('request', (request) => {
       if (isGeneration(request.url()) && request.method() === 'POST') {
         generationRequests.push(request)
+        observed.generationRequests = generationRequests.length
+        observed.requestId ??= request.headers()['x-request-id'] ?? null
       }
     })
     const generated: Promise<Response> = page.waitForResponse(
@@ -233,6 +273,9 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // The deployed function's answer, read off the wire rather than the app.
     const response = await generated
     const payload: unknown = await response.json().catch(() => null)
+    observed.status = response.status()
+    const refusal = (payload as { code?: unknown } | null)?.code
+    observed.code = typeof refusal === 'string' ? refusal : null
     expect(
       response.status(),
       `generate-workout failed: ${JSON.stringify(payload)}`,
@@ -248,6 +291,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     const workout = body.acceptance.workout
     expect(workout.title.trim()).not.toBe('')
     expect(workout.sections.length).toBeGreaterThan(0)
+    observed.accepted = true
 
     // ── Review ─────────────────────────────────────────────────────────────
     await expectScreen('Review', routeOf('Review'), workout.title)

@@ -61,7 +61,19 @@ Two other jobs are privileged, and they are privileged for different reasons:
 | `rls-standing` | every pull request, branches of this repository only | `rls.spec.ts` | REQ-007 asks for the cross-user matrix *before* a merge, not after. It starts no browser against an untrusted origin and works in its own namespace |
 | `backend-e2e` | push to `main` | OTP + RLS + D6 + Settings | reviewed and merged code, with no paid model call |
 | `deployed-journeys` | successful Vercel **Production** deployment | History, locations, and appearance against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; every automatic journey is model-free |
-| `live-model-canary` | explicit workflow dispatch for a release | `core-loop.spec.ts` with no retries | one declared Anthropic call, one canary at a time, against the supplied production URL and exact `main` SHA |
+| `live-model-canary` | explicit workflow dispatch for a release | `npm run gr:lanes`, then `core-loop.spec.ts` with no retries | one declared Anthropic call, one canary at a time, against the supplied production URL and exact `main` SHA |
+
+The release journey is gated twice. Without `LIVE_MODEL_TESTS=1` it is skipped.
+With it, `core-loop.spec.ts` first asks `scripts/generation-reliability/release-gate.mjs`
+whether the fast contract, composition and critical browser lanes have passed
+for the commit checked out, and refuses — naming the lane, before any user is
+created — if one has not. `npm run gr:lanes` (or `-- fast-contract`,
+`-- composition`, `-- critical-browser`) runs them on a clean tree with the
+opt-in removed and records each pass under `release-evidence/<commit>/lanes/`;
+a browser lane that skipped for want of credentials is not recorded. Pass or
+fail, the journey writes `release-evidence/<commit>/release-journey.json` with
+the request id, HTTP status, typed error code and failure class, and nothing
+else. The directory is ignored by git and uploaded with the canary's artifacts.
 
 `generation-database-lane.spec.ts` (GR-05) is in none of these jobs. It is run
 on demand, after a catalog deployment, with
