@@ -28,7 +28,16 @@
  * `complete_onboarding` is one transaction (ONB-01's migration), so there is no
  * partial-write path here to clean up after.
  */
-import { createError, err, ErrorCode, isErr, ok, type Result } from '../state/errors'
+import {
+  createError,
+  err,
+  ErrorCode,
+  isErr,
+  ok,
+  type AppError,
+  type Result,
+} from '../state/errors'
+import { locationRefusalMessage } from '../state/locations'
 import { viabilityRefusalMessage } from '../state/onboarding'
 import {
   locationDraftSchema,
@@ -51,7 +60,12 @@ import {
 } from '../state/schemas'
 import type { AuthClient } from './auth'
 import { createSupabaseClient, type SupabaseClient, type SupabaseConfig } from './supabase'
-import { failuresFromRefusal, notViableError, settingsRefusalFrom } from './viability'
+import {
+  failuresFromRefusal,
+  locationRefusalFrom,
+  notViableError,
+  settingsRefusalFrom,
+} from './viability'
 
 export interface UserDataClient {
   /** The user's row, or `null` when they have none yet. */
@@ -99,6 +113,10 @@ export interface UserDataClient {
    * Nothing here reassigns the default — REQ-063 asks that deleting the default
    * force reassignment *first*, so that is a decision the screen makes the user
    * take, and this is only ever called on a row that is safe to remove.
+   *
+   * All three writes are refused by the database when what they leave cannot
+   * support the saved sections (REQ-013); the error's message then names the
+   * section and the change, and nothing was written.
    */
   deleteLocation(locationId: string): Promise<Result<void>>
 }
@@ -259,7 +277,7 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
         p_equipment: [...payload.value.equipment],
         p_location_id: payload.value.id,
       })
-      if (isErr(saved)) return saved
+      if (isErr(saved)) return err(refused(saved.error))
 
       return parseBoundary(locationSetupSchema, saved.value)
     },
@@ -271,7 +289,7 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       const moved = await supa.value.rpc('set_default_location', {
         p_location_id: locationId,
       })
-      if (isErr(moved)) return moved
+      if (isErr(moved)) return err(refused(moved.error))
 
       return parseBoundary(locationSchema, moved.value)
     },
@@ -280,11 +298,32 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       const supa = await client()
       if (isErr(supa)) return supa
 
-      // No owner in the predicate and none needed: `locations_delete_own` is
-      // the policy, and a row that is not the caller's matches nothing. The
-      // delete asks for no representation, so a location already gone is not an
-      // error — the screen's optimistic removal was right either way.
-      return supa.value.from('locations').delete({ id: locationId })
+      // A function rather than a DELETE since REQ-013: removing the last
+      // location is evaluated where it cannot be skipped. It answers the id it
+      // removed, or null for a location already gone — which is not an error,
+      // because the screen's optimistic removal was right either way.
+      const deleted = await supa.value.rpc('delete_location', {
+        p_location_id: locationId,
+      })
+      if (isErr(deleted)) return err(refused(deleted.error))
+
+      return ok(undefined)
     },
   }
+}
+
+/**
+ * REQ-013. A location write the database refused as non-viable, reported with
+ * the sentence that names the section and the change; any other failure is
+ * returned as it arrived. The refusal itself rides in `details` for a caller
+ * that needs the class rather than the sentence.
+ */
+function refused(error: AppError): AppError {
+  const refusal = locationRefusalFrom(error)
+  if (refusal === null) return error
+
+  return createError(error.code, {
+    message: locationRefusalMessage(refusal),
+    details: { ...error.details, refusal },
+  })
 }

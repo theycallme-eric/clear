@@ -305,6 +305,8 @@ function malformed(details: Record<string, unknown>): AppError {
 
 /** SQLSTATE of a plain `raise exception` in a database function or trigger. */
 const RAISED_EXCEPTION = 'P0001'
+/** SQLSTATE TASK-011 uses for a location write that violates viability. */
+const CHECK_VIOLATION = '23514'
 
 /**
  * HTTP status → the error taxonomy. A write refused by RLS is not a network
@@ -326,12 +328,12 @@ async function transportError(
       const problem = body as { code?: unknown; message?: unknown; details?: unknown }
       details.pgCode = problem.code
       // Raised exceptions carry structured refusal evidence in DETAIL. Keep it
-      // for both REQ-011's custom SQLSTATE and REQ-012's P0001 trigger.
+      // for all three save-time viability guards.
       if (typeof problem.details === 'string') details.pgDetail = problem.details
-      // P0001 is a `raise` in this schema's own SQL, so its message and detail
-      // are ours rather than Postgres' — REQ-012's refusal carries what it
-      // refused in them, and `viability.ts` is what reads it.
-      if (problem.code === RAISED_EXCEPTION) {
+      // These are raised by this schema's own guards, so the message is ours
+      // rather than Postgres' — the settings and location refusals use it to
+      // identify which guard rejected the write.
+      if (problem.code === RAISED_EXCEPTION || problem.code === CHECK_VIOLATION) {
         details.pgMessage = problem.message
       }
     }

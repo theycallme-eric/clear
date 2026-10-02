@@ -346,6 +346,15 @@ and `errors.ts` (`settingsRefusalMessage`) composes the sentence. `user-data.ts`
 `updatePreferences` and `constraints.ts`'s `add` answer that error, and Settings shows it through the
 inline save it already had — `src/app/Settings.tsx` is unchanged.
 
+REQ-013 is the first write that asks it. `20261002000024_location_viability.sql` redefines
+`save_location` and `set_default_location` and adds `delete_location`; each evaluates what it leaves
+through `location_viability_failures` — `generation_viability` against the caller's saved goal,
+sections and persistent exclusions — and raises `location_not_viable` after the write, so the
+transaction restores the previous rows. The exception's DETAIL carries the change and the failing
+sections; `src/data/user-data.ts` reads it (`locationRefusalFrom`) and sets the error's message from
+`locationRefusalMessage` in `src/state/locations.ts`. `LocationSettings` is unchanged: its existing
+failed-save path rolls the optimistic update back and toasts that message.
+
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`
 (`supabase/migrations/20260921000007_streak_sessions.sql`) answers a page of completed sessions
