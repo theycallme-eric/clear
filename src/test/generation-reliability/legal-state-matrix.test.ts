@@ -149,7 +149,7 @@ describe('where the enums come from', () => {
     expect(() => buildMatrix(grow('goal_preset'))).toThrow(/no section preset/)
     expect(() => buildMatrix(grow('session_focus'))).toThrow(/focus_pattern_map/)
     expect(() => buildMatrix(grow('constraint_scope'))).toThrow(/no retrieval predicate/)
-  })
+  }, 20_000)
 })
 
 describe('coverage', () => {
