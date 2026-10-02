@@ -31,6 +31,7 @@
  *   supabase/migrations/20261001000021_generation_viability.sql
  *   supabase/migrations/20261002000022_settings_viability_guard.sql
  *   supabase/migrations/20261002000023_onboarding_viability.sql
+ *   supabase/migrations/20261002000024_location_viability.sql
  */
 
 export type Json =
@@ -796,6 +797,12 @@ export type Database = {
         }
         Returns: Database['public']['Tables']['user_constraints']['Row'][]
       }
+      delete_location: {
+        Args: {
+          p_location_id: string
+        }
+        Returns: string
+      }
       generation_candidate_sets: {
         Args: {
           p_user_id: string
@@ -878,6 +885,12 @@ export type Database = {
           p_prescription: Json
         }
         Returns: string
+      }
+      location_viability_failures: {
+        Args: {
+          p_equipment: string[]
+        }
+        Returns: Json
       }
       mark_rest_day: {
         Args: {

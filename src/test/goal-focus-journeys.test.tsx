@@ -507,8 +507,8 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
     // generation-reliability catalog repair (GR-02), refusal diagnostics
     // (GR-04), save-time viability evaluation (REQ-010), the Settings
     // viability guard (REQ-012), and the onboarding commit that asks it
-    // (REQ-011) — each is named here so a migration nobody
-    // accounted for still fails.
+    // (REQ-011), followed by the location writes that enforce it (REQ-013) —
+    // each is named here so a migration nobody accounted for still fails.
     const inspected = migrations.indexOf('20260927000018_generation_goal_scope.sql')
     expect(inspected).toBeGreaterThan(-1)
     expect(migrations.slice(inspected + 1)).toEqual([
@@ -517,6 +517,7 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
       '20261001000021_generation_viability.sql',
       '20261002000022_settings_viability_guard.sql',
       '20261002000023_onboarding_viability.sql',
+      '20261002000024_location_viability.sql',
     ])
   })
 })
