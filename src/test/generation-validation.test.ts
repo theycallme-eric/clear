@@ -300,10 +300,14 @@ describe('a section the user did not enable', () => {
 
     const violations = checkReferences(workout, INPUT)
 
-    expect(violations).toHaveLength(1)
-    expect(violations[0].check).toBe(3)
-    expect(violations[0].path).toBe('sections[2].section_type')
-    expect(violations[0].message).toContain('carries')
+    // Renaming a section is two faults, and GR-04 reports both: the resolved
+    // section that is now missing, and the one nobody enabled — once, not once
+    // per exercise under it.
+    expect(violations.map((violation) => violation.check)).toEqual([3, 3])
+    expect(violations[0].path).toBe('sections')
+    expect(violations[0].message).toContain('accessory')
+    expect(violations[1].path).toBe('sections[2].section_type')
+    expect(violations[1].message).toContain('carries')
   })
 
   it('reads the effective sections, which active recovery fixes for itself', () => {
@@ -368,9 +372,10 @@ describe('the rejection a retry is told about', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A workout composed to be outside on all four observations at once: no warmup
- * section, a primary lift that is a fifth of the session, three accessory
- * movements sharing components, and an exercise the history already saw.
+ * A workout composed to be outside on all four observations at once: a warmup
+ * that prepares nothing the session does, a primary lift that is a fraction of
+ * the session, three accessory movements sharing components, and an exercise
+ * the history already saw.
  */
 function noticeablyPoorWorkout(): GenerationOutput {
   const workout = composed()
@@ -383,9 +388,8 @@ function noticeablyPoorWorkout(): GenerationOutput {
     { ...exercise, exercise_id: 'glute-bridge', equipment: 'bodyweight' },
   ]
 
-  // Drop the warmup; the request still enables it.
-  workout.sections = [workout.sections[1], accessory]
-
+  // Every resolved section stays: dropping one is a hard rejection (GR-04), and
+  // this fixture is about what is merely observed.
   return workout
 }
 

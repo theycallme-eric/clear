@@ -298,6 +298,16 @@ model, and GEN-02b cannot select an ineligible exercise because the prompt it bu
 one. `src/data/candidates.ts` is the only reader: it maps the payload, and turns a section that
 resolved to nothing into `GENERATION_NO_CANDIDATES` instead of an empty workout.
 
+A refusal is classified (GR-04). `generation_refusal_diagnostics`
+(`supabase/migrations/20261001000020_generation_refusal_diagnostics.sql`) answers two counts for each
+empty section — catalog exercises carrying it, and those the resolved location can perform before
+exclusions — and `classifySection` in `src/data/candidates.ts` reads them as `catalog_defect`,
+`athlete_constraint` or `missing_equipment`; no resolved section at all is `empty_profile`. The
+reader and `generate-workout` (`_shared/generate.ts`) build the same error through
+`noCandidatesError`, the function logs `generation refused: eligibility` with the request id and the
+section/class pairs, and it returns above the composer. The wire body is unchanged. `validate.ts`
+check 3 rejects a composed workout that omits a resolved section as well as one that adds a section.
+
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`
 (`supabase/migrations/20260921000007_streak_sessions.sql`) answers a page of completed sessions

@@ -10,7 +10,12 @@
 
 import {
   CANDIDATE_FLOOR,
+  REFUSAL_DIAGNOSTICS_RPC,
+  emptySections,
+  failuresOf,
+  noCandidatesError,
   sectionFromRow,
+  supportFromRows,
   type SectionCandidates,
 } from '../../../src/data/candidates.ts'
 import { deprioritized } from '../../../src/data/constraint-selectors.ts'
@@ -142,16 +147,27 @@ export function createGenerationDatabase(config: GenerationDatabaseConfig): Gene
         sections.push(section.value)
       }
 
-      const empty = sections
-        .filter((section) => section.candidates.length === 0)
-        .map((section) => section.section)
+      if (sections.length === 0) return err(noCandidatesError(sections, null))
 
-      if (sections.length === 0 || empty.length > 0) {
-        return err(
-          createError(ErrorCode.GENERATION_NO_CANDIDATES, {
-            details: { sections: sections.length === 0 ? 'none resolved' : empty },
-          }),
+      const empty = emptySections(sections)
+      if (empty.length > 0) {
+        // GR-04: the refusal says whose it is to fix. One more read, made only
+        // for the sections that came back empty; if it cannot be made the
+        // refusal stands, typed, with the class left `undetermined`.
+        const support = await requestJson(
+          `/rpc/${REFUSAL_DIAGNOSTICS_RPC}`,
+          {
+            method: 'POST',
+            body: JSON.stringify({
+              p_user_id: userId,
+              p_sections: empty,
+              p_location_id: request.location_id,
+            }),
+          },
+          REFUSAL_DIAGNOSTICS_RPC,
         )
+
+        return err(noCandidatesError(sections, support.ok ? supportFromRows(support.value) : null))
       }
 
       return ok(sections)
@@ -301,7 +317,20 @@ export async function performGeneration(
       deps.db.conditioning(userId),
     ])
 
-  if (!candidateResult.ok) return err({ ...candidateResult.error, requestId })
+  // Eligibility is settled before anything is composed (GR-04 / REQ-008): a
+  // refusal returns here, above the prompt and above the composer.
+  if (!candidateResult.ok) {
+    if (candidateResult.error.code === ErrorCode.GENERATION_NO_CANDIDATES) {
+      // The whole of the diagnostic: section names and class names. Nothing of
+      // the request's notes, the caller, or the credentials it arrived with.
+      logger?.warn('generation refused: eligibility', {
+        requestId,
+        code: candidateResult.error.code,
+        failures: failuresOf(candidateResult.error),
+      })
+    }
+    return err({ ...candidateResult.error, requestId })
+  }
   if (!constraintResult.ok) return err({ ...constraintResult.error, requestId })
   if (!historyResult.ok) return err({ ...historyResult.error, requestId })
   if (!anchorResult.ok) return err({ ...anchorResult.error, requestId })

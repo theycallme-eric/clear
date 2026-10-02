@@ -91,6 +91,16 @@ export function createCandidatesDouble(
     const caller = options.users[token]
     if (caller === undefined) return problem(401, '42501', 'invalid claim')
 
+    if (path === '/rpc/generation_refusal_diagnostics' && method === 'POST') {
+      const args = JSON.parse(String(init?.body ?? '{}')) as {
+        p_user_id: string
+        p_sections: string[]
+        p_location_id: string | null
+      }
+
+      return json(refusalDiagnostics(caller, args))
+    }
+
     if (path !== '/rpc/generation_candidate_sets' || method !== 'POST') {
       return problem(404, '42883', `no function matches ${path}`)
     }
@@ -228,6 +238,33 @@ export function createCandidatesDouble(
         candidates: relaxed
           ? candidatesFor(caller, args, section, available, true)
           : strict,
+      }
+    })
+  }
+
+  /**
+   * `generation_refusal_diagnostics`, transcribed from
+   * `20261001000020_generation_refusal_diagnostics.sql`: two counts per
+   * section, and the user's exclusions deliberately not applied.
+   */
+  const refusalDiagnostics = (
+    caller: string,
+    args: { p_user_id: string; p_sections: string[]; p_location_id: string | null },
+  ) => {
+    const available = equipmentFor(caller, args.p_user_id, args.p_location_id)
+
+    return args.p_sections.map((section) => {
+      const tagged = catalog.filter(
+        (exercise) =>
+          exercise.sections.includes(section) && exercise.equipmentOptions.length > 0,
+      )
+
+      return {
+        section,
+        catalog_exercises: tagged.length,
+        equipped_exercises: tagged.filter((exercise) =>
+          exercise.equipmentOptions.some((item) => available.includes(item)),
+        ).length,
       }
     })
   }

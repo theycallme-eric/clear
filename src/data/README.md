@@ -28,8 +28,10 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   equipment and exclusions all ran in SQL before a row arrived
   (`supabase/migrations/20260921000005_generation_candidates.sql`). What it owns is the domain
   shape, the parse of the `jsonb` candidate list, and the typed empty-set failure —
-  `GENERATION_NO_CANDIDATES`, naming the sections that resolved to nothing. One RPC per request,
-  and no model call anywhere in the path.
+  `GENERATION_NO_CANDIDATES`, naming the sections that resolved to nothing and the failure class of
+  each (`catalog_defect`, `athlete_constraint`, `missing_equipment`, `empty_profile`; GR-04). One RPC
+  per request, a second (`generation_refusal_diagnostics`) only to classify a refusal, and no model
+  call anywhere in the path.
 - `generation.ts` (GEN-03) — the call to `generate-workout`, and every way it refuses. One method,
   answering the validated workout or a typed error carrying the request id, and never both. Three
   refusals happen before anything is sent: a request `workout_sessions`' CHECK constraints would not
