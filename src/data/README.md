@@ -37,7 +37,10 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   (`supabase/migrations/20261001000021_generation_viability.sql`). The proposal is the arguments;
   nothing saved is read and nothing is written. It answers viable, or each failing section with its
   class (`catalog_gap`, `missing_equipment`, `athlete_exclusion`, `no_sections`) and the
-  incompatible choice. No screen calls it yet.
+  incompatible choice. REQ-012 adds the refusal read: the database runs the same evaluation when a
+  Goal, section or limitation changes (`20261002000022_settings_viability_guard.sql`) and refuses
+  the write, and `settingsRefusalFrom` turns that write's error into the sentence naming the choice
+  and the place. `user-data.ts` (`updatePreferences`) and `constraints.ts` (`add`) apply it.
 - `generation.ts` (GEN-03) — the call to `generate-workout`, and every way it refuses. One method,
   answering the validated workout or a typed error carrying the request id, and never both. Three
   refusals happen before anything is sent: a request `workout_sessions`' CHECK constraints would not

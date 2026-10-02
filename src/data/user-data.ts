@@ -50,6 +50,7 @@ import {
 } from '../state/schemas'
 import type { AuthClient } from './auth'
 import { createSupabaseClient, type SupabaseClient, type SupabaseConfig } from './supabase'
+import { settingsRefusalFrom } from './viability'
 
 export interface UserDataClient {
   /** The user's row, or `null` when they have none yet. */
@@ -196,7 +197,9 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       if (isErr(supa)) return supa
 
       const rows = await supa.value.from('profiles').update(patch.value, { id: userId })
-      if (isErr(rows)) return rows
+      // REQ-012: a Goal or section change that cannot generate at a saved
+      // location is refused by the database, and the refusal names the choice.
+      if (isErr(rows)) return err(settingsRefusalFrom(rows.error))
 
       const [row] = rows.value
       // No row means the patch matched nothing: RLS refused it, or the profile
