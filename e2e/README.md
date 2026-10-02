@@ -63,6 +63,13 @@ Two other jobs are privileged, and they are privileged for different reasons:
 | `deployed-journeys` | successful Vercel **Production** deployment | History, locations, and appearance against that deployment's URL, from that deployment's commit | the job first verifies the deployed SHA is `main`'s exact head; every automatic journey is model-free |
 | `live-model-canary` | explicit workflow dispatch for a release | `core-loop.spec.ts` with no retries | one declared Anthropic call, one canary at a time, against the supplied production URL and exact `main` SHA |
 
+`generation-database-lane.spec.ts` (GR-05) is in none of these jobs. It is run
+on demand, after a catalog deployment, with
+`npx playwright test e2e/generation-database-lane.spec.ts --project=mobile`:
+it creates its own `clear-e2e-<namespace>-gr-db-*` users, calls the candidate
+RPC and `persist_session` as them, makes no model call, and has deleted them by
+the time it reports. Without credentials it skips with the reason above.
+
 A pull request **from a fork** receives no secret from GitHub, so `rls-standing`
 skips rather than failing confusingly. What still runs there is the half that
 needs no database: the disposition audit below, in both this suite and `CI`.
