@@ -8,6 +8,9 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+# GR-06 release evidence: per-commit lane records and the release journey's
+# diagnostics. Uploaded from the release run, never committed.
+release-evidence/
 .env
 .env.*
 !.env.example

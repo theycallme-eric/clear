@@ -22,6 +22,7 @@
     "gr:auth-template": "node scripts/generation-reliability/auth-email-template.mjs",
     "gen:types": "node scripts/gen-types/gen-types.mjs",
     "gr:matrix": "node scripts/generation-reliability/legal-state-matrix.mjs",
+    "gr:lanes": "node scripts/generation-reliability/release-lanes.mjs",
     "gr:dispositions": "node scripts/generation-reliability/configuration-dispositions.mjs",
     "gr:repair": "node scripts/generation-reliability/catalog-repair-migration.mjs",
     "lint": "eslint .",

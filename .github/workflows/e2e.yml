@@ -269,6 +269,13 @@ jobs:
           echo "Provider attempts: 1 normally; 2 maximum only for a retryable failure." >> "$GITHUB_STEP_SUMMARY"
           echo "Playwright retries: 0. Concurrent canaries: 1." >> "$GITHUB_STEP_SUMMARY"
 
+      # REQ-026: the provider is never a discovery tool. Each deterministic
+      # lane runs here, on this exact commit, with the opt-in removed from its
+      # environment; the journey below refuses, naming the lane, unless all
+      # three left a passing record.
+      - name: Prove the deterministic lanes for this commit
+        run: npm run gr:lanes
+
       - name: Walk the release core loop with one real generation
         run: npx playwright test e2e/core-loop.spec.ts --project=mobile --retries=0
 
@@ -281,6 +288,7 @@ jobs:
         with:
           name: paid-canary-${{ inputs.deployed_sha }}
           path: |
+            release-evidence/
             playwright-report/
             test-results/
           if-no-files-found: ignore
