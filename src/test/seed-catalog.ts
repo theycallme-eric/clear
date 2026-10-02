@@ -30,6 +30,9 @@ export interface SeededExercise {
   readonly id: string
   readonly name: string
   readonly equipmentOptions: readonly string[]
+  /** Equipment slug → what the exercise is called with it. Usually empty. */
+  readonly equipmentDisplayNames: Readonly<Record<string, string>>
+  readonly coachingCues: readonly string[]
   readonly sections: readonly string[]
   readonly componentMovements: readonly string[]
   readonly exerciseRole: string
@@ -206,8 +209,18 @@ export function seededCatalog(): SeededExercise[] {
     read('supabase/seed/010_exercise_definitions.sql'),
     'exercise_definitions',
   ).map((row) => {
-    const [id, name, equipmentOptions, , , , sections, canBePrimary, componentMovements, exerciseRole] =
-      row
+    const [
+      id,
+      name,
+      equipmentOptions,
+      ,
+      equipmentDisplayNames,
+      coachingCues,
+      sections,
+      canBePrimary,
+      componentMovements,
+      exerciseRole,
+    ] = row
     const derived = new Set(
       texts(componentMovements)
         .map((component) => components.get(component))
@@ -218,6 +231,9 @@ export function seededCatalog(): SeededExercise[] {
       id: text(id),
       name: text(name),
       equipmentOptions: texts(equipmentOptions),
+      // `'{}'::jsonb` in all but a handful of rows, and already parsed.
+      equipmentDisplayNames: equipmentDisplayNames as Record<string, string>,
+      coachingCues: texts(coachingCues),
       sections: texts(sections),
       componentMovements: texts(componentMovements),
       exerciseRole: text(exerciseRole),
