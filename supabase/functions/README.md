@@ -14,6 +14,8 @@ What the shell guarantees, which is what makes it worth being a module:
 
 - Unauthenticated → `401` with `{ code, message, requestId }`; the handler never runs.
 - A body the CORE-03 schema rejects → `400` carrying the field paths that were wrong.
+- A generation refusal carries only its closed contract subtype as `failure`; retry counts,
+  provider details and every other `AppError.details` value stay server-side.
 - Every response — success, refusal, or a handler that threw — echoes the client's
   `X-Request-ID`, in the body and in the response header.
 - One log line per request, with four fields picked by name. No header map, no request object and
@@ -32,6 +34,11 @@ Two consequences at deploy time, both handled in `deno.json` and `../config.toml
   `src/test/generation-envelope.test.ts` fails if the two drift.
 - CORE-03's own relative imports are extensionless, which Deno resolves only with
   `unstable: ["sloppy-imports"]`.
+
+`_shared/claude.ts` also derives its structured-output JSON Schema from that same CORE-03 schema.
+It removes only provider-unsupported constraints and collapses the repeated discriminated-union
+shape to stay within Anthropic's grammar limit; the original Zod schema still validates every
+response. No parallel handwritten model schema exists.
 
 `verify_jwt` is `false` for these functions, and that is not a relaxation: the gateway's refusal is
 untyped and carries no request id, so the function verifies the same token against GoTrue itself

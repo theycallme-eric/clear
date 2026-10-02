@@ -89,8 +89,10 @@ than a convention. `supabase/functions/_shared/envelope.ts` is what every AI fun
 the request id, JWT verification against GoTrue, `parseBoundary` with the caller's CORE-03 schema,
 and one CORE-02 log line per request. A handler receives a parsed body and an authenticated user or
 it does not run, and it returns a value rather than a `Response` — status codes and the
-`{ code, message, requestId }` shape belong to the envelope, which is the only way every function
-can be relied on to answer the same way. `generate-workout/index.ts` is that module plus a handler;
+`{ code, message, requestId, failure? }` shape belong to the envelope, which is the only way every
+function can be relied on to answer the same way. `failure`, when present, is one value from the
+closed generation subtype allowlist; arbitrary handler details stay server-side.
+`generate-workout/index.ts` is that module plus a handler;
 `generate-section` (REV-02) is the same module plus a different one. Nothing in the directory
 reaches for a runtime global except the `Deno.serve` line, so the envelope is tested with Vitest
 from `src/test/generation-envelope.test.ts` rather than by deploying it — and the assertion that
@@ -109,9 +111,13 @@ clause already enforces, and no name, cue or regression, because those are hydra
 validation. The active-recovery clamp lives here too, applied to the request rather than checked on
 the output, since the system prompt states the 1–3 range as an accomplished fact. `claude.ts` is the
 call: `ANTHROPIC_API_KEY` reaches it as an argument from `Deno.env.get` and leaves in one request
-header, the response is parsed against CORE-03's `generationOutputSchema`, and a typed failure buys
-exactly one corrected retry before `generation.exhausted`. There is no third attempt and no shape it
-can return but a parsed workout or an `AppError` — D2's mock workout has nowhere to live.
+header. The provider's constrained-decoding schema is derived from CORE-03's
+`generationOutputSchema`, normalized only for Anthropic's supported JSON Schema subset, and the
+response is still parsed against the original schema. The 16K output budget leaves room for
+Sonnet 5 adaptive thinking plus a complete long session; truncation and refusal become typed
+failures. A typed failure buys exactly one corrected retry before `generation.exhausted`. There is
+no third attempt and no shape it can return but a parsed workout or an `AppError` — D2's mock
+workout has nowhere to live.
 
 GEN-02c's validation is the third module in that directory, and the direction of its one import is
 the design. `validate.ts` asks the questions neither the schema nor the database can: is this
@@ -188,8 +194,8 @@ with CORE-03's own schemas. That re-parse is not redundant with GEN-02c's: the t
 side of the fetch is a deployment, which can be older than the bundle asking, and a workout that
 does not parse has to become an error rather than a half-rendered screen. It also reads the
 contract's §9 code (`generation.no_candidates` and friends) when the function names one, through
-`generationErrorResponseSchema` — CORE-03's error response widened for the client only, so what
-GEN-01 *writes* stays GEN-01's call — and maps each of the six to its own sentence and its own
+`generationErrorResponseSchema` — the same closed wire shape GEN-01 writes — and maps each of the
+six to its own sentence and its own
 answer to "can this be retried", because "try again" is wrong advice for an over-constrained
 request and for a spent retry alike. `src/state/generation.ts` is the mutation over it: idle →
 pending → success | error, with the in-flight guard in a ref rather than in rendered state, because

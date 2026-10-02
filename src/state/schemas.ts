@@ -301,6 +301,16 @@ export const generationOutputSchema = z.strictObject({
   estimated_duration_mins: positiveInt,
 })
 
+/**
+ * The same output contract expressed as JSON Schema for provider-side
+ * constrained decoding. Provider-specific compatibility belongs in the model
+ * client; this export keeps the shape derived from CORE-03 instead of
+ * introducing a second handwritten generation schema.
+ */
+export const generationOutputJsonSchema = z.toJSONSchema(generationOutputSchema, {
+  target: 'draft-7',
+})
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Envelopes
 // ─────────────────────────────────────────────────────────────────────────────
@@ -399,33 +409,7 @@ export const schemaIssueSchema = z.strictObject({
   message: nonBlank,
 })
 
-/**
- * The CORE-01 wire error: `{ code, message, requestId }`, the same shape for
- * every function. `code` is the taxonomy in `src/state/errors.ts` rather than
- * a string, so a client can branch on it; the contract's own §9 code list
- * (`generation.malformed_prescription` and friends) names failures the
- * taxonomy spells `GENERATION_*`, and reconciling the two lists is GEN-01's
- * call to make once it owns the responses.
- *
- * `issues` is optional because most failures have no field to name: a model
- * outage is not a path. When the failure *is* a malformed payload, the paths
- * travel with it (GEN-01), and nothing else from an `AppError`'s `details`
- * does — the rest of it is for the log.
- */
-export const errorResponseSchema = z.strictObject({
-  code: z.enum(Object.values(ErrorCode) as [ErrorCode, ...ErrorCode[]]),
-  message: nonBlank,
-  requestId: requestIdSchema,
-  issues: z.array(schemaIssueSchema).optional(),
-})
-
-/**
- * The contract's own §9 code list, in the contract's spelling. It is a second
- * vocabulary beside `ErrorCode` on purpose: the taxonomy says what a client
- * should *do*, and these say which check refused the composition. GEN-03 reads
- * them to choose a sentence a person can act on — "change equipment" and "the
- * retry is spent" are different advice arriving as the same taxonomy code.
- */
+/** The contract's own §9 code list, beside CORE-01's action-oriented taxonomy. */
 export const GENERATION_FAILURES = [
   'generation.no_candidates',
   'generation.invalid_reference',
@@ -437,15 +421,29 @@ export const GENERATION_FAILURES = [
 export const generationFailureSchema = z.enum(GENERATION_FAILURES)
 
 /**
- * The error response as GEN-03 reads it: CORE-01's wire error, plus the §9 code
- * when the function names one. `errorResponseSchema` is left as it is — what
- * GEN-01 *writes* is its own call, and this only widens what a client will
- * accept. Unknown keys are still refused, and an answer without `failure`
- * parses exactly as it does today.
+ * The CORE-01 wire error: `{ code, message, requestId }`, the same shape for
+ * every function. `issues` and the closed generation `failure` subtype are
+ * optional because most failures have neither. Nothing else from an
+ * `AppError`'s details crosses the boundary.
  */
-export const generationErrorResponseSchema = errorResponseSchema.extend({
+export const errorResponseSchema = z.strictObject({
+  code: z.enum(Object.values(ErrorCode) as [ErrorCode, ...ErrorCode[]]),
+  message: nonBlank,
+  requestId: requestIdSchema,
+  issues: z.array(schemaIssueSchema).optional(),
+  /**
+   * Present only when a generation failure reached the envelope with one of
+   * the contract's closed §9 values. Other AppError details remain server-only.
+   */
   failure: generationFailureSchema.optional(),
 })
+
+/**
+ * The generation error response is the shared wire error. The alias keeps the
+ * call site explicit while ensuring the producer and consumer cannot drift on
+ * the optional §9 failure subtype.
+ */
+export const generationErrorResponseSchema = errorResponseSchema
 
 /**
  * A generation that succeeded, echoing the id it was called with (§9).
