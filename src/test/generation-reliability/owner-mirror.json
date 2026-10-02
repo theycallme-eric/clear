@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "generatedBy": "npm run gr:matrix -- --deployed",
+  "notes": [
+    "Generated from one read-only pass over the hosted project. Do not edit.",
+    "The owner’s saved configuration, reduced to enumerated values and equipment ids.",
+    "equipment is the default location’s. exclusions lists scopes only: no target and no note is recorded."
+  ],
+  "goal": "balanced",
+  "enabledSections": [
+    "warmup",
+    "mobility",
+    "primary_lift",
+    "accessory",
+    "skill_power",
+    "core",
+    "conditioning",
+    "cooldown"
+  ],
+  "tier": "building",
+  "equipment": [
+    "barbell",
+    "bodyweight",
+    "box",
+    "cable_machine",
+    "dumbbells",
+    "foam_roller",
+    "kettlebells",
+    "leg_press",
+    "pullup_bar",
+    "rowing_machine"
+  ],
+  "exclusions": []
+}
