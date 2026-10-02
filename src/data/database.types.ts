@@ -30,6 +30,7 @@
  *   supabase/migrations/20261001000020_generation_refusal_diagnostics.sql
  *   supabase/migrations/20261001000021_generation_viability.sql
  *   supabase/migrations/20261002000022_settings_viability_guard.sql
+ *   supabase/migrations/20261002000023_onboarding_viability.sql
  */
 
 export type Json =

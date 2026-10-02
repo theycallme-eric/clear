@@ -24,7 +24,9 @@
  *
  * States (IA.md §4): committing (loading), commit failed (error, draft kept,
  * retry), populated (the step). Empty is n/a — a wizard with no answers yet is
- * still a question.
+ * still a question. A commit the database refuses as unable to generate
+ * (REQ-011) is neither a failure nor a new state: it is the confirm step with
+ * the step's own validation line saying which answer to change.
  */
 import { useReducer, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -38,6 +40,7 @@ import {
   Input,
   Progress,
 } from '../design-system/index'
+import { viabilityFailuresOf } from '../data/viability'
 import { useAuth } from '../state/auth-context'
 import type { AppError } from '../state/errors'
 import {
@@ -82,6 +85,12 @@ type Commit =
   | { readonly status: 'idle' }
   | { readonly status: 'committing' }
   | { readonly status: 'failed'; readonly error: AppError }
+  /**
+   * REQ-011: the commit evaluated the answers and refused them. Not a failure
+   * to retry — the same draft is refused again — so it carries the draft it
+   * was about, and stops being shown the moment that draft is edited.
+   */
+  | { readonly status: 'refused'; readonly message: string; readonly draft: OnboardingDraft }
 
 type Direction = 'forward' | 'back'
 
@@ -99,6 +108,9 @@ export function Onboarding() {
   const step = ONBOARDING_STEPS[index] ?? 'confirm'
   const blocked = blockedReason(step, draft)
   const answers = toAnswers(draft)
+  // The reducer answers the same object for an edit that changes nothing, so
+  // identity is exactly "these are still the answers that were refused".
+  const refusal = commit.status === 'refused' && commit.draft === draft ? commit.message : null
 
   function go(to: number, towards: Direction) {
     setDirection(towards)
@@ -112,7 +124,11 @@ export function Onboarding() {
     const committed = await userData.completeOnboarding(answers)
 
     if (!committed.ok) {
-      setCommit({ status: 'failed', error: committed.error })
+      setCommit(
+        viabilityFailuresOf(committed.error).length > 0
+          ? { status: 'refused', message: committed.error.message, draft }
+          : { status: 'failed', error: committed.error },
+      )
       return
     }
 
@@ -206,6 +222,11 @@ export function Onboarding() {
             <Heading>{STEP_TITLES[step]}</Heading>
             <StepView step={step} draft={draft} dispatch={dispatch} />
             {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
+            {refusal !== null && step === 'confirm' && (
+              <p role="alert" style={{ margin: 0 }}>
+                {refusal}
+              </p>
+            )}
           </div>
         </div>
       </div>

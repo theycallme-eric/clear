@@ -317,10 +317,21 @@ Goal, section toggles, exclusions and one location's equipment as arguments — 
 and `focus_pattern_map` and no row a user owns — and applies retrieval's predicates and floor to
 every goal × focus Generate offers, active recovery's fixed sections included. No rows is viable;
 otherwise each failing section carries a class and the incompatible choice (the section, the
-equipment set, or the exclusions). `src/data/viability.ts` is the only reader. The predicates are
-restated rather than shared, because retrieval resolves them from saved rows;
-`src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and the
-answers to the legal-state matrix.
+equipment set, or the exclusions). `src/data/viability.ts` is the only reader and no screen calls it
+directly. The predicates are restated rather than shared, because retrieval resolves them from saved
+rows; `src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and
+the answers to the legal-state matrix.
+
+REQ-011 is the first save that asks it. `20261002000023_onboarding_viability.sql` re-declares
+`complete_onboarding` with the evaluation ahead of every write: the answers are the proposal, and any
+failing row raises SQLSTATE `CLR11` with the rows as the exception's detail, so nothing is written
+and a crafted request meets the same refusal. `src/data/supabase.ts` keeps that detail,
+`src/data/user-data.ts` turns it into a `VALIDATION_CONSTRAINT` carrying the failures
+(`failuresFromRefusal`, `notViableError`), and the sentence naming the section and the equipment or
+exclusion is `viabilityRefusalMessage` in `src/state/onboarding.ts`. `src/app/Onboarding.tsx` shows it
+on the confirm step's validation line as an alert and keeps the draft.
+`src/test/generation-reliability/onboarding-viability.test.ts` follows it end to end over
+`src/test/onboarding-double.ts`, the commit transcribed.
 
 REQ-012 is the first caller, and it is the database rather than a screen.
 `20261002000022_settings_viability_guard.sql` puts one trigger on `profiles` (Goal, enabled sections)

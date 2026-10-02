@@ -325,12 +325,14 @@ async function transportError(
     if (typeof body === 'object' && body !== null && 'code' in body) {
       const problem = body as { code?: unknown; message?: unknown; details?: unknown }
       details.pgCode = problem.code
+      // Raised exceptions carry structured refusal evidence in DETAIL. Keep it
+      // for both REQ-011's custom SQLSTATE and REQ-012's P0001 trigger.
+      if (typeof problem.details === 'string') details.pgDetail = problem.details
       // P0001 is a `raise` in this schema's own SQL, so its message and detail
       // are ours rather than Postgres' — REQ-012's refusal carries what it
       // refused in them, and `viability.ts` is what reads it.
       if (problem.code === RAISED_EXCEPTION) {
         details.pgMessage = problem.message
-        details.pgDetail = problem.details
       }
     }
   } catch {
