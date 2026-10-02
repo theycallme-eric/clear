@@ -1,0 +1,224 @@
+{
+  "version": 1,
+  "notes": [
+    "GR-06 / REQ-022. Recorded model responses for the composition lane (composition-lane.test.ts).",
+    "Each response is the text a contract-4.1.0 model answer carries, for the saved configuration beside it.",
+    "Every exercise id and equipment value is one the committed seed resolves for that configuration and section; the lane fails when that stops being true.",
+    "prose is a recorded answer that is not a workout at all. Out-of-candidate answers are derived from these in the test, one named field at a time."
+  ],
+  "prose": "Happy to help! Here's a full-body strength session. I've put the jumps before the squat and finished with carries, which should complement the focus you asked for. Let me know if you'd like it adjusted.",
+  "recordings": {
+    "customized-repaired-sections": {
+      "description": "A customized Building-tier Strength profile with skill_power, carries and stability_balance switched on beside the preset.",
+      "profile": {
+        "tier": "building",
+        "goal": "strength",
+        "focus": "full_body",
+        "addedSections": ["skill_power", "carries", "stability_balance"],
+        "requestedIntensity": 7,
+        "requestedDurationMins": 60
+      },
+      "response": {
+        "title": "Full Body Strength",
+        "overview": "Jumps, a heavy squat, then single-leg and loaded-carry work.",
+        "sections": [
+          {
+            "section_type": "warmup",
+            "section_title": "Prepare",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "cat-cow", "equipment": "bodyweight", "session_function": "prep", "anchor_relationship": "neutral", "modality": "reps", "sets": 2, "target_kind": "fixed", "target_value": 8, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 30, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "worlds-greatest-stretch", "equipment": "bodyweight", "session_function": "prep", "anchor_relationship": "direct", "modality": "reps", "sets": 2, "target_kind": "fixed", "target_value": 5, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": 30, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "skill_power",
+            "section_title": "Jump",
+            "section_notes": "Full reset between reps.",
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "box-jumps", "equipment": "box", "session_function": "primary", "anchor_relationship": "complementary", "modality": "reps", "sets": 3, "target_kind": "fixed", "target_value": 5, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 60, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "primary_lift",
+            "section_title": "Squat",
+            "section_notes": "Build to a heavy set of five.",
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "back-squat", "equipment": "barbell", "session_function": "primary", "anchor_relationship": "direct", "modality": "reps", "sets": 4, "target_kind": "fixed", "target_value": 5, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 150, "tempo": "31X1", "load_type": "percent_1rm", "load_value": 78, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "accessory",
+            "section_title": "Push and Pull",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "superset", "rounds": 3, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": 90, "rep_scheme": "fixed", "block_notes": "Alternate without rest between the pair.",
+                "exercises": [
+                  { "exercise_id": "barbell-row", "equipment": "barbell", "session_function": "accessory", "anchor_relationship": "complementary", "modality": "reps", "sets": null, "target_kind": "range", "target_value": null, "target_min": 8, "target_max": 10, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "rir", "load_value": 2, "is_interval_exercise": false },
+                  { "exercise_id": "db-incline-press", "equipment": "dumbbells", "session_function": "accessory", "anchor_relationship": "complementary", "modality": "reps", "sets": null, "target_kind": "range", "target_value": null, "target_min": 8, "target_max": 10, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "rir", "load_value": 2, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "stability_balance",
+            "section_title": "Single Leg",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "single-leg-rdl", "equipment": "kettlebells", "session_function": "balance", "anchor_relationship": "complementary", "modality": "reps", "sets": 3, "target_kind": "fixed", "target_value": 8, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": 60, "tempo": null, "load_type": "rir", "load_value": 3, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "carries",
+            "section_title": "Carry",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "farmers-carry", "equipment": "kettlebells", "session_function": "accessory", "anchor_relationship": "complementary", "modality": "distance", "sets": 3, "target_kind": "fixed", "target_value": 40, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": "m", "rest_seconds": 60, "tempo": null, "load_type": "rir", "load_value": 2, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "core",
+            "section_title": "Trunk",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "plank", "equipment": "bodyweight", "session_function": "core", "anchor_relationship": "neutral", "modality": "time", "sets": 3, "target_kind": "fixed", "target_value": 45, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 45, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "dead-bugs", "equipment": "bodyweight", "session_function": "core", "anchor_relationship": "neutral", "modality": "reps", "sets": 2, "target_kind": "fixed", "target_value": 10, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": 45, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "cooldown",
+            "section_title": "Downshift",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "childs-pose", "equipment": "bodyweight", "session_function": "recovery", "anchor_relationship": "neutral", "modality": "time", "sets": 1, "target_kind": "fixed", "target_value": 60, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "90-90-stretch", "equipment": "bodyweight", "session_function": "recovery", "anchor_relationship": "neutral", "modality": "time", "sets": 1, "target_kind": "fixed", "target_value": 60, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          }
+        ],
+        "estimated_duration_mins": 55
+      }
+    },
+    "minimal-main-work": {
+      "description": "A Minimal-tier Strength request: the primary lift is low/no-equipment main work, with no barbell anywhere in the candidate set.",
+      "profile": {
+        "tier": "minimal",
+        "goal": "strength",
+        "focus": "lower_body",
+        "addedSections": [],
+        "requestedIntensity": 6,
+        "requestedDurationMins": 45
+      },
+      "response": {
+        "title": "Lower Body, No Equipment",
+        "overview": "Split-squat main work with bodyweight posterior-chain accessories.",
+        "sections": [
+          {
+            "section_type": "warmup",
+            "section_title": "Prepare",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "leg-swings", "equipment": "bodyweight", "session_function": "prep", "anchor_relationship": "direct", "modality": "reps", "sets": 2, "target_kind": "fixed", "target_value": 10, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": 30, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "air-squat", "equipment": "bodyweight", "session_function": "prep", "anchor_relationship": "direct", "modality": "reps", "sets": 2, "target_kind": "fixed", "target_value": 10, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 30, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "primary_lift",
+            "section_title": "Split Squat",
+            "section_notes": "Slow lowering; stop two reps short of failure.",
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "bulgarian-split-squat", "equipment": "bodyweight", "session_function": "primary", "anchor_relationship": "direct", "modality": "reps", "sets": 4, "target_kind": "range", "target_value": null, "target_min": 8, "target_max": 12, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": 90, "tempo": "41X1", "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "accessory",
+            "section_title": "Posterior Chain",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "superset", "rounds": 3, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": 60, "rep_scheme": "fixed", "block_notes": "Alternate without rest between the pair.",
+                "exercises": [
+                  { "exercise_id": "single-leg-glute-bridge", "equipment": "bodyweight", "session_function": "accessory", "anchor_relationship": "complementary", "modality": "reps", "sets": null, "target_kind": "fixed", "target_value": 12, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "sissy-squat", "equipment": "bodyweight", "session_function": "accessory", "anchor_relationship": "complementary", "modality": "reps", "sets": null, "target_kind": "fixed", "target_value": 10, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "core",
+            "section_title": "Trunk",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "plank", "equipment": "bodyweight", "session_function": "core", "anchor_relationship": "neutral", "modality": "time", "sets": 3, "target_kind": "fixed", "target_value": 40, "target_min": null, "target_max": null, "target_sequence": null, "per_side": false, "distance_unit": null, "rest_seconds": 30, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          },
+          {
+            "section_type": "cooldown",
+            "section_title": "Downshift",
+            "section_notes": null,
+            "blocks": [
+              {
+                "structure_type": "standard", "rounds": null, "timer_type": "none", "timer_seconds": null, "round_rest_seconds": null, "rep_scheme": "fixed", "block_notes": null,
+                "exercises": [
+                  { "exercise_id": "pigeon-stretch", "equipment": "bodyweight", "session_function": "recovery", "anchor_relationship": "neutral", "modality": "time", "sets": 1, "target_kind": "fixed", "target_value": 60, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false },
+                  { "exercise_id": "couch-stretch", "equipment": "bodyweight", "session_function": "recovery", "anchor_relationship": "neutral", "modality": "time", "sets": 1, "target_kind": "fixed", "target_value": 60, "target_min": null, "target_max": null, "target_sequence": null, "per_side": true, "distance_unit": null, "rest_seconds": null, "tempo": null, "load_type": "bodyweight", "load_value": null, "is_interval_exercise": false }
+                ]
+              }
+            ]
+          }
+        ],
+        "estimated_duration_mins": 38
+      }
+    }
+  }
+}
