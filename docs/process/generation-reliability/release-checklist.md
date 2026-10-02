@@ -173,3 +173,40 @@ a pass.
 | ---- | ------ | ------------------------- | --------------------- | -------------------- |
 | 2026-10-02 | Agent Runner, TASK-025 attempt 2 | not run — stopped at 3.3 | — | not run |
 | 2026-10-02 | Recovery supervisor, after deployed matrix passed | 25 passed, 0 skipped, 0 failed | 0 | pass |
+
+## 4. Deployed UAT matrix (REQ-028)
+
+Run after step 3 passes, against the deployed application.
+
+### 4.1 Nine entries to Review — automated, disposable users only, no model call
+
+```sh
+npx playwright test e2e/generation-deployed-matrix.spec.ts --project=mobile
+npx vitest run src/test/generation-reliability/release-evidence.test.ts
+```
+
+The first command walks a new user, a returning user, a default preset, the owner-mirror
+customized profile, the Minimal tier, the Building tier, and one user for each of `skill_power`,
+`carries` and `stability_balance` from Welcome to Review on the deployment. Generation is answered
+from what the deployed candidate RPC resolved for that user. It must pass **unskipped**, and it
+rewrites `docs/process/generation-reliability/release-evidence.json`: one row per saved section
+for every entry, the deployed commit, and what was left behind. Commit the record. The second
+command fails while the record is absent, lacks an entry or a section row, records a failure or a
+leftover, or carries anything but enumerated values, counts and a commit.
+
+The target is `E2E_BASE_URL` when set; otherwise the public alias of the newest ready production
+deployment, read with `VERCEL_TOKEN`. The record names the commit, never the origin.
+
+| Date | Run by | Deployed commit | Passed / skipped / failed | Disposable users or rows left | Result (pass / fail) |
+| ---- | ------ | --------------- | ------------------------- | ----------------------------- | -------------------- |
+| 2026-10-02 | Agent Runner, TASK-027 attempt 2 | `9995a5ad845f269e8d4cdfab55ffb130a399a145` | 11 passed, 0 skipped, 0 failed | 0 | pass |
+
+### 4.2 Owner sign-in, generate and review — a person, the real profile
+
+The owner signs in on the deployed application with the real account, generates a workout with
+the current real profile and reaches Review. This step calls the model and is not automated here.
+Record only the outcome, and the request id if it fails.
+
+| Date | Run by | Result (pass / fail) | Request id, if failed |
+| ---- | ------ | -------------------- | --------------------- |
+|      |        |                      |                       |
