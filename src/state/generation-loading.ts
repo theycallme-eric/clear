@@ -27,7 +27,7 @@
  *
  * The presentation half is `src/app/GenerationLoading.tsx`.
  */
-import { GENERATION_STAGES, type GenerationError, type GenerationStage } from '../data/generation'
+import { GenerationFailure, GENERATION_STAGES, type GenerationError, type GenerationStage } from '../data/generation'
 import type { GenerationState } from './generation'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,10 +55,9 @@ export const GENERATION_FAILED_LABEL = 'Generation failed'
 export const GENERATION_RETRY_LABEL = 'Retry'
 
 /**
- * Pattern 3's one action when it could not. `no_candidates` and `exhausted` are
- * §9's terminal failures — offering "Retry" for them would be advice that
- * cannot work, and a toast with no action at all is the dead end the pattern
- * forbids. Changing the request is the thing that is genuinely available.
+ * Pattern 3's action when request options can fix a refusal. Provider and
+ * exhausted-composition failures instead reuse Cancel: no evidence says the
+ * options caused those failures, and neither path invites another model call.
  */
 export const GENERATION_CHANGE_LABEL = 'Change options'
 
@@ -120,6 +119,13 @@ export interface GenerationLoadingView {
  * a person sees and the thing pressing it does cannot disagree.
  */
 export function generationRecoveryAction(error: GenerationError): GenerationLoadingAction {
+  if (!error.retryable && (
+    error.failure === GenerationFailure.UPSTREAM || error.failure === GenerationFailure.EXHAUSTED
+  )) {
+    // A provider/composition failure does not establish that workout options
+    // are wrong. Reuse the existing exit and copy, without inviting another call.
+    return { label: GENERATION_CANCEL_LABEL, kind: 'change' }
+  }
   return error.retryable
     ? { label: GENERATION_RETRY_LABEL, kind: 'retry' }
     : { label: GENERATION_CHANGE_LABEL, kind: 'change' }

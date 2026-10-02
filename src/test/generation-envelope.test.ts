@@ -15,6 +15,7 @@ import { ErrorCode, err, ok, type AppError } from '../state/errors'
 import type { LogLevel, LogSink } from '../state/logger'
 import {
   errorResponseSchema,
+  GENERATION_ERROR_ACCEPT,
   generationRequestSchema,
   requestIdSchema,
   type GenerationRequest,
@@ -115,11 +116,13 @@ interface RequestOptions {
   requestId?: string | null
   body?: unknown
   rawBody?: string
+  accept?: string
 }
 
 function request(options: RequestOptions = {}): Request {
   const { token = ACCESS_TOKEN, requestId = CLIENT_REQUEST_ID } = options
   const headers = new Headers({ 'Content-Type': 'application/json', apikey: ANON_KEY })
+  if (options.accept !== undefined) headers.set('Accept', options.accept)
 
   if (options.authorization !== undefined) headers.set('Authorization', options.authorization)
   else if (token !== null) headers.set('Authorization', `Bearer ${token}`)
@@ -394,6 +397,65 @@ describe('every response echoes the client‘s request id', () => {
     expect(JSON.stringify(body)).not.toContain('provider response content')
     expect(JSON.stringify(body)).not.toContain('attempts')
   })
+
+  it('forwards only a terminal retry restriction and keeps provider diagnostics private', async () => {
+    const { handleRequest } = harness({
+      handle: ({ requestId }) => err({
+        code: ErrorCode.GENERATION_MODEL_ERROR,
+        message: 'Could not generate workout. Try again.',
+        requestId,
+        details: {
+          generationCode: 'generation.upstream',
+          retryable: false,
+          attempts: 1,
+          provider: { reason: 'schema_complexity', requestId: 'req_PrivateProviderCorrelation' },
+          detail: 'private diagnostic',
+        },
+      }),
+    })
+    const body = parsedError(await bodyOf(await handleRequest(request({ accept: GENERATION_ERROR_ACCEPT }))))
+
+    expect(body).toEqual({
+      code: ErrorCode.GENERATION_MODEL_ERROR,
+      message: 'Could not generate workout. Try again.',
+      requestId: CLIENT_REQUEST_ID,
+      failure: 'generation.upstream',
+      retryable: false,
+    })
+    expect(JSON.stringify(body)).not.toMatch(/PrivateProvider|schema_complexity|attempts|diagnostic/)
+  })
+
+  it.each([true, 'false', 0, null])('does not promote arbitrary retry details (%s)', async (retryable) => {
+    const { handleRequest } = harness({
+      handle: ({ requestId }) => err({
+        code: ErrorCode.GENERATION_FAILED,
+        message: 'Could not generate workout. Try again.',
+        requestId,
+        details: { generationCode: 'generation.exhausted', retryable },
+      }),
+    })
+    const body = parsedError(await bodyOf(await handleRequest(request({ accept: GENERATION_ERROR_ACCEPT }))))
+    expect(body).not.toHaveProperty('retryable')
+  })
+
+  it.each([undefined, 'application/json', 'application/json; generation-errors=999'])(
+    'preserves the legacy strict terminal response without an explicit capability (%s)',
+    async (accept) => {
+      const { handleRequest } = harness({
+        handle: ({ requestId }) => err({
+          code: ErrorCode.GENERATION_MODEL_ERROR,
+          message: 'Generation is unavailable right now.',
+          requestId,
+          details: { generationCode: 'generation.upstream', attempts: 1, retryable: false },
+        }),
+      })
+      const body = await bodyOf(await handleRequest(request({ accept })))
+      const legacySchema = errorResponseSchema.omit({ retryable: true })
+      expect(legacySchema.safeParse(body).success).toBe(true)
+      expect(body.failure).toBe('generation.exhausted')
+      expect(body).not.toHaveProperty('retryable')
+    },
+  )
 
   it('mints one when the client sent none', async () => {
     const { handleRequest } = harness()

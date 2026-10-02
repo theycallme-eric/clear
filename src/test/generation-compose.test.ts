@@ -9,9 +9,11 @@ import {
   GenerationFailure,
   MAX_ATTEMPTS,
   ProviderFailureKind,
+  ProviderFailureReason,
   apiKeyFromEnv,
   classifyProviderFailure,
   createComposer,
+  extractProviderDiagnostic,
   parseCompletion,
   stripCodeFence,
 } from '../../supabase/functions/_shared/claude.ts'
@@ -42,6 +44,7 @@ import {
 const API_KEY = 'sk-ant-api03-ThisIsNotARealKeyItIsAFixture'
 
 const REQUEST_ID = 'req_abc123_def456'
+const PROVIDER_REQUEST_ID = 'req_018EeWyXxfu5pfWkrYcMdjWG'
 
 /** A fetch that answers each call from the list, and records what it was sent. */
 function stubFetch(bodies: readonly string[]) {
@@ -244,6 +247,52 @@ describe('a recorded invalid response', () => {
     expect(composed.value.retriedAfter?.code).toBe(GenerationFailure.MALFORMED)
   })
 
+  it('records failed-attempt usage without changing the successful attempt usage', async () => {
+    const fetch = stubFetch([
+      claudeResponse(NOT_JSON_RESPONSE, { input: 3_900, output: 850 }),
+      claudeResponse(VALID_RESPONSE, { input: 4_100, output: 900 }),
+    ])
+    const { logger, lines } = collectLogs()
+    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send, logger }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(fetch.count).toBe(2)
+    expect(composed.ok).toBe(true)
+    if (!composed.ok) return
+    expect(composed.value.usage).toEqual({ inputTokens: 4_100, outputTokens: 900 })
+    expect(composed.value.retriedAfter?.usage).toEqual({ inputTokens: 3_900, outputTokens: 850 })
+    const warning = lines.find((entry) => entry.level === 'warn')
+    expect(warning && JSON.parse(warning.line).usage).toEqual({ input: 3_900, output: 850 })
+  })
+
+  it('retains reported usage when candidate validation rejects the response twice', async () => {
+    const fetch = stubFetch([claudeResponse(VALID_RESPONSE, { input: 3_900, output: 850 })])
+    const { logger, lines } = collectLogs()
+    const validate = vi.fn(() => ({
+      ok: false as const,
+      error: {
+        code: GenerationFailure.INVALID_REFERENCE,
+        detail: 'An exercise is outside the candidates.',
+      },
+    }))
+    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send, logger, validate })
+      .compose(promptInput(), REQUEST_ID)
+
+    expect(fetch.count).toBe(2)
+    expect(validate).toHaveBeenCalledTimes(2)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.EXHAUSTED)
+    expect(composed.error.details?.usage).toEqual({ input: 3_900, output: 850 })
+    const warnings = lines.filter((entry) => entry.level === 'warn')
+    expect(warnings.map((entry) => JSON.parse(entry.line).usage)).toEqual([
+      { input: 3_900, output: 850 },
+      { input: 3_900, output: 850 },
+    ])
+  })
+
   it.each(invalid)('then a typed generation error when it is %s twice', async (_name, body) => {
     const fetch = stubFetch([claudeResponse(body)])
     const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send }).compose(
@@ -316,8 +365,9 @@ describe('an upstream failure', () => {
       usage: { input_tokens: 4_200, output_tokens: DEFAULT_MAX_TOKENS },
     })
     const fetch = stubFetch([truncated])
+    const { logger, lines } = collectLogs()
 
-    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send }).compose(
+    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send, logger }).compose(
       promptInput(),
       REQUEST_ID,
     )
@@ -329,6 +379,13 @@ describe('an upstream failure', () => {
     expect(composed.error.details?.detail).toBe(
       `The response reached the ${DEFAULT_MAX_TOKENS} token output limit.`,
     )
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.EXHAUSTED)
+    expect(composed.error.details?.usage).toEqual({ input: 4_200, output: DEFAULT_MAX_TOKENS })
+    const warnings = lines.filter((entry) => entry.level === 'warn')
+    expect(warnings.map((entry) => JSON.parse(entry.line).usage)).toEqual([
+      { input: 4_200, output: DEFAULT_MAX_TOKENS },
+      { input: 4_200, output: DEFAULT_MAX_TOKENS },
+    ])
   })
 
   it('classifies a structured-output refusal without retrying or retaining its text', async () => {
@@ -354,7 +411,13 @@ describe('an upstream failure', () => {
     if (composed.ok) return
     expect(composed.error.code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
     expect(composed.error.details?.attempts).toBe(1)
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.UPSTREAM)
+    expect(composed.error.details?.retryable).toBe(false)
     expect(composed.error.details?.detail).toBe('The API refused the request.')
+    expect(composed.error.details?.usage).toEqual({ input: 4_200, output: 12 })
+    expect(composed.error.message).not.toContain('twice')
+    const warning = lines.find((entry) => entry.level === 'warn')
+    expect(warning && JSON.parse(warning.line).usage).toEqual({ input: 4_200, output: 12 })
     expect(lines.map((entry) => entry.line).join('\n')).not.toContain(refusedText)
   })
 
@@ -403,13 +466,118 @@ describe('an upstream failure', () => {
     expect(composed.ok).toBe(false)
     if (composed.ok) return
     expect(composed.error.details?.attempts).toBe(1)
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.UPSTREAM)
+    expect(composed.error.details?.retryable).toBe(false)
     expect(composed.error.details?.detail).toBe('The API answered 400 (credit).')
+    expect(composed.error.details?.provider).toEqual({
+      status: 400,
+      reason: ProviderFailureReason.REQUEST_OTHER,
+      errorType: 'invalid_request_error',
+      requestId: null,
+    })
 
     const logged = lines.map((entry) => entry.line).join('\n')
     expect(logged).toContain('The API answered 400 (credit).')
     expect(logged).not.toContain('cranky shoulder')
     expect(logged).not.toContain('credit balance is too low')
     expect(logged).not.toContain(API_KEY)
+  })
+
+  it('retains only an allowlisted compilation diagnostic and provider request ID', async () => {
+    const privateValue = 'private prompt cranky shoulder must never be logged'
+    const providerBody = JSON.stringify({
+      type: 'error',
+      error: {
+        type: 'invalid_request_error',
+        message: 'Schema is too complex for compilation.',
+        private: privateValue,
+      },
+      request_id: 'req_bodyValueIsNotTheHeader',
+    })
+    const send = vi.fn(async () =>
+      new Response(providerBody, {
+        status: 400,
+        headers: {
+          'content-type': 'application/json',
+          'request-id': PROVIDER_REQUEST_ID,
+          'x-private': privateValue,
+        },
+      }),
+    ) as unknown as typeof globalThis.fetch
+    const { logger, lines } = collectLogs()
+    const composed = await createComposer({ apiKey: API_KEY, fetch: send, logger }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+    const provider = {
+      status: 400,
+      reason: ProviderFailureReason.SCHEMA_COMPLEXITY,
+      errorType: 'invalid_request_error',
+      requestId: PROVIDER_REQUEST_ID,
+    }
+
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.details?.provider).toEqual(provider)
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.UPSTREAM)
+    expect(composed.error.details?.retryable).toBe(false)
+    expect(composed.error.message).not.toContain('twice')
+    const warnings = lines
+      .filter((entry) => entry.level === 'warn')
+      .map((entry) => JSON.parse(entry.line))
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].provider).toEqual(provider)
+    const retained = JSON.stringify({ error: composed.error, logs: lines })
+    expect(retained).not.toContain(privateValue)
+    expect(retained).not.toContain('Schema is too complex for compilation.')
+    expect(retained).not.toContain('req_bodyValueIsNotTheHeader')
+    expect(retained).not.toContain('x-private')
+  })
+
+  it('does not retain malformed reported usage from a refused response', async () => {
+    const fetch = stubFetch([JSON.stringify({
+      stop_reason: 'refusal',
+      usage: { input_tokens: -1, output_tokens: 'private token-looking data' },
+    })])
+    const { logger, lines } = collectLogs()
+    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send, logger }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(fetch.count).toBe(1)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.details?.usage).toEqual({ input: null, output: null })
+    expect(JSON.stringify({ error: composed.error, logs: lines }))
+      .not.toContain('private token-looking data')
+  })
+
+  it('keeps a terminal retry restriction when the second call is a deterministic rejection', async () => {
+    const send = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('overloaded', { status: 529 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        error: { type: 'invalid_request_error', message: 'Schema is too complex for compilation.' },
+      }), { status: 400 })) as unknown as typeof globalThis.fetch
+    const composed = await createComposer({ apiKey: API_KEY, fetch: send }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(send).toHaveBeenCalledTimes(2)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.details?.attempts).toBe(2)
+    expect(composed.error.details?.generationCode).toBe(GenerationFailure.EXHAUSTED)
+    expect(composed.error.details?.retryable).toBe(false)
+    expect(composed.error.details?.provider).toEqual({
+      status: 400,
+      reason: ProviderFailureReason.SCHEMA_COMPLEXITY,
+      errorType: 'invalid_request_error',
+      requestId: null,
+    })
   })
 
   it('is retried once, without a correction there is nothing to correct', async () => {
@@ -513,6 +681,73 @@ describe('an upstream failure', () => {
     expect(composed.ok).toBe(false)
     if (composed.ok) return
     expect(composed.error.code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
+  })
+})
+
+describe('safe provider diagnostics', () => {
+  it('reconstructs the documented compilation reason rather than returning its message', () => {
+    expect(extractProviderDiagnostic(
+      400,
+      { error: { type: 'invalid_request_error', message: 'Schema is too complex for compilation.' } },
+      PROVIDER_REQUEST_ID,
+    )).toEqual({
+      status: 400,
+      reason: ProviderFailureReason.SCHEMA_COMPLEXITY,
+      errorType: 'invalid_request_error',
+      requestId: PROVIDER_REQUEST_ID,
+    })
+  })
+
+  it.each([
+    null,
+    'a raw provider body',
+    [],
+    {},
+    { error: 'invalid_request_error' },
+    { error: [] },
+    { error: { type: 'secret-type', message: 'unknown private provider message' } },
+  ])('maps malformed or unknown bodies to closed unknown fields: %j', (body) => {
+    expect(extractProviderDiagnostic(400, body, undefined)).toEqual({
+      status: 400,
+      reason: ProviderFailureReason.REQUEST_OTHER,
+      errorType: null,
+      requestId: null,
+    })
+  })
+
+  it.each([
+    null,
+    undefined,
+    123,
+    'req_a',
+    `req_${'a'.repeat(129)}`,
+    'req_abc123_def456',
+    ` ${PROVIDER_REQUEST_ID}`,
+    `${PROVIDER_REQUEST_ID}\n`,
+    'msg_018EeWyXxfu5pfWkrYcMdjWG',
+    API_KEY,
+  ])('rejects non-provider or unbounded request IDs: %j', (requestId) => {
+    expect(extractProviderDiagnostic(400, null, requestId).requestId).toBeNull()
+  })
+
+  it('accepts only bounded alphanumeric provider IDs', () => {
+    const largest = `req_${'a'.repeat(128)}`
+    expect(extractProviderDiagnostic(400, null, largest).requestId).toBe(largest)
+  })
+
+  it.each([
+    [400, 'Schema is too complex for compilation. private prompt'],
+    [400, 'nested schemas have some unknown complexity error'],
+    [400, 'private message '.repeat(10_000)],
+    [500, 'Schema is too complex for compilation.'],
+  ])('does not infer a compilation failure from other diagnostics', (status, message) => {
+    const diagnostic = extractProviderDiagnostic(status, {
+      error: { type: 'invalid_request_error', message },
+    }, null)
+
+    expect(diagnostic.reason).toBe(ProviderFailureReason.REQUEST_OTHER)
+    expect(Object.keys(diagnostic)).toEqual(['status', 'reason', 'errorType', 'requestId'])
+    expect(JSON.stringify(diagnostic)).not.toContain(message)
   })
 })
 

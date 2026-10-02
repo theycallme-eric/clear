@@ -301,6 +301,30 @@ describe('GEN-05 · a failure hands off to pattern 3', () => {
     expect(client.calls).toHaveLength(1)
   })
 
+  it('does not offer Retry or make a second call after a terminal provider rejection', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mountJourney(client)
+    await user.click(screen.getByRole('button', { name: GENERATE }))
+    await act(async () => {
+      client.fail(makeGenerationError({
+        code: ErrorCode.GENERATION_MODEL_ERROR,
+        message: 'Generation is unavailable right now.',
+        failure: GenerationFailure.UPSTREAM,
+        retryable: false,
+      }))
+    })
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Generation is unavailable right now.')
+    expect(alert).not.toHaveTextContent('failed twice')
+    expect(within(alert).queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+    expect(within(alert).queryByRole('button', { name: 'Change options' })).not.toBeInTheDocument()
+    await user.click(within(alert).getByRole('button', { name: 'Cancel' }))
+    await screen.findByText('the generate screen')
+    expect(client.calls).toHaveLength(1)
+  })
+
   it('raises one toast for one failure, however often the screen re-renders', async () => {
     const user = userEvent.setup()
     const client = createFakeGenerationClient()

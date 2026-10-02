@@ -23,7 +23,7 @@ import {
 import type { UserConstraintRow } from '../../data/constraints'
 import { ErrorCode, createError, err, ok } from '../../state/errors'
 import type { LogSink } from '../../state/logger'
-import { generationRequestSchema, type GenerationOutput } from '../../state/schemas'
+import { GENERATION_ERROR_ACCEPT, generationRequestSchema, type GenerationOutput } from '../../state/schemas'
 import { createCandidatesDouble } from '../candidates-double'
 import { CANDIDATE_LIBRARY, promptInput } from '../generation-prompt-fixtures'
 import { VALID_RESPONSE } from '../generation-response-fixtures'
@@ -383,6 +383,7 @@ async function mounted(options: Mounted) {
         authorization: `Bearer ${TOKEN}`,
         apikey: ANON_KEY,
         'content-type': 'application/json',
+        accept: GENERATION_ERROR_ACCEPT,
         'x-request-id': REQUEST_ID,
         'x-client-info': EMAIL,
       },
@@ -584,8 +585,10 @@ describe('diagnostics leak nothing (REQ-032)', () => {
 
     expect(run.calls.provider).toBeGreaterThan(0)
     expect(run.response.status).toBeGreaterThanOrEqual(500)
-    expect(Object.keys(run.body).sort()).toEqual(['code', 'failure', 'message', 'requestId'])
-    expect(run.body.failure).toBe('generation.exhausted')
+    expect(Object.keys(run.body).sort()).toEqual(['code', 'failure', 'message', 'requestId', 'retryable'])
+    expect(run.body.failure).toBe('generation.upstream')
+    expect(run.body.retryable).toBe(false)
+    expect(run.calls.provider).toBe(1)
     expect(run.lines.length).toBeGreaterThan(0)
     for (const secret of SENSITIVE) expect(run.log).not.toContain(secret)
     expect(JSON.stringify(run.body)).not.toContain(PROVIDER_BODY)

@@ -52,6 +52,7 @@ import {
 } from '../../../src/state/logger.ts'
 import {
   generationFailureSchema,
+  GENERATION_ERROR_ACCEPT,
   parseBoundary,
   requestIdSchema,
   type ErrorResponse,
@@ -223,22 +224,36 @@ const ROOT_PATH = '(root)'
  * generation subtype when one exists. The request id is the envelope's, never
  * the error's: an error created before the id was known still answers with it.
  */
-export function errorBody(error: AppError, requestId: string): ErrorResponse {
+export function errorBody(
+  error: AppError,
+  requestId: string,
+  supportsTerminalRetry = false,
+): ErrorResponse {
   const issues = issuesOf(error)
   const failure = failureOf(error)
+  // Cached strict clients reject additional keys and treat upstream as retryable.
+  // Preserve their previous terminal representation until they opt in. The real
+  // attempt count/subtype remain accurate in the server's private diagnostics.
+  const wireFailure = !supportsTerminalRetry && failure === 'generation.upstream' &&
+    error.details?.retryable === false ? 'generation.exhausted' : failure
 
   return {
     code: error.code,
     message: error.message,
     requestId,
     ...(issues.length > 0 ? { issues } : {}),
-    ...(failure === undefined ? {} : { failure }),
+    ...(wireFailure === undefined ? {} : { failure: wireFailure }),
+    // Only a validated generation subtype may carry this restriction. Never
+    // serialize arbitrary details or promote a terminal failure to retryable.
+    ...(supportsTerminalRetry && failure !== undefined && error.details?.retryable === false
+      ? { retryable: false }
+      : {}),
   }
 }
 
 /**
- * Reads the issue list `parseBoundary` stored in `details`. The only other
- * detail allowed onto the wire is read separately through `failureOf`.
+ * Reads the issue list `parseBoundary` stored in `details`. The closed
+ * generation subtype and terminal retry restriction are picked separately.
  */
 function issuesOf(error: AppError): SchemaIssue[] {
   const issues = error.details?.issues
@@ -307,7 +322,11 @@ export function createEdgeFunction<TBody>(
       // this request is already in the response the caller is holding.
       logger.warn('request refused', { requestId, code: error.code, status })
 
-      return respond(errorBody(error, requestId), status)
+      return respond(errorBody(
+        error,
+        requestId,
+        request.headers.get('accept') === GENERATION_ERROR_ACCEPT,
+      ), status)
     }
 
     // A preflight carries no credential and reaches no handler, so it is

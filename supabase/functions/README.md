@@ -14,7 +14,11 @@ What the shell guarantees, which is what makes it worth being a module:
 
 - Unauthenticated → `401` with `{ code, message, requestId }`; the handler never runs.
 - A body the CORE-03 schema rejects → `400` carrying the field paths that were wrong.
-- A generation refusal carries only its closed contract subtype as `failure`; retry counts,
+- A generation refusal carries its closed contract subtype as `failure` and may carry
+  `retryable: false` to restrict retry advice only when the client opts in with
+  `Accept: application/json; generation-errors=2`. Older strict clients retain the
+  prior terminal `generation.exhausted` representation with no added field; their
+  outdated wording is not an accurate attempt count. Retry counts,
   provider details and every other `AppError.details` value stay server-side.
 - Every response — success, refusal, or a handler that threw — echoes the client's
   `X-Request-ID`, in the body and in the response header.

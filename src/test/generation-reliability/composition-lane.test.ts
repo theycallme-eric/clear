@@ -542,6 +542,8 @@ describe('provider failures', () => {
       expect(lane.providerCalls()).toHaveLength(1)
       expect(response.status).toBe(502)
       expect(errorResponseSchema.parse(response.body).code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
+      expect(errorResponseSchema.parse(response.body).failure).toBe('generation.upstream')
+      expect(errorResponseSchema.parse(response.body).retryable).toBe(false)
       expect(response.body).not.toHaveProperty('acceptance')
       expect(lane.sessions.store().sessions).toEqual([])
     },
@@ -555,6 +557,7 @@ describe('provider failures', () => {
     expect(lane.providerOverruns()).toBe(0)
     expect(response.status).toBe(502)
     expect(errorResponseSchema.parse(response.body).code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
+    expect(errorResponseSchema.parse(response.body).failure).toBe('generation.exhausted')
     expect(response.body).not.toHaveProperty('acceptance')
     expect(lane.sessions.store().sessions).toEqual([])
   })

@@ -36,6 +36,7 @@ import {
 } from '../state/errors'
 import {
   generationErrorResponseSchema,
+  GENERATION_ERROR_ACCEPT,
   generationRequestSchema,
   generationSuccessSchema,
   parseBoundary,
@@ -106,7 +107,7 @@ const FAILURE_MESSAGES: Record<GenerationFailure, string> = {
   [GenerationFailure.UPSTREAM]:
     'The generation service did not answer. Try again in a moment.',
   [GenerationFailure.EXHAUSTED]:
-    'Generation failed twice. Change the options and try again.',
+    'Generation could not complete after two attempts.',
 }
 
 /** The human sentence for a §9 failure, without building an error to read it. */
@@ -187,6 +188,7 @@ function generationError(options: {
   message?: string
   issues?: readonly SchemaIssue[]
   details?: Record<string, unknown>
+  retryable?: boolean
 }): GenerationError {
   const failure = options.failure ?? null
 
@@ -196,11 +198,15 @@ function generationError(options: {
     // what happened, and the taxonomy's is the general one.
     message:
       options.message ??
-      (failure === null ? getErrorMessage(options.code) : FAILURE_MESSAGES[failure]),
+      (failure === GenerationFailure.UPSTREAM && options.retryable === false
+        ? 'Generation is unavailable right now.'
+        : failure === null ? getErrorMessage(options.code) : FAILURE_MESSAGES[failure]),
     requestId: options.requestId,
     failure,
     issues: options.issues ?? [],
-    retryable: failure === null ? CODE_RETRYABLE[options.code] : FAILURE_RETRYABLE[failure],
+    retryable:
+      (failure === null ? CODE_RETRYABLE[options.code] : FAILURE_RETRYABLE[failure]) &&
+      options.retryable !== false,
   }
 }
 
@@ -381,6 +387,7 @@ export function createGenerationClient(config: GenerationClientConfig): Generati
           apikey: config.supabase.anonKey,
           authorization: `Bearer ${session.value.accessToken}`,
           'content-type': 'application/json',
+          accept: GENERATION_ERROR_ACCEPT,
           [REQUEST_ID_HEADER]: requestId,
         },
         body: JSON.stringify(body),
@@ -539,6 +546,7 @@ function readAnswer<T>(
         code: refusal.data.code,
         requestId: refusal.data.requestId,
         failure,
+        retryable: refusal.data.retryable,
         message: failure === null ? refusal.data.message : undefined,
         issues: refusal.data.issues ?? [],
         details: { status },

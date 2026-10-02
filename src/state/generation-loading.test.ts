@@ -17,6 +17,7 @@ import {
   generationLoadingView,
   generationRecoveryAction,
   GENERATION_CHANGE_LABEL,
+  GENERATION_CANCEL_LABEL,
   GENERATION_LOADING_TITLE,
   GENERATION_RETRY_LABEL,
   GENERATION_STAGE_COPY,
@@ -147,6 +148,13 @@ describe('the one recovery action', () => {
 
     expect(view.action).toEqual(generationRecoveryAction(error))
   })
+
+  it.each([GenerationFailure.UPSTREAM, GenerationFailure.EXHAUSTED])(
+    'offers the existing exit without blaming options for %s', (failure) => {
+      const action = generationRecoveryAction(makeGenerationError({ failure, retryable: false }))
+      expect(action).toEqual({ label: GENERATION_CANCEL_LABEL, kind: 'change' })
+    },
+  )
 })
 
 describe('what the module refuses to contain', () => {

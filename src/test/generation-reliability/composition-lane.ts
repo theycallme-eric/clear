@@ -50,6 +50,7 @@ import { ok } from '../../state/errors'
 import type { LogLevel, LogSink } from '../../state/logger'
 import {
   generationRequestSchema,
+  GENERATION_ERROR_ACCEPT,
   type ExerciseCatalogRow,
   type GenerationRequest,
 } from '../../state/schemas'
@@ -345,6 +346,7 @@ export function createCompositionLane(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Accept: GENERATION_ERROR_ACCEPT,
             Authorization: `Bearer ${ACCESS_TOKEN}`,
             'x-request-id': request.request_id,
           },
