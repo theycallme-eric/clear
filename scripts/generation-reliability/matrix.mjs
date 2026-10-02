@@ -134,6 +134,9 @@ export function buildMatrix(inputs) {
     }).length
   }
 
+  /** @type {Map<string, Readonly<{ section: string, strict: number, relaxed: number, floorApplied: boolean, served: number }>>} */
+  const retrieved = new Map()
+
   /** `generation_candidate_sets`' floor: under it, the section is retrieved relaxed. */
   const retrieve = (
     /** @type {string} */ section,
@@ -141,12 +144,27 @@ export function buildMatrix(inputs) {
     /** @type {string} */ tier,
     /** @type {Constraint | null} */ constraint,
   ) => {
+    // The same retrieval is asked for by every goal that enables the section,
+    // and by every constraint's baseline. It depends on nothing else, so it is
+    // counted once; the answer is read-only.
+    const key = `${section}|${focus}|${tier}|${constraint === null ? '' : `${constraint.scope}:${constraint.target}`}`
+    const known = retrieved.get(key)
+    if (known !== undefined) return known
+
     const available = equipmentByTier[tier]
     const strict = count(section, focus, available, constraint, false)
     const floorApplied = strict < floor
     const relaxed = count(section, focus, available, constraint, true)
 
-    return { section, strict, relaxed, floorApplied, served: floorApplied ? relaxed : strict }
+    const result = Object.freeze({
+      section,
+      strict,
+      relaxed,
+      floorApplied,
+      served: floorApplied ? relaxed : strict,
+    })
+    retrieved.set(key, result)
+    return result
   }
 
   // ── Section × tier: is there anything in the catalog at all ───────────────

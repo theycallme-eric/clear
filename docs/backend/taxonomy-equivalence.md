@@ -194,7 +194,7 @@ catalog before this seed existed, and they agree exactly.
 
 ## 7. Checks
 
-48 checks, 0 failing.
+53 checks, 0 failing.
 
 ### Counts
 
@@ -264,3 +264,11 @@ catalog before this seed existed, and they agree exactly.
 - PASS — candidate set — power: legacy 54 (54), derived 54 (54); lost 2 (2), gained 2 (2)
 - PASS — every session focus compared: expected 4 focuses (upper_body, lower_body, full_body, power), compared 4
 - PASS — weights outside the derivation are the reviewed ones: 19 preserved weights that exercise_pattern_ranked cannot surface, all reviewed
+
+### repair
+
+- PASS — sections differ from the capture only as the ledger says: 112 exercises carry the captured sections and can_be_primary unchanged; 28 carry them plus their ledger row
+- PASS — no captured section or primary eligibility is removed: every captured tag is still on its exercise
+- PASS — every ledger row changes a seeded exercise: 28 ledger rows, each naming one exercise and adding to it
+- PASS — the repair is the reviewed one: 28 rows: skill_power=12 carries=4 stability_balance=10 primary_lift=8; 8 made primary
+- PASS — section membership after the repair: 10 values, every count as reviewed

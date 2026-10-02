@@ -555,6 +555,97 @@ export function verify(transformed) {
       : `expected ${reviewed.WEIGHTS_OUTSIDE_DERIVATION.length}: [${reviewed.WEIGHTS_OUTSIDE_DERIVATION.join(', ')}]\n      found ${outside.length}: [${outside.join(', ')}]`,
   )
 
+  // =========================================================================
+  // 8. Section repair — GR-02 / REQ-004
+  // =========================================================================
+
+  // `sections` and `can_be_primary` are the only columns the seed does not
+  // carry across unchanged, so they are held to two things: the capture, and
+  // the ledger rows that are allowed to add to it.
+  const { sectionRepair } = transformed
+  const repairById = new Map(sectionRepair.map((change) => [change.id, change]))
+
+  const offLedger = definitions
+    .filter((row) => {
+      const repair = repairById.get(row.id)
+      const expected = [
+        ...row.capturedSections,
+        ...(repair?.add ?? []).filter((section) => !row.capturedSections.includes(section)),
+      ]
+      return (
+        !same(row.sections, expected) ||
+        row.canBePrimary !== (row.capturedCanBePrimary || (repair?.makePrimary ?? false))
+      )
+    })
+    .map((row) => row.id)
+  check(
+    'repair',
+    'sections differ from the capture only as the ledger says',
+    offLedger.length === 0,
+    offLedger.length === 0
+      ? `${definitions.length - sectionRepair.length} exercises carry the captured sections and can_be_primary unchanged; ${sectionRepair.length} carry them plus their ledger row`
+      : `neither the capture nor capture plus ledger row: ${offLedger.join(', ')}`,
+  )
+
+  const narrowed = definitions
+    .filter(
+      (row) =>
+        row.capturedSections.some((section) => !row.sections.includes(section)) ||
+        (row.capturedCanBePrimary && !row.canBePrimary),
+    )
+    .map((row) => row.id)
+  check(
+    'repair',
+    'no captured section or primary eligibility is removed',
+    narrowed.length === 0,
+    narrowed.length === 0
+      ? 'every captured tag is still on its exercise'
+      : `lost a captured tag: ${narrowed.join(', ')}`,
+  )
+
+  const idle = sectionRepair
+    .filter((change) => {
+      const row = definitions.find((entry) => entry.id === change.id)
+      return (
+        row === undefined ||
+        (change.add.every((section) => row.capturedSections.includes(section)) &&
+          (!change.makePrimary || row.capturedCanBePrimary))
+      )
+    })
+    .map((change) => change.id)
+  check(
+    'repair',
+    'every ledger row changes a seeded exercise',
+    idle.length === 0 && repairById.size === sectionRepair.length,
+    idle.length === 0 && repairById.size === sectionRepair.length
+      ? `${sectionRepair.length} ledger rows, each naming one exercise and adding to it`
+      : `names no exercise, repeats one, or adds nothing: ${idle.join(', ') || 'a repeated id'}`,
+  )
+
+  const addedTally = tally(sectionRepair.flatMap((change) => change.add))
+  const madePrimary = sectionRepair.filter((change) => change.makePrimary).length
+  const repairAsReviewed =
+    sectionRepair.length === reviewed.SECTION_REPAIR.rows &&
+    sameTally(addedTally, reviewed.SECTION_REPAIR.added) &&
+    madePrimary === reviewed.SECTION_REPAIR.madePrimary
+  check(
+    'repair',
+    'the repair is the reviewed one',
+    repairAsReviewed,
+    repairAsReviewed
+      ? `${sectionRepair.length} rows: ${format(reviewed.SECTION_REPAIR.added)}; ${madePrimary} made primary`
+      : `expected ${reviewed.SECTION_REPAIR.rows} rows and ${reviewed.SECTION_REPAIR.madePrimary} made primary, ` +
+        `found ${sectionRepair.length} and ${madePrimary}; ${describeTally(addedTally, reviewed.SECTION_REPAIR.added)}`,
+  )
+
+  const sectionTally = tally(definitions.flatMap((row) => row.sections))
+  check(
+    'repair',
+    'section membership after the repair',
+    sameTally(sectionTally, reviewed.SECTION_MEMBERSHIP),
+    describeTally(sectionTally, reviewed.SECTION_MEMBERSHIP),
+  )
+
   return {
     checks,
     failures: checks.filter((entry) => !entry.ok),

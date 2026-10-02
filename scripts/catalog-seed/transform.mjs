@@ -12,8 +12,16 @@
  * migration, the content comes from the capture and migration `00031`, and the
  * three dispositions below are the ones `sources/source-24-LIVE_BACKEND_AUDIT_2026-09-18.md`
  * §3 approved.
+ *
+ * One thing is not carried across unchanged. GR-02 / REQ-004: `sections` and
+ * `can_be_primary` are the capture's plus what the section-mapping ledger adds
+ * (`docs/process/generation-reliability/section-mapping-ledger.json`), applied
+ * by the same function the repair migration is modelled on. The captured values
+ * stay on the row, so `verify.mjs` can hold every difference to a ledger row.
  */
-import { loadAnatomyTags, loadSnapshot } from './sources.mjs'
+import { applyChange, ledgerChanges } from '../generation-reliability/catalog-repair.mjs'
+import { loadLedger } from '../generation-reliability/section-ledger.mjs'
+import { REPO_ROOT, loadAnatomyTags, loadSnapshot } from './sources.mjs'
 import { LEGACY_ANCHORS, loadSchemaTaxonomy } from './taxonomy.mjs'
 
 /**
@@ -33,8 +41,10 @@ import { LEGACY_ANCHORS, loadSchemaTaxonomy } from './taxonomy.mjs'
  * @property {string | null} regression
  * @property {string | null} progression
  * @property {string[]} coachingCues
- * @property {string[]} sections
- * @property {boolean} canBePrimary
+ * @property {string[]} sections             The capture's, plus the ledger's.
+ * @property {boolean} canBePrimary         The capture's, or raised by the ledger.
+ * @property {string[]} capturedSections    As the capture holds them.
+ * @property {boolean} capturedCanBePrimary As the capture holds it.
  * @property {string[]} componentMovements  From the reviewed `00031` tags.
  * @property {string} exerciseRole          From the reviewed `00031` tags.
  * @property {string[]} derivedPatterns     What `exercise_patterns` will yield.
@@ -80,6 +90,8 @@ import { LEGACY_ANCHORS, loadSchemaTaxonomy } from './taxonomy.mjs'
  * @property {SeedWeight[]} weights
  * @property {AnchorRecord[]} anchors
  * @property {LegacyPatternRecord[]} legacyPatterns
+ * @property {import('../generation-reliability/catalog-repair.mjs').Change[]} sectionRepair
+ *   What the ledger adds, one entry per row.
  */
 
 /**
@@ -92,6 +104,9 @@ export function transform() {
 
   const tagById = new Map(tags.map((tag) => [tag.exerciseId, tag]))
 
+  const sectionRepair = ledgerChanges(loadLedger(REPO_ROOT))
+  const repairById = new Map(sectionRepair.map((change) => [change.id, change]))
+
   /** @type {SeedDefinition[]} */
   const definitions = snapshot.definitions.map((row) => {
     const tag = tagById.get(row.id)
@@ -101,6 +116,9 @@ export function transform() {
       // pattern. Refusing here is the loud failure, not a later count.
       throw new Error(`No reviewed workout-anatomy tag for exercise "${row.id}"`)
     }
+    const captured = { sections: row.sections, canBePrimary: row.canBePrimary }
+    const repair = repairById.get(row.id)
+    const membership = repair === undefined ? captured : applyChange(captured, repair)
     return {
       id: row.id,
       name: row.name,
@@ -110,8 +128,10 @@ export function transform() {
       regression: row.regression,
       progression: row.progression,
       coachingCues: row.coachingCues,
-      sections: row.sections,
-      canBePrimary: row.canBePrimary,
+      sections: membership.sections,
+      canBePrimary: membership.canBePrimary,
+      capturedSections: row.sections,
+      capturedCanBePrimary: row.canBePrimary,
       componentMovements: tag.componentMovements,
       exerciseRole: tag.exerciseRole,
       derivedPatterns: derivePatterns(tag.componentMovements, schema.componentPatternMap),
@@ -159,6 +179,7 @@ export function transform() {
     weights,
     anchors,
     legacyPatterns,
+    sectionRepair,
   }
 }
 

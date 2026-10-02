@@ -411,19 +411,16 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
     expect(result.error.details?.sections).toEqual(DEFAULT_SECTIONS)
   })
 
-  it('refuses a bodyweight-only location asked for a primary lift', async () => {
-    // Not a defect and not a thin library: every primary lift in the seeded
-    // catalog needs a barbell, a dumbbell, a kettlebell or a bar. The request
-    // is over-constrained, and GEN-02b never sees a section it could fill with
-    // nothing.
+  it('serves a bodyweight-only location asked for a primary lift', async () => {
+    // This was a refusal while every primary lift in the seeded catalog needed
+    // a barbell, a dumbbell, a kettlebell or a bar. The section-mapping ledger
+    // (GR-02 / REQ-005) made the bodyweight squat, hinge and press patterns
+    // main work, so the same request now resolves.
     const { client } = setup({ equipment: ['bodyweight'] })
 
     const result = await client.retrieve({ userId: USER, focus: 'lower_body' })
 
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.code).toBe(ErrorCode.GENERATION_NO_CANDIDATES)
-    expect(result.error.details?.sections).toEqual(['primary_lift'])
+    expect(result.ok).toBe(true)
   })
 
   it('names only the sections that came back empty', async () => {

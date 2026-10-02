@@ -498,11 +498,16 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 })
 
 describe('REQ-015 — the recovery stayed inside its scope', () => {
-  it('added no migration: the newest is the one the recovery inspected', () => {
+  it('added no migration: the newest of its time is the one the recovery inspected', () => {
     const migrations = readdirSync(resolve(process.cwd(), 'supabase/migrations'))
       .filter((file) => file.endsWith('.sql'))
       .sort()
 
-    expect(migrations.at(-1)).toBe('20260927000018_generation_goal_scope.sql')
+    // Everything after it belongs to a later, separate piece of work — the
+    // generation-reliability catalog repair (GR-02) — and is named here so a
+    // migration nobody accounted for still fails.
+    const inspected = migrations.indexOf('20260927000018_generation_goal_scope.sql')
+    expect(inspected).toBeGreaterThan(-1)
+    expect(migrations.slice(inspected + 1)).toEqual(['20261001000019_catalog_section_repair.sql'])
   })
 })

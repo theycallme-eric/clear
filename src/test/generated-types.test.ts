@@ -172,6 +172,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20260921000016_saved_workouts.sql',
       '20260921000017_deload_session_tag.sql',
       '20260927000018_generation_goal_scope.sql',
+      '20261001000019_catalog_section_repair.sql',
     ])
   })
 

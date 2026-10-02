@@ -26,6 +26,7 @@
  *   supabase/migrations/20260921000016_saved_workouts.sql
  *   supabase/migrations/20260921000017_deload_session_tag.sql
  *   supabase/migrations/20260927000018_generation_goal_scope.sql
+ *   supabase/migrations/20261001000019_catalog_section_repair.sql
  */
 
 export type Json =
