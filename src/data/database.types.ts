@@ -27,6 +27,7 @@
  *   supabase/migrations/20260921000017_deload_session_tag.sql
  *   supabase/migrations/20260927000018_generation_goal_scope.sql
  *   supabase/migrations/20261001000019_catalog_section_repair.sql
+ *   supabase/migrations/20261001000020_generation_viability.sql
  */
 
 export type Json =
@@ -843,6 +844,18 @@ export type Database = {
           p_goal: Database['public']['Enums']['goal_preset']
         }
         Returns: Database['public']['Enums']['section_type'][]
+      }
+      generation_viability: {
+        Args: {
+          p_goal: Database['public']['Enums']['goal_preset']
+          p_enabled_sections: Database['public']['Enums']['section_type'][]
+          p_available_equipment: string[]
+          p_excluded_exercises?: string[] | null
+          p_excluded_patterns?: Database['public']['Enums']['movement_pattern'][] | null
+          p_excluded_equipment?: string[] | null
+          p_floor?: number | null
+        }
+        Returns: { section: Database['public']['Enums']['section_type']; failure_class: string; incompatible_choice: Json; goals: Database['public']['Enums']['goal_preset'][]; focuses: Database['public']['Enums']['session_focus'][]; blocks_proposed_goal: boolean }[]
       }
       insert_prescription: {
         Args: {

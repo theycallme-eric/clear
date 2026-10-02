@@ -298,6 +298,17 @@ model, and GEN-02b cannot select an ineligible exercise because the prompt it bu
 one. `src/data/candidates.ts` is the only reader: it maps the payload, and turns a section that
 resolved to nothing into `GENERATION_NO_CANDIDATES` instead of an empty workout.
 
+REQ-010 adds the same question asked before anything is saved.
+`20261001000020_generation_viability.sql` declares `generation_viability`, which takes a proposed
+Goal, section toggles, exclusions and one location's equipment as arguments — it reads the catalog
+and `focus_pattern_map` and no row a user owns — and applies retrieval's predicates and floor to
+every goal × focus Generate offers, active recovery's fixed sections included. No rows is viable;
+otherwise each failing section carries a class and the incompatible choice (the section, the
+equipment set, or the exclusions). `src/data/viability.ts` is the only reader and no screen calls it
+yet. The predicates are restated rather than shared, because retrieval resolves them from saved rows;
+`src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and the
+answers to the legal-state matrix.
+
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`
 (`supabase/migrations/20260921000007_streak_sessions.sql`) answers a page of completed sessions

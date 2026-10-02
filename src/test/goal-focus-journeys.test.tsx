@@ -504,10 +504,14 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
       .sort()
 
     // Everything after it belongs to a later, separate piece of work — the
-    // generation-reliability catalog repair (GR-02) — and is named here so a
-    // migration nobody accounted for still fails.
+    // generation-reliability catalog repair (GR-02) and save-time viability
+    // evaluation (REQ-010) — and is named here so a migration nobody accounted
+    // for still fails.
     const inspected = migrations.indexOf('20260927000018_generation_goal_scope.sql')
     expect(inspected).toBeGreaterThan(-1)
-    expect(migrations.slice(inspected + 1)).toEqual(['20261001000019_catalog_section_repair.sql'])
+    expect(migrations.slice(inspected + 1)).toEqual([
+      '20261001000019_catalog_section_repair.sql',
+      '20261001000020_generation_viability.sql',
+    ])
   })
 })
