@@ -41,6 +41,7 @@ import {
 } from '../../../src/state/errors.ts'
 import type { Logger } from '../../../src/state/logger.ts'
 import {
+  generationOutputJsonSchema,
   generationOutputSchema,
   schemaIssues,
   type GenerationOutput,
@@ -74,11 +75,137 @@ export const ANTHROPIC_VERSION = '2023-06-01'
 export const DEFAULT_MODEL = 'claude-sonnet-5'
 
 /**
- * A contract-4.1.0 workout is a few thousand tokens of nested JSON; the old
- * function's 4096 truncated long sessions, and a truncated response is a parse
- * failure that costs a retry to discover.
+ * A contract-4.1.0 workout is a few thousand tokens of nested JSON. Sonnet 5's
+ * adaptive thinking and denser tokenizer share this same output budget with
+ * the response, so 8192 can truncate a long customized session before its JSON
+ * closes. Sixteen thousand leaves headroom without asking the model to spend it.
  */
-export const DEFAULT_MAX_TOKENS = 8192
+export const DEFAULT_MAX_TOKENS = 16_384
+
+// Anthropic's structured-output grammar accepts the JSON Schema vocabulary
+// below but not Zod's numeric bounds, string lengths, or `oneOf`. CORE-03 still
+// validates the original Zod schema after the response arrives, so provider
+// simplification may only widen the constrained shape; it never weakens the
+// application boundary.
+const UNSUPPORTED_OUTPUT_KEYWORDS = new Set([
+  '$schema',
+  'minimum',
+  'maximum',
+  'exclusiveMinimum',
+  'exclusiveMaximum',
+  'multipleOf',
+  'minLength',
+  'maxLength',
+  'maxItems',
+  'uniqueItems',
+  'minProperties',
+  'maxProperties',
+])
+
+type JsonSchemaObject = Record<string, unknown>
+
+function isObject(value: unknown): value is JsonSchemaObject {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function distinctSchemas(values: readonly unknown[]): unknown[] {
+  const seen = new Set<string>()
+
+  return values.filter((value) => {
+    const key = JSON.stringify(value)
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function enumSchema(choices: readonly unknown[]): JsonSchemaObject | null {
+  if (!choices.every(isObject)) return null
+  if (!choices.every((choice) => Object.hasOwn(choice, 'const'))) return null
+
+  const bases = choices.map((choice) => {
+    const base = { ...choice }
+    delete base.const
+    return base
+  })
+  if (distinctSchemas(bases).length !== 1) return null
+
+  return {
+    ...bases[0],
+    enum: distinctSchemas(choices.map((choice) => choice.const)),
+  }
+}
+
+/**
+ * Zod emits the prescription discriminated union as three complete `oneOf`
+ * objects. Merging their identical fields keeps the provider grammar below
+ * its union-complexity limit; the four target fields remain nullable unions
+ * and `target_kind` becomes the same three-value enum.
+ */
+function mergeObjectUnion(variants: readonly unknown[]): JsonSchemaObject | null {
+  if (!variants.every(isObject)) return null
+  if (!variants.every((variant) => variant.type === 'object')) return null
+
+  const properties = variants.map((variant) => variant.properties)
+  if (!properties.every(isObject)) return null
+
+  const propertyNames = Object.keys(properties[0])
+  if (
+    !properties.every(
+      (entry) =>
+        Object.keys(entry).length === propertyNames.length &&
+        propertyNames.every((name) => Object.hasOwn(entry, name)),
+    )
+  ) {
+    return null
+  }
+
+  const required = variants.map((variant) => variant.required)
+  if (distinctSchemas(required).length !== 1) return null
+
+  const mergedProperties: JsonSchemaObject = {}
+  for (const name of propertyNames) {
+    const choices = distinctSchemas(properties.map((entry) => entry[name]))
+    mergedProperties[name] =
+      choices.length === 1 ? choices[0] : (enumSchema(choices) ?? { anyOf: choices })
+  }
+
+  return {
+    type: 'object',
+    properties: mergedProperties,
+    required: required[0],
+    additionalProperties: false,
+  }
+}
+
+function normalizeOutputSchema(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeOutputSchema)
+  if (!isObject(value)) return value
+
+  const normalized: JsonSchemaObject = {}
+
+  for (const [key, child] of Object.entries(value)) {
+    if (UNSUPPORTED_OUTPUT_KEYWORDS.has(key)) continue
+    // The provider supports `minItems` only at 0 or 1. CORE-03 retains the
+    // ladder's stricter two-rung minimum after constrained decoding.
+    if (key === 'minItems' && typeof child === 'number' && child > 1) continue
+
+    if (key === 'oneOf' && Array.isArray(child)) {
+      const choices = child.map(normalizeOutputSchema)
+      Object.assign(normalized, mergeObjectUnion(choices) ?? { anyOf: choices })
+      continue
+    }
+
+    normalized[key] = normalizeOutputSchema(child)
+  }
+
+  return normalized
+}
+
+/** The canonical CORE-03 output shape, made compatible with Claude's grammar. */
+export const CLAUDE_OUTPUT_SCHEMA = normalizeOutputSchema(
+  generationOutputJsonSchema,
+) as JsonSchemaObject
 
 /**
  * GEN-02c's validation, as this module needs to see it: a parsed workout and
@@ -350,6 +477,11 @@ function usageFrom(value: unknown): TokenUsage {
   return { inputTokens: read('input_tokens'), outputTokens: read('output_tokens') }
 }
 
+function stopReasonFrom(value: unknown): string | null {
+  const reason = (value as { stop_reason?: unknown } | null)?.stop_reason
+  return typeof reason === 'string' ? reason : null
+}
+
 /** The first text block of a `messages` response, or nothing usable. */
 function textFrom(value: unknown): string | null {
   const content = (value as { content?: unknown } | null)?.content
@@ -392,6 +524,12 @@ async function callClaude(
         max_tokens: config.maxTokens ?? DEFAULT_MAX_TOKENS,
         system,
         messages: [{ role: 'user', content: user }],
+        output_config: {
+          format: {
+            type: 'json_schema',
+            schema: CLAUDE_OUTPUT_SCHEMA,
+          },
+        },
       }),
     })
   } catch (cause) {
@@ -422,6 +560,22 @@ async function callClaude(
       code: GenerationFailure.UPSTREAM,
       detail: 'The API answered with a body that was not JSON.',
       retryable: true,
+    })
+  }
+
+  const stopReason = stopReasonFrom(body)
+  if (stopReason === 'max_tokens') {
+    return err({
+      code: GenerationFailure.MALFORMED,
+      detail: `The response reached the ${config.maxTokens ?? DEFAULT_MAX_TOKENS} token output limit.`,
+      retryable: true,
+    })
+  }
+  if (stopReason === 'refusal') {
+    return err({
+      code: GenerationFailure.UPSTREAM,
+      detail: 'The API refused the request.',
+      retryable: false,
     })
   }
 

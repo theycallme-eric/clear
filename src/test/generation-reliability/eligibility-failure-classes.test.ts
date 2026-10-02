@@ -584,7 +584,8 @@ describe('diagnostics leak nothing (REQ-032)', () => {
 
     expect(run.calls.provider).toBeGreaterThan(0)
     expect(run.response.status).toBeGreaterThanOrEqual(500)
-    expect(Object.keys(run.body).sort()).toEqual(['code', 'message', 'requestId'])
+    expect(Object.keys(run.body).sort()).toEqual(['code', 'failure', 'message', 'requestId'])
+    expect(run.body.failure).toBe('generation.exhausted')
     expect(run.lines.length).toBeGreaterThan(0)
     for (const secret of SENSITIVE) expect(run.log).not.toContain(secret)
     expect(JSON.stringify(run.body)).not.toContain(PROVIDER_BODY)

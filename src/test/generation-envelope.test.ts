@@ -370,16 +370,29 @@ describe('every response echoes the client‘s request id', () => {
     const { handleRequest } = harness({
       handle: ({ requestId }) =>
         err({
-          code: ErrorCode.GENERATION_NO_CANDIDATES,
-          message: 'No exercises match these options. Change equipment or exclusions.',
+          code: ErrorCode.GENERATION_FAILED,
+          message: 'Could not generate workout. Try again.',
           requestId,
+          details: {
+            generationCode: 'generation.exhausted',
+            attempts: 2,
+            detail: 'provider response content stays server-side',
+          },
         }),
     })
 
     const response = await handleRequest(request())
+    const body = parsedError(await bodyOf(response))
 
-    expect(response.status).toBe(422)
-    expect(parsedError(await bodyOf(response)).requestId).toBe(CLIENT_REQUEST_ID)
+    expect(response.status).toBe(500)
+    expect(body).toEqual({
+      code: ErrorCode.GENERATION_FAILED,
+      message: 'Could not generate workout. Try again.',
+      requestId: CLIENT_REQUEST_ID,
+      failure: 'generation.exhausted',
+    })
+    expect(JSON.stringify(body)).not.toContain('provider response content')
+    expect(JSON.stringify(body)).not.toContain('attempts')
   })
 
   it('mints one when the client sent none', async () => {

@@ -51,9 +51,11 @@ import {
   type Logger,
 } from '../../../src/state/logger.ts'
 import {
+  generationFailureSchema,
   parseBoundary,
   requestIdSchema,
   type ErrorResponse,
+  type GenerationFailure,
   type SchemaIssue,
 } from '../../../src/state/schemas.ts'
 
@@ -217,24 +219,26 @@ export function statusForCode(code: ErrorCode): number {
 const ROOT_PATH = '(root)'
 
 /**
- * `{ code, message, requestId }` and, when the failure has field paths to
- * report, the issues CORE-03 found. The request id is the envelope's, never the
- * error's: an error created before the id was known still answers with it.
+ * `{ code, message, requestId }`, the issues CORE-03 found, and the closed §9
+ * generation subtype when one exists. The request id is the envelope's, never
+ * the error's: an error created before the id was known still answers with it.
  */
 export function errorBody(error: AppError, requestId: string): ErrorResponse {
   const issues = issuesOf(error)
+  const failure = failureOf(error)
 
   return {
     code: error.code,
     message: error.message,
     requestId,
     ...(issues.length > 0 ? { issues } : {}),
+    ...(failure === undefined ? {} : { failure }),
   }
 }
 
 /**
- * Reads the issue list `parseBoundary` stored in `details`, and nothing else
- * from `details` — the rest of it is for the log, not for the wire.
+ * Reads the issue list `parseBoundary` stored in `details`. The only other
+ * detail allowed onto the wire is read separately through `failureOf`.
  */
 function issuesOf(error: AppError): SchemaIssue[] {
   const issues = error.details?.issues
@@ -248,6 +252,15 @@ function issuesOf(error: AppError): SchemaIssue[] {
       typeof (issue as SchemaIssue).path === 'string' &&
       typeof (issue as SchemaIssue).message === 'string',
   )
+}
+
+/**
+ * The one safe, closed detail the generation client needs in order to offer
+ * honest recovery. Arbitrary handler details remain private to the function.
+ */
+function failureOf(error: AppError): GenerationFailure | undefined {
+  const parsed = generationFailureSchema.safeParse(error.details?.generationCode)
+  return parsed.success ? parsed.data : undefined
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

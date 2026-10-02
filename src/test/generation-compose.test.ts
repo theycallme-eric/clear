@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   API_KEY_VARIABLE,
   ANTHROPIC_MESSAGES_URL,
+  CLAUDE_OUTPUT_SCHEMA,
+  DEFAULT_MAX_TOKENS,
   DEFAULT_MODEL,
   GenerationFailure,
   MAX_ATTEMPTS,
@@ -58,9 +60,44 @@ function stubFetch(bodies: readonly string[]) {
 function sentBody(calls: readonly { init: RequestInit }[], index: number) {
   return JSON.parse(String(calls[index].init.body)) as {
     model: string
+    max_tokens: number
     system: string
     messages: { role: string; content: string }[]
+    output_config: {
+      format: { type: string; schema: Record<string, unknown> }
+    }
   }
+}
+
+function schemaFacts(value: unknown): {
+  readonly keys: string[]
+  readonly unionCount: number
+  readonly openObjectCount: number
+} {
+  const keys: string[] = []
+  let unionCount = 0
+  let openObjectCount = 0
+
+  const visit = (entry: unknown) => {
+    if (Array.isArray(entry)) {
+      entry.forEach(visit)
+      return
+    }
+    if (typeof entry !== 'object' || entry === null) return
+
+    const record = entry as Record<string, unknown>
+    if (record.type === 'object' && record.additionalProperties !== false) openObjectCount += 1
+
+    for (const [key, child] of Object.entries(record)) {
+      keys.push(key)
+      if (key === 'anyOf') unionCount += 1
+      if (key === 'type' && Array.isArray(child)) unionCount += 1
+      visit(child)
+    }
+  }
+
+  visit(value)
+  return { keys, unionCount, openObjectCount }
 }
 
 function collectLogs() {
@@ -144,8 +181,37 @@ describe('a well-formed response', () => {
     const sent = sentBody(fetch.calls, 0)
     expect(fetch.calls[0].url).toBe(ANTHROPIC_MESSAGES_URL)
     expect(sent.model).toBe(DEFAULT_MODEL)
+    expect(sent.max_tokens).toBe(DEFAULT_MAX_TOKENS)
     expect(sent.system).toContain('You compose personalized workouts for CLEAR')
     expect(sent.messages).toEqual([{ role: 'user', content: buildUserMessage(input) }])
+    expect(sent.output_config).toEqual({
+      format: { type: 'json_schema', schema: CLAUDE_OUTPUT_SCHEMA },
+    })
+  })
+
+  it('constrains output with a provider-compatible form of the canonical schema', () => {
+    const facts = schemaFacts(CLAUDE_OUTPUT_SCHEMA)
+
+    expect(facts.keys).not.toContain('oneOf')
+    expect(facts.keys).not.toContain('$schema')
+    expect(
+      facts.keys.filter((key) =>
+        [
+          'minimum',
+          'maximum',
+          'exclusiveMinimum',
+          'exclusiveMaximum',
+          'multipleOf',
+          'minLength',
+          'maxLength',
+        ].includes(key),
+      ),
+    ).toEqual([])
+    expect(facts.unionCount).toBeLessThanOrEqual(16)
+    expect(facts.openObjectCount).toBe(0)
+    expect(
+      generationOutputSchema.safeParse(JSON.parse(stripCodeFence(VALID_RESPONSE))).success,
+    ).toBe(true)
   })
 
   it('survives the markdown fence a model wraps JSON in', () => {
@@ -242,6 +308,56 @@ describe('a recorded invalid response', () => {
 })
 
 describe('an upstream failure', () => {
+  it('identifies output-limit truncation without trying to parse the partial body', async () => {
+    const truncated = JSON.stringify({
+      type: 'message',
+      content: [{ type: 'text', text: '{"title":"unfinished"' }],
+      stop_reason: 'max_tokens',
+      usage: { input_tokens: 4_200, output_tokens: DEFAULT_MAX_TOKENS },
+    })
+    const fetch = stubFetch([truncated])
+
+    const composed = await createComposer({ apiKey: API_KEY, fetch: fetch.send }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(fetch.count).toBe(2)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.code).toBe(ErrorCode.GENERATION_FAILED)
+    expect(composed.error.details?.detail).toBe(
+      `The response reached the ${DEFAULT_MAX_TOKENS} token output limit.`,
+    )
+  })
+
+  it('classifies a structured-output refusal without retrying or retaining its text', async () => {
+    const refusedText = 'provider refusal detail must remain private'
+    const refused = JSON.stringify({
+      type: 'message',
+      content: [{ type: 'text', text: refusedText }],
+      stop_reason: 'refusal',
+      usage: { input_tokens: 4_200, output_tokens: 12 },
+    })
+    const send = vi.fn(async () =>
+      new Response(refused, { status: 200, headers: { 'content-type': 'application/json' } }),
+    ) as unknown as typeof globalThis.fetch
+    const { logger, lines } = collectLogs()
+
+    const composed = await createComposer({ apiKey: API_KEY, fetch: send, logger }).compose(
+      promptInput(),
+      REQUEST_ID,
+    )
+
+    expect(send).toHaveBeenCalledTimes(1)
+    expect(composed.ok).toBe(false)
+    if (composed.ok) return
+    expect(composed.error.code).toBe(ErrorCode.GENERATION_MODEL_ERROR)
+    expect(composed.error.details?.attempts).toBe(1)
+    expect(composed.error.details?.detail).toBe('The API refused the request.')
+    expect(lines.map((entry) => entry.line).join('\n')).not.toContain(refusedText)
+  })
+
   it('classifies provider failures without retaining their response body', () => {
     expect(
       classifyProviderFailure(400, {
