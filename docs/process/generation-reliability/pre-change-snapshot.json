@@ -1,0 +1,431 @@
+{
+  "version": 1,
+  "generatedBy": "npm run gr:snapshot -- --out <directory outside the repository>",
+  "notes": [
+    "Generated from one read-only pass over the hosted project, before the catalog section repair was applied. Do not edit.",
+    "The captured rows are outside the repository. Only row counts and SHA-256 hashes of the capture files are recorded here.",
+    "rollback.verified records that the committed migration followed by the committed rollback, run over the captured section tags, gave the capture back."
+  ],
+  "capturedAt": "2026-10-02T15:30:38.351Z",
+  "deployedCommit": {
+    "sha": "b1a72988f45087116af00bbbf791592191da7cd4",
+    "source": "newest ready production deployment",
+    "deployedAt": "2026-10-02T15:24:06.648Z"
+  },
+  "capture": {
+    "relations": [
+      {
+        "relation": "exercise_definitions",
+        "file": "exercise_definitions.jsonl",
+        "rows": 140,
+        "sha256": "2f380673e97b3db25230e840af852c178386d0f74725f2e748210f952aa0a6e6"
+      },
+      {
+        "relation": "exercise_muscle_groups",
+        "file": "exercise_muscle_groups.jsonl",
+        "rows": 488,
+        "sha256": "d4955b77e7f3f7255c9a3798d233915caff927f5b167826f3f8c785a32109cd7"
+      },
+      {
+        "relation": "exercise_pattern_weights",
+        "file": "exercise_pattern_weights.jsonl",
+        "rows": 102,
+        "sha256": "500a589033e897f2d84d8d493c4c741bf0be564aaeb9769890211e2e8e0edecf"
+      },
+      {
+        "relation": "profiles",
+        "file": "profiles.jsonl",
+        "rows": 1,
+        "sha256": "ec733e2f7b6f9c02ed37be3faaeb377e031839ddfa7219400f90bdd3bac0a77c"
+      }
+    ]
+  },
+  "deployedMatrix": {
+    "file": "deployed-matrix.json",
+    "sha256": "8a2e9c3afe234d581770e58b7d60c35cd6f9911600785311e364c08517f88ca4",
+    "catalogRows": 140,
+    "summary": {
+      "sectionTiers": {
+        "supported": 27,
+        "supported-with-recorded-relaxation": 0,
+        "legitimate-constraint-refusal": 0,
+        "unsupported-product-state": 13
+      },
+      "cells": {
+        "supported": 87,
+        "supported-with-recorded-relaxation": 21,
+        "legitimate-constraint-refusal": 0,
+        "unsupported-product-state": 52
+      },
+      "unconstrainedStates": {
+        "supported": 0,
+        "supported-with-recorded-relaxation": 160,
+        "legitimate-constraint-refusal": 0,
+        "unsupported-product-state": 288
+      },
+      "constrainedStatesListed": {
+        "supported": 0,
+        "supported-with-recorded-relaxation": 0,
+        "legitimate-constraint-refusal": 4,
+        "unsupported-product-state": 0
+      },
+      "statesFailingBeforeComposition": 292
+    },
+    "rows": {
+      "sectionTiers": {
+        "count": 40,
+        "sha256": "d5bf878d3bd59579b5c80a4192b05643844b3ebaab989f8395020a068d7c4365"
+      },
+      "cells": {
+        "count": 160,
+        "sha256": "6323672a7ef2b3528a3784a14735efd532b2319cf2984ef625a47a9fe71ff36a"
+      },
+      "states": {
+        "count": 452,
+        "sha256": "a4d29c5c6ccfda7aaec58e780bae11054fb7fd50817e638059a39baf5f9aec67"
+      },
+      "constraints": {
+        "count": 163,
+        "sha256": "7b05de30dcd4772f823e350d6f4034bde527e7c12d25c915943ef9ef2dd3ecba"
+      }
+    },
+    "sectionTiers": [
+      {
+        "id": "warmup/minimal",
+        "section": "warmup",
+        "tier": "minimal",
+        "catalogRows": 31,
+        "candidates": 28,
+        "classification": "supported"
+      },
+      {
+        "id": "warmup/home",
+        "section": "warmup",
+        "tier": "home",
+        "catalogRows": 31,
+        "candidates": 29,
+        "classification": "supported"
+      },
+      {
+        "id": "warmup/building",
+        "section": "warmup",
+        "tier": "building",
+        "catalogRows": 31,
+        "candidates": 31,
+        "classification": "supported"
+      },
+      {
+        "id": "warmup/full",
+        "section": "warmup",
+        "tier": "full",
+        "catalogRows": 31,
+        "candidates": 31,
+        "classification": "supported"
+      },
+      {
+        "id": "mobility/minimal",
+        "section": "mobility",
+        "tier": "minimal",
+        "catalogRows": 14,
+        "candidates": 14,
+        "classification": "supported"
+      },
+      {
+        "id": "mobility/home",
+        "section": "mobility",
+        "tier": "home",
+        "catalogRows": 14,
+        "candidates": 14,
+        "classification": "supported"
+      },
+      {
+        "id": "mobility/building",
+        "section": "mobility",
+        "tier": "building",
+        "catalogRows": 14,
+        "candidates": 14,
+        "classification": "supported"
+      },
+      {
+        "id": "mobility/full",
+        "section": "mobility",
+        "tier": "full",
+        "catalogRows": 14,
+        "candidates": 14,
+        "classification": "supported"
+      },
+      {
+        "id": "primary_lift/minimal",
+        "section": "primary_lift",
+        "tier": "minimal",
+        "catalogRows": 25,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "primary_lift/home",
+        "section": "primary_lift",
+        "tier": "home",
+        "catalogRows": 25,
+        "candidates": 5,
+        "classification": "supported"
+      },
+      {
+        "id": "primary_lift/building",
+        "section": "primary_lift",
+        "tier": "building",
+        "catalogRows": 25,
+        "candidates": 24,
+        "classification": "supported"
+      },
+      {
+        "id": "primary_lift/full",
+        "section": "primary_lift",
+        "tier": "full",
+        "catalogRows": 25,
+        "candidates": 25,
+        "classification": "supported"
+      },
+      {
+        "id": "accessory/minimal",
+        "section": "accessory",
+        "tier": "minimal",
+        "catalogRows": 97,
+        "candidates": 23,
+        "classification": "supported"
+      },
+      {
+        "id": "accessory/home",
+        "section": "accessory",
+        "tier": "home",
+        "catalogRows": 97,
+        "candidates": 59,
+        "classification": "supported"
+      },
+      {
+        "id": "accessory/building",
+        "section": "accessory",
+        "tier": "building",
+        "catalogRows": 97,
+        "candidates": 92,
+        "classification": "supported"
+      },
+      {
+        "id": "accessory/full",
+        "section": "accessory",
+        "tier": "full",
+        "catalogRows": 97,
+        "candidates": 97,
+        "classification": "supported"
+      },
+      {
+        "id": "skill_power/minimal",
+        "section": "skill_power",
+        "tier": "minimal",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "skill_power/home",
+        "section": "skill_power",
+        "tier": "home",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "skill_power/building",
+        "section": "skill_power",
+        "tier": "building",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "skill_power/full",
+        "section": "skill_power",
+        "tier": "full",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "carries/minimal",
+        "section": "carries",
+        "tier": "minimal",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "carries/home",
+        "section": "carries",
+        "tier": "home",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "carries/building",
+        "section": "carries",
+        "tier": "building",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "carries/full",
+        "section": "carries",
+        "tier": "full",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "core/minimal",
+        "section": "core",
+        "tier": "minimal",
+        "catalogRows": 21,
+        "candidates": 15,
+        "classification": "supported"
+      },
+      {
+        "id": "core/home",
+        "section": "core",
+        "tier": "home",
+        "catalogRows": 21,
+        "candidates": 19,
+        "classification": "supported"
+      },
+      {
+        "id": "core/building",
+        "section": "core",
+        "tier": "building",
+        "catalogRows": 21,
+        "candidates": 21,
+        "classification": "supported"
+      },
+      {
+        "id": "core/full",
+        "section": "core",
+        "tier": "full",
+        "catalogRows": 21,
+        "candidates": 21,
+        "classification": "supported"
+      },
+      {
+        "id": "stability_balance/minimal",
+        "section": "stability_balance",
+        "tier": "minimal",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "stability_balance/home",
+        "section": "stability_balance",
+        "tier": "home",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "stability_balance/building",
+        "section": "stability_balance",
+        "tier": "building",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "stability_balance/full",
+        "section": "stability_balance",
+        "tier": "full",
+        "catalogRows": 0,
+        "candidates": 0,
+        "classification": "unsupported-product-state"
+      },
+      {
+        "id": "conditioning/minimal",
+        "section": "conditioning",
+        "tier": "minimal",
+        "catalogRows": 27,
+        "candidates": 13,
+        "classification": "supported"
+      },
+      {
+        "id": "conditioning/home",
+        "section": "conditioning",
+        "tier": "home",
+        "catalogRows": 27,
+        "candidates": 23,
+        "classification": "supported"
+      },
+      {
+        "id": "conditioning/building",
+        "section": "conditioning",
+        "tier": "building",
+        "catalogRows": 27,
+        "candidates": 25,
+        "classification": "supported"
+      },
+      {
+        "id": "conditioning/full",
+        "section": "conditioning",
+        "tier": "full",
+        "catalogRows": 27,
+        "candidates": 27,
+        "classification": "supported"
+      },
+      {
+        "id": "cooldown/minimal",
+        "section": "cooldown",
+        "tier": "minimal",
+        "catalogRows": 6,
+        "candidates": 6,
+        "classification": "supported"
+      },
+      {
+        "id": "cooldown/home",
+        "section": "cooldown",
+        "tier": "home",
+        "catalogRows": 6,
+        "candidates": 6,
+        "classification": "supported"
+      },
+      {
+        "id": "cooldown/building",
+        "section": "cooldown",
+        "tier": "building",
+        "catalogRows": 6,
+        "candidates": 6,
+        "classification": "supported"
+      },
+      {
+        "id": "cooldown/full",
+        "section": "cooldown",
+        "tier": "full",
+        "catalogRows": 6,
+        "candidates": 6,
+        "classification": "supported"
+      }
+    ],
+    "differencesFromCommittedSeed": {
+      "sectionTiers": 16,
+      "cells": 60,
+      "states": 392,
+      "constraints": 163
+    }
+  },
+  "rollback": {
+    "verified": true,
+    "migration": "supabase/migrations/20261001000019_catalog_section_repair.sql",
+    "migrationSha256": "9858febd58731f54fffdee6a8e01b24cfb8193c073561af167a92142d5cbf101",
+    "script": "docs/backend/rollback/catalog-section-repair.sql",
+    "scriptSha256": "43907ab05cd0e6b99648413461e5c563d322623a9ea228416ec83ee2cf3c4f8d",
+    "exercisesRepaired": 28,
+    "exercisesRestored": 28,
+    "sectionTagsSha256": "42c491cf23d5a073cc0d4f30b9438a53c121e0f61e3f78fdc04e5fc670a355f7"
+  }
+}
