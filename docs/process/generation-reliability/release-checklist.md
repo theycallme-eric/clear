@@ -106,3 +106,70 @@ rollback script other than the committed ones. A changed migration means a new c
 | Date | Run by | Result (pass / fail) |
 | ---- | ------ | -------------------- |
 |      |        |                      |
+
+## 3. Protected deployment and deployed re-verification (REQ-027, REQ-002, REQ-021)
+
+Run after step 2 and **before any application journey is opened**. Steps 3.1 and 3.2 write to the
+hosted project; they are run by the approved release operator or a trusted job from the reviewed
+commit on a clean worktree. The approved release operator may be the recovery supervisor acting
+under the task's recorded owner approval, or protected automation with the same narrow scope. Any
+failure stops the release at that step; the narrow way back is
+`docs/backend/catalog-section-repair-rollback.md`.
+
+### 3.1 Apply the reviewed migrations — authorized release step, writes
+
+```sh
+npm run gr:snapshot -- --check
+supabase db push --db-url "$SUPABASE_DB_URL" --dry-run
+supabase db push --db-url "$SUPABASE_DB_URL"
+```
+
+`gr:snapshot -- --check` first: it fails if
+`supabase/migrations/20261001000019_catalog_section_repair.sql` no longer hashes to the
+`rollback.migrationSha256` the committed manifest recorded, so the file pushed is the reviewed one,
+byte for byte. The dry run must list only committed migrations from this directory, in order;
+record which. Do not edit a file between the check and the push.
+
+| Date | Run by | Commit | Migrations pushed | Result (pass / fail) |
+| ---- | ------ | ------ | ----------------- | -------------------- |
+| 2026-10-02 | Recovery supervisor under owner-approved TASK-025 | `821b0b23c8530b2f86e2e7570a65967a3f7e915c` | `20261001000019` through `20261002000024`, exactly as dry-run listed | pass |
+
+### 3.2 Deploy the functions — authorized release step, writes
+
+Deploy `generate-workout` from `supabase/functions/` at the same commit
+(`supabase/functions/README.md`). The approved inventory retires `generate-section`; do not deploy
+it. The deployment needs the CLI's own credential, which is not one of the workspace's ignored
+files.
+
+| Date | Run by | Commit | Result (pass / fail) |
+| ---- | ------ | ------ | -------------------- |
+| 2026-10-02 | Recovery supervisor under owner-approved TASK-025 | `821b0b23c8530b2f86e2e7570a65967a3f7e915c` | pass — `generate-workout` deployed |
+
+### 3.3 Deployed matrix equals the committed-seed matrix — automated, read-only
+
+```sh
+npm run gr:matrix -- --deployed --check
+```
+
+Passes only with no differing row. A mismatch names each differing row and stops the release:
+3.4 and every application journey stay unrun.
+
+| Date | Run by | Result (pass / fail) | Differing rows |
+| ---- | ------ | -------------------- | -------------- |
+| 2026-10-02 | Agent Runner, TASK-025 attempt 2, before 3.1 | fail — 3.1 and 3.2 not yet run | 631 |
+| 2026-10-02 | Recovery supervisor, after 3.1 and 3.2 | pass | 0 |
+
+### 3.4 Database lane, live — automated, disposable users only
+
+```sh
+npx playwright test e2e/generation-database-lane.spec.ts --project=mobile
+```
+
+Run only after 3.3 passes. It must pass **unskipped** for the owner-mirror configuration and every
+tier × Goal preset, and its cleanup test must report no disposable user left. A skipped run is not
+a pass.
+
+| Date | Run by | Passed / skipped / failed | Disposable users left | Result (pass / fail) |
+| ---- | ------ | ------------------------- | --------------------- | -------------------- |
+| 2026-10-02 | Agent Runner, TASK-025 attempt 2 | not run — stopped at 3.3 | — | not run |
+| 2026-10-02 | Recovery supervisor, after deployed matrix passed | 25 passed, 0 skipped, 0 failed | 0 | pass |
