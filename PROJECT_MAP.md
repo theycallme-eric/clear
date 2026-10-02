@@ -322,7 +322,7 @@ directly. The predicates are restated rather than shared, because retrieval reso
 rows; `src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and
 the answers to the legal-state matrix.
 
-REQ-011 is the first save that asks it. `20261002000022_onboarding_viability.sql` re-declares
+REQ-011 is the first save that asks it. `20261002000023_onboarding_viability.sql` re-declares
 `complete_onboarding` with the evaluation ahead of every write: the answers are the proposal, and any
 failing row raises SQLSTATE `CLR11` with the rows as the exception's detail, so nothing is written
 and a crafted request meets the same refusal. `src/data/supabase.ts` keeps that detail,
@@ -332,6 +332,18 @@ exclusion is `viabilityRefusalMessage` in `src/state/onboarding.ts`. `src/app/On
 on the confirm step's validation line as an alert and keeps the draft.
 `src/test/generation-reliability/onboarding-viability.test.ts` follows it end to end over
 `src/test/onboarding-double.ts`, the commit transcribed.
+
+REQ-012 is the first caller, and it is the database rather than a screen.
+`20261002000022_settings_viability_guard.sql` puts one trigger on `profiles` (Goal, enabled sections)
+and one on `user_constraints` (a persistent `exclude`): each runs `generation_viability` for every
+location the user has, before and after the change, and raises `settings_not_viable` when the change
+introduces a failure — so a refused write stores nothing, whichever client made it, and a
+configuration that was already failing stays editable. Onboarding's commit and the location writes
+are not guarded. The raise carries the introduced failures and their locations as its detail;
+`supabase.ts` keeps a raise's message and detail, `viability.ts` (`settingsRefusalFrom`) reads them,
+and `errors.ts` (`settingsRefusalMessage`) composes the sentence. `user-data.ts`'s
+`updatePreferences` and `constraints.ts`'s `add` answer that error, and Settings shows it through the
+inline save it already had — `src/app/Settings.tsx` is unchanged.
 
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`

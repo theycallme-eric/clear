@@ -1,7 +1,7 @@
 /**
  * REQ-011, REQ-031 — onboarding cannot save an impossible configuration.
  *
- * `supabase/migrations/20261002000022_onboarding_viability.sql` re-declares
+ * `supabase/migrations/20261002000023_onboarding_viability.sql` re-declares
  * `complete_onboarding` with one step ahead of every write: the answers go to
  * `generation_viability` as a proposal, and a proposal it fails is refused
  * with the failing rows. Followed here from where it is refused to where it is
@@ -59,7 +59,7 @@ import {
   notOnboardedProfile,
 } from '../user-data-double'
 
-const MIGRATION = '20261002000022_onboarding_viability.sql'
+const MIGRATION = '20261002000023_onboarding_viability.sql'
 const ORIGINAL = '20260921000008_complete_onboarding.sql'
 
 const URL_ = 'https://clear.test'

@@ -303,6 +303,9 @@ function malformed(details: Record<string, unknown>): AppError {
   return createError(ErrorCode.PERSISTENCE_READ_FAILED, { details })
 }
 
+/** SQLSTATE of a plain `raise exception` in a database function or trigger. */
+const RAISED_EXCEPTION = 'P0001'
+
 /**
  * HTTP status → the error taxonomy. A write refused by RLS is not a network
  * problem and must not read as one: 401/403 means the caller is not the owner,
@@ -320,11 +323,17 @@ async function transportError(
   try {
     const body: unknown = await response.json()
     if (typeof body === 'object' && body !== null && 'code' in body) {
-      details.pgCode = (body as { code?: unknown }).code
-      // A raised exception's DETAIL. `complete_onboarding` puts the failing
-      // sections there (REQ-011); kept only when it is text, as raised.
-      const raised = (body as { details?: unknown }).details
-      if (typeof raised === 'string') details.pgDetails = raised
+      const problem = body as { code?: unknown; message?: unknown; details?: unknown }
+      details.pgCode = problem.code
+      // Raised exceptions carry structured refusal evidence in DETAIL. Keep it
+      // for both REQ-011's custom SQLSTATE and REQ-012's P0001 trigger.
+      if (typeof problem.details === 'string') details.pgDetail = problem.details
+      // P0001 is a `raise` in this schema's own SQL, so its message and detail
+      // are ours rather than Postgres' — REQ-012's refusal carries what it
+      // refused in them, and `viability.ts` is what reads it.
+      if (problem.code === RAISED_EXCEPTION) {
+        details.pgMessage = problem.message
+      }
     }
   } catch {
     // A body that is not JSON tells us nothing the status has not already.

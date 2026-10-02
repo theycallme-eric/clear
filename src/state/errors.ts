@@ -14,6 +14,11 @@
  * - PERSISTENCE_*: Data storage failures
  */
 import type { FailureClass, SectionFailure } from '../data/candidates.ts'
+import type {
+  IncompatibleChoice,
+  LocatedViabilityFailure,
+  ViabilityFailureClass,
+} from '../data/viability.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Error Codes
@@ -247,6 +252,81 @@ export function eligibilityRefusalMessage(failures: readonly SectionFailure[]): 
   return sentences.length === 0
     ? getErrorMessage(ErrorCode.GENERATION_NO_CANDIDATES)
     : sentences.join(' ')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings refusals
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * REQ-012. One sentence per viability class for a settings change the database
+ * refused. Each names the section and the incompatible choice; where a place is
+ * the cause — its equipment, or what the exclusions leave of it — it names the
+ * place. A catalog gap is the same at every place, so it names none.
+ *
+ * Total over `ViabilityFailureClass`, as the eligibility record above is over
+ * its own classes.
+ */
+const settingsRefusalMessages: Record<
+  ViabilityFailureClass,
+  (sections: string, places: string, choice: IncompatibleChoice) => string
+> = {
+  catalog_gap: (sections) => `${sections}: this selection is not currently supported.`,
+  missing_equipment: (sections, places) =>
+    `${sections}: nothing can be done with the equipment at ${places}.`,
+  athlete_exclusion: (sections, places, choice) => {
+    const targets =
+      choice.kind === 'exclusion'
+        ? choice.exclusions.map((exclusion) => sectionName(exclusion.target)).join(', ')
+        : ''
+
+    return targets === ''
+      ? `${sections}: your exclusions remove every exercise at ${places}.`
+      : `${sections}: working around ${targets} removes every exercise at ${places}.`
+  },
+  no_sections: () => 'No sections are turned on.',
+}
+
+/** What every refused settings change ends with: nothing was stored. */
+export const SETTINGS_REFUSAL_KEPT = 'Not saved. Your previous settings are kept.'
+
+/**
+ * The user-safe sentence for a refused Goal, section or limitation change: one
+ * sentence per class and incompatible choice, listing its sections and the
+ * places it fails at, then the line saying nothing was saved.
+ */
+export function settingsRefusalMessage(failures: readonly LocatedViabilityFailure[]): string {
+  const groups = new Map<
+    string,
+    { first: LocatedViabilityFailure; sections: string[]; places: string[] }
+  >()
+
+  for (const failure of failures) {
+    const key = `${failure.failureClass}|${JSON.stringify(failure.incompatibleChoice)}`
+    const group = groups.get(key) ?? { first: failure, sections: [], places: [] }
+    const section = failure.section === null ? null : sectionName(failure.section)
+
+    if (section !== null && !group.sections.includes(section)) group.sections.push(section)
+    if (!group.places.includes(failure.locationName)) group.places.push(failure.locationName)
+    groups.set(key, group)
+  }
+
+  const sentences = [...groups.values()].map(({ first, sections, places }) => {
+    const listed = sections.join(', ')
+
+    return settingsRefusalMessages[first.failureClass](
+      listed.charAt(0).toUpperCase() + listed.slice(1),
+      places.join(', '),
+      first.incompatibleChoice,
+    )
+  })
+
+  // A refusal that arrived without its reasons is still said to be one.
+  if (sentences.length === 0) {
+    sentences.push('This change cannot generate a workout at one of your places.')
+  }
+
+  return [...new Set(sentences), SETTINGS_REFUSAL_KEPT].join(' ')
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

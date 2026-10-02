@@ -4,7 +4,7 @@
  * The honesty note the viability double carries applies here unchanged: the
  * migration cannot be executed in this suite, so this double holds the commit's
  * rules in the one place a test can run them — the body of
- * `supabase/migrations/20261002000022_onboarding_viability.sql` transcribed
+ * `supabase/migrations/20261002000023_onboarding_viability.sql` transcribed
  * below in its own order, which
  * `src/test/generation-reliability/onboarding-viability.test.ts` holds to the
  * migration's text. What a test using it proves is that the commit *as

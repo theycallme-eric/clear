@@ -183,6 +183,8 @@ async function retrievedEmptySections(state: State): Promise<string[]> {
 
 describe('the migration — shape', () => {
   it('is additive: one function, and nothing altered, dropped or written', () => {
+    // Later migrations may call the function (REQ-012's guard does); none
+    // before it could.
     expect(migrationFiles()).toContain(MIGRATION)
     expect(MIGRATION > GOAL_SCOPE_MIGRATION).toBe(true)
 
