@@ -17,12 +17,13 @@
  *     arrives as JSON, which is `Json` to TypeScript, so it is parsed rather
  *     than asserted (CORE-03 will replace the hand-rolled parse with a schema);
  *   * the typed empty-set failure. A section that resolved to nothing is
- *     `GENERATION_NO_CANDIDATES` — an over-constrained request, reported as one
- *     — and never a section that quietly generates nothing
+ *     `GENERATION_NO_CANDIDATES` — reported with the class of each failed
+ *     section (GR-04) — and never a section that quietly generates nothing
  *     (GENERATION_CONTRACT §9).
  *
- * No model is called from here, and none can be: the only I/O is one PostgREST
- * RPC through `supabase.ts`.
+ * No model is called from here, and none can be: the only I/O is PostgREST
+ * RPCs through `supabase.ts` — one per request, and a second only to classify
+ * a refusal.
  */
 
 import {
@@ -264,6 +265,148 @@ function malformed(details: Record<string, unknown>): AppError {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Refusal
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// GR-04 / REQ-009. "No candidates" names what happened and not whose it is to
+// fix. The class does, and it is decided here — once, for the reader below and
+// for `generate-workout` alike — from two counts the database gives
+// (`generation_refusal_diagnostics`,
+// supabase/migrations/20261001000020_generation_refusal_diagnostics.sql). No
+// predicate is re-run in TypeScript: the counts are SQL's, and this only reads
+// them.
+
+/**
+ * Why a refused request was refused. A closed set:
+ *
+ *   * `catalog_defect` — no catalog exercise carries the section for any
+ *     equipment. Nothing the athlete changes can help; the catalog or the
+ *     configuration that offered the section is wrong.
+ *   * `athlete_constraint` — the resolved location could perform the section,
+ *     and the athlete's exclusions removed every candidate.
+ *   * `missing_equipment` — the catalog has the section, and nothing in it can
+ *     be performed with what the resolved location holds.
+ *   * `empty_profile` — no profile, or a profile that resolves to no sections.
+ *   * `undetermined` — the diagnostic read itself failed. The refusal stands
+ *     and stays typed; a class is not guessed.
+ */
+export const FAILURE_CLASSES = [
+  'catalog_defect',
+  'athlete_constraint',
+  'missing_equipment',
+  'empty_profile',
+  'undetermined',
+] as const
+export type FailureClass = (typeof FAILURE_CLASSES)[number]
+
+/** One refused section and its class. `section` is null for `empty_profile`. */
+export interface SectionFailure {
+  readonly section: SectionType | null
+  readonly failureClass: FailureClass
+}
+
+/** One row of `generation_refusal_diagnostics`, as the domain reads it. */
+export interface SectionSupport {
+  readonly section: SectionType
+  /** Catalog exercises carrying the section, on any equipment. */
+  readonly catalogExercises: number
+  /** Of those, the ones the resolved location can perform, before exclusions. */
+  readonly equippedExercises: number
+}
+
+/**
+ * The rows of `generation_refusal_diagnostics` → the domain, or null when the
+ * payload is not what the function declares. Null is `undetermined`, not a
+ * failure of its own: the request is already being refused.
+ */
+export function supportFromRows(payload: unknown): SectionSupport[] | null {
+  if (!Array.isArray(payload)) return null
+
+  const support: SectionSupport[] = []
+  for (const entry of payload) {
+    if (typeof entry !== 'object' || entry === null) return null
+    const {
+      section,
+      catalog_exercises: catalogExercises,
+      equipped_exercises: equippedExercises,
+    } = entry as Record<string, unknown>
+
+    if (
+      !isOneOf(section, Constants.public.Enums.section_type) ||
+      typeof catalogExercises !== 'number' ||
+      typeof equippedExercises !== 'number'
+    ) {
+      return null
+    }
+    support.push({ section, catalogExercises, equippedExercises })
+  }
+
+  return support
+}
+
+/**
+ * The class of one section that resolved to nothing. Order matters: a section
+ * the catalog does not have is a defect whatever the athlete excluded, and a
+ * section the location could have performed was emptied by exclusions —
+ * retrieval had already dropped the pattern predicate, so they are the only
+ * predicates left.
+ */
+export function classifySection(support: SectionSupport | undefined): FailureClass {
+  if (support === undefined) return 'undetermined'
+  if (support.catalogExercises === 0) return 'catalog_defect'
+  if (support.equippedExercises > 0) return 'athlete_constraint'
+
+  return 'missing_equipment'
+}
+
+/** The sections of a retrieval that came back with nothing in them. */
+export function emptySections(sections: readonly SectionCandidates[]): SectionType[] {
+  return sections
+    .filter((section) => section.candidates.length === 0)
+    .map((section) => section.section)
+}
+
+/**
+ * The typed refusal, with every failed section and its class in `details`.
+ * `support` is null when the diagnostic read could not be made.
+ *
+ * `details.sections` keeps the shape it has always had. `details.failures` is
+ * what a log line carries: section names and class names, and nothing about
+ * the athlete.
+ */
+export function noCandidatesError(
+  sections: readonly SectionCandidates[],
+  support: readonly SectionSupport[] | null,
+  details: Record<string, unknown> = {},
+): AppError {
+  const empty = emptySections(sections)
+  const failures: SectionFailure[] =
+    sections.length === 0
+      ? [{ section: null, failureClass: 'empty_profile' }]
+      : empty.map((section) => ({
+          section,
+          failureClass: classifySection(support?.find((row) => row.section === section)),
+        }))
+
+  return createError(ErrorCode.GENERATION_NO_CANDIDATES, {
+    details: {
+      ...details,
+      // Named, because "which section" is the whole of what a user has to
+      // change to make the request answerable.
+      sections: sections.length === 0 ? 'none resolved' : empty,
+      failures,
+    },
+  })
+}
+
+/** The failures a refusal carries, or none if the error is not one. */
+export function failuresOf(error: AppError): readonly SectionFailure[] {
+  const failures = error.details?.failures
+
+  return Array.isArray(failures) ? (failures as SectionFailure[]) : []
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Client
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -277,13 +420,15 @@ export interface CandidatesClient {
    *
    * Fails with `GENERATION_NO_CANDIDATES` when the request resolves to no
    * sections at all, or when any resolved section is empty after the floor has
-   * been applied — both are over-constrained input, and both are worth saying
-   * out loud rather than composing around.
+   * been applied — neither is composed around. The error names every failed
+   * section and its `FailureClass`; classifying an empty section costs one more
+   * RPC, made only on that path.
    */
   retrieve(request: CandidateRequest): Promise<Result<SectionCandidates[]>>
 }
 
 const CANDIDATE_SETS_RPC = 'generation_candidate_sets'
+export const REFUSAL_DIAGNOSTICS_RPC = 'generation_refusal_diagnostics'
 
 export function createCandidatesClient(config: CandidatesClientConfig): CandidatesClient {
   const db = createSupabaseClient(config)
@@ -307,19 +452,23 @@ export function createCandidatesClient(config: CandidatesClientConfig): Candidat
         sections.push(section.value)
       }
 
-      const empty = sections
-        .filter((section) => section.candidates.length === 0)
-        .map((section) => section.section)
+      if (sections.length === 0) {
+        return err(noCandidatesError(sections, null, { focus: request.focus }))
+      }
 
-      if (sections.length === 0 || empty.length > 0) {
+      const empty = emptySections(sections)
+      if (empty.length > 0) {
+        // Only now, and only for what came back empty: a request that resolves
+        // is still one round trip.
+        const support = await db.rpc(REFUSAL_DIAGNOSTICS_RPC, {
+          p_user_id: request.userId,
+          p_sections: empty,
+          p_location_id: request.locationId ?? null,
+        })
+
         return err(
-          createError(ErrorCode.GENERATION_NO_CANDIDATES, {
-            details: {
-              focus: request.focus,
-              // Named, because "which section" is the whole of what a user has
-              // to change to make the request answerable.
-              sections: sections.length === 0 ? 'none resolved' : empty,
-            },
+          noCandidatesError(sections, support.ok ? supportFromRows(support.value) : null, {
+            focus: request.focus,
           }),
         )
       }

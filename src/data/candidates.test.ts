@@ -8,6 +8,7 @@ import {
   CANDIDATE_FLOOR,
   SESSION_FOCUSES,
   createCandidatesClient,
+  failuresOf,
   type SectionCandidates,
   type SessionFocus,
 } from './candidates'
@@ -409,6 +410,22 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
       'No exercises match these options. Change equipment or exclusions.',
     )
     expect(result.error.details?.sections).toEqual(DEFAULT_SECTIONS)
+    // GR-04: and says whose it is to fix. The catalog has every one of these
+    // sections; this location cannot perform any of them.
+    expect(failuresOf(result.error)).toEqual(
+      DEFAULT_SECTIONS.map((section) => ({ section, failureClass: 'missing_equipment' })),
+    )
+  })
+
+  it('classifies a refusal with one more RPC, and only a refusal', async () => {
+    const { client, double } = setup({ equipment: ['skipping_rope'] })
+
+    await client.retrieve({ userId: USER, focus: 'full_body' })
+
+    expect(double.requests()).toEqual([
+      { method: 'POST', path: '/rpc/generation_candidate_sets' },
+      { method: 'POST', path: '/rpc/generation_refusal_diagnostics' },
+    ])
   })
 
   it('serves a bodyweight-only location asked for a primary lift', async () => {
@@ -440,6 +457,12 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
       'accessory',
       'conditioning',
     ])
+    // Nothing in this catalog carries them, on any equipment.
+    expect(failuresOf(result.error).map((failure) => failure.failureClass)).toEqual([
+      'catalog_defect',
+      'catalog_defect',
+      'catalog_defect',
+    ])
   })
 
   it('fails when the request resolves to no sections at all', async () => {
@@ -453,6 +476,7 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
     if (result.ok) return
     expect(result.error.code).toBe(ErrorCode.GENERATION_NO_CANDIDATES)
     expect(result.error.details?.sections).toBe('none resolved')
+    expect(failuresOf(result.error)).toEqual([{ section: null, failureClass: 'empty_profile' }])
   })
 
   it('reports a transport refusal as itself, not as an empty candidate set', async () => {

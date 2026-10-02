@@ -27,6 +27,7 @@
  *   supabase/migrations/20260921000017_deload_session_tag.sql
  *   supabase/migrations/20260927000018_generation_goal_scope.sql
  *   supabase/migrations/20261001000019_catalog_section_repair.sql
+ *   supabase/migrations/20261001000020_generation_refusal_diagnostics.sql
  */
 
 export type Json =
@@ -830,6 +831,14 @@ export type Database = {
           p_location_id?: string | null
         }
         Returns: string[]
+      }
+      generation_refusal_diagnostics: {
+        Args: {
+          p_user_id: string
+          p_sections: Database['public']['Enums']['section_type'][]
+          p_location_id?: string | null
+        }
+        Returns: { section: Database['public']['Enums']['section_type']; catalog_exercises: number; equipped_exercises: number }[]
       }
       generation_sections: {
         Args: {

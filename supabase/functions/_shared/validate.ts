@@ -337,6 +337,23 @@ export function checkReferences(
   const index = candidateIndex(input)
   const enabled = new Set(input.request.effectiveSections)
 
+  // Check 3, in the other direction (GR-04 / REQ-008). The sections this
+  // request resolved are the sections the workout has: one the model left out
+  // is a section the athlete selected and did not get.
+  const composed = new Set(workout.sections.map((section) => section.section_type))
+  for (const resolved of input.sections) {
+    if (!composed.has(resolved.section)) {
+      violations.push({
+        check: 3,
+        code: GenerationFailure.INVALID_REFERENCE,
+        path: 'sections',
+        message:
+          `'${resolved.section}' was resolved for this request and is missing ` +
+          `(resolved: ${input.sections.map((section) => section.section).join(', ')})`,
+      })
+    }
+  }
+
   workout.sections.forEach((section, sectionIndex) => {
     // Check 3. A section nobody enabled has no candidate set, so it is asked
     // first: every id under it would otherwise be reported as unknown, which
