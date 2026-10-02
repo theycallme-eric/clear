@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { FAILURE_CLASSES } from '../data/candidates'
 import {
+  ELIGIBILITY_MESSAGE_CLASSES,
   ErrorCode,
+  eligibilityRefusalMessage,
   generateRequestId,
   createError,
   getErrorMessage,
@@ -131,6 +134,70 @@ describe('getErrorMessage', () => {
     expect(getErrorMessage(ErrorCode.PERSISTENCE_CONFLICT)).toBe('Data conflict. Refresh and try again.')
     expect(getErrorMessage(ErrorCode.PERSISTENCE_WRITE_FAILED)).toBe('Could not save. Try again.')
     expect(getErrorMessage(ErrorCode.PERSISTENCE_READ_FAILED)).toBe('Could not load. Try again.')
+  })
+})
+
+describe('eligibilityRefusalMessage (REQ-014)', () => {
+  // Written out per class rather than read back from the mapping: a class
+  // added to the closed set has no row here, and the first test fails.
+  const MESSAGES: Record<string, string> = {
+    catalog_defect: 'Conditioning: this selection is not currently supported.',
+    athlete_constraint:
+      'Conditioning: your exclusions remove every exercise. Remove one under Work around in Settings.',
+    missing_equipment:
+      'Conditioning: nothing can be done with the equipment at this place. Add equipment in Places and equipment, or choose another place.',
+    empty_profile: 'Your profile has no sections turned on. Turn on sections in Settings.',
+    undetermined: 'Conditioning: no exercises match these options. Change equipment or exclusions.',
+  }
+
+  it('maps exactly the closed set of failure classes', () => {
+    expect([...ELIGIBILITY_MESSAGE_CLASSES].sort()).toEqual([...FAILURE_CLASSES].sort())
+    expect(Object.keys(MESSAGES).sort()).toEqual([...FAILURE_CLASSES].sort())
+  })
+
+  it.each(FAILURE_CLASSES)('%s has its own message', (failureClass) => {
+    const section = failureClass === 'empty_profile' ? null : 'conditioning'
+
+    expect(eligibilityRefusalMessage([{ section, failureClass }])).toBe(MESSAGES[failureClass])
+  })
+
+  it('gives every class a different sentence', () => {
+    expect(new Set(Object.values(MESSAGES)).size).toBe(FAILURE_CLASSES.length)
+  })
+
+  it('names every failed section, one sentence per class', () => {
+    expect(
+      eligibilityRefusalMessage([
+        { section: 'primary_lift', failureClass: 'missing_equipment' },
+        { section: 'accessory', failureClass: 'athlete_constraint' },
+        { section: 'core', failureClass: 'missing_equipment' },
+      ]),
+    ).toBe(
+      'Accessory: your exclusions remove every exercise. Remove one under Work around in Settings. ' +
+        'Primary lift, core: nothing can be done with the equipment at this place. Add equipment in Places and equipment, or choose another place.',
+    )
+  })
+
+  it('does not present a catalog defect as something the athlete can change', () => {
+    const message = eligibilityRefusalMessage([
+      { section: 'conditioning', failureClass: 'catalog_defect' },
+    ])
+
+    expect(message).toContain('not currently supported')
+    expect(message).not.toMatch(/goal|focus|equipment|exclusion|settings|change|try/i)
+  })
+
+  it('falls back to the general line when no failure is named', () => {
+    expect(eligibilityRefusalMessage([])).toBe(
+      getErrorMessage(ErrorCode.GENERATION_NO_CANDIDATES),
+    )
+  })
+
+  it('createError keeps a specific message beside the code', () => {
+    const error = createError(ErrorCode.GENERATION_NO_CANDIDATES, { message: 'Specific.' })
+
+    expect(error.code).toBe(ErrorCode.GENERATION_NO_CANDIDATES)
+    expect(error.message).toBe('Specific.')
   })
 })
 
