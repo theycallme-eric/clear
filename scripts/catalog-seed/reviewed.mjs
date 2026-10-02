@@ -176,6 +176,51 @@ export const WEIGHTS_OUTSIDE_DERIVATION = Object.freeze([
 ])
 
 /**
+ * GR-02 / REQ-004 — the section repair, as reviewed.
+ *
+ * `sections` and `can_be_primary` are the capture's plus what the
+ * section-mapping ledger adds
+ * (`docs/process/generation-reliability/section-mapping-ledger.json`). The
+ * ledger is where a membership decision is made and argued; these numbers are
+ * the seed's record of having read it, so a row added to or taken from the
+ * ledger fails the seed until it is acknowledged here.
+ *
+ * `added` is how many exercises gain each section. The first three were empty
+ * in the capture. `primary_lift` was not: its eight are the exercises that can
+ * be done with no implement, which is also `madePrimary` — a row raises
+ * `can_be_primary` exactly when it adds `primary_lift`.
+ */
+export const SECTION_REPAIR = Object.freeze({
+  rows: 28,
+  added: Object.freeze({
+    skill_power: 12,
+    carries: 4,
+    stability_balance: 10,
+    primary_lift: 8,
+  }),
+  madePrimary: 8,
+})
+
+/**
+ * How many exercises carry each `section_type` once the repair is applied. The
+ * sections the capture already populated keep their captured counts, except
+ * `primary_lift`, which grows from 25 by the eight above; the three it left
+ * empty hold exactly what the ledger added.
+ */
+export const SECTION_MEMBERSHIP = Object.freeze({
+  warmup: 31,
+  primary_lift: 33,
+  accessory: 97,
+  core: 21,
+  conditioning: 27,
+  cooldown: 6,
+  mobility: 14,
+  skill_power: 12,
+  carries: 4,
+  stability_balance: 10,
+})
+
+/**
  * DATA_MODEL §3 step 3: "Compare candidate sets … derived versus original,
  * across all four focuses."
  *

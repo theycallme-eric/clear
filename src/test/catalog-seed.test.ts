@@ -103,6 +103,7 @@ describe('npm run seed', () => {
       'equivalence',
       'invented',
       'orphaned',
+      'repair',
     ])
     expect(verification.failures).toEqual([])
   })

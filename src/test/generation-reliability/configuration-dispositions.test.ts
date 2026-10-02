@@ -9,14 +9,16 @@
  * ledger row, a preset or a seed row that changes without a regeneration fails
  * here as well as under `--check`.
  *
- * It is a projection. Nothing is applied: the seed-side baseline is still
- * asserted by `legal-state-matrix.test.ts`, and stays true alongside this.
+ * It is a projection, and since the ledger was applied to the seed it projects
+ * nothing new: the committed seed already carries every row. The unrepaired
+ * baseline it is compared with is rebuilt here from the pre-change capture.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
+import { loadSnapshot } from '../../../scripts/catalog-seed/sources.mjs'
 import { REPO_ROOT } from '../../../scripts/gen-types/schema.mjs'
 import {
   DISPOSITIONS,
@@ -39,8 +41,20 @@ const ENUMS = Constants.public.Enums
 
 const rules = loadRetrievalRules()
 const ledger = loadLedger(REPO_ROOT)
-const seed = seededCatalog()
-const catalog = projectCatalog(seed, ledger)
+const seeded = seededCatalog()
+const catalog = projectCatalog(seeded, ledger)
+
+/**
+ * The catalog before the ledger was applied: the seed's rows with the
+ * pre-change capture's tags. The committed seed now carries the ledger, so the
+ * unrepaired baseline is rebuilt from the capture rather than read from it.
+ */
+const captured = new Map(loadSnapshot().definitions.map((row) => [row.id, row]))
+const seed = seeded.map((row) => ({
+  ...row,
+  sections: captured.get(row.id)?.sections ?? [],
+  canBePrimary: captured.get(row.id)?.canBePrimary ?? false,
+}))
 
 const vocabularies = {
   rules,
@@ -49,7 +63,7 @@ const vocabularies = {
   equipment: EQUIPMENT.map((item) => item.value),
 }
 
-/** What the seed serves today, and what it would serve with the ledger applied. */
+/** What the catalog served before the repair, and what it serves with the ledger applied. */
 const current = buildMatrix({ ...vocabularies, catalog: seed })
 const matrix = buildMatrix({ ...vocabularies, catalog })
 
@@ -383,8 +397,8 @@ describe('the check', () => {
   })
 
   it('refuses to call a section with no catalog rows a prevented preference', () => {
-    // The seed as it is: three sections are empty at every tier, and no choice
-    // of the athlete's explains that.
+    // The catalog as it was before the repair: three sections are empty at
+    // every tier, and no choice of the athlete's explains that.
     const unrepaired = buildDispositions({ matrix: current, catalog: seed, ledgerRows: 0 })
     const unresolved = unrepaired.configurations.filter((row) => row.disposition === 'unresolved')
 

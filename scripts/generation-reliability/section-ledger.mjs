@@ -25,7 +25,8 @@
  * `projectCatalog` is the catalog as it would be with every row applied — the
  * input the dispositions (`dispositions.mjs`) are computed from.
  *
- * This module changes nothing. Applying the ledger to the seed is a later task.
+ * This module changes nothing. `catalog-repair.mjs` is what applies the rows:
+ * to the seed, and as the repair migration and its rollback.
  */
 import { readFileSync } from 'node:fs'
 

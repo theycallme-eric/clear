@@ -190,7 +190,7 @@ export function buildDispositions({ matrix, catalog, ledgerRows }) {
     generatedBy: 'npm run gr:dispositions',
     notes: [
       'Generated. Do not edit; run `npm run gr:dispositions` and commit the result.',
-      'Projected, not current: computed from the committed seed with every row of the section-mapping ledger applied. The seed and the database are unchanged by it.',
+      'Computed from the committed seed with every row of the section-mapping ledger applied. The seed carries those rows since the catalog repair, so this is the seeded catalog; no database is read or changed by it.',
       'A configuration is a legal-state matrix state: goal × focus × tier × saved section profile × at most one exclude constraint. Constrained states are listed where the constraint changes the outcome, as in the matrix.',
       'supported means every required section has a candidate, strictly or through the recorded relaxation (relaxedSections).',
       'prevented means a required section has none. preventedBy names, per empty section, the choice that causes it: the section itself where the equipment cannot serve it, or the exclude constraint where it removes the candidates the equipment had.',

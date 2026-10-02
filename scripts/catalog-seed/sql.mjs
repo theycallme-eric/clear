@@ -113,7 +113,7 @@ $$;
  * @param {import('./transform.mjs').Transformed} transformed
  * @returns {string}
  */
-export function emitDefinitions({ definitions, snapshotId }) {
+export function emitDefinitions({ definitions, snapshotId, sectionRepair }) {
   const columns = [
     'id',
     'name',
@@ -170,6 +170,10 @@ export function emitDefinitions({ definitions, snapshotId }) {
       'component_movements and exercise_role come from the reviewed tags, every',
       'other column verbatim from the capture — including a null regression or',
       'progression, which means "no variant authored" and is preserved as null.',
+      '',
+      `sections and can_be_primary are the capture's plus the ${sectionRepair.length} rows of the`,
+      'section-mapping ledger (GR-02 / REQ-004), which only add. The repair',
+      'migration is generated from the same rows.',
     ]) +
     `
 insert into public.exercise_definitions as ed (

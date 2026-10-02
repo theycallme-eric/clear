@@ -21,6 +21,14 @@ workout-anatomy tags in
 transformation and its equivalence proof are recorded in
 `docs/backend/taxonomy-equivalence.md`; read that before changing anything.
 
+One thing is added to the capture. `sections` and `can_be_primary` are the
+captured values plus the 28 rows of
+`docs/process/generation-reliability/section-mapping-ledger.json` (GR-02), which
+only add tags. `supabase/migrations/20261001000019_catalog_section_repair.sql`
+is generated from the same rows (`npm run gr:repair`), so a seeded database and
+a migrated one hold the same catalog. To undo it, see
+`docs/backend/catalog-section-repair-rollback.md`.
+
 The 150 captured exercise-anchor links become 102 pattern weights. The other 48
 carried `surprise`, which named the absence of a movement pattern; the seed
 refuses to run unless every affected exercise is still reachable through its

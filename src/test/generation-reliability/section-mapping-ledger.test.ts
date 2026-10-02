@@ -13,9 +13,10 @@
  * `Minimal main work` block holds those rows to that — usable with the Minimal
  * preset alone, and taking nothing away from the tiers above it.
  *
- * The ledger is a proposal. The seed is untouched by it, and the last block
- * says so — it is expected to be rewritten by the task that applies the ledger,
- * not relaxed.
+ * The ledger is applied: `npm run seed` reads it, and the last block holds the
+ * committed seed to it — the capture where there is no row, the row's `after`
+ * where there is. `catalog-repair-migration.test.ts` holds the migration to the
+ * same rows.
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -52,6 +53,13 @@ const capture = new Map(
 const seed = new Map(
   catalog.map((row) => [row.id, { sections: [...row.sections], canBePrimary: row.canBePrimary }]),
 )
+
+/** The catalog as it was before the ledger was applied: the seed's rows, the capture's tags. */
+const unrepaired = catalog.map((row) => ({
+  ...row,
+  sections: capture.get(row.id)?.sections ?? [],
+  canBePrimary: capture.get(row.id)?.canBePrimary ?? false,
+}))
 
 const facts = new Map(
   catalog.map((row) => [
@@ -302,10 +310,13 @@ describe('the check', () => {
     const removed = withRow((row) => {
       row.after.sections = row.after.sections.slice(1)
     })
-    expect(validateLedger(removed, context).join('\n')).toMatch(/without a removalRationale/)
+    // Against a seed that has not applied the row: the committed seed carries
+    // the row as written, and would also differ from this tampered `after`.
+    const unapplied = { ...context, seed: capture }
+    expect(validateLedger(removed, unapplied).join('\n')).toMatch(/without a removalRationale/)
 
     removed.rows[0].removalRationale = 'Recorded reason for the removal.'
-    expect(validateLedger(removed, context)).toEqual([])
+    expect(validateLedger(removed, unapplied)).toEqual([])
   })
 
   it('fails when an ambiguous exercise is also decided by a row, or has no recommendation', () => {
@@ -350,8 +361,11 @@ describe('Minimal main work', () => {
     expect([...MINIMAL]).toEqual(['bodyweight', 'resistance_bands', 'foam_roller'])
   })
 
-  it('has no candidate in the seed, which is what the rows repair', () => {
-    expect(candidates(catalog, MAIN_WORK_SECTION, 'minimal')).toEqual([])
+  it('had no candidate before the ledger was applied, which is what the rows repair', () => {
+    expect(candidates(unrepaired, MAIN_WORK_SECTION, 'minimal')).toEqual([])
+    expect(candidates(catalog, MAIN_WORK_SECTION, 'minimal')).toEqual(
+      mainWorkRows.map((row) => row.id).sort(),
+    )
   })
 
   it('has rows, each making its exercise primary on the owner’s decision', () => {
@@ -413,7 +427,7 @@ describe('Minimal main work', () => {
       for (const section of SECTION_TYPES) {
         const after = candidates(projected, section, tier)
 
-        for (const id of candidates(catalog, section, tier)) {
+        for (const id of candidates(unrepaired, section, tier)) {
           expect(after, `${tier}/${section} keeps ${id}`).toContain(id)
         }
       }
@@ -432,16 +446,36 @@ describe('Minimal main work', () => {
   })
 })
 
-describe('the seed, before the ledger is applied', () => {
-  it('still matches the pre-change capture for every exercise', () => {
+describe('the seed, with the ledger applied', () => {
+  const rows = new Map(ledger.rows.map((row) => [row.id, row]))
+
+  it('matches the pre-change capture for every exercise without a row', () => {
     expect(seed.size).toBe(capture.size)
 
     for (const [id, captured] of capture) {
-      expect(seed.get(id), id).toEqual(captured)
+      if (!rows.has(id)) expect(seed.get(id), id).toEqual(captured)
     }
   })
 
-  it.each(LEDGER_SECTIONS)('still has no %s exercise', (section) => {
-    expect(catalog.filter((row) => row.sections.includes(section))).toEqual([])
+  it('carries every row’s after', () => {
+    for (const [id, row] of rows) {
+      expect([...(seed.get(id)?.sections ?? [])].sort(), id).toEqual([...row.after.sections].sort())
+      expect(seed.get(id)?.canBePrimary, id).toBe(row.after.canBePrimary)
+    }
+  })
+
+  it.each(LEDGER_SECTIONS)('has in %s exactly the exercises its rows add', (section) => {
+    expect(unrepaired.filter((row) => row.sections.includes(section))).toEqual([])
+    expect(
+      catalog
+        .filter((row) => row.sections.includes(section))
+        .map((row) => row.id)
+        .sort(),
+    ).toEqual(
+      ledger.rows
+        .filter((row) => addedSections(row).includes(section))
+        .map((row) => row.id)
+        .sort(),
+    )
   })
 })

@@ -9,11 +9,11 @@
  * row that changes without a regeneration fails here as well as under
  * `--check`.
  *
- * It also records what the matrix says about the catalog *as it is today*:
- * three selectable sections with no exercises at any tier, and no primary lift
- * at the Minimal tier. Those assertions are the unrepaired baseline GR-02
- * starts from, and they are expected to be rewritten by the task that repairs
- * the catalog — not relaxed to make a red build green.
+ * It also records what the matrix says about the catalog *as it is today*,
+ * with GR-02's section-mapping ledger applied to the seed: the three sections
+ * the capture left empty have candidates, and the Minimal tier resolves main
+ * work. The one gap left — no carry without dumbbells or kettlebells — is
+ * asserted as a gap.
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -295,37 +295,38 @@ describe('strict and relaxed counts', () => {
   })
 })
 
-describe('the unrepaired catalog', () => {
+describe('the repaired catalog', () => {
   it.each(['skill_power', 'carries', 'stability_balance'])(
-    'has no %s candidate at any tier',
+    'has %s candidates at every tier that has the equipment',
     (section) => {
       const rows = matrix.sectionTiers.filter((row) => row.section === section)
       expect(rows).toHaveLength(ENUMS.equipment_tier.length)
-      for (const row of rows) {
-        expect(row.candidates, row.id).toBe(0)
-        expect(row.classification, row.id).toBe('unsupported-product-state')
-      }
+      expect(rows.find((row) => row.tier === 'full')?.candidates).toBeGreaterThan(0)
 
-      for (const cell of matrix.cells.filter((candidate) => candidate.section === section)) {
-        expect([cell.strict, cell.relaxed], cell.id).toEqual([0, 0])
-      }
+      // The one gap left is recorded, not hidden: every carry needs dumbbells
+      // or kettlebells, so `carries` is empty at Minimal and nowhere else.
+      const empty = rows.filter((row) => row.candidates === 0).map((row) => row.id)
+      expect(empty).toEqual(section === 'carries' ? ['carries/minimal'] : [])
     },
   )
 
-  it.each(['strength', 'hypertrophy', 'balanced'])(
-    'has no Minimal primary_lift candidate for %s',
+  it.each(['strength', 'hypertrophy', 'conditioning', 'balanced'])(
+    'resolves every default section, primary_lift included, for %s at Minimal',
     (goal) => {
       const rows = matrix.states.filter(
-        (state) => state.goal === goal && state.tier === 'minimal' && state.profile === 'preset',
+        (state) =>
+          state.goal === goal &&
+          state.tier === 'minimal' &&
+          state.profile === 'preset' &&
+          state.constraint === null,
       )
       expect(rows).toHaveLength(ENUMS.session_focus.length)
 
       for (const row of rows) {
         const primary = row.sections.find((section) => section.section === 'primary_lift')
-        expect(primary, row.id).toMatchObject({ strict: 0, relaxed: 0, floorApplied: true })
-        expect(row.emptySections, row.id).toContain('primary_lift')
-        expect(row.failsBeforeComposition, row.id).toBe(true)
-        expect(row.classification, row.id).toBe('unsupported-product-state')
+        if (primary !== undefined) expect(primary.relaxed, row.id).toBeGreaterThan(0)
+        expect(row.emptySections, row.id).toEqual([])
+        expect(row.failsBeforeComposition, row.id).toBe(false)
       }
     },
   )
