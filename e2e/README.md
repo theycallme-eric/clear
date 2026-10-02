@@ -82,6 +82,17 @@ it creates its own `clear-e2e-<namespace>-gr-db-*` users, calls the candidate
 RPC and `persist_session` as them, makes no model call, and has deleted them by
 the time it reports. Without credentials it skips with the reason above.
 
+`generation-deployed-matrix.spec.ts` (GR-07) is also on demand, once per
+release, after the database lane:
+`npx playwright test e2e/generation-deployed-matrix.spec.ts --project=mobile`.
+It always drives the deployed application — `E2E_BASE_URL` if set, otherwise
+the public alias of the newest ready production deployment, read with
+`VERCEL_TOKEN` — never the local dev server. Nine
+`clear-e2e-<namespace>-gr-uat-*` users are walked to Review with generation
+answered from the deployed candidate RPC, so there is no model call, and each
+is deleted as its entry finishes. It rewrites
+`docs/process/generation-reliability/release-evidence.json`; commit that file.
+
 A pull request **from a fork** receives no secret from GitHub, so `rls-standing`
 skips rather than failing confusingly. What still runs there is the half that
 needs no database: the disposition audit below, in both this suite and `CI`.
