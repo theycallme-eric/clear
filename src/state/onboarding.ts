@@ -35,6 +35,7 @@ import { Constants } from '../data/database.types'
 import type {
   Database,
 } from '../data/database.types'
+import type { ViabilityFailure } from '../data/viability'
 import type { OnboardingAnswers } from './schemas'
 import { NON_SELECTABLE_SECTIONS } from './section-selectability'
 
@@ -406,6 +407,108 @@ export function labelOf<T extends string>(
   value: T,
 ): string {
   return options.find((option) => option.value === value)?.label ?? value
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A refused commit
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `A`, `A and B`, `A, B and C`. */
+function listed(items: readonly string[]): string {
+  return items.length <= 1
+    ? items.join('')
+    : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1] ?? ''}`
+}
+
+/** The pattern as the limitations step names it, without its examples. */
+function patternName(pattern: string): string {
+  const label = MOVEMENT_PATTERNS.find((option) => option.value === pattern)?.label ?? pattern
+  return label.split(' — ')[0] ?? label
+}
+
+/**
+ * REQ-011. The sentence a refused commit is presented as: which section cannot
+ * be generated, and which answer — the equipment, or what is worked around —
+ * leaves it with nothing. One sentence pair per failure class, in the words
+ * the steps themselves use, so the thing named is a thing the athlete ticked.
+ *
+ * A section the athlete did not turn on can still fail: a recovery session
+ * always has a warm-up, mobility and a cooldown, whatever the toggles say.
+ * Turning it off is then not a correction, and the sentence does not offer it.
+ */
+export function viabilityRefusalMessage(failures: readonly ViabilityFailure[]): string {
+  const sentences: string[] = []
+
+  const sectionsOf = (matching: readonly ViabilityFailure[]) =>
+    listed(
+      ordered(
+        Constants.public.Enums.section_type,
+        matching.flatMap((failure) => (failure.section === null ? [] : [failure.section])),
+      ).map((section) => SECTION_COPY[section].label),
+    )
+
+  /** Whether the athlete turned the failing sections on, and so can turn them off. */
+  const chosen = (matching: readonly ViabilityFailure[]) =>
+    matching.every((failure) => failure.blocksProposedGoal)
+
+  if (failures.some((failure) => failure.failureClass === 'no_sections')) {
+    sentences.push('A workout needs at least one section.')
+  }
+
+  const gaps = failures.filter((failure) => failure.failureClass === 'catalog_gap')
+  if (gaps.length > 0) {
+    const sections = sectionsOf(gaps)
+    sentences.push(
+      chosen(gaps)
+        ? `CLEAR has no exercises for ${sections} yet. Turn off ${sections}.`
+        : `CLEAR has no exercises for ${sections} yet.`,
+    )
+  }
+
+  const unequipped = failures.filter((failure) => failure.failureClass === 'missing_equipment')
+  if (unequipped.length > 0) {
+    const sections = sectionsOf(unequipped)
+    const equipment = unequipped.flatMap((failure) =>
+      failure.incompatibleChoice.kind === 'equipment' ? failure.incompatibleChoice.equipment : [],
+    )
+    const held = ordered(
+      EQUIPMENT.map((item) => item.value),
+      equipment,
+    ).map((item) => labelOf(EQUIPMENT, item))
+
+    sentences.push(
+      `Nothing in ${sections} can be done with ${
+        held.length === 0 ? 'no equipment chosen' : `the equipment you chose (${held.join(', ')})`
+      }. ${
+        chosen(unequipped)
+          ? `Add equipment to your setup, or turn off ${sections}.`
+          : `Recovery sessions always include ${sections}, so add equipment to your setup.`
+      }`,
+    )
+  }
+
+  const excluded = failures.filter((failure) => failure.failureClass === 'athlete_exclusion')
+  if (excluded.length > 0) {
+    const sections = sectionsOf(excluded)
+    const targets = excluded.flatMap((failure) =>
+      failure.incompatibleChoice.kind === 'exclusion'
+        ? failure.incompatibleChoice.exclusions.map((exclusion) =>
+            exclusion.scope === 'movement_pattern' ? patternName(exclusion.target) : exclusion.target,
+          )
+        : [],
+    )
+    const named = listed([...new Set(targets)])
+
+    sentences.push(
+      `Working around ${named === '' ? 'these movements' : named} leaves nothing for ${sections}. ${
+        chosen(excluded)
+          ? `Work around less, or turn off ${sections}.`
+          : `Recovery sessions always include ${sections}, so work around less.`
+      }`,
+    )
+  }
+
+  return sentences.join(' ')
 }
 
 /**

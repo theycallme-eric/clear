@@ -29,6 +29,7 @@
  *   supabase/migrations/20261001000019_catalog_section_repair.sql
  *   supabase/migrations/20261001000020_generation_refusal_diagnostics.sql
  *   supabase/migrations/20261001000021_generation_viability.sql
+ *   supabase/migrations/20261002000022_onboarding_viability.sql
  */
 
 export type Json =

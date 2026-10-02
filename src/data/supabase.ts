@@ -321,6 +321,10 @@ async function transportError(
     const body: unknown = await response.json()
     if (typeof body === 'object' && body !== null && 'code' in body) {
       details.pgCode = (body as { code?: unknown }).code
+      // A raised exception's DETAIL. `complete_onboarding` puts the failing
+      // sections there (REQ-011); kept only when it is text, as raised.
+      const raised = (body as { details?: unknown }).details
+      if (typeof raised === 'string') details.pgDetails = raised
     }
   } catch {
     // A body that is not JSON tells us nothing the status has not already.

@@ -20,7 +20,10 @@
  *     NULL for `no_sections`, and `RETURNS TABLE` columns are generated
  *     non-null.
  *
- * Nothing is saved, no model is called, and no screen reads this yet.
+ * Nothing is saved and no model is called. REQ-011 adds the other direction:
+ * `complete_onboarding` asks the same function inside its transaction and
+ * refuses with the failing rows, and "A refused save" below reads those back
+ * through the same mapping.
  */
 
 import {
@@ -190,6 +193,85 @@ function stringArray(value: unknown): string[] | null {
 
 function malformed(details: Record<string, unknown>): AppError {
   return createError(ErrorCode.PERSISTENCE_READ_FAILED, { details })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A refused save
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * REQ-011. The SQLSTATE `complete_onboarding` raises when the answers fail the
+ * evaluation (`supabase/migrations/20261002000022_onboarding_viability.sql`).
+ * Its DETAIL is the failing rows as JSON, in the function's own column names.
+ */
+export const NOT_VIABLE_PG_CODE = 'CLR11'
+
+/**
+ * The failures a refused save names, from the transport error it arrived as —
+ * or `null` when the error is not that refusal, or its detail is not rows this
+ * module can read. Null rather than an empty list: a refusal that names nothing
+ * is not one a screen can present as a choice to correct.
+ */
+export function failuresFromRefusal(error: AppError): readonly ViabilityFailure[] | null {
+  if (error.details?.pgCode !== NOT_VIABLE_PG_CODE) return null
+  if (typeof error.details.pgDetails !== 'string') return null
+
+  let rows: unknown
+  try {
+    rows = JSON.parse(error.details.pgDetails)
+  } catch {
+    return null
+  }
+  if (!Array.isArray(rows) || rows.length === 0) return null
+
+  const failures: ViabilityFailure[] = []
+  for (const row of rows as unknown[]) {
+    if (typeof row !== 'object' || row === null) return null
+
+    const { goals, focuses, blocks_proposed_goal: blocks } = row as Record<string, unknown>
+    const goalList = stringArray(goals)
+    const focusList = stringArray(focuses)
+    if (
+      goalList === null ||
+      focusList === null ||
+      typeof blocks !== 'boolean' ||
+      !goalList.every((goal) => isOneOf(goal, ENUMS.goal_preset)) ||
+      !focusList.every((focus) => isOneOf(focus, ENUMS.session_focus))
+    ) {
+      return null
+    }
+
+    const failure = failureFromRow(row as ViabilityRow)
+    if (!failure.ok) return null
+    failures.push(failure.value)
+  }
+
+  return failures
+}
+
+/**
+ * The typed refusal a save answers with. A validation failure, because that is
+ * what it is to the person: an answer they gave that has to change. The
+ * failures ride in `details`, as `noCandidatesError`'s do, and `message` is the
+ * sentence the caller built from them.
+ */
+export function notViableError(
+  failures: readonly ViabilityFailure[],
+  message: string,
+): AppError {
+  return createError(ErrorCode.VALIDATION_CONSTRAINT, {
+    message,
+    details: { pgCode: NOT_VIABLE_PG_CODE, viability: failures },
+  })
+}
+
+/** The failures a refused save carries, or none if the error is not one. */
+export function viabilityFailuresOf(error: AppError): readonly ViabilityFailure[] {
+  const failures = error.details?.viability
+
+  return error.code === ErrorCode.VALIDATION_CONSTRAINT && Array.isArray(failures)
+    ? (failures as ViabilityFailure[])
+    : []
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
