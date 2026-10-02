@@ -12,6 +12,7 @@ import {
   namespaceId,
   rowSelector,
 } from '../../scripts/e2e/namespace.mjs'
+import { createSupabaseDouble as createDouble } from './supabase-double'
 
 /**
  * ENV-07 — the lifecycle's two promises, proved without a database.
@@ -25,146 +26,15 @@ import {
  * Supabase project of its own. The live half of the suite is `e2e/`, and it
  * runs against the preview deployment.
  *
- * The double is small and deliberately unforgiving. It reproduces exactly the
- * three behaviours the lifecycle leans on: a duplicate primary key is refused
- * unless the request asked for `ignore-duplicates`, a second `createUser` for a
- * known address is a 422, and deleting a user takes their rows with it.
+ * The double is `src/test/supabase-double.ts`, shared with GR-05's database
+ * lane, which needs the same users and the same cascade.
  */
 
-interface FakeUser {
-  id: string
-  email: string
-  email_confirm: boolean
-  created_at: string
-}
-
-type FakeRow = Record<string, unknown> & { __owner?: string }
-
-/** Child table → [parent table, the column pointing at it]. */
-const PARENT: Record<string, [string, string]> = {
-  location_equipment: ['locations', 'location_id'],
-  workout_sections: ['workout_sessions', 'session_id'],
-  workout_blocks: ['workout_sections', 'section_id'],
-  workout_exercises: ['workout_blocks', 'block_id'],
-  exercise_set_logs: ['workout_exercises', 'workout_exercise_id'],
-  block_results: ['workout_blocks', 'block_id'],
-  saved_workout_completions: ['saved_workouts', 'saved_workout_id'],
-}
-
 function createSupabaseDouble() {
-  const users = new Map<string, FakeUser>()
-  const tables = new Map<string, FakeRow[]>()
-  const requests: string[] = []
-  let nextId = 1
-
-  const rowsIn = (table: string) => tables.get(table) ?? []
-
-  const primaryKeyOf = (table: string, row: FakeRow) =>
-    table === 'location_equipment'
-      ? `${String(row.location_id)}:${String(row.equipment_id)}`
-      : table === 'load_anchors'
-        ? `${String(row.user_id)}:${String(row.exercise_id)}:${String(row.equipment_used)}`
-      : String(row.id)
-
-  /**
-   * Who a row belongs to, resolved once at insert time by following the same
-   * parent chain the foreign keys declare — which is also what makes the
-   * cascade on delete a one-liner below.
-   */
-  function ownerOf(table: string, row: FakeRow): string | undefined {
-    if (table === 'profiles') return String(row.id)
-    if (typeof row.user_id === 'string') return row.user_id
-
-    const parent = PARENT[table]
-    if (parent === undefined) return undefined
-
-    const [parentTable, column] = parent
-    const parentRow = rowsIn(parentTable).find(
-      (candidate) => String(candidate.id) === String(row[column]),
-    )
-    return parentRow?.__owner
-  }
-
-  const respond = (status: number, body: unknown) =>
-    new Response(body === null ? null : JSON.stringify(body), {
-      status,
-      headers: { 'Content-Type': 'application/json' },
-    })
-
-  const fetchImpl: typeof globalThis.fetch = async (input, init) => {
-    const url = new URL(String(input))
-    const method = init?.method ?? 'GET'
-    requests.push(`${method} ${url.pathname}`)
-
-    if (url.pathname === '/auth/v1/admin/users' && method === 'GET') {
-      return respond(200, { users: [...users.values()] })
-    }
-
-    if (url.pathname === '/auth/v1/admin/users' && method === 'POST') {
-      const body = JSON.parse(String(init?.body)) as { email: string }
-      if (users.has(body.email)) {
-        return respond(422, { msg: 'email address already registered' })
-      }
-      const user = {
-        id: `user-${nextId++}`,
-        email: body.email,
-        email_confirm: true,
-        // GoTrue stamps every user; the stale sweep is the one caller that
-        // reads it, so the double has to carry it.
-        created_at: new Date().toISOString(),
-      }
-      users.set(body.email, user)
-      return respond(200, user)
-    }
-
-    if (url.pathname.startsWith('/auth/v1/admin/users/') && method === 'DELETE') {
-      const id = url.pathname.split('/').pop()
-      const found = [...users.values()].find((user) => user.id === id)
-      if (found === undefined) return respond(404, { msg: 'not found' })
-
-      users.delete(found.email)
-      for (const [table, rows] of tables) {
-        tables.set(
-          table,
-          rows.filter((row) => row.__owner !== id),
-        )
-      }
-      return respond(204, null)
-    }
-
-    if (url.pathname.startsWith('/rest/v1/') && method === 'POST') {
-      const table = url.pathname.replace('/rest/v1/', '')
-      const incoming = JSON.parse(String(init?.body)) as FakeRow[]
-      const prefer = new Headers(init?.headers).get('Prefer') ?? ''
-      const ignoreDuplicates = prefer.includes('ignore-duplicates')
-      const rows = rowsIn(table)
-
-      for (const row of incoming) {
-        const key = primaryKeyOf(table, row)
-        const clashes = rows.some(
-          (present) => primaryKeyOf(table, present) === key,
-        )
-
-        if (clashes) {
-          if (ignoreDuplicates) continue
-          return respond(409, { message: 'duplicate key value' })
-        }
-
-        rows.push({ ...row, __owner: ownerOf(table, row) })
-      }
-
-      tables.set(table, rows)
-      return respond(201, null)
-    }
-
-    throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-  }
+  const double = createDouble()
 
   return {
-    users,
-    tables,
-    requests,
-    rowsIn,
+    ...double,
     client: (
       overrides: Partial<{
         url: string
@@ -176,7 +46,7 @@ function createSupabaseDouble() {
         url: 'https://project.supabase.co',
         serviceRoleKey: 'service-role',
         anonKey: 'anon',
-        fetch: fetchImpl,
+        fetch: double.fetch,
         ...overrides,
       }),
   }
