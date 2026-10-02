@@ -29,6 +29,7 @@
 import {
   ErrorCode,
   createError,
+  eligibilityRefusalMessage,
   err,
   ok,
   type AppError,
@@ -389,6 +390,8 @@ export function noCandidatesError(
         }))
 
   return createError(ErrorCode.GENERATION_NO_CANDIDATES, {
+    // REQ-014: the sentence a person reads says which section and whose choice.
+    message: eligibilityRefusalMessage(failures),
     details: {
       ...details,
       // Named, because "which section" is the whole of what a user has to

@@ -406,8 +406,9 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.code).toBe(ErrorCode.GENERATION_NO_CANDIDATES)
+    // REQ-014: the sentence names the sections and the choice that emptied them.
     expect(result.error.message).toBe(
-      'No exercises match these options. Change equipment or exclusions.',
+      'Warmup, primary lift, accessory, core, conditioning, cooldown: nothing can be done with the equipment at this place. Add equipment in Places and equipment, or choose another place.',
     )
     expect(result.error.details?.sections).toEqual(DEFAULT_SECTIONS)
     // GR-04: and says whose it is to fix. The catalog has every one of these

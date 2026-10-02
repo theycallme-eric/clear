@@ -452,7 +452,10 @@ describe('an eligibility refusal at the mounted function (REQ-008, REQ-009)', ()
 
     expect(run.body).toEqual({
       code: ErrorCode.GENERATION_NO_CANDIDATES,
-      message: 'No exercises match these options. Change equipment or exclusions.',
+      // REQ-014: the same three keys; the sentence is now the classes' own.
+      message:
+        'Accessory: your exclusions remove every exercise. Remove one under Work around in Settings. ' +
+        'Primary lift: nothing can be done with the equipment at this place. Add equipment in Places and equipment, or choose another place.',
       requestId: REQUEST_ID,
     })
     expect(run.response.headers.get('x-request-id')).toBe(REQUEST_ID)
