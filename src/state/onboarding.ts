@@ -36,6 +36,7 @@ import type {
   Database,
 } from '../data/database.types'
 import type { OnboardingAnswers } from './schemas'
+import { NON_SELECTABLE_SECTIONS } from './section-selectability'
 
 type EquipmentTier = Database['public']['Enums']['equipment_tier']
 type ExperienceLevel = Database['public']['Enums']['experience_level']
@@ -230,9 +231,14 @@ const SECTION_COPY: Record<SectionType, Option<SectionType>> = {
   },
 }
 
-/** Every section the enum has, in the enum's order. */
+/**
+ * Every section a person can be offered, in the enum's order: the enum, less
+ * the values `section-selectability.ts` marks as having no catalog support.
+ */
 export const SECTIONS: readonly Option<SectionType>[] =
-  Constants.public.Enums.section_type.map((section) => SECTION_COPY[section])
+  Constants.public.Enums.section_type
+    .filter((section) => !NON_SELECTABLE_SECTIONS.includes(section))
+    .map((section) => SECTION_COPY[section])
 
 const PATTERN_LABELS: Record<MovementPattern, string> = {
   squat: 'Squatting',

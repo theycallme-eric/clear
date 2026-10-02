@@ -10,6 +10,11 @@
  * connection, reads no environment variable and needs no credential. Applying
  * the generated SQL belongs to the reviewed deployment/cutover path.
  *
+ * GR-03: beside equivalence it holds the catalog to the viability invariants
+ * in `viability.mjs`, against the tier and Goal presets onboarding renders.
+ * Those are TypeScript, so the command loads `src/state/onboarding.ts` through
+ * Vite's module runner, as `npm run gr:matrix` does; no dev server is started.
+ *
  * Idempotent in both directions. Running it twice writes byte-identical
  * artifacts — every collection is sorted and no timestamp is emitted — and the
  * SQL it writes updates zero rows on a second apply.
@@ -22,14 +27,19 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
+import { loadRetrievalRules } from '../generation-reliability/rules.mjs'
 import { renderReport } from './report.mjs'
+import * as reviewed from './reviewed.mjs'
 import { REPO_ROOT } from './sources.mjs'
 import { emitDefinitions, emitDevBaseline, emitMuscles, emitWeights } from './sql.mjs'
 import { transform } from './transform.mjs'
 import { verify } from './verify.mjs'
+import { catalogOf, checkViability } from './viability.mjs'
 
 const SEED_DIR = join(REPO_ROOT, 'supabase/seed')
 const REPORT_PATH = join(REPO_ROOT, 'docs/backend/taxonomy-equivalence.md')
+const ONBOARDING_MODULE = 'src/state/onboarding.ts'
+const SELECTABILITY_MODULE = 'src/state/section-selectability.ts'
 
 /**
  * @typedef {object} Artifact
@@ -72,6 +82,66 @@ export function build({ dev = false } = {}) {
 }
 
 /**
+ * The presets the viability invariants are held against, as the onboarding
+ * screen's own modules export them.
+ *
+ * @param {any} onboarding     `src/state/onboarding.ts`.
+ * @param {any} selectability  `src/state/section-selectability.ts`.
+ * @returns {import('./viability.mjs').Presets}
+ */
+export function presetsFrom(onboarding, selectability) {
+  const values = (/** @type {{ value: string }[]} */ options) =>
+    options.map((option) => option.value)
+
+  return {
+    equipmentByTier: onboarding.EQUIPMENT_BY_TIER,
+    sectionsByGoal: onboarding.SECTIONS_BY_GOAL,
+    equipment: values(onboarding.EQUIPMENT),
+    tiers: values(onboarding.TIERS),
+    goals: values(onboarding.GOALS),
+    nonSelectableSections: selectability.NON_SELECTABLE_SECTIONS,
+  }
+}
+
+/** @returns {Promise<import('./viability.mjs').Presets>} */
+export async function loadPresets() {
+  const { runnerImport } = await import('vite')
+  const load = async (/** @type {string} */ path) =>
+    (
+      await runnerImport(join(REPO_ROOT, path), {
+        configFile: false,
+        root: REPO_ROOT,
+        logLevel: 'silent',
+      })
+    ).module
+
+  return presetsFrom(await load(ONBOARDING_MODULE), await load(SELECTABILITY_MODULE))
+}
+
+/**
+ * `verify`'s checks and the viability invariants as one verification, so the
+ * command reports and fails on them the same way.
+ *
+ * @param {import('./transform.mjs').Transformed} transformed
+ * @param {import('./verify.mjs').Verification} verification
+ * @param {import('./viability.mjs').Presets} presets
+ * @returns {import('./verify.mjs').Verification}
+ */
+export function withViability(transformed, verification, presets) {
+  const checks = [
+    ...verification.checks,
+    ...checkViability({
+      rules: loadRetrievalRules(),
+      catalog: catalogOf(transformed),
+      presets,
+      recorded: reviewed.FOCUS_RETRIEVAL,
+    }),
+  ]
+
+  return { ...verification, checks, failures: checks.filter((entry) => !entry.ok) }
+}
+
+/**
  * @param {string} label
  * @param {string} contents
  * @returns {Artifact}
@@ -82,9 +152,10 @@ function artifact(label, contents) {
 
 /**
  * @param {string[]} argv
+ * @param {import('./viability.mjs').Presets} presets  `loadPresets()`'s.
  * @returns {number} Process exit code.
  */
-export function main(argv) {
+export function main(argv, presets) {
   const dev = argv.includes('--dev')
   const checkOnly = argv.includes('--check')
 
@@ -95,7 +166,8 @@ export function main(argv) {
     return 1
   }
 
-  const { transformed, verification, artifacts } = build({ dev })
+  const { transformed, verification: equivalence, artifacts } = build({ dev })
+  const verification = withViability(transformed, equivalence, presets)
 
   report(transformed, verification)
 
@@ -110,7 +182,8 @@ export function main(argv) {
     write('Nothing was written. The capture, the reviewed tags and the recorded')
     write('review in scripts/catalog-seed/reviewed.mjs disagree; read')
     write('docs/backend/taxonomy-equivalence.md from the last good run before')
-    write('changing any of them.')
+    write('changing any of them. A [viability] failure names a section, tier or')
+    write('Goal the catalog cannot serve: repair the catalog or the preset.')
     return 1
   }
 
@@ -223,5 +296,5 @@ function write(line) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  process.exitCode = main(process.argv.slice(2))
+  process.exitCode = main(process.argv.slice(2), await loadPresets())
 }

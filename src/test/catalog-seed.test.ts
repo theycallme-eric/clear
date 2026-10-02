@@ -16,10 +16,12 @@ import { describe, expect, it, vi } from 'vitest'
 
 import { parseCsv, parsePgArray } from '../../scripts/catalog-seed/csv.mjs'
 import * as reviewed from '../../scripts/catalog-seed/reviewed.mjs'
-import { build, main } from '../../scripts/catalog-seed/seed.mjs'
+import { build, main, presetsFrom } from '../../scripts/catalog-seed/seed.mjs'
 import { loadAnatomyTags, loadSnapshot } from '../../scripts/catalog-seed/sources.mjs'
 import { transform } from '../../scripts/catalog-seed/transform.mjs'
 import { verify } from '../../scripts/catalog-seed/verify.mjs'
+import * as onboarding from '../state/onboarding'
+import * as selectability from '../state/section-selectability'
 
 const root = resolve(__dirname, '../..')
 const capture = resolve(root, 'docs/backend/snapshot/2026-09-18T162821Z/catalog')
@@ -39,7 +41,7 @@ function run(argv: string[]): { code: number; output: string } {
       return true
     })
   try {
-    return { code: main(argv), output: lines.join('') }
+    return { code: main(argv, presetsFrom(onboarding, selectability)), output: lines.join('') }
   } finally {
     spy.mockRestore()
   }
