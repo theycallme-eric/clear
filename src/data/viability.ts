@@ -2,7 +2,7 @@
  * REQ-010 — the save-time viability evaluation, read back.
  *
  * The evaluation itself is SQL and lives in
- * `supabase/migrations/20261001000020_generation_viability.sql`. This module is
+ * `supabase/migrations/20261001000021_generation_viability.sql`. This module is
  * the one way `src/` asks for it, and — as `candidates.ts` does for retrieval —
  * it decides nothing about eligibility: which sections fail, why, and which
  * choice is to blame were all answered in the database, by the predicates

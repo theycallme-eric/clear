@@ -512,7 +512,7 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
     expect(migrations.slice(inspected + 1)).toEqual([
       '20261001000019_catalog_section_repair.sql',
       '20261001000020_generation_refusal_diagnostics.sql',
-      '20261001000020_generation_viability.sql',
+      '20261001000021_generation_viability.sql',
     ])
   })
 })

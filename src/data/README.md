@@ -34,7 +34,7 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   call anywhere in the path.
 - `viability.ts` (REQ-010) — whether a *proposed* Goal, section toggles, exclusions and location
   equipment can generate at all, read back from `generation_viability`
-  (`supabase/migrations/20261001000020_generation_viability.sql`). The proposal is the arguments;
+  (`supabase/migrations/20261001000021_generation_viability.sql`). The proposal is the arguments;
   nothing saved is read and nothing is written. It answers viable, or each failing section with its
   class (`catalog_gap`, `missing_equipment`, `athlete_exclusion`, `no_sections`) and the
   incompatible choice. No screen calls it yet.

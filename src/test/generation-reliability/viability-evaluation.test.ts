@@ -1,7 +1,7 @@
 /**
  * REQ-010 — the save-time viability evaluation.
  *
- * `supabase/migrations/20261001000020_generation_viability.sql` adds one
+ * `supabase/migrations/20261001000021_generation_viability.sql` adds one
  * function that answers, for a proposed Goal, enabled sections, exclusions and
  * location equipment, whether candidate retrieval is already known to be unable
  * to generate. This suite holds it to four things:
@@ -46,7 +46,7 @@ import { createCandidatesDouble } from '../candidates-double'
 import { focusPatternMap, seededCatalog } from '../seed-catalog'
 import { createViabilityDouble, viabilityRows, type ViabilityArgs } from '../viability-double'
 
-const MIGRATION = '20261001000020_generation_viability.sql'
+const MIGRATION = '20261001000021_generation_viability.sql'
 const CANDIDATES_MIGRATION = '20260921000005_generation_candidates.sql'
 const GOAL_SCOPE_MIGRATION = '20260927000018_generation_goal_scope.sql'
 

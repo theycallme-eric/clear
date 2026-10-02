@@ -4,7 +4,7 @@
  * The honesty note the candidates double carries applies here unchanged: the
  * migration cannot be executed in this suite, so this double holds the
  * evaluation's rules in the one place a test can run them — each CTE of
- * `supabase/migrations/20261001000020_generation_viability.sql` transcribed
+ * `supabase/migrations/20261001000021_generation_viability.sql` transcribed
  * below under its own name, which
  * `src/test/generation-reliability/viability-evaluation.test.ts` asserts
  * against clause by clause. What a test using it proves is that the evaluation

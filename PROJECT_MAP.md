@@ -311,7 +311,7 @@ section/class pairs, and it returns above the composer. The wire body is unchang
 check 3 rejects a composed workout that omits a resolved section as well as one that adds a section.
 
 REQ-010 adds the same question asked before anything is saved.
-`20261001000020_generation_viability.sql` declares `generation_viability`, which takes a proposed
+`20261001000021_generation_viability.sql` declares `generation_viability`, which takes a proposed
 Goal, section toggles, exclusions and one location's equipment as arguments — it reads the catalog
 and `focus_pattern_map` and no row a user owns — and applies retrieval's predicates and floor to
 every goal × focus Generate offers, active recovery's fixed sections included. No rows is viable;
