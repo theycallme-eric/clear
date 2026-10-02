@@ -318,11 +318,34 @@ and `focus_pattern_map` and no row a user owns — and applies retrieval's predi
 every goal × focus Generate offers, active recovery's fixed sections included. No rows is viable;
 otherwise each failing section carries a class and the incompatible choice (the section, the
 equipment set, or the exclusions). `src/data/viability.ts` is the only reader and no screen calls it
-yet. The predicates are restated rather than shared, because retrieval resolves them from saved rows;
-`src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and the
-answers to the legal-state matrix.
+directly. The predicates are restated rather than shared, because retrieval resolves them from saved
+rows; `src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and
+the answers to the legal-state matrix.
 
-REQ-013 is the first write that asks it. `20261002000022_location_viability.sql` redefines
+REQ-011 is the first save that asks it. `20261002000023_onboarding_viability.sql` re-declares
+`complete_onboarding` with the evaluation ahead of every write: the answers are the proposal, and any
+failing row raises SQLSTATE `CLR11` with the rows as the exception's detail, so nothing is written
+and a crafted request meets the same refusal. `src/data/supabase.ts` keeps that detail,
+`src/data/user-data.ts` turns it into a `VALIDATION_CONSTRAINT` carrying the failures
+(`failuresFromRefusal`, `notViableError`), and the sentence naming the section and the equipment or
+exclusion is `viabilityRefusalMessage` in `src/state/onboarding.ts`. `src/app/Onboarding.tsx` shows it
+on the confirm step's validation line as an alert and keeps the draft.
+`src/test/generation-reliability/onboarding-viability.test.ts` follows it end to end over
+`src/test/onboarding-double.ts`, the commit transcribed.
+
+REQ-012 is the first caller, and it is the database rather than a screen.
+`20261002000022_settings_viability_guard.sql` puts one trigger on `profiles` (Goal, enabled sections)
+and one on `user_constraints` (a persistent `exclude`): each runs `generation_viability` for every
+location the user has, before and after the change, and raises `settings_not_viable` when the change
+introduces a failure — so a refused write stores nothing, whichever client made it, and a
+configuration that was already failing stays editable. Onboarding's commit and the location writes
+are not guarded. The raise carries the introduced failures and their locations as its detail;
+`supabase.ts` keeps a raise's message and detail, `viability.ts` (`settingsRefusalFrom`) reads them,
+and `errors.ts` (`settingsRefusalMessage`) composes the sentence. `user-data.ts`'s
+`updatePreferences` and `constraints.ts`'s `add` answer that error, and Settings shows it through the
+inline save it already had — `src/app/Settings.tsx` is unchanged.
+
+REQ-013 is the first write that asks it. `20261002000024_location_viability.sql` redefines
 `save_location` and `set_default_location` and adds `delete_location`; each evaluates what it leaves
 through `location_viability_failures` — `generation_viability` against the caller's saved goal,
 sections and persistent exclusions — and raises `location_not_viable` after the write, so the

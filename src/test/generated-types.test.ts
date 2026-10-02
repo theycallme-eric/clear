@@ -175,7 +175,9 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20261001000019_catalog_section_repair.sql',
       '20261001000020_generation_refusal_diagnostics.sql',
       '20261001000021_generation_viability.sql',
-      '20261002000022_location_viability.sql',
+      '20261002000022_settings_viability_guard.sql',
+      '20261002000023_onboarding_viability.sql',
+      '20261002000024_location_viability.sql',
     ])
   })
 

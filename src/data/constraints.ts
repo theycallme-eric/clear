@@ -29,6 +29,7 @@ import {
 import type { AuthClient } from './auth.ts'
 import type { Enums, Tables, TablesInsert } from './database.types.ts'
 import { createSupabaseClient, type SupabaseConfig } from './supabase.ts'
+import { settingsRefusalFrom } from './viability.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Vocabulary
@@ -302,7 +303,9 @@ export function createUserConstraintsClient(
   return {
     async add(constraint) {
       const result = await db.from(TABLE).insert(toRow(constraint))
-      if (!result.ok) return result
+      // REQ-012: a limitation that leaves a saved location unable to generate
+      // is refused by the database, and the refusal names the choice.
+      if (!result.ok) return err(settingsRefusalFrom(result.error))
 
       const parsed = rows(result.value)
       if (!parsed.ok) return parsed

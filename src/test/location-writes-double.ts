@@ -3,7 +3,7 @@
  *
  * The honesty note the viability double carries applies here unchanged: the
  * migration cannot be executed in this suite, so this double holds
- * `supabase/migrations/20261002000022_location_viability.sql` in the one place a
+ * `supabase/migrations/20261002000024_location_viability.sql` in the one place a
  * test can run it — each function transcribed below under its own name, with the
  * evaluation delegated to `viabilityRows`, the transcription of the function the
  * SQL itself calls. What a test using it proves is that the writes *as written*

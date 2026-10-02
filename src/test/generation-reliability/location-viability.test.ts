@@ -2,7 +2,7 @@
  * REQ-013 — a location or equipment change cannot create an impossible
  * configuration.
  *
- * `supabase/migrations/20261002000022_location_viability.sql` makes the three
+ * `supabase/migrations/20261002000024_location_viability.sql` makes the three
  * location writes evaluate what they leave against the caller's saved sections
  * and raise when it is not viable. This suite holds that to five things:
  *
@@ -46,7 +46,7 @@ import { renderApp } from '../render'
 import { FIXTURE_USER_ID, fixtureLocation, onboardedProfile } from '../user-data-double'
 import { viabilityRows } from '../viability-double'
 
-const MIGRATION = '20261002000022_location_viability.sql'
+const MIGRATION = '20261002000024_location_viability.sql'
 const LOCATION_WRITES = '20260921000009_location_writes.sql'
 
 const read = (file: string) => readFileSync(join(REPO_ROOT, 'supabase/migrations', file), 'utf8')

@@ -290,7 +290,7 @@ function changeClause(change: LocationChange): string {
  * The sentence a refused location write is reported with: the section that
  * would be left with nothing, and the change that would leave it so.
  *
- * The write was refused by the database (`20261002000022_location_viability.sql`),
+ * The write was refused by the database (`20261002000024_location_viability.sql`),
  * so this decides nothing — it words what the refusal already states. One
  * sentence per failure class, each listing its sections, as
  * `eligibilityRefusalMessage` does for a refused generation.

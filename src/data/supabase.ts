@@ -303,6 +303,11 @@ function malformed(details: Record<string, unknown>): AppError {
   return createError(ErrorCode.PERSISTENCE_READ_FAILED, { details })
 }
 
+/** SQLSTATE of a plain `raise exception` in a database function or trigger. */
+const RAISED_EXCEPTION = 'P0001'
+/** SQLSTATE TASK-011 uses for a location write that violates viability. */
+const CHECK_VIOLATION = '23514'
+
 /**
  * HTTP status → the error taxonomy. A write refused by RLS is not a network
  * problem and must not read as one: 401/403 means the caller is not the owner,
@@ -320,12 +325,17 @@ async function transportError(
   try {
     const body: unknown = await response.json()
     if (typeof body === 'object' && body !== null && 'code' in body) {
-      const { code, message, details: detail } = body as Record<string, unknown>
-      details.pgCode = code
-      // What a function raised, and the DETAIL it raised it with: how a caller
-      // tells one refusal from another (REQ-013's `location_not_viable`).
-      if (typeof message === 'string') details.pgMessage = message
-      if (typeof detail === 'string') details.pgDetail = detail
+      const problem = body as { code?: unknown; message?: unknown; details?: unknown }
+      details.pgCode = problem.code
+      // Raised exceptions carry structured refusal evidence in DETAIL. Keep it
+      // for all three save-time viability guards.
+      if (typeof problem.details === 'string') details.pgDetail = problem.details
+      // These are raised by this schema's own guards, so the message is ours
+      // rather than Postgres' — the settings and location refusals use it to
+      // identify which guard rejected the write.
+      if (problem.code === RAISED_EXCEPTION || problem.code === CHECK_VIOLATION) {
+        details.pgMessage = problem.message
+      }
     }
   } catch {
     // A body that is not JSON tells us nothing the status has not already.

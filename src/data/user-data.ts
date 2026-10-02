@@ -38,6 +38,7 @@ import {
   type Result,
 } from '../state/errors'
 import { locationRefusalMessage } from '../state/locations'
+import { viabilityRefusalMessage } from '../state/onboarding'
 import {
   locationDraftSchema,
   locationEquipmentListSchema,
@@ -59,7 +60,12 @@ import {
 } from '../state/schemas'
 import type { AuthClient } from './auth'
 import { createSupabaseClient, type SupabaseClient, type SupabaseConfig } from './supabase'
-import { locationRefusalFrom } from './viability'
+import {
+  failuresFromRefusal,
+  locationRefusalFrom,
+  notViableError,
+  settingsRefusalFrom,
+} from './viability'
 
 export interface UserDataClient {
   /** The user's row, or `null` when they have none yet. */
@@ -193,7 +199,15 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
         p_avoid_patterns: payload.value.avoid_patterns,
         p_note: payload.value.note,
       })
-      if (isErr(committed)) return committed
+      if (isErr(committed)) {
+        // REQ-011: the commit evaluated the answers and refused them before
+        // writing anything. That is an answer to correct, not a failed save,
+        // so it arrives as the choice the database named.
+        const failures = failuresFromRefusal(committed.error)
+        return failures === null
+          ? committed
+          : err(notViableError(failures, viabilityRefusalMessage(failures)))
+      }
 
       return parseBoundary(onboardingCommitSchema, committed.value)
     },
@@ -210,7 +224,9 @@ export function createUserDataClient({ auth, supabase }: UserDataConfig): UserDa
       if (isErr(supa)) return supa
 
       const rows = await supa.value.from('profiles').update(patch.value, { id: userId })
-      if (isErr(rows)) return rows
+      // REQ-012: a Goal or section change that cannot generate at a saved
+      // location is refused by the database, and the refusal names the choice.
+      if (isErr(rows)) return err(settingsRefusalFrom(rows.error))
 
       const [row] = rows.value
       // No row means the patch matched nothing: RLS refused it, or the profile

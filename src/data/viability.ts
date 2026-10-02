@@ -20,12 +20,20 @@
  *     NULL for `no_sections`, and `RETURNS TABLE` columns are generated
  *     non-null.
  *
- * Nothing is saved, no model is called, and no screen reads this yet.
+ * Nothing is saved and no model is called. REQ-011 adds the other direction:
+ * `complete_onboarding` asks the same function inside its transaction and
+ * refuses with the failing rows, and "A refused save" below reads those back
+ * through the same mapping.
  *
- * REQ-013 adds the one other place the evaluation's answer arrives: the DETAIL
- * of a location write the database refused. `locationRefusalFrom` reads it with
- * the same row parser, so a refusal names its sections exactly as an evaluation
- * does.
+ * REQ-012 adds the other direction: the database runs the same evaluation when
+ * a saved preference changes and refuses the write. `settingsRefusalFrom` reads
+ * that refusal out of the write's error, so Settings' two writers
+ * (`user-data.ts`, `constraints.ts`) answer a sentence naming the choice.
+ *
+ * REQ-013 adds the location direction: a location write that would make the
+ * saved configuration impossible is refused in the database.
+ * `locationRefusalFrom` reads its DETAIL with the same row parser, so every
+ * refusal names its sections exactly as an evaluation does.
  */
 
 import {
@@ -33,6 +41,7 @@ import {
   createError,
   err,
   ok,
+  settingsRefusalMessage,
   type AppError,
   type Result,
 } from '../state/errors.ts'
@@ -201,7 +210,7 @@ function malformed(details: Record<string, unknown>): AppError {
 // Location refusals — REQ-013
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** What `20261002000022_location_viability.sql` raises a refused write with. */
+/** What `20261002000024_location_viability.sql` raises a refused write with. */
 export const LOCATION_NOT_VIABLE = 'location_not_viable'
 
 export const LOCATION_CHANGE_KINDS = ['add', 'edit', 'default', 'delete'] as const
@@ -269,6 +278,155 @@ export function locationRefusalFrom(error: AppError): LocationRefusal | null {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// A refused onboarding save (REQ-011)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * REQ-011. The SQLSTATE `complete_onboarding` raises when the answers fail the
+ * evaluation (`supabase/migrations/20261002000023_onboarding_viability.sql`).
+ * Its DETAIL is the failing rows as JSON, in the function's own column names.
+ */
+export const NOT_VIABLE_PG_CODE = 'CLR11'
+
+/**
+ * The failures a refused save names, from the transport error it arrived as —
+ * or `null` when the error is not that refusal, or its detail is not rows this
+ * module can read. Null rather than an empty list: a refusal that names nothing
+ * is not one a screen can present as a choice to correct.
+ */
+export function failuresFromRefusal(error: AppError): readonly ViabilityFailure[] | null {
+  if (error.details?.pgCode !== NOT_VIABLE_PG_CODE) return null
+  if (typeof error.details.pgDetail !== 'string') return null
+
+  let rows: unknown
+  try {
+    rows = JSON.parse(error.details.pgDetail)
+  } catch {
+    return null
+  }
+  if (!Array.isArray(rows) || rows.length === 0) return null
+
+  const failures: ViabilityFailure[] = []
+  for (const row of rows as unknown[]) {
+    if (typeof row !== 'object' || row === null) return null
+
+    const { goals, focuses, blocks_proposed_goal: blocks } = row as Record<string, unknown>
+    const goalList = stringArray(goals)
+    const focusList = stringArray(focuses)
+    if (
+      goalList === null ||
+      focusList === null ||
+      typeof blocks !== 'boolean' ||
+      !goalList.every((goal) => isOneOf(goal, ENUMS.goal_preset)) ||
+      !focusList.every((focus) => isOneOf(focus, ENUMS.session_focus))
+    ) {
+      return null
+    }
+
+    const failure = failureFromRow(row as ViabilityRow)
+    if (!failure.ok) return null
+    failures.push(failure.value)
+  }
+
+  return failures
+}
+
+/**
+ * The typed refusal a save answers with. A validation failure, because that is
+ * what it is to the person: an answer they gave that has to change. The
+ * failures ride in `details`, as `noCandidatesError`'s do, and `message` is the
+ * sentence the caller built from them.
+ */
+export function notViableError(
+  failures: readonly ViabilityFailure[],
+  message: string,
+): AppError {
+  return createError(ErrorCode.VALIDATION_CONSTRAINT, {
+    message,
+    details: { pgCode: NOT_VIABLE_PG_CODE, viability: failures },
+  })
+}
+
+/** The failures a refused save carries, or none if the error is not one. */
+export function viabilityFailuresOf(error: AppError): readonly ViabilityFailure[] {
+  const failures = error.details?.viability
+
+  return error.code === ErrorCode.VALIDATION_CONSTRAINT && Array.isArray(failures)
+    ? (failures as ViabilityFailure[])
+    : []
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A refused settings change (REQ-012)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A failure at one of the athlete's saved locations. */
+export interface LocatedViabilityFailure extends ViabilityFailure {
+  readonly locationId: string
+  readonly locationName: string
+}
+
+/**
+ * The message `refuse_non_viable_settings` raises
+ * (`supabase/migrations/20261002000022_settings_viability_guard.sql`).
+ */
+export const SETTINGS_NOT_VIABLE = 'settings_not_viable'
+
+/**
+ * The failures a refused Goal, section or limitation change would have
+ * introduced, read from the write's own error — or `null` when the error is not
+ * that refusal. The evaluation ran in the database, in the statement that was
+ * refused; nothing is asked a second time.
+ *
+ * A refusal whose detail cannot be read is still a refusal: it answers no
+ * failures rather than `null`, so the caller says the change was refused
+ * instead of reporting a constraint it cannot name.
+ */
+export function settingsRefusalFailures(error: AppError): LocatedViabilityFailure[] | null {
+  if (error.details?.pgMessage !== SETTINGS_NOT_VIABLE) return null
+
+  let detail: unknown
+  try {
+    detail = typeof error.details.pgDetail === 'string' ? JSON.parse(error.details.pgDetail) : null
+  } catch {
+    detail = null
+  }
+  if (!Array.isArray(detail)) return []
+
+  const failures: LocatedViabilityFailure[] = []
+  for (const entry of detail) {
+    if (typeof entry !== 'object' || entry === null) return []
+
+    const row = entry as ViabilityRow & { location_id?: unknown; location_name?: unknown }
+    if (typeof row.location_id !== 'string' || typeof row.location_name !== 'string') return []
+
+    const failure = failureFromRow(row)
+    if (!failure.ok) return []
+
+    failures.push({
+      ...failure.value,
+      locationId: row.location_id,
+      locationName: row.location_name,
+    })
+  }
+
+  return failures
+}
+
+/**
+ * A write's error, with REQ-012's refusal turned into the sentence the athlete
+ * reads. Every other error is answered unchanged.
+ */
+export function settingsRefusalFrom(error: AppError): AppError {
+  const failures = settingsRefusalFailures(error)
+  if (failures === null) return error
+
+  return createError(ErrorCode.VALIDATION_CONSTRAINT, {
+    message: settingsRefusalMessage(failures),
+    details: { ...error.details, failures },
+  })
+}
 // ─────────────────────────────────────────────────────────────────────────────
 // Client
 // ─────────────────────────────────────────────────────────────────────────────
