@@ -23,7 +23,13 @@
  * are then editable item by item. What generation reads is always the ticks.
  */
 import type { Enums } from '../data/database.types'
-import { EQUIPMENT, EQUIPMENT_BY_TIER, TIERS, type Option } from './onboarding'
+import {
+  VIABILITY_FAILURE_CLASSES,
+  type LocationChange,
+  type LocationRefusal,
+  type ViabilityFailureClass,
+} from '../data/viability'
+import { EQUIPMENT, EQUIPMENT_BY_TIER, SECTIONS, TIERS, type Option } from './onboarding'
 import type { Location, LocationDraft } from './schemas'
 
 type EquipmentTier = Enums<'equipment_tier'>
@@ -237,6 +243,10 @@ export function withDefault(
  * no default because there is nothing to be default, which DATA-01b §4 allows
  * explicitly, and generation then reports an over-constrained request rather
  * than composing from equipment nobody has.
+ *
+ * Not refusable *here*: REQ-013's `delete_location` refuses it when the saved
+ * sections would be left with no equipment, and the screen rolls the removal
+ * back with `locationRefusalMessage`.
  */
 export function deletionRefusal(
   locations: readonly Location[],
@@ -246,6 +256,78 @@ export function deletionRefusal(
   if (location === undefined || !location.is_default) return null
 
   return locations.length > 1 ? DEFAULT_DELETE_REASON : null
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Viability refusals — REQ-013
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A section as onboarding names it; one it does not offer keeps its id, spaced. */
+function sectionLabel(section: string): string {
+  return (
+    SECTIONS.find((option) => option.value === section)?.label ??
+    section.charAt(0).toUpperCase() + section.slice(1).replaceAll('_', ' ')
+  )
+}
+
+/** The refused write, as the clause a sentence about it opens with. */
+function changeClause(change: LocationChange): string {
+  switch (change.kind) {
+    case 'add':
+      return `Adding ${change.location} with this equipment`
+    case 'default':
+      return `Making ${change.location} the default`
+    case 'delete':
+      return `Deleting ${change.location}`
+    case 'edit':
+      return change.removed.length > 0
+        ? `Removing ${change.removed.map(equipmentLabel).join(', ')} from ${change.location}`
+        : `This equipment change to ${change.location}`
+  }
+}
+
+/**
+ * The sentence a refused location write is reported with: the section that
+ * would be left with nothing, and the change that would leave it so.
+ *
+ * The write was refused by the database (`20261002000022_location_viability.sql`),
+ * so this decides nothing — it words what the refusal already states. One
+ * sentence per failure class, each listing its sections, as
+ * `eligibilityRefusalMessage` does for a refused generation.
+ */
+export function locationRefusalMessage({ change, failures }: LocationRefusal): string {
+  const what = changeClause(change)
+  const sectionsOf = (failureClass: ViabilityFailureClass) =>
+    failures
+      .filter((failure) => failure.failureClass === failureClass)
+      .flatMap((failure) => (failure.section === null ? [] : [sectionLabel(failure.section)]))
+      .join(', ')
+  // No equipment rows at all is its own statement, not a list of what is missing.
+  const unequipped = failures.some(
+    (failure) =>
+      failure.incompatibleChoice.kind === 'equipment' &&
+      failure.incompatibleChoice.equipment.length === 0,
+  )
+
+  const sentences: Record<ViabilityFailureClass, (sections: string) => string> = {
+    missing_equipment: (sections) =>
+      unequipped
+        ? `${what} leaves no equipment to train with, so ${sections} would have no exercises.`
+        : `${what} leaves ${sections} with no exercise the remaining equipment can do.`,
+    athlete_exclusion: (sections) =>
+      `${what} leaves ${sections} with only exercises your exclusions remove.`,
+    catalog_gap: (sections) => `${sections}: this selection is not currently supported.`,
+    no_sections: () => 'Your profile has no sections turned on. Turn on sections in Settings.',
+  }
+
+  return [
+    ...VIABILITY_FAILURE_CLASSES.flatMap((failureClass) =>
+      failures.some((failure) => failure.failureClass === failureClass)
+        ? [sentences[failureClass](sectionsOf(failureClass))]
+        : [],
+    ),
+    'Nothing was changed.',
+  ].join(' ')
 }
 
 /** The places that could take the default from this one, in the list's order. */

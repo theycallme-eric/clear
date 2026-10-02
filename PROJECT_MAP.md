@@ -321,6 +321,15 @@ yet. The predicates are restated rather than shared, because retrieval resolves 
 `src/test/generation-reliability/viability-evaluation.test.ts` holds the two texts together and the
 answers to the legal-state matrix.
 
+REQ-013 is the first write that asks it. `20261002000022_location_viability.sql` redefines
+`save_location` and `set_default_location` and adds `delete_location`; each evaluates what it leaves
+through `location_viability_failures` — `generation_viability` against the caller's saved goal,
+sections and persistent exclusions — and raises `location_not_viable` after the write, so the
+transaction restores the previous rows. The exception's DETAIL carries the change and the failing
+sections; `src/data/user-data.ts` reads it (`locationRefusalFrom`) and sets the error's message from
+`locationRefusalMessage` in `src/state/locations.ts`. `LocationSettings` is unchanged: its existing
+failed-save path rolls the optimistic update back and toasts that message.
+
 SES-01c is the first flow that deliberately stops short of the database. The streak is consecutive
 training days, and no column anywhere holds it: `streak_sessions(...)`
 (`supabase/migrations/20260921000007_streak_sessions.sql`) answers a page of completed sessions

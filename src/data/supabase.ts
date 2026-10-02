@@ -320,7 +320,12 @@ async function transportError(
   try {
     const body: unknown = await response.json()
     if (typeof body === 'object' && body !== null && 'code' in body) {
-      details.pgCode = (body as { code?: unknown }).code
+      const { code, message, details: detail } = body as Record<string, unknown>
+      details.pgCode = code
+      // What a function raised, and the DETAIL it raised it with: how a caller
+      // tells one refusal from another (REQ-013's `location_not_viable`).
+      if (typeof message === 'string') details.pgMessage = message
+      if (typeof detail === 'string') details.pgDetail = detail
     }
   } catch {
     // A body that is not JSON tells us nothing the status has not already.

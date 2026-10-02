@@ -21,6 +21,11 @@
  *     non-null.
  *
  * Nothing is saved, no model is called, and no screen reads this yet.
+ *
+ * REQ-013 adds the one other place the evaluation's answer arrives: the DETAIL
+ * of a location write the database refused. `locationRefusalFrom` reads it with
+ * the same row parser, so a refusal names its sections exactly as an evaluation
+ * does.
  */
 
 import {
@@ -190,6 +195,78 @@ function stringArray(value: unknown): string[] | null {
 
 function malformed(details: Record<string, unknown>): AppError {
   return createError(ErrorCode.PERSISTENCE_READ_FAILED, { details })
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Location refusals — REQ-013
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** What `20261002000022_location_viability.sql` raises a refused write with. */
+export const LOCATION_NOT_VIABLE = 'location_not_viable'
+
+export const LOCATION_CHANGE_KINDS = ['add', 'edit', 'default', 'delete'] as const
+export type LocationChangeKind = (typeof LOCATION_CHANGE_KINDS)[number]
+
+/** The write that was refused, as the function describes it. */
+export interface LocationChange {
+  readonly kind: LocationChangeKind
+  /** The location's name. */
+  readonly location: string
+  /** Equipment the location held and the write would have dropped. */
+  readonly removed: readonly string[]
+  readonly added: readonly string[]
+}
+
+export interface LocationRefusal {
+  readonly change: LocationChange
+  readonly failures: readonly ViabilityFailure[]
+}
+
+/**
+ * The refusal a failed location write carries, or `null` when the failure is
+ * anything else — including a `location_not_viable` whose detail does not
+ * parse, which is then reported as the write failure it arrived as.
+ */
+export function locationRefusalFrom(error: AppError): LocationRefusal | null {
+  if (error.details?.pgMessage !== LOCATION_NOT_VIABLE) return null
+  if (typeof error.details.pgDetail !== 'string') return null
+
+  let detail: unknown
+  try {
+    detail = JSON.parse(error.details.pgDetail)
+  } catch {
+    return null
+  }
+  if (typeof detail !== 'object' || detail === null) return null
+
+  const { change, failures: rows } = detail as Record<string, unknown>
+  if (typeof change !== 'object' || change === null || !Array.isArray(rows)) return null
+
+  const { kind, location, removed, added } = change as Record<string, unknown>
+  const removedItems = stringArray(removed)
+  const addedItems = stringArray(added)
+  if (
+    !isOneOf(kind, LOCATION_CHANGE_KINDS) ||
+    typeof location !== 'string' ||
+    removedItems === null ||
+    addedItems === null
+  ) {
+    return null
+  }
+
+  const failures: ViabilityFailure[] = []
+  for (const row of rows) {
+    if (typeof row !== 'object' || row === null) return null
+    const failure = failureFromRow(row as ViabilityRow)
+    if (!failure.ok) return null
+    failures.push(failure.value)
+  }
+  if (failures.length === 0) return null
+
+  return {
+    change: { kind, location, removed: removedItems, added: addedItems },
+    failures,
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

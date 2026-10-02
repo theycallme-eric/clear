@@ -183,7 +183,7 @@ async function retrievedEmptySections(state: State): Promise<string[]> {
 
 describe('the migration — shape', () => {
   it('is additive: one function, and nothing altered, dropped or written', () => {
-    expect(migrationFiles().at(-1)).toBe(MIGRATION)
+    expect(migrationFiles()).toContain(MIGRATION)
     expect(MIGRATION > GOAL_SCOPE_MIGRATION).toBe(true)
 
     expect(statements.match(/create (or replace )?function/gi)).toHaveLength(1)

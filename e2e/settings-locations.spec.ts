@@ -159,8 +159,8 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await expect(page.getByRole('dialog', { name: 'Delete this place?' })).toBeVisible()
     const deleted = page.waitForResponse(
       (response) =>
-        response.url().includes('/rest/v1/locations?') &&
-        response.request().method() === 'DELETE',
+        response.url().includes('/rest/v1/rpc/delete_location') &&
+        response.request().method() === 'POST',
     )
     await page.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click()
     expect([200, 204], 'deleting the old location').toContain((await deleted).status())
