@@ -463,6 +463,24 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     expect(await contextReader.recentHistory(contextUser.id)).toEqual({
       ok: true, value: { focuses: ['upper_body'], patterns: [], exerciseIds: [] },
     })
+    // Success must leave the actual non-personal workout available for coaching
+    // review after disposable-user cleanup. Never attach the whole acceptance,
+    // request/response, auth, user/location IDs or athlete-supplied notes.
+    expect(body.acceptance.generation_notes, 'the disposable canary has no athlete notes').toBeNull()
+    await testInfo.attach('non-personal-generated-workout', {
+      body: Buffer.from(JSON.stringify({
+        target: {
+          goal: body.acceptance.goal_preset,
+          focus: body.acceptance.session_focus,
+          duration_mins: body.acceptance.effective_duration_target_mins,
+          intensity: body.acceptance.effective_intensity,
+          prompt_version: body.acceptance.prompt_version,
+          contract_version: body.acceptance.contract_version,
+        },
+        workout,
+      }, null, 2)),
+      contentType: 'application/json',
+    })
   })
 })
 
