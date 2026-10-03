@@ -1,7 +1,8 @@
 # Generation reliability — release checklist
 
 Run before a generation-reliability release is called ready. Each step names the boundary it
-proves. Record the result in the table under the step, in this file, in the release pull request.
+proves. Record the result in the table under the step, in this file, in the release pull request;
+the owner's two manual steps (1.3 and 4.2) are recorded with the command each one names instead.
 
 **Never record a one-time code, an email address, or any email content here** — or in a journal,
 a log, a screenshot, or a commit. A result is a date, who ran it, and pass or fail. If a step
@@ -45,7 +46,7 @@ repeat 1.3.
 
 | Date | Run by | Result (pass / fail / not run) |
 | ---- | ------ | ------------------------------ |
-|      |        |                                |
+| 2026-10-02 | Recovery supervisor using existing CLI session, read-only | pass — hosted numeric-code template and subject match committed source; PROCESS_LOG TASK-028 owner-UAT gate |
 
 ### 1.3 Manual inbox check — a person, a real inbox
 
@@ -55,12 +56,17 @@ Run against the deployed application, after 1.2 passes, with an address whose in
 2. Confirm an email arrives and that it contains a **numeric code** and **no sign-in link**.
 3. Enter the code and confirm you are signed in and reach Home.
 
-Record only the outcome. If it fails, give the sub-step number (1, 2 or 3) in the notes column
-and nothing from the email itself.
+The owner performs the steps. The owner or release operator may record only the owner's reported
+outcome with the command below; the operator cannot perform or infer the inbox observation.
+If it fails, give the sub-step number (1, 2 or 3)
+and nothing from the email itself. The command writes today's date and the result to
+`docs/process/generation-reliability/release-exit.json`; it has no field for anything else. Commit
+the record.
 
-| Date | Run by | Result (pass / fail) | Failed sub-step, if any |
-| ---- | ------ | -------------------- | ----------------------- |
-|      |        |                      |                         |
+```sh
+npm run gr:exit -- --record inbox_check pass
+npm run gr:exit -- --record inbox_check fail --sub-step <1|2|3>
+```
 
 ## 2. Pre-change snapshot (REQ-027)
 
@@ -90,7 +96,7 @@ does not give the captured section tags back.
 
 | Date | Run by | Result (pass / fail) |
 | ---- | ------ | -------------------- |
-|      |        |                      |
+| 2026-10-02 | Recovery supervisor, before catalog deployment | pass — captured 15:30:38.351 UTC; exact deployed commit and hashes in `pre-change-snapshot.json` |
 
 ### 2.2 Committed manifest — automated, no credentials
 
@@ -105,7 +111,7 @@ rollback script other than the committed ones. A changed migration means a new c
 
 | Date | Run by | Result (pass / fail) |
 | ---- | ------ | -------------------- |
-|      |        |                      |
+| 2026-10-02 | Recovery supervisor before reviewed migration push | pass — committed manifest/migration binding and offline rollback rehearsal; journal TASK-025 approved operator recovery |
 
 ## 3. Protected deployment and deployed re-verification (REQ-027, REQ-002, REQ-021)
 
@@ -205,8 +211,54 @@ deployment, read with `VERCEL_TOKEN`. The record names the commit, never the ori
 
 The owner signs in on the deployed application with the real account, generates a workout with
 the current real profile and reaches Review. This step calls the model and is not automated here.
-Record only the outcome, and the request id if it fails.
 
-| Date | Run by | Result (pass / fail) | Request id, if failed |
-| ---- | ------ | -------------------- | --------------------- |
-|      |        |                      |                       |
+1. Sign in on the deployed application with the real account (step 1.3 covers the code itself).
+2. Confirm Home shows the current real profile — do not change Goal, sections or location first.
+3. Open Generate, choose a focus and generate.
+4. Confirm Review shows a useful workout for the selected Goal, Focus and available time, choosing
+   from the profile's available sections. Enabled sections are allowed choices, not mandatory
+   headings; unsupported equipment or exclusions must not be bypassed.
+
+The owner performs and reports the observation; the release operator may record that report on the
+owner's behalf. Record only the outcome, with the command below, and the request id shown on the refusal if it
+fails. The command writes today's date and the result to
+`docs/process/generation-reliability/release-exit.json`. Commit the record.
+
+```sh
+npm run gr:exit -- --record generate_review pass
+npm run gr:exit -- --record generate_review fail --request-id <id>
+```
+
+## 5. Release exit checklist (REQ-018, REQ-028)
+
+Run last. `docs/process/generation-reliability/release-exit.json` links every release exit
+criterion to its recorded results: a committed file and a line in it, a step of this checklist
+whose last dated row passed, or one of the owner's two steps (1.3 and 4.2).
+
+```sh
+npm run gr:exit -- --check
+npx vitest run src/test/generation-reliability/release-evidence.test.ts
+```
+
+Both fail, naming the criterion, while any criterion has no evidence, links to a file or line that
+is not there, links to a checklist step whose last recorded run did not pass, or stands on an owner
+step that is `not_recorded` or failed. **`not_recorded` is not a pass. The record command requires
+the owner's reported observation; an operator must not fabricate or infer it.** The release is
+not ready while either command fails.
+
+| Exit criterion | Recorded result |
+| -------------- | --------------- |
+| Every selectable section has reviewed catalog coverage | `section-mapping-ledger.json`; journal 2026-10-01, TASK-003; step 3.3 |
+| Every tier/Goal combination is supported or prevented before generation | `configuration-dispositions.json`; journal 2026-10-01, TASK-004 |
+| Every supported Goal × Focus × tier returns candidates per required section | `legal-state-matrix.json`; steps 3.3 and 3.4 |
+| The owner's current customized profile passes candidate resolution | steps 3.4 and 4.1; `release-evidence.json`, `customized_profile`; owner step 4.2 |
+| New-user and returning-user authentication reach a generation-ready Home | step 4.1; `release-evidence.json`, `new_user` and `returning_user` |
+| A deterministic browser journey reaches Review and a deployed integrated journey succeeds | journal 2026-10-03, TASK-028 latest exact-source release proof; historical TASK-026 recovery remains recorded |
+| The deployed catalog matches the committed seed viability matrix | step 3.3 |
+| Failures expose the failed boundary and section without leaking sensitive data | journal 2026-10-01, TASK-007 and TASK-012; step 3.4 |
+| Requirements Builder and Agent Runner follow-up work has a traced task | journal 2026-10-01, TASK-029 and TASK-030; `task-032-replay.json` |
+| UI/visual work remains unchanged until the explicit release word | journal 2026-10-01, TASK-012; journal 2026-10-02, TASK-011 recovery note |
+| The owner requests a code with a real address, receives a numeric code, and signs in | owner step 1.3 |
+| The owner signs in and generates and reviews a workout with the current real profile | owner step 4.2 |
+
+The record is the authority; this table is its index for a reader.

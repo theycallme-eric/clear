@@ -1,0 +1,229 @@
+{
+  "version": 1,
+  "notes": [
+    "ownerUat is written only by the record command from the owner's reported result after the owner performs the step. An operator may record that report, not perform or infer the step. A step that has not been performed is not_recorded, which is not a pass.",
+    "An owner result is a date and pass or fail, the failed sub-step of the inbox check, or the request id of a failed generation. No code, address, email content, token or account detail is recorded.",
+    "exitCriteria links every release exit criterion to its recorded results: a committed file and a line in it, a release-checklist step whose last recorded run passed, or an owner step."
+  ],
+  "ownerUat": [
+    {
+      "step": "inbox_check",
+      "checklist": "1.3",
+      "result": "pass",
+      "recordedOn": "2026-10-02",
+      "failedSubStep": null,
+      "requestId": null
+    },
+    {
+      "step": "generate_review",
+      "checklist": "4.2",
+      "result": "pass",
+      "recordedOn": "2026-10-03",
+      "failedSubStep": null,
+      "requestId": null
+    }
+  ],
+  "exitCriteria": [
+    {
+      "id": "section_coverage",
+      "criterion": "Every selectable section has reviewed catalog coverage.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-003 / issue #290 — evidence inventory and section-mapping ledger (REQ-003)"
+        },
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/section-mapping-ledger.json",
+          "anchor": "\"rows\": ["
+        },
+        {
+          "kind": "checklist",
+          "section": "3.3"
+        }
+      ]
+    },
+    {
+      "id": "tier_goal_disposition",
+      "criterion": "Every advertised equipment-tier/Goal combination is either supported or explicitly prevented before generation; there are no known-invalid saved states.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/configuration-dispositions.json",
+          "anchor": "\"generatedBy\": \"npm run gr:dispositions\""
+        },
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-004 / issue #291 — Minimal main work and a disposition for every configuration (REQ-003, REQ-005, REQ-006)"
+        }
+      ]
+    },
+    {
+      "id": "candidates_per_section",
+      "criterion": "Every supported Goal × Focus × tier combination returns non-empty candidates per required section.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/legal-state-matrix.json",
+          "anchor": "\"generatedBy\": \"npm run gr:matrix\""
+        },
+        {
+          "kind": "checklist",
+          "section": "3.3"
+        },
+        {
+          "kind": "checklist",
+          "section": "3.4"
+        }
+      ]
+    },
+    {
+      "id": "owner_profile_resolution",
+      "criterion": "The owner’s current customized profile passes candidate resolution.",
+      "evidence": [
+        {
+          "kind": "checklist",
+          "section": "3.4"
+        },
+        {
+          "kind": "checklist",
+          "section": "4.1"
+        },
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/release-evidence.json",
+          "anchor": "\"entry\": \"customized_profile\""
+        },
+        {
+          "kind": "owner",
+          "step": "generate_review"
+        }
+      ]
+    },
+    {
+      "id": "auth_reaches_home",
+      "criterion": "New-user and returning-user authentication both reach a generation-ready Home state.",
+      "evidence": [
+        {
+          "kind": "checklist",
+          "section": "4.1"
+        },
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/release-evidence.json",
+          "anchor": "\"entry\": \"new_user\""
+        },
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/release-evidence.json",
+          "anchor": "\"entry\": \"returning_user\""
+        }
+      ]
+    },
+    {
+      "id": "journeys",
+      "criterion": "A deterministic browser journey reaches Review and a final deployed integrated journey succeeds.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-03.md",
+          "anchor": "Latest exact-source release proof"
+        },
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-03.md",
+          "anchor": "HTTP 200 / `req_muruzwml_psr51u`"
+        }
+      ]
+    },
+    {
+      "id": "deployed_matches_seed",
+      "criterion": "The deployed catalog matches the committed seed viability matrix.",
+      "evidence": [
+        {
+          "kind": "checklist",
+          "section": "3.3"
+        }
+      ]
+    },
+    {
+      "id": "failure_boundary",
+      "criterion": "Failures expose the actual failed boundary and section without leaking sensitive data.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-007 (#294) — eligibility contract and classified refusals (GR-04 / REQ-008, REQ-009, REQ-032)"
+        },
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-012 (#299) — a refusal message per failure class on the Generate/Loading path (REQ-014, REQ-031)"
+        },
+        {
+          "kind": "checklist",
+          "section": "3.4"
+        }
+      ]
+    },
+    {
+      "id": "process_followup",
+      "criterion": "Requirements Builder and Agent Runner follow-up work has a traced task for the process gaps found here.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-029 / issue #316 — Requirements Builder prevention rules (REQ-029)"
+        },
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "## TASK-030 / REQ-030 — Agent Runner prevention rules: no partial closure (issue #317)"
+        },
+        {
+          "kind": "file",
+          "path": "docs/process/generation-reliability/task-032-replay.json",
+          "anchor": "\"requirement\": \"REQ-030\""
+        }
+      ]
+    },
+    {
+      "id": "ui_unchanged",
+      "criterion": "UI/visual work remains unchanged until the explicit release word.",
+      "evidence": [
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-01.md",
+          "anchor": "- No file under `src/app`, `src/ui` or `src/design-system` changed."
+        },
+        {
+          "kind": "file",
+          "path": "docs/journal/2026-10-02.md",
+          "anchor": "**Recovery note.** The owner explicitly released PRE-005"
+        }
+      ]
+    },
+    {
+      "id": "owner_inbox_check",
+      "criterion": "The owner requests a code with a real address, receives a numeric code, and signs in.",
+      "evidence": [
+        {
+          "kind": "owner",
+          "step": "inbox_check"
+        }
+      ]
+    },
+    {
+      "id": "owner_generate_review",
+      "criterion": "The owner signs in and generates and reviews a workout with the current real profile.",
+      "evidence": [
+        {
+          "kind": "owner",
+          "step": "generate_review"
+        }
+      ]
+    }
+  ]
+}
