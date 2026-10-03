@@ -228,6 +228,20 @@ describe('the release journey is gated, single and retained (REQ-024)', () => {
     expect(spec).toContain('assertSingleAttemptDeployment(backend.generationEndpoint())')
   })
 
+  it('waits for onboarding commit navigation before unchanged authenticated context checks', () => {
+    const finish = spec.indexOf("await page.getByRole('button', { name: 'Finish setup', exact: true }).click()")
+    const home = spec.indexOf("await expectScreen('Home', routeOf('Home'), 'Today')", finish)
+    const experience = spec.indexOf("expect(await contextReader.experience?.(contextUser.id)).toEqual({ ok: true, value: 'some' })")
+    const history = spec.indexOf('expect(await contextReader.recentHistory(contextUser.id)).toEqual({')
+    const generate = spec.indexOf("await page.getByRole('button', { name: 'Generate workout', exact: true }).click()", home)
+
+    expect(finish).toBeGreaterThan(-1)
+    expect(home).toBeGreaterThan(finish)
+    expect(experience).toBeGreaterThan(home)
+    expect(history).toBeGreaterThan(experience)
+    expect(generate).toBeGreaterThan(history)
+  })
+
   it('writes the evidence after the walk whatever its outcome, and deletes its user', () => {
     const after = spec.slice(spec.indexOf('test.afterEach('), spec.indexOf("test('walks"))
 

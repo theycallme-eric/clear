@@ -292,6 +292,11 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
     await checkA11y()
     await page.getByRole('button', { name: 'Finish setup', exact: true }).click()
+
+    // ── Home ───────────────────────────────────────────────────────────────
+    // Navigation follows the awaited onboarding commit. A click or auth-user
+    // lookup alone is not a barrier for reading the persisted profile.
+    await expectScreen('Home', routeOf('Home'), 'Today')
     const contextUser = await client.findUserByEmail(email)
     if (!contextUser) throw new Error('The disposable context-reader athlete is absent.')
     expect(await contextReader.experience?.(contextUser.id)).toEqual({ ok: true, value: 'some' })
@@ -299,8 +304,6 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       ok: true, value: { focuses: [], patterns: [], exerciseIds: [] },
     })
 
-    // ── Home ───────────────────────────────────────────────────────────────
-    await expectScreen('Home', routeOf('Home'), 'Today')
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
 
     // ── Generate ───────────────────────────────────────────────────────────
