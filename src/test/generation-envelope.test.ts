@@ -16,6 +16,7 @@ import type { LogLevel, LogSink } from '../state/logger'
 import {
   errorResponseSchema,
   GENERATION_ERROR_ACCEPT,
+  GENERATION_SINGLE_ATTEMPT_ACCEPT,
   generationRequestSchema,
   requestIdSchema,
   type GenerationRequest,
@@ -83,6 +84,7 @@ const echoHandler = async ({ body, user }: EnvelopeContext<GenerationRequest>) =
   ok({ focus: body.focus, ownerId: user.id } satisfies JsonObject)
 
 interface HarnessOptions {
+  route?: string
   verifyToken?: VerifyToken
   handle?: (context: EnvelopeContext<GenerationRequest>) => Promise<Result> | Result
   allowOrigin?: string
@@ -96,7 +98,7 @@ function harness(options: HarnessOptions = {}) {
   let clock = 1_000
 
   const handleRequest = createEdgeFunction<GenerationRequest>({
-    route: 'generate-workout',
+    route: options.route ?? 'generate-workout',
     schema: generationRequestSchema,
     verifyToken: options.verifyToken ?? acceptToken,
     handle: options.handle ?? echoHandler,
@@ -587,6 +589,78 @@ describe('no credential reaches a log line (D3)', () => {
 // CORS
 // ─────────────────────────────────────────────────────────────────────────────
 
+describe('the one-attempt budget is lower-only on the authenticated workout route', () => {
+  it('acknowledges the budget without running auth or the handler on preflight', async () => {
+    const verifyToken = vi.fn(acceptToken)
+    const handle = vi.fn(echoHandler)
+    const { handleRequest } = harness({ verifyToken, handle })
+    const response = await handleRequest(request({ method: 'OPTIONS', token: null, accept: GENERATION_SINGLE_ATTEMPT_ACCEPT }))
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get('x-generation-attempt-limit')).toBe('1')
+    expect(await response.text()).toBe('')
+    expect(verifyToken).not.toHaveBeenCalled()
+    expect(handle).not.toHaveBeenCalled()
+  })
+
+  it('passes only the lower limit to an authenticated, parsed handler', async () => {
+    const handle = vi.fn(echoHandler)
+    const { handleRequest } = harness({ handle })
+    const response = await handleRequest(request({ accept: GENERATION_SINGLE_ATTEMPT_ACCEPT }))
+
+    expect(response.status).toBe(200)
+    expect(handle).toHaveBeenCalledTimes(1)
+    expect(handle.mock.calls[0][0]).toMatchObject({ user: USER, body: validBody, generationAttemptLimit: 1 })
+    expect(response.headers.get('x-generation-attempt-limit')).toBe('1')
+  })
+
+  it.each([undefined, GENERATION_ERROR_ACCEPT, 'application/json; generation-attempts=1', `${GENERATION_ERROR_ACCEPT}; generation-attempts=3`])(
+    'does not change the ordinary budget for an unrecognized capability (%s)', async (accept) => {
+      const handle = vi.fn(echoHandler)
+      const { handleRequest } = harness({ handle })
+      const response = await handleRequest(request({ accept }))
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get('x-generation-attempt-limit')).toBeNull()
+      expect(handle.mock.calls[0][0]).not.toHaveProperty('generationAttemptLimit')
+    },
+  )
+
+  it('does not advertise a budget for the section route, whose composer does not mount it', async () => {
+    const handle = vi.fn(echoHandler)
+    const { handleRequest } = harness({ route: 'generate-section', handle })
+    const response = await handleRequest(request({ accept: GENERATION_SINGLE_ATTEMPT_ACCEPT }))
+
+    expect(response.headers.get('x-generation-attempt-limit')).toBeNull()
+    expect(handle.mock.calls[0][0]).not.toHaveProperty('generationAttemptLimit')
+  })
+
+  it.each([
+    { token: null },
+    { body: {} },
+  ])('cannot bypass authentication or request parsing with the capability', async (invalid) => {
+    const handle = vi.fn(echoHandler)
+    const { handleRequest } = harness({ handle })
+    const response = await handleRequest(request({ ...invalid, accept: GENERATION_SINGLE_ATTEMPT_ACCEPT }))
+
+    expect(response.status).toBeGreaterThanOrEqual(400)
+    expect(handle).not.toHaveBeenCalled()
+  })
+
+  it('preserves negotiated terminal retry advice without exposing diagnostic details', async () => {
+    const { handleRequest } = harness({
+      handle: () => err({ code: ErrorCode.GENERATION_FAILED, message: 'Generation is unavailable right now.', details: {
+        generationCode: 'generation.malformed_prescription', attempts: 1, retryable: false, detail: 'private diagnostic',
+      } }),
+    })
+    const body = parsedError(await bodyOf(await handleRequest(request({ accept: GENERATION_SINGLE_ATTEMPT_ACCEPT }))))
+
+    expect(body.failure).toBe('generation.malformed_prescription')
+    expect(body.retryable).toBe(false)
+    expect(JSON.stringify(body)).not.toMatch(/attempts|private diagnostic/)
+  })
+})
+
 describe('CORS is answered by the envelope, not by each function', () => {
   it('answers the preflight with no body and the headers a browser needs', async () => {
     const { handleRequest } = harness()
@@ -765,6 +839,11 @@ describe('generate-workout mounts the shared envelope', () => {
     // this directory too; this is the same claim, stated where it is mounted.
     expect(entry).not.toContain("from 'zod'")
     expect(entry).not.toContain('z.object(')
+  })
+
+  it('mounts the negotiated lower attempt limit in the real composer', () => {
+    expect(entry).toContain('generationAttemptLimit')
+    expect(entry).toContain('attemptLimit: generationAttemptLimit')
   })
 
   it('reads no credential beyond the two the platform injects', () => {

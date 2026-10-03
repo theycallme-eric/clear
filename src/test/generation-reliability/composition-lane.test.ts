@@ -607,10 +607,28 @@ describe('the generation envelope', () => {
       '{ userId: user.id, requestId, logger },',
       'db: createGenerationDatabase(credentials),',
       'catalog: createCatalogReader(credentials),',
-      'composer: createGenerationComposer({ apiKey: apiKey.value, logger }),',
+      'composer: createGenerationComposer({',
+      'apiKey: apiKey.value,',
+      'attemptLimit: generationAttemptLimit,',
     ]) {
       expect(mounted).toContain(line)
     }
+  })
+
+  it('caps the mounted pipeline at one provider attempt and never accepts a rejected answer', async () => {
+    const profile = profileOf(MINIMAL)
+    const lane = createCompositionLane(configurationOf(profile), [PROSE_REPLY, VALID_REPLY(MINIMAL)])
+    const response = await lane.generate(requestOf(profile), 1)
+
+    expect(lane.providerCalls()).toHaveLength(1)
+    expect(lane.providerOverruns()).toBe(0)
+    expect(response.status).toBe(500)
+    expect(errorResponseSchema.parse(response.body)).toMatchObject({
+      failure: GenerationFailure.MALFORMED,
+      retryable: false,
+    })
+    expect(response.body).not.toHaveProperty('acceptance')
+    expect(lane.catalogReads()).toHaveLength(0)
   })
 
   it('answers success as exactly the acceptance payload and the request id', async () => {

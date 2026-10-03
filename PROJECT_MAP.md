@@ -111,11 +111,13 @@ clause already enforces, and no name, cue or regression, because those are hydra
 validation. The active-recovery clamp lives here too, applied to the request rather than checked on
 the output, since the system prompt states the 1–3 range as an accomplished fact. `claude.ts` is the
 call: `ANTHROPIC_API_KEY` reaches it as an argument from `Deno.env.get` and leaves in one request
-header. The provider's constrained-decoding schema is derived from CORE-03's
-`generationOutputSchema`, normalized only for Anthropic's supported JSON Schema subset, and the
-response is still parsed against the original schema. The 16K output budget leaves room for
-Sonnet 5 adaptive thinking plus a complete long session; truncation and refusal become typed
-failures. A typed failure buys exactly one corrected retry before `generation.exhausted`. There is
+header. The outgoing Messages body retains the output contract in the prompt, without a second
+provider-normalized schema; the response is parsed against CORE-03 and checked against the
+actual section candidates and duration. The existing 16K output ceiling remains unchanged;
+truncation and refusal become typed failures. A controlled acceptance run may lower the budget
+to one attempt using the exact negotiated capability on the authenticated workout route, with
+a zero-model OPTIONS acknowledgement. Ordinary generation still buys one corrected retry before
+`generation.exhausted`. There is
 no third attempt and no shape it can return but a parsed workout or an `AppError` — D2's mock
 workout has nowhere to live.
 

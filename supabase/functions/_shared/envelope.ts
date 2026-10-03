@@ -53,6 +53,7 @@ import {
 import {
   generationFailureSchema,
   GENERATION_ERROR_ACCEPT,
+  GENERATION_SINGLE_ATTEMPT_ACCEPT,
   parseBoundary,
   requestIdSchema,
   type ErrorResponse,
@@ -104,6 +105,8 @@ export interface EnvelopeContext<TBody> {
   readonly accessToken: string
   /** Scoped to the route and bound to the request id. */
   readonly logger: Logger
+  /** Only the workout route negotiates this lower-only provider call budget. */
+  readonly generationAttemptLimit?: 1
 }
 
 /**
@@ -297,6 +300,9 @@ export function createEdgeFunction<TBody>(
   return async function handleRequest(request: Request): Promise<Response> {
     const startedAt = now()
     const requestId = resolveRequestId(request)
+    const accept = request.headers.get('accept')
+    const singleAttempt = options.route === 'generate-workout'
+      && accept === GENERATION_SINGLE_ATTEMPT_ACCEPT
 
     const respond = (body: JsonObject | null, status: number): Response => {
       logEdgeRequest(
@@ -310,6 +316,9 @@ export function createEdgeFunction<TBody>(
           // A 204 carries no body, so it carries no content type either.
           ...(body === null ? {} : { 'Content-Type': 'application/json' }),
           [REQUEST_ID_HEADER]: requestId,
+          // Preflight can attest the budget before any authenticated generation
+          // is dispatched. It does not run auth, the handler or the provider.
+          ...(singleAttempt ? { 'x-generation-attempt-limit': '1' } : {}),
           ...corsHeaders(allowOrigin),
         },
       })
@@ -325,7 +334,7 @@ export function createEdgeFunction<TBody>(
       return respond(errorBody(
         error,
         requestId,
-        request.headers.get('accept') === GENERATION_ERROR_ACCEPT,
+        accept === GENERATION_ERROR_ACCEPT || accept === GENERATION_SINGLE_ATTEMPT_ACCEPT,
       ), status)
     }
 
@@ -380,6 +389,7 @@ export function createEdgeFunction<TBody>(
         body: parsed.value,
         accessToken: token,
         logger: logger.child('handler', { requestId }),
+        ...(singleAttempt ? { generationAttemptLimit: 1 as const } : {}),
       })
     } catch (thrown) {
       return refuse(toAppError(thrown, ErrorCode.GENERATION_FAILED, requestId))

@@ -41,7 +41,6 @@ import {
 } from '../../../src/state/errors.ts'
 import type { Logger } from '../../../src/state/logger.ts'
 import {
-  generationOutputJsonSchema,
   generationOutputSchema,
   schemaIssues,
   type GenerationOutput,
@@ -75,137 +74,11 @@ export const ANTHROPIC_VERSION = '2023-06-01'
 export const DEFAULT_MODEL = 'claude-sonnet-5'
 
 /**
- * A contract-4.1.0 workout is a few thousand tokens of nested JSON. Sonnet 5's
- * adaptive thinking and denser tokenizer share this same output budget with
- * the response, so 8192 can truncate a long customized session before its JSON
- * closes. Sixteen thousand leaves headroom without asking the model to spend it.
+ * Keep the existing upper bound while isolating the provider request-format
+ * regression. This is a ceiling, not a target. The earlier malformed response
+ * did not retain a stop reason, so increasing it is not proof of truncation.
  */
 export const DEFAULT_MAX_TOKENS = 16_384
-
-// Anthropic's structured-output grammar accepts the JSON Schema vocabulary
-// below but not Zod's numeric bounds, string lengths, or `oneOf`. CORE-03 still
-// validates the original Zod schema after the response arrives, so provider
-// simplification may only widen the constrained shape; it never weakens the
-// application boundary.
-const UNSUPPORTED_OUTPUT_KEYWORDS = new Set([
-  '$schema',
-  'minimum',
-  'maximum',
-  'exclusiveMinimum',
-  'exclusiveMaximum',
-  'multipleOf',
-  'minLength',
-  'maxLength',
-  'maxItems',
-  'uniqueItems',
-  'minProperties',
-  'maxProperties',
-])
-
-type JsonSchemaObject = Record<string, unknown>
-
-function isObject(value: unknown): value is JsonSchemaObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function distinctSchemas(values: readonly unknown[]): unknown[] {
-  const seen = new Set<string>()
-
-  return values.filter((value) => {
-    const key = JSON.stringify(value)
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
-function enumSchema(choices: readonly unknown[]): JsonSchemaObject | null {
-  if (!choices.every(isObject)) return null
-  if (!choices.every((choice) => Object.hasOwn(choice, 'const'))) return null
-
-  const bases = choices.map((choice) => {
-    const base = { ...choice }
-    delete base.const
-    return base
-  })
-  if (distinctSchemas(bases).length !== 1) return null
-
-  return {
-    ...bases[0],
-    enum: distinctSchemas(choices.map((choice) => choice.const)),
-  }
-}
-
-/**
- * Zod emits the prescription discriminated union as three complete `oneOf`
- * objects. Merging their identical fields keeps the provider grammar below
- * its union-complexity limit; the four target fields remain nullable unions
- * and `target_kind` becomes the same three-value enum.
- */
-function mergeObjectUnion(variants: readonly unknown[]): JsonSchemaObject | null {
-  if (!variants.every(isObject)) return null
-  if (!variants.every((variant) => variant.type === 'object')) return null
-
-  const properties = variants.map((variant) => variant.properties)
-  if (!properties.every(isObject)) return null
-
-  const propertyNames = Object.keys(properties[0])
-  if (
-    !properties.every(
-      (entry) =>
-        Object.keys(entry).length === propertyNames.length &&
-        propertyNames.every((name) => Object.hasOwn(entry, name)),
-    )
-  ) {
-    return null
-  }
-
-  const required = variants.map((variant) => variant.required)
-  if (distinctSchemas(required).length !== 1) return null
-
-  const mergedProperties: JsonSchemaObject = {}
-  for (const name of propertyNames) {
-    const choices = distinctSchemas(properties.map((entry) => entry[name]))
-    mergedProperties[name] =
-      choices.length === 1 ? choices[0] : (enumSchema(choices) ?? { anyOf: choices })
-  }
-
-  return {
-    type: 'object',
-    properties: mergedProperties,
-    required: required[0],
-    additionalProperties: false,
-  }
-}
-
-function normalizeOutputSchema(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(normalizeOutputSchema)
-  if (!isObject(value)) return value
-
-  const normalized: JsonSchemaObject = {}
-
-  for (const [key, child] of Object.entries(value)) {
-    if (UNSUPPORTED_OUTPUT_KEYWORDS.has(key)) continue
-    // The provider supports `minItems` only at 0 or 1. CORE-03 retains the
-    // ladder's stricter two-rung minimum after constrained decoding.
-    if (key === 'minItems' && typeof child === 'number' && child > 1) continue
-
-    if (key === 'oneOf' && Array.isArray(child)) {
-      const choices = child.map(normalizeOutputSchema)
-      Object.assign(normalized, mergeObjectUnion(choices) ?? { anyOf: choices })
-      continue
-    }
-
-    normalized[key] = normalizeOutputSchema(child)
-  }
-
-  return normalized
-}
-
-/** The canonical CORE-03 output shape, made compatible with Claude's grammar. */
-export const CLAUDE_OUTPUT_SCHEMA = normalizeOutputSchema(
-  generationOutputJsonSchema,
-) as JsonSchemaObject
 
 /**
  * GEN-02c's validation, as this module needs to see it: a parsed workout and
@@ -228,6 +101,8 @@ export interface ComposerConfig<V = unknown> {
   readonly apiKey: string
   readonly model?: string
   readonly maxTokens?: number
+  /** Lower-only request budget. Ordinary generation still permits one retry. */
+  readonly attemptLimit?: 1
   /** Injected in tests; the global `fetch` otherwise. */
   readonly fetch?: typeof globalThis.fetch
   /** The envelope's per-request logger, where there is one. */
@@ -593,12 +468,6 @@ async function callClaude(
         max_tokens: config.maxTokens ?? DEFAULT_MAX_TOKENS,
         system,
         messages: [{ role: 'user', content: user }],
-        output_config: {
-          format: {
-            type: 'json_schema',
-            schema: CLAUDE_OUTPUT_SCHEMA,
-          },
-        },
       }),
     })
   } catch (cause) {
@@ -674,6 +543,11 @@ async function callClaude(
 /** How many times a prompt may be sent. One attempt, one retry (§4). */
 export const MAX_ATTEMPTS = 2
 
+/** Narrow provider envelopes without retaining their raw contents. */
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 /**
  * An attempt's failure becomes the retry's addendum only when there was a
  * response to correct. Telling a model that the *network* failed would be an
@@ -699,7 +573,11 @@ function correctionFor(failure: AttemptFailure): RetryFailure | null {
  * something unusable is `GENERATION_FAILED` ("try again"), and an API that did
  * not answer at all is `GENERATION_MODEL_ERROR` ("the service").
  */
-function compositionError(failures: readonly AttemptFailure[], requestId?: string): AppError {
+function compositionError(
+  failures: readonly AttemptFailure[],
+  requestId?: string,
+  attemptLimit = MAX_ATTEMPTS,
+): AppError {
   const last = failures[failures.length - 1]
   const exhausted = failures.length === MAX_ATTEMPTS
 
@@ -715,7 +593,9 @@ function compositionError(failures: readonly AttemptFailure[], requestId?: strin
         // taxonomy's. Both, because §9 names this failure and the client
         // branches on the other one.
         generationCode: exhausted ? GenerationFailure.EXHAUSTED : last.code,
-        ...(last.retryable === false ? { retryable: false } : {}),
+        ...(last.retryable === false || (attemptLimit === 1 && failures.length >= attemptLimit)
+          ? { retryable: false }
+          : {}),
         attempts: failures.length,
         failures: failures.map((failure) => failure.code),
         detail: last.detail,
@@ -781,8 +661,11 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
 
       const failures: AttemptFailure[] = []
       let message = prompt.user
+      // Only the exact lower limit is honored; malformed/untrusted config
+      // cannot raise the contract's two-call ceiling.
+      const attemptLimit = config.attemptLimit === 1 ? 1 : MAX_ATTEMPTS
 
-      for (let count = 1; count <= MAX_ATTEMPTS; count += 1) {
+      for (let count = 1; count <= attemptLimit; count += 1) {
         const outcome = await attempt(config, prompt.system, message, input)
 
         if (outcome.ok) {
@@ -840,7 +723,7 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
       // There is no third call, no partial object assembled from what did
       // parse, and no fixture standing in for a workout — the caller gets a
       // typed error and the user is told (D2).
-      return err(compositionError(failures, requestId))
+      return err(compositionError(failures, requestId, attemptLimit))
     },
   }
 }

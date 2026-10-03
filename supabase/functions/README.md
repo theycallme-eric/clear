@@ -39,10 +39,14 @@ Two consequences at deploy time, both handled in `deno.json` and `../config.toml
 - CORE-03's own relative imports are extensionless, which Deno resolves only with
   `unstable: ["sloppy-imports"]`.
 
-`_shared/claude.ts` also derives its structured-output JSON Schema from that same CORE-03 schema.
-It removes only provider-unsupported constraints and collapses the repeated discriminated-union
-shape to stay within Anthropic's grammar limit; the original Zod schema still validates every
-response. No parallel handwritten model schema exists.
+`_shared/claude.ts` sends the historically accepted Messages request shape, with the output
+contract in the system prompt. There is no parallel provider-normalized schema; the original
+CORE-03 schema and the domain checks still reject every invalid response before acceptance.
+The model and 16K output ceiling are unchanged. A controlled acceptance request can negotiate
+the exact `GENERATION_SINGLE_ATTEMPT_ACCEPT` capability on `generate-workout` to lower the
+provider budget from two attempts to one. Its OPTIONS acknowledgement runs no auth, handler
+or model; its POST still requires ordinary authentication, parsing and all validation. Unknown
+capabilities cannot raise the budget, and `generate-section` does not advertise this option.
 
 `verify_jwt` is `false` for these functions, and that is not a relaxation: the gateway's refusal is
 untyped and carries no request id, so the function verifies the same token against GoTrue itself
