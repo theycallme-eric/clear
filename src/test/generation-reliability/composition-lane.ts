@@ -50,6 +50,8 @@ import { ok } from '../../state/errors'
 import type { LogLevel, LogSink } from '../../state/logger'
 import {
   generationRequestSchema,
+  GENERATION_ERROR_ACCEPT,
+  GENERATION_SINGLE_ATTEMPT_ACCEPT,
   type ExerciseCatalogRow,
   type GenerationRequest,
 } from '../../state/schemas'
@@ -156,7 +158,7 @@ export interface LogLine {
 
 export interface CompositionLane {
   /** POST the request to the mounted function, as the client does. */
-  generate(request: GenerationRequest): Promise<{ status: number; body: Record<string, unknown> }>
+  generate(request: GenerationRequest, attemptLimit?: 1): Promise<{ status: number; body: Record<string, unknown> }>
   /** Every request the provider double was sent, in order. */
   providerCalls(): readonly ProviderCall[]
   /** Requests made after the recorded replies ran out. Always zero when the budget holds. */
@@ -323,7 +325,7 @@ export function createCompositionLane(
     schema: generationRequestSchema,
     verifyToken,
     sink,
-    handle: async ({ requestId, user, body, accessToken, logger }) => {
+    handle: async ({ requestId, user, body, accessToken, logger, generationAttemptLimit }) => {
       const credentials = { url: PROJECT_URL, anonKey: ANON_KEY, accessToken, fetch: database }
 
       return performGeneration(
@@ -332,19 +334,25 @@ export function createCompositionLane(
         {
           db: createGenerationDatabase(credentials),
           catalog: createCatalogReader(credentials),
-          composer: createGenerationComposer({ apiKey: LANE_API_KEY, logger, fetch: provider }),
+          composer: createGenerationComposer({
+            apiKey: LANE_API_KEY,
+            logger,
+            fetch: provider,
+            attemptLimit: generationAttemptLimit,
+          }),
         },
       )
     },
   })
 
   return {
-    async generate(request) {
+    async generate(request, attemptLimit) {
       const response = await handleRequest(
         new Request(`${PROJECT_URL}/functions/v1/generate-workout`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            Accept: attemptLimit === 1 ? GENERATION_SINGLE_ATTEMPT_ACCEPT : GENERATION_ERROR_ACCEPT,
             Authorization: `Bearer ${ACCESS_TOKEN}`,
             'x-request-id': request.request_id,
           },

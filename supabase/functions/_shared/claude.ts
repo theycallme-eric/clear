@@ -41,7 +41,6 @@ import {
 } from '../../../src/state/errors.ts'
 import type { Logger } from '../../../src/state/logger.ts'
 import {
-  generationOutputJsonSchema,
   generationOutputSchema,
   schemaIssues,
   type GenerationOutput,
@@ -75,137 +74,11 @@ export const ANTHROPIC_VERSION = '2023-06-01'
 export const DEFAULT_MODEL = 'claude-sonnet-5'
 
 /**
- * A contract-4.1.0 workout is a few thousand tokens of nested JSON. Sonnet 5's
- * adaptive thinking and denser tokenizer share this same output budget with
- * the response, so 8192 can truncate a long customized session before its JSON
- * closes. Sixteen thousand leaves headroom without asking the model to spend it.
+ * Keep the existing upper bound while isolating the provider request-format
+ * regression. This is a ceiling, not a target. The earlier malformed response
+ * did not retain a stop reason, so increasing it is not proof of truncation.
  */
 export const DEFAULT_MAX_TOKENS = 16_384
-
-// Anthropic's structured-output grammar accepts the JSON Schema vocabulary
-// below but not Zod's numeric bounds, string lengths, or `oneOf`. CORE-03 still
-// validates the original Zod schema after the response arrives, so provider
-// simplification may only widen the constrained shape; it never weakens the
-// application boundary.
-const UNSUPPORTED_OUTPUT_KEYWORDS = new Set([
-  '$schema',
-  'minimum',
-  'maximum',
-  'exclusiveMinimum',
-  'exclusiveMaximum',
-  'multipleOf',
-  'minLength',
-  'maxLength',
-  'maxItems',
-  'uniqueItems',
-  'minProperties',
-  'maxProperties',
-])
-
-type JsonSchemaObject = Record<string, unknown>
-
-function isObject(value: unknown): value is JsonSchemaObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function distinctSchemas(values: readonly unknown[]): unknown[] {
-  const seen = new Set<string>()
-
-  return values.filter((value) => {
-    const key = JSON.stringify(value)
-    if (seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
-function enumSchema(choices: readonly unknown[]): JsonSchemaObject | null {
-  if (!choices.every(isObject)) return null
-  if (!choices.every((choice) => Object.hasOwn(choice, 'const'))) return null
-
-  const bases = choices.map((choice) => {
-    const base = { ...choice }
-    delete base.const
-    return base
-  })
-  if (distinctSchemas(bases).length !== 1) return null
-
-  return {
-    ...bases[0],
-    enum: distinctSchemas(choices.map((choice) => choice.const)),
-  }
-}
-
-/**
- * Zod emits the prescription discriminated union as three complete `oneOf`
- * objects. Merging their identical fields keeps the provider grammar below
- * its union-complexity limit; the four target fields remain nullable unions
- * and `target_kind` becomes the same three-value enum.
- */
-function mergeObjectUnion(variants: readonly unknown[]): JsonSchemaObject | null {
-  if (!variants.every(isObject)) return null
-  if (!variants.every((variant) => variant.type === 'object')) return null
-
-  const properties = variants.map((variant) => variant.properties)
-  if (!properties.every(isObject)) return null
-
-  const propertyNames = Object.keys(properties[0])
-  if (
-    !properties.every(
-      (entry) =>
-        Object.keys(entry).length === propertyNames.length &&
-        propertyNames.every((name) => Object.hasOwn(entry, name)),
-    )
-  ) {
-    return null
-  }
-
-  const required = variants.map((variant) => variant.required)
-  if (distinctSchemas(required).length !== 1) return null
-
-  const mergedProperties: JsonSchemaObject = {}
-  for (const name of propertyNames) {
-    const choices = distinctSchemas(properties.map((entry) => entry[name]))
-    mergedProperties[name] =
-      choices.length === 1 ? choices[0] : (enumSchema(choices) ?? { anyOf: choices })
-  }
-
-  return {
-    type: 'object',
-    properties: mergedProperties,
-    required: required[0],
-    additionalProperties: false,
-  }
-}
-
-function normalizeOutputSchema(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(normalizeOutputSchema)
-  if (!isObject(value)) return value
-
-  const normalized: JsonSchemaObject = {}
-
-  for (const [key, child] of Object.entries(value)) {
-    if (UNSUPPORTED_OUTPUT_KEYWORDS.has(key)) continue
-    // The provider supports `minItems` only at 0 or 1. CORE-03 retains the
-    // ladder's stricter two-rung minimum after constrained decoding.
-    if (key === 'minItems' && typeof child === 'number' && child > 1) continue
-
-    if (key === 'oneOf' && Array.isArray(child)) {
-      const choices = child.map(normalizeOutputSchema)
-      Object.assign(normalized, mergeObjectUnion(choices) ?? { anyOf: choices })
-      continue
-    }
-
-    normalized[key] = normalizeOutputSchema(child)
-  }
-
-  return normalized
-}
-
-/** The canonical CORE-03 output shape, made compatible with Claude's grammar. */
-export const CLAUDE_OUTPUT_SCHEMA = normalizeOutputSchema(
-  generationOutputJsonSchema,
-) as JsonSchemaObject
 
 /**
  * GEN-02c's validation, as this module needs to see it: a parsed workout and
@@ -228,6 +101,8 @@ export interface ComposerConfig<V = unknown> {
   readonly apiKey: string
   readonly model?: string
   readonly maxTokens?: number
+  /** Lower-only request budget. Ordinary generation still permits one retry. */
+  readonly attemptLimit?: 1
   /** Injected in tests; the global `fetch` otherwise. */
   readonly fetch?: typeof globalThis.fetch
   /** The envelope's per-request logger, where there is one. */
@@ -319,6 +194,10 @@ export interface AttemptFailure {
   readonly retryable?: boolean
   /** Present when the response parsed as JSON and failed the schema. */
   readonly issues?: readonly SchemaIssue[]
+  /** Reconstructed, allowlisted provider metadata. Never its message or body. */
+  readonly provider?: ProviderDiagnostic
+  /** Usage from this failed attempt, when the provider reported it. */
+  readonly usage?: TokenUsage
 }
 
 /** Tokens as the API reported them — §5 records the API's answer, not a guess. */
@@ -437,6 +316,71 @@ export const ProviderFailureKind = {
 export type ProviderFailureKind =
   (typeof ProviderFailureKind)[keyof typeof ProviderFailureKind]
 
+export const ProviderFailureReason = {
+  SCHEMA_COMPLEXITY: 'schema_complexity',
+  REQUEST_OTHER: 'request_other',
+} as const
+
+export type ProviderFailureReason =
+  (typeof ProviderFailureReason)[keyof typeof ProviderFailureReason]
+
+const PROVIDER_ERROR_TYPES = [
+  'invalid_request_error',
+  'authentication_error',
+  'permission_error',
+  'not_found_error',
+  'request_too_large',
+  'rate_limit_error',
+  'api_error',
+  'overloaded_error',
+] as const
+
+export interface ProviderDiagnostic {
+  readonly status: number
+  readonly reason: ProviderFailureReason
+  readonly errorType: (typeof PROVIDER_ERROR_TYPES)[number] | null
+  readonly requestId: string | null
+}
+
+const SCHEMA_COMPLEXITY_MESSAGE = 'schema is too complex for compilation.'
+
+/**
+ * Recognizes only Anthropic's documented diagnostic text. Comparisons and
+ * request IDs are bounded; no message, regex capture or header container is
+ * retained. Unknown diagnostics remain unknown rather than becoming a guess.
+ */
+export function extractProviderDiagnostic(
+  status: number,
+  body: unknown,
+  requestId: unknown,
+): ProviderDiagnostic {
+  const error = isObject(body) && isObject(body.error) ? body.error : null
+  const message = error?.message
+  const knownComplexity =
+    status === 400 &&
+    typeof message === 'string' &&
+    message.length === SCHEMA_COMPLEXITY_MESSAGE.length &&
+    message.toLowerCase() === SCHEMA_COMPLEXITY_MESSAGE
+  const errorType = PROVIDER_ERROR_TYPES.find((type) => type === error?.type) ?? null
+  const safeRequestId =
+    typeof requestId === 'string' &&
+    requestId.length <= 132 &&
+    // `$` can match before a final newline. Reject that without retaining a match.
+    requestId.trim() === requestId &&
+    /^req_[A-Za-z0-9]{8,128}$/.test(requestId)
+      ? requestId
+      : null
+
+  return {
+    status,
+    reason: knownComplexity
+      ? ProviderFailureReason.SCHEMA_COMPLEXITY
+      : ProviderFailureReason.REQUEST_OTHER,
+    errorType,
+    requestId: safeRequestId,
+  }
+}
+
 function providerMessage(value: unknown): string {
   const error = (value as { error?: unknown } | null)?.error
   if (typeof error !== 'object' || error === null) return ''
@@ -471,7 +415,7 @@ function usageFrom(value: unknown): TokenUsage {
 
   const read = (key: string) => {
     const number = usage?.[key]
-    return typeof number === 'number' ? number : null
+    return typeof number === 'number' && Number.isSafeInteger(number) && number >= 0 ? number : null
   }
 
   return { inputTokens: read('input_tokens'), outputTokens: read('output_tokens') }
@@ -524,12 +468,6 @@ async function callClaude(
         max_tokens: config.maxTokens ?? DEFAULT_MAX_TOKENS,
         system,
         messages: [{ role: 'user', content: user }],
-        output_config: {
-          format: {
-            type: 'json_schema',
-            schema: CLAUDE_OUTPUT_SCHEMA,
-          },
-        },
       }),
     })
   } catch (cause) {
@@ -545,10 +483,13 @@ async function callClaude(
   if (!response.ok) {
     const body: unknown = await response.json().catch(() => null)
     const failure = classifyProviderFailure(response.status, body)
+    const usage = usageFrom(body)
     return err({
       code: GenerationFailure.UPSTREAM,
       detail: `The API answered ${response.status} (${failure.kind}).`,
       retryable: failure.retryable,
+      provider: extractProviderDiagnostic(response.status, body, response.headers.get('request-id')),
+      ...(usage.inputTokens !== null || usage.outputTokens !== null ? { usage } : {}),
     })
   }
 
@@ -563,12 +504,14 @@ async function callClaude(
     })
   }
 
+  const usage = usageFrom(body)
   const stopReason = stopReasonFrom(body)
   if (stopReason === 'max_tokens') {
     return err({
       code: GenerationFailure.MALFORMED,
       detail: `The response reached the ${config.maxTokens ?? DEFAULT_MAX_TOKENS} token output limit.`,
       retryable: true,
+      usage,
     })
   }
   if (stopReason === 'refusal') {
@@ -576,6 +519,7 @@ async function callClaude(
       code: GenerationFailure.UPSTREAM,
       detail: 'The API refused the request.',
       retryable: false,
+      usage,
     })
   }
 
@@ -585,10 +529,11 @@ async function callClaude(
       code: GenerationFailure.UPSTREAM,
       detail: 'The API answered with no content.',
       retryable: true,
+      usage,
     })
   }
 
-  return ok({ text, usage: usageFrom(body) })
+  return ok({ text, usage })
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -597,6 +542,11 @@ async function callClaude(
 
 /** How many times a prompt may be sent. One attempt, one retry (§4). */
 export const MAX_ATTEMPTS = 2
+
+/** Narrow provider envelopes without retaining their raw contents. */
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
 
 /**
  * An attempt's failure becomes the retry's addendum only when there was a
@@ -618,13 +568,18 @@ function correctionFor(failure: AttemptFailure): RetryFailure | null {
 }
 
 /**
- * Two attempts' worth of failure, as the one error a caller sees. The taxonomy
+ * A terminal composition failure, as the one error a caller sees. The taxonomy
  * splits where the user's next move differs: a model that answered twice with
  * something unusable is `GENERATION_FAILED` ("try again"), and an API that did
  * not answer at all is `GENERATION_MODEL_ERROR` ("the service").
  */
-function exhausted(failures: readonly AttemptFailure[], requestId?: string): AppError {
+function compositionError(
+  failures: readonly AttemptFailure[],
+  requestId?: string,
+  attemptLimit = MAX_ATTEMPTS,
+): AppError {
   const last = failures[failures.length - 1]
+  const exhausted = failures.length === MAX_ATTEMPTS
 
   return createError(
     last.code === GenerationFailure.UPSTREAM
@@ -632,15 +587,23 @@ function exhausted(failures: readonly AttemptFailure[], requestId?: string): App
       : ErrorCode.GENERATION_FAILED,
     {
       requestId,
+      ...(!exhausted ? { message: 'Generation is unavailable right now.' } : {}),
       details: {
         // The contract's own code for the state this reached, beside the
         // taxonomy's. Both, because §9 names this failure and the client
         // branches on the other one.
-        generationCode: GenerationFailure.EXHAUSTED,
+        generationCode: exhausted ? GenerationFailure.EXHAUSTED : last.code,
+        ...(last.retryable === false || (attemptLimit === 1 && failures.length >= attemptLimit)
+          ? { retryable: false }
+          : {}),
         attempts: failures.length,
         failures: failures.map((failure) => failure.code),
         detail: last.detail,
         ...(last.issues ? { issues: last.issues } : {}),
+        ...(last.provider ? { provider: last.provider } : {}),
+        ...(last.usage
+          ? { usage: { input: last.usage.inputTokens, output: last.usage.outputTokens } }
+          : {}),
       },
     },
   )
@@ -669,17 +632,17 @@ async function attempt<V>(
   const completion = await callClaude(config, system, message)
   if (!completion.ok) return err(completion.error)
 
-  const parsed = parseCompletion(completion.value.text)
-  if (!parsed.ok) return err(parsed.error)
-
   const usage = completion.value.usage
+  const parsed = parseCompletion(completion.value.text)
+  if (!parsed.ok) return err({ ...parsed.error, usage })
+
   if (!config.validate) return ok({ workout: parsed.value, usage, validation: null })
 
   const validated = config.validate(parsed.value, input)
 
   return validated.ok
     ? ok({ workout: parsed.value, usage, validation: validated.value })
-    : err(validated.error)
+    : err({ ...validated.error, usage })
 }
 
 export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
@@ -698,8 +661,11 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
 
       const failures: AttemptFailure[] = []
       let message = prompt.user
+      // Only the exact lower limit is honored; malformed/untrusted config
+      // cannot raise the contract's two-call ceiling.
+      const attemptLimit = config.attemptLimit === 1 ? 1 : MAX_ATTEMPTS
 
-      for (let count = 1; count <= MAX_ATTEMPTS; count += 1) {
+      for (let count = 1; count <= attemptLimit; count += 1) {
         const outcome = await attempt(config, prompt.system, message, input)
 
         if (outcome.ok) {
@@ -733,6 +699,15 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
           // (overload) all collapse into the same un-actionable 502 in the
           // hosted logs.
           detail: outcome.error.detail,
+          ...(outcome.error.provider ? { provider: outcome.error.provider } : {}),
+          ...(outcome.error.usage
+            ? {
+                usage: {
+                  input: outcome.error.usage.inputTokens,
+                  output: outcome.error.usage.outputTokens,
+                },
+              }
+            : {}),
         })
 
         const correction = correctionFor(outcome.error)
@@ -744,10 +719,11 @@ export function createComposer<V>(config: ComposerConfig<V>): Composer<V> {
         if (outcome.error.retryable === false) break
       }
 
-      // Two failures, and the loop ends. There is no third call, no partial
-      // object assembled from what did parse, and no fixture standing in for a
-      // workout — the caller gets a typed error and the user is told (D2).
-      return err(exhausted(failures, requestId))
+      // Both attempts failed, or the first request was definitively refused.
+      // There is no third call, no partial object assembled from what did
+      // parse, and no fixture standing in for a workout — the caller gets a
+      // typed error and the user is told (D2).
+      return err(compositionError(failures, requestId, attemptLimit))
     },
   }
 }

@@ -89,6 +89,7 @@ describe('the generation call', () => {
     // The trace begins in the browser: the id on the wire is the id an error
     // screen shows, and the id the function logs.
     expect(headers['x-request-id']).toBe(REQUEST_ID)
+    expect(headers.accept).toBe('application/json; generation-errors=2')
 
     expect(JSON.parse(String(init.body))).toEqual({
       ...INPUT,
@@ -285,6 +286,37 @@ describe('the generation call', () => {
 })
 
 describe('the contract §9 codes', () => {
+  it('does not invite another call or blame options after a terminal upstream rejection', async () => {
+    const fetchImpl = answering({
+      code: ErrorCode.GENERATION_MODEL_ERROR,
+      message: 'Could not generate workout. Try again.',
+      requestId: REQUEST_ID,
+      failure: GenerationFailure.UPSTREAM,
+      retryable: false,
+    }, 502)
+    const result = await clientWith(fetchImpl).generate(INPUT)
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.retryable).toBe(false)
+    expect(result.error.message).toBe('Generation is unavailable right now.')
+    expect(result.error.message).not.toMatch(/twice|options|try again/i)
+  })
+
+  it('cannot reopen exhausted retryability even if the wire says true', async () => {
+    const result = await clientWith(answering({
+      code: ErrorCode.GENERATION_FAILED,
+      message: 'Try again.',
+      requestId: REQUEST_ID,
+      failure: GenerationFailure.EXHAUSTED,
+      retryable: true,
+    }, 500)).generate(INPUT)
+
+    expect(!result.ok && result.error.retryable).toBe(false)
+    expect(!result.ok && result.error.message).not.toMatch(/options|try again/i)
+  })
+
   /** §9's table, read from the contract itself rather than restated here. */
   const documented = [
     ...readFileSync(

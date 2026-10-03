@@ -464,6 +464,19 @@ describe('the request and response envelopes (GEN-01)', () => {
     expect(isErrorResponse(failure) && failure.code).toBe(ErrorCode.GENERATION_FAILED)
   })
 
+  it('accepts an optional boolean retry restriction but no provider diagnostics', () => {
+    const body = {
+      code: ErrorCode.GENERATION_MODEL_ERROR,
+      message: 'Generation is unavailable right now.',
+      requestId: 'req_lxyz123_a1b2c3',
+      failure: 'generation.upstream',
+    }
+    expect(errorResponseSchema.safeParse(body).success).toBe(true)
+    expect(errorResponseSchema.safeParse({ ...body, retryable: false }).success).toBe(true)
+    expect(errorResponseSchema.safeParse({ ...body, retryable: 'false' }).success).toBe(false)
+    expect(errorResponseSchema.safeParse({ ...body, provider: { reason: 'schema_complexity' } }).success).toBe(false)
+  })
+
   it('rejects an error response that invents a code or drops the request id', () => {
     expect(
       errorResponseSchema.safeParse({

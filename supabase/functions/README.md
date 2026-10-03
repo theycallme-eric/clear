@@ -14,7 +14,11 @@ What the shell guarantees, which is what makes it worth being a module:
 
 - Unauthenticated → `401` with `{ code, message, requestId }`; the handler never runs.
 - A body the CORE-03 schema rejects → `400` carrying the field paths that were wrong.
-- A generation refusal carries only its closed contract subtype as `failure`; retry counts,
+- A generation refusal carries its closed contract subtype as `failure` and may carry
+  `retryable: false` to restrict retry advice only when the client opts in with
+  `Accept: application/json; generation-errors=2`. Older strict clients retain the
+  prior terminal `generation.exhausted` representation with no added field; their
+  outdated wording is not an accurate attempt count. Retry counts,
   provider details and every other `AppError.details` value stay server-side.
 - Every response — success, refusal, or a handler that threw — echoes the client's
   `X-Request-ID`, in the body and in the response header.
@@ -35,10 +39,14 @@ Two consequences at deploy time, both handled in `deno.json` and `../config.toml
 - CORE-03's own relative imports are extensionless, which Deno resolves only with
   `unstable: ["sloppy-imports"]`.
 
-`_shared/claude.ts` also derives its structured-output JSON Schema from that same CORE-03 schema.
-It removes only provider-unsupported constraints and collapses the repeated discriminated-union
-shape to stay within Anthropic's grammar limit; the original Zod schema still validates every
-response. No parallel handwritten model schema exists.
+`_shared/claude.ts` sends the historically accepted Messages request shape, with the output
+contract in the system prompt. There is no parallel provider-normalized schema; the original
+CORE-03 schema and the domain checks still reject every invalid response before acceptance.
+The model and 16K output ceiling are unchanged. A controlled acceptance request can negotiate
+the exact `GENERATION_SINGLE_ATTEMPT_ACCEPT` capability on `generate-workout` to lower the
+provider budget from two attempts to one. Its OPTIONS acknowledgement runs no auth, handler
+or model; its POST still requires ordinary authentication, parsing and all validation. Unknown
+capabilities cannot raise the budget, and `generate-section` does not advertise this option.
 
 `verify_jwt` is `false` for these functions, and that is not a relaxation: the gateway's refusal is
 untyped and carries no request id, so the function verifies the same token against GoTrue itself

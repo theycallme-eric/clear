@@ -1,6 +1,10 @@
 import type { Page, Request, Response } from '@playwright/test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
+import { GENERATION_SINGLE_ATTEMPT_ACCEPT, generationRequestSchema, generationSuccessSchema } from '../src/state/schemas'
+import { EQUIPMENT, GOALS, SECTIONS, TIERS } from '../src/state/onboarding'
 import {
   assertReleaseGate,
   buildReleaseEvidence,
@@ -10,6 +14,7 @@ import {
 import { expect, test } from './fixtures'
 import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
 import { backend } from './support/backend'
+import { assertSingleAttemptDeployment, createGenerationBudget, MODEL_ROUTE } from './support/generation-budget'
 import { liveModelEnabled, liveModelReason } from './support/live-model'
 
 /**
@@ -53,23 +58,23 @@ import { liveModelEnabled, liveModelReason } from './support/live-model'
 
 const JOURNEY = REQUIRED_JOURNEYS.find((journey) => journey.id === 'new-user')
 
+// Only the committed, non-personal configuration is used. No real account,
+// notes, history or live owner profile is copied into this disposable user.
+const MIRROR = JSON.parse(readFileSync(resolve(process.cwd(),
+  'src/test/generation-reliability/owner-mirror.json'), 'utf8')) as {
+  goal: string; tier: string; equipment: string[]; enabledSections: string[]
+}
+function labelOf(options: readonly { value: string; label: string }[], value: string) {
+  const option = options.find((candidate) => candidate.value === value)
+  if (!option) throw new Error('The acceptance fixture contains an unknown configuration value.')
+  return option.label
+}
+
 /** The inventory's route for a screen, so the walk cannot drift from it. */
 function routeOf(screen: string): string {
   const entry = REQUIRED_SCREENS.find((candidate) => candidate.screen === screen)
   if (entry?.path == null) throw new Error(`"${screen}" has no required route`)
   return entry.path
-}
-
-interface GeneratedWorkout {
-  requestId: string
-  acceptance: {
-    prompt_version: string
-    contract_version: string
-    workout: {
-      title: string
-      sections: { section_title: string }[]
-    }
-  }
 }
 
 async function expectPinnedAction(page: Page, name: string) {
@@ -96,10 +101,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
   test.skip(!backend.available, backend.reason)
   test.skip(!liveModelEnabled, liveModelReason)
   test.describe.configure({ mode: 'serial', retries: 0 })
+  test.use({ serviceWorkers: 'block' })
 
   let email = ''
   let client: ReturnType<typeof backend.client>
   let commit = ''
+  let dispatchBudget: ReturnType<typeof createGenerationBudget> | undefined
 
   /** What the journey saw of its one generation; only this reaches the evidence. */
   const observed = {
@@ -114,6 +121,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     void browserName
     // Refuses, naming the lane, before anything is provisioned or requested.
     commit = assertReleaseGate().commit
+    await assertSingleAttemptDeployment(backend.generationEndpoint())
     email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-core-loop@example.com`
     client = backend.client()
     // A cancelled prior run may have left this exact address behind. Only it
@@ -139,6 +147,10 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     })
     const path = writeReleaseEvidence(process.cwd(), evidence)
     await testInfo.attach('release-evidence', { path, contentType: 'application/json' })
+    await testInfo.attach('generation-dispatch-budget', {
+      body: Buffer.from(JSON.stringify(dispatchBudget?.snapshot() ?? { attempted: 0, forwarded: 0, blocked: 0 })),
+      contentType: 'application/json',
+    })
   })
 
   test('walks every screen on the path and lands Home with the session in recents', async ({
@@ -148,6 +160,33 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
   }, testInfo) => {
     // One paid model call plus a dozen screens; the bound is explicit.
     test.setTimeout(300_000)
+
+    const endpoint = backend.generationEndpoint()
+    const budget = createGenerationBudget(endpoint)
+    dispatchBudget = budget
+    // Guard before navigation, on every origin and model-backed route. Abort
+    // a duplicate or mismatched request before it can reach any backend.
+    await page.route(MODEL_ROUTE, async (route) => {
+      const request = route.request()
+      if (request.method() !== 'POST') return route.continue()
+      const allowed = budget.allow(request.url())
+      observed.generationRequests = budget.snapshot().forwarded
+      if (!allowed) return route.abort('blockedbyclient')
+      observed.requestId = await request.headerValue('x-request-id')
+      // Relay the genuine network response, never a fixture. Browser redirect
+      // handling could otherwise escape the exact-endpoint guard.
+      const response = await route.fetch({
+        headers: { ...request.headers(), accept: GENERATION_SINGLE_ATTEMPT_ACCEPT },
+        maxRedirects: 0,
+        maxRetries: 0,
+        timeout: 180_000,
+      })
+      if (response.status() >= 300 && response.status() < 400) {
+        await route.abort('blockedbyclient')
+        throw new Error('Generation redirected; the acceptance run stopped without following it.')
+      }
+      await route.fulfill({ response })
+    })
 
     expect(JOURNEY?.steps).toEqual([
       'Welcome',
@@ -219,11 +258,21 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     await expectScreen('Onboarding', routeOf('Onboarding'), 'Set up CLEAR')
     const next = page.getByRole('button', { name: 'Next', exact: true })
 
-    await page.getByRole('radio', { name: /^Full gym/ }).click()
+    await page.getByRole('radio', { name: new RegExp(`^${labelOf(TIERS, MIRROR.tier)}`) }).click()
+    const equipment = page.getByRole('group', { name: 'Equipment', exact: true })
+    for (const option of EQUIPMENT) {
+      await equipment.getByRole('checkbox', { name: option.label, exact: true })
+        .setChecked(MIRROR.equipment.includes(option.value))
+    }
     await next.click()
     await page.getByRole('radio', { name: /^Some experience/ }).click()
     await next.click()
-    await page.getByRole('radio', { name: /^Strength/ }).click()
+    await page.getByRole('radio', { name: new RegExp(`^${labelOf(GOALS, MIRROR.goal)}`) }).click()
+    const sections = page.getByRole('group', { name: 'Sections', exact: true })
+    for (const option of SECTIONS) {
+      await sections.getByRole('checkbox', { name: option.label, exact: true })
+        .setChecked(MIRROR.enabledSections.includes(option.value))
+    }
     await next.click()
     await page.getByRole('button', { name: 'Skip', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
@@ -237,22 +286,20 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Generate ───────────────────────────────────────────────────────────
     await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
 
-    // Onboarding persisted Strength as the standing Goal. Generate deliberately
-    // shows that Goal as context instead of asking for it again; a first-time
+    // Onboarding persisted the fixture's standing Goal and customized sections.
+    // Generate shows that Goal as context instead of asking for it again; a first-time
     // athlete only supplies the unresolved Focus (labelled Anchor in the UI).
-    await expect(page.getByText(/^Goal: Strength/)).toBeVisible({ timeout: 30_000 })
+    await expect(page.getByText(new RegExp(`^Goal: ${labelOf(GOALS, MIRROR.goal)}`))).toBeVisible({ timeout: 30_000 })
     const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
     await expect(anchor).toBeVisible({ timeout: 30_000 })
-    await anchor.getByRole('button', { name: 'Full body', exact: true }).click()
+    await anchor.getByRole('button', { name: 'Upper body', exact: true }).click()
 
     // Every generation request the page makes is counted: one press, one call.
     const generationRequests: Request[] = []
-    const isGeneration = (url: string) => url.includes('/functions/v1/generate-workout')
+    const isGeneration = (url: string) => url === endpoint
     page.on('request', (request) => {
       if (isGeneration(request.url()) && request.method() === 'POST') {
         generationRequests.push(request)
-        observed.generationRequests = generationRequests.length
-        observed.requestId ??= request.headers()['x-request-id'] ?? null
       }
     })
     const generated: Promise<Response> = page.waitForResponse(
@@ -272,6 +319,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
 
     // The deployed function's answer, read off the wire rather than the app.
     const response = await generated
+    expect(await response.headerValue('x-generation-attempt-limit')).toBe('1')
     const payload: unknown = await response.json().catch(() => null)
     observed.status = response.status()
     const refusal = (payload as { code?: unknown } | null)?.code
@@ -281,8 +329,13 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       `generate-workout failed: ${JSON.stringify(payload)}`,
     ).toBe(200)
     expect(response.fromServiceWorker(), 'the workout came from a service worker').toBe(false)
+    expect(budget.snapshot()).toEqual({ attempted: 1, forwarded: 1, blocked: 0 })
 
-    const body = payload as GeneratedWorkout
+    const body = generationSuccessSchema.parse(payload)
+    const sent = generationRequestSchema.parse(response.request().postDataJSON())
+    expect(sent.goal).toBe(MIRROR.goal)
+    expect(sent.focus).toBe('upper_body')
+    expect(sent.requested_duration_mins).toBe(45)
     const requestId = await response.request().headerValue('x-request-id')
     expect(requestId, 'the call carried no request id').toBeTruthy()
     expect(body.requestId, 'the answer is not for this request').toBe(requestId)
@@ -291,6 +344,8 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     const workout = body.acceptance.workout
     expect(workout.title.trim()).not.toBe('')
     expect(workout.sections.length).toBeGreaterThan(0)
+    expect(workout.sections.map((section) => section.section_type).sort())
+      .toEqual([...MIRROR.enabledSections].sort())
     observed.accepted = true
 
     // ── Review ─────────────────────────────────────────────────────────────
@@ -329,6 +384,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
 
     expect(visited, 'a screen on the path was skipped').toEqual(JOURNEY?.steps)
     expect(generationRequests, 'generation was retried or repeated').toHaveLength(1)
+    expect(budget.snapshot()).toEqual({ attempted: 1, forwarded: 1, blocked: 0 })
 
     // What Start persisted is exactly what the model returned.
     const user = await client.findUserByEmail(email)

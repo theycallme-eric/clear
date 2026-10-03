@@ -37,7 +37,7 @@ export const handleRequest = createEdgeFunction({
   route: 'generate-workout',
   schema: generationRequestSchema,
   verifyToken: createTokenVerifier({ url, anonKey }),
-  handle: async ({ requestId, user, body, accessToken, logger }) => {
+  handle: async ({ requestId, user, body, accessToken, logger, generationAttemptLimit }) => {
     const apiKey = apiKeyFromEnv((name) => Deno.env.get(name))
     if (!apiKey.ok) return err({ ...apiKey.error, requestId })
 
@@ -48,7 +48,11 @@ export const handleRequest = createEdgeFunction({
       {
         db: createGenerationDatabase(credentials),
         catalog: createCatalogReader(credentials),
-        composer: createGenerationComposer({ apiKey: apiKey.value, logger }),
+        composer: createGenerationComposer({
+          apiKey: apiKey.value,
+          logger,
+          attemptLimit: generationAttemptLimit,
+        }),
       },
     )
   },

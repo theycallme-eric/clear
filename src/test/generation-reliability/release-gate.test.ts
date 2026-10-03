@@ -220,6 +220,12 @@ describe('the release journey is gated, single and retained (REQ-024)', () => {
       "expect(generationRequests, 'generation was retried or repeated').toHaveLength(1)",
     )
     expect(spec).not.toMatch(/route\.fulfill\([^)]*generate|functions\/v1\/generate-\*/)
+    expect(spec).toContain("test.use({ serviceWorkers: 'block' })")
+    expect(spec).toContain('maxRedirects: 0')
+    expect(spec).toContain('maxRetries: 0')
+    expect(spec).toContain("await route.abort('blockedbyclient')")
+    expect(spec).toContain('await route.fulfill({ response })')
+    expect(spec).toContain('assertSingleAttemptDeployment(backend.generationEndpoint())')
   })
 
   it('writes the evidence after the walk whatever its outcome, and deletes its user', () => {

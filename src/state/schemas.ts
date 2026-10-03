@@ -301,16 +301,6 @@ export const generationOutputSchema = z.strictObject({
   estimated_duration_mins: positiveInt,
 })
 
-/**
- * The same output contract expressed as JSON Schema for provider-side
- * constrained decoding. Provider-specific compatibility belongs in the model
- * client; this export keeps the shape derived from CORE-03 instead of
- * introducing a second handwritten generation schema.
- */
-export const generationOutputJsonSchema = z.toJSONSchema(generationOutputSchema, {
-  target: 'draft-7',
-})
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Envelopes
 // ─────────────────────────────────────────────────────────────────────────────
@@ -423,9 +413,15 @@ export const generationFailureSchema = z.enum(GENERATION_FAILURES)
 /**
  * The CORE-01 wire error: `{ code, message, requestId }`, the same shape for
  * every function. `issues` and the closed generation `failure` subtype are
- * optional because most failures have neither. Nothing else from an
- * `AppError`'s details crosses the boundary.
+ * optional because most failures have neither. A boolean retry restriction
+ * may narrow recovery advice; no provider diagnostic crosses the boundary.
  */
+/** Opt in to terminal retry restrictions; older strict clients keep their wire shape. */
+export const GENERATION_ERROR_ACCEPT = 'application/json; generation-errors=2'
+
+/** Lower-only budget for a controlled acceptance run on the ordinary authenticated route. */
+export const GENERATION_SINGLE_ATTEMPT_ACCEPT = `${GENERATION_ERROR_ACCEPT}; generation-attempts=1`
+
 export const errorResponseSchema = z.strictObject({
   code: z.enum(Object.values(ErrorCode) as [ErrorCode, ...ErrorCode[]]),
   message: nonBlank,
@@ -436,6 +432,8 @@ export const errorResponseSchema = z.strictObject({
    * the contract's closed §9 values. Other AppError details remain server-only.
    */
   failure: generationFailureSchema.optional(),
+  /** A server-side terminal condition may narrow, never expand, retry advice. */
+  retryable: z.boolean().optional(),
 })
 
 /**

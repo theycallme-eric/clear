@@ -52,6 +52,8 @@ import {
 } from '../../../src/state/logger.ts'
 import {
   generationFailureSchema,
+  GENERATION_ERROR_ACCEPT,
+  GENERATION_SINGLE_ATTEMPT_ACCEPT,
   parseBoundary,
   requestIdSchema,
   type ErrorResponse,
@@ -103,6 +105,8 @@ export interface EnvelopeContext<TBody> {
   readonly accessToken: string
   /** Scoped to the route and bound to the request id. */
   readonly logger: Logger
+  /** Only the workout route negotiates this lower-only provider call budget. */
+  readonly generationAttemptLimit?: 1
 }
 
 /**
@@ -223,22 +227,36 @@ const ROOT_PATH = '(root)'
  * generation subtype when one exists. The request id is the envelope's, never
  * the error's: an error created before the id was known still answers with it.
  */
-export function errorBody(error: AppError, requestId: string): ErrorResponse {
+export function errorBody(
+  error: AppError,
+  requestId: string,
+  supportsTerminalRetry = false,
+): ErrorResponse {
   const issues = issuesOf(error)
   const failure = failureOf(error)
+  // Cached strict clients reject additional keys and treat upstream as retryable.
+  // Preserve their previous terminal representation until they opt in. The real
+  // attempt count/subtype remain accurate in the server's private diagnostics.
+  const wireFailure = !supportsTerminalRetry && failure === 'generation.upstream' &&
+    error.details?.retryable === false ? 'generation.exhausted' : failure
 
   return {
     code: error.code,
     message: error.message,
     requestId,
     ...(issues.length > 0 ? { issues } : {}),
-    ...(failure === undefined ? {} : { failure }),
+    ...(wireFailure === undefined ? {} : { failure: wireFailure }),
+    // Only a validated generation subtype may carry this restriction. Never
+    // serialize arbitrary details or promote a terminal failure to retryable.
+    ...(supportsTerminalRetry && failure !== undefined && error.details?.retryable === false
+      ? { retryable: false }
+      : {}),
   }
 }
 
 /**
- * Reads the issue list `parseBoundary` stored in `details`. The only other
- * detail allowed onto the wire is read separately through `failureOf`.
+ * Reads the issue list `parseBoundary` stored in `details`. The closed
+ * generation subtype and terminal retry restriction are picked separately.
  */
 function issuesOf(error: AppError): SchemaIssue[] {
   const issues = error.details?.issues
@@ -282,6 +300,9 @@ export function createEdgeFunction<TBody>(
   return async function handleRequest(request: Request): Promise<Response> {
     const startedAt = now()
     const requestId = resolveRequestId(request)
+    const accept = request.headers.get('accept')
+    const singleAttempt = options.route === 'generate-workout'
+      && accept === GENERATION_SINGLE_ATTEMPT_ACCEPT
 
     const respond = (body: JsonObject | null, status: number): Response => {
       logEdgeRequest(
@@ -295,6 +316,9 @@ export function createEdgeFunction<TBody>(
           // A 204 carries no body, so it carries no content type either.
           ...(body === null ? {} : { 'Content-Type': 'application/json' }),
           [REQUEST_ID_HEADER]: requestId,
+          // Preflight can attest the budget before any authenticated generation
+          // is dispatched. It does not run auth, the handler or the provider.
+          ...(singleAttempt ? { 'x-generation-attempt-limit': '1' } : {}),
           ...corsHeaders(allowOrigin),
         },
       })
@@ -307,7 +331,11 @@ export function createEdgeFunction<TBody>(
       // this request is already in the response the caller is holding.
       logger.warn('request refused', { requestId, code: error.code, status })
 
-      return respond(errorBody(error, requestId), status)
+      return respond(errorBody(
+        error,
+        requestId,
+        accept === GENERATION_ERROR_ACCEPT || accept === GENERATION_SINGLE_ATTEMPT_ACCEPT,
+      ), status)
     }
 
     // A preflight carries no credential and reaches no handler, so it is
@@ -361,6 +389,7 @@ export function createEdgeFunction<TBody>(
         body: parsed.value,
         accessToken: token,
         logger: logger.child('handler', { requestId }),
+        ...(singleAttempt ? { generationAttemptLimit: 1 as const } : {}),
       })
     } catch (thrown) {
       return refuse(toAppError(thrown, ErrorCode.GENERATION_FAILED, requestId))

@@ -18,6 +18,12 @@ export const backend = {
   /** The sentence a skipped spec prints instead of failing. */
   reason: env.missingReason,
 
+  /** Public endpoint only; never expose the resolved credentials to a spec. */
+  generationEndpoint() {
+    if (env.url === null) throw new Error(env.missingReason)
+    return `${env.url.replace(/\/$/, '')}/functions/v1/generate-workout`
+  },
+
   /** Only ever called from a spec that `available` did not skip. */
   client() {
     const { url, anonKey, serviceRoleKey } = env
