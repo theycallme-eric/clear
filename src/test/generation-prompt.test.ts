@@ -107,6 +107,10 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     expect(SYSTEM_PROMPT).toContain('Useful lifts may repeat across\ndays; do not force novelty or infer absent history.')
   })
 
+  it('puts superset shared rest where execution reads it rather than on ignored members', () => {
+    expect(SYSTEM_PROMPT).toContain('shared rest only in round_rest_seconds, member rest_seconds 0/null')
+  })
+
   it('forbids the facts hydration owns', () => {
     expect(SYSTEM_PROMPT).toContain(
       'do not return exercise\nnames, equipment display strings, coaching cues, regressions, or factual catalog content',

@@ -234,6 +234,13 @@ recovery's complete-section interpretation without altering its historical appro
 
 Checks 4–7 mirror the schema's CHECK constraints, so a workout that validates is a workout that can be persisted. Failing at the boundary beats failing at the INSERT.
 
+Generated execution invariants additionally refuse representations that persist but cannot execute
+their prescription: timed protocols must enable their declared clock, and superset shared rest
+must be on `round_rest_seconds`, with member `rest_seconds` zero or null. Positive member rest is
+malformed because Workout intentionally reads the block's shared rest, even if Review displays the
+member value. This is not a new database constraint or rest minimum: zero/null shared rest remains
+allowed. Validation rejects rather than silently relocating fields; existing stored rows are unchanged.
+
 ### Soft — record, never reject
 
 Relationship ratios against goal · warmup component coverage · variety (component overlap within a section) · pattern repetition against recent history.

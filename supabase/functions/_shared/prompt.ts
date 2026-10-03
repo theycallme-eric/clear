@@ -61,7 +61,7 @@ import {
  * 5.1.1 restores main-work thematic guidance, treats enabled sections as available
  * choices and composes to the time available. The output contract is unchanged.
  */
-export const PROMPT_VERSION = '5.1.1'
+export const PROMPT_VERSION = '5.1.2'
 
 export { CONTRACT_VERSION }
 
@@ -233,9 +233,8 @@ never a disabled section. Notes are optional.
 
 STRUCTURES
 - standard: independent sets; normal for warmup, primary, accessory, core, and cooldown.
-- superset: exactly two compatible movements back-to-back, with shared rest after both. Prefer
-  antagonist or non-competing pairs. Avoid pairs competing for the same stabilizers or requiring
-  awkward equipment changes.
+- superset: two back-to-back movements; shared rest only in round_rest_seconds, member rest_seconds 0/null.
+  Prefer compatible antagonist/non-competing pairs; avoid competing stabilizers and awkward equipment changes.
 - circuit: at least three movements, fixed rounds, shared rest after a round. Arrange smooth
   transitions; keep repeated equipment adjacent and avoid repeated floor/standing changes.
 - emom: one movement per minute or two alternating movements; never cram three into a minute.

@@ -251,6 +251,83 @@ describe('a generated timed protocol must execute its declared clock', () => {
   })
 })
 
+describe('generated superset rest must use the field execution honors', () => {
+  it('rejects the live field-shape defect without relocating rest or changing the workout', () => {
+    const workout = composed()
+    const block = workout.sections[2].blocks[0]
+    block.rounds = null
+    block.round_rest_seconds = null
+    block.block_notes = 'Shared rest after the pair.'
+    block.exercises.forEach((exercise) => { exercise.sets = 3; exercise.rest_seconds = 0 })
+    block.exercises[1].rest_seconds = 90
+    const before = structuredClone(workout)
+    expect(generationOutputSchema.safeParse(workout).success).toBe(true)
+
+    const { logger, lines } = collectLogs()
+    const result = validateComposition(workout, INPUT, { logger, requestId: 'req_superset_rest' })
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        code: GenerationFailure.MALFORMED,
+        detail: 'sections[2].blocks[0].exercises[1].rest_seconds: ' +
+          'superset member rest is not executed; move shared rest to ' +
+          'sections[2].blocks[0].round_rest_seconds and set member rest_seconds to 0 or null',
+      },
+    })
+    expect(workout).toEqual(before)
+    const rejection = JSON.stringify(result)
+    for (const value of [workout.title, workout.overview, block.block_notes, block.exercises[1].exercise_id]) {
+      expect(rejection).not.toContain(value)
+      expect(lines.map(({ line }) => line).join('\n')).not.toContain(value)
+    }
+    expect(lines).toHaveLength(1)
+    expect(JSON.parse(lines[0].line)).toMatchObject({
+      level: 'warn', msg: 'composition rejected', checks: [6], violations: 1,
+    })
+  })
+
+  it.each([0, 1])('rejects positive rest on member %s even with valid block shared rest', (index) => {
+    const workout = composed()
+    const block = workout.sections[2].blocks[0]
+    block.round_rest_seconds = 90
+    block.exercises[index].rest_seconds = 1
+    const result = validateComposition(workout, INPUT)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.code).toBe(GenerationFailure.MALFORMED)
+    expect(result.error.detail).toContain(`sections[2].blocks[0].exercises[${index}].rest_seconds`)
+  })
+
+  it.each([null, 0, 90])('allows block shared rest %s with zero/null members', (rest) => {
+    const workout = composed()
+    const block = workout.sections[2].blocks[0]
+    block.rounds = null
+    block.round_rest_seconds = rest
+    block.exercises[0].rest_seconds = 0
+    block.exercises[1].rest_seconds = null
+    const before = structuredClone(workout)
+    expect(generationOutputSchema.safeParse(workout).success).toBe(true)
+    expect(validateComposition(workout, INPUT).ok).toBe(true)
+    expect(workout).toEqual(before)
+  })
+
+  it.each(['standard', 'circuit', 'emom', 'amrap', 'for_time'] as const)(
+    'does not apply the superset-only member-rest rule to %s', (structure) => {
+      const workout = composed()
+      const block = workout.sections[2].blocks[0]
+      block.structure_type = structure
+      block.rounds = structure === 'circuit' ? 3 : null
+      block.round_rest_seconds = null
+      block.timer_type = structure === 'emom' ? 'per_minute' :
+        structure === 'amrap' || structure === 'for_time' ? 'countdown' : 'none'
+      block.timer_seconds = ['emom', 'amrap', 'for_time'].includes(structure) ? 600 : null
+      block.exercises[1].rest_seconds = 90
+      expect(generationOutputSchema.safeParse(workout).success).toBe(true)
+      expect(validateComposition(workout, INPUT).ok).toBe(true)
+    },
+  )
+})
+
 describe('an exercise outside the retrieved candidate set', () => {
   it('is accepted when it is in that section’s set', () => {
     const validated = validateComposition(composed(), INPUT)

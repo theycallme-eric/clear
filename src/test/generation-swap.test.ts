@@ -230,7 +230,8 @@ const prescription = (exerciseId: string): Prescription => ({
   target_sequence: null,
   per_side: false,
   distance_unit: null,
-  rest_seconds: 90,
+  // Newly generated superset members use the retained block's shared rest.
+  rest_seconds: 0,
   tempo: null,
   load_type: 'bodyweight',
   load_value: null,
@@ -370,6 +371,21 @@ describe('a response wider than the slot is rejected', () => {
 
   it('accepts one section, one block, one replacement', () => {
     expect(checkSwapShape(composed(['front-squat']), scope)).toEqual([])
+  })
+
+  it('rejects misplaced generated member rest while preserving the existing block shared rest', () => {
+    const workout = composed(['front-squat'])
+    const block = workout.sections[0].blocks[0]
+    block.exercises[0].rest_seconds = 90
+    expect(checkSwapShape(workout, scope)).toEqual([])
+    const result = swapValidator(scope)(workout,
+      swapPromptInput(scope, CANDIDATES, [], TODAY, REQUEST_ID))
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.code).toBe('generation.malformed_prescription')
+    expect(result.error.detail).toContain('sections[0].blocks[0].exercises[0].rest_seconds')
+    expect(block.round_rest_seconds).toBe(120)
+    expect(scope.block.round_rest_seconds).toBe(120)
   })
 
   it('rejects a second section — that is a regeneration, not a swap', () => {
