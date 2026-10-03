@@ -15,7 +15,6 @@ import {
 } from '../../supabase/functions/_shared/persist.ts'
 import {
   PROMPT_VERSION,
-  SYSTEM_PROMPT,
   resolveEffectiveRequest,
   type PromptInput,
 } from '../../supabase/functions/_shared/prompt.ts'
@@ -53,8 +52,8 @@ import type { Enums } from '../data/database.types'
 //      a deployment moves between the model call and the write.
 //   3. Does a run per goal preset persist a contract-valid workout honouring
 //      section scaling? One pipeline run per goal — parse, validate, hydrate,
-//      persist — with each goal's section arc read out of the system prompt's
-//      own GOAL SHAPES block rather than restated here.
+//      persist — with independent synthetic selections, not mandatory arcs
+//      read from prompt prose or evidence of live model quality.
 //
 // What this file cannot prove is that Postgres agrees: the off-machine-backup
 // gate in `docs/backend/live-inventory.md` forbids touching the reused project,
@@ -627,41 +626,19 @@ describe('a write that fails says which kind of failure it was', () => {
 // 5. One run per goal preset
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Each goal's section arc, read out of the system prompt's own GOAL SHAPES
- * block. The arc is what "honouring section scaling" is measured against, and
- * reading it from the prompt rather than restating it here is what makes the
- * assertion falsifiable: a goal shape edited in `prompt.ts` changes what these
- * runs are required to persist.
+/** Independent synthetic selections, not mandatory arcs parsed from the prompt.
+ * These check persistence for each goal; they do not prove live coaching quality.
+ * Available parts may be omitted under the owner's October 2 disposition.
  */
 function goalShapes(): Map<Enums<'goal_preset'>, Enums<'section_type'>[]> {
-  const block = SYSTEM_PROMPT.split('GOAL SHAPES')[1]?.split('STRUCTURES')[0] ?? ''
-  const shapes = new Map<Enums<'goal_preset'>, Enums<'section_type'>[]>()
-
-  for (const match of block.matchAll(/^- ([a-z_]+): ([^.;]+)/gm)) {
-    const arc = match[2]
-      .split('→')
-      .map((token) => token.trim().match(/^[a-z_]+/)?.[0] ?? '')
-      .filter((token): token is Enums<'section_type'> => SECTION_TYPES.includes(token))
-
-    shapes.set(match[1] as Enums<'goal_preset'>, arc)
-  }
-
-  return shapes
+  return new Map([
+    ['strength', ['warmup', 'primary_lift', 'accessory', 'cooldown']],
+    ['hypertrophy', ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown']],
+    ['conditioning', ['warmup', 'conditioning', 'cooldown']],
+    ['balanced', ['warmup', 'primary_lift', 'conditioning', 'cooldown']],
+    ['active_recovery', ['mobility', 'cooldown']],
+  ])
 }
-
-const SECTION_TYPES: string[] = [
-  'warmup',
-  'mobility',
-  'primary_lift',
-  'accessory',
-  'skill_power',
-  'carries',
-  'core',
-  'stability_balance',
-  'conditioning',
-  'cooldown',
-]
 
 /**
  * Which of the captured candidates belong in each section. The library is nine
@@ -811,7 +788,7 @@ function inputFor(goal: Enums<'goal_preset'>, arc: readonly Enums<'section_type'
 describe('one run per goal preset persists a contract-valid workout', () => {
   const shapes = goalShapes()
 
-  it('reads a section arc for every goal preset the database knows', () => {
+  it('covers every goal with independently selected useful parts, not every available part', () => {
     expect([...shapes.keys()].sort()).toEqual([
       'active_recovery',
       'balanced',
@@ -819,19 +796,17 @@ describe('one run per goal preset persists a contract-valid workout', () => {
       'hypertrophy',
       'strength',
     ])
-    expect(shapes.get('active_recovery')).toEqual(['warmup', 'mobility', 'cooldown'])
+    expect(shapes.get('active_recovery')).toEqual(['mobility', 'cooldown'])
     expect(shapes.get('balanced')).toEqual([
       'warmup',
       'primary_lift',
-      'accessory',
-      'core',
       'conditioning',
       'cooldown',
     ])
   })
 
   for (const [goal, arc] of goalShapes()) {
-    it(`persists a ${goal} session honouring its section arc`, async () => {
+    it(`persists the ${goal} session's composed selection`, async () => {
       const input = inputFor(goal, arc)
       const store = double()
 
@@ -844,8 +819,8 @@ describe('one run per goal preset persists a contract-valid workout', () => {
       expect(result.ok).toBe(true)
       if (!result.ok) return
 
-      // Section scaling, as the row order records it: the arc the goal asks
-      // for, in that order, each section carrying the block it was composed of.
+      // The model's selected order persists; the test does not require all
+      // available headings or prescribe a universal goal arc.
       const stored = store.store()
       expect(stored.sections.map((row) => row.section_type)).toEqual(arc)
       expect(stored.sections.map((row) => row.order_index)).toEqual(arc.map((_, index) => index))
@@ -866,9 +841,8 @@ describe('one run per goal preset persists a contract-valid workout', () => {
   }
 
   it('honours active recovery own section override rather than the profile toggles', async () => {
-    // GEN-02a fixes active recovery's sections in SQL whatever the profile
-    // stores, so a session composed for it must persist those three and not the
-    // five somebody left enabled.
+    // GEN-02a fixes active recovery's allowed pool whatever the profile stores;
+    // composition may choose a useful subset, not the profile's heavy lifts.
     const arc = shapes.get('active_recovery') ?? []
     const input = promptInput({
       request: resolveEffectiveRequest({
@@ -893,11 +867,8 @@ describe('one run per goal preset persists a contract-valid workout', () => {
 
     expect(result.ok).toBe(true)
     const [session] = store.store().sessions
-    expect(store.store().sections.map((row) => row.section_type)).toEqual([
-      'warmup',
-      'mobility',
-      'cooldown',
-    ])
+    expect(input.request.effectiveSections).toEqual(['warmup', 'mobility', 'cooldown'])
+    expect(store.store().sections.map((row) => row.section_type)).toEqual(arc)
     expect(session.requested_intensity).toBe(9)
     expect(session.effective_intensity).toBe(3)
     expect(session.adjustment_reason).toBe(

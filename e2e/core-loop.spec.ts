@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
-import { GENERATION_SINGLE_ATTEMPT_ACCEPT, generationRequestSchema, generationSuccessSchema } from '../src/state/schemas'
+import { createGenerationDatabase } from '../supabase/functions/_shared/generate.ts'
+import { GENERATION_SINGLE_ATTEMPT_ACCEPT, generationRequestSchema, generationSuccessSchema, type GenerationOutput } from '../src/state/schemas'
 import { EQUIPMENT, GOALS, SECTIONS, TIERS } from '../src/state/onboarding'
 import {
   assertReleaseGate,
@@ -252,7 +253,20 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
         response.url().includes('/auth/v1/verify') && response.request().method() === 'POST',
     )
     await page.getByRole('button', { name: 'Verify', exact: true }).click()
-    expect((await verified).status(), 'the public verify endpoint refused the code').toBe(200)
+    const verifiedResponse = await verified
+    expect(verifiedResponse.status(), 'the public verify endpoint refused the code').toBe(200)
+    // Use only this disposable athlete's public-login session in memory for
+    // read-only context checks. No credential value is asserted or recorded.
+    const accessToken: unknown = (await verifiedResponse.json()).access_token
+    const publicKey = await verifiedResponse.request().headerValue('apikey')
+    if (typeof accessToken !== 'string' || !publicKey) {
+      throw new Error('Public login supplied no usable context-reader session.')
+    }
+    const contextReader = createGenerationDatabase({
+      url: endpoint.replace(/\/functions\/v1\/generate-workout$/, ''),
+      anonKey: publicKey,
+      accessToken,
+    })
 
     // ── Onboarding ─────────────────────────────────────────────────────────
     await expectScreen('Onboarding', routeOf('Onboarding'), 'Set up CLEAR')
@@ -278,6 +292,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
     await checkA11y()
     await page.getByRole('button', { name: 'Finish setup', exact: true }).click()
+    const contextUser = await client.findUserByEmail(email)
+    if (!contextUser) throw new Error('The disposable context-reader athlete is absent.')
+    expect(await contextReader.experience?.(contextUser.id)).toEqual({ ok: true, value: 'some' })
+    expect(await contextReader.recentHistory(contextUser.id)).toEqual({
+      ok: true, value: { focuses: [], patterns: [], exerciseIds: [] },
+    })
 
     // ── Home ───────────────────────────────────────────────────────────────
     await expectScreen('Home', routeOf('Home'), 'Today')
@@ -344,8 +364,11 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     const workout = body.acceptance.workout
     expect(workout.title.trim()).not.toBe('')
     expect(workout.sections.length).toBeGreaterThan(0)
-    expect(workout.sections.map((section) => section.section_type).sort())
-      .toEqual([...MIRROR.enabledSections].sort())
+    // Enabled parts are available choices, not a requirement to pad every
+    // heading into this session. Domain validation still owns IDs/equipment.
+    for (const section of workout.sections) {
+      expect(MIRROR.enabledSections).toContain(section.section_type)
+    }
     observed.accepted = true
 
     // ── Review ─────────────────────────────────────────────────────────────
@@ -386,26 +409,73 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     expect(generationRequests, 'generation was retried or repeated').toHaveLength(1)
     expect(budget.snapshot()).toEqual({ attempted: 1, forwarded: 1, blocked: 0 })
 
-    // What Start persisted is exactly what the model returned.
+    // Verify stored prescription structure, not only a success banner/title.
+    // Contract-only relationship labels and the model's diagnostic time estimate
+    // have no stored columns; this claim is limited to actual persisted fields.
     const user = await client.findUserByEmail(email)
     expect(user, 'the namespaced user vanished mid-run').toBeTruthy()
     const stored = await client.selectAsService('workout_sessions', {
-      select: 'title,prompt_version,contract_version,completed_at',
+      select: 'title,overview,prompt_version,contract_version,completed_at,' +
+        'sections:workout_sections(order_index,section_type,section_title,section_notes,' +
+        'blocks:workout_blocks(order_index,structure_type,rounds,timer_type,timer_seconds,' +
+        'round_rest_seconds,rep_scheme,block_notes,' +
+        'exercises:workout_exercises(order_index,exercise_id,equipment_used,modality,sets,' +
+        'target_kind,target_value,target_min,target_max,target_sequence,per_side,distance_unit,' +
+        'rest_seconds,tempo,load_type,load_value,is_interval_exercise)))',
       user_id: `eq.${String(user?.id)}`,
     })
     expect(stored.ok, 'reading the persisted session').toBe(true)
-    expect(stored.body).toEqual([
+    const ordered = (stored.body as StoredComposition[]).map((session) => ({
+      ...session,
+      sections: session.sections.sort(byOrder).map((section) => ({
+        ...section,
+        blocks: section.blocks.sort(byOrder).map((block) => ({
+          ...block,
+          exercises: block.exercises.sort(byOrder),
+        })),
+      })),
+    }))
+    expect(ordered).toEqual([
       {
         title: workout.title,
+        overview: workout.overview,
         prompt_version: body.acceptance.prompt_version,
         contract_version: body.acceptance.contract_version,
         completed_at: expect.any(String) as unknown,
+        sections: workout.sections.map((section, sectionIndex) => ({
+          ...section,
+          order_index: sectionIndex,
+          blocks: section.blocks.map((block, blockIndex) => ({
+            ...block,
+            order_index: blockIndex,
+            exercises: block.exercises.map((exercise, exerciseIndex) => {
+              const { equipment, session_function, anchor_relationship, ...prescription } = exercise
+              void session_function
+              void anchor_relationship
+              return { ...prescription, equipment_used: equipment, order_index: exerciseIndex }
+            }),
+          })),
+        })),
       },
     ])
+    // Navigation completion is not performed training. This exercises the real
+    // authenticated embedded history query without another provider request.
+    expect(await contextReader.recentHistory(contextUser.id)).toEqual({
+      ok: true, value: { focuses: ['upper_body'], patterns: [], exerciseIds: [] },
+    })
   })
 })
 
-/** Section by section to the last one, then Finish — nothing skipped past. */
+type StoredExercise = Omit<GenerationOutput['sections'][number]['blocks'][number]['exercises'][number],
+  'equipment' | 'session_function' | 'anchor_relationship'> & { equipment_used: string; order_index: number }
+type StoredBlock = Omit<GenerationOutput['sections'][number]['blocks'][number], 'exercises'> &
+  { order_index: number; exercises: StoredExercise[] }
+type StoredSection = Omit<GenerationOutput['sections'][number], 'blocks'> &
+  { order_index: number; blocks: StoredBlock[] }
+type StoredComposition = { sections: StoredSection[]; [key: string]: unknown }
+const byOrder = (a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index
+
+/** Navigation to Finish; not a claim that every prescribed set was performed. */
 async function walkToFinish(page: Page, sections: number) {
   const nav = page.getByRole('navigation', { name: 'Workout sections' })
   const nextSection = nav.getByRole('button', { name: 'Next section', exact: true })

@@ -167,9 +167,46 @@ describe('a standard block', () => {
     expect(estimate.seconds).toBe(220)
     expect(estimate.declaredClock).toBe(false)
   })
+
+  it.each([null, 1, 9])('counts sequence rungs rather than a conflicting sets value (%s)', (sets) => {
+    const block = composed().sections[1].blocks[0]
+    const exercise = block.exercises[0]
+    exercise.target_kind = 'sequence'
+    exercise.target_value = null
+    exercise.target_min = null
+    exercise.target_max = null
+    exercise.target_sequence = [15, 12, 9, 6, 3]
+    exercise.sets = sets
+    exercise.rest_seconds = 60
+
+    const estimate = estimateBlock(block, 'sections[1].blocks[0]', 'primary_lift')
+
+    expect(estimate.workSeconds).toBe(5 * WORK_PER_SET_SECONDS)
+    expect(estimate.restSeconds).toBe(4 * 60)
+    expect(estimate.seconds).toBe(440)
+  })
 })
 
 describe('a superset and a circuit', () => {
+  it('infers sequence rounds with the same set-count authority as execution', () => {
+    const block = supersetBlock()
+    block.rounds = null
+    block.round_rest_seconds = 60
+    for (const exercise of block.exercises) {
+      exercise.sets = null
+      exercise.target_kind = 'sequence'
+      exercise.target_value = null
+      exercise.target_min = null
+      exercise.target_max = null
+      exercise.target_sequence = [15, 12, 9, 6, 3]
+    }
+    const estimate = estimateBlock(block, 'sections[2].blocks[0]', 'accessory')
+    expect(estimate.rounds).toBe(5)
+    expect(estimate.workSeconds).toBe(5 * 2 * WORK_PER_SET_SECONDS)
+    expect(estimate.restSeconds).toBe(4 * 60)
+    expect(estimate.seconds).toBe(640)
+  })
+
   it('count shared rest once per round, not once per member per round', () => {
     const block = supersetBlock()
     block.structure_type = 'circuit'

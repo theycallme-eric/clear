@@ -46,7 +46,7 @@ export const handleRequest = createEdgeFunction({
       body,
       { userId: user.id, requestId, logger },
       {
-        db: createGenerationDatabase(credentials),
+        db: createGenerationDatabase({ ...credentials, logger }),
         catalog: createCatalogReader(credentials),
         composer: createGenerationComposer({
           apiKey: apiKey.value,

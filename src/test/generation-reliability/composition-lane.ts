@@ -276,6 +276,7 @@ export function createCompositionLane(
       case '/rpc/constraints_in_force':
       case '/rpc/conditioning_history':
       case '/workout_sessions':
+      case '/profiles':
       case '/load_anchors':
         return json([])
       case `/${CATALOG_VIEW}`: {

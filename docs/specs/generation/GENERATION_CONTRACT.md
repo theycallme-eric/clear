@@ -7,6 +7,12 @@
 > **Replaces:** prompt v4.0.0 and the current `generate-workout` handler contract
 > **Principle:** Claude composes. Code decides eligibility, computes duration, and owns facts.
 
+**Owner-confirmed experience (2026-10-02):** stay on a program with little thought: open the
+phone, check the suggested focus, choose available duration and today's intensity, then generate
+on the way to the gym. Saved context does the background work; tweaking is available but should
+not normally be necessary for a useful session. "Energy" is only a loose description of the
+existing intensity control, not a new readiness model or rigid conversion.
+
 ---
 
 ## 1. The pipeline
@@ -46,7 +52,13 @@ The current system prompt describes ~24 rules and the validator checks four. Rul
 | Duration must fit ±10% | Computed and checked in code (§7) |
 | Canonical names, equipment strings, cues, regressions | Hydrated by ID (§6) |
 
-**Stays in the prompt** — these are composition judgment and belong to the model: the session arc · goal character and relationship ratios · intensity guidance · structure-type definitions · warmup component coverage · cooldown muscle targeting · variety · section scaling · ordering and pairing.
+**Stays in the prompt** — these are composition judgment and belong to the model: the session arc · goal character and thematic relationships · intensity guidance · structure-type definitions · warmup component coverage · cooldown muscle targeting · variety · section scaling · ordering and pairing.
+
+**Execution alignment (2026-10-02 repair):** generated EMOM, AMRAP and for-time blocks must
+enable their declared clock (`timer_type` cannot be `none`). This generation-level check is
+stricter than the stored block shape, which is unchanged. Standard sequence targets use their
+rung count for computed work/rest, through the same prescription reader execution uses; a
+conflicting nullable `sets` value must not under-count or over-count the ladder.
 
 **Effect:** the system prompt drops roughly 40%, the candidate payload roughly 70%. Fewer input tokens, fewer output tokens, and fewer retries — the retry being the largest single latency cost, since it runs the whole generation twice.
 
@@ -214,11 +226,22 @@ Candidates are grouped by section, carry only what composition needs, and never 
 | 7 | `load_value` present unless `load_type` ∈ {bodyweight, prior_session, none} |
 | 8 | **Computed duration within tolerance** (§7) |
 
+Enabled sections are available candidate groups, not mandatory headings in every session. The
+composer selects useful goal- and time-appropriate work from that pool; omitted optional groups
+are not invalid references. Disabled sections, wrong-section IDs and unavailable equipment remain
+hard failures. This records the owner's October 2, 2026 clarification and supersedes the later
+recovery's complete-section interpretation without altering its historical approved graph.
+
 Checks 4–7 mirror the schema's CHECK constraints, so a workout that validates is a workout that can be persisted. Failing at the boundary beats failing at the INSERT.
 
 ### Soft — record, never reject
 
 Relationship ratios against goal · warmup component coverage · variety (component overlap within a section) · pattern repetition against recent history.
+
+The October 2 owner disposition retires fixed section-share bands. Section and relationship
+mix remain recorded numerically, without judging useful short sessions against a fixed
+exercise-count ratio. The existing no-band `within` status means no band was tested; it
+does not establish coaching quality, adequate dose or live generation success.
 
 These are stored on the session as a quality record. They are the observability layer that tells you whether the prompt is working, and they are **explicitly not gates** — a soft rule that rejects is a hard rule with a soft name.
 

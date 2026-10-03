@@ -9,7 +9,7 @@ import {
   sectionFixture,
 } from './generation-prompt-fixtures'
 import { factsFromRows, type CatalogReader } from '../../supabase/functions/_shared/hydrate.ts'
-import { measurePrompt } from '../../supabase/functions/_shared/prompt.ts'
+import { PROMPT_VERSION, measurePrompt } from '../../supabase/functions/_shared/prompt.ts'
 import {
   performGeneration,
   type GenerationComposerFactory,
@@ -108,7 +108,7 @@ describe('whole-workout generation integration', () => {
       requested_intensity: 7,
       effective_intensity: 7,
       generation_notes: 'Keep the shoulder comfortable.',
-      prompt_version: '5.1.0',
+      prompt_version: PROMPT_VERSION,
       contract_version: '4.1.0',
       is_deload: false,
     })

@@ -225,6 +225,32 @@ describe('the checks the schema gates, gated', () => {
 // 2. Checks 1–3 — the candidate boundary
 // ─────────────────────────────────────────────────────────────────────────────
 
+describe('a generated timed protocol must execute its declared clock', () => {
+  it.each(['emom', 'amrap', 'for_time'] as const)('rejects %s with a disabled clock despite valid storage shape', (structure) => {
+    const workout = composed()
+    const block = workout.sections[2].blocks[0]
+    block.structure_type = structure
+    block.timer_seconds = 600
+    block.timer_type = 'none'
+    expect(generationOutputSchema.safeParse(workout).success).toBe(true)
+
+    const result = validateComposition(workout, INPUT)
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.error.code).toBe(GenerationFailure.MALFORMED)
+    expect(result.error.detail).toContain('sections[2].blocks[0].timer_type')
+  })
+
+  it.each(['emom', 'amrap', 'for_time'] as const)('accepts %s with an executable clock', (structure) => {
+    const workout = composed()
+    const block = workout.sections[2].blocks[0]
+    block.structure_type = structure
+    block.timer_seconds = 600
+    block.timer_type = structure === 'emom' ? 'per_minute' : 'countdown'
+    expect(validateComposition(workout, INPUT).ok).toBe(true)
+  })
+})
+
 describe('an exercise outside the retrieved candidate set', () => {
   it('is accepted when it is in that section’s set', () => {
     const validated = validateComposition(composed(), INPUT)
@@ -300,14 +326,11 @@ describe('a section the user did not enable', () => {
 
     const violations = checkReferences(workout, INPUT)
 
-    // Renaming a section is two faults, and GR-04 reports both: the resolved
-    // section that is now missing, and the one nobody enabled — once, not once
-    // per exercise under it.
-    expect(violations.map((violation) => violation.check)).toEqual([3, 3])
-    expect(violations[0].path).toBe('sections')
-    expect(violations[0].message).toContain('accessory')
-    expect(violations[1].path).toBe('sections[2].section_type')
-    expect(violations[1].message).toContain('carries')
+    // Available sections may be omitted; inventing a disabled section remains
+    // one hard fault, regardless of how many exercises it contains.
+    expect(violations.map((violation) => violation.check)).toEqual([3])
+    expect(violations[0].path).toBe('sections[2].section_type')
+    expect(violations[0].message).toContain('carries')
   })
 
   it('reads the effective sections, which active recovery fixes for itself', () => {
@@ -388,8 +411,8 @@ function noticeablyPoorWorkout(): GenerationOutput {
     { ...exercise, exercise_id: 'glute-bridge', equipment: 'bodyweight' },
   ]
 
-  // Every resolved section stays: dropping one is a hard rejection (GR-04), and
-  // this fixture is about what is merely observed.
+  // This fixture retains its available sections to isolate coaching
+  // observations; phase selection is composition judgment, not a count gate.
   return workout
 }
 
@@ -423,9 +446,10 @@ describe('the soft record', () => {
     )
     // The last two are OVR-02's, and this workout is poor rather than chatty:
     // it narrates no weight and was composed under no directive, so both are
-    // honestly `within` while the four §6 checks are all outside.
+    // honestly `within`. Ratios only record mix without retired fixed bands;
+    // the remaining three composition observations are outside.
     expect(statuses).toEqual([
-      'outside',
+      'within',
       'outside',
       'outside',
       'outside',
@@ -435,19 +459,19 @@ describe('the soft record', () => {
     expect(validated.value.violations).toEqual([])
   })
 
-  it('records ratios against the goal’s dominant section', () => {
+  it('records section mix without fixed goal-share verdicts', () => {
     const record = observeQuality(composed(), INPUT)
     const ratios = observationFor(record, SoftCheck.RATIOS)
 
-    // The fixture request is `strength`, whose dominant section is the primary
-    // lift at 40–50% — one prescribed exercise of five is not that, and the
-    // number says so rather than a verdict.
+    // One primary exercise of five is recorded, not compared to a fixed band:
+    // exercise counts do not prove the goal's time/dose or usefulness.
     expect(ratios?.summary).toContain('primary_lift')
-    expect(ratios?.metrics.min).toBe(0.4)
-    expect(ratios?.metrics.max).toBe(0.5)
+    expect(ratios?.metrics.min).toBeUndefined()
+    expect(ratios?.metrics.max).toBeUndefined()
     expect(ratios?.metrics.exercises).toBe(5)
     expect(ratios?.metrics.observed).toBe(0.2)
-    expect(ratios?.status).toBe('outside')
+    expect(ratios?.status).toBe('within')
+    expect(ratios?.summary).toContain('recorded without a band')
   })
 
   it('records a goal that states no share without inventing a band for it', () => {
@@ -510,7 +534,7 @@ describe('the soft record', () => {
     expect(quality?.line).not.toContain('back-squat')
 
     const fields = qualityFields(observeQuality(composed(), INPUT))
-    expect(fields[SoftCheck.RATIOS]).toBe('outside')
+    expect(fields[SoftCheck.RATIOS]).toBe('within')
     expect(fields.noted).toBe(
       observeQuality(composed(), INPUT).observations.filter(
         (observation) => observation.status === 'outside',

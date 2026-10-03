@@ -605,7 +605,7 @@ describe('the generation envelope', () => {
       'schema: generationRequestSchema,',
       'const credentials = { url, anonKey, accessToken }',
       '{ userId: user.id, requestId, logger },',
-      'db: createGenerationDatabase(credentials),',
+      'db: createGenerationDatabase({ ...credentials, logger }),',
       'catalog: createCatalogReader(credentials),',
       'composer: createGenerationComposer({',
       'apiKey: apiKey.value,',

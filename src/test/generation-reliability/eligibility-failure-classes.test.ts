@@ -596,7 +596,7 @@ describe('diagnostics leak nothing (REQ-032)', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. The composed workout has exactly the resolved sections
+// 4. The composed workout uses only available sections, not necessarily all
 // ─────────────────────────────────────────────────────────────────────────────
 
 function composed(): GenerationOutput {
@@ -606,7 +606,7 @@ function composed(): GenerationOutput {
   return structuredClone(parsed.value)
 }
 
-describe('a composed workout cannot drop or add a resolved section (REQ-008)', () => {
+describe('a composed workout may select useful available sections without inventing one', () => {
   const input = promptInput()
   const resolved = input.sections.map((section) => section.section)
 
@@ -617,16 +617,13 @@ describe('a composed workout cannot drop or add a resolved section (REQ-008)', (
     expect(validateComposition(workout, input).ok).toBe(true)
   })
 
-  it.each(resolved)('rejects a workout that omits %s', (omitted) => {
+  it.each(resolved)('permits omitting the available %s section', (omitted) => {
     const workout = composed()
     workout.sections = workout.sections.filter((section) => section.section_type !== omitted)
 
     const result = validateComposition(workout, input)
 
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.code).toBe(GenerationFailure.INVALID_REFERENCE)
-    expect(result.error.detail).toContain(`'${omitted}' was resolved for this request`)
+    expect(result.ok).toBe(true)
   })
 
   it('rejects a workout that adds a section nothing resolved', () => {
