@@ -102,7 +102,7 @@ request object or access token reaches a logger at all.
 GEN-02b adds the two modules that sit inside that shell, and they are in `_shared/` for the reason
 the envelope is: nothing in the browser bundle may reach a prompt or the client that sends one, and
 `npm run build` is what proves it — no file under `src/` imports either. `prompt.ts` is
-`PROMPT_v4.md` version `5.0.0` as pure functions: §2's system prompt (a copy of the spec's fenced
+`PROMPT_v4.md` version `5.1.1` as pure functions: §2's system prompt (a copy of the spec's fenced
 block, held to it byte for byte by `src/test/generation-prompt.test.ts`), §3's user message in its
 fixed order, §4's retry addendum, and a deterministic candidate serializer — section-enum order,
 then exercise id — so two recordings of one request differ only where the request did. What it does
@@ -182,12 +182,11 @@ write cannot stamp the new number on the old workout. What does *not* reach a ro
 facts: a name, a cue and a muscle stay in `exercise_catalog`, because re-writing them into the
 session is the drift §8 exists to prevent. Claude's estimate rides in the payload only because
 `generationOutputSchema` requires the field, and `persist_session` never mentions it — which
-`src/test/generation-persistence.test.ts` reads back out of the migration, beside one pipeline run
-per goal preset whose section arc it reads back out of the system prompt's own GOAL SHAPES block.
-Nothing calls it yet: `generate-workout/index.ts` still refuses, typed, because the handler that
-would wire GEN-02a's candidate read, HIST-01's history and GEN-06's minutes into one request is not
-this module's, and a function that answered with a workout the response envelope has no session id
-for would be GEN-01's contract changed by the back door.
+`src/test/generation-persistence.test.ts` reads back out of the migration, beside independent
+synthetic per-goal selections rather than deriving expectations from the prompt being tested.
+The mounted `generate-workout/index.ts` now wires those boundaries through `performGeneration` and
+returns the validated acceptance payload for Review. Start persists it through the existing
+transactional session path; generation itself does not insert a partial workout.
 
 GEN-03 is the other end of that call, and it is two files. `src/data/generation.ts` makes the
 request — minting the request id, refusing a body `workout_sessions`' CHECK constraints would not
@@ -318,7 +317,14 @@ exclusions — and `classifySection` in `src/data/candidates.ts` reads them as `
 reader and `generate-workout` (`_shared/generate.ts`) build the same error through
 `noCandidatesError`, the function logs `generation refused: eligibility` with the request id and the
 section/class pairs, and it returns above the composer. The wire body is unchanged. `validate.ts`
-check 3 rejects a composed workout that omits a resolved section as well as one that adds a section.
+check 3 rejects a composed workout that adds a disabled section. Resolved sections are an available
+pool, not mandatory headings; the owner clarified that useful composition scales to goal and time.
+`_shared/generate.ts` also reads known saved experience and a bounded recent-history snapshot through
+the caller's JWT. New logged-only history/catalog reads omit soft context on transport/5xx failures,
+but malformed/auth/other 4xx responses remain errors; existing safety/context policies are unchanged.
+Skipped or unlogged prescriptions do not become performed history, and logged superseded rows retain
+their evidence. This is not an exhaustive training ledger; timer-only scores without exercise logs
+are conservatively unobserved.
 
 REQ-010 adds the same question asked before anything is saved.
 `20261001000021_generation_viability.sql` declares `generation_viability`, which takes a proposed

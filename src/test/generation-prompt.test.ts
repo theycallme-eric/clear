@@ -21,6 +21,7 @@ import {
   SESSION_FOCUSES,
   createCandidatesClient,
   type Candidate,
+  type SectionType,
   type SessionFocus,
 } from '../data/candidates'
 import { CONTRACT_VERSION } from '../state/schemas'
@@ -82,6 +83,28 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     ]) {
       expect(SYSTEM_PROMPT).toContain(heading)
     }
+  })
+
+  it('restores a main-work theme without turning coaching purposes into mandatory sections', () => {
+    expect(SYSTEM_PROMPT).toContain('coherent theme from chosen main work and focus: ramp → main work → support → descent')
+    expect(SYSTEM_PROMPT).toContain('These are purposes, not required sections.')
+    expect(SYSTEM_PROMPT).toContain('focal/supporting, contrasting/balancing,\nprep/recovery or general conditioning')
+    expect(SYSTEM_PROMPT).toContain("Encode their job and theme link with the schema's\nsession_function and anchor_relationship values.")
+    expect(SYSTEM_PROMPT).toContain("Prepare the main work's candidate components; protect rehearsal before heat-building.")
+    expect(SYSTEM_PROMPT).toContain('targets muscles actually worked')
+    expect(SYSTEM_PROMPT).toContain('its amount fits the available time')
+    expect(SYSTEM_PROMPT).toContain('Timed blocks enable a clock; never timer_type=none')
+    expect(SYSTEM_PROMPT).toContain('not random novelty')
+    expect(SYSTEM_PROMPT).not.toContain('40–50%')
+    expect(SYSTEM_PROMPT).not.toContain('50–60%')
+    expect(SYSTEM_PROMPT).not.toMatch(/^- [a-z_]+: warmup →/m)
+  })
+
+  it('balances supplied patterns softly without inventing history or forbidding useful repeated lifts', () => {
+    expect(SYSTEM_PROMPT).toContain('Respect the chosen focus.')
+    expect(SYSTEM_PROMPT).toContain('balance squat/hinge within lower-body work')
+    expect(SYSTEM_PROMPT).toContain('press/pull within upper-body work, with complementary accessories')
+    expect(SYSTEM_PROMPT).toContain('Useful lifts may repeat across\ndays; do not force novelty or infer absent history.')
   })
 
   it('forbids the facts hydration owns', () => {
@@ -151,6 +174,121 @@ describe('the active-recovery clamp', () => {
   })
 })
 
+describe('available parts and time-aware composition instructions', () => {
+  const mirror = JSON.parse(read('src/test/generation-reliability/owner-mirror.json')) as {
+    goal: PromptInput['request']['goal']
+    enabledSections: SectionType[]
+    equipment: string[]
+  }
+
+  async function resolvedPrompt(
+    goal: PromptInput['request']['goal'],
+    focus: SessionFocus,
+    durationTargetMins: number,
+  ) {
+    const url = 'https://project.supabase.co'
+    const anonKey = 'anon-key'
+    const accessToken = 'user-token'
+    const userId = 'user-1'
+    const client = createCandidatesClient({
+      url,
+      anonKey,
+      accessToken,
+      fetch: createCandidatesDouble({
+        url,
+        anonKey,
+        users: { [accessToken]: userId },
+        profiles: {
+          [userId]: {
+            goalPreset: goal,
+            enabledSections: mirror.enabledSections,
+            locations: [{ id: 'location-home', isDefault: true, equipment: mirror.equipment }],
+          },
+        },
+      }).fetch,
+    })
+    const candidates = await client.retrieve({ userId, focus })
+    if (!candidates.ok) throw new Error(`retrieval failed: ${candidates.error.code}`)
+
+    const request = resolveEffectiveRequest({
+      requestId: 'req_section_prompt',
+      goal,
+      focus,
+      requestedIntensity: goal === 'active_recovery' ? 9 : 6,
+      durationTargetMins,
+      enabledSections: mirror.enabledSections,
+    })
+    return {
+      request,
+      assembled: assemblePrompt(promptInput({
+        request,
+        sections: [...candidates.value].reverse(),
+        preferences: { constraints: [], notes: null },
+      })),
+    }
+  }
+
+  const candidateHeadings = (user: string) =>
+    user.split('\n')
+      .filter((line) => line.startsWith('CANDIDATES — '))
+      .map((line) => line.replace(' (pattern predicate relaxed to reach the floor)', ''))
+
+  // Independent goal/time inputs, not arcs parsed from the prompt or fabricated
+  // model workouts. These prove what composition is asked, not what it produces.
+  for (const { goal, focus, character } of [
+    { goal: 'strength', focus: 'upper_body', character: 'primary compound work dominates; accessories support it' },
+    { goal: 'hypertrophy', focus: 'upper_body', character: 'related muscle work from different angles' },
+    { goal: 'conditioning', focus: 'full_body', character: 'conditioning is the main work' },
+    { goal: 'balanced', focus: 'upper_body', character: 'coherent strength plus conditioning when time permits, not a checklist' },
+    { goal: 'active_recovery', focus: 'full_body', character: 'gentle mobility and recovery flow only' },
+  ] as const) {
+    it.each([15, 60, 90])(`${goal} carries a %i-minute target and available choices without a required output count`, async (minutes) => {
+      const { request, assembled } = await resolvedPrompt(goal, focus, minutes)
+
+      expect(assembled.user).toContain(`goal: ${goal}\nfocus: ${focus}`)
+      expect(assembled.user).toContain(`effective_duration_target_mins: ${minutes}`)
+      expect(assembled.user).toContain(`enabled_sections: [${request.effectiveSections.join(',')}]`)
+      expect(candidateHeadings(assembled.user)).toEqual(
+        request.effectiveSections.map((section) => `CANDIDATES — ${section}`),
+      )
+      expect(assembled.user).toContain('SOFT PREFERENCES\nnone')
+      expect(assembled.system).toContain('Goals set character, not mandatory arcs or shares')
+      expect(assembled.system).toContain(`${goal}: ${character}`)
+      expect(assembled.system).toContain('Choose a useful subset of enabled_sections;\nnever a disabled section.')
+      expect(assembled.system).toContain('Short sessions prioritize\ngoal-relevant main work')
+      expect(assembled.system).toContain('conditioning for conditioning, gentle mobility for active_recovery')
+      expect(assembled.system).toContain('coherent warmup prep and adequate rest')
+      expect(assembled.system).toContain('omit optional parts before rushing work')
+      expect(assembled.system).toContain('With more time\nadd useful volume, accessories or mobility, not filler')
+      expect(assembled.system).toContain('Explain omissions or adjustments plainly in\noverview or section_notes')
+      expect(assembled.system).toContain('selected sections follow candidate-group order')
+      expect(assembled.system).not.toContain('section order matches the goal shape')
+      expect(assembled.system).not.toContain('never omit a section')
+      expect(assembled.system).not.toContain('Include every resolved enabled_sections entry')
+    })
+  }
+
+  it('keeps customized available parts without prescribing an eight-part workout', async () => {
+    const { request, assembled } = await resolvedPrompt(mirror.goal, 'upper_body', 15)
+
+    expect(request.effectiveSections).toEqual(mirror.enabledSections)
+    expect(candidateHeadings(assembled.user)).toContain('CANDIDATES — mobility')
+    expect(candidateHeadings(assembled.user)).toContain('CANDIDATES — skill_power')
+  })
+
+  it('still limits active recovery availability and intensity before assembly', async () => {
+    const { request, assembled } = await resolvedPrompt('active_recovery', 'full_body', 15)
+
+    expect(request.effectiveSections).toEqual(ACTIVE_RECOVERY_SECTIONS)
+    expect(request.effectiveIntensity).toBe(ACTIVE_RECOVERY_INTENSITY_MAX)
+    expect(assembled.user).toContain(`enabled_sections: [${ACTIVE_RECOVERY_SECTIONS.join(',')}]`)
+    expect(candidateHeadings(assembled.user)).toEqual(
+      ACTIVE_RECOVERY_SECTIONS.map((section) => `CANDIDATES — ${section}`),
+    )
+    expect(assembled.system).toContain('active_recovery: gentle mobility and recovery flow only.')
+  })
+})
+
 describe('the user message against PROMPT_v4.md §3', () => {
   const message = buildUserMessage(promptInput())
 
@@ -181,6 +319,15 @@ describe('the user message against PROMPT_v4.md §3', () => {
     expect(message).toContain('requested_intensity: 8')
     expect(message).toContain('effective_intensity: 8')
     expect(message).toContain('effective_duration_target_mins: 45')
+  })
+
+  it.each(['new', 'some', 'confident'] as const)('carries saved experience %s only when supplied', (experience) => {
+    expect(buildUserMessage(promptInput({ experience }))).toContain(`focus: lower_body\nexperience: ${experience}\nrequested_intensity: 8`)
+  })
+
+  it('does not invent experience for an unknown or older caller', () => {
+    expect(message).not.toMatch(/^experience:/m)
+    expect(buildUserMessage(promptInput({ experience: null }))).toBe(message)
   })
 
   it('summarizes history compactly rather than dumping sessions', () => {
@@ -330,7 +477,7 @@ describe('the retry addendum against PROMPT_v4.md §4', () => {
   })
 })
 
-describe('prompt 5.1.0 measured against the captured v4.0.0 baseline', () => {
+describe('prompt 5.1.1 measured against the captured v4.0.0 baseline', () => {
   // PROMPT_v4.md §5 asks for the comparison and says the result belongs in the
   // GEN-02b change rather than in the static spec. This is that record, and it
   // is a test rather than a note so it cannot quietly stop being true.
@@ -354,7 +501,7 @@ describe('prompt 5.1.0 measured against the captured v4.0.0 baseline', () => {
 
   it('records the measurement §5 asks for', () => {
     expect(measurement).toEqual({
-      promptVersion: '5.1.0',
+      promptVersion: PROMPT_VERSION,
       contractVersion: CONTRACT_VERSION,
       systemBytes: byteLength(SYSTEM_PROMPT),
       userBytes: byteLength(assembled.user),
@@ -416,8 +563,9 @@ describe('the Goal/Focus recovery against the prompt it inherited', () => {
   const assembled = assemblePrompt(promptInput())
   const userLines = assembled.user.split('\n')
 
-  it('does not materially grow the fixture prompt', () => {
-    expect(assembled.measurement.totalBytes).toBeLessThanOrEqual(
+  it.each([undefined, 'confident'] as const)('does not materially grow the fixture prompt with experience %s', (experience) => {
+    const measured = assemblePrompt(promptInput({ experience })).measurement
+    expect(measured.totalBytes).toBeLessThanOrEqual(
       PRE_RECOVERY_TOTAL_BYTES + RECOVERY_TOLERANCE_BYTES,
     )
   })

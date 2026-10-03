@@ -394,7 +394,7 @@ describe('what the system prompt says about loads', () => {
 
   it('never tells the model what an anchor is worth', () => {
     const input: PromptInput = promptInput()
-    expect(SYSTEM_PROMPT).toContain('It carries labels and never\nloads')
+    expect(SYSTEM_PROMPT).toContain('never loads; code fills loads afterwards')
     expect(input.training.anchors.every((entry) => !('value' in entry))).toBe(true)
   })
 })

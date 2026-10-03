@@ -1,5 +1,5 @@
 /**
- * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.0.0`.
+ * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.1.1`.
  *
  * This module is pure: candidates and an effective request in, two strings and
  * a measurement out. It opens no connection, reads no environment, and calls no
@@ -58,8 +58,10 @@ import {
  * and the instruction never to compute a load. A minor bump rather than a major
  * one because nothing was removed and no output field moved — `CONTRACT_VERSION`
  * is untouched, which is the requirement's own condition for leaving it alone.
+ * 5.1.1 restores main-work thematic guidance, treats enabled sections as available
+ * choices and composes to the time available. The output contract is unchanged.
  */
-export const PROMPT_VERSION = '5.1.0'
+export const PROMPT_VERSION = '5.1.1'
 
 export { CONTRACT_VERSION }
 
@@ -173,6 +175,8 @@ export interface SoftPreferences {
 /** Everything the user message is assembled from. */
 export interface PromptInput {
   readonly request: EffectiveRequest
+  /** Saved athlete context, when known; never inferred or defaulted here. */
+  readonly experience?: Enums<'experience_level'> | null
   readonly sections: readonly SectionCandidates[]
   readonly history: RecentHistory
   readonly preferences: SoftPreferences
@@ -211,19 +215,21 @@ PRIORITY
 5. Variety and recent-history balance
 
 GOAL SHAPES
-- strength: warmup → primary_lift → accessory → core → cooldown. Give primary work 40–50% of
-  the session. No conditioning. Primary rest 120–180s; accessory rest 90–120s. Prefer lower reps,
-  more primary sets, and controlled eccentric / forceful concentric tempo.
-- hypertrophy: warmup → primary_lift → accessory → core → cooldown. Give accessory work 40–50%.
-  Supersets are the default accessory structure when candidates pair cleanly. Primary rest about
-  90s; accessory 45–75s; core 45–60s. Prefer 8–12 reps and controlled 3–4s eccentrics.
-- conditioning: warmup → conditioning → core → cooldown; accessory is optional only when time
-  remains. Give conditioning 50–60%, potentially across multiple blocks. No primary_lift. Prefer
-  circuit, emom, amrap, or for_time; keep transitions practical and inter-block rest 60–90s.
-- balanced: warmup → primary_lift → accessory → core → conditioning → cooldown. No section
-  dominates. Use strength-style primary rest, moderate accessory rest, and conditioning structures.
-- active_recovery: warmup → mobility → cooldown only. Intensity is already clamped to 1–3.
-  Choose gentle, non-loaded, non-explosive movement and make the sections one continuous flow.
+Goals set character, not mandatory arcs or shares. Choose a useful subset of enabled_sections;
+never a disabled section. Notes are optional.
+- strength: primary compound work dominates; accessories support it. Use standard sets, no timed
+  main work or conditioning. Primary rest 120–180s; accessory rest 90–120s. Prefer lower reps,
+  more primary sets, controlled eccentric / forceful concentric tempo.
+- hypertrophy: related muscle work from different angles. Supersets are the default accessory
+  structure when candidates pair cleanly. Primary rest about 90s; accessory 45–75s; core 45–60s.
+  Prefer 8–12 reps and controlled 3–4s eccentrics.
+- conditioning: conditioning is the main work, potentially across multiple blocks; accessory is
+  optional. No primary_lift. Prefer circuit, emom, amrap or for_time; sustainable flow and practical
+  transitions, with inter-block rest 60–90s.
+- balanced: coherent strength plus conditioning when time permits, not a checklist. Use
+  strength-style primary rest, moderate accessory rest and varied conditioning structures.
+- active_recovery: gentle mobility and recovery flow only. Intensity is already clamped to 1–3.
+  Choose non-loaded, non-explosive movement; no finishers or timed blocks.
 
 STRUCTURES
 - standard: independent sets; normal for warmup, primary, accessory, core, and cooldown.
@@ -235,6 +241,7 @@ STRUCTURES
 - emom: one movement per minute or two alternating movements; never cram three into a minute.
 - amrap: two to four movements per round.
 - for_time: fixed work with a timer cap.
+Timed blocks enable a clock; never timer_type=none.
 
 REP AND SET GUIDANCE
 - Standard reps by intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
@@ -255,14 +262,11 @@ LOAD GUIDANCE
 - 9–10: heavy, roughly 80–90%+, only where the goal and candidate role support it.
 Use only the contract's load_type/load_value representation. Never invent a prior-session number.
 Never compute, state or narrate a weight, anywhere, including section_notes, block_notes, tempo and
-the overview. The app fills every suggested load after generation from the user's own logged history;
-a number you write conflicts with the one it computes, and the user is left reading two answers for
-the same set.
+the overview. Code fills loads from logged history.
 
 TRAINING HISTORY AND DIRECTIVES
-The user message carries a TRAINING HISTORY block: one line per exercise the user has recent capacity
-for, with its confidence, how long since it was trained, and a label. It carries labels and never
-loads, because the loads are filled afterwards by code.
+TRAINING HISTORY lists recent capacity per exercise: confidence, time since training and a label,
+never loads; code fills loads afterwards.
 - SESSION DIRECTIVE normal: compose as the goal shape asks.
 - SESSION DIRECTIVE deload: the same movements rather than novelty. Apply the stated working-set
   multiplier, hold rep targets where they are, keep conditioning at or below the stated intensity, and
@@ -277,30 +281,34 @@ so there is something for added reps to progress against. Both are preferences; 
 thematic coherence still win.
 
 SECTION COMPOSITION
+Build a coherent theme from chosen main work and focus: ramp → main work → support → descent.
+These are purposes, not required sections. Choices are focal/supporting, contrasting/balancing,
+prep/recovery or general conditioning. Encode their job and theme link with the schema's
+session_function and anchor_relationship values.
 - Warmup progresses general movement → dynamic range → activation → specific movement prep.
-  Cover the day's focus components. At intensity 1–3 omit loaded movement prep; at 7–10 include
-  a specific preparation candidate when available.
-- Primary chooses one \`can_be_primary\` compound candidate relevant to the focus. Equipment quality
-  may break ties, but availability is already resolved.
-- Accessory supports the primary or fills a meaningful pattern gap. Avoid redundant candidates
-  that duplicate the same components without purpose.
-- Core uses two or three complementary candidates; superset only when transitions are simple.
-- Conditioning uses two to four movements per block with sustainable flow and no needless setup.
-- Cooldown uses three to five recovery candidates relevant to the work just performed.
+  Prepare the main work's candidate components; protect rehearsal before heat-building. At intensity
+  1–3 omit loaded prep; at 7–10 include specific prep when available.
+- Primary chooses one \`can_be_primary\` compound relevant to the focus; availability is resolved.
+- Accessory supports the theme's synergists/stabilizers or opposing pattern, not random novelty.
+- Core uses useful complementary work; superset only for simple transitions.
+- Conditioning uses two to four movements per block with sustainable flow and practical setup.
+- Cooldown targets muscles actually worked; its amount fits the available time.
 
 HISTORY AND VARIETY
-Balance movement patterns across recent sessions within the chosen focus. Prefer an eligible pattern
-that has been underrepresented; do not force novelty at the cost of fit. Avoid repeating the exact
-same candidate in one workout unless the structure explicitly requires it. Treat avoid/prefer-not
-entries as soft ranking signals, never as permission to violate the hard candidate boundary.
+Respect the chosen focus. Use supplied history to balance squat/hinge within lower-body work and
+press/pull within upper-body work, with complementary accessories. Useful lifts may repeat across
+days; do not force novelty or infer absent history. Avoid redundant work within a workout.
+Treat avoid/prefer-not as soft ranking signals, never permission to cross the hard candidate boundary.
 
 DURATION
-Compose to the effective duration target. Protect the goal's dominant section; shorten or remove
-lower-priority work first. Your estimated_duration_mins is diagnostic only. Independent code will
-compute plausibility and may retry with a named overrunning block.
+Compose the closest useful workout to the effective duration target. Short sessions prioritize
+goal-relevant main work: conditioning for conditioning, gentle mobility for active_recovery.
+Keep coherent warmup prep and adequate rest; omit optional parts before rushing work. With more time
+add useful volume, accessories or mobility, not filler. Explain omissions or adjustments plainly in
+overview or section_notes. Your estimated_duration_mins is diagnostic only; code checks plausibility.
 
 Before returning, verify internally that every ID and equipment value came from the correct section,
-section order matches the goal shape, target fields match target_kind, timed structures have clocks,
+selected sections follow candidate-group order, target fields match target_kind, timed structures have clocks,
 circuits have rounds, and the JSON matches the schema. Return JSON only.`
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -437,12 +445,13 @@ function serializeSection(section: SectionCandidates): string {
 
 const NONE = 'none'
 
-function serializeRequest(request: EffectiveRequest): string {
+function serializeRequest(request: EffectiveRequest, experience: PromptInput['experience']): string {
   return [
     'REQUEST',
     `request_id: ${request.requestId}`,
     `goal: ${request.goal}`,
     `focus: ${request.focus ?? NONE}`,
+    ...(experience == null ? [] : [`experience: ${experience}`]),
     `requested_intensity: ${request.requestedIntensity}`,
     `effective_intensity: ${request.effectiveIntensity}`,
     `effective_duration_target_mins: ${request.durationTargetMins}`,
@@ -598,7 +607,7 @@ function serializePreferences(preferences: SoftPreferences): string {
  */
 export function buildUserMessage(input: PromptInput): string {
   return [
-    serializeRequest(input.request),
+    serializeRequest(input.request, input.experience),
     serializeHistory(input.history),
     serializeTrainingHistory(input.training),
     serializePreferences(input.preferences),

@@ -337,22 +337,10 @@ export function checkReferences(
   const index = candidateIndex(input)
   const enabled = new Set(input.request.effectiveSections)
 
-  // Check 3, in the other direction (GR-04 / REQ-008). The sections this
-  // request resolved are the sections the workout has: one the model left out
-  // is a section the athlete selected and did not get.
-  const composed = new Set(workout.sections.map((section) => section.section_type))
-  for (const resolved of input.sections) {
-    if (!composed.has(resolved.section)) {
-      violations.push({
-        check: 3,
-        code: GenerationFailure.INVALID_REFERENCE,
-        path: 'sections',
-        message:
-          `'${resolved.section}' was resolved for this request and is missing ` +
-          `(resolved: ${input.sections.map((section) => section.section).join(', ')})`,
-      })
-    }
-  }
+  // Owner intent clarification, 2026-10-02: resolved sections are an allowed
+  // candidate pool, not mandatory output headings. Claude chooses useful work
+  // for this goal and time. Check 3 still rejects a disabled section; checks
+  // 1–2 still enforce that section's candidate and equipment boundaries.
 
   workout.sections.forEach((section, sectionIndex) => {
     // Check 3. A section nobody enabled has no candidate set, so it is asked
@@ -479,25 +467,14 @@ export interface QualityRecord {
   readonly observations: readonly SoftObservation[]
 }
 
-/**
- * The goal's dominant section and the share the system prompt gives it —
- * `PROMPT_v4.md` §2's GOAL SHAPES, as numbers. `balanced` has no dominant
- * section and says so ("No section dominates"), which is a ceiling rather than
- * a band; `active_recovery` states no share at all, so there is nothing to
- * observe against and the record says that rather than inventing a band.
- *
- * Total over `goal_preset`, so a sixth goal fails to compile here instead of
- * quietly having no ratio recorded.
+/** Character context for recording mix, not fixed exercise-count share bands.
+ * Those retired bands falsely flagged useful time-scaled selections as poor.
  */
-const GOAL_SHAPES: Record<
-  GoalPreset,
-  { readonly dominant: SectionType | null; readonly min: number; readonly max: number } | null
-> = {
-  strength: { dominant: 'primary_lift', min: 0.4, max: 0.5 },
-  hypertrophy: { dominant: 'accessory', min: 0.4, max: 0.5 },
-  conditioning: { dominant: 'conditioning', min: 0.5, max: 0.6 },
-  // No dominant section: the observation is that nothing took more than half.
-  balanced: { dominant: null, min: 0, max: 0.5 },
+const GOAL_MAIN_SECTION: Record<GoalPreset, SectionType | null> = {
+  strength: 'primary_lift',
+  hypertrophy: 'accessory',
+  conditioning: 'conditioning',
+  balanced: null,
   active_recovery: null,
 }
 
@@ -547,7 +524,7 @@ function observeRatios(
   goal: GoalPreset,
   prescriptions: readonly PrescriptionEntry[],
 ): SoftObservation {
-  const shape = GOAL_SHAPES[goal]
+  const dominant = GOAL_MAIN_SECTION[goal]
   const total = prescriptions.length
 
   const perSection = new Map<SectionType, number>()
@@ -567,33 +544,20 @@ function observeRatios(
     (entry) => entry.exercise.anchor_relationship === 'direct',
   ).length
 
-  if (!shape) {
-    return {
-      check: SoftCheck.RATIOS,
-      status: 'within',
-      summary: `${goal} states no section share; recorded without a band`,
-      metrics: { exercises: total, directShare: share(direct, total) },
-      detail,
-    }
-  }
-
-  const dominantCount = shape.dominant ? (perSection.get(shape.dominant) ?? 0) : 0
+  const dominantCount = dominant ? (perSection.get(dominant) ?? 0) : 0
   const largest = Math.max(0, ...perSection.values())
-  const observed = shape.dominant ? share(dominantCount, total) : share(largest, total)
-  const within = observed >= shape.min && observed <= shape.max
-
-  const subject = shape.dominant ?? 'the largest section'
+  const observed = dominant ? share(dominantCount, total) : share(largest, total)
+  const subject = dominant ?? 'the largest section'
 
   return {
     check: SoftCheck.RATIOS,
-    status: within ? 'within' : 'outside',
+    // Existing no-band convention; this is not an assessment of useful dose.
+    status: 'within',
     summary:
       `${subject} is ${observed} of ${total} prescribed exercises ` +
-      `(${goal} expects ${shape.min}–${shape.max})`,
+      `(${goal} states no section share; recorded without a band)`,
     metrics: {
       observed,
-      min: shape.min,
-      max: shape.max,
       exercises: total,
       directShare: share(direct, total),
     },
@@ -1123,7 +1087,24 @@ export function validateComposition(
   input: PromptInput,
   options: ValidationOptions = {},
 ): Result<Validated, AttemptFailure> {
-  const violations = checkReferences(workout, input)
+  const violations = [...checkReferences(workout, input)]
+
+  // The database shape permits `none` alongside declared seconds, but the
+  // EMOM execution treats `none` as untimed. A generated timed protocol must
+  // actually run its declared clock; counting seconds alone cannot prove that.
+  // This is a generation execution invariant, not a new storage constraint.
+  workout.sections.forEach((section, sectionIndex) => {
+    section.blocks.forEach((block, blockIndex) => {
+      if (['emom', 'amrap', 'for_time'].includes(block.structure_type) && block.timer_type === 'none') {
+        violations.push({
+          check: 6,
+          code: GenerationFailure.MALFORMED,
+          path: `${sectionPath(sectionIndex)}.blocks[${blockIndex}].timer_type`,
+          message: `${block.structure_type} requires an enabled clock, not timer_type 'none'`,
+        })
+      }
+    })
+  })
 
   if (violations.length > 0) {
     options.logger?.warn('composition rejected', {

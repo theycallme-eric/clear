@@ -20,7 +20,7 @@ import {
 } from '../../../src/data/candidates.ts'
 import { deprioritized } from '../../../src/data/constraint-selectors.ts'
 import { fromRow as constraintFromRow, type UserConstraint } from '../../../src/data/constraints.ts'
-import type { FunctionReturns } from '../../../src/data/database.types.ts'
+import { Constants, type Enums, type FunctionReturns } from '../../../src/data/database.types.ts'
 import {
   ErrorCode,
   createError,
@@ -33,9 +33,16 @@ import type { Logger } from '../../../src/state/logger.ts'
 import { conditioningDirectiveOf } from '../../../src/state/conditioning.ts'
 import {
   conditioningHistorySchema,
+  exerciseSetLogRowSchema,
+  executionStatusSchema,
+  experienceLevelSchema,
   loadAnchorListSchema,
+  movementPatternSchema,
   parseBoundary,
+  sessionFocusSchema,
   userConstraintRowSchema,
+  workoutExerciseRowSchema,
+  workoutSessionRowSchema,
   type ConditioningHistoryRow,
   type GenerationRequest,
   type GenerationSuccess,
@@ -60,11 +67,36 @@ import { validateComposition, type Validated } from './validate.ts'
 
 type CandidateSetRow = FunctionReturns<'generation_candidate_sets_for_goal'>[number]
 
+// A bounded observed snapshot, not an exhaustive weekly training ledger. Sets
+// never multiply the pattern count: each observed session contributes at most
+// one count for a pattern. The compact ID list remains soft variety context.
+const RECENT_SESSION_LIMIT = 8
+const RECENT_PRESCRIPTION_LIMIT = 256
+const RECENT_EXERCISE_LIMIT = 40
+
+const record = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const inList = (ids: readonly string[]): string =>
+  `in.(${ids.map((id) => `"${id.replaceAll('"', '""')}"`).join(',')})`
+
+/** Only transport failures and explicit server failures make soft context unknown. */
+function transientContextRead(error: AppError): boolean {
+  const status = error.details?.status
+  if (status !== undefined) {
+    return error.code === ErrorCode.PERSISTENCE_READ_FAILED && typeof status === 'number' &&
+      Number.isInteger(status) && status >= 500 && status <= 599
+  }
+  return error.code === ErrorCode.NETWORK_SERVER_ERROR ||
+    error.code === ErrorCode.NETWORK_OFFLINE || error.code === ErrorCode.NETWORK_TIMEOUT
+}
+
 export interface GenerationDatabaseConfig {
   readonly url: string
   readonly anonKey: string
   readonly accessToken: string
   readonly fetch?: typeof globalThis.fetch
+  readonly logger?: Logger
 }
 
 export interface GenerationDatabase {
@@ -74,6 +106,8 @@ export interface GenerationDatabase {
   ): Promise<Result<readonly SectionCandidates[], AppError>>
   constraints(userId: string): Promise<Result<readonly UserConstraint[], AppError>>
   recentHistory(userId: string): Promise<Result<RecentHistory, AppError>>
+  /** Optional for older injected doubles; the live reader always supplies it. */
+  experience?(userId: string): Promise<Result<Enums<'experience_level'> | null, AppError>>
   anchors(userId: string): Promise<Result<readonly AnchorHistory[], AppError>>
   /** OVR-03: the scored conditioning blocks the density directive is read over. */
   conditioning(userId: string): Promise<Result<readonly ConditioningHistoryRow[], AppError>>
@@ -204,34 +238,160 @@ export function createGenerationDatabase(config: GenerationDatabaseConfig): Gene
       const query = new URLSearchParams({
         user_id: `eq.${userId}`,
         completed_at: 'not.is.null',
-        select: 'session_focus',
-        order: 'completed_at.desc',
-        limit: '8',
+        select: 'id,session_focus',
+        order: 'completed_at.desc,id.asc',
+        limit: String(RECENT_SESSION_LIMIT),
       })
       const payload = await requestJson(`/${source}?${query}`, { method: 'GET' }, source)
       if (!payload.ok) return payload
-      if (!Array.isArray(payload.value)) {
+      if (!Array.isArray(payload.value) || payload.value.length > RECENT_SESSION_LIMIT) {
         return err(createError(ErrorCode.PERSISTENCE_READ_FAILED, { details: { source } }))
       }
 
       const focuses: RecentHistory['focuses'][number][] = []
+      const sessions = new Map<string, Set<string>>()
       for (const row of payload.value) {
-        if (typeof row !== 'object' || row === null || !('session_focus' in row)) {
+        if (!record(row)) {
           return err(createError(ErrorCode.PERSISTENCE_READ_FAILED, { details: { source } }))
         }
-        const focus = (row as { session_focus?: unknown }).session_focus
-        if (
-          focus !== 'upper_body' &&
-          focus !== 'lower_body' &&
-          focus !== 'full_body' &&
-          focus !== 'power'
-        ) {
+        const id = workoutSessionRowSchema.shape.id.safeParse(row.id)
+        const focus = sessionFocusSchema.safeParse(row.session_focus)
+        if (!id.success || !focus.success || sessions.has(id.data)) {
           return err(createError(ErrorCode.PERSISTENCE_READ_FAILED, { details: { source } }))
         }
-        focuses.push(focus)
+        sessions.set(id.data, new Set())
+        focuses.push(focus.data)
       }
 
-      return ok({ focuses, patterns: [], exerciseIds: [] })
+      if (sessions.size === 0) return ok({ focuses, patterns: [], exerciseIds: [] })
+
+      // Read only actual set engagement. `session_performed` also includes
+      // unlogged active prescriptions and drops superseded ones, so it cannot
+      // answer this question reliably. The log FK retains the exact historical
+      // prescription after a swap. No measurements, weights or notes are read.
+      // A timer-only block score does not prove which members were performed;
+      // without an exercise log those members intentionally remain unobserved.
+      const performedSource = 'workout_exercises'
+      const performedQuery = new URLSearchParams({
+        select: 'id,exercise_id,execution_status,workout_blocks!inner(workout_sections!inner(session_id)),exercise_set_logs!inner(id)',
+        'workout_blocks.workout_sections.session_id': inList([...sessions.keys()]),
+        execution_status: 'neq.skipped',
+        'exercise_set_logs.limit': '1',
+        'exercise_set_logs.order': 'id.asc',
+        order: 'id.asc',
+        limit: String(RECENT_PRESCRIPTION_LIMIT),
+      })
+      const performed = await requestJson(
+        `/${performedSource}?${performedQuery}`, { method: 'GET' }, performedSource,
+      )
+      if (!performed.ok) {
+        if (!transientContextRead(performed.error)) return performed
+        config.logger?.warn('generation soft history unavailable; using known focuses only', {
+          source: performedSource, code: performed.error.code,
+        })
+        return ok({ focuses, patterns: [], exerciseIds: [] })
+      }
+      const failedPerformed = () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED, {
+        details: { source: performedSource },
+      }))
+      if (!Array.isArray(performed.value) || performed.value.length > RECENT_PRESCRIPTION_LIMIT) {
+        return failedPerformed()
+      }
+      for (const row of performed.value) {
+        if (!record(row) || !record(row.workout_blocks) ||
+          !record(row.workout_blocks.workout_sections) || !Array.isArray(row.exercise_set_logs) ||
+          row.exercise_set_logs.length > 1) return failedPerformed()
+        const id = workoutExerciseRowSchema.shape.id.safeParse(row.id)
+        const exercise = workoutExerciseRowSchema.shape.exercise_id.safeParse(row.exercise_id)
+        const status = executionStatusSchema.safeParse(row.execution_status)
+        const session = workoutSessionRowSchema.shape.id.safeParse(
+          row.workout_blocks.workout_sections.session_id,
+        )
+        if (!id.success || !exercise.success || !status.success || !session.success ||
+          !sessions.has(session.data)) return failedPerformed()
+        for (const log of row.exercise_set_logs) {
+          if (!record(log) || !exerciseSetLogRowSchema.shape.id.safeParse(log.id).success) {
+            return failedPerformed()
+          }
+        }
+        // Defend the projection as well as asking SQL to filter it. Absence of
+        // logs is not evidence of training, and an explicit skip is not a set.
+        if (status.data !== 'skipped' && row.exercise_set_logs.length > 0) {
+          sessions.get(session.data)?.add(exercise.data)
+        }
+      }
+
+      const ids = [...new Set([...sessions.values()].flatMap((set) => [...set]))]
+      if (ids.length === 0) return ok({ focuses, patterns: [], exerciseIds: [] })
+      const patternSource = 'exercise_catalog'
+      const patternQuery = new URLSearchParams({
+        select: 'id,movement_patterns',
+        id: inList(ids),
+        order: 'id.asc',
+        limit: String(RECENT_PRESCRIPTION_LIMIT),
+      })
+      const catalog = await requestJson(`/${patternSource}?${patternQuery}`, { method: 'GET' }, patternSource)
+      if (!catalog.ok) {
+        if (!transientContextRead(catalog.error)) return catalog
+        config.logger?.warn('generation soft history unavailable; using known focuses only', {
+          source: patternSource, code: catalog.error.code,
+        })
+        return ok({ focuses, patterns: [], exerciseIds: [] })
+      }
+      const failedCatalog = () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED, {
+        details: { source: patternSource },
+      }))
+      if (!Array.isArray(catalog.value) || catalog.value.length > ids.length) return failedCatalog()
+      const patternsById = new Map<string, Enums<'movement_pattern'>[]>()
+      for (const row of catalog.value) {
+        if (!record(row)) return failedCatalog()
+        const id = workoutExerciseRowSchema.shape.exercise_id.safeParse(row.id)
+        const patterns = movementPatternSchema.array().max(Constants.public.Enums.movement_pattern.length)
+          .safeParse(row.movement_patterns)
+        if (!id.success || !patterns.success || !ids.includes(id.data) || patternsById.has(id.data)) {
+          return failedCatalog()
+        }
+        patternsById.set(id.data, patterns.data)
+      }
+      if (patternsById.size !== ids.length) return failedCatalog()
+
+      const counts = new Map<Enums<'movement_pattern'>, number>()
+      const exerciseIds = new Set<string>()
+      for (const exercises of sessions.values()) {
+        const sessionPatterns = new Set<Enums<'movement_pattern'>>()
+        for (const id of [...exercises].sort()) {
+          if (exerciseIds.size < RECENT_EXERCISE_LIMIT) exerciseIds.add(id)
+          for (const pattern of patternsById.get(id) ?? []) sessionPatterns.add(pattern)
+        }
+        for (const pattern of sessionPatterns) counts.set(pattern, (counts.get(pattern) ?? 0) + 1)
+      }
+      return ok({
+        focuses,
+        patterns: Constants.public.Enums.movement_pattern
+          .filter((pattern) => counts.has(pattern))
+          .map((pattern) => ({ pattern, count: counts.get(pattern) ?? 0 })),
+        exerciseIds: [...exerciseIds],
+      })
+    },
+
+    async experience(userId) {
+      const source = 'profiles'
+      const query = new URLSearchParams({
+        id: `eq.${userId}`,
+        select: 'experience_level',
+        limit: '1',
+      })
+      const payload = await requestJson(`/${source}?${query}`, { method: 'GET' }, source)
+      if (!payload.ok) return payload
+      if (!Array.isArray(payload.value) || payload.value.length > 1 ||
+        (payload.value.length === 1 && !record(payload.value[0]))) {
+        return err(createError(ErrorCode.PERSISTENCE_READ_FAILED, { details: { source } }))
+      }
+      if (payload.value.length === 0) return ok(null)
+      const experience = experienceLevelSchema.nullable().safeParse(payload.value[0].experience_level)
+      return experience.success
+        ? ok(experience.data)
+        : err(createError(ErrorCode.PERSISTENCE_READ_FAILED, { details: { source } }))
     },
 
     async anchors(userId) {
@@ -308,13 +468,14 @@ export async function performGeneration(
   const now = context.now ?? (() => Date.now())
   const startedAt = now()
 
-  const [candidateResult, constraintResult, historyResult, anchorResult, conditioningResult] =
+  const [candidateResult, constraintResult, historyResult, anchorResult, conditioningResult, experienceResult] =
     await Promise.all([
       deps.db.candidates(request, userId),
       deps.db.constraints(userId),
       deps.db.recentHistory(userId),
       deps.db.anchors(userId),
       deps.db.conditioning(userId),
+      deps.db.experience?.(userId) ?? Promise.resolve(ok(null)),
     ])
 
   // Eligibility is settled before anything is composed (GR-04 / REQ-008): a
@@ -334,6 +495,14 @@ export async function performGeneration(
   if (!constraintResult.ok) return err({ ...constraintResult.error, requestId })
   if (!historyResult.ok) return err({ ...historyResult.error, requestId })
   if (!anchorResult.ok) return err({ ...anchorResult.error, requestId })
+  if (!experienceResult.ok) {
+    if (!transientContextRead(experienceResult.error)) {
+      return err({ ...experienceResult.error, requestId })
+    }
+    logger?.warn('generation saved experience unavailable; omitting unknown context', {
+      source: 'profiles', code: experienceResult.error.code,
+    })
+  }
 
   // OVR-03's density directive, decided here in code and never by the model. A
   // failed read resolves to no directive rather than failing the workout: the
@@ -363,6 +532,7 @@ export async function performGeneration(
     request: effective,
     sections: candidateResult.value,
     history: historyResult.value,
+    ...(experienceResult.ok ? { experience: experienceResult.value } : {}),
     preferences: {
       constraints: deprioritized(constraintResult.value),
       notes: request.notes,

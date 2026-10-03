@@ -236,6 +236,20 @@ describe('the release journey is gated, single and retained (REQ-024)', () => {
     expect(spec).toContain('await client.deleteUser(provisioned.id)')
     expect(read('.gitignore')).toMatch(new RegExp(`^${EVIDENCE_DIR}/$`, 'm'))
   })
+
+  it('retains only a non-personal canonical workout after the successful storage checks', () => {
+    const start = spec.indexOf("await testInfo.attach('non-personal-generated-workout'")
+    const attachment = spec.slice(start, spec.indexOf('\n  })', start))
+    expect(start).toBeGreaterThan(spec.indexOf('expect(ordered).toEqual(['))
+    expect(start).toBeGreaterThan(spec.indexOf("'the disposable canary has no athlete notes'"))
+    for (const field of ['goal_preset', 'session_focus', 'effective_duration_target_mins',
+      'effective_intensity', 'prompt_version', 'contract_version']) {
+      expect(attachment).toContain(`body.acceptance.${field}`)
+    }
+    expect(attachment).toContain('workout,')
+    expect(attachment).not.toMatch(/accessToken|publicKey|headers|email|user_id|location_id|generation_notes/)
+    expect(attachment).not.toMatch(/JSON\.stringify\(body(?:\.acceptance)?[,)]|\.\.\.body/)
+  })
 })
 
 describe('the release evidence artifact (REQ-024)', () => {

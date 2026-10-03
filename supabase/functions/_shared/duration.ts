@@ -40,6 +40,7 @@
 import type { SectionType } from '../../../src/data/candidates.ts'
 import type { Enums } from '../../../src/data/database.types.ts'
 import type { GenerationOutput, WorkoutBlock } from '../../../src/state/schemas.ts'
+import { prescribedSetCount } from '../../../src/state/prescription.ts'
 
 type StructureType = Enums<'structure_type'>
 
@@ -141,7 +142,7 @@ export interface WorkoutDuration {
 function roundsOf(block: WorkoutBlock): { rounds: number; assumed: boolean } {
   if (block.rounds !== null) return { rounds: block.rounds, assumed: false }
 
-  const stated = block.exercises.reduce((most, exercise) => Math.max(most, exercise.sets ?? 0), 0)
+  const stated = block.exercises.reduce((most, exercise) => Math.max(most, prescribedSetCount(exercise)), 0)
 
   return { rounds: Math.max(stated, 1), assumed: true }
 }
@@ -211,7 +212,9 @@ export function estimateBlock(
   let restSeconds = 0
 
   for (const exercise of block.exercises) {
-    const sets = exercise.sets ?? 1
+    // A sequence's rungs are its performed set count, even when `sets` differs.
+    // Use the same reader as execution rather than under-counting a ladder.
+    const sets = prescribedSetCount(exercise)
     workSeconds += sets * WORK_PER_SET_SECONDS
     restSeconds += Math.max(sets - 1, 0) * (exercise.rest_seconds ?? 0)
   }
