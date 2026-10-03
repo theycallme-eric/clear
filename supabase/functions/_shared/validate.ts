@@ -7,12 +7,13 @@
  * decided, and the division it keeps is GENERATION_CONTRACT §6's, which is the
  * only division in generation that matters at three in the morning:
  *
- *   * **Hard checks reject.** Every one of them corresponds to something the
- *     database would refuse at the INSERT, and the correspondence is listed
- *     rather than asserted — `HARD_CHECKS` names the constraint per check and
+ *   * **Hard checks reject.** Storage correspondence is listed rather than
+ *     asserted — `HARD_CHECKS` names the constraint per check and
  *     `src/test/generation-validation.test.ts` reads those names back out of
  *     `supabase/migrations/`. A hard check with no matching constraint is a bug
  *     in one of the two, and it now fails a test instead of being a paragraph.
+ *     Generation-only execution invariants are declared separately: a stored
+ *     shape can be legal yet carry a clock or member rest execution ignores.
  *   * **Soft checks record.** Ratios, warmup coverage, variety and repetition
  *     are observations with a number attached, returned beside the workout and
  *     logged. Nothing here can turn one into a rejection: `validateComposition`
@@ -1089,18 +1090,35 @@ export function validateComposition(
 ): Result<Validated, AttemptFailure> {
   const violations = [...checkReferences(workout, input)]
 
-  // The database shape permits `none` alongside declared seconds, but the
-  // EMOM execution treats `none` as untimed. A generated timed protocol must
-  // actually run its declared clock; counting seconds alone cannot prove that.
-  // This is a generation execution invariant, not a new storage constraint.
+  // Generation execution invariants, separate from HARD_CHECKS' database
+  // correspondence. Storage permits values the execution readers do not
+  // honor; refuse them here rather than silently rewriting the prescription.
   workout.sections.forEach((section, sectionIndex) => {
     section.blocks.forEach((block, blockIndex) => {
+      // EMOM treats `none` as untimed; generated timed protocols enable clocks.
       if (['emom', 'amrap', 'for_time'].includes(block.structure_type) && block.timer_type === 'none') {
         violations.push({
           check: 6,
           code: GenerationFailure.MALFORMED,
           path: `${sectionPath(sectionIndex)}.blocks[${blockIndex}].timer_type`,
           message: `${block.structure_type} requires an enabled clock, not timer_type 'none'`,
+        })
+      }
+      // Superset execution uses only block shared rest, never member rest.
+      // Zero/null members and any schema-valid block rest remain legitimate.
+      if (block.structure_type === 'superset') {
+        block.exercises.forEach((exercise, exerciseIndex) => {
+          if ((exercise.rest_seconds ?? 0) <= 0) return
+          violations.push({
+            check: 6,
+            code: GenerationFailure.MALFORMED,
+            path: prescriptionPath({
+              sectionIndex, blockIndex, exerciseIndex, sectionType: section.section_type,
+            }, 'rest_seconds'),
+            message: 'superset member rest is not executed; move shared rest to ' +
+              `${sectionPath(sectionIndex)}.blocks[${blockIndex}].round_rest_seconds ` +
+              'and set member rest_seconds to 0 or null',
+          })
         })
       }
     })

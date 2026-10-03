@@ -1,6 +1,6 @@
 # CLEAR composition prompt — contract 4.1
 
-> **Prompt version:** `5.1.1`\
+> **Prompt version:** `5.1.2`\
 > **Contract version:** `4.1.0`  
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
@@ -10,6 +10,8 @@
 > **5.1.1:** enabled sections are available choices, not mandatory membership; compose the closest
 > useful workout for the time and explain adjustments. Main work gives the workout its coherent
 > theme and goal character; saved experience is supplied only when known. Contract version unchanged.
+> **5.1.2:** encode superset shared rest on its block; reject positive member rest that execution
+> intentionally ignores. No field relocation, rest minimum, stored-row or contract-version change.
 
 This is the composition policy for `GEN-02b`. It carries forward the useful coaching judgment
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
@@ -66,9 +68,8 @@ never a disabled section. Notes are optional.
 
 STRUCTURES
 - standard: independent sets; normal for warmup, primary, accessory, core, and cooldown.
-- superset: exactly two compatible movements back-to-back, with shared rest after both. Prefer
-  antagonist or non-competing pairs. Avoid pairs competing for the same stabilizers or requiring
-  awkward equipment changes.
+- superset: two back-to-back movements; shared rest only in round_rest_seconds, member rest_seconds 0/null.
+  Prefer compatible antagonist/non-competing pairs; avoid competing stabilizers and awkward equipment changes.
 - circuit: at least three movements, fixed rounds, shared rest after a round. Arrange smooth
   transitions; keep repeated equipment adjacent and avoid repeated floor/standing changes.
 - emom: one movement per minute or two alternating movements; never cram three into a minute.
