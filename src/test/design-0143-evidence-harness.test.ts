@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, relative, resolve } from 'node:path'
 
@@ -35,6 +35,14 @@ import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import { createGenerationBudget, MODEL_ROUTE } from '../../e2e/support/generation-budget'
 import { MOBILE_VIEWPORT, TABLET_VIEWPORT } from '../../playwright.config'
 import { SKINS } from '../design-system/skin'
+import { readE2eEnv } from '../../scripts/e2e/env.mjs'
+import { createElement } from 'react'
+import { render, screen } from '@testing-library/react'
+import { RouterProvider } from 'react-router-dom'
+import { createTestRouter } from '../app/router'
+import { AppProviders, createWarmQueryClient, signedIn } from './render'
+import { createWorkoutDouble } from './workout-double'
+import { createError, ErrorCode, err } from '../state/errors'
 
 /**
  * TASK-033 (#379) — the 0.14.3 evidence harness, proved without a browser, a
@@ -121,15 +129,49 @@ describe('authenticated routes are reached before they are captured', () => {
 
   it('drives the real session through the scanning fixture, never a stubbed route', () => {
     const spec = read('e2e/design-0143/baseline.spec.ts')
+    const positive = spec.split("test.describe('0.14.3 capture harness: negative state rejection")[0]
 
     expect(spec).toContain("from '../support/authenticated-session'")
     expect(spec).toContain('authenticatedPage: page')
     expect(spec).toContain('await visit(target.path)')
     expect(spec).toContain('test.skip(!backend.available, backend.reason)')
-    expect(spec.match(/test\.skip\(/g)).toHaveLength(1)
-    expect(spec).not.toMatch(/page\.goto\(|route\.fulfill\(|page\.route\(/)
+    expect(positive.match(/test\.skip\(/g)).toHaveLength(1)
+    expect(positive).not.toMatch(/page\.goto\(|route\.fulfill\(|page\.route\(/)
+    // The sole injected read failure proves rejection, never a positive capture.
+    expect(spec.match(/page\.route\(/g)).toHaveLength(1)
+    expect(spec).toContain("page.route('**/rest/v1/workout_sessions?*'")
+    expect(spec).toContain("if (route.request().method() !== 'GET') return route.continue()")
+    expect(spec).toContain(`rejects.toThrow('expected the heading "Generate workout"')`)
+    expect(spec).toContain('expect(screenshots).toBe(0)')
     // The capture follows navigation and precedes every assertion on its record.
     expect(spec.indexOf('await captureTarget(')).toBeGreaterThan(spec.indexOf('await visit('))
+  })
+
+  it('rejects the real mounted Generate history-error even though its Anchor group exists', async () => {
+    // Explicit component scope: real route/providers and failed reader, without production BootGate.
+    const router = createTestRouter(['/generate'])
+    const workout = createWorkoutDouble({
+      history: { page: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)) },
+    }).clients
+    render(createElement(AppProviders, {
+      ...signedIn({ queryClient: createWarmQueryClient(), workout }),
+      children: createElement(RouterProvider, { router }),
+    }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('Your history could not be read.')
+    expect(screen.getByRole('group', { name: 'Anchor' })).toBeInTheDocument()
+    const target = AUTHENTICATED_CAPTURE_TARGETS.find((candidate) => candidate.screen === 'Generate')!
+    const screenshot = vi.fn(async () => PNG)
+    const driver: CaptureDriver = {
+      observe: async () => ({
+        pathname: router.state.location.pathname,
+        heading: screen.getByRole('heading', { level: 1 }).textContent ?? '',
+        stateVisible: screen.queryByText(target.stateText, { exact: true }) !== null,
+      }),
+      motion: async () => MOTION,
+      screenshot,
+    }
+    await expect(captureTarget(driver, { ...request, target })).rejects.toThrow('nothing was captured')
+    expect(screenshot).not.toHaveBeenCalled()
   })
 })
 
@@ -173,7 +215,37 @@ describe('the capture schema binds a screenshot to what it shows', () => {
     expect(identity.runtimeSourceHash).toMatch(/^[0-9a-f]{64}$/)
     expect(identity.packageHash).not.toBe(identity.runtimeSourceHash)
     expect(identity.packageHash).toBe(hashTree(root, ['src/design-system']))
-    expect(identity.testedDeployment).toBe('local-dev-server')
+    expect(identity.testedDeployment).toBe(new URL(readE2eEnv({}, root).baseURL).origin)
+  })
+
+  it('uses the real file-resolved browser origin and strips credentials, path and query', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'clear-0143-origin-'))
+    try {
+      mkdirSync(join(dir, 'src/design-system'), { recursive: true })
+      writeFileSync(join(dir, 'src/design-system/package.json'), JSON.stringify({
+        name: 'clear-design-system', version: packages.before,
+      }))
+      writeFileSync(join(dir, 'src/app.ts'), 'fixture runtime')
+      writeFileSync(join(dir, 'index.html'), '<html></html>')
+      writeFileSync(join(dir, '.env.runner.local'),
+        'E2E_BASE_URL=https://fixture-user:fixture-password@preview.example.test/capture?token=fixture-only\n')
+      expect(captureIdentity(dir, {}).testedDeployment).toBe('https://preview.example.test')
+      const override = { E2E_BASE_URL: 'https://different.example.test/path?token=not-retained' }
+      const changed = captureIdentity(dir, override)
+      expect(changed.testedDeployment).toBe(new URL(readE2eEnv(override, dir).baseURL).origin)
+      expect(changed.testedDeployment).toBe('https://different.example.test')
+      expect(changed.packageHash).toBe(captureIdentity(dir, {}).packageHash)
+      expect(JSON.stringify(changed)).not.toMatch(/fixture-password|fixture-user|token=|not-retained/)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('identifies Generate by its exclusive first-workout message, not the shared Anchor label', () => {
+    const target = AUTHENTICATED_CAPTURE_TARGETS.find((candidate) => candidate.screen === 'Generate')!
+    expect(target.stateText).toBe('CLEAR needs a starting workout. Choose the focus for this one.')
+    expect(read('src/app/Generate.tsx')).toContain(`'${target.stateText}'`)
+    expect(target.stateText).not.toBe('Anchor')
   })
 
   it('changes the hash when a byte or a path changes, and skips what it is told to', () => {

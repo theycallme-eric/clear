@@ -90,19 +90,23 @@ export async function installDeterministicCapture(page: Page, options: Determini
 }
 
 /** The capture driver for a real page: observes, then screenshots on request. */
-export function playwrightCaptureDriver(page: Page, testInfo: TestInfo): CaptureDriver {
+export function playwrightCaptureDriver(
+  page: Page,
+  testInfo: TestInfo,
+  options: { readonly timeoutMs?: number } = {},
+): CaptureDriver {
   const settled = (assertion: Promise<void>) => assertion.then(() => true, () => false)
 
   return {
     async observe(target) {
       const heading = page.locator('main h1')
-      await settled(expect(page).toHaveURL((url) => url.pathname === target.path, { timeout: 30_000 }))
+      await settled(expect(page).toHaveURL((url) => url.pathname === target.path, { timeout: options.timeoutMs ?? 30_000 }))
       const named = await settled(
-        expect(heading).toHaveAccessibleName(target.heading, { timeout: 30_000 }),
+        expect(heading).toHaveAccessibleName(target.heading, { timeout: options.timeoutMs ?? 30_000 }),
       )
       const stateVisible = await settled(
         expect(page.getByText(target.stateText, { exact: true }).first()).toBeVisible({
-          timeout: 30_000,
+          timeout: options.timeoutMs ?? 30_000,
         }),
       )
       return {

@@ -26,6 +26,7 @@ test.describe('0.14.3 capture harness: authenticated routes (REQ-030)', () => {
   for (const target of AUTHENTICATED_CAPTURE_TARGETS) {
     test(`captures ${target.screen} at ${target.path} in "${target.state}"`, async ({
       authenticatedPage: page,
+      authenticatedSession,
       visit,
     }, testInfo) => {
       const viewport = VIEWPORT_OF_PROJECT[testInfo.project.name]
@@ -49,6 +50,12 @@ test.describe('0.14.3 capture harness: authenticated routes (REQ-030)', () => {
       expect(record.viewport).toMatchObject(page.viewportSize() ?? {})
       expect(record.screenshot.bytes).toBeGreaterThan(0)
       expect(network.blockedGenerations(), 'a capture lane asked for a generation').toBe(0)
+      expect(authenticatedSession.journey.generationRequests).toBe(0)
+      await testInfo.attach('network-observation.json', {
+        body: JSON.stringify({ journeyGenerationRequests: authenticatedSession.journey.generationRequests,
+          blockedCaptureGenerations: network.blockedGenerations(), posture: 'generation-aborted-before-target-navigation' }),
+        contentType: 'application/json',
+      })
 
       await testInfo.attach(`${record.pairId}.json`, {
         body: JSON.stringify(record, null, 2),
@@ -56,4 +63,50 @@ test.describe('0.14.3 capture harness: authenticated routes (REQ-030)', () => {
       })
     })
   }
+})
+
+/** Failure injection is confined to this negative case; positive captures above stub no reads. */
+test.describe('0.14.3 capture harness: negative state rejection (REQ-030)', () => {
+  test.skip(!backend.available, backend.reason)
+
+  test('rejects actual boot history-failure before any Generate screenshot', async ({
+    authenticatedPage: page,
+    authenticatedSession,
+    visit,
+  }, testInfo) => {
+    const target = AUTHENTICATED_CAPTURE_TARGETS.find((candidate) => candidate.screen === 'Generate')!
+    const viewport = VIEWPORT_OF_PROJECT[testInfo.project.name]
+    expect(viewport).toBeTruthy()
+    const network = await installDeterministicCapture(page, { skin: SKIN })
+    let failedReads = 0
+    await page.route('**/rest/v1/workout_sessions?*', (route) => {
+      if (route.request().method() !== 'GET') return route.continue()
+      failedReads += 1
+      return route.fulfill({ status: 500, json: { message: 'Scoped capture negative-case history failure' } })
+    })
+    await visit(target.path)
+    // BootGate owns this failed first read and correctly withholds the route tree.
+    // The shared-Anchor branch is separately proved in the mounted component test.
+    await expect(page.getByText('System check failed', { exact: true })).toBeVisible()
+    await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
+    const realDriver = playwrightCaptureDriver(page, testInfo, { timeoutMs: 1_000 })
+    let screenshots = 0
+    await expect(captureTarget({
+      ...realDriver,
+      screenshot: async (name) => {
+        screenshots += 1
+        return realDriver.screenshot(name)
+      },
+    }, { target, viewport, skin: SKIN })).rejects.toThrow('expected the heading "Generate workout"')
+    expect(failedReads).toBeGreaterThan(0)
+    expect(screenshots).toBe(0)
+    expect(network.blockedGenerations(), 'a negative capture asked for a generation').toBe(0)
+    expect(authenticatedSession.journey.generationRequests).toBe(0)
+    await testInfo.attach('network-observation.json', {
+      body: JSON.stringify({ journeyGenerationRequests: authenticatedSession.journey.generationRequests,
+        blockedCaptureGenerations: network.blockedGenerations(), screenshots, failedReads,
+        posture: 'generation-aborted-before-target-navigation' }),
+      contentType: 'application/json',
+    })
+  })
 })

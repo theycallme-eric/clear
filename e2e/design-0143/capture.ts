@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { readE2eEnv } from '../../scripts/e2e/env.mjs'
 
 import {
   baselineEntry,
@@ -82,11 +83,11 @@ export interface CaptureIdentity {
   readonly packageVersion: string
   /** Digest of the vendored design system exactly as installed. */
   readonly packageHash: string
-  /** Digest of the application source the browser was served. */
+  /** Digest of this checked-out application source; remote bytes need separate deployment proof. */
   readonly runtimeSourceHash: string
   /** The commit checked out, or null outside a repository. */
   readonly applicationCommit: string | null
-  /** The origin tested: a deployment URL, or the local dev server. */
+  /** Configured browser origin, resolved exactly as Playwright does; never URL credentials or query. */
   readonly testedDeployment: string
 }
 
@@ -97,7 +98,9 @@ export function captureIdentity(
   root: string = process.cwd(),
   env: Record<string, string | undefined> = process.env,
 ): CaptureIdentity {
-  const cached = identities.get(root)
+  const testedDeployment = new URL(readE2eEnv(env, root).baseURL).origin
+  const key = JSON.stringify([resolve(root), testedDeployment])
+  const cached = identities.get(key)
   if (cached) return cached
 
   const manifest = JSON.parse(readFileSync(resolve(root, PACKAGE_DIR, 'package.json'), 'utf8')) as {
@@ -121,9 +124,9 @@ export function captureIdentity(
     packageHash: hashTree(root, [PACKAGE_DIR]),
     runtimeSourceHash: hashTree(root, ['index.html', 'src'], isNotRuntimeSource),
     applicationCommit,
-    testedDeployment: env.E2E_BASE_URL ?? 'local-dev-server',
+    testedDeployment,
   }
-  identities.set(root, identity)
+  identities.set(key, identity)
   return identity
 }
 
