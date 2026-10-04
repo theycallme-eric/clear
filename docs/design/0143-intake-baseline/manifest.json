@@ -1,0 +1,385 @@
+{
+  "version": 1,
+  "task": "TASK-040",
+  "issue": 386,
+  "recordedOn": "2026-10-04",
+  "phase": "before",
+  "captureSchema": 1,
+  "notes": [
+    "Every capture is the PNG and the record the TASK-033 harness (e2e/design-0143/baseline.spec.ts) wrote in one run. Values are transcribed from those records; nothing is reconstructed or inferred from a picture.",
+    "Each screenshot was taken only after the harness observed the protected route, its heading and its state text in a real authenticated session. None is a Welcome redirect.",
+    "identity, baseline, phase, deterministic and liveGeneration were identical in all fifteen records and are stated once; they apply to every capture.",
+    "The merged harness reaches five states of five route entries, in the clear skin, at three viewports. matrix and coverage state exactly what was and was not captured. A state that is not listed under a capture has no before-state screenshot.",
+    "The target was the harness's owned local server. This is not deployed proof and not live generation proof.",
+    "No contact sheet is recorded: none was produced in this session, and none is claimed."
+  ],
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.9.7",
+    "packageHash": "b3223f46990b0a1a9251e72c85820f18c64673eeaa6ea8faa54b4c4b0b51a2f5",
+    "runtimeSourceHash": "1471f10ccca773f88a6bcc433a5c07c846cb8efe8e8cdcbc0ecb9b7e2a803950",
+    "applicationCommit": "1523f8fb7f1075b2e5819d632dad1d0d89e3efc2",
+    "testedDeployment": "http://127.0.0.1:61031"
+  },
+  "baseline": {
+    "task": "TASK-001",
+    "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+    "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583"
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "run": {
+    "command": "python3 /Users/eric/clear-app/requirements-recovery/012-design-0143/execution-support.py browser e2e/design-0143/baseline.spec.ts",
+    "spec": "e2e/design-0143/baseline.spec.ts",
+    "target": "owned local server",
+    "deployedProof": false,
+    "counts": { "expected": 18, "unexpected": 0, "flaky": 0, "skipped": 0 },
+    "positiveCaptures": 15,
+    "negativeRejections": 3,
+    "generation": {
+      "journeyGenerationRequests": 0,
+      "blockedCaptureGenerations": 0,
+      "posture": "generation-aborted-before-target-navigation"
+    }
+  },
+  "matrix": {
+    "viewports": {
+      "captured": [
+        { "id": "phone", "width": 390, "height": 844 },
+        { "id": "tablet", "width": 768, "height": 1024 },
+        { "id": "desktop", "width": 1280, "height": 720 }
+      ],
+      "notCaptured": [
+        { "id": "short", "width": 390, "height": 320, "reason": "No Playwright project maps to it in the merged harness." }
+      ]
+    },
+    "skins": {
+      "captured": ["clear"],
+      "notCaptured": ["vapour", "signal", "mono"],
+      "reason": "The merged baseline spec pins the default skin."
+    },
+    "motion": "prefers-reduced-motion did not match in any capture. No capture was motion-settled; the animations running at capture are named per capture."
+  },
+  "screenshotDirectory": "docs/design/0143-intake-baseline/screenshots",
+  "captures": [
+    {
+      "pairId": "home--root--no-history--phone--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "no-history",
+      "viewport": { "id": "phone", "width": 390, "height": 844 },
+      "skin": "clear",
+      "reached": { "pathname": "/", "heading": "Today", "stateVisible": true },
+      "screenshot": {
+        "name": "home--root--no-history--phone--clear.png",
+        "sha256": "1879782994553efa592d7f15e6a0aee90c840f86586d0fdd8cd85c58b0eafee7",
+        "bytes": 362554
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-btn-scan", "clr-scan-sweep", "clr-btn-scan", "clr-scan-sweep", "clr-tab-enter"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "home--root--no-history--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "no-history",
+      "viewport": { "id": "tablet", "width": 768, "height": 1024 },
+      "skin": "clear",
+      "reached": { "pathname": "/", "heading": "Today", "stateVisible": true },
+      "screenshot": {
+        "name": "home--root--no-history--tablet--clear.png",
+        "sha256": "b773cda15e20e364b0028eb16244c1416bd6233de9c58d86b97e0d14f7c18815",
+        "bytes": 364927
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-btn-scan", "clr-scan-sweep", "clr-btn-scan", "clr-scan-sweep", "clr-tab-enter"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "home--root--no-history--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "no-history",
+      "viewport": { "id": "desktop", "width": 1280, "height": 720 },
+      "skin": "clear",
+      "reached": { "pathname": "/", "heading": "Today", "stateVisible": true },
+      "screenshot": {
+        "name": "home--root--no-history--desktop--clear.png",
+        "sha256": "d4c2b642e184e89044ac3e57fcce45eb8646bef879b05d27174a4d6dd2225610",
+        "bytes": 165479
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-btn-scan", "clr-scan-sweep", "clr-btn-scan", "clr-scan-sweep", "clr-tab-enter"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "viewport": { "id": "phone", "width": 390, "height": 844 },
+      "skin": "clear",
+      "reached": { "pathname": "/generate", "heading": "Generate workout", "stateVisible": true },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--phone--clear.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "bytes": 498963
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-tumble"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "viewport": { "id": "tablet", "width": 768, "height": 1024 },
+      "skin": "clear",
+      "reached": { "pathname": "/generate", "heading": "Generate workout", "stateVisible": true },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--tablet--clear.png",
+        "sha256": "810c050d232725c28c620c96671cecc6bac5a26f4f4b4d1a884529290579c6fb",
+        "bytes": 608725
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-tumble"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--desktop--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "viewport": { "id": "desktop", "width": 1280, "height": 720 },
+      "skin": "clear",
+      "reached": { "pathname": "/generate", "heading": "Generate workout", "stateVisible": true },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--desktop--clear.png",
+        "sha256": "ae4bc6bd1e861afe3a7c00b9d7f53721e948d729c66758ce5e6474e03995f754",
+        "bytes": 224596
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c", "clr-tumble"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "history--history--no-workouts-empty--phone--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "no-workouts-empty",
+      "viewport": { "id": "phone", "width": 390, "height": 844 },
+      "skin": "clear",
+      "reached": { "pathname": "/history", "heading": "History", "stateVisible": true },
+      "screenshot": {
+        "name": "history--history--no-workouts-empty--phone--clear.png",
+        "sha256": "d428510dc2a718010b970addc041aa9c5319ca4bfc61f44c51f7a805c288e1b5",
+        "bytes": 355392
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "history--history--no-workouts-empty--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "no-workouts-empty",
+      "viewport": { "id": "tablet", "width": 768, "height": 1024 },
+      "skin": "clear",
+      "reached": { "pathname": "/history", "heading": "History", "stateVisible": true },
+      "screenshot": {
+        "name": "history--history--no-workouts-empty--tablet--clear.png",
+        "sha256": "c1df941e31fa84a1b451bf2454a13107a670aac3dae6ef314fe602ae43961308",
+        "bytes": 454600
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "history--history--no-workouts-empty--desktop--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "no-workouts-empty",
+      "viewport": { "id": "desktop", "width": 1280, "height": 720 },
+      "skin": "clear",
+      "reached": { "pathname": "/history", "heading": "History", "stateVisible": true },
+      "screenshot": {
+        "name": "history--history--no-workouts-empty--desktop--clear.png",
+        "sha256": "598cd49db1036adc92cfd4acf4cb69282f713ee74579b939d7a9e9172cecdc28",
+        "bytes": 185441
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings--preferences-populated--phone--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "viewport": { "id": "phone", "width": 390, "height": 844 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings", "heading": "Settings", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings--preferences-populated--phone--clear.png",
+        "sha256": "5a3a53c8f9f651af07730896396fb0ab14673e73c8f3551b57ed94a2c690f7c7",
+        "bytes": 416114
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings--preferences-populated--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "viewport": { "id": "tablet", "width": 768, "height": 1024 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings", "heading": "Settings", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings--preferences-populated--tablet--clear.png",
+        "sha256": "101ccf50b60881d73df26c4ccad19911944db294e2529468a6367653ae5b720b",
+        "bytes": 585921
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings--preferences-populated--desktop--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "viewport": { "id": "desktop", "width": 1280, "height": 720 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings", "heading": "Settings", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings--preferences-populated--desktop--clear.png",
+        "sha256": "0411fe7ad8bf190ecf6c9b2b07129f4c779b105d179fce97b61063ea3ba74486",
+        "bytes": 216966
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings-locations--list-populated--phone--clear",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "viewport": { "id": "phone", "width": 390, "height": 844 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings/locations", "heading": "Places and equipment", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings-locations--list-populated--phone--clear.png",
+        "sha256": "ce0387a5a8f0868a8762be16ce4f8387ca274f50af23cf211238b81848d04c21",
+        "bytes": 351618
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings-locations--list-populated--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "viewport": { "id": "tablet", "width": 768, "height": 1024 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings/locations", "heading": "Places and equipment", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings-locations--list-populated--tablet--clear.png",
+        "sha256": "8bab27f9ec9968a073cd0868b081efc4268f8ea60c2a9e9ad61ef1ef060fc41f",
+        "bytes": 461309
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    },
+    {
+      "pairId": "settings--settings-locations--list-populated--desktop--clear",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "viewport": { "id": "desktop", "width": 1280, "height": 720 },
+      "skin": "clear",
+      "reached": { "pathname": "/settings/locations", "heading": "Places and equipment", "stateVisible": true },
+      "screenshot": {
+        "name": "settings--settings-locations--list-populated--desktop--clear.png",
+        "sha256": "2bb20f25d30bafc0018d552fc5d92589849f5f6921836142ccfd83bb9a867265",
+        "bytes": 172316
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": ["clr-drift-a", "clr-drift-b", "clr-drift-c"],
+        "settled": false
+      }
+    }
+  ],
+  "negativeCases": [
+    {
+      "case": "boot-history-read-failure-is-not-captured-as-generate",
+      "projects": ["mobile", "tablet", "desktop"],
+      "observed": "BootGate showed \"System check failed\"; captureTarget rejected the Generate target.",
+      "perProject": { "screenshots": 0, "failedReads": 1, "journeyGenerationRequests": 0, "blockedCaptureGenerations": 0 }
+    }
+  ],
+  "contactSheets": [],
+  "coverage": {
+    "status": "partial",
+    "inventoryStates": 136,
+    "capturedStates": 5,
+    "notCapturedStates": 131,
+    "reason": "States that need seeded history, an active or completed session, a failing read, an anonymous or onboarding user, a dialog or toast, or the dev gallery have no target in the merged TASK-033 harness (e2e/design-0143/state-inventory.ts), which TASK-040 does not own. They are counted here, not fabricated.",
+    "entries": [
+      { "screen": "Welcome", "route": "/welcome", "recordedStates": 3, "capturedStates": [] },
+      { "screen": "OTP Login", "route": "/login", "recordedStates": 11, "capturedStates": [] },
+      { "screen": "Onboarding", "route": "/onboarding", "recordedStates": 7, "capturedStates": [] },
+      { "screen": "Home", "route": "/", "recordedStates": 10, "capturedStates": ["no-history"] },
+      { "screen": "Generate", "route": "/generate", "recordedStates": 14, "capturedStates": ["first-or-stale-history-manual-focus"] },
+      { "screen": "Loading", "route": null, "recordedStates": 7, "capturedStates": [] },
+      { "screen": "Review", "route": "/review", "recordedStates": 11, "capturedStates": [] },
+      { "screen": "Workout", "route": "/workout", "recordedStates": 15, "capturedStates": [] },
+      { "screen": "Summary", "route": "/summary", "recordedStates": 9, "capturedStates": [] },
+      { "screen": "History", "route": "/history", "recordedStates": 8, "capturedStates": ["no-workouts-empty"] },
+      { "screen": "Session Detail", "route": "/history/:id", "recordedStates": 11, "capturedStates": [] },
+      { "screen": "Settings", "route": "/settings", "recordedStates": 9, "capturedStates": ["preferences-populated"] },
+      { "screen": "Settings", "route": "/settings/locations", "recordedStates": 11, "capturedStates": ["list-populated"] },
+      { "screen": "Component Gallery", "route": "/dev/gallery", "recordedStates": 5, "capturedStates": [] },
+      { "screen": "Not Found", "route": "*", "recordedStates": 2, "capturedStates": [] },
+      { "screen": "BootSequence", "route": null, "recordedStates": 3, "capturedStates": [] }
+    ]
+  }
+}
