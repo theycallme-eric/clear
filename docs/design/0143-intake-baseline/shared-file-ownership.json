@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "task": "TASK-001",
+  "recordedOn": "2026-10-03",
+  "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+  "rules": [
+    "A shared resource has exactly one owner at a time: the serialized foundation named here. Foundations run one after another in the listed order where their paths overlap.",
+    "A route or evidence sibling edits only its own route files, focused tests and task-local styles. It does not edit global styles, the gallery registry or a shared adapter; if it needs a change there, that is a finding for the owning foundation.",
+    "A compile-only consumer call-signature adjustment outside a foundation's paths is permitted only inside a serialized foundation.",
+    "Owners are named by foundation role, from the owner brief's decomposition. The approved graph binds each role to its task; this record does not invent task numbers.",
+    "The daily journal is shared by every task: append a unique TASK-ID heading, never rewrite or reorder a peer entry.",
+    "No task edits another task's shared file to make a local assertion pass."
+  ],
+  "foundations": [
+    {
+      "order": 1,
+      "role": "vendor-version-contract",
+      "owns": [
+        "src/design-system/**",
+        "docs/design/exports/**",
+        "src/main.tsx (stylesheet imports)",
+        "index.html (skin bootstrap)",
+        "package.json and lockfile",
+        "src/test/design-system-version.test.ts",
+        "src/test/design-system-0.9.7.test.tsx",
+        "src/test/design-system-097-deprecations.test.ts",
+        "docs/UPGRADING-DESIGN-SYSTEM.md",
+        "docs/design/CHANGELOG.md"
+      ],
+      "pr287": "Supersedes any vendored 0.9.7 package change it carries; the 0.14.3 archive bytes are imported unedited."
+    },
+    {
+      "order": 2,
+      "role": "card-containment-adapter",
+      "owns": [
+        "src/ui/card.tsx",
+        "src/ui/composition.tsx",
+        "src/ui/view-state.tsx",
+        "src/ui/Heading.tsx",
+        "src/ui/collapsible-section.tsx",
+        "src/ui/collapsible-section.css"
+      ],
+      "pr287": "Supersedes its card-dialect visuals with the 0.14.3 Card; ports any heading-outline or accessibility fix main lacks."
+    },
+    {
+      "order": 3,
+      "role": "fields-quiet-actions",
+      "owns": [
+        "src/ui/select.tsx",
+        "src/ui/checkbox-group.tsx",
+        "src/ui/formFocus.ts",
+        "src/ui/inline-save.tsx",
+        "src/ui/mood.tsx",
+        "src/styles/a11y.css"
+      ],
+      "pr287": "Supersedes its field visuals; preserves focus-indicator behavior."
+    },
+    {
+      "order": 4,
+      "role": "shell-atmosphere",
+      "owns": [
+        "src/app/router.tsx",
+        "src/app/RootLayout.tsx",
+        "src/app/AppChrome.tsx",
+        "src/app/Screen.tsx",
+        "src/app/screen-registry.ts",
+        "src/app/atmosphere.ts",
+        "src/ui/atmosphere.tsx",
+        "src/ui/Nav.tsx",
+        "src/ui/SkipLink.tsx",
+        "src/styles/shell.css",
+        "src/styles/atmosphere.css",
+        "src/styles/skin-clear.css"
+      ],
+      "pr287": "Supersedes its shell and per-screen atmosphere visuals; preserves the contained scroller, guards and route set."
+    },
+    {
+      "order": 5,
+      "role": "motion-dialog-toast",
+      "owns": [
+        "src/ui/motion.ts",
+        "src/styles/app-motion.css",
+        "src/ui/app-dialog.tsx",
+        "src/ui/blocking-dialog.tsx",
+        "src/ui/toast-host.tsx",
+        "src/app/BootSequence.tsx",
+        "src/app/GenerationLoadingHost.tsx"
+      ],
+      "pr287": "Supersedes its dialog and toast geometry; preserves focus trapping, exactly-once callbacks and severity announcements."
+    },
+    {
+      "order": 6,
+      "role": "documentation-drift-guard",
+      "owns": [
+        "docs/specs/design/ATOMIC.md",
+        "docs/specs/IA.md",
+        "PROJECT_MAP.md",
+        "src/test/adherence-gate.test.ts",
+        "src/test/ui-review.test.ts",
+        "src/test/easing-vocabulary.test.ts",
+        "eslint.ds.config.js",
+        "src/dev/gallery-registry.tsx",
+        "src/dev/gallery-ds.tsx",
+        "src/dev/gallery-app.tsx",
+        "src/dev/gallery.css",
+        "src/dev/specimens.ts"
+      ],
+      "pr287": "Supersedes its 0.9.7 audit prose and visual assertions; none of them is authority over 0.14.3."
+    }
+  ],
+  "routeFamilies": {
+    "rule": "Bounded by route-state-inventory.json: one family per task, its screen files and colocated tests only.",
+    "behaviorToPreserve": "Recovery 011 TASK-009 to TASK-012 wiring in Onboarding, Settings, LocationSettings, Generate and GenerationLoading."
+  },
+  "evidence": {
+    "beforeState": "TASK-040, with its reusable capture harness, before the package import",
+    "thisTask": "docs/design/0143-intake-baseline/** only"
+  },
+  "notExpanded": [
+    "no shared design-system repository",
+    "no published package",
+    "no Storybook",
+    "no support-tooling redesign",
+    "no new protected CI workflow"
+  ]
+}

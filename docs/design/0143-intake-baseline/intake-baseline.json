@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "task": "TASK-001",
+  "issue": 347,
+  "requirements": ["REQ-001", "REQ-031"],
+  "recordedOn": "2026-10-03",
+  "notes": [
+    "A value marked observed was read in the TASK-001 workspace. A value marked declared is copied from the named approved source and was not recomputed here.",
+    "liveRecheck names what this session could not read. It is not a pass, and the check it names runs before the first visual edit."
+  ],
+  "main": {
+    "sha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+    "subject": "chore: close generation recovery release evidence (TASK-028) (#394)",
+    "committedAt": "2026-10-03T02:23:57-05:00",
+    "basis": "observed",
+    "observedAs": "workspace HEAD and the workspace's origin/main remote-tracking ref, which are equal",
+    "moving": true,
+    "liveRecheck": "not_performed — fetching origin was declined in this workspace, so a later main commit cannot be ruled out. Each later task refreshes main itself.",
+    "referenceSnapshotHead": "55981753796643d74011ebd7bf702a6e36896635",
+    "referenceSnapshotNote": "The application reference in the evidence package is an older head. It is supporting context; this main SHA is the baseline."
+  },
+  "source": {
+    "package": "clear-design-system",
+    "version": "0.14.3",
+    "versionBasis": "observed — sources/source-01-CLEAR-Design-System-0.14.3/package.json",
+    "archiveSha256": "ef4a0f9ae0c41e4acc314a0202f48092d229910a1b16d84261275db85f966682",
+    "archiveSha256Basis": "declared — sources/source-02-OWNER_BRIEF.md and REQ-001. The archive file is not in the evidence snapshot, so the hash was not recomputed here; the vendor/version foundation task proves the imported bytes against it.",
+    "publicEntry": {
+      "main": "./index.js",
+      "types": "./index.d.ts",
+      "styles": "./styles.css"
+    },
+    "notRuntime": ["_source", "ui_kits", "./bundle (_ds_bundle.js)"],
+    "authority": "0.14.3 components, public API and shipped CSS govern. README and other prose are context only where they agree (sources/source-05-OWNER_COMPONENT_AUTHORITY.md). DISC-01 to DISC-05 are stale documentation; DISC-06 and DISC-07 are regression-test targets, not vendor edits.",
+    "installedBaseline": {
+      "version": "0.9.7",
+      "path": "src/design-system",
+      "savedExport": "docs/design/exports/clear-design-system-0.9.7",
+      "loadedBy": "src/main.tsx imports css/foundation.css, css/motion.css and css/skins.css individually, not the package's styles.css"
+    }
+  },
+  "recovery011": {
+    "namespace": "011",
+    "completion": "complete on main at the recorded SHA",
+    "basis": "observed in committed records; controller state not read",
+    "proof": [
+      {
+        "what": "TASK-028 final release closeout merged through the protected path as #394, the recorded main SHA",
+        "path": "docs/journal/2026-10-03.md",
+        "anchor": "## TASK-028 / #315 — final release closeout"
+      },
+      {
+        "what": "Both owner steps recorded pass (inbox_check 2026-10-02, generate_review 2026-10-03) and every exit criterion linked",
+        "path": "docs/process/generation-reliability/release-exit.json",
+        "anchor": "\"step\": \"generate_review\""
+      },
+      {
+        "what": "Release checklist steps 1.1 to 4.1 last dated rows pass",
+        "path": "docs/process/generation-reliability/release-checklist.md",
+        "anchor": "## 5. Release exit checklist (REQ-018, REQ-028)"
+      }
+    ],
+    "behavioralUiToPreserve": [
+      {
+        "task": "TASK-009",
+        "pr": 338,
+        "commit": "0346e62e8d66c5ac77d5c17d45314bf3c74af39c",
+        "behavior": "Onboarding refuses a configuration that cannot generate",
+        "journal": "docs/journal/2026-10-02.md"
+      },
+      {
+        "task": "TASK-010",
+        "issue": 297,
+        "behavior": "Settings cannot save impossible preferences",
+        "journal": "docs/journal/2026-10-02.md"
+      },
+      {
+        "task": "TASK-011",
+        "pr": 339,
+        "commit": "b1a72988f45087116af00bbbf791592191da7cd4",
+        "behavior": "Location and equipment changes are refused server-side when not viable; the optimistic update rolls back",
+        "journal": "docs/journal/2026-10-02.md"
+      },
+      {
+        "task": "TASK-012",
+        "issue": 299,
+        "behavior": "A refusal message per failure class, with the request id, on the Generate/Loading path",
+        "journal": "docs/journal/2026-10-01.md"
+      }
+    ],
+    "controller": {
+      "stateChangedByThisTask": false,
+      "heartbeatChangedByThisTask": false,
+      "secondControllerStarted": false,
+      "idleness": "not_observed",
+      "liveRecheck": "not_performed — PRE-001's readiness command (check-readiness.py backend) was declined in this workspace. Original task identities, latest run state and process idleness are confirmed by that command, not by this record."
+    },
+    "uiHold": "The historical UI hold of recovery 011 is a closed historical fact recorded in its journal. It is not a prerequisite here, and no passcode or release word gates any 012 task."
+  },
+  "pr287": {
+    "number": 287,
+    "repository": "theycallme-eric/clear",
+    "description": "Separate unfinished visual work that predates the 0.14.3 selection (sources/source-04-application-reference/REFERENCE_STATUS.md)",
+    "liveStateObserved": false,
+    "liveRecheck": "not_performed — every GitHub read was declined in this workspace. Open/closed state, head SHA and changed files are unknown to this record.",
+    "locallyObserved": [
+      "No commit on main at the recorded SHA names #287 in its message.",
+      "Recovery 011's journal records PR #287 as paused and unchanged through its closeout (docs/journal/2026-10-02.md, docs/journal/2026-10-03.md)."
+    ],
+    "disposition": "preserve_untouched",
+    "dispositionDetail": [
+      "Never auto-merge, close, rebase, force-push or delete it. This task changed nothing in it.",
+      "It is not visual authority. Where its 0.9.7-era visuals differ from 0.14.3 components and CSS, 0.14.3 governs and the 012 task that owns the resource supersedes that visual work explicitly, in its own journal entry.",
+      "Any behavioral or accessibility change it carries that main lacks is kept: the owning 012 task ports it or records why not, rather than losing it.",
+      "No 012 task builds on its branch or depends on its merge."
+    ],
+    "requiredBeforeFirstVisualEdit": "Read its state and changed-file list, and match each path against shared-file-ownership.json. The file-level overlap is unconfirmed until then."
+  },
+  "noOverlapBoundary": {
+    "thisTaskWrites": [
+      "docs/design/0143-intake-baseline/**",
+      "src/test/design-0143-intake-baseline.test.ts",
+      "docs/journal/2026-10-03.md (appended TASK-001 heading only)"
+    ],
+    "thisTaskDoesNotTouch": [
+      "any runtime file under src/app, src/ui, src/styles, src/dev, src/data, src/state or src/design-system",
+      "index.html, package.json, lockfile, Vite, ESLint, Playwright or CI workflow configuration",
+      "supabase/**, hosted project state, deployments",
+      "recovery 011 state, contract, heartbeat, database or Runner attempts",
+      "PR #287",
+      "the evidence snapshot"
+    ],
+    "containment": "No shared design-system repository, published package, Storybook, support-tooling change or new protected CI workflow.",
+    "approval": "Graph approval that made TASK-001 executable is one thing; design authority (the owner's 0.14.3 selection) and review-only sync are separate things. None of the three implies another."
+  }
+}

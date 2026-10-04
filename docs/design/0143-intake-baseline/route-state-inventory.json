@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "task": "TASK-001",
+  "recordedOn": "2026-10-03",
+  "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+  "notes": [
+    "A source inventory of the before-state: which file renders each required screen and which committed suite exercises it. It is not rendered evidence.",
+    "Complete before-state screenshots are owned by TASK-040, captured with its reusable harness before the package import.",
+    "The screen list is e2e/required-routes.ts (IA.md §4). Nothing here adds or removes a route.",
+    "browser names the committed suites whose journey passes through the screen, as a pointer for TASK-040. It is not a statement that every state of the screen is covered there."
+  ],
+  "viewports": ["phone 390x844", "tablet 768x1024", "desktop", "short viewport"],
+  "skins": 4,
+  "requiredStates": [
+    "loading",
+    "empty",
+    "error",
+    "populated",
+    "selected",
+    "disabled",
+    "focus/keyboard",
+    "reduced motion",
+    "dialog",
+    "toast",
+    "wrapped pinned actions",
+    "contained scrolling"
+  ],
+  "sharedStateSources": {
+    "viewStates": "src/ui/view-state.tsx",
+    "loadingHost": "src/app/GenerationLoadingHost.tsx",
+    "dialogs": ["src/ui/app-dialog.tsx", "src/ui/blocking-dialog.tsx"],
+    "toasts": "src/ui/toast-host.tsx",
+    "errorBoundary": "src/app/ErrorBoundary.tsx"
+  },
+  "screens": [
+    {
+      "screen": "Welcome",
+      "route": "/welcome",
+      "guard": "public-only",
+      "source": "src/app/Welcome.tsx",
+      "unit": "src/app/Welcome.test.tsx",
+      "browser": ["e2e/auth-screen.spec.ts", "e2e/app-shell.spec.ts", "e2e/contained-shell.spec.ts"]
+    },
+    {
+      "screen": "OTP Login",
+      "route": "/login",
+      "guard": "public-only",
+      "source": "src/app/Login.tsx",
+      "unit": "src/app/Login.test.tsx",
+      "browser": ["e2e/auth-otp.spec.ts", "e2e/auth-screen.spec.ts", "e2e/app-shell.spec.ts"]
+    },
+    {
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "guard": "onboarding",
+      "source": "src/app/Onboarding.tsx",
+      "unit": "src/app/Onboarding.test.tsx",
+      "browser": ["e2e/generation-browser-new-user.spec.ts"],
+      "recovery011Behavior": "TASK-009"
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "guard": "protected",
+      "source": "src/app/Home.tsx",
+      "unit": "src/app/Home.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts", "e2e/session-continuity.spec.ts"]
+    },
+    {
+      "screen": "Generate",
+      "route": "/generate",
+      "guard": "protected",
+      "source": "src/app/Generate.tsx",
+      "unit": "src/app/Generate.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts", "e2e/uat-batch-01.spec.ts"],
+      "recovery011Behavior": "TASK-012"
+    },
+    {
+      "screen": "Loading",
+      "route": null,
+      "guard": "protected",
+      "renderedWithin": ["Home", "Generate", "Review"],
+      "source": "src/app/GenerationLoading.tsx",
+      "unit": "src/app/GenerationLoading.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts"],
+      "recovery011Behavior": "TASK-012"
+    },
+    {
+      "screen": "Review",
+      "route": "/review",
+      "guard": "protected",
+      "source": "src/app/Review.tsx",
+      "routeSource": "src/app/ReviewRoute.tsx",
+      "unit": "src/app/Review.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts", "e2e/d6-swap-persistence.spec.ts"]
+    },
+    {
+      "screen": "Workout",
+      "route": "/workout",
+      "guard": "protected",
+      "source": "src/app/Workout.tsx",
+      "unit": "src/app/Workout.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts", "e2e/session-continuity.spec.ts"]
+    },
+    {
+      "screen": "Summary",
+      "route": "/summary",
+      "guard": "protected",
+      "source": "src/app/Summary.tsx",
+      "unit": "src/app/Summary.test.tsx",
+      "browser": ["e2e/core-loop.spec.ts"]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "guard": "protected",
+      "source": "src/app/History.tsx",
+      "unit": "src/app/History.test.tsx",
+      "browser": ["e2e/history-detail.spec.ts"]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "guard": "protected",
+      "source": "src/app/SessionDetail.tsx",
+      "unit": "src/app/SessionDetail.test.tsx",
+      "browser": ["e2e/history-detail.spec.ts"]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "subRoutes": ["/settings/locations"],
+      "guard": "protected",
+      "source": "src/app/Settings.tsx",
+      "subRouteSource": "src/app/LocationSettings.tsx",
+      "unit": "src/app/Settings.test.tsx",
+      "browser": ["e2e/settings-appearance.spec.ts", "e2e/settings-locations.spec.ts"],
+      "recovery011Behavior": "TASK-010, TASK-011"
+    },
+    {
+      "screen": "Component Gallery",
+      "route": "/dev/gallery",
+      "guard": "dev-only",
+      "source": "src/dev/GalleryRoute.tsx",
+      "unit": "src/dev/gallery-route.test.tsx",
+      "browser": []
+    },
+    {
+      "screen": "Not Found",
+      "route": "*",
+      "guard": "none",
+      "source": "src/app/NotFound.tsx",
+      "unit": "src/app/router.test.tsx",
+      "browser": []
+    }
+  ],
+  "shellSuites": {
+    "focusedCheck": ["e2e/app-shell.spec.ts", "e2e/contained-shell.spec.ts"],
+    "result": "72 expected, 0 unexpected, 0 flaky, 0 skipped against the owned local server on 2026-10-03; not deployed proof"
+  }
+}
