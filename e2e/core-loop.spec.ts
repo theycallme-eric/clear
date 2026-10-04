@@ -12,6 +12,7 @@ import {
   writeReleaseEvidence,
 } from '../scripts/generation-reliability/release-gate.mjs'
 
+import { CLEAR_0143_SINGLE_GENERATION_GUARD, singleGenerationGuard } from './design-0143/fixtures'
 import { expect, test } from './fixtures'
 import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
 import { backend } from './support/backend'
@@ -167,12 +168,19 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     dispatchBudget = budget
     // Guard before navigation, on every origin and model-backed route. Abort
     // a duplicate or mismatched request before it can reach any backend.
+    // CLEAR_0143_SINGLE_GENERATION_GUARD: this lane alone opts in. Only a POST
+    // is a dispatch; the first is forwarded and every later one is aborted.
+    const dispatch = singleGenerationGuard({
+      marker: CLEAR_0143_SINGLE_GENERATION_GUARD,
+      specFile: testInfo.file,
+      budget,
+    })
     await page.route(MODEL_ROUTE, async (route) => {
       const request = route.request()
-      if (request.method() !== 'POST') return route.continue()
-      const allowed = budget.allow(request.url())
+      const decision = dispatch(request.method(), request.url())
+      if (decision === 'pass') return route.continue()
       observed.generationRequests = budget.snapshot().forwarded
-      if (!allowed) return route.abort('blockedbyclient')
+      if (decision === 'abort') return route.abort('blockedbyclient')
       observed.requestId = await request.headerValue('x-request-id')
       // Relay the genuine network response, never a fixture. Browser redirect
       // handling could otherwise escape the exact-endpoint guard.
