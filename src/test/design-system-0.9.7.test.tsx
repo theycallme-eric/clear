@@ -29,11 +29,19 @@ function filesBelow(root: string): string[] {
   return files.sort()
 }
 
-describe('0.9.7 source and public contract', () => {
-  it('declares VERSION 0.9.7 from the public entry and package', () => {
+describe('0.14.3 source and public contract', () => {
+  it('declares VERSION 0.14.3 from the public entry and package', () => {
     const pkg = JSON.parse(readFileSync(dsPath('package.json'), 'utf-8'))
-    expect(VERSION).toBe('0.9.7')
-    expect(pkg.version).toBe('0.9.7')
+    expect(VERSION).toBe('0.14.3')
+    expect(pkg.version).toBe('0.14.3')
+  })
+
+  it('loads the single public stylesheet entry exactly once', () => {
+    const main = readFileSync(resolve(import.meta.dirname, '../main.tsx'), 'utf-8')
+    const imports = [...main.matchAll(/^import ['"]([^'"]+\.css)['"]/gm)]
+      .map((match) => match[1])
+      .filter((path) => path.startsWith('./design-system/'))
+    expect(imports).toEqual(['./design-system/styles.css'])
   })
 
   it('pins ATOMIC.md to the owner-supplied archive and hash', () => {
@@ -41,22 +49,24 @@ describe('0.9.7 source and public contract', () => {
       resolve(import.meta.dirname, '../../docs/specs/design/ATOMIC.md'),
       'utf-8',
     )
-    expect(atomic).toMatch(/\|\s*Version\s*\|\s*`0\.9\.7`\s*\|/)
+    expect(atomic).toMatch(/\|\s*Version\s*\|\s*`0\.14\.3`\s*\|/)
     expect(atomic).toContain(
-      '12620dc5d9b6d7de965f25b80f86a90b8ee3e6a5eeea813eb1b85b0563d74790',
+      'ef4a0f9ae0c41e4acc314a0202f48092d229910a1b16d84261275db85f966682',
     )
+    expect(atomic).toMatch(/\|\s*Source files\s*\|\s*577\s*\|/)
+    expect(atomic).toMatch(/\|\s*Review pages\s*\|\s*43 \(22 previews \+ 21 component cards\)\s*\|/)
   })
 
   it('keeps the runtime vendor byte-identical to the immutable evidence copy', () => {
     const runtime = resolve(import.meta.dirname, '../design-system')
     const evidence = resolve(
       import.meta.dirname,
-      '../../docs/design/exports/clear-design-system-0.9.7',
+      '../../exports/clear-design-system-0.14.3',
     )
     const runtimeFiles = filesBelow(runtime)
     const evidenceFiles = filesBelow(evidence)
     expect(runtimeFiles).toEqual(evidenceFiles)
-    expect(runtimeFiles).toHaveLength(590)
+    expect(runtimeFiles).toHaveLength(577)
     for (const path of runtimeFiles) {
       if (!readFileSync(join(runtime, path)).equals(readFileSync(join(evidence, path)))) {
         throw new Error(`Runtime vendor differs from evidence at ${path}`)
@@ -71,7 +81,7 @@ describe('0.9.7 source and public contract', () => {
       'utf-8',
     )
     expect(declaration).toContain('Version 0.5.0')
-    expect(declaration).toContain("VERSION: '0.9.7'")
+    expect(declaration).toContain("VERSION: '0.14.3'")
     expect(atomic).toContain('documentation defect')
   })
 
@@ -92,12 +102,12 @@ describe('0.9.7 source and public contract', () => {
         return false
       }
     })
-    expect(previews).toHaveLength(24)
-    expect(cards).toHaveLength(19)
+    expect(previews).toHaveLength(22)
+    expect(cards).toHaveLength(21)
     expect(previews.length + cards.length).toBe(43)
   })
 
-  it('ships the 0.9.7 composition and motion vocabulary', () => {
+  it('ships the 0.14.3 composition and motion vocabulary', () => {
     const foundation = readFileSync(dsPath('css/foundation.css'), 'utf-8')
     const motion = readFileSync(dsPath('css/motion.css'), 'utf-8')
     for (const className of ['clr-scroll-region', 'clr-list', 'clr-actions', 'clr-footer', 'clr-band']) {
@@ -108,7 +118,7 @@ describe('0.9.7 source and public contract', () => {
   })
 })
 
-describe('0.9.7 component behavior', () => {
+describe('0.14.3 component behavior', () => {
   const tabs = ['Alpha', 'Beta', 'Gamma']
 
   it('renders a tablist whose direct children are the tabs', () => {

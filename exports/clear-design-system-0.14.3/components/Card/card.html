@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" name="Card" subtitle="Frame + accent bar + heading inside · every group sits in one · never nested" viewport="700x260" --><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<style>html,body{margin:0;padding:0;background:var(--bg);overflow:hidden}a{color:var(--interaction-300)}a:hover{color:var(--interaction-100)}
+.card{box-sizing:border-box;height:260px;padding:18px 22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:start}
+.fb{font-family:var(--font-data);font-size:12px;color:var(--neutral-400);letter-spacing:var(--tracking-data);text-transform:uppercase}
+.t{font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.1;text-transform:uppercase;color:var(--text-header)}
+.p{font-family:var(--font-body);font-size:13px;line-height:1.25;color:var(--text-secondary);margin:0}</style></head>
+<body><div class="card" id="m"><span class="fb">Bundle compiling… reload in a moment</span></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script>
+const NS=window.CLEARDesignSystem_4ee044||{};const e=React.createElement;const m=document.getElementById('m');
+if(NS.Card){(m.__r||(m.__r=ReactDOM.createRoot(m))).render(e(React.Fragment,null,
+ e(NS.Card,{heading:'Rest day'},e('div',{className:'t'},'No workout scheduled'),e('p',{className:'p'},'Generate one based on how you feel today.')),
+ e(NS.Card,{heading:'Coaching cue',role:'info'},e('p',{className:'p'},'Brace before the press. Elbows under the bar.')),
+ e(NS.Card,{heading:'Sessions',meta:'Week 4'},e('p',{className:'p'},'3 of 7 complete.'))));}
+</script></body></html>

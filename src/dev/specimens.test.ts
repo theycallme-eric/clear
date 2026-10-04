@@ -49,16 +49,15 @@ describe('the specimen catalogue', () => {
     )
   })
 
-  it('finds a descriptor on every marked 0.9.7 review page', () => {
+  it('finds a descriptor on every marked 0.14.3 review page', () => {
     // The count is derived, not asserted into existence: every file carrying a
-    // `@dsCard` comment, which is 41 of the 43 the 0.9.7 export ships. The two
-    // without one are the legacy previews the per-component cards superseded.
+    // `@dsCard` comment, which is all 43 review pages the 0.14.3 export ships.
     const marked = specimenFilesOnDisk().filter((file) =>
       readFileSync(resolve(VENDOR_ROOT, file), 'utf-8').includes('@dsCard'),
     )
 
     expect(DESCRIBED_SPECIMENS).toHaveLength(marked.length)
-    expect(DESCRIBED_SPECIMENS).toHaveLength(41)
+    expect(DESCRIBED_SPECIMENS).toHaveLength(43)
     expect(SPECIMENS).toHaveLength(43)
   })
 
@@ -71,7 +70,7 @@ describe('the specimen catalogue', () => {
     expect(skins?.descriptor?.name).toBe('Skins')
     expect(skins?.descriptor?.subtitle).toContain('Four identities, one system')
     expect(skins?.width).toBe(700)
-    expect(skins?.height).toBe(360)
+    expect(skins?.height).toBe(420)
     expect(skins?.url).toBe(`${SPECIMEN_BASE}preview/skins.html`)
   })
 
@@ -83,20 +82,14 @@ describe('the specimen catalogue', () => {
     expect(mono?.subtitle).toContain('"the accessible skin"')
   })
 
-  it('keeps the undescribed previews, in a group that says so', () => {
+  it('does not invent undescribed previews when every shipped page has a descriptor', () => {
     const undescribed = SPECIMENS.filter(
       (specimen) => specimen.descriptor === null,
     )
 
-    expect(undescribed.map((specimen) => specimen.file)).toEqual([
-      'preview/component-buttons.html',
-      'preview/component-cards.html',
-    ])
-    expect(undescribed.map((specimen) => specimen.name)).toEqual([
-      'Component Buttons',
-      'Component Cards',
-    ])
-    expect(SPECIMEN_GROUPS.at(-1)?.group).toBe(UNDESCRIBED_GROUP)
+    expect(undescribed.map((specimen) => specimen.file)).toEqual([])
+    expect(undescribed.map((specimen) => specimen.name)).toEqual([])
+    expect(SPECIMEN_GROUPS.map((group) => group.group)).not.toContain(UNDESCRIBED_GROUP)
   })
 
   it('groups every card under exactly one heading', () => {

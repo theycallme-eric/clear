@@ -4,9 +4,9 @@ import ts from 'typescript'
 import { describe, expect, it } from 'vitest'
 
 /**
- * VIBE-D — retired 0.9.7 vocabulary must not quietly return through a local
- * screen. The immutable vendor still defines compatibility aliases; this scan
- * is deliberately limited to the production application consumer.
+ * VIBE-D — retired vocabulary must not quietly return through a local screen.
+ * The 0.14.3 vendor removes compatibility aliases; this scan is deliberately
+ * limited to the production application consumer.
  */
 
 const root = resolve(import.meta.dirname, '..')
@@ -48,7 +48,7 @@ function emptyStateActions(path: string, source: string): string[] {
   return violations
 }
 
-describe('the production app consumes CLEAR 0.9.7 vocabulary', () => {
+describe('the production app consumes CLEAR 0.14.3 vocabulary', () => {
   it('contains none of the removed class or token names', () => {
     const removed = [
       'clr-load-ticks',

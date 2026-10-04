@@ -117,13 +117,18 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
           runs on this host-owned wrapper — the decay covers the whole toast. */}
       <div ref={wrapperRef} className={leaving ? PHOSPHOR_OUT : undefined}>
         <Toast
+          key={current.id}
           variant={current.variant}
           actionLabel={current.actionLabel}
           onAction={() => {
             current.onAction?.()
             queue.dismiss(current.id)
           }}
-          onDismiss={() => queue.dismiss(current.id)}
+          onDismiss={() => {
+            // The vendor reports completed exit; do not animate it a second time.
+            queue.dismiss(current.id)
+            queue.settle(current.id)
+          }}
         >
           {current.message}
           {current.requestId && (
