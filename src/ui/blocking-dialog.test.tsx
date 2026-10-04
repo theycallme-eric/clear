@@ -2,19 +2,21 @@
  * DS-05 acceptance: the blocking surfaces. A decision the user must take and
  * a failure that stops the flow are both a `Dialog` — never a bottom sheet
  * (decided 2026-08-25, ATOMIC §12) — and both inherit `AppDialog`'s entrance
- * and its phosphor-out dismissal, so a blocking overlay always constructs
+ * and the public Dialog's delayed dismissal, so a blocking overlay always constructs
  * itself rather than sliding in.
  */
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, ErrorCode } from '../state/errors'
 import { renderWithProviders } from '../test/render'
 import { ConfirmDialog, ErrorDialog } from './blocking-dialog'
+
+afterEach(() => vi.useRealTimers())
 
 function getDialog(): HTMLDialogElement {
   const dialog = document.querySelector('dialog')
@@ -87,7 +89,8 @@ describe('ConfirmDialog — a confirmation is a Dialog, not a sheet', () => {
     expect(onCancel).toHaveBeenCalledTimes(1)
   })
 
-  it('Esc is the safe exit and reports one cancellation', () => {
+  it('Esc is the safe exit and reports one cancellation after the public Dialog closes', () => {
+    vi.useFakeTimers()
     const onCancel = vi.fn()
     const onConfirm = vi.fn()
     renderWithProviders(
@@ -98,6 +101,12 @@ describe('ConfirmDialog — a confirmation is a Dialog, not a sheet', () => {
 
     fireEvent(getDialog(), new Event('cancel', { cancelable: true }))
 
+    expect(getDialog().open).toBe(true)
+    expect(getDialog()).toHaveClass('clr-dialog--closing')
+    expect(onCancel).not.toHaveBeenCalled()
+    act(() => vi.advanceTimersByTime(200))
+
+    expect(getDialog().open).toBe(false)
     expect(onCancel).toHaveBeenCalledTimes(1)
     expect(onConfirm).not.toHaveBeenCalled()
   })
@@ -181,28 +190,38 @@ describe('ErrorDialog — a blocking AppError', () => {
   })
 })
 
-describe('both blocking surfaces dismiss through phosphor-out', () => {
+describe('both blocking surfaces dismiss through the public Dialog exit', () => {
   it('keeps the confirmation mounted while it decays', () => {
+    vi.useFakeTimers()
+    const onCancel = vi.fn()
     const view = renderWithProviders(
-      <ConfirmDialog open title="Discard workout" onConfirm={() => {}} onCancel={() => {}}>
+      <ConfirmDialog open title="Discard workout" onConfirm={() => {}} onCancel={onCancel}>
         Body
       </ConfirmDialog>,
     )
 
-    // The exit animation cannot run in jsdom, so the close is immediate — the
-    // decay class is the same one `app-dialog.test.tsx` proves holds it open.
+    // The real public Dialog owns the 200ms exit even when CSS cannot run in
+    // jsdom. A controlled close must remain silent after the native close.
     view.rerender(
       <ConfirmDialog
         open={false}
         title="Discard workout"
         onConfirm={() => {}}
-        onCancel={() => {}}
+        onCancel={onCancel}
       >
         Body
       </ConfirmDialog>,
     )
 
-    expect(getDialog().open).toBe(false)
+    const dialog = getDialog()
+    expect(dialog).toBeInTheDocument()
+    expect(dialog.open).toBe(true)
+    expect(dialog).toHaveClass('clr-dialog--closing')
+    act(() => vi.advanceTimersByTime(199))
+    expect(dialog.open).toBe(true)
+    act(() => vi.advanceTimersByTime(1))
+    expect(dialog.open).toBe(false)
+    expect(onCancel).not.toHaveBeenCalled()
   })
 
   it('no app-owned source hand-rolls an overlay beside the shipped Dialog', () => {

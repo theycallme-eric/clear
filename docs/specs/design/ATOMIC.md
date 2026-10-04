@@ -1,11 +1,11 @@
-# ATOMIC.md — CLEAR 0.9.7 component and token contract
+# ATOMIC.md — CLEAR 0.14.3 component and token contract
 
-**Status:** revision 3 · pinned to `clear-design-system@0.9.7`
+**Status:** revision 4 · pinned to `clear-design-system@0.14.3`
 **Companion to:** `docs/specs/IA.md` (screens and journeys)
 **Companion to:** `docs/specs/design/visual-language-rules.md` (visual rationale)
 
 IA answers what screens exist and what they do. This document records the design-system
-contract those screens compose from. The owner-supplied 0.9.7 archive is authoritative when this
+contract those screens compose from. The owner-supplied 0.14.3 archive is authoritative when this
 document, historical requirements, screenshots, recovery notes, or local fixes disagree.
 
 The design system is an external, versioned input. Product code may compose its public API; it
@@ -18,16 +18,18 @@ must not patch the vendored implementation or invent a second visual dialect.
 | Field | Value |
 | --- | --- |
 | Package | `clear-design-system` |
-| Version | `0.9.7` |
-| Source archive | `CLEAR Design System 0.9.7..zip` |
-| Archive SHA-256 | `12620dc5d9b6d7de965f25b80f86a90b8ee3e6a5eeea813eb1b85b0563d74790` |
+| Version | `0.14.3` |
+| Source archive | `CLEAR-Design-System-0.14.3.zip` |
+| Archive SHA-256 | `ef4a0f9ae0c41e4acc314a0202f48092d229910a1b16d84261275db85f966682` |
+| Source files | 577 |
+| Review pages | 43 (22 previews + 21 component cards) |
 | Peer dependency | `react >= 18` |
 | Public entry | `index.js` / `index.d.ts` |
 | Style entry | `styles.css` — load exactly this file |
 | Namespace (UMD) | `CLEARDesignSystem_4ee044` |
-| Evidence copy | `docs/design/exports/clear-design-system-0.9.7/` |
+| Evidence copy | `exports/clear-design-system-0.14.3/` |
 | Runtime copy | `src/design-system/` |
-| Origin | Authored in Claude Design and supplied by the owner on 2026-09-30 |
+| Origin | Owner-supplied versioned archive, selected for recovery 012 |
 
 The evidence and runtime directories are exact copies of the supplied package. Do not edit either
 copy by hand. A later design change arrives as another versioned import with a changelog entry and
@@ -48,7 +50,7 @@ imports. Product code imports only from the public entry.
 
 The prose header in the supplied `index.d.ts` still says 0.5.0. It is a non-blocking upstream
 documentation defect: `VERSION`, `package.json`, the changelog, the archive name, and this pin all
-agree on 0.9.7. The vendor remains byte-identical rather than patching the header locally.
+agree on 0.14.3. The vendor remains byte-identical rather than patching the header locally.
 
 ---
 

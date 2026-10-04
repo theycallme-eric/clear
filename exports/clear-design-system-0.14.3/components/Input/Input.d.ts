@@ -1,0 +1,45 @@
+import type * as React from "react";
+
+export interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "defaultValue"> {
+  /** Stenciled uppercase label, wired to the field with htmlFor/id. */
+  label?: React.ReactNode;
+  value?: string;
+  defaultValue?: string;
+  /** Called with the next value, then the original event. */
+  onChange?: (value: string, event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  /** Write placeholders in a real voice — how a person talks, not how a form asks. */
+  placeholder?: string;
+  /** Render a textarea instead. `type` is ignored when set. */
+  multiline?: boolean;
+  rows?: number;
+  disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
+  /** Defaults to true when `errorText` is present. Sets aria-invalid. */
+  invalid?: boolean;
+  /** Persistent guidance. Linked via aria-describedby. */
+  helperText?: React.ReactNode;
+  /** Validation failure. Linked via aria-describedby and implies invalid. */
+  errorText?: React.ReactNode;
+  /**
+   * A fixed unit shown inside the field, in a tinted end cap behind a divider,
+   * e.g. "kg". It reads as part of the field but not editable, and is announced
+   * with the field.
+   */
+  unit?: React.ReactNode;
+  inputRef?: React.Ref<HTMLInputElement | HTMLTextAreaElement>;
+}
+
+/**
+ * Text field — sharp corners, 2px structure border, surface brightens on focus.
+ * Supports id/name/type/required/readOnly/autoComplete, helper and error text
+ * wired through aria-describedby, and forwards native focus/blur.
+ *
+ * Shrinks safely inside constrained flex and grid parents: it takes the width it
+ * is given rather than forcing its parent to overflow, while keeping its 40px
+ * height, focus ring, label, validation and affordances intact. Standalone
+ * sizing is unchanged. The parent layout owns the decision to stack or reflow at
+ * extreme widths; no `min-width: 0` override is needed at the call site.
+ */
+export declare function Input(props: InputProps): React.JSX.Element;

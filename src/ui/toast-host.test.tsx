@@ -5,7 +5,7 @@
  * reachable button that steals no focus; only `negative` announces
  * assertively (`role="alert"`) — a success stays a polite `status`.
  */
-import { act, screen } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -15,7 +15,10 @@ import { createToastQueue, errorToast, type ToastQueue } from '../state/toasts'
 import { renderWithProviders } from '../test/render'
 import { ToastHost } from './toast-host'
 
-afterEach(() => vi.restoreAllMocks())
+afterEach(() => {
+  vi.useRealTimers()
+  vi.restoreAllMocks()
+})
 
 /**
  * jsdom computes no animations, so by default the host settles immediately —
@@ -43,11 +46,14 @@ function renderHost(queue: ToastQueue) {
   return renderWithProviders(<ToastHost queue={queue} />)
 }
 
-/** jsdom has no AnimationEvent; build the end event by hand. */
+/** jsdom lacks AnimationEvent; React detects its prefixed fallback at import. */
 function fireAnimationEnd(element: Element, animationName: string) {
   const event = new Event('animationend', { bubbles: true })
   Object.assign(event, { animationName })
   fireEvent(element, event)
+  const prefixed = new Event('webkitAnimationEnd', { bubbles: true })
+  Object.assign(prefixed, { animationName })
+  fireEvent(element, prefixed)
 }
 
 describe('one host, one visible toast', () => {
@@ -180,7 +186,8 @@ describe('dismissal — keyboard reachable, focus-safe', () => {
     expect(dismiss).toHaveFocus()
     await user.keyboard('{Enter}')
 
-    expect(screen.queryByText('Saved locally')).not.toBeInTheDocument()
+    // 0.14.3 owns dismissal motion; notification arrives only after its exit.
+    await waitFor(() => expect(screen.queryByText('Saved locally')).not.toBeInTheDocument())
   })
 })
 
@@ -264,5 +271,47 @@ describe('pinned action clearance', () => {
       bottom: 'calc(88px + var(--spacing-300))',
       zIndex: '3',
     })
+  })
+})
+
+describe('0.14.3 vendor dismissal completion', () => {
+  it('waits for the vendor fallback, then promotes and independently dismisses the next toast', () => {
+    vi.useFakeTimers()
+    const queue = createToastQueue()
+    renderHost(queue)
+    act(() => {
+      queue.show({ variant: 'info', message: 'First' })
+      queue.show({ variant: 'positive', message: 'Second' })
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
+    act(() => vi.advanceTimersByTime(259))
+    expect(screen.getByText('First')).toBeInTheDocument()
+    expect(screen.queryByText('Second')).not.toBeInTheDocument()
+    act(() => vi.advanceTimersByTime(1))
+    expect(screen.queryByText('First')).not.toBeInTheDocument()
+    expect(screen.getByText('Second')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
+    act(() => vi.advanceTimersByTime(260))
+    expect(queue.getState().current).toBeNull()
+  })
+
+  it('animation completion settles exactly once without a second host exit', () => {
+    vi.useFakeTimers()
+    mockPhosphorOutRuns()
+    const queue = createToastQueue()
+    const settle = vi.spyOn(queue, 'settle')
+    renderHost(queue)
+    act(() => {
+      queue.show({ variant: 'info', message: 'First' })
+      queue.show({ variant: 'info', message: 'Second' })
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
+    fireAnimationEnd(screen.getByRole('status'), 'clr-phosphor-out')
+    expect(screen.queryByText('First')).not.toBeInTheDocument()
+    expect(screen.getByText('Second')).toBeInTheDocument()
+    expect(settle).toHaveBeenCalledTimes(1)
+    act(() => vi.advanceTimersByTime(260))
+    expect(screen.getByText('Second')).toBeInTheDocument()
+    expect(settle).toHaveBeenCalledTimes(1)
   })
 })

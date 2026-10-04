@@ -13,6 +13,7 @@ export default tseslint.config(
       'dist',
       'coverage',
       'docs/design/exports',
+      'exports/clear-design-system-0.14.3',
       'docs/backend/evidence',
       'src/design-system',
       'scripts/adherence/fixtures',

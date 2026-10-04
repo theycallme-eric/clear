@@ -121,6 +121,10 @@ async function completeThrough(label: string, effort?: number): Promise<void> {
     })
   }
   await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
+  // The successful or failed write closes the effort question through the
+  // real public Dialog's 200ms exit. Finish that close before another block
+  // is selected, so a still-open prior question cannot satisfy the next one.
+  await waitFor(() => expect(dialog).not.toHaveAttribute('open'))
 }
 
 describe('BlockCompletionProvider — one path for every structure', () => {
@@ -226,7 +230,9 @@ describe('BlockCompletionProvider — one path for every structure', () => {
     const { workout } = mount(['for_time'])
 
     await user.click(screen.getByRole('button', { name: 'FOR TIME' }))
-    await user.click(await screen.findByRole('button', { name: 'Not now' }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: 'Not now' }))
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'))
 
     expect(workout.recorded()).toEqual([])
     expect(screen.getByRole('button', { name: 'FOR TIME' })).toBeInTheDocument()

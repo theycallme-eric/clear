@@ -9,7 +9,7 @@ import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { EmptyState } from '../design-system/index'
+import { Button, EmptyState } from '../design-system/index'
 import { createError, ErrorCode } from '../state/errors'
 import {
   SLOW_THRESHOLD_MS,
@@ -37,12 +37,13 @@ function ReferenceHistoryScreen({
         state={state}
         loadingLabel="Reading history"
         empty={
-          <EmptyState
-            title="No sessions logged"
-            message="Completed workouts appear here."
-            actionLabel="Generate workout"
-            onAction={onGenerate}
-          />
+          <>
+            <EmptyState
+              title="No sessions logged"
+              message="Completed workouts appear here."
+            />
+            {onGenerate && <Button onClick={onGenerate}>Generate workout</Button>}
+          </>
         }
         errorTitle="History didn't load"
         onRetry={onRetry}
