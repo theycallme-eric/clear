@@ -1,12 +1,16 @@
 {
-  "version": 1,
+  "version": 2,
   "task": "TASK-001",
   "issue": 347,
-  "requirements": ["REQ-001", "REQ-031"],
+  "requirements": [
+    "REQ-001",
+    "REQ-031"
+  ],
   "recordedOn": "2026-10-03",
   "notes": [
-    "A value marked observed was read in the TASK-001 workspace. A value marked declared is copied from the named approved source and was not recomputed here.",
-    "liveRecheck names what this session could not read. It is not a pass, and the check it names runs before the first visual edit."
+    "observed means the named workspace or retained read-only operator observation; operator observations are explicitly attributed and dated. They are not worker-executed commands.",
+    "The original worker declined live reads. Its journal checkpoint remains intact; retained startup evidence below resolves the recorded baseline facts without claiming a fresh re-query or task acceptance.",
+    "This is an immutable before-state at recovered f83 main; every later task refreshes moving main through the existing controller. No 0.14.3 import or full before-state capture is claimed here."
   ],
   "main": {
     "sha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
@@ -15,34 +19,93 @@
     "basis": "observed",
     "observedAs": "workspace HEAD and the workspace's origin/main remote-tracking ref, which are equal",
     "moving": true,
-    "liveRecheck": "not_performed — fetching origin was declined in this workspace, so a later main commit cannot be ruled out. Each later task refreshes main itself.",
+    "liveRecheck": "Worker fetch was declined; retained operator facts independently record this exact current main at their observation time. Subsequent delivery/task refresh remains the existing controller's responsibility.",
     "referenceSnapshotHead": "55981753796643d74011ebd7bf702a6e36896635",
-    "referenceSnapshotNote": "The application reference in the evidence package is an older head. It is supporting context; this main SHA is the baseline."
+    "referenceSnapshotNote": "The application reference in the evidence package is an older head. It is supporting context; this main SHA is the baseline.",
+    "treeSha": "ad445729f3b3534b6897202cc38ee8aedcd86a9c",
+    "operatorObservation": {
+      "sha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+      "observedAt": "2026-10-04T02:05:19.147040+00:00",
+      "proof": "retainedOperatorEvidence.operatorFacts"
+    }
   },
   "source": {
     "package": "clear-design-system",
     "version": "0.14.3",
     "versionBasis": "observed — sources/source-01-CLEAR-Design-System-0.14.3/package.json",
     "archiveSha256": "ef4a0f9ae0c41e4acc314a0202f48092d229910a1b16d84261275db85f966682",
-    "archiveSha256Basis": "declared — sources/source-02-OWNER_BRIEF.md and REQ-001. The archive file is not in the evidence snapshot, so the hash was not recomputed here; the vendor/version foundation task proves the imported bytes against it.",
+    "archiveSha256Basis": "actual_original_file_bytes — independently hashed by the preparation operator, as retained in TASK-001-OPERATOR-FACTS.json and TASK-001-INDEPENDENT-REVIEW-CHECKLIST.md; not recomputed by the worker",
     "publicEntry": {
       "main": "./index.js",
       "types": "./index.d.ts",
       "styles": "./styles.css"
     },
-    "notRuntime": ["_source", "ui_kits", "./bundle (_ds_bundle.js)"],
+    "notRuntime": [
+      "_source",
+      "ui_kits",
+      "./bundle (_ds_bundle.js)"
+    ],
     "authority": "0.14.3 components, public API and shipped CSS govern. README and other prose are context only where they agree (sources/source-05-OWNER_COMPONENT_AUTHORITY.md). DISC-01 to DISC-05 are stale documentation; DISC-06 and DISC-07 are regression-test targets, not vendor edits.",
     "installedBaseline": {
       "version": "0.9.7",
       "path": "src/design-system",
       "savedExport": "docs/design/exports/clear-design-system-0.9.7",
       "loadedBy": "src/main.tsx imports css/foundation.css, css/motion.css and css/skins.css individually, not the package's styles.css"
+    },
+    "archiveVerification": {
+      "archivePath": "/Users/eric/Downloads/CLEAR Design System 0.14.3.zip",
+      "observedAt": "2026-10-04T02:05:19.147040+00:00",
+      "proof": "retainedOperatorEvidence.operatorFacts",
+      "inventoryPath": "requirements-recovery/012-design-0143/ARCHIVE_INVENTORY.json",
+      "inventoryFileSha256": "304b45ad196d70559c3de69fb5c2bd69b6881b77510fbdcfe0888aca0b551757",
+      "fileCount": 577,
+      "sourceManifestPath": "requirements-recovery/012-design-0143/workspace/SOURCE_MANIFEST.json",
+      "sourceManifestFileSha256": "ed8679e6cc3693c99b19c791f34cc5413e1c065934879313a2633e98e9d3eaed",
+      "sourceInventorySha256": "f7e0d792ef59890cab0980541f54dd8f9f127278e9fa6a1e6b96abb8057001e3",
+      "selectedCopiedBytesMatch": [
+        {
+          "path": "index.d.ts",
+          "bytes": 5305,
+          "sha256": "22fbb77b9b3e8384b2580ec115a195865e9e3b2fedd1809ee569dfd4e43ca441"
+        },
+        {
+          "path": "index.js",
+          "bytes": 3581,
+          "sha256": "c88efa3a369ffa97e7423f7b94b2d39ec2d07f1f43561924691dfc35e2d779ca"
+        },
+        {
+          "path": "package.json",
+          "bytes": 750,
+          "sha256": "6ac4d90574ac2121de891c1b8db40b5bf69075b2e2072404984bf787d72d14f3"
+        },
+        {
+          "path": "styles.css",
+          "bytes": 1145,
+          "sha256": "26f46d2ea2c391d77098c395d001ff091ebd01658c4457d8e0277ac40f310956"
+        },
+        {
+          "path": "components/Card/Card.jsx",
+          "bytes": 2976,
+          "sha256": "78c8afedab253f499a8cd8080589a76725467e6ac00c96d45ef4d56edd87a107"
+        },
+        {
+          "path": "components/Dialog/Dialog.jsx",
+          "bytes": 4245,
+          "sha256": "71a5407d23b0635342924906b59f677b65451d500a41612833144fa308302090"
+        },
+        {
+          "path": "components/Toast/Toast.jsx",
+          "bytes": 4579,
+          "sha256": "bf4bc4e277d48c529124fe52b7a77fb2655a7e265e6fd535b52a40632afb8625"
+        }
+      ],
+      "limit": "Retained preparation proof for original/copied bytes. TASK-002 independently verifies the exact imported vendor bytes and public entry; this does not claim import has occurred."
     }
   },
   "recovery011": {
     "namespace": "011",
     "completion": "complete on main at the recorded SHA",
-    "basis": "observed in committed records; controller state not read",
+    "basis": "committed protected release records plus retained original-task completion and Production readback",
     "proof": [
       {
         "what": "TASK-028 final release closeout merged through the protected path as #394, the recorded main SHA",
@@ -92,17 +155,60 @@
       "stateChangedByThisTask": false,
       "heartbeatChangedByThisTask": false,
       "secondControllerStarted": false,
-      "idleness": "not_observed",
-      "liveRecheck": "not_performed — PRE-001's readiness command (check-readiness.py backend) was declined in this workspace. Original task identities, latest run state and process idleness are confirmed by that command, not by this record."
+      "idleness": "retained_operator_observation",
+      "liveRecheck": "The worker readiness command was declined; original-task completion/readback and the preparation operator's empty recovery-controller process observation are retained above. This task does not mutate or revive 011.",
+      "observedAt": "2026-10-04T02:05:19.147040+00:00",
+      "observedRecoveryControllerProcesses": []
     },
-    "uiHold": "The historical UI hold of recovery 011 is a closed historical fact recorded in its journal. It is not a prerequisite here, and no passcode or release word gates any 012 task."
+    "uiHold": "The historical UI hold of recovery 011 is a closed historical fact recorded in its journal. It is not a prerequisite here, and no passcode or release word gates any 012 task.",
+    "originalIdentity": {
+      "handoffSha256": "cac19ff02997fd95ea5472ba07c8f024cd954dbefa7bf54afd2e9400283ca34b",
+      "taskIds": [
+        "TASK-001",
+        "TASK-002",
+        "TASK-003",
+        "TASK-004",
+        "TASK-005",
+        "TASK-006",
+        "TASK-007",
+        "TASK-008",
+        "TASK-009",
+        "TASK-010",
+        "TASK-011",
+        "TASK-012",
+        "TASK-013",
+        "TASK-014",
+        "TASK-015",
+        "TASK-016",
+        "TASK-017",
+        "TASK-018",
+        "TASK-019",
+        "TASK-020",
+        "TASK-021",
+        "TASK-022",
+        "TASK-023",
+        "TASK-024",
+        "TASK-025",
+        "TASK-026",
+        "TASK-027",
+        "TASK-028",
+        "TASK-029",
+        "TASK-030"
+      ],
+      "latestCompleted": 30,
+      "releasePullRequest": 394,
+      "releaseMergeCommit": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+      "observedAt": "2026-10-04T01:54:09.556088+00:00",
+      "proof": "retainedOperatorEvidence.releaseReadback",
+      "taskIdentityProof": "retainedOperatorEvidence.reviewPreparation"
+    }
   },
   "pr287": {
     "number": 287,
     "repository": "theycallme-eric/clear",
     "description": "Separate unfinished visual work that predates the 0.14.3 selection (sources/source-04-application-reference/REFERENCE_STATUS.md)",
     "liveStateObserved": false,
-    "liveRecheck": "not_performed — every GitHub read was declined in this workspace. Open/closed state, head SHA and changed files are unknown to this record.",
+    "liveRecheck": "Worker GitHub commands were declined. The later retained preparation-operator observation below supplies the actual state/head/fourteen paths; it is not a worker live read or permission to merge.",
     "locallyObserved": [
       "No commit on main at the recorded SHA names #287 in its message.",
       "Recovery 011's journal records PR #287 as paused and unchanged through its closeout (docs/journal/2026-10-02.md, docs/journal/2026-10-03.md)."
@@ -114,7 +220,157 @@
       "Any behavioral or accessibility change it carries that main lacks is kept: the owning 012 task ports it or records why not, rather than losing it.",
       "No 012 task builds on its branch or depends on its merge."
     ],
-    "requiredBeforeFirstVisualEdit": "Read its state and changed-file list, and match each path against shared-file-ownership.json. The file-level overlap is unconfirmed until then."
+    "requiredBeforeFirstVisualEdit": "Baseline prerequisite observations are retained and the fourteen paths are mapped here against actual approved ownership. Later owners refresh moving main/state through the existing controller and explicitly preserve behavior or supersede stale visuals; no dependency on PR287 merge.",
+    "operatorObservation": {
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "headSha": "55981753796643d74011ebd7bf702a6e36896635",
+      "baseBranch": "main",
+      "mergeable": false,
+      "mergeableState": "dirty",
+      "observedAt": "2026-10-04T02:05:19.147040+00:00",
+      "proof": "retainedOperatorEvidence.operatorFacts"
+    },
+    "changedFiles": [
+      {
+        "path": "docs/journal/2026-10-01.md",
+        "status": "modified",
+        "owners": [
+          "shared-journal-append-only"
+        ],
+        "ownershipBasis": "Every approved task may append its own unique journal entry; no task owns another entry.",
+        "disposition": "Preserve the PR and old dirty journal untouched. Historical behavior/visual notes are context only; TASK-001 records them without replacing any journal."
+      },
+      {
+        "path": "e2e/uat-batch-01.spec.ts",
+        "status": "modified",
+        "owners": [
+          "TASK-012",
+          "TASK-016"
+        ],
+        "ownershipBasis": "Explicit onboarding/Generate scoped ownership, serialized TASK-012 before TASK-016.",
+        "disposition": "Preserve real onboarding/navigation and Goal/Focus/request semantics; replace only stale visual assertions in each owner's section. Keep deterministic captures distinct from actual live generation."
+      },
+      {
+        "path": "src/app/Generate.test.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-016"
+        ],
+        "ownershipBasis": "src/app/Generate* plus focused-test allowance.",
+        "disposition": "Preserve standing Goal, history-derived Focus, first-workout/manual correction, URL/draft restoration, request clamping and one-dispatch/retry/cancel assertions; supersede old visual assertions only."
+      },
+      {
+        "path": "src/app/Generate.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-016"
+        ],
+        "ownershipBasis": "src/app/Generate*; shared adapters stay with their foundations.",
+        "disposition": "Keep current f83 viable-input and Goal/Focus/request behavior. Use 0.14.3 composition after shared foundations; do not wholesale port the old PR or introduce an intensity redesign."
+      },
+      {
+        "path": "src/app/History.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-014"
+        ],
+        "ownershipBasis": "TASK-014 owns the exact approved src/app/History* scope.",
+        "disposition": "Use 0.14.3 visuals while preserving current loading/error/empty/filter behavior, supported-session Review entry and durable Session Detail fallback; old PR is not current behavioral authority."
+      },
+      {
+        "path": "src/app/Home.test.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-013"
+        ],
+        "ownershipBasis": "src/app/Home* plus focused-test allowance.",
+        "disposition": "Preserve history-derived recommendation and Home-to-Generate payload semantics. Old prose/visual removals do not authorize removing current behavioral assertions."
+      },
+      {
+        "path": "src/app/LocationSettings.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-024"
+        ],
+        "ownershipBasis": "src/app/LocationSettings*.",
+        "disposition": "Supersede old header/frame visuals. Preserve 011 server-side viability refusal, optimistic rollback, equipment save/reload and default/delete/reassignment behavior."
+      },
+      {
+        "path": "src/app/SessionDetail.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-015"
+        ],
+        "ownershipBasis": "src/app/SessionDetail*.",
+        "disposition": "Supersede old frame visuals without losing actual-work provenance, nullable/unlogged outcomes, refusal/missing-session handling, restart eligibility and durable back destinations."
+      },
+      {
+        "path": "src/dev/gallery-registry.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-002",
+          "TASK-025"
+        ],
+        "ownershipBasis": "Explicit compile-facing migration, then final-specimens ownership.",
+        "disposition": "TASK-002 makes only necessary compile-facing package migrations; TASK-025 updates final 0.14.3 specimens after route evidence. Route siblings do not edit the registry."
+      },
+      {
+        "path": "src/test/goal-focus-journeys.test.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-013",
+          "TASK-016"
+        ],
+        "ownershipBasis": "No explicit whole-file assignment in TASK_OWNERSHIP.json. Existing Home/Generate focused-test allowance applies only to their assertions; this is not a new global owner or concurrent edit grant.",
+        "disposition": "Preserve the whole cross-route behavior test. Any necessary focused assertion change must remain attributed to the existing route owner and serialized by the single controller; otherwise report a scope finding rather than edit."
+      },
+      {
+        "path": "src/ui/card.test.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-003"
+        ],
+        "ownershipBasis": "src/ui/card* plus focused-test allowance.",
+        "disposition": "Preserve semantic heading/accessibility tests; update only the stale 0.9.7 geometry/dialect expectations against the shipped 0.14.3 Card."
+      },
+      {
+        "path": "src/ui/card.tsx",
+        "status": "modified",
+        "owners": [
+          "TASK-003"
+        ],
+        "ownershipBasis": "TASK-003 owns the exact approved src/ui/card* scope.",
+        "disposition": "0.14.3 Card/public CSS supersedes old manual geometry. Preserve semantic headings, accessible relationships and app callbacks/data; do not vendor-edit to satisfy old visuals."
+      },
+      {
+        "path": "src/ui/header-back-button.test.tsx",
+        "status": "added",
+        "owners": [
+          "TASK-005"
+        ],
+        "ownershipBasis": "src/ui/header-back-button* plus focused-test allowance.",
+        "disposition": "Retain accessible label, click and disabled/back-destination behavior where main lacks it. Use 0.14.3 public frame/size assertions, not old bespoke classes."
+      },
+      {
+        "path": "src/ui/header-back-button.tsx",
+        "status": "added",
+        "owners": [
+          "TASK-005"
+        ],
+        "ownershipBasis": "src/ui/header-back-button*.",
+        "disposition": "Existing approved owner may port missing accessible back-control behavior using the 0.14.3 public surface. Never merge/rebase PR287 or copy its stale header geometry wholesale."
+      }
+    ],
+    "preservedOldProduct": {
+      "root": "/Users/eric/clear-app/clear-phase4",
+      "headSha": "55981753796643d74011ebd7bf702a6e36896635",
+      "status": [
+        " M docs/journal/2026-10-01.md",
+        "?? docs/process/CLEAR-GENERATION-RELIABILITY-RECOVERY.md"
+      ]
+    }
   },
   "noOverlapBoundary": {
     "thisTaskWrites": [
@@ -131,6 +387,35 @@
       "the evidence snapshot"
     ],
     "containment": "No shared design-system repository, published package, Storybook, support-tooling change or new protected CI workflow.",
-    "approval": "Graph approval that made TASK-001 executable is one thing; design authority (the owner's 0.14.3 selection) and review-only sync are separate things. None of the three implies another."
+    "approval": "Graph approval that made TASK-001 executable is one thing; design authority (the owner's 0.14.3 selection) and review-only sync are separate things. None of the three implies another.",
+    "approvalIdentity": {
+      "handoffVersion": 4,
+      "approval": 2,
+      "requirementsRevision": 11,
+      "handoffSha256": "327808c15c33b11ba77d33e4d882be2c8c6280082bb542b16c6b62a163106b4d",
+      "graphSha256": "2a6fa9223b19c4ddd3ccb2a26a134d4109d6c0291b1272f97d92488009193d32",
+      "approvalSha256": "657564d78b13e5ea40a1a4269ad3ec7e6ca357b7551e11e741f1f57c6e3fa4cd",
+      "originalRequirementInventorySha256": "f7e0d792ef59890cab0980541f54dd8f9f127278e9fa6a1e6b96abb8057001e3",
+      "current012ControllerPermitted": "sole existing TASK001 wave, unchanged",
+      "boundary": "Explicit approved graph is execution authority, owner-selected shipped 0.14.3 is design authority, earlier review-only sync is historical. One existing root-owned controller; no TASK-001 activation/state edits."
+    }
+  },
+  "retainedOperatorEvidence": {
+    "operatorFacts": {
+      "path": "requirements-recovery/012-design-0143/startup/dragon-2026-10-03/TASK-001-OPERATOR-FACTS.json",
+      "sha256": "962ce1fa4072aaeb853386b10d745f8b34b24c6efac8ead4b69f4fc63ad6abc8",
+      "observedAt": "2026-10-04T02:05:19.147040+00:00",
+      "observedBy": "Codex preparation operator"
+    },
+    "releaseReadback": {
+      "path": "requirements-recovery/012-design-0143/startup/dragon-2026-10-03/RECOVERY-TRANSITION-LIVE-READBACK.json",
+      "sha256": "efa9450b52818efd1637e81176c8b29d28e14263d2534576fc3bb1ef46bc2daf",
+      "observedAt": "2026-10-04T01:54:09.556088+00:00"
+    },
+    "reviewPreparation": {
+      "path": "requirements-recovery/012-design-0143/startup/dragon-2026-10-03/TASK-001-INDEPENDENT-REVIEW-CHECKLIST.md",
+      "sha256": "bcad84a9e02d76f293e16955d858908671fa4d2f370219daa9b5844ada551082"
+    },
+    "boundary": "Retained read-only operator observations, not worker-executed commands, a TASK-001 completion receipt, new generation/browser proof, or permission to merge PR287. Paths identify the external retained package, not product CI inputs."
   }
 }

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "task": "TASK-001",
   "recordedOn": "2026-10-03",
   "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
@@ -7,9 +7,15 @@
     "A source inventory of the before-state: which file renders each required screen and which committed suite exercises it. It is not rendered evidence.",
     "Complete before-state screenshots are owned by TASK-040, captured with its reusable harness before the package import.",
     "The screen list is e2e/required-routes.ts (IA.md §4). Nothing here adds or removes a route.",
-    "browser names the committed suites whose journey passes through the screen, as a pointer for TASK-040. It is not a statement that every state of the screen is covered there."
+    "browser names the committed suites whose journey passes through the screen, as a pointer for TASK-040. It is not a statement that every state of the screen is covered there.",
+    "reachableStates are normalized fixture labels for current source behavior, not new runtime enums or a request to implement absent states. Unsupported empty/pause states are not fabricated."
   ],
-  "viewports": ["phone 390x844", "tablet 768x1024", "desktop", "short viewport"],
+  "viewports": [
+    "phone 390x844",
+    "tablet 768x1024",
+    "desktop",
+    "short viewport"
+  ],
   "skins": 4,
   "requiredStates": [
     "loading",
@@ -28,9 +34,15 @@
   "sharedStateSources": {
     "viewStates": "src/ui/view-state.tsx",
     "loadingHost": "src/app/GenerationLoadingHost.tsx",
-    "dialogs": ["src/ui/app-dialog.tsx", "src/ui/blocking-dialog.tsx"],
+    "dialogs": [
+      "src/ui/app-dialog.tsx",
+      "src/ui/blocking-dialog.tsx"
+    ],
     "toasts": "src/ui/toast-host.tsx",
-    "errorBoundary": "src/app/ErrorBoundary.tsx"
+    "errorBoundary": "src/app/ErrorBoundary.tsx",
+    "fixtureSources": [
+      "src/test/render.tsx"
+    ]
   },
   "screens": [
     {
@@ -39,7 +51,30 @@
       "guard": "public-only",
       "source": "src/app/Welcome.tsx",
       "unit": "src/app/Welcome.test.tsx",
-      "browser": ["e2e/auth-screen.spec.ts", "e2e/app-shell.spec.ts", "e2e/contained-shell.spec.ts"]
+      "browser": [
+        "e2e/auth-screen.spec.ts",
+        "e2e/app-shell.spec.ts",
+        "e2e/contained-shell.spec.ts"
+      ],
+      "ownerTask": "TASK-010",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "session-restoring",
+        "anonymous-ready",
+        "authenticated-redirect"
+      ],
+      "stateSources": [
+        "src/state/auth-context.ts",
+        "src/app/guards.tsx"
+      ],
+      "fixtureSources": [
+        "src/test/auth-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Two working auth paths; session restore does not flash Welcome; authenticated visitors are routed by existing guards. No empty data/error fetch state is manufactured.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "OTP Login",
@@ -47,7 +82,40 @@
       "guard": "public-only",
       "source": "src/app/Login.tsx",
       "unit": "src/app/Login.test.tsx",
-      "browser": ["e2e/auth-otp.spec.ts", "e2e/auth-screen.spec.ts", "e2e/app-shell.spec.ts"]
+      "browser": [
+        "e2e/auth-otp.spec.ts",
+        "e2e/auth-screen.spec.ts",
+        "e2e/app-shell.spec.ts"
+      ],
+      "ownerTask": "TASK-011",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "email-step",
+        "email-invalid",
+        "send-busy",
+        "send-error",
+        "code-step",
+        "code-invalid",
+        "verify-busy",
+        "wrong-code",
+        "expired-code",
+        "resend-cooldown",
+        "authenticated-redirect"
+      ],
+      "stateSources": [
+        "src/state/sign-in-context.ts",
+        "src/state/cooldown.ts",
+        "src/data/otp.ts",
+        "src/app/guards.tsx"
+      ],
+      "fixtureSources": [
+        "src/test/auth-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Sign-in and explicit create-account intent use the same passwordless flow; validation/failure return focus, cooldown is real, verified auth leaves by guards.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Onboarding",
@@ -55,8 +123,34 @@
       "guard": "onboarding",
       "source": "src/app/Onboarding.tsx",
       "unit": "src/app/Onboarding.test.tsx",
-      "browser": ["e2e/generation-browser-new-user.spec.ts"],
-      "recovery011Behavior": "TASK-009"
+      "browser": [
+        "e2e/generation-browser-new-user.spec.ts"
+      ],
+      "recovery011Behavior": "TASK-009",
+      "ownerTask": "TASK-012",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "five-step-draft",
+        "selection-incomplete-disabled",
+        "back-preserves-draft",
+        "committing",
+        "typed-viability-refusal",
+        "commit-error-retry",
+        "success-home"
+      ],
+      "stateSources": [
+        "src/state/onboarding.ts",
+        "src/state/user-queries.ts",
+        "src/data/viability.ts"
+      ],
+      "fixtureSources": [
+        "src/test/user-data-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Five current steps, disabled Next with explanation, same draft on back/refusal/error; completeOnboarding seeds profile/location state before Home. Preserve 011 refusal of impossible combinations.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Home",
@@ -64,7 +158,44 @@
       "guard": "protected",
       "source": "src/app/Home.tsx",
       "unit": "src/app/Home.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts", "e2e/session-continuity.spec.ts"]
+      "browser": [
+        "e2e/core-loop.spec.ts",
+        "e2e/session-continuity.spec.ts"
+      ],
+      "ownerTask": "TASK-013",
+      "afterEvidenceOwner": "TASK-035",
+      "reachableStates": [
+        "reads-loading",
+        "read-error-retry",
+        "no-history",
+        "history-populated",
+        "favorites-empty",
+        "favorites-populated",
+        "active-session-resume",
+        "compatible-review-entry",
+        "incompatible-detail-fallback",
+        "suggestion-selected-dismissed"
+      ],
+      "stateSources": [
+        "src/state/home.ts",
+        "src/state/history-queries.ts",
+        "src/state/favorite-queries.ts",
+        "src/state/workout-queries.ts",
+        "src/state/session-suggestion.ts",
+        "src/app/ResumableSession.tsx",
+        "src/app/useOpenHistorySession.ts"
+      ],
+      "fixtureSources": [
+        "src/test/user-data-double.ts",
+        "src/test/workout-double.ts",
+        "src/test/rest-day-double.ts",
+        "src/test/generation-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Independent history/favorites/week/streak failures are not fabricated populated data. Resume reads real saved active state; compatible completed rows open Review, other history uses durable Detail; recommendation remains history-derived.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Generate",
@@ -72,18 +203,89 @@
       "guard": "protected",
       "source": "src/app/Generate.tsx",
       "unit": "src/app/Generate.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts", "e2e/uat-batch-01.spec.ts"],
-      "recovery011Behavior": "TASK-012"
+      "browser": [
+        "e2e/core-loop.spec.ts",
+        "e2e/uat-batch-01.spec.ts"
+      ],
+      "recovery011Behavior": "TASK-012",
+      "ownerTask": "TASK-016",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "profile-or-places-loading",
+        "read-error-retry",
+        "goal-correction",
+        "no-place",
+        "history-loading",
+        "history-error-manual-or-retry",
+        "first-or-stale-history-manual-focus",
+        "history-recommended-focus",
+        "focus-override",
+        "recovery-override",
+        "request-validation-disabled",
+        "deload-confirmation",
+        "generating",
+        "cancel-preserves-draft"
+      ],
+      "stateSources": [
+        "src/state/generation-form.ts",
+        "src/state/generation.ts",
+        "src/state/history-queries.ts",
+        "src/state/session-suggestion.ts",
+        "src/state/user-queries.ts",
+        "src/state/review-handoff.ts",
+        "src/state/deload-queries.ts"
+      ],
+      "fixtureSources": [
+        "src/test/user-data-double.ts",
+        "src/test/workout-double.ts",
+        "src/test/generation-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Standing Goal is saved context; preserve focus history/first-workout/manual semantics, current intensity/request clamp and optional notes. Focus/Recovery URL overrides, viable place and truthful retry/cancel behavior stay; no stale PR wholesale port.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Loading",
       "route": null,
       "guard": "protected",
-      "renderedWithin": ["Home", "Generate", "Review"],
+      "renderedWithin": [
+        "Home",
+        "Generate",
+        "Review"
+      ],
       "source": "src/app/GenerationLoading.tsx",
       "unit": "src/app/GenerationLoading.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts"],
-      "recovery011Behavior": "TASK-012"
+      "browser": [
+        "e2e/core-loop.spec.ts"
+      ],
+      "recovery011Behavior": "TASK-012",
+      "ownerTask": "TASK-016",
+      "sharedOwnerTask": "TASK-009",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "pending-before-stage",
+        "active-stage",
+        "slow-still-working",
+        "typed-retriable-failure",
+        "terminal-or-input-refusal",
+        "cancel",
+        "success-review"
+      ],
+      "stateSources": [
+        "src/app/GenerationLoadingHost.tsx",
+        "src/state/generation-loading.ts",
+        "src/state/generation.ts"
+      ],
+      "fixtureSources": [
+        "src/test/generation-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Transient shared host within Home/Generate/Review; real stages, no invented progress; typed class/request id selects correction vs permitted retry. Cancel ignores late results. TASK-009 shared layer precedes TASK-016 route composition.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Review",
@@ -92,7 +294,41 @@
       "source": "src/app/Review.tsx",
       "routeSource": "src/app/ReviewRoute.tsx",
       "unit": "src/app/Review.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts", "e2e/d6-swap-persistence.spec.ts"]
+      "browser": [
+        "e2e/core-loop.spec.ts",
+        "e2e/d6-swap-persistence.spec.ts"
+      ],
+      "ownerTask": "TASK-017",
+      "afterEvidenceOwner": "TASK-036",
+      "reachableStates": [
+        "missing-or-invalid-handoff",
+        "validated-workout",
+        "favorite-progression-loading",
+        "favorite-progression-error-retry",
+        "swap-confirmation",
+        "swap-failure",
+        "regenerate-confirmation",
+        "regenerating-cancel",
+        "start-busy",
+        "start-failure",
+        "start-workout"
+      ],
+      "stateSources": [
+        "src/app/ReviewRoute.tsx",
+        "src/state/review.ts",
+        "src/state/review-handoff.ts",
+        "src/state/favorite-progression.ts",
+        "src/state/favorite-queries.ts",
+        "src/state/workout-queries.ts"
+      ],
+      "fixtureSources": [
+        "src/test/workout-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Missing/invalid handoff offers Generate/favorites choices rather than pretend data. Start persists session, swap/regenerate failure/confirmation preserved; favorite failure is secondary and does not block starting.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Workout",
@@ -100,7 +336,50 @@
       "guard": "protected",
       "source": "src/app/Workout.tsx",
       "unit": "src/app/Workout.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts", "e2e/session-continuity.spec.ts"]
+      "browser": [
+        "e2e/core-loop.spec.ts",
+        "e2e/session-continuity.spec.ts"
+      ],
+      "ownerTask": "TASK-021",
+      "afterEvidenceOwner": "TASK-036",
+      "reachableStates": [
+        "active-read-loading",
+        "active-read-error-retry",
+        "no-active-session-home",
+        "active-standard-superset-circuit",
+        "active-emom-amrap-for-time-ladder",
+        "rest-running-urgent-skipped",
+        "background-resume",
+        "set-sync-sustained-failure-retry",
+        "block-effort-dismissed-or-recorded",
+        "finish-pending",
+        "finish-error-retry",
+        "finish-summary",
+        "abandon-confirmation",
+        "abandon-error-retry",
+        "abandon-home"
+      ],
+      "stateSources": [
+        "src/state/workout-queries.ts",
+        "src/state/workout-progress.ts",
+        "src/state/workout-persistence.ts",
+        "src/state/rest-provider.tsx",
+        "src/state/block-completion-provider.tsx",
+        "src/state/set-logging-provider.tsx",
+        "src/state/set-log-queue.ts",
+        "src/ui/workout-chrome.tsx",
+        "src/ui/set-sync-notice.tsx",
+        "src/ui/block-renderers.tsx"
+      ],
+      "fixtureSources": [
+        "src/test/workout-double.ts",
+        "src/test/summary-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "No running session redirects Home, not an empty shell. Capture actual prescribed structures/outcomes, optional rest guidance, persisted background re-entry and local set-sync failure; do not claim a generic pause or phone-away redesign exists. Finish/abandon retain failure recovery and Summary/Home destinations.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Summary",
@@ -108,7 +387,36 @@
       "guard": "protected",
       "source": "src/app/Summary.tsx",
       "unit": "src/app/Summary.test.tsx",
-      "browser": ["e2e/core-loop.spec.ts"]
+      "browser": [
+        "e2e/core-loop.spec.ts"
+      ],
+      "ownerTask": "TASK-022",
+      "afterEvidenceOwner": "TASK-036",
+      "reachableStates": [
+        "completed-read-loading",
+        "completed-read-error-retry",
+        "no-completed-session-home",
+        "debrief-unrecorded-or-saved",
+        "favorite-save-failure-secondary",
+        "save-busy",
+        "save-error-draft-retry",
+        "done-home",
+        "streak-empty-or-error"
+      ],
+      "stateSources": [
+        "src/state/summary-queries.ts",
+        "src/app/FavoriteToggle.tsx",
+        "src/data/summary.ts"
+      ],
+      "fixtureSources": [
+        "src/test/summary-double.ts",
+        "src/test/workout-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Missing completed session redirects Home. Existing mood/notes save semantics, null rather than invented unlogged values and retry with draft are preserved. Streak/favorite failures do not cost the debrief.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "History",
@@ -116,7 +424,34 @@
       "guard": "protected",
       "source": "src/app/History.tsx",
       "unit": "src/app/History.test.tsx",
-      "browser": ["e2e/history-detail.spec.ts"]
+      "browser": [
+        "e2e/history-detail.spec.ts"
+      ],
+      "ownerTask": "TASK-014",
+      "afterEvidenceOwner": "TASK-035",
+      "reachableStates": [
+        "loading",
+        "error-retry",
+        "no-workouts-empty",
+        "filtered-no-matches",
+        "populated-load-more",
+        "selected-filters",
+        "compatible-review-entry",
+        "incompatible-detail-fallback"
+      ],
+      "stateSources": [
+        "src/state/history.ts",
+        "src/state/history-queries.ts",
+        "src/app/useOpenHistorySession.ts"
+      ],
+      "fixtureSources": [
+        "src/test/workout-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "No workouts and no filter matches are distinct. Existing compatible completed-session entry goes to Review; unsupported/incomplete snapshot remains durable Session Detail rather than sample data.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Session Detail",
@@ -124,18 +459,125 @@
       "guard": "protected",
       "source": "src/app/SessionDetail.tsx",
       "unit": "src/app/SessionDetail.test.tsx",
-      "browser": ["e2e/history-detail.spec.ts"]
+      "browser": [
+        "e2e/history-detail.spec.ts"
+      ],
+      "ownerTask": "TASK-015",
+      "afterEvidenceOwner": "TASK-035",
+      "reachableStates": [
+        "loading",
+        "error-retry",
+        "missing-or-not-yours",
+        "as-performed-populated",
+        "unscored-or-unlogged",
+        "section-collapsed",
+        "favorite-save-failure",
+        "restart-ineligible",
+        "restart-read-validation-error",
+        "restart-active-confirmation",
+        "restart-review"
+      ],
+      "stateSources": [
+        "src/state/history-queries.ts",
+        "src/state/session-detail.ts",
+        "src/state/session-restart.ts",
+        "src/ui/session-detail.tsx"
+      ],
+      "fixtureSources": [
+        "src/test/workout-double.ts",
+        "src/test/generation-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Read session_as_performed provenance, null/unlogged outcomes and swapped lineage truthfully. Missing/not-yours is not fabricated empty data. Preserve eligibility/refusal, actual reconstruction, active-session confirmation and back destinations.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Settings",
       "route": "/settings",
-      "subRoutes": ["/settings/locations"],
+      "subRoutes": [
+        "/settings/locations"
+      ],
       "guard": "protected",
       "source": "src/app/Settings.tsx",
       "subRouteSource": "src/app/LocationSettings.tsx",
       "unit": "src/app/Settings.test.tsx",
-      "browser": ["e2e/settings-appearance.spec.ts", "e2e/settings-locations.spec.ts"],
-      "recovery011Behavior": "TASK-010, TASK-011"
+      "browser": [
+        "e2e/settings-appearance.spec.ts",
+        "e2e/settings-locations.spec.ts"
+      ],
+      "recovery011Behavior": "TASK-010, TASK-011",
+      "ownerTask": "TASK-023",
+      "afterEvidenceOwner": "TASK-035",
+      "reachableStates": [
+        "profile-loading",
+        "profile-error-retry",
+        "missing-profile",
+        "preferences-populated",
+        "constraints-loading-empty-error-populated",
+        "inline-save-pending-saved",
+        "save-refusal-rollback",
+        "appearance-system-or-skin",
+        "sign-out"
+      ],
+      "stateSources": [
+        "src/state/settings.ts",
+        "src/state/user-queries.ts",
+        "src/state/constraint-queries.ts",
+        "src/state/appearance.ts",
+        "src/ui/inline-save.tsx"
+      ],
+      "fixtureSources": [
+        "src/test/user-data-double.ts",
+        "src/test/constraints-double.ts",
+        "src/test/auth-double.ts",
+        "src/test/render.tsx"
+      ],
+      "detail": "Preserve current goal/experience/section/exclusion vocabularies and last-section/active-recovery constraints. Independent read errors do not erase preferences; optimistic writes/refusals rollback; appearance uses registry and persisted choice.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured",
+      "subRouteInventory": [
+        {
+          "route": "/settings/locations",
+          "ownerTask": "TASK-024",
+          "source": "src/app/LocationSettings.tsx",
+          "unit": "src/app/LocationSettings.test.tsx",
+          "browser": [
+            "e2e/settings-locations.spec.ts"
+          ],
+          "reachableStates": [
+            "locations-loading",
+            "locations-error-retry",
+            "no-locations-empty",
+            "list-populated",
+            "new-location-editor",
+            "equipment-loading-error",
+            "edit-inline-save",
+            "typed-viability-refusal-rollback",
+            "default-change-rollback",
+            "default-delete-reassignment",
+            "delete-confirmation"
+          ],
+          "stateSources": [
+            "src/state/user-queries.ts",
+            "src/data/user-data.ts",
+            "src/data/viability.ts",
+            "src/ui/inline-save.tsx",
+            "src/ui/blocking-dialog.tsx"
+          ],
+          "fixtureSources": [
+            "src/test/user-data-double.ts",
+            "src/test/render.tsx"
+          ],
+          "fixtureOwner": "TASK-033",
+          "beforeCaptureOwner": "TASK-040",
+          "afterEvidenceOwner": "TASK-035",
+          "beforeCaptureStatus": "planned_not_captured",
+          "detail": "Locations/equipment reads and writes, real default/delete/reassignment and 011 server viability refusal/rollback remain authoritative; no impossible saved preferences are silently accepted."
+        }
+      ]
     },
     {
       "screen": "Component Gallery",
@@ -143,7 +585,30 @@
       "guard": "dev-only",
       "source": "src/dev/GalleryRoute.tsx",
       "unit": "src/dev/gallery-route.test.tsx",
-      "browser": []
+      "browser": [],
+      "ownerTask": "TASK-025",
+      "sharedOwnerTask": "TASK-002",
+      "afterEvidenceOwner": null,
+      "reachableStates": [
+        "overview",
+        "design-system-specimens",
+        "app-composed-specimens",
+        "skin-atmosphere-selection",
+        "triggered-dialog-toast-motion"
+      ],
+      "stateSources": [
+        "src/dev/gallery-registry.tsx",
+        "src/dev/gallery-app.tsx",
+        "src/dev/gallery-ds.tsx",
+        "src/dev/specimens.ts"
+      ],
+      "fixtureSources": [
+        "src/dev/gallery-route.test.tsx"
+      ],
+      "detail": "Actual /dev/gallery/* overview/ds/app specimen surface; no production route and no authenticated-app capture substitute. Only approved gallery-* compile/final scopes are granted; GalleryRoute wrapper is a source pointer, not a new write scope.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     },
     {
       "screen": "Not Found",
@@ -151,11 +616,112 @@
       "guard": "none",
       "source": "src/app/NotFound.tsx",
       "unit": "src/app/router.test.tsx",
-      "browser": []
+      "browser": [],
+      "ownerTask": "TASK-010",
+      "afterEvidenceOwner": "TASK-034",
+      "reachableStates": [
+        "unmatched-route",
+        "home-or-welcome-return"
+      ],
+      "stateSources": [
+        "src/app/router.tsx",
+        "src/app/guards.tsx"
+      ],
+      "fixtureSources": [
+        "src/app/router.test.tsx"
+      ],
+      "detail": "Real fallback route; no fake four-state data model.",
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "beforeCaptureStatus": "planned_not_captured"
     }
   ],
   "shellSuites": {
-    "focusedCheck": ["e2e/app-shell.spec.ts", "e2e/contained-shell.spec.ts"],
+    "focusedCheck": [
+      "e2e/app-shell.spec.ts",
+      "e2e/contained-shell.spec.ts"
+    ],
     "result": "72 expected, 0 unexpected, 0 flaky, 0 skipped against the owned local server on 2026-10-03; not deployed proof"
+  },
+  "beforeStateSequence": [
+    "TASK-001",
+    "TASK-033",
+    "TASK-040",
+    "TASK-002"
+  ],
+  "captureStatus": "planned_not_captured",
+  "routerSources": [
+    "src/app/router.tsx",
+    "src/app/guards.tsx"
+  ],
+  "fixturePlan": {
+    "owner": "TASK-033",
+    "paths": [
+      "e2e/design-0143/fixtures.ts",
+      "e2e/design-0143/capture.ts",
+      "e2e/design-0143/state-inventory.ts",
+      "e2e/design-0143/baseline.spec.ts"
+    ],
+    "status": "planned_not_implemented_by_TASK-001",
+    "boundary": "Use explicit deterministic fixtures for current authenticated state, not sample routes or protected-route Welcome redirects. Actual live lane remains unstubbed and exactly one POST; no paid generation here."
+  },
+  "nonRouteStateInventory": [
+    {
+      "screen": "BootSequence",
+      "route": null,
+      "ownerTask": "TASK-010",
+      "source": "src/app/BootSequence.tsx",
+      "unit": "src/app/BootSequence.test.tsx",
+      "reachableStates": [
+        "checking",
+        "failed-retry",
+        "ready"
+      ],
+      "stateSources": [
+        "src/main.tsx",
+        "src/state/boot.ts",
+        "src/state/boot-queries.ts"
+      ],
+      "fixtureSources": [
+        "src/test/auth-double.ts",
+        "src/test/constraints-double.ts",
+        "src/test/user-data-double.ts",
+        "src/test/workout-double.ts",
+        "src/test/render.tsx"
+      ],
+      "fixtureOwner": "TASK-033",
+      "beforeCaptureOwner": "TASK-040",
+      "afterEvidenceOwner": "TASK-034",
+      "beforeCaptureStatus": "planned_not_captured",
+      "detail": "BootGate above router follows actual profile/history/equipment/constraint checks. Anonymous ready does not prove authenticated failed/retry; no empty state, timer hold or controlled pause is invented."
+    }
+  ],
+  "sharedStateContracts": {
+    "src/ui/view-state.tsx": {
+      "ownerTask": "TASK-009",
+      "preserve": "Current loading/empty/error/populated distinctions and typed retry messages; no sample data fallback."
+    },
+    "src/ui/app-dialog.tsx": {
+      "ownerTasks": [
+        "TASK-002",
+        "TASK-007"
+      ],
+      "preserve": "Minimum package compatibility first; safe focus/inertness and exactly-once callbacks."
+    },
+    "src/ui/blocking-dialog.tsx": {
+      "ownerTask": "TASK-007",
+      "preserve": "Confirmation and blocking recovery action semantics."
+    },
+    "src/ui/toast-host.tsx": {
+      "ownerTasks": [
+        "TASK-002",
+        "TASK-008"
+      ],
+      "preserve": "Minimum package delayed-close lifecycle first; severity/announcement/dismissal/recovery semantics."
+    },
+    "src/app/ErrorBoundary.tsx": {
+      "ownerTask": "TASK-009",
+      "preserve": "Actual error boundary recovery, not swallowed errors."
+    }
   }
 }

@@ -1,15 +1,72 @@
 {
-  "version": 1,
+  "version": 2,
   "task": "TASK-001",
   "recordedOn": "2026-10-03",
   "verified": true,
-  "verificationBasis": "committed_release_record",
-  "verificationNote": "The identity below is the deployment proof recovery 011 recorded and protected-merged as #394: an immutable Production deployment, an ACTIVE function version with its bundle hash, and three hosted runs on the exact source. It is not inferred from local source. It was not re-queried from the hosted project in the TASK-001 session.",
-  "liveRecheck": "not_performed — check-readiness.py backend and all hosted reads were declined in the TASK-001 workspace. A deployment made after the recorded proof would not appear here.",
+  "verificationBasis": "committed_release_record_and_retained_operator_readback",
+  "verificationNote": "Retained startup readback establishes actual successful Production app deployment of recovered f83 main (#394). Separate historical df91 actual function/model proof is preserved below; #394 changed release evidence/tooling only, not app/function/database runtime. No new hosted read, generation or 0.14.3 UI deployment is claimed.",
+  "liveRecheck": "Original worker hosted reads were declined. The named retained operator readback independently supplies the f83 app deployment chain at its dated observation; a later deployment is not asserted.",
   "deployedReleaseIdentity": {
     "recovery": "011",
+    "verifiedAtMainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+    "verifiedAtMainNote": "PR394 protected merge and actual Production status at f83; historical actual runtime proof was taken at df91 and is source-equivalent because the intervening release-closeout diff contains no app/function/database runtime changes.",
+    "application": {
+      "provider": "Vercel",
+      "environment": "Production",
+      "sha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+      "deploymentId": "6824761508",
+      "successStatusId": "19207035097",
+      "state": "success",
+      "createdAt": "2026-10-03T07:24:43Z",
+      "observedAt": "2026-10-04T01:54:09.556088+00:00",
+      "proof": "retainedOperatorEvidence"
+    },
+    "function": {
+      "name": "generate-workout",
+      "state": "ACTIVE",
+      "version": 33,
+      "bundleSha256": "d47e58037c78e7b60d30afbb241929ca01fffbb24786c2a4a7633dde4977582c",
+      "sourceEquivalentTo": "#392 (528edba6ee2d125905eea0d645829375f1a235b2)",
+      "promptVersion": "5.1.2",
+      "outputVersion": "4.1.0",
+      "retired": [
+        "generate-section"
+      ]
+    },
+    "database": {
+      "migrationsThrough": "20261002000024",
+      "pushedAtCommit": "821b0b23c8530b2f86e2e7570a65967a3f7e915c",
+      "deployedMatrixDifferingRows": 0,
+      "deployedMatrixCommit": "9995a5ad845f269e8d4cdfab55ffb130a399a145"
+    },
+    "functionVerificationBasis": "Preserved historical actual v33 proof, plus committed no-runtime-change source equivalence to f83; not a new function/model exercise at f83."
+  },
+  "proof": [
+    {
+      "path": "docs/journal/2026-10-03.md",
+      "anchor": "### Latest exact-source release proof"
+    },
+    {
+      "path": "docs/process/generation-reliability/release-checklist.md",
+      "anchor": "### 3.2 Deploy the functions — authorized release step, writes"
+    },
+    {
+      "path": "docs/process/generation-reliability/release-exit.json",
+      "anchor": "\"id\": \"journeys\""
+    },
+    {
+      "path": "docs/design/0143-intake-baseline/intake-baseline.json",
+      "anchor": "\"releaseMergeCommit\": \"f83ddc9770d2f013f65b0e5140ada09ca84b7583\""
+    }
+  ],
+  "boundary": "No TASK-001 runtime or hosted mutation. Later app visual deployments may change the app release SHA; function bundle/version, schema/matrix and preserved generation behavior remain protected baseline facts. Any claimed change needs independent evidence, not a local-source inference.",
+  "retainedOperatorEvidence": {
+    "path": "requirements-recovery/012-design-0143/startup/dragon-2026-10-03/RECOVERY-TRANSITION-LIVE-READBACK.json",
+    "sha256": "efa9450b52818efd1637e81176c8b29d28e14263d2534576fc3bb1ef46bc2daf",
+    "observedAt": "2026-10-04T01:54:09.556088+00:00"
+  },
+  "historicalRuntimeProof": {
     "verifiedAtMainSha": "df91e415168b0b11449ed146f2255e1f1686dad5",
-    "verifiedAtMainNote": "Protected-merged #393. The later #394 (f83ddc9770d2f013f65b0e5140ada09ca84b7583) changed release evidence, checklist, map and journal files only.",
     "application": {
       "provider": "Vercel",
       "environment": "Production",
@@ -25,7 +82,9 @@
       "sourceEquivalentTo": "#392 (528edba6ee2d125905eea0d645829375f1a235b2)",
       "promptVersion": "5.1.2",
       "outputVersion": "4.1.0",
-      "retired": ["generate-section"]
+      "retired": [
+        "generate-section"
+      ]
     },
     "database": {
       "migrationsThrough": "20261002000024",
@@ -37,21 +96,14 @@
       "trustedBackend": "https://github.com/theycallme-eric/clear/actions/runs/37094532559",
       "deployedNoModel": "https://github.com/theycallme-eric/clear/actions/runs/37094567243",
       "realRelease": "https://github.com/theycallme-eric/clear/actions/runs/37094710974"
-    }
-  },
-  "proof": [
-    {
-      "path": "docs/journal/2026-10-03.md",
-      "anchor": "### Latest exact-source release proof"
     },
-    {
-      "path": "docs/process/generation-reliability/release-checklist.md",
-      "anchor": "### 3.2 Deploy the functions — authorized release step, writes"
+    "realReleaseOutcome": "Successful exactly-one browser generation/provider attempt, Review/Start, stored prescription/context and disposable cleanup; recorded by recovery 011, not rerun by TASK-001.",
+    "preserved": true,
+    "sourceEquivalence": {
+      "from": "df91e415168b0b11449ed146f2255e1f1686dad5",
+      "to": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+      "basis": "Committed PR394 closeout diff changes only release evidence/tooling/tests/journal/package script, not src/app, src/state, src/data, src/ui, vendor, supabase functions or migrations."
     },
-    {
-      "path": "docs/process/generation-reliability/release-exit.json",
-      "anchor": "\"id\": \"journeys\""
-    }
-  ],
-  "boundary": "The 0.14.3 migration is visual. No 012 task deploys a function, pushes a migration or changes hosted configuration; this identity is expected to be unchanged at the final audit, and a difference is a finding."
+    "limit": "Actual historical function/model proof, not a newly exercised f83 application endpoint or future visual deployment."
+  }
 }
