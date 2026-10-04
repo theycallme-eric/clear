@@ -1,0 +1,397 @@
+{
+  "version": 2,
+  "task": "TASK-001",
+  "recordedOn": "2026-10-03",
+  "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+  "policySource": {
+    "path": "requirements-recovery/012-design-0143/TASK_OWNERSHIP.json",
+    "fileSha256": "6d8060d7bd6a755b40b4e77f7961d4eaf8508ba5ba85f968cf6b41b129ccc515",
+    "handoffPath": "requirements-recovery/012-design-0143/workspace/APPROVED_HANDOFF.json",
+    "handoffFileSha256": "15c37a0849122045921d95fc99dc9dc491d4523c0a1c6f75c859cef31c39e380",
+    "canonicalHandoffSha256": "327808c15c33b11ba77d33e4d882be2c8c6280082bb542b16c6b62a163106b4d",
+    "graphSha256": "2a6fa9223b19c4ddd3ccb2a26a134d4109d6c0291b1272f97d92488009193d32",
+    "basis": "Exact approved writable scopes and dependency IDs read from these retained sources, not inferred foundation roles. Focused tests/task-local styles follow each task's approved prompt."
+  },
+  "rules": [
+    "One existing root-owned controller serializes overlapping scopes; listed dependencies are copied from the approved graph, not new dependencies. The numeric order is an inventory index, not a new global serial dependency; TASK-004 and TASK-005 both depend on TASK-003.",
+    "Foundation role labels explain existing task ownership; owns contains only the exact TASK_OWNERSHIP scopes, including their restrictions.",
+    "A route/evidence sibling stays in its named scope and focused tests/task-local styles. It does not edit global styles, gallery registry or shared adapters.",
+    "Compile-only consumer call-signature adjustment is allowed only inside serialized foundations; this record does not expand TASK-001 or any route owner.",
+    "Daily journal entries are append-only, unique by TASK-ID; never rewrite/reorder peer entries.",
+    "No task edits another owner's shared files to satisfy a local assertion."
+  ],
+  "foundations": [
+    {
+      "order": 1,
+      "task": "TASK-002",
+      "role": "vendor-version-contract",
+      "dependsOn": [
+        "TASK-040"
+      ],
+      "owns": [
+        "src/design-system/**",
+        "exports/clear-design-system-0.14.3/**",
+        "src/main.tsx",
+        "src/test/design-system*",
+        "docs/specs/design/ATOMIC.md (identity section only)",
+        "src/ui/app-dialog* (minimum lifecycle compatibility only)",
+        "src/ui/toast-host* (minimum lifecycle compatibility only)",
+        "src/dev/gallery-* (compile-facing migration only)"
+      ],
+      "pr287": "Compile-only public API migration before later visuals; exact incoming bytes remain unedited."
+    },
+    {
+      "order": 2,
+      "task": "TASK-003",
+      "role": "card-containment-adapter",
+      "dependsOn": [
+        "TASK-002"
+      ],
+      "owns": [
+        "src/ui/card*",
+        "src/ui/composition*",
+        "src/ui/Heading*"
+      ],
+      "pr287": "Supersede old Card geometry; preserve heading/accessibility behavior."
+    },
+    {
+      "order": 3,
+      "task": "TASK-004",
+      "role": "fields-quiet-actions",
+      "dependsOn": [
+        "TASK-003"
+      ],
+      "owns": [
+        "src/ui/select*",
+        "src/ui/formFocus*",
+        "src/ui/checkbox-group*",
+        "src/ui/inline-save*",
+        "src/ui/text-action*"
+      ],
+      "pr287": "Fields/actions visual migration preserves focus and save semantics."
+    },
+    {
+      "order": 4,
+      "task": "TASK-005",
+      "role": "shell-atmosphere",
+      "dependsOn": [
+        "TASK-003"
+      ],
+      "owns": [
+        "src/app/RootLayout*",
+        "src/app/Screen*",
+        "src/app/atmosphere*",
+        "src/ui/atmosphere*",
+        "src/app/Nav*",
+        "src/ui/header-back-button*",
+        "src/styles/**"
+      ],
+      "pr287": "Supersede old shell/header visuals; preserve contained scrolling and back-control behavior."
+    },
+    {
+      "order": 5,
+      "task": "TASK-006",
+      "role": "motion-router",
+      "dependsOn": [
+        "TASK-005"
+      ],
+      "owns": [
+        "src/ui/motion*",
+        "src/app/router*",
+        "src/app/AppChrome*",
+        "src/styles/** (motion only)"
+      ],
+      "pr287": "Router guards/route set unchanged; motion uses shipped surface."
+    },
+    {
+      "order": 6,
+      "task": "TASK-007",
+      "role": "dialogs",
+      "dependsOn": [
+        "TASK-006"
+      ],
+      "owns": [
+        "src/ui/app-dialog*",
+        "src/ui/blocking-dialog*",
+        "src/app/ActiveSessionPrompt*",
+        "src/styles/** (dialog action layout only)"
+      ],
+      "pr287": "Preserve safe focus/inertness and exactly-once callbacks; no behavior redesign."
+    },
+    {
+      "order": 7,
+      "task": "TASK-008",
+      "role": "toasts",
+      "dependsOn": [
+        "TASK-007"
+      ],
+      "owns": [
+        "src/ui/toast-host*"
+      ],
+      "pr287": "Preserve severity, dismissal and delayed-close lifecycle."
+    },
+    {
+      "order": 8,
+      "task": "TASK-009",
+      "role": "shared-view-loading-error",
+      "dependsOn": [
+        "TASK-008"
+      ],
+      "owns": [
+        "src/ui/view-state*",
+        "src/app/GenerationLoadingHost*",
+        "src/app/GenerationLoading*",
+        "src/app/ErrorBoundary*"
+      ],
+      "pr287": "Preserve typed failure/request-id/retry/cancel behavior; route loading remains TASK-016."
+    },
+    {
+      "order": 9,
+      "task": "TASK-032",
+      "role": "workout-chrome-coaching-sync-rest",
+      "dependsOn": [
+        "TASK-009"
+      ],
+      "owns": [
+        "src/ui/workout-chrome*",
+        "src/ui/exercise-coaching*",
+        "src/ui/set-sync-notice*",
+        "src/ui/rest-timer-bar*"
+      ],
+      "pr287": "Preserve set sync, rest guidance and coaching behavior; no execution interaction redesign."
+    },
+    {
+      "order": 10,
+      "task": "TASK-039",
+      "role": "mood-favorites",
+      "dependsOn": [
+        "TASK-009"
+      ],
+      "owns": [
+        "src/ui/mood*",
+        "src/app/FavoriteToggle*"
+      ],
+      "pr287": "Mood is TASK-039, not fields TASK-004; favorites preserve durable behavior."
+    },
+    {
+      "order": 11,
+      "task": "TASK-025",
+      "role": "documentation-drift-guard",
+      "dependsOn": [
+        "TASK-034",
+        "TASK-035",
+        "TASK-036"
+      ],
+      "owns": [
+        "docs/specs/design/ATOMIC.md (complete current contract)",
+        "docs/specs/IA.md (visual only)",
+        "docs/design/** (consolidation only)",
+        "scripts/adherence/**",
+        "eslint.ds.config.js",
+        "src/test/adherence-gate*",
+        "src/test/design-system*",
+        "src/dev/gallery-* (final specimens)"
+      ],
+      "pr287": "Final specimens/adherence/docs after route evidence, not early route-sibling edits."
+    }
+  ],
+  "sharedResourceStages": [
+    {
+      "path": "src/styles/**",
+      "stages": [
+        {
+          "task": "TASK-005",
+          "scope": "global shell/atmosphere styles"
+        },
+        {
+          "task": "TASK-006",
+          "scope": "motion only"
+        },
+        {
+          "task": "TASK-007",
+          "scope": "dialog action layout only"
+        }
+      ]
+    },
+    {
+      "path": "src/ui/app-dialog*",
+      "stages": [
+        {
+          "task": "TASK-002",
+          "scope": "minimum package lifecycle compatibility only"
+        },
+        {
+          "task": "TASK-007",
+          "scope": "dialog visual migration"
+        }
+      ]
+    },
+    {
+      "path": "src/ui/toast-host*",
+      "stages": [
+        {
+          "task": "TASK-002",
+          "scope": "minimum package lifecycle compatibility only"
+        },
+        {
+          "task": "TASK-008",
+          "scope": "toast visual migration"
+        }
+      ]
+    },
+    {
+      "path": "src/dev/gallery-*",
+      "stages": [
+        {
+          "task": "TASK-002",
+          "scope": "compile-facing migration only"
+        },
+        {
+          "task": "TASK-025",
+          "scope": "final specimens after TASK-034/TASK-035/TASK-036"
+        }
+      ]
+    },
+    {
+      "path": "docs/specs/design/ATOMIC.md",
+      "stages": [
+        {
+          "task": "TASK-002",
+          "scope": "identity section/minimum package-induced compatibility assertions only"
+        },
+        {
+          "task": "TASK-025",
+          "scope": "complete current contract after route evidence"
+        }
+      ]
+    },
+    {
+      "path": "src/test/design-system*",
+      "stages": [
+        {
+          "task": "TASK-002",
+          "scope": "package/version/public-entry compatibility"
+        },
+        {
+          "task": "TASK-025",
+          "scope": "final current-contract consolidation"
+        }
+      ]
+    },
+    {
+      "path": "src/app/GenerationLoading*",
+      "stages": [
+        {
+          "task": "TASK-009",
+          "scope": "shared loading layer"
+        },
+        {
+          "task": "TASK-016",
+          "scope": "Generate route loading composition"
+        }
+      ]
+    },
+    {
+      "path": "e2e/uat-batch-01.spec.ts",
+      "stages": [
+        {
+          "task": "TASK-012",
+          "scope": "onboarding only"
+        },
+        {
+          "task": "TASK-016",
+          "scope": "Generate only"
+        }
+      ]
+    },
+    {
+      "path": "e2e/history-detail.spec.ts",
+      "stages": [
+        {
+          "task": "TASK-014",
+          "scope": "history only"
+        },
+        {
+          "task": "TASK-015",
+          "scope": "detail only"
+        }
+      ]
+    }
+  ],
+  "sourcePathFindings": [
+    {
+      "source": "src/ui/Nav.tsx",
+      "approvedScope": "src/app/Nav*",
+      "task": "TASK-005",
+      "disposition": "Preserve current Nav untouched. Actual path differs from approved TASK-005 glob; existing controller must confirm the bounded path before any Nav edit, not let this intake silently add ownership."
+    },
+    {
+      "source": "src/ui/collapsible-section.tsx",
+      "approvedScope": null,
+      "task": null,
+      "disposition": "No explicit foundation ownership in the current policy; preserve unchanged. Do not assign it to TASK-003 by role or use a sibling visual edit to broaden scope."
+    },
+    {
+      "source": "src/test/goal-focus-journeys.test.tsx",
+      "approvedScope": "Home/Generate focused-test allowance only",
+      "task": null,
+      "disposition": "No whole-file owner. Preserve cross-route behavior; any scoped Home/Generate assertions stay with TASK-013/TASK-016 and single-controller serialization. See intake-baseline.json PR287 map."
+    }
+  ],
+  "routeFamilies": {
+    "rule": "Concrete route owner IDs and reachable-state source/fixture references are in route-state-inventory.json. Boot/Welcome/NotFound belong to TASK-010, not motion/dialog TASK-006/TASK-007.",
+    "owners": [
+      "TASK-010",
+      "TASK-011",
+      "TASK-012",
+      "TASK-013",
+      "TASK-014",
+      "TASK-015",
+      "TASK-016",
+      "TASK-017",
+      "TASK-021",
+      "TASK-022",
+      "TASK-023",
+      "TASK-024"
+    ],
+    "behaviorToPreserve": "Recovery 011 TASK-009 through TASK-012 viable-input refusal/rollback and generation typed errors; current main remains behavioral authority."
+  },
+  "evidence": {
+    "beforeStateSequence": [
+      "TASK-001",
+      "TASK-033",
+      "TASK-040",
+      "TASK-002"
+    ],
+    "beforeState": "TASK-040 captures authenticated route/state evidence with TASK-033 reusable deterministic harness before TASK-002 import.",
+    "fixtureOwner": "TASK-033",
+    "fixtureScopes": [
+      "e2e/design-0143/fixtures.ts",
+      "e2e/design-0143/capture.ts",
+      "e2e/design-0143/state-inventory.ts",
+      "e2e/design-0143/baseline.spec.ts",
+      "e2e/core-loop.spec.ts (single-request guard only)",
+      "src/test/design-0143-evidence-harness.test.ts"
+    ],
+    "captureOwner": "TASK-040",
+    "captureScopes": [
+      "docs/design/0143-intake-baseline/screenshots/**",
+      "docs/design/0143-intake-baseline/manifest.json"
+    ],
+    "laterGroups": {
+      "entryForms": "TASK-034",
+      "collectionsSettings": "TASK-035",
+      "workoutLifecycle": "TASK-036",
+      "integratedAccessibility": "TASK-026",
+      "finalAuditOwnerQa": "TASK-027"
+    },
+    "thisTask": "Five intake docs, their focused test and append-only journal; no captures/harness/runtime changes."
+  },
+  "notExpanded": [
+    "no shared design-system repository",
+    "no published package",
+    "no Storybook",
+    "no support-tooling redesign",
+    "no new protected CI workflow"
+  ]
+}
