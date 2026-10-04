@@ -66,6 +66,38 @@ interface Manifest {
   }
   screenshotDirectory: string
   captures: ManifestCapture[]
+  supplemental?: {
+    version: number
+    status: string
+    deployedProof: boolean
+    acceptanceComplete: boolean
+    captures: Array<ManifestCapture & {
+      phase: string; project: string; sourceFile: string; caseId: string; invocationId: string
+      identity: Manifest['identity']; deterministic: boolean; liveGeneration: boolean
+      deployedProof: boolean; acceptanceApproved: boolean; pictureKind: string
+      screenshot: { name: string; sha256: string; bytes: number; explicit: boolean }
+    }>
+    packets: Array<{
+      caseId: string; invocationId: string; images: number; status: string
+      generation: { requests: number; forwarded: number; blocked?: number; blockedUnexpected?: number }
+      fixtures?: string[]
+    }>
+    runs: Array<{
+      invocationId: string; namedCases: number; executedCases: number; boundPassedCases: number
+      passed: number; failed: number; skipped: number; notRun: number; flaky: number
+      caseOutcomes: Array<{ id: string; status: string }>
+    }>
+    coverage: Array<{
+      screen: string; route: string | null; state: string; historicalImages: string[]
+      canonicalImages: string[]; variantImages: string[]; surfaceImages: string[]
+      transitionDestinationImages: string[]; transitions: unknown[]; dispositions: unknown[]
+    }>
+    beforeFindings: Array<{
+      kind: string; screenshot?: string; screenshotSha256?: string; containmentPassed?: boolean
+      directRouteScreenshot?: string; navigationSuccessClaim?: boolean; acceptanceApproved?: boolean
+      bottom?: number; requiredMaxBottom?: number
+    }>
+  }
   contactSheets: unknown[]
   coverage: {
     status: string
@@ -101,9 +133,11 @@ describe('0.14.3 before-state manifest (TASK-040)', () => {
     const onDisk = readdirSync(resolve(root, manifest.screenshotDirectory)).filter((name) =>
       name.endsWith('.png'),
     )
-    expect(onDisk.sort()).toEqual(manifest.captures.map((capture) => capture.screenshot.name).sort())
+    const allCaptures = [...manifest.captures, ...(manifest.supplemental?.captures ?? [])]
+    expect(onDisk.sort()).toEqual(allCaptures.map((capture) => capture.screenshot.name).sort())
+    expect(manifest.captures).toHaveLength(15)
 
-    for (const capture of manifest.captures) {
+    for (const capture of allCaptures) {
       const bytes = readFileSync(resolve(root, manifest.screenshotDirectory, capture.screenshot.name))
       expect(bytes.byteLength, capture.pairId).toBe(capture.screenshot.bytes)
       expect(createHash('sha256').update(bytes).digest('hex'), capture.pairId).toBe(
@@ -190,5 +224,100 @@ describe('0.14.3 before-state manifest (TASK-040)', () => {
     expect(manifest.coverage.capturedStates).toBe(captured)
     expect(manifest.coverage.notCapturedStates).toBe(total - captured)
     expect(manifest.coverage.status).toBe(captured === total ? 'complete' : 'partial')
+  })
+
+  it('keeps supplemental capture provenance separate from historical and deployed proof', () => {
+    const supplement = manifest.supplemental
+    expect(supplement, 'The partial original five-state baseline is not the complete intake record').toBeDefined()
+    expect(supplement!.version).toBe(1)
+    expect(supplement!.deployedProof).toBe(false)
+    expect(supplement!.acceptanceComplete).toBe(false)
+    expect(supplement!.status).toBe('acceptance-review-pending')
+    const names = supplement!.captures.map((capture) => capture.screenshot.name)
+    expect(new Set(names).size).toBe(names.length)
+    for (const capture of supplement!.captures) {
+      expect(capture.phase).toBe('before')
+      expect(capture.project).toBe('mobile')
+      expect(capture.identity.packageVersion).toBe(manifest.identity.packageVersion)
+      expect(capture.identity.packageHash).toBe(manifest.identity.packageHash)
+      expect(capture.identity.runtimeSourceHash).toBe(manifest.identity.runtimeSourceHash)
+      expect(capture.identity.applicationCommit).toMatch(/^[0-9a-f]{40}$/)
+      const origin = new URL(capture.identity.testedDeployment)
+      expect(origin.hostname).toBe('127.0.0.1')
+      expect(origin.origin).toBe(capture.identity.testedDeployment)
+      expect(capture.deterministic).toBe(true)
+      expect(capture.liveGeneration).toBe(false)
+      expect(capture.deployedProof).toBe(false)
+      expect(capture.acceptanceApproved).toBe(false)
+      expect(capture.screenshot.explicit).toBe(true)
+      expect(['canonical-state', 'route-variant', 'non-route-surface', 'transition-destination']).toContain(capture.pictureKind)
+      const bound = supplement!.runs.find((run) => run.invocationId === capture.invocationId)
+      expect(bound?.caseOutcomes).toContainEqual({ id: capture.caseId, status: 'passed' })
+      const identity = JSON.parse(capture.caseId) as string[]
+      expect(identity[0]).toBe(capture.project)
+      expect(identity[1]).toBe(capture.sourceFile)
+    }
+  })
+
+  it('retains every actual batch outcome without manufacturing an all-green invocation', () => {
+    const supplement = manifest.supplemental!
+    const invocations = supplement.runs.map((run) => run.invocationId)
+    expect(new Set(invocations).size).toBe(invocations.length)
+    for (const run of supplement.runs) {
+      expect(run.namedCases).toBe(run.caseOutcomes.length)
+      for (const [count, status] of [
+        ['passed', 'passed'], ['failed', 'failed'], ['skipped', 'skipped'],
+        ['notRun', 'not-run'], ['flaky', 'flaky'],
+      ] as const) expect(run[count]).toBe(run.caseOutcomes.filter((row) => row.status === status).length)
+      expect(run.executedCases).toBe(run.passed + run.failed + run.flaky)
+      expect(run.boundPassedCases).toBe(supplement.packets.filter((packet) => packet.invocationId === run.invocationId).length)
+    }
+    expect(supplement.packets.reduce((sum, packet) => sum + packet.images, 0)).toBe(supplement.captures.length)
+    expect(supplement.runs.some((run) => run.failed > 0)).toBe(true)
+  })
+
+  it('keeps known adverse before-state geometry rather than labeling capture success containment success', () => {
+    const supplement = manifest.supplemental!
+    const finding = supplement.beforeFindings.find((row) => row.kind === 'known-before-layout-constraint')
+    expect(finding).toBeDefined()
+    expect(finding!.containmentPassed).toBe(false)
+    expect(finding!.bottom!).toBeGreaterThan(finding!.requiredMaxBottom!)
+    const picture = supplement.captures.find((capture) => capture.screenshot.name === finding!.screenshot)
+    expect(picture?.screenshot.sha256).toBe(finding!.screenshotSha256)
+  })
+
+  it('accounts for every inventory label without treating destinations or source-only branches as rendered states', () => {
+    const supplement = manifest.supplemental!
+    const expected = readBaselineInventory(root).entries.flatMap((entry) =>
+      entry.states.map((state) => [entry.screen, entry.route, state]),
+    )
+    expect(supplement.coverage.map((entry) => [entry.screen, entry.route, entry.state])).toEqual(expected)
+    for (const entry of supplement.coverage) {
+      expect(entry.canonicalImages.length + entry.variantImages.length + entry.surfaceImages.length +
+        entry.transitionDestinationImages.length + entry.dispositions.length, `${entry.screen}: ${entry.state}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('retains locally fulfilled generation request counts without claiming provider generation', () => {
+    for (const packet of manifest.supplemental!.packets) {
+      expect(packet.generation.forwarded).toBe(0)
+      expect(packet.generation.blocked ?? packet.generation.blockedUnexpected).toBe(0)
+      expect(Number.isSafeInteger(packet.generation.requests)).toBe(true)
+      expect(packet.generation.requests).toBeGreaterThanOrEqual(0)
+      if (packet.generation.requests > 0) expect(packet.fixtures?.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('preserves the Gallery wrong-link finding separately from direct-route specimens', () => {
+    const supplement = manifest.supplemental!
+    const finding = supplement.beforeFindings.find((row) => row.kind === 'known-before-navigation-defect')
+    expect(finding).toBeDefined()
+    expect(finding!.navigationSuccessClaim).toBe(false)
+    expect(finding!.acceptanceApproved).toBe(false)
+    const observed = supplement.captures.find((capture) => capture.screenshot.name === finding!.screenshot)
+    const direct = supplement.captures.find((capture) => capture.screenshot.name === finding!.directRouteScreenshot)
+    expect(observed?.screenshot.sha256).toBe(finding!.screenshotSha256)
+    expect(observed?.reached.pathname).toBe('/dev/gallery/ds/app')
+    expect(direct?.reached.pathname).toBe('/dev/gallery/app')
   })
 })
