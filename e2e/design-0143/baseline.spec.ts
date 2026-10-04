@@ -1,3 +1,5 @@
+import { writeFile } from 'node:fs/promises'
+import type { TestInfo } from '@playwright/test'
 import { expect, test } from '../support/authenticated-session'
 import { backend } from '../support/backend'
 import { captureTarget } from './capture'
@@ -19,6 +21,13 @@ import { AUTHENTICATED_CAPTURE_TARGETS, VIEWPORT_OF_PROJECT } from './state-inve
  */
 
 const SKIN = 'clear'
+
+/** The supervisor consumes the JSON reporter, so body-only attachments would be lost. */
+async function attachJson(testInfo: TestInfo, name: string, value: unknown) {
+  const path = testInfo.outputPath(name)
+  await writeFile(path, JSON.stringify(value, null, 2))
+  await testInfo.attach(name, { path, contentType: 'application/json' })
+}
 
 test.describe('0.14.3 capture harness: authenticated routes (REQ-030)', () => {
   test.skip(!backend.available, backend.reason)
@@ -51,16 +60,13 @@ test.describe('0.14.3 capture harness: authenticated routes (REQ-030)', () => {
       expect(record.screenshot.bytes).toBeGreaterThan(0)
       expect(network.blockedGenerations(), 'a capture lane asked for a generation').toBe(0)
       expect(authenticatedSession.journey.generationRequests).toBe(0)
-      await testInfo.attach('network-observation.json', {
-        body: JSON.stringify({ journeyGenerationRequests: authenticatedSession.journey.generationRequests,
-          blockedCaptureGenerations: network.blockedGenerations(), posture: 'generation-aborted-before-target-navigation' }),
-        contentType: 'application/json',
+      await attachJson(testInfo, 'network-observation.json', {
+        journeyGenerationRequests: authenticatedSession.journey.generationRequests,
+        blockedCaptureGenerations: network.blockedGenerations(),
+        posture: 'generation-aborted-before-target-navigation',
       })
 
-      await testInfo.attach(`${record.pairId}.json`, {
-        body: JSON.stringify(record, null, 2),
-        contentType: 'application/json',
-      })
+      await attachJson(testInfo, `${record.pairId}.json`, record)
     })
   }
 })
@@ -102,11 +108,10 @@ test.describe('0.14.3 capture harness: negative state rejection (REQ-030)', () =
     expect(screenshots).toBe(0)
     expect(network.blockedGenerations(), 'a negative capture asked for a generation').toBe(0)
     expect(authenticatedSession.journey.generationRequests).toBe(0)
-    await testInfo.attach('network-observation.json', {
-      body: JSON.stringify({ journeyGenerationRequests: authenticatedSession.journey.generationRequests,
-        blockedCaptureGenerations: network.blockedGenerations(), screenshots, failedReads,
-        posture: 'generation-aborted-before-target-navigation' }),
-      contentType: 'application/json',
+    await attachJson(testInfo, 'network-observation.json', {
+      journeyGenerationRequests: authenticatedSession.journey.generationRequests,
+      blockedCaptureGenerations: network.blockedGenerations(), screenshots, failedReads,
+      posture: 'generation-aborted-before-target-navigation',
     })
   })
 })
