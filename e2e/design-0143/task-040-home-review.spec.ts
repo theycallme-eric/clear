@@ -258,18 +258,29 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     ready = true
   })
   test.afterEach(async () => {
+    let captureFailed = false
+    let captureError: unknown
     try {
       if (ready) {
         await save.finish() // retain partial/failing proof before cleanup/assertion
         expect(blocked(), 'any unexpected generation is a failed capture, not success').toBe(0)
         expect(observed, 'all observed model POSTs must be explicitly local fixtures').toBe(expectedLocalPosts)
       }
-    } finally {
-      for (const id of actorIds) {
-        try { await client.deleteUser(id) } catch { throw new Error('TASK-040 scoped cleanup failed.') }
-      }
-      actorIds = []
+    } catch (error) {
+      captureFailed = true
+      captureError = error
     }
+    let cleanupFailed = false
+    for (const id of actorIds) {
+      try { await client.deleteUser(id) } catch { cleanupFailed = true }
+    }
+    actorIds = []
+    if (cleanupFailed) {
+      const cleanupError = new Error('TASK-040 scoped cleanup failed.')
+      if (captureFailed) throw new AggregateError([captureError, cleanupError], 'TASK-040 capture and scoped cleanup failed.')
+      throw cleanupError
+    }
+    if (captureFailed) throw captureError
   })
 
   function acceptance(title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body') {

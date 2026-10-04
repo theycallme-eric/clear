@@ -361,14 +361,26 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
   })
 
   test.afterEach(async () => {
+    let captureFailed = false
+    let captureError: unknown
+    const cleanupErrors: Error[] = []
     try {
       if (recorderReady) await save.finish()
+    } catch (error) {
+      captureFailed = true
+      captureError = error
     } finally {
-      for (const id of cleanupActorIds) {
-        try { await client.deleteUser(id) } catch { throw new Error('TASK-040 scoped fixture cleanup failed.') }
-      }
+      const ownedIds = cleanupActorIds
       cleanupActorIds = []
+      for (const id of ownedIds) {
+        try { await client.deleteUser(id) } catch { cleanupErrors.push(new Error('TASK-040 scoped fixture cleanup failed.')) }
+      }
     }
+    if (captureFailed && cleanupErrors.length > 0) {
+      throw new AggregateError([captureError, ...cleanupErrors], 'TASK-040 capture and scoped fixture cleanup failed.')
+    }
+    if (captureFailed) throw captureError
+    if (cleanupErrors.length > 0) throw new AggregateError(cleanupErrors, 'TASK-040 scoped fixture cleanup failed.')
   })
 
   const persist = async (title = TITLE, offset = 1, spectrum = true) => must<Persisted>(

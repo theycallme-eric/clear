@@ -272,12 +272,26 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
     }))
   })
   test.afterEach(async () => {
-    try { if (save) await save.finish() } finally {
-      if (ownedActorId !== null) {
-        try { await client.deleteUser(ownedActorId) } catch { throw new Error('TASK-040 isolated gaps cleanup failed.') }
-      }
+    let captureFailed = false
+    let captureError: unknown
+    let cleanupError: Error | undefined
+    try {
+      if (save) await save.finish()
+    } catch (error) {
+      captureFailed = true
+      captureError = error
+    } finally {
+      const ownedId = ownedActorId
       ownedActorId = null
+      if (ownedId !== null) {
+        try { await client.deleteUser(ownedId) } catch { cleanupError = new Error('TASK-040 isolated gaps cleanup failed.') }
+      }
     }
+    if (captureFailed && cleanupError) {
+      throw new AggregateError([captureError, cleanupError], 'TASK-040 capture and isolated gaps cleanup failed.')
+    }
+    if (captureFailed) throw captureError
+    if (cleanupError) throw cleanupError
   })
   const persist = async (title = TITLE, offset = 0, twoSections = false) => must<Persisted>(
     await client.rpcAs('persist_session', {

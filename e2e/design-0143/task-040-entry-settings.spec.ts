@@ -235,7 +235,7 @@ test('entry: Welcome and OTP validation, busy, typed failure and cooldown', asyn
   let otpStatus = 500
   let verifyExpired = false
   let otpHold = deferred()
-  let verifyHold = deferred()
+  const verifyHold = deferred()
   evidence.fixture('OTP delivery locally held/answered; verify negatives are explicit typed boundary fixtures')
   await page.route('**/auth/v1/otp', async (route) => {
     if (route.request().method() !== 'POST') return answer(route, 204, null)
