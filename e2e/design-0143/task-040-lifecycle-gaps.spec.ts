@@ -219,6 +219,9 @@ function recorder(page: Page, info: TestInfo, skin: CaptureSkin, counts: () => C
 }
 
 test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline', () => {
+  // Credential-free Preview is not capture proof; local captures keep hard prerequisites.
+  test.skip(Boolean(process.env.CI) && process.env.GITHUB_JOB === 'preview-e2e' && !backend.available,
+    backend.reason)
   test.use({ timezoneId: 'UTC' })
   test.describe.configure({ mode: 'default', retries: 0 })
   let client: ReturnType<typeof backend.client>

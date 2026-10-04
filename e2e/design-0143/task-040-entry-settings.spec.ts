@@ -339,7 +339,11 @@ async function enterNewUser(page: Page, visit: (path: string) => Promise<void>, 
   await heading(page, 'Set up CLEAR')
 }
 
-test('entry: real new user, all onboarding steps, retained draft and actual commit', async ({ page, visit, evidence }, testInfo) => {
+// Keep public OTP runnable and case identities unchanged; Preview omission is not capture proof.
+const backendTest = Boolean(process.env.CI) && process.env.GITHUB_JOB === 'preview-e2e' && !backend.available
+  ? test.skip : test
+
+backendTest('entry: real new user, all onboarding steps, retained draft and actual commit', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(150_000)
   expect(backend.available, 'TASK-040 requires the named E2E fixture prerequisites; no skipped proof').toBe(true)
   const client = backend.client()
@@ -419,7 +423,7 @@ test('entry: real new user, all onboarding steps, retained draft and actual comm
   }
 })
 
-test('entry: onboarding keeps the actual typed impossible-choice refusal', async ({ page, visit, evidence }, testInfo) => {
+backendTest('entry: onboarding keeps the actual typed impossible-choice refusal', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(120_000)
   expect(backend.available).toBe(true)
   const client = backend.client()
@@ -452,7 +456,7 @@ test('entry: onboarding keeps the actual typed impossible-choice refusal', async
   }
 })
 
-test('Generate: genuine first-workout, validation and workout-only recovery', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('Generate: genuine first-workout, validation and workout-only recovery', async ({ authenticatedPage: page, visit, evidence }) => {
   await visit('/generate')
   const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
   const cta = page.getByRole('button', { name: 'Generate workout', exact: true })
@@ -482,7 +486,7 @@ test('Generate: genuine first-workout, validation and workout-only recovery', as
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Generate: scoped valid missing goal and empty-place reads', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Generate: scoped valid missing goal and empty-place reads', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   evidence.fixture('scoped real onboarded profile with goal_preset null; then scoped valid empty locations read')
   await transformProfile(page, session.userId, null)
   await visit('/generate')
@@ -505,7 +509,7 @@ test('Generate: scoped valid missing goal and empty-place reads', async ({ authe
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Generate: real session with named recent/stale history fixture and focus override', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Generate: real session with named recent/stale history fixture and focus override', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   evidence.fixture('scoped parsed history rows from existing makeSessionRow, relative to actual suggestion day')
   await fixtureHistory(page, session.userId, recentRows(session.userId))
   await visit('/generate')
@@ -539,7 +543,7 @@ test('Generate: real session with named recent/stale history fixture and focus o
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Generate: existing anchor evidence exposes a real deload confirmation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Generate: existing anchor evidence exposes a real deload confirmation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   evidence.fixture('scoped anchor_evidence six existing-schema rows; no fabricated runtime state')
   const rows = [12, 8, 4].flatMap((days) => [1, 2].map((set) => ({
     session_id: randomUUID(), session_date: dayAgo(days), logged_at: `${dayAgo(days)}T10:0${set}:00.000Z`,
@@ -567,7 +571,7 @@ test('Generate: existing anchor evidence exposes a real deload confirmation', as
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Loading: held client stages, actual slow threshold, retriable and terminal failures', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('Loading: held client stages, actual slow threshold, retriable and terminal failures', async ({ authenticatedPage: page, visit, evidence }) => {
   test.setTimeout(90_000)
   evidence.fixture('generate-workout POST held and locally fulfilled; no provider dispatch')
   let held = deferred()
@@ -649,7 +653,7 @@ test('Loading: held client stages, actual slow threshold, retriable and terminal
   } finally { held.release() }
 })
 
-test('Boot: a genuine scoped shared-read hold/failure/retry and automatic continuation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Boot: a genuine scoped shared-read hold/failure/retry and automatic continuation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   const hold = deferred()
   let fail = true
   let profileReads = 0
@@ -702,7 +706,7 @@ test('Boot: a genuine scoped shared-read hold/failure/retry and automatic contin
   } finally { hold.release() }
 })
 
-test('Settings: actual populated preference, held save, typed refusal and rollback', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Settings: actual populated preference, held save, typed refusal and rollback', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   const hold = deferred()
   let refuse = true
   evidence.fixture('scoped profile PATCH first answers typed settings_not_viable; next save reaches actual endpoint')
@@ -754,7 +758,7 @@ test('Settings: actual populated preference, held save, typed refusal and rollba
   } finally { hold.release() }
 })
 
-test('Settings: real four-skin selection, keyboard focus, system, short containment and reduced motion', async ({ authenticatedPage: page, visit, evidence }, testInfo) => {
+backendTest('Settings: real four-skin selection, keyboard focus, system, short containment and reduced motion', async ({ authenticatedPage: page, visit, evidence }, testInfo) => {
   await visit('/settings')
   const skins: readonly CaptureSkin[] = testInfo.project.name === 'mobile' ? CAPTURE_SKINS : ['clear']
   for (const skin of skins) {
@@ -796,7 +800,7 @@ test('Settings: real four-skin selection, keyboard focus, system, short containm
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Places: real list/editor CRUD, equipment held failure and retry, default/delete', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('Places: real list/editor CRUD, equipment held failure and retry, default/delete', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   test.setTimeout(120_000)
   evidence.fixture('actual namespaced location writes; only original location equipment GET is held/500 once')
   const client = backend.client()
@@ -897,7 +901,7 @@ test('Places: real list/editor CRUD, equipment held failure and retry, default/d
   } finally { hold.release() }
 })
 
-test('Places: typed viability refusal retains the editor and rolls back the list', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('Places: typed viability refusal retains the editor and rolls back the list', async ({ authenticatedPage: page, visit, evidence }) => {
   evidence.fixture('save_location locally answers the existing typed location_not_viable wire branch; no write forwarded')
   await page.route('**/rest/v1/rpc/save_location', (route) => {
     if (route.request().method() !== 'POST') return route.fallback()
@@ -923,7 +927,7 @@ test('Places: typed viability refusal retains the editor and rolls back the list
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Gallery: actual dev routes, selected skin/atmosphere and triggered dialog/toast', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('Gallery: actual dev routes, selected skin/atmosphere and triggered dialog/toast', async ({ authenticatedPage: page, visit, evidence }) => {
   await visit('/dev/gallery')
   await evidence.route('Component Gallery', '/dev/gallery', 'overview', 'Component Gallery', () =>
     expect(page.getByRole('heading', { name: 'Two sections', exact: true })).toBeVisible())
@@ -967,7 +971,7 @@ test('Gallery: actual dev routes, selected skin/atmosphere and triggered dialog/
   expect(evidence.modelAttempts()).toBe(0)
 })
 
-test('Entry: authentic public redirects, unmatched route and sign out', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('Entry: authentic public redirects, unmatched route and sign out', async ({ authenticatedPage: page, visit, evidence }) => {
   await visit('/welcome')
   await evidence.transition('Welcome', '/welcome', 'authenticated-redirect', '/welcome', '/', 'Today', () =>
     expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeEnabled())

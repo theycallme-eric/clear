@@ -289,6 +289,9 @@ function recorder(page: Page, testInfo: TestInfo, skin: CaptureSkin, counts: () 
 }
 
 test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifacts', () => {
+  // Credential-free Preview is not capture proof; local captures keep hard prerequisites.
+  test.skip(Boolean(process.env.CI) && process.env.GITHUB_JOB === 'preview-e2e' && !backend.available,
+    backend.reason)
   test.use({ timezoneId: 'UTC' })
   // Independent per-case users: one failure must not silently skip later captures.
   test.describe.configure({ mode: 'default' })
