@@ -106,6 +106,7 @@ interface Stop {
     readonly height: number
   }
   readonly fieldFocusColor: string
+  readonly fieldBorderChannel: 'borderColor' | 'borderLayer'
   readonly ancestors: readonly {
     readonly name: string
     readonly focused: Frame
@@ -179,6 +180,10 @@ async function readStop(page: Page): Promise<Stop | null> {
       'input:not([type="checkbox"],[type="radio"],[type="range"],[type="button"],[type="submit"],[type="reset"]),textarea,select,[contenteditable="true"]',
     )
     const owner = isTextField ? (focused.closest('.clr-field') ?? focused) : focused
+    // 0.14.3 fields paint a chamfered ::after ring; 0.9.7/plain fields
+    // paint a native border. Do not borrow paint from an unrelated ancestor.
+    const fieldBorderChannel: Stop['fieldBorderChannel'] = owner.matches('.clr-field.clr-chamfer')
+      ? 'borderLayer' : 'borderColor'
     const bracket = document.querySelector('.clr-focus-brackets')
     const bracketStyle = bracket === null ? null : getComputedStyle(bracket)
     const bracketRect = bracket?.getBoundingClientRect()
@@ -215,6 +220,7 @@ async function readStop(page: Page): Promise<Stop | null> {
         height: bracketRect?.height ?? 0,
       },
       fieldFocusColor,
+      fieldBorderChannel,
       ancestors,
     }
   })
@@ -246,12 +252,14 @@ function expectNormalFocus(stop: Stop) {
   expect(stop.bracket.count, `${where}: the root mounted more than one bracket layer`).toBe(1)
 
   if (stop.kind === 'field') {
+    const borderColor = stop.focusedFrame[stop.fieldBorderChannel]
+    const restingBorderColor = stop.restingFrame[stop.fieldBorderChannel]
     expect(stop.bracket.opacity, `${where}: a text field summoned brackets`).toBe(0)
-    expect(stop.focusedFrame.borderColor, `${where}: its border did not light`).toBe(
+    expect(borderColor, `${where}: its border did not light`).toBe(
       stop.fieldFocusColor,
     )
-    expect(stop.focusedFrame.borderColor, `${where}: its border did not change`).not.toBe(
-      stop.restingFrame.borderColor,
+    expect(borderColor, `${where}: its border did not change`).not.toBe(
+      restingBorderColor,
     )
   } else {
     expect(stop.bracket.opacity, `${where}: brackets are hidden`).toBe(1)

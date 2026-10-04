@@ -75,6 +75,57 @@ const test = authenticatedTest.extend<{ evidence: Evidence }>({
     let skin: CaptureSkin = 'clear'
     const guard = await installDeterministicCapture(page, { skin })
     const identity = captureIdentity()
+    let modelAttempts = 0
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && /\/functions\/v1\/generate-/.test(new URL(request.url()).pathname)) {
+        modelAttempts += 1
+      }
+    })
+    // The public OTP behavior stays active after the package import, but it
+    // must not write new 0.14.3 observations as historical TASK-040 BEFORE data.
+    // Only this exact public case can use the non-capture compatibility path.
+    if (identity.packageVersion === '0.14.3' &&
+      testInfo.title === 'entry: Welcome and OTP validation, busy, typed failure and cooldown') {
+      const observations: Array<{ screen: string; route: string; state: string }> = []
+      const fixtures: string[] = []
+      const captureOnly = () => {
+        throw new Error('The post-import public OTP case cannot use baseline capture operations')
+      }
+      const evidence: Evidence = {
+        async route(screen, route, state, title, assertion) {
+          expect(pathname(page), 'the actual path must match the public route').toBe(route)
+          await heading(page, title)
+          await assertion()
+          const size = CAPTURE_VIEWPORTS.find((candidate) => candidate.id === viewport)!
+          expect(page.viewportSize()).toEqual({ width: size.width, height: size.height })
+          await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
+          observations.push({ screen, route, state })
+        },
+        surface: async () => captureOnly(),
+        transition: async () => captureOnly(),
+        disposition: captureOnly,
+        fixture(name) { if (!fixtures.includes(name)) fixtures.push(name) },
+        geometry: async () => captureOnly(),
+        skin: captureOnly,
+        modelAttempts: () => modelAttempts,
+      }
+      try { await use(evidence) } finally {
+        await testInfo.attach('task040-public-entry-verification', {
+          body: Buffer.from(JSON.stringify({
+            version: 1, kind: 'post-import-public-entry-behavior-verification',
+            caseTitle: testInfo.title, project: testInfo.project.name,
+            sourceFile: 'e2e/design-0143/task-040-entry-settings.spec.ts',
+            identity, status: testInfo.status, observations, fixtures,
+            baselineCapture: false, liveGeneration: false,
+            generation: { requests: modelAttempts, forwarded: 0,
+              blockedUnexpected: guard.blockedGenerations() },
+          }, null, 2)),
+          contentType: 'application/json',
+        })
+        expect(guard.blockedGenerations(), 'unexpected model POST was blocked, not evidence of success').toBe(0)
+      }
+      return
+    }
     expect(identity.packageVersion, 'before evidence must precede package import').toBe('0.9.7')
     const inventory = readBaselineInventory()
     const nativeDriver = playwrightCaptureDriver(page, testInfo)
@@ -94,12 +145,6 @@ const test = authenticatedTest.extend<{ evidence: Evidence }>({
     const fixtures: string[] = []
     const pairs = new Set<string>()
     let imageSequence = 0
-    let modelAttempts = 0
-    page.on('request', (request) => {
-      if (request.method() === 'POST' && /\/functions\/v1\/generate-/.test(new URL(request.url()).pathname)) {
-        modelAttempts += 1
-      }
-    })
     const ref = (screen: string, route: string | null, state: string) => {
       if (!baselineEntry(inventory, screen, route)?.states.includes(state)) {
         throw new Error(`No recorded baseline state: ${screen} ${route} ${state}`)
