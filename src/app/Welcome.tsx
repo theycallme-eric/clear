@@ -39,7 +39,7 @@ export function Welcome() {
     >
       <div className="clr-stack clr-boot">
         <p className="label">Strength training, simplified.</p>
-        <Card barWidth="lg">
+        <Card>
           <ActionRow>
             <Button
               variant="primary"

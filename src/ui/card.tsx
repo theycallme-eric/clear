@@ -1,48 +1,96 @@
 /**
- * Card — the DS-04a React wrapper over the export's `.clr-card` CSS.
+ * Card — the app's thin semantic composition over the public 0.14.3 Card.
  *
- * The export ships the card as CSS only: a closed chamfered body with an
- * optional accent bar joined to its left edge. The body always keeps all four
- * edges; the bar is decoration, never the card's missing border.
+ * The public component owns the frame: one accent bar from
+ * `--accent-bar-width`, body/bar/emission paired on one role, the 70% card
+ * ground, a corner picked from the card's height and the bottom padding that
+ * keeps content clear of the cut. This adapter never sets any of those.
  *
- * Width comes from `--accent-bar-width` / `--accent-bar-width-lg` through the
- * bar classes; the component never sets one. The card imposes no heading level
- * on its content (CORE-05) — the screen that composes it decides.
+ * It adds two things. The public heading slot is a `span`, so the heading is
+ * rendered here as a real `Heading` child at the surrounding outline level
+ * (CORE-05). And a card never holds another card: a `Card` rendered inside a
+ * card becomes a ruled sub-group, and the list/metric wrappers drop their own
+ * frames.
  */
-import type { HTMLAttributes } from 'react'
+import type { CSSProperties, HTMLAttributes, ReactNode } from 'react'
 
+import {
+  Card as PublicCard,
+  type CardProps as PublicCardProps,
+} from '../design-system/index'
+
+import { CardContainmentContext, useInsideCard } from './card-context'
 import { ActionRow } from './composition'
+import { Heading } from './Heading'
 
-export type CardBarWidth = 'md' | 'lg'
+export type { CardRole } from '../design-system/index'
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  /** Add the optional accent bar. md → 8px · lg → 12px. Omit for a plain card. */
-  barWidth?: CardBarWidth
+export interface CardProps
+  extends Omit<PublicCardProps, 'heading' | 'meta' | 'cornerSize'> {
+  /** The card's label, inside it at the top, as a heading at the current level. */
+  heading?: ReactNode
+  /** Secondary text on the heading row, right-aligned (e.g. "Week 4"). */
+  meta?: ReactNode
 }
 
-export function Card({
-  barWidth,
-  className,
-  children,
-  ...props
-}: CardProps) {
+const HEADING_ROW_STYLE: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'baseline',
+  gap: 'var(--spacing-300)',
+}
+
+const HEADING_STYLE: CSSProperties = { margin: 0 }
+
+const SUBGROUP_RULE_STYLE: CSSProperties = {
+  paddingBottom: 'var(--spacing-100)',
+  borderBottom: 'var(--border-width) solid var(--border-region-rule)',
+}
+
+function CardHeading({
+  heading,
+  meta,
+  ruled = false,
+}: Pick<CardProps, 'heading' | 'meta'> & { ruled?: boolean }) {
+  if (!heading && !meta) return null
   return (
-    <div
-      className={['clr-card', className].filter(Boolean).join(' ')}
-      {...props}
-    >
-      {barWidth ? (
-        <div
-          aria-hidden="true"
-          className={
-            barWidth === 'lg' ? 'clr-card__bar clr-card__bar--lg' : 'clr-card__bar'
-          }
-        />
+    <div style={ruled ? { ...HEADING_ROW_STYLE, ...SUBGROUP_RULE_STYLE } : HEADING_ROW_STYLE}>
+      {heading ? (
+        <Heading className="label" style={HEADING_STYLE}>
+          {heading}
+        </Heading>
       ) : null}
-      <div className="clr-card__body clr-chamfer clr-chamfer--md">
+      {meta ? (
+        <span className="label" style={{ color: 'var(--text-secondary)' }}>
+          {meta}
+        </span>
+      ) : null}
+    </div>
+  )
+}
+
+export function Card({ heading, meta, role, padding, className, children, ...props }: CardProps) {
+  const insideCard = useInsideCard()
+
+  if (insideCard) {
+    return (
+      <div
+        className={['clr-stack', 'clr-stack--tight', className].filter(Boolean).join(' ')}
+        {...props}
+      >
+        <CardHeading heading={heading} meta={meta} ruled />
         {children}
       </div>
-    </div>
+    )
+  }
+
+  return (
+    <PublicCard role={role} padding={padding} className={className} {...props} cornerSize="auto">
+      <CardContainmentContext.Provider value>
+        <CardHeading heading={heading} meta={meta} />
+        {children}
+      </CardContainmentContext.Provider>
+    </PublicCard>
   )
 }
 

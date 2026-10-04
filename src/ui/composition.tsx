@@ -1,11 +1,18 @@
 /**
- * Small semantic-neutral wrappers for the CSS-only 0.9.7 layout patterns.
+ * Small semantic-neutral wrappers for the CSS-only layout patterns.
  *
  * They centralise vocabulary without inventing product behaviour: callers keep
  * their native elements, accessible names and handlers through `as` and the
  * ordinary HTML attributes spread onto the rendered element.
+ *
+ * Containment: inside a Card the list and metric wrappers are bare rows and
+ * readouts, because the card is already the frame. They never add a card.
  */
 import { createElement, type ElementType, type HTMLAttributes, type ReactNode } from 'react'
+
+import { EmptyState } from '../design-system/index'
+
+import { useInsideCard } from './card-context'
 
 interface CompositionProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType
@@ -28,9 +35,14 @@ export function ActionRow(props: CompositionProps) {
   return composition('div', 'clr-actions', props)
 }
 
-/** One closed frame around a related collection of rows. */
+/** A related collection of rows: one closed frame, or the card's when inside one. */
 export function ListFrame(props: CompositionProps) {
-  return composition('div', 'clr-list clr-chamfer clr-chamfer--md', props)
+  const insideCard = useInsideCard()
+  return composition(
+    'div',
+    insideCard ? 'clr-list' : 'clr-list clr-chamfer clr-chamfer--md',
+    props,
+  )
 }
 
 /** A row inside ListFrame; adjacent rows receive the system inset rule. */
@@ -38,7 +50,10 @@ export function ListRow(props: CompositionProps) {
   return composition('div', 'clr-list__row', props)
 }
 
-/** Factual empty/loading copy occupying the same frame as populated rows. */
+/**
+ * Factual empty copy where the rows will be. Standalone it is the public
+ * EmptyState, which is its own card; inside a card it is plain copy.
+ */
 export function ListMessage({
   title,
   message,
@@ -46,17 +61,15 @@ export function ListMessage({
   title: ReactNode
   message?: ReactNode
 }) {
+  const insideCard = useInsideCard()
+  if (!insideCard) return <EmptyState title={title} message={message} />
   return (
-    <ListFrame>
-      <ListRow>
-        <div className="clr-stack clr-stack--tight">
-          <p style={{ margin: 0 }}>{title}</p>
-          {message === undefined ? null : (
-            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{message}</p>
-          )}
-        </div>
-      </ListRow>
-    </ListFrame>
+    <div className="clr-stack clr-stack--tight">
+      <p style={{ margin: 0 }}>{title}</p>
+      {message === undefined ? null : (
+        <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{message}</p>
+      )}
+    </div>
   )
 }
 
@@ -70,9 +83,14 @@ export function MetricGrid(props: CompositionProps) {
   return composition('div', 'clr-metric-grid', props)
 }
 
-/** One small closed frame within a MetricGrid. */
+/** One readout within a MetricGrid: a small element frame, unframed inside a card. */
 export function MetricFrame(props: CompositionProps) {
-  return composition('div', 'clr-metric-frame clr-chamfer clr-chamfer--sm', props)
+  const insideCard = useInsideCard()
+  return composition(
+    'div',
+    insideCard ? 'clr-metric-frame' : 'clr-metric-frame clr-chamfer clr-chamfer--sm',
+    props,
+  )
 }
 
 /** Pinned screen action area with the system's full-width top rule. */
