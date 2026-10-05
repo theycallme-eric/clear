@@ -13,7 +13,7 @@
  */
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { UserConstraint } from '../data/constraints'
 import { constraintsQueryKey } from '../state/constraint-queries'
@@ -210,6 +210,120 @@ describe('REQ-057 · a failed check retries', () => {
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent('Could not read your profile.')
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+})
+
+describe('REQ-015 · the status is one card under the wordmark', () => {
+  /** A boot whose history read fails once, then answers. */
+  function failingOnce() {
+    let attempt = 0
+    return createWorkoutDouble({
+      session: null,
+      history: {
+        page: async () => {
+          attempt += 1
+          return attempt === 1
+            ? err(makeAppError())
+            : ok({ sessions: [makeSessionRow()], hasMore: false })
+        },
+      },
+    }).clients
+  }
+
+  it('contains the running check in the loader card, below the wordmark, with no footer', () => {
+    renderBoot()
+
+    const heading = screen.getByRole('heading', { level: 1 })
+    expect(heading.firstElementChild).toHaveStyle({
+      display: 'flex',
+      justifyContent: 'center',
+      width: '100%',
+    })
+    const cards = document.querySelectorAll('.clr-card')
+    expect(cards).toHaveLength(1)
+    const status = screen.getByRole('status')
+    expect(cards[0]).toContainElement(status)
+    expect(
+      heading.compareDocumentPosition(status) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    expect(document.querySelector('.clr-footer')).toBeNull()
+  })
+
+  it('contains the failure in one card and pins its one action in the footer', async () => {
+    renderBoot(bootProviders({ workout: failingOnce() }))
+
+    const alert = await screen.findByRole('alert')
+    const cards = document.querySelectorAll('.clr-card')
+    expect(cards).toHaveLength(1)
+    expect(cards[0]).toContainElement(alert)
+    expect(
+      screen
+        .getByRole('heading', { level: 1 })
+        .compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+
+    const retry = screen.getByRole('button', { name: 'Retry' })
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    expect(retry).toHaveClass('clr-btn--primary')
+    expect(cards[0]).not.toContainElement(retry)
+    expect(retry.closest('.clr-scroll-region__foot > .clr-footer')).not.toBeNull()
+    expect(document.querySelector('.clr-scroll-region__scroller')).not.toContainElement(retry)
+  })
+
+  it('retries from the keyboard', async () => {
+    const user = userEvent.setup()
+    renderBoot(bootProviders({ workout: failingOnce() }))
+
+    await screen.findByRole('alert')
+    screen.getByRole('button', { name: 'Retry' }).focus()
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByText(APP)).toBeInTheDocument()
+    expect(document.querySelector('.clr-footer')).toBeNull()
+  })
+
+  it('shows only what the real reads reported — no sample rows, no consent action', async () => {
+    const constraints = createFakeConstraintsClient({
+      listInForce: () => new Promise<Result<UserConstraint[]>>(() => {}),
+    })
+
+    renderBoot(bootProviders({ constraints }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Session history · 2 entries')).toBeInTheDocument()
+    })
+    expect(screen.queryByText(/42 entries|barbell, bands|left shoulder/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/all systems nominal|training mode/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /begin session/i })).not.toBeInTheDocument()
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
+  })
+
+  it('hands off to a reduced-motion user without waiting on any animation', async () => {
+    const media = vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: query.includes('prefers-reduced-motion'),
+          media: query,
+          onchange: null,
+          addListener: () => {},
+          removeListener: () => {},
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    )
+
+    try {
+      renderBoot()
+
+      // No `animationend`/`transitionend` is ever dispatched in this test: the
+      // app arrives because the reads answered, with nothing left of boot.
+      expect(await screen.findByText(APP)).toBeInTheDocument()
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      expect(document.querySelector('.clr-card')).toBeNull()
+    } finally {
+      media.mockRestore()
+    }
   })
 })
 
