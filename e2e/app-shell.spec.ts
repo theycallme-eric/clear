@@ -51,16 +51,47 @@ test('the skip link is the first thing a keyboard reaches', async ({
   await expect(focused).toHaveAttribute('href', '#main')
 })
 
-test('welcome keeps its semantic entry card and auth uses a direct form', async ({ page, visit }, testInfo) => {
+test('welcome groups one card under the wordmark, pins its entries, and auth uses a direct form', async ({ page, visit }, testInfo) => {
   await visit('/welcome')
 
-  const card = page.locator('.clr-card')
+  // REQ-015: the line under the wordmark is the card's, not a floating label,
+  // and the card holds no action — both entries are the pinned footer.
+  const card = page.locator('main .clr-card')
   await expect(card).toHaveCount(1)
-  await expect(card.getByRole('button', { name: 'Sign in' })).toBeVisible()
-  await expect(card.getByRole('button', { name: 'Create account' })).toBeVisible()
+  await expect(card).toContainText('Strength training, simplified.')
+  await expect(card.getByRole('button')).toHaveCount(0)
+  await expect(page.locator('main').getByRole('status')).toHaveCount(0)
+
+  const foot = page.locator('main .clr-scroll-region__foot > .clr-footer')
+  await expect(foot).toHaveCount(1)
+  await expect(foot.getByRole('button')).toHaveText(['Sign in', 'Create account'])
+  await expect(page.getByRole('button', { name: /begin session/i })).toHaveCount(0)
+
+  // Grouping, rendered: wordmark, then the card, then the footer, with the
+  // footer's last action inside the viewport rather than below the fold.
+  const boxes = await page.evaluate(() => {
+    const top = (selector: string) =>
+      document.querySelector(selector)?.getBoundingClientRect().top ?? -1
+    const lastAction = document.querySelector(
+      'main .clr-footer button:last-of-type',
+    )
+    return {
+      heading: top('main h1'),
+      card: top('main .clr-card'),
+      foot: top('main .clr-footer'),
+      lastActionBottom: lastAction?.getBoundingClientRect().bottom ?? -1,
+      viewport: window.innerHeight,
+      overflow: document.documentElement.scrollWidth - window.innerWidth,
+    }
+  })
+  expect(boxes.heading).toBeGreaterThanOrEqual(0)
+  expect(boxes.card).toBeGreaterThan(boxes.heading)
+  expect(boxes.foot).toBeGreaterThan(boxes.card)
+  expect(boxes.lastActionBottom).toBeLessThanOrEqual(boxes.viewport)
+  expect(boxes.overflow).toBeLessThanOrEqual(0)
   await page.screenshot({ path: testInfo.outputPath('vibe-d-welcome.png') })
 
-  await card.getByRole('button', { name: 'Create account' }).click()
+  await foot.getByRole('button', { name: 'Create account' }).click()
   await expect(page).toHaveURL(/\/login\?mode=create$/)
   await expect(
     page.getByRole('heading', { level: 1, name: 'Create account' }),
@@ -69,6 +100,35 @@ test('welcome keeps its semantic entry card and auth uses a direct form', async 
   await expect(page.locator('main .clr-footer')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('vibe-d-create-account.png') })
+})
+
+test.describe('with reduced motion', () => {
+  // The browser's own media feature, set before the first document loads.
+  test.use({ reducedMotion: 'reduce' })
+
+  test('welcome entries work from the keyboard', async ({ page, visit }) => {
+    await visit('/welcome')
+
+    // Reduced motion reaches the final state at once: the card is fully shown
+    // on arrival and nothing is held behind an entrance.
+    const card = page.locator('main .clr-card')
+    await expect(card).toBeVisible()
+    await expect(card).toHaveCSS('opacity', '1')
+
+    const signIn = page.getByRole('button', { name: 'Sign in' })
+    const create = page.getByRole('button', { name: 'Create account' })
+    await signIn.focus()
+    await page.keyboard.press('Tab')
+    await expect(create).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+    await expect(signIn).toBeFocused()
+
+    await page.keyboard.press('Enter')
+    await expect(page).toHaveURL(/\/login$/)
+    await expect(
+      page.getByRole('heading', { level: 1, name: 'Sign in' }),
+    ).toBeVisible()
+  })
 })
 
 test('the full atmosphere keeps every colored layer in the viewport', async ({

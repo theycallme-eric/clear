@@ -1,13 +1,17 @@
 /**
  * REQ-057 — the boot and re-entry sequence, and the gate that is not one.
  *
- * Composition is the Boot Sequence template's
- * (`docs/design/exports/clear-design-system-0.9.7/templates/boot-sequence/BootSequence.dc.html`):
- * the atmosphere, the shell, `ClearLogo` booting once, and `ScanLoader`
- * carrying the system checks as they finish. What the template shows with a
- * `simulateWork` stand-in, `useAppBoot` supplies for real — and the template's
- * own instruction is the one this file follows: *replace it with your own init,
- * do not replace it with a timer.*
+ * Composition is the 0.14.3 Boot Sequence template's: the atmosphere, the
+ * shell, `ClearLogo` booting once, and directly below it one card that holds
+ * the status. While it checks, that card is `ScanLoader`, which is a card
+ * itself and carries the system checks as they finish; when a check fails it
+ * is a `Card` holding the failure, and the one recovery action is pinned in
+ * the footer rather than floating under the card. What the template shows
+ * with a `simulateWork` stand-in, `useAppBoot` supplies for real — and the
+ * template's own instruction is the one this file follows: *replace it with
+ * your own init, do not replace it with a timer.* Its sample check rows and
+ * its consent action are illustration, not product: the rows here are the
+ * app's own reads, and a ready app is never behind a keypress.
  *
  * Three states, which are the CORE-04 four minus the one that cannot happen:
  * loading is the sequence, error is the failed check, populated is the app.
@@ -29,9 +33,9 @@
  * exactly as the template does — the one `RootLayout` mounts for the app takes
  * over when boot hands off.
  */
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, type CSSProperties, type ReactNode } from 'react'
 
-import { ClearLogo } from '../design-system/index'
+import { Button, ClearLogo } from '../design-system/index'
 import { useAppBoot } from '../state/boot-queries'
 import {
   BOOT_FAILURE_TITLE,
@@ -40,6 +44,8 @@ import {
   type BootView,
 } from '../state/boot'
 import { AtmosphereLayer } from '../ui/atmosphere'
+import { Card } from '../ui/card'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
 import { Screen } from './Screen'
@@ -71,7 +77,25 @@ export function BootSequence({ view, onRetry }: BootSequenceProps) {
         data-atmosphere={DEFAULT_ATMOSPHERE}
       >
         <div className="clr-shell__content">
-          <Screen title="CLEAR" heading={<ClearLogo size="lg" boot />}>
+          <Screen
+            title="CLEAR"
+            heading={
+              <span style={BRAND_HEADING_STYLE}>
+                <ClearLogo size="lg" boot />
+              </span>
+            }
+            pinnedFoot={
+              view.status === 'failed' ? (
+                <PhoneFooter>
+                  <ActionRow>
+                    <Button variant="primary" size="lg" onClick={onRetry}>
+                      {BOOT_RETRY_LABEL}
+                    </Button>
+                  </ActionRow>
+                </PhoneFooter>
+              ) : undefined
+            }
+          >
             {view.status === 'checking' ? (
               <LoadingView
                 label={BOOT_LABEL}
@@ -80,25 +104,31 @@ export function BootSequence({ view, onRetry }: BootSequenceProps) {
                 max={view.max}
               />
             ) : (
-              <ErrorView
-                // Fixed copy plus the failed read's own code and requestId —
-                // the raw message could name an internal cause, and the user
-                // needs the one fact that matters: nothing was lost.
-                error={{
-                  code: view.failure.error.code,
-                  message: view.failure.message,
-                  requestId: view.failure.error.requestId,
-                }}
-                title={BOOT_FAILURE_TITLE}
-                actionLabel={BOOT_RETRY_LABEL}
-                onRetry={onRetry}
-              />
+              <Card>
+                <ErrorView
+                  // Fixed copy plus the failed read's own code and requestId —
+                  // the raw message could name an internal cause, and the user
+                  // needs the one fact that matters: nothing was lost.
+                  error={{
+                    code: view.failure.error.code,
+                    message: view.failure.message,
+                    requestId: view.failure.error.requestId,
+                  }}
+                  title={BOOT_FAILURE_TITLE}
+                />
+              </Card>
             )}
           </Screen>
         </div>
       </div>
     </>
   )
+}
+
+const BRAND_HEADING_STYLE: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%',
 }
 
 export interface BootGateProps {
