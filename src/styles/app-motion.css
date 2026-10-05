@@ -1,5 +1,5 @@
 /* =============================================================================
-   APP MOTION — DS-05 dialog entrance (app-owned)
+   APP MOTION — DS-05 dialog entrance and loop coordination (app-owned)
 
    The vendored Dialog ships with no entrance animation — showModal() simply
    reveals it. These rules compose the shipped vocabulary (keyframes and
@@ -35,4 +35,30 @@
   .clr-app-dialog-enter > .clr-chamfer > * {
     animation: none !important;
   }
+}
+
+/* =============================================================================
+   ONE INTERFACE LOOP IN VIEW
+
+   Two loops that would run together are settled by useInterfaceLoop in
+   src/ui/motion.ts: the one carrying state keeps moving and the other is marked
+   data-loop="still". Stilled is the shipped reduced-motion treatment, scoped
+   to that one region — the scan band, the cursor, the busy frame and the pulse
+   all stay on screen, static, so a real wait still reads as a wait and
+   aria-busy is untouched. One-shot effects inside the region are not loops and
+   keep playing.
+   ============================================================================= */
+
+[data-loop='still'] .clr-scan-band,
+[data-loop='still'] .clr-pulse-micro,
+[data-loop='still'].clr-pulse-micro,
+[data-loop='still'] .clr-glitch--loop,
+[data-loop='still'].clr-glitch--loop,
+[data-loop='still'] .clr-progress-indet,
+[data-loop='still'].clr-progress-indet,
+[data-loop='still'] .clr-cursor::after,
+[data-loop='still'].clr-cursor::after,
+[data-loop='still'] .clr-chamfer[aria-busy='true']::before,
+[data-loop='still'].clr-chamfer[aria-busy='true']::before {
+  animation: none !important;
 }

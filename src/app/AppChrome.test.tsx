@@ -73,6 +73,35 @@ describe('AppChrome (CORE-05)', () => {
       expect(reset).toHaveBeenCalledWith({ top: 0, left: 0 })
     })
 
+    it('gives the arriving screen its entry without holding focus or input back', async () => {
+      const user = userEvent.setup()
+      renderApp(['/missing'], signedIn())
+      expect(screen.getByRole('main').className).not.toMatch(/route-enter-/)
+
+      await user.click(screen.getByRole('link', { name: 'Return to CLEAR' }))
+
+      // The entry and the focus land in the same commit: nothing waits on it.
+      expect(screen.getByRole('main')).toHaveClass('clr-screen', 'route-enter-forward')
+      expect(screen.getByRole('heading', { level: 1, name: 'Today' })).toHaveFocus()
+    })
+
+    it('adds no entry at all when the platform asks for reduced motion', async () => {
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }))
+      const user = userEvent.setup()
+      renderApp(['/missing'], signedIn())
+
+      await user.click(screen.getByRole('link', { name: 'Return to CLEAR' }))
+
+      expect(screen.getByRole('heading', { level: 1, name: 'Today' })).toHaveFocus()
+      expect(screen.getByRole('main').className).not.toMatch(/route-enter-|clr-interlace/)
+      vi.unstubAllGlobals()
+    })
+
     it('updates the document title on navigation', async () => {
       const user = userEvent.setup()
       renderApp(['/missing'], signedIn())
