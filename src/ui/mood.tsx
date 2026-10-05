@@ -8,6 +8,9 @@
  * `MoodReading` is the reporting half: a face, the word, and the number out of
  * five. Three cues for one value, because the face alone is a picture a reader
  * may not parse the same way and the number alone is a rating without a scale.
+ *
+ * The four faces are the export's round, line-drawn ones (0.14.3) and come
+ * from the public entry only; nothing here draws a face of its own.
  */
 import type { CSSProperties, ReactElement } from 'react'
 
