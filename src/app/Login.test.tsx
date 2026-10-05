@@ -56,10 +56,63 @@ describe('OTP login — requesting a code', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
     expect(emailField()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
-    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
     expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(
       screen.getByRole('button', { name: 'Send code' }),
     )
+  })
+
+  it('holds the step heading, guidance and field in one form card (0.14.3)', () => {
+    mount(createFakeOtpClient())
+
+    const main = screen.getByRole('main')
+    const cards = main.querySelectorAll<HTMLElement>('.clr-card')
+    expect(cards).toHaveLength(1)
+    const card = cards[0]
+
+    // The public Card's frame: the accent bar and the chamfered body.
+    expect(card.querySelector('.clr-card__bar')).toBeInTheDocument()
+    expect(card.querySelector('.clr-card__body')).toBeInTheDocument()
+    // Only the screen title sits on the atmosphere; the group heading is a
+    // real heading inside the card, one level under it.
+    expect(card).not.toContainElement(screen.getByRole('heading', { level: 1 }))
+    expect(card).toContainElement(
+      screen.getByRole('heading', { level: 2, name: 'Your email' }),
+    )
+    expect(card).toContainElement(screen.getByText(/we email a one-time code/i))
+    expect(card).toContainElement(emailField())
+    // The field is the 0.14.3 element frame, labelled above and marked required.
+    expect(emailField().closest('.clr-field')).toHaveClass('clr-chamfer', 'clr-chamfer--sm')
+    expect(emailField()).toBeRequired()
+    expect(emailField()).toHaveAttribute('autocomplete', 'email')
+    // The actions stay in the pinned footer, not in the card.
+    expect(card).not.toContainElement(screen.getByRole('button', { name: 'Send code' }))
+  })
+
+  it('marks the send action busy while the request is in flight', async () => {
+    const user = userEvent.setup()
+    let release: () => void = () => {}
+    const { otp } = mount(
+      createFakeOtpClient({
+        requestCode: () =>
+          new Promise((resolve) => {
+            release = () => resolve(ok(undefined))
+          }),
+      }),
+    )
+
+    await user.type(emailField(), EMAIL)
+    await user.click(screen.getByRole('button', { name: 'Send code' }))
+
+    const send = screen.getByRole('button', { name: 'Send code' })
+    await waitFor(() => expect(send).toHaveAttribute('aria-busy', 'true'))
+    // Busy blocks activation: a second press does not ask twice.
+    await user.click(send)
+    expect(otp.requests).toEqual([EMAIL])
+
+    await act(async () => {
+      release()
+    })
+    expect(await screen.findByRole('button', { name: 'Verify' })).toBeInTheDocument()
   })
 
   it('renders an explicit account-creation intent over the same passwordless flow', () => {
@@ -80,10 +133,15 @@ describe('OTP login — requesting a code', () => {
     await user.type(emailField(), 'lifter@example')
     await user.click(screen.getByRole('button', { name: 'Send code' }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(
-      'That is not an email address. Check it and try again.',
-    )
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('That is not an email address. Check it and try again.')
     expect(otp.requests).toEqual([])
+    // The failure is inside the form card with a glyph, and the refused field
+    // is an invalid Input carrying its own in-field warning glyph.
+    expect(screen.getByRole('main').querySelector('.clr-card')).toContainElement(alert)
+    expect(alert.querySelector('svg')).toBeInTheDocument()
+    expect(emailField()).toHaveAttribute('aria-invalid', 'true')
+    expect(emailField().closest('.clr-field')?.querySelector('.clr-field__glyph')).toBeInTheDocument()
   })
 
   it('puts the caret back on the address it refused (CORE-05)', async () => {
@@ -108,6 +166,36 @@ describe('OTP login — requesting a code', () => {
     // Scoped to the screen: the route announcer is a status region too.
     expect(within(screen.getByRole('main')).getByRole('status')).toHaveTextContent(
       `Code sent to ${EMAIL}`,
+    )
+  })
+
+  it('keeps the code step in the same form card with its actions in the footer', async () => {
+    const user = userEvent.setup()
+    mount(createFakeOtpClient())
+
+    await requestCode(user)
+
+    const main = screen.getByRole('main')
+    const cards = main.querySelectorAll<HTMLElement>('.clr-card')
+    expect(cards).toHaveLength(1)
+    expect(cards[0]).toContainElement(
+      screen.getByRole('heading', { level: 2, name: 'Your code' }),
+    )
+    expect(cards[0]).toContainElement(codeField())
+    expect(codeField()).toHaveFocus()
+    expect(codeField()).toHaveAttribute('autocomplete', 'one-time-code')
+    expect(codeField()).toHaveAttribute('inputmode', 'numeric')
+    expect(codeField()).toHaveAccessibleDescription(`Sent to ${EMAIL}`)
+
+    const footer = main.querySelector<HTMLElement>('.clr-footer')
+    expect(footer).not.toBeNull()
+    for (const name of ['Verify', /resend/i, 'Use a different email']) {
+      expect(footer).toContainElement(screen.getByRole('button', { name }))
+    }
+    // The quiet way back is the public TextAction, full width under the primary.
+    expect(screen.getByRole('button', { name: 'Use a different email' })).toHaveClass(
+      'clr-text-action',
+      'clr-text-action--block',
     )
   })
 
@@ -244,6 +332,9 @@ describe('OTP login — verifying a code', () => {
         'true',
       ),
     )
+    // Nothing else can start while the exchange is in flight.
+    expect(screen.getByRole('button', { name: /resend/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Use a different email' })).toBeDisabled()
 
     release()
   })
