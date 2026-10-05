@@ -95,6 +95,52 @@ describe('Home — a resumable session', () => {
     expect(screen.getByText(/Primary lift/)).toBeInTheDocument()
   })
 
+  it('heads the resume card inside one barred card, with the readouts as its content', async () => {
+    home()
+
+    await screen.findByText(/In progress · Full body/)
+    const heading = screen.getByRole('heading', { level: 2, name: 'Train today' })
+    expect(heading).toHaveClass('label')
+    const body = heading.closest<HTMLElement>('.clr-card__body')
+    expect(body).not.toBeNull()
+    const card = body!.closest<HTMLElement>('.clr-card')!
+    expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    // The timer is this card's element frame, not a timer card inside a card.
+    const timer = within(card).getByRole('timer', { name: 'Session time' })
+    expect(timer).toHaveClass('clr-chamfer', 'clr-chamfer--timer')
+    expect(timer).not.toHaveClass('clr-card__body')
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+    expect(within(card).getByText('1 of 3 sections done')).toBeInTheDocument()
+    expect(within(card).getByText(/Picks up at Primary lift/)).toBeInTheDocument()
+
+    // The resume card takes Train Today's place in Home's one arriving set.
+    const set = document.querySelector('.clr-boot')
+    expect(set).not.toBeNull()
+    expect(document.querySelectorAll('.clr-boot')).toHaveLength(1)
+    expect(set!.firstElementChild).toContainElement(card)
+  })
+
+  it('keeps the two answers in their own treatments', async () => {
+    home()
+
+    // Forward and primary: the pinned footer's framed button.
+    const resume = await screen.findByRole('button', { name: 'Resume workout' })
+    expect(resume).toHaveClass('clr-btn')
+    expect(resume.closest('.clr-footer')).not.toBeNull()
+
+    // Destructive, so never the quiet text action: a framed quiet button that
+    // only opens the confirm.
+    const abandon = screen.getByRole('button', { name: 'Abandon' })
+    expect(abandon).toHaveClass('clr-btn')
+    expect(abandon).not.toHaveClass('clr-text-action')
+    expect(abandon.closest('.clr-card')).not.toBeNull()
+
+    // Nothing the package's worked example shows on its own active card.
+    expect(screen.queryByText(/paused \d+ minutes ago/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/movements complete/i)).not.toBeInTheDocument()
+  })
+
   it('resumes into the focus shell', async () => {
     const user = userEvent.setup()
     home()
