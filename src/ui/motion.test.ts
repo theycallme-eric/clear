@@ -23,18 +23,24 @@ import {
 } from './motion'
 
 function stubMatchMedia(matches: boolean) {
+  let reduced = matches
+  const listeners = new Set<() => void>()
   vi.stubGlobal('matchMedia', (query: string): MediaQueryList => {
     return {
-      matches: query === '(prefers-reduced-motion: reduce)' ? matches : false,
+      get matches() { return query === '(prefers-reduced-motion: reduce)' ? reduced : false },
       media: query,
       onchange: null,
-      addEventListener: () => {},
-      removeEventListener: () => {},
+      addEventListener: (_type: string, listener: () => void) => { listeners.add(listener) },
+      removeEventListener: (_type: string, listener: () => void) => { listeners.delete(listener) },
       addListener: () => {},
       removeListener: () => {},
       dispatchEvent: () => false,
-    } as MediaQueryList
+    } as unknown as MediaQueryList
   })
+  return (next: boolean) => {
+    reduced = next
+    for (const listener of listeners) listener()
+  }
 }
 
 describe('prefersReducedMotion (CORE-05)', () => {
@@ -247,6 +253,9 @@ describe('interruption: cut, then interlace', () => {
 })
 
 describe('useArrivalStagger', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
   function end(animationName: string, target: Element | null, currentTarget: Element) {
     return { animationName, target, currentTarget } as unknown as AnimationEvent<HTMLElement>
   }
@@ -258,6 +267,7 @@ describe('useArrivalStagger', () => {
   }
 
   it('staggers a set once, then lets later rows simply appear', () => {
+    const preference = stubMatchMedia(false)
     const { result } = renderHook(() => useArrivalStagger())
     const rows = list()
     expect(result.current.className).toBe('clr-boot')
@@ -267,15 +277,53 @@ describe('useArrivalStagger', () => {
 
     act(() => result.current.onAnimationEnd(end('clr-boot-in', rows.lastElementChild, rows)))
     expect(result.current.className).toBe('')
+
+    const reduced = renderHook(() => useArrivalStagger())
+    act(() => preference(true))
+    expect(reduced.result.current.className).toBe('')
+    act(() => preference(false))
+    reduced.rerender()
+    expect(reduced.result.current.className).toBe('')
+    reduced.unmount()
+
+    stubMatchMedia(true)
+    const initialReduced = renderHook(() => useArrivalStagger())
+    expect(initialReduced.result.current.className).toBe('')
+    stubMatchMedia(false)
+    initialReduced.rerender()
+    expect(initialReduced.result.current.className).toBe('')
+    initialReduced.unmount()
   })
 
-  it("is not ended by some other effect's animation finishing inside the set", () => {
+  it('ignores unrelated effects but retires a cancelled or interrupted arrival', () => {
+    stubMatchMedia(false)
     const { result } = renderHook(() => useArrivalStagger())
     const rows = list()
 
     act(() => result.current.onAnimationEnd(end('clr-interlace', rows.lastElementChild, rows)))
 
     expect(result.current.className).toBe('clr-boot')
+
+    rows.className = result.current.className
+    const cleanup = result.current.ref(rows)
+    const cancel = new Event('animationcancel', { bubbles: true })
+    Object.defineProperty(cancel, 'animationName', { value: 'clr-boot-in' })
+    act(() => rows.firstElementChild?.dispatchEvent(cancel))
+    expect(result.current.className).toBe('')
+    expect(rows.classList.contains(ARRIVAL_CLASS)).toBe(false)
+    if (typeof cleanup === 'function') cleanup()
+
+    const interrupted = renderHook(() => useArrivalStagger())
+    const otherRows = list()
+    otherRows.className = interrupted.result.current.className
+    const cutCleanup = interrupted.result.current.ref(otherRows)
+    act(() => interruptMotion(otherRows))
+    expect(otherRows.classList.contains(ARRIVAL_CLASS)).toBe(false)
+    expect(interrupted.result.current.className).toBe('')
+    interrupted.rerender()
+    expect(interrupted.result.current.className).toBe('')
+    if (typeof cutCleanup === 'function') cutCleanup()
+    interrupted.unmount()
   })
 
   it('spaces the set by the shipped 40ms unit, not a number of its own', () => {

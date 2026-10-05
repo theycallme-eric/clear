@@ -10,11 +10,13 @@
 import {
   createContext,
   useContext,
+  useCallback,
   useEffect,
   useId,
   useState,
   useSyncExternalStore,
   type AnimationEvent,
+  type RefCallback,
 } from 'react'
 
 /**
@@ -212,6 +214,15 @@ export function interruptMotion(element: HTMLElement): void {
       if (isOneShot(animation)) animation.cancel()
     }
   }
+  // Cancellation has reached the final state. Retire a set's arrival both in
+  // the DOM now and in its hook, rather than waiting for an animationend that
+  // a cut deliberately prevents.
+  const arrivals = [element, ...element.querySelectorAll<HTMLElement>(`.${ARRIVAL_CLASS}`)]
+  for (const arrival of arrivals) {
+    if (!arrival.classList.contains(ARRIVAL_CLASS)) continue
+    arrival.classList.remove(ARRIVAL_CLASS)
+    arrival.dispatchEvent(new Event(ARRIVAL_CUT_EVENT))
+  }
   element.classList.remove(INTERLACE_CLASS, ...ROUTE_ENTRY_CLASSES)
   if (prefersReducedMotion()) return
   // A class that is already there does not restart: read layout between the
@@ -245,8 +256,10 @@ export function enterRoute(element: HTMLElement, direction: RouteDirection): voi
 
 export const ARRIVAL_CLASS = 'clr-boot'
 const ARRIVAL_KEYFRAMES = 'clr-boot-in'
+const ARRIVAL_CUT_EVENT = 'clear-arrival-cut'
 
 export interface ArrivalStagger {
+  ref: RefCallback<HTMLElement>
   className: string
   onAnimationEnd: (event: AnimationEvent<HTMLElement>) => void
 }
@@ -256,13 +269,45 @@ export interface ArrivalStagger {
  *
  * `.clr-boot > *` animates any child, including one inserted long after the
  * set arrived — which is how an inline update ends up replaying an entrance.
- * The class is dropped when the last child has landed, so later rows simply
- * appear. Spread the result onto the container and keep it mounted.
+ * The class is dropped when the last child has landed, or immediately when
+ * motion is reduced/cut, so later rows simply appear. Spread the result onto
+ * the container and keep it mounted.
  */
 export function useArrivalStagger(): ArrivalStagger {
-  const [arrived, setArrived] = useState(false)
+  const [arrived, setArrived] = useState(prefersReducedMotion)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const finishIfReduced = () => {
+      if (media.matches) setArrived(true)
+    }
+    finishIfReduced()
+    media.addEventListener('change', finishIfReduced)
+    return () => media.removeEventListener('change', finishIfReduced)
+  }, [])
+
+  const ref = useCallback<RefCallback<HTMLElement>>((element) => {
+    if (!element) return
+    const finish = () => {
+      element.classList.remove(ARRIVAL_CLASS)
+      setArrived(true)
+    }
+    const cancel = (event: globalThis.AnimationEvent) => {
+      if (event.animationName === ARRIVAL_KEYFRAMES) finish()
+    }
+    // An empty set has already arrived; rows added later are an inline update.
+    if (!element.firstElementChild) finish()
+    element.addEventListener('animationcancel', cancel)
+    element.addEventListener(ARRIVAL_CUT_EVENT, finish)
+    return () => {
+      element.removeEventListener('animationcancel', cancel)
+      element.removeEventListener(ARRIVAL_CUT_EVENT, finish)
+    }
+  }, [])
 
   return {
+    ref,
     className: arrived ? '' : ARRIVAL_CLASS,
     onAnimationEnd: (event) => {
       if (
