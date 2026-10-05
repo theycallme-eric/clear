@@ -21,6 +21,14 @@
  *
  * Like the swap controls, it draws nothing when the workout clients are absent
  * — a block renderer previewed on its own has no row to read or write.
+ *
+ * Containment, from 0.14.3: the panel is one group and every label is inside
+ * it. On an exercise's card it is that card's content; on its own it is one
+ * card. Either way the disclosure, the cues, the regression and the note are
+ * ruled sub-groups under their own headings — never a card in a card, and
+ * never a label floating above a frame. The guidance's wait and the note's
+ * save each take the view's one loop in turn, so neither animates against a
+ * low rest timer; both stay marked busy while they are stilled.
  */
 import { use, useState } from 'react'
 
@@ -35,7 +43,10 @@ import { QueryClientContext, type QueryState } from '../state/query'
 import type { ExerciseDefinitionRow } from '../state/schemas'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { Card } from './card'
 import { CollapsibleSection } from './collapsible-section'
+import { HeadingSection } from './Heading'
+import { useInterfaceLoop } from './motion'
 import { ErrorView, LoadingView } from './view-state'
 
 export const NO_CUES_TEXT = 'No coaching cues are written for this movement.'
@@ -66,21 +77,24 @@ function CoachingPanel({ exercise }: ExerciseCoachingProps) {
   const [opened, setOpened] = useState(false)
 
   return (
-    <CollapsibleSection
-      label={`Coaching and notes — ${name}`}
-      expanded={expanded}
-      onExpandedChange={(next) => {
-        setExpanded(next)
-        if (next) setOpened(true)
-      }}
-    >
-      <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
-        {opened ? (
-          <Guidance exerciseId={exercise.prescription.exercise_id} name={name} />
-        ) : null}
-        <ExerciseNotesField exercise={exercise} name={name} />
-      </div>
-    </CollapsibleSection>
+    <Card>
+      <CollapsibleSection
+        label={`Coaching and notes — ${name}`}
+        expanded={expanded}
+        onExpandedChange={(next) => {
+          setExpanded(next)
+          if (next) setOpened(true)
+        }}
+      >
+        {/* The sub-groups head one level below whatever the panel sits under. */}
+        <HeadingSection className="clr-stack">
+          {opened ? (
+            <Guidance exerciseId={exercise.prescription.exercise_id} name={name} />
+          ) : null}
+          <ExerciseNotesField exercise={exercise} name={name} />
+        </HeadingSection>
+      </CollapsibleSection>
+    </Card>
   )
 }
 
@@ -123,25 +137,23 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
 function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
   return (
     <>
-      <p className="label" style={{ margin: 0 }}>
-        Cues
-      </p>
-      {definition.coaching_cues.length === 0 ? (
-        <p style={{ margin: 0 }}>{NO_CUES_TEXT}</p>
-      ) : (
-        <ul aria-label="Coaching cues" style={{ margin: 0 }}>
-          {definition.coaching_cues.map((cue, index) => (
-            <li key={index}>{cue}</li>
-          ))}
-        </ul>
-      )}
+      <Card heading="Cues">
+        {definition.coaching_cues.length === 0 ? (
+          <p style={{ margin: 0 }}>{NO_CUES_TEXT}</p>
+        ) : (
+          <ul aria-label="Coaching cues" style={{ margin: 0 }}>
+            {definition.coaching_cues.map((cue, index) => (
+              <li key={index}>{cue}</li>
+            ))}
+          </ul>
+        )}
+      </Card>
 
-      <p className="label" style={{ margin: 0 }}>
-        Regression
-      </p>
-      <p style={{ margin: 0 }}>
-        {definition.regression === null ? NO_REGRESSION_TEXT : definition.regression}
-      </p>
+      <Card heading="Regression">
+        <p style={{ margin: 0 }}>
+          {definition.regression === null ? NO_REGRESSION_TEXT : definition.regression}
+        </p>
+      </Card>
     </>
   )
 }
@@ -168,6 +180,7 @@ function ExerciseNotesField({
     () => notes.stored(exercise.prescription.exercise_notes) ?? '',
   )
   const [status, setStatus] = useState<NoteStatus>({ kind: 'idle' })
+  const loop = useInterfaceLoop('busy', status.kind === 'saving')
 
   const save = async () => {
     setStatus({ kind: 'saving' })
@@ -179,7 +192,9 @@ function ExerciseNotesField({
   }
 
   return (
-    <>
+    // The field's label is above it and inside the group, so the note needs no
+    // heading of its own.
+    <div className="clr-stack clr-stack--tight">
       <Input
         label={`Notes — ${name}`}
         multiline
@@ -193,7 +208,11 @@ function ExerciseNotesField({
         invalid={status.kind === 'failed'}
         errorText={status.kind === 'failed' ? NOTE_FAILED_TEXT : undefined}
       />
-      <div className="clr-row" style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}>
+      <div
+        className="clr-row"
+        style={{ gap: 'var(--spacing-200)', alignItems: 'center' }}
+        {...loop}
+      >
         <Button
           variant="secondary"
           aria-label={`Save note — ${name}`}
@@ -204,7 +223,7 @@ function ExerciseNotesField({
         </Button>
         <NoteStatusLine status={status} />
       </div>
-    </>
+    </div>
   )
 }
 

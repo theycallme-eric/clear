@@ -1,10 +1,12 @@
 /* =============================================================================
    REST TIMER BAR — EXE-05. The shell's countdown between sets (IA.md §3).
 
-   One moving part: the fill, which shrinks as the rest runs down. It is a
-   determinate reading of a real number, so it steps rather than glides —
-   --dur-enter with --step-4, the same mechanical vocabulary the disclosure uses
-   (ATOMIC.md §8).
+   The rest is one timer-role card (src/ui/workout-chrome.tsx); the card, its
+   accent bar and its low state are the design system's. What is styled here is
+   the one part the export does not ship: the fill, which shrinks as the rest
+   runs down. It is a determinate reading of a real number, so it steps rather
+   than glides — --dur-enter with --step-4, the same mechanical vocabulary the
+   disclosure uses (ATOMIC.md §8).
 
    The fill is never the only cue. The digits say the number, the label says
    what the rest is after, and the finished state says the word "complete" —
@@ -20,11 +22,14 @@
 .clr-rest-bar__fill {
   height: 100%;
   background: var(--surface-selected);
-  transition: width var(--dur-enter) var(--step-4);
+  transition:
+    width var(--dur-enter) var(--step-4),
+    background-color var(--dur-alert) var(--step-4);
 }
 
 /* The last ten seconds carry the timer's urgency colour — beside the word and
-   the glyph the bar already shows, never instead of them. */
+   the glyph the bar already shows, never instead of them. It crosses over on
+   the card's own schedule, --dur-alert in four steps, and adds no glow. */
 .clr-rest-bar[data-urgent='true'] .clr-rest-bar__fill {
   background: var(--text-timer-low);
 }

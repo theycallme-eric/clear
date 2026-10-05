@@ -3,10 +3,21 @@
  * rules the export's pattern 6 states for them: the timer is labelled and not
  * live, status is never colour alone, and the destructive action is nowhere
  * near the one pressed between every section.
+ *
+ * And the 0.14.3 composition of the same parts: a timer is its own card and is
+ * never put inside another, a label is inside the card it names, the structure
+ * badge is an element frame, and the low rest is the shipped low state — the
+ * stepped `--dur-alert` crossing and the 80% pulse, as the view's one loop.
+ * jsdom applies no stylesheet, so motion is proved as classes, attributes and
+ * the rule text the classes resolve to.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import type { ReactNode } from 'react'
 import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderWithProviders } from '../test/render'
 import { snapshotFixture } from '../test/workout-double'
@@ -21,7 +32,42 @@ import {
   StructureBadge,
   WorkoutNavigation,
 } from './workout-chrome'
+import { Card } from './card'
 import { HeadingLevelProvider } from './Heading'
+import { LoadingView } from './view-state'
+
+const MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../design-system/css/motion.css'),
+  'utf-8',
+)
+const REST_BAR_CSS = readFileSync(resolve(import.meta.dirname, 'rest-timer-bar.css'), 'utf-8')
+
+afterEach(() => vi.restoreAllMocks())
+
+function reduceMotion(reduced: boolean) {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: reduced && query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) as MediaQueryList,
+  )
+}
+
+/** Every card frame in the document, and the ones that sit inside another. */
+function cards(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('.clr-card'))
+}
+
+function nestedCards(): HTMLElement[] {
+  return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
+}
 
 /** Three sections: one finished, one under way, one untouched. */
 function mixedProgress(): SessionProgress {
@@ -54,6 +100,46 @@ describe('GlobalTimer', () => {
     const timer = screen.getByRole('timer')
     expect(timer).not.toHaveAttribute('aria-live')
     expect(timer).not.toHaveAttribute('role', 'status')
+  })
+
+  it('is the shipped timer card — one bar, the timer role, and no frame around it', () => {
+    renderWithProviders(<GlobalTimer seconds={750} />)
+
+    const timer = screen.getByRole('timer', { name: 'Session time' })
+    expect(timer).toHaveClass('clr-chamfer', 'clr-card__body', 'clr-chamfer--timer')
+    expect(cards()).toHaveLength(1)
+    expect(timer.parentElement).toBe(cards()[0])
+    expect(cards()[0].querySelectorAll(':scope > .clr-card__bar')).toHaveLength(1)
+
+    const bleed = cards()[0].parentElement as HTMLElement
+    expect(bleed).toHaveClass('clr-bleed')
+    expect(bleed.style.getPropertyValue('--bleed')).toBe('var(--border-timer)')
+  })
+
+  it('is an element frame inside a card, never a second card', () => {
+    renderWithProviders(
+      <Card heading="Workout in progress">
+        <GlobalTimer seconds={750} />
+      </Card>,
+    )
+
+    const timer = screen.getByRole('timer', { name: 'Session time' })
+    expect(cards()).toHaveLength(1)
+    expect(nestedCards()).toEqual([])
+    expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+    expect(timer).toHaveClass('clr-chamfer--timer')
+    expect(timer).not.toHaveClass('clr-card__body')
+    expect(timer.parentElement).toHaveClass('clr-bleed')
+    expect(timer).toHaveTextContent('12 minutes 30 seconds')
+  })
+
+  it('counts up, so it has no low state at any reading', () => {
+    renderWithProviders(<GlobalTimer seconds={0} />)
+
+    const timer = screen.getByRole('timer', { name: 'Session time' })
+    expect(timer).not.toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
+    expect(document.querySelector('.clr-glow')).toBeNull()
   })
 })
 
@@ -99,6 +185,16 @@ describe('ProgressTracker', () => {
 
     rerender(<ProgressTracker progress={mixedProgress()} currentIndex={0} />)
     expect(screen.getByRole('button', { name: 'Finisher, not started' })).toBeDisabled()
+  })
+
+  it('is one card with its heading, bar and section list inside', () => {
+    renderWithProviders(<ProgressTracker progress={mixedProgress()} currentIndex={1} />)
+
+    expect(cards()).toHaveLength(1)
+    const body = within(cards()[0].querySelector('.clr-card__body') as HTMLElement)
+    expect(body.getByRole('heading', { name: 'Sections' })).toBeInTheDocument()
+    expect(body.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeInTheDocument()
+    expect(body.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
   })
 })
 
@@ -151,16 +247,60 @@ describe('SectionHeader', () => {
     expect(structures.getByText('FOR TIME · 15 MIN CAP')).toBeInTheDocument()
     expect(structures.getByText('CIRCUIT · 3 ROUNDS · LADDER DOWN')).toBeInTheDocument()
   })
+
+  it('is one card: the title, its position and its badges are all inside it', () => {
+    const progress = mixedProgress()
+    renderWithProviders(
+      <SectionHeader section={progress.sections[1]} position={2} total={3}>
+        <p>Section body</p>
+      </SectionHeader>,
+    )
+
+    expect(cards()).toHaveLength(1)
+    const body = within(cards()[0].querySelector('.clr-card__body') as HTMLElement)
+    expect(body.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
+    expect(body.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    expect(body.getByRole('list', { name: 'Structures in this section' })).toBeInTheDocument()
+    expect(body.getByText('Section body')).toBeInTheDocument()
+  })
 })
 
 describe('StructureBadge', () => {
-  it('is the label alone when the block carries no number', () => {
-    const identity = sessionProgress(snapshotFixture({ sections: [{ blocks: [{}] }] }))
-      .sections[0].blocks[0].identity
+  function standardIdentity() {
+    return sessionProgress(snapshotFixture({ sections: [{ blocks: [{}] }] })).sections[0]
+      .blocks[0].identity
+  }
 
-    renderWithProviders(<StructureBadge identity={identity} />)
+  it('is the label alone when the block carries no number', () => {
+    renderWithProviders(<StructureBadge identity={standardIdentity()} />)
 
     expect(screen.getByText('STANDARD')).toBeInTheDocument()
+  })
+
+  it('is an element frame on the structure role, emitting through its own wrapper', () => {
+    renderWithProviders(<StructureBadge identity={standardIdentity()} />)
+
+    const frame = screen.getByText('STANDARD')
+    expect(frame).toHaveClass('clr-chamfer', 'clr-chamfer--sm', 'clr-chamfer--structure')
+    // The glyph the export ships for the structure, beside the word.
+    expect(frame.querySelector('svg')).not.toBeNull()
+
+    const bleed = frame.parentElement as HTMLElement
+    expect(bleed).toHaveClass('clr-bleed')
+    expect(bleed).not.toHaveClass('clr-glow')
+    expect(bleed.style.getPropertyValue('--bleed')).toBe('var(--border-frame-structure)')
+  })
+
+  it('is not a card, so it sits inside one without nesting', () => {
+    renderWithProviders(
+      <Card heading="Block">
+        <StructureBadge identity={standardIdentity()} />
+      </Card>,
+    )
+
+    expect(cards()).toHaveLength(1)
+    expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+    expect(screen.getByText('STANDARD')).not.toHaveClass('clr-card__body')
   })
 })
 
@@ -209,6 +349,26 @@ describe('WorkoutNavigation', () => {
     expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Next section' })).toBeDisabled()
   })
+
+  it('claims the loop only while finishing, and stays busy when it is stilled', () => {
+    reduceMotion(false)
+    const { rerender } = renderWithProviders(
+      <WorkoutNavigation canGoBack canGoForward={false} {...handlers()} />,
+    )
+    const nav = screen.getByRole('navigation', { name: 'Workout sections' })
+    expect(nav).toHaveAttribute('data-loop', 'still')
+
+    rerender(<WorkoutNavigation canGoBack canGoForward={false} busy {...handlers()} />)
+    expect(nav).toHaveAttribute('data-loop', 'run')
+    expect(screen.getByRole('button', { name: 'Finish workout' })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
+
+    // Moving between sections disables the buttons but scans nothing.
+    rerender(<WorkoutNavigation canGoBack canGoForward busy {...handlers()} />)
+    expect(nav).toHaveAttribute('data-loop', 'still')
+  })
 })
 
 describe('RestTimerBar', () => {
@@ -236,14 +396,34 @@ describe('RestTimerBar', () => {
   }
 
   /** The bar under the shell's provider, and one control that raises a rest. */
-  function mountRest(clock = testClock(), seconds = 90) {
+  function mountRest(clock = testClock(), seconds = 90, beside: ReactNode = null) {
     renderWithProviders(
       <RestTimerProvider now={clock.now}>
         <Raise seconds={seconds} />
+        {beside}
         <RestTimerBar />
       </RestTimerProvider>,
     )
     return clock
+  }
+
+  /** A rest raised and run down to `left` seconds, read on return. */
+  async function restWith(left: number, beside: ReactNode = null) {
+    const user = userEvent.setup()
+    const clock = mountRest(testClock(), 90, beside)
+    await user.click(screen.getByRole('button', { name: 'Raise rest' }))
+    clock.advance(90 - left)
+    returnToForeground()
+    return { user, clock }
+  }
+
+  function restCardBody(): HTMLElement {
+    return (restBar() as HTMLElement).querySelector('.clr-card__body') as HTMLElement
+  }
+
+  /** The decorative digits: the timer's first child. */
+  function restDigits(): HTMLElement {
+    return screen.getByRole('timer', { name: 'Time remaining' }).firstElementChild as HTMLElement
   }
 
   function restBar(): HTMLElement | null {
@@ -352,5 +532,155 @@ describe('RestTimerBar', () => {
       /route-enter|clr-boot|clr-reveal|clr-scan/.test(node.getAttribute('class') ?? ''),
     )
     expect(animated).toEqual([])
+  })
+
+  it('is one timer card, with the label, the digits, the fill and the controls inside', async () => {
+    await restWith(60)
+
+    expect(cards()).toHaveLength(1)
+    expect(nestedCards()).toEqual([])
+    expect((restBar() as HTMLElement).querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    const body = restCardBody()
+    expect(body).toHaveClass('clr-chamfer--timer')
+    expect(body).not.toHaveClass('clr-chamfer--timer-low')
+    const inside = within(body)
+    expect(inside.getByText('Rest after Back Squat')).toBeInTheDocument()
+    expect(inside.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('01:00')
+    expect(body.querySelector('.clr-rest-bar__fill')).not.toBeNull()
+    expect(inside.getByRole('button', { name: 'Add 30s' })).toBeInTheDocument()
+    expect(inside.getByRole('button', { name: 'Skip rest' })).toBeInTheDocument()
+
+    // Not low: nothing pulses and nothing claims the loop.
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+  })
+
+  it('goes low as the shipped low state: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+    reduceMotion(false)
+    await restWith(8)
+
+    // One role change moves bar, body and emission together.
+    expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(restCardBody()).not.toHaveClass('clr-chamfer--timer')
+    expect(cards()).toHaveLength(1)
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(restDigits().style.color).toBe('var(--text-timer-low)')
+    expect(restDigits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(restDigits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // The pulse is on the whole card and is the view's running loop.
+    expect(restBar()).toHaveClass('clr-pulse-micro')
+    expect(restBar()).toHaveAttribute('data-loop', 'run')
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(document.querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+    expect(MOTION_CSS.includes('@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }')).toBe(true)
+    expect(MOTION_CSS.includes('.clr-pulse-micro { animation: clr-micro-pulse var(--dur-idle) var(--step-2) infinite; }')).toBe(true)
+  })
+
+  it('steps the fill to the low colour on the same schedule, with no glow in its styles', () => {
+    expect(REST_BAR_CSS).toMatch(
+      /\.clr-rest-bar__fill \{[^}]*background-color var\(--dur-alert\) var\(--step-4\)/,
+    )
+    expect(REST_BAR_CSS).toMatch(
+      /\.clr-rest-bar\[data-urgent='true'\] \.clr-rest-bar__fill \{\s*background: var\(--text-timer-low\);/,
+    )
+    expect(REST_BAR_CSS).not.toMatch(/box-shadow|drop-shadow|filter:|animation/)
+    expect(REST_BAR_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{\s*\.clr-rest-bar__fill \{\s*transition: none;/,
+    )
+  })
+
+  it('stays a labelled timer that is not live, with one milestone that is', async () => {
+    await restWith(8)
+
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).not.toHaveAttribute('aria-live')
+    expect(restDigits()).toHaveAttribute('aria-hidden', 'true')
+    expect(timer).toHaveTextContent('8 seconds left')
+    expect(restBar()).not.toHaveAttribute('aria-live')
+
+    const live = (restBar() as HTMLElement).querySelectorAll('[aria-live], [role="status"]')
+    expect(live).toHaveLength(1)
+    expect(live[0]).toHaveTextContent('Final 10 seconds')
+  })
+
+  it('keeps its controls true in the low state: added time leaves it, skip ends it', async () => {
+    reduceMotion(false)
+    const { user } = await restWith(8)
+
+    await user.click(screen.getByRole('button', { name: 'Add 30s' }))
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:38')
+    expect(restBar()).toHaveAttribute('data-urgent', 'false')
+    expect(restBar()).not.toHaveClass('clr-pulse-micro')
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(restCardBody()).toHaveClass('clr-chamfer--timer')
+    expect(screen.queryByText('Final 10 seconds')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+    expect(restBar()).not.toBeInTheDocument()
+  })
+
+  it('takes the one loop from a loading region beside it, and gives it back', async () => {
+    reduceMotion(false)
+    const loading = (
+      <Card heading="Coaching">
+        <LoadingView label="Reading coaching for back squat" />
+      </Card>
+    )
+    const { user, clock } = await restWith(60, loading)
+    const wait = screen.getByText('Reading coaching for back squat').closest(
+      '[data-loop]',
+    ) as HTMLElement
+
+    // A rest that is not low has no loop, so the wait keeps its own.
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+
+    clock.advance(52)
+    returnToForeground()
+
+    // Low: the pulse carries more state, so it runs and the wait is stilled —
+    // still on screen, still busy, still saying what it is waiting for.
+    expect(restBar()).toHaveAttribute('data-loop', 'run')
+    expect(wait).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('aria-busy', 'true')
+    expect(wait).toHaveTextContent('Reading coaching for back squat')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+  })
+
+  it('is still under reduced motion and loses nothing it was saying', async () => {
+    reduceMotion(true)
+    await restWith(8)
+
+    expect(restBar()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+
+    // The reading, the word, the colour role and the controls are all there.
+    expect(restBar()).toHaveAttribute('data-urgent', 'true')
+    expect(restCardBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(restDigits().style.color).toBe('var(--text-timer-low)')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:08')
+    expect(screen.getByText('8 seconds left')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Final 10 seconds')
+    expect(screen.getByText('Rest after Back Squat')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add 30s' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Skip rest' })).toBeEnabled()
+
+    // The shipped rule that makes a stilled or reduced pulse static.
+    expect(MOTION_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
+    )
   })
 })
