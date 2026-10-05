@@ -2,15 +2,12 @@
  * RootLayout — the one place the atmosphere exists.
  *
  * The layer mounts **once**, here, above every route, so navigating never tears
- * it down and rebuilds it. CLEAR 0.9.7 uses the Full atmosphere on every
- * production screen; route-level intensity selection is no longer part of the
- * application contract.
+ * it down and rebuilds it. CLEAR 0.14.3 ships one atmosphere with no intensity
+ * modes, so nothing here reads the pathname and no route selects a level.
  *
- * The attribute lands in both places the specs name it. ATOMIC.md §7.2 puts the
- * two global attributes on `<html>`, which is what the viewport-fixed layer and
- * anything rendered outside the shell (native dialogs, toasts) inherit from;
- * IA.md §3 layer 2 states the shell itself carries it, which is what makes a
- * same contract readable from the rendered tree.
+ * `data-atmosphere` selects nothing in the shipped CSS any more. It still lands
+ * on `<html>` and on the shell as an inert marker of the one atmosphere, which
+ * keeps that contract readable from the rendered tree.
  */
 import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'

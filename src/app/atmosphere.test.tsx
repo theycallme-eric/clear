@@ -1,5 +1,5 @@
-/** CLEAR 0.9.7 uses one Full atmosphere across every production screen. */
-import { readFileSync } from 'node:fs'
+/** CLEAR 0.14.3 ships one atmosphere, mounted once, with no intensity modes. */
+import { readdirSync, readFileSync } from 'node:fs'
 
 import { act, render } from '@testing-library/react'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
@@ -11,12 +11,8 @@ import { AppProviders, renderApp, signedIn, type ProviderOptions } from '../test
 import { FIXTURE_USER_ID, notOnboardedProfile } from '../test/user-data-double'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import { routes } from './router'
-import {
-  DEFAULT_ATMOSPHERE,
-  SCREEN_ATMOSPHERE,
-  resolveAtmosphere,
-  screenAtmosphere,
-} from './atmosphere'
+import * as atmosphereModule from './atmosphere'
+import { DEFAULT_ATMOSPHERE, resolveAtmosphere, screenAtmosphere } from './atmosphere'
 
 const PRODUCTION_PATHS = [
   '/welcome',
@@ -108,36 +104,78 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('atmosphere assignment', () => {
-  it.each(PRODUCTION_PATHS)('resolves %s to Full', (pathname) => {
-    expect(resolveAtmosphere(pathname)).toBe('full')
+describe('one atmosphere, no modes', () => {
+  const foundation = readFileSync('src/design-system/css/foundation.css', 'utf8')
+  const motion = readFileSync('src/design-system/css/motion.css', 'utf8')
+  const appStyles = readdirSync('src/styles')
+    .filter((name) => name.endsWith('.css'))
+    .map((name) => ({ name, css: readFileSync(`src/styles/${name}`, 'utf8') }))
+
+  it.each(PRODUCTION_PATHS)('resolves %s to the one atmosphere', (pathname) => {
+    expect(resolveAtmosphere(pathname)).toBe(DEFAULT_ATMOSPHERE)
   })
 
-  it('records Full for every screen in the authoritative IA contract', () => {
-    const ia = readFileSync('docs/specs/IA.md', 'utf8')
-    const documented = [...ia.matchAll(/^\*\*Atmosphere:\*\* `(\w+)`/gm)].map(
-      (match) => match[1],
-    )
-    const screens = SCREEN_ATMOSPHERE.filter((entry) => entry.alias !== true)
-
-    expect(screens).toHaveLength(documented.length)
-    expect(new Set(documented)).toEqual(new Set(['full']))
-  })
-
-  it('gives a routeless screen its documented level', () => {
-    // The Loading screen is transient — IA.md §4 gives it `full` and no route.
-    expect(screenAtmosphere('Loading')).toBe('full')
-    expect(() => screenAtmosphere('Nowhere')).toThrow(/Nowhere/)
-  })
-
-  it('falls back to the Not Found level for an unclaimed pathname', () => {
-    expect(DEFAULT_ATMOSPHERE).toBe('full')
+  it('keeps no per-screen table for a route to be assigned a level from', () => {
+    expect(Object.keys(atmosphereModule).sort()).toEqual([
+      'DEFAULT_ATMOSPHERE',
+      'resolveAtmosphere',
+      'screenAtmosphere',
+    ])
+    // Routed, transient and unknown screens all sit on the same ground.
+    expect(screenAtmosphere('Loading')).toBe(DEFAULT_ATMOSPHERE)
+    expect(screenAtmosphere('Nowhere')).toBe(DEFAULT_ATMOSPHERE)
     expect(resolveAtmosphere('/deep/unknown/path')).toBe(DEFAULT_ATMOSPHERE)
   })
 
-  it('never assigns a production level other than Full', () => {
-    for (const entry of SCREEN_ATMOSPHERE) {
-      expect(entry.level).toBe('full')
+  it('ships a single intensity that no attribute can change', () => {
+    expect(foundation).not.toContain('[data-atmosphere')
+    expect(motion).not.toContain('[data-atmosphere')
+    for (const token of ['blur', 'opacity', 'dim', 'grain', 'scan']) {
+      expect(
+        foundation.match(new RegExp(`--atmosphere-${token}:`, 'g')),
+        token,
+      ).toHaveLength(1)
+    }
+  })
+
+  it('adds no app-owned mode, intensity or blob geometry', () => {
+    expect(appStyles.length).toBeGreaterThan(0)
+    for (const { name, css } of appStyles) {
+      expect(css, name).not.toContain('data-atmosphere')
+      expect(css, name).not.toMatch(/--atmosphere-[a-z]+\s*:/)
+      expect(css, name).not.toContain('.clr-atmosphere__blob--')
+    }
+  })
+
+  it('sizes every blob from the longer side of the layer', () => {
+    expect(foundation).toMatch(/\.clr-atmosphere \{[^}]*container-type: size;/)
+    for (const blob of ['structure', 'interaction', 'info']) {
+      expect(foundation, blob).toMatch(
+        new RegExp(
+          `\\.clr-atmosphere__blob--${blob} \\{[^}]*width: \\d+cqmax; aspect-ratio: 1;`,
+        ),
+      )
+    }
+  })
+
+  it('breathes and drifts by transform alone, never by brightness or blur', () => {
+    const breathe = motion.match(/@keyframes clr-breathe \{(.*)\}\s*$/m)?.[1] ?? ''
+    expect(breathe).toMatch(/scale:/)
+    expect(breathe).toMatch(/rotate:/)
+    expect(breathe).not.toMatch(/opacity|filter|brightness|border-radius|width|height/)
+
+    const drifts = [...motion.matchAll(/@keyframes clr-drift-[a-d] \{ to \{ ([^}]*)\} \}/g)]
+    expect(drifts).toHaveLength(4)
+    for (const [, declarations] of drifts) {
+      expect(declarations.trim()).toMatch(/^transform: [^;]+;$/)
+    }
+
+    for (const blob of ['structure', 'interaction', 'info']) {
+      expect(motion, blob).toMatch(
+        new RegExp(
+          `\\.clr-atmosphere__blob--${blob} \\{ animation: clr-drift-[a-d] [^,]+, clr-breathe `,
+        ),
+      )
     }
   })
 })
@@ -165,7 +203,7 @@ describe('atmosphere rendering', () => {
     expect(container.querySelector('.clr-shell .clr-atmosphere')).toBeNull()
   })
 
-  it('keeps the Full layer mounted across navigation', async () => {
+  it('keeps the one layer mounted across navigation', async () => {
     // It used to start on `/workout`, which EXE-01 has since made both
     // protected and a focus mode — a navigation off it is intercepted by the
     // abandon confirm, which is `Workout.test.tsx`'s subject and would prove
@@ -221,7 +259,7 @@ describe('atmosphere rendering', () => {
     expect(layer?.querySelectorAll('.clr-atmosphere__blob')).toHaveLength(3)
   })
 
-  it('stops the drift in CSS, not only in the DOM', () => {
+  it('stops the drift and breathing in CSS, not only in the DOM', () => {
     const appRule = readFileSync('src/styles/atmosphere.css', 'utf8')
     const vendored = readFileSync('src/design-system/css/motion.css', 'utf8')
 

@@ -27,7 +27,7 @@
   padding: var(--spacing-200) var(--spacing-400);
   background: var(--surface-cta-primary);
   color: var(--text-on-cta);
-  font-family: var(--font-label);
+  font-family: var(--font-data);
   font-size: var(--label-sm-size);
   font-weight: var(--font-weight-bold);
   letter-spacing: var(--tracking-data);

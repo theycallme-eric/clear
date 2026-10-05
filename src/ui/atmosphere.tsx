@@ -1,14 +1,14 @@
 /**
  * AtmosphereLayer — the export's five-layer ground, mounted once.
  *
- * The markup is the export's own (`templates/app-shell/AppShell.dc.html`):
- * three role-coloured blobs, the dim overlay and the scanlines, viewport-fixed
- * so scrolling never repaints it. Intensity is not this component's business —
- * it reads whatever `data-atmosphere` the document carries (ATOMIC.md §7.2),
- * which is what lets one mount serve every screen. Under
- * `prefers-reduced-motion` the layer renders its static fallback: the export's
- * media query already stops the blob drift, and the scanlines — the one
- * remaining source of apparent movement — are dropped entirely.
+ * The markup is the export's own (`css/foundation.css`, ATMOSPHERE): three
+ * role-coloured blobs, the dim overlay and the scanlines, viewport-fixed so
+ * scrolling never repaints it. Geometry and motion are the package's too — the
+ * blobs are sized from the layer's longer side and drift and breathe by
+ * transform alone — so this component carries no sizing and no intensity.
+ * Under `prefers-reduced-motion` the layer renders its static fallback: the
+ * export's media query already stops the drift and breathing, and the
+ * scanlines are dropped entirely.
  */
 import { useSyncExternalStore } from 'react'
 

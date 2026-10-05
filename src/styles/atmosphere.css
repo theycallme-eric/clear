@@ -1,42 +1,17 @@
 /* =============================================================================
    ATMOSPHERE — app-owned reduced-motion fallback (DS-06)
 
-   The export already stops the blob drift inside its own
+   The export already stops the blob drift and breathing inside its own
    `prefers-reduced-motion` media query. This rule states the same thing from
    the attribute AtmosphereLayer sets, so the static fallback does not depend on
    the media query and the JS-resolved preference agreeing at every instant —
    they are read from the same signal, and this makes the DOM the record of it.
 
-   Nothing else here changes intensity: 0.9.7 uses Full on every screen.
+   Nothing else belongs here. 0.14.3 ships one atmosphere: its blobs are sized
+   from the container's longer side, so a portrait phone needs no app-owned
+   geometry, and there is no intensity mode for a route to choose.
    ============================================================================= */
 
 .clr-atmosphere[data-static='true'] .clr-atmosphere__blob {
   animation: none;
-}
-
-/*
- * The export positions the two largest blobs with vertical percentages. Those
- * percentages resolve against the viewport height, while each blob's height is
- * derived from its width. On a tall phone that put Structure almost entirely
- * above the viewport and Interaction entirely below it. Keep the export's
- * desktop composition, but pull its same three role layers into portrait view.
- */
-@media (max-aspect-ratio: 3 / 4) {
-  .clr-atmosphere__blob--structure {
-    width: 105%;
-    top: -8%;
-    left: -34%;
-  }
-
-  .clr-atmosphere__blob--interaction {
-    width: 98%;
-    right: -30%;
-    bottom: -10%;
-  }
-
-  .clr-atmosphere__blob--info {
-    width: 56%;
-    top: 36%;
-    left: 32%;
-  }
 }

@@ -1,11 +1,14 @@
 /* =============================================================================
-   CONTAINED APPLICATION SHELL — CLEAR 0.9.7
+   CONTAINED APPLICATION SHELL — CLEAR 0.14.3
 
    The browser document never becomes an accidental second scroll owner. The
    fixed shell follows the visual viewport through `dvh`; each Screen fills the
    remaining space and gives vertical overflow to the public ScrollRegion.
    Headers are siblings above Screen, so transparent chrome never needs an
    opaque surface to hide content moving underneath it.
+
+   The package ships the action-row rules (`.clr-actions` full-width cells and
+   primary placement), so nothing here restates them.
    ============================================================================= */
 
 html,
@@ -66,22 +69,9 @@ body,
   border-top: 0;
 }
 
-/* Button's public component includes a bleed wrapper. That wrapper, rather
-   than the nested button, is the direct action-grid item. These adapters make
-   it carry the system's full-width and primary-right rules without changing
-   the imported 0.9.7 package. */
-.clr-actions > .clr-bleed {
-  display: flex;
-}
-
-.clr-actions > .clr-bleed > .clr-btn {
-  width: 100%;
-  flex: 1 1 auto;
-}
-
 /* Review facts and completed-session results are the same visual object:
    short labelled values, each in its own small frame. Keeping this in the
-   shared shell layer prevents route-specific copies of the 0.9.7 stat grid. */
+   shared shell layer prevents route-specific copies of the stat grid. */
 .clr-metric-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -98,12 +88,6 @@ body,
 
 .clr-metric-frame > :last-child {
   overflow-wrap: anywhere;
-}
-
-@media (min-width: 560px) {
-  .clr-actions > .clr-bleed:has(> .clr-btn--primary) {
-    order: 2;
-  }
 }
 
 @media (min-width: 1440px) {
