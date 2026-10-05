@@ -12,7 +12,7 @@ import { resolve } from 'node:path'
 
 import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 
 import type { GenerationInput } from '../data/generation'
@@ -375,6 +375,65 @@ describe('GenerationLoadingHost · one negative toast per failure', () => {
     view.unmount()
 
     expect(liveToasts()).toEqual([])
+  })
+})
+
+describe('GenerationLoadingHost · the view’s one loop', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('holds the loop for the run and releases it when the screen leaves', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client)
+
+    await startRun(user)
+    expect(screen.getByRole('status')).toHaveAttribute('data-loop', 'run')
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    expect(loader()).not.toBeInTheDocument()
+
+    // A run started afterwards is first in line again, not behind a stale claim.
+    await startRun(user)
+    expect(screen.getByRole('status')).toHaveAttribute('data-loop', 'run')
+  })
+
+  it('is static under reduced motion and still says it is busy, through a retry', async () => {
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: query === '(prefers-reduced-motion: reduce)',
+          media: query,
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    )
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mount(client)
+
+    await startRun(user)
+    const region = screen.getByRole('status')
+    expect(region).toHaveAttribute('data-loop', 'still')
+    expect(region).toHaveAttribute('aria-busy', 'true')
+    expect(region).toHaveTextContent(GENERATION_LOADING_TITLE)
+
+    await act(async () => {
+      client.fail(makeGenerationError())
+    })
+    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'false')
+
+    const alert = await screen.findByRole('alert')
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+
+    expect(client.calls).toEqual([INPUT, INPUT])
+    expect(screen.getByRole('status')).toHaveAttribute('data-loop', 'still')
+    expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true')
   })
 })
 

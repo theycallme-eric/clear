@@ -14,11 +14,15 @@
  * own, and the one action offered is an accelerator rather than a repair.
  *
  * Severity is carried by a glyph and a sentence before it is carried by a hue.
+ *
+ * It is one card on the urgency role, with its heading and its one action
+ * inside it. A pass already under way scans the button, and that scan takes
+ * the view's one loop in turn with the rest timer and any loading region.
  */
-import type { CSSProperties } from 'react'
-
 import { AlertTriangle, Button } from '../design-system/index'
 import { useSetLogging } from '../state/set-logging'
+import { Card } from './card'
+import { useInterfaceLoop } from './motion'
 
 /** The count, as a sentence. Singular and plural are written out, not `(s)`. */
 export function unsyncedSetsText(count: number): string {
@@ -34,47 +38,43 @@ export function unsyncedSetsText(count: number): string {
 export function SetSyncNotice() {
   const { sync, retrySync } = useSetLogging()
 
-  if (!sync.sustainedFailure || sync.unsyncedCount === 0) return null
+  const shown = sync.sustainedFailure && sync.unsyncedCount > 0
+  const loop = useInterfaceLoop('busy', shown && sync.syncing)
+
+  if (!shown) return null
 
   return (
-    <div
-      role="status"
-      className="clr-chamfer clr-chamfer--md clr-stack--tight"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        padding: 'var(--spacing-400)',
-        '--surface': 'var(--surface-toast-negative)',
-        '--brd': 'var(--border-toast-negative)',
-      } as CSSProperties}
-    >
-      <p
-        style={{
-          margin: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--spacing-200)',
-          fontFamily: 'var(--font-data)',
-          letterSpacing: 'var(--tracking-data)',
-          color: 'var(--icon-toast-negative)',
-        }}
+    // The card's own `role` is its colour role, so the live region wraps it.
+    <div role="status">
+      <Card
+        role="urgency"
+        heading={
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-200)',
+              color: 'var(--icon-toast-negative)',
+            }}
+          >
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <AlertTriangle />
+            </span>
+            Sets waiting to sync
+          </span>
+        }
       >
-        <span aria-hidden="true" style={{ display: 'flex' }}>
-          <AlertTriangle />
-        </span>
-        Sets waiting to sync
-      </p>
+        <p style={{ margin: 0 }}>
+          {unsyncedSetsText(sync.unsyncedCount)} Nothing is lost — they’ll be sent when
+          the connection returns, and logging the next set still works.
+        </p>
 
-      <p style={{ margin: 0 }}>
-        {unsyncedSetsText(sync.unsyncedCount)} Nothing is lost — they’ll be sent when
-        the connection returns, and logging the next set still works.
-      </p>
-
-      <div>
-        <Button variant="secondary" onClick={retrySync} loading={sync.syncing}>
-          Try now
-        </Button>
-      </div>
+        <div {...loop}>
+          <Button variant="secondary" onClick={retrySync} loading={sync.syncing}>
+            Try now
+          </Button>
+        </div>
+      </Card>
     </div>
   )
 }

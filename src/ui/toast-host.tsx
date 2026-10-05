@@ -9,34 +9,22 @@
  * (`prefers-reduced-motion`, or no stylesheet as in tests), the host settles
  * immediately so nothing ever waits on motion.
  *
- * Focus is never managed here: arrival does not steal it, and dismissal is a
- * plain labelled button inside the Toast, reachable by keyboard in place.
+ * Placement is the 0.14.3 overlay rule: a toast sits above the screen and may
+ * cover the footer action, because it is temporary and dismissable. The host
+ * measures nothing and reserves no space, so it is never a permanent
+ * obstruction — with no toast it renders nothing at all.
+ *
+ * Arrival never steals focus, and dismissal is a plain labelled button inside
+ * the Toast, reachable by keyboard in place. When the keyboard was inside a
+ * toast as it leaves, focus goes back to the control it came from rather than
+ * falling to the document.
  */
-import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, type FocusEvent } from 'react'
 
 import { Toast } from '../design-system/index'
 import { toastQueue, type ToastQueue } from '../state/toasts'
 
 const PHOSPHOR_OUT = 'clr-phosphor-out'
-const DEFAULT_BOTTOM = 'var(--spacing-500)'
-
-/**
- * A toast must not cover the screen's pinned action. ScrollRegion measures the
- * footer for its own scroller, but the root toast host is its sibling and does
- * not inherit that measurement. Read the rendered edge instead of guessing a
- * button height, so one rule works for wrapped actions and every viewport.
- */
-function pinnedFooterBottom(): string {
-  const footer = document.querySelector<HTMLElement>('main .clr-scroll-region__foot')
-  if (footer === null) return DEFAULT_BOTTOM
-
-  const viewport = window.visualViewport
-  const viewportBottom = viewport
-    ? viewport.offsetTop + viewport.height
-    : window.innerHeight
-  const inset = Math.max(0, viewportBottom - footer.getBoundingClientRect().top)
-  return `calc(${Math.ceil(inset)}px + var(--spacing-300))`
-}
 
 /** True when the element's computed style actually runs the named animation. */
 function runsAnimation(element: Element, name: string): boolean {
@@ -55,28 +43,37 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
   const { current, phase } = state
   const leaving = phase === 'leaving'
   const leavingId = leaving && current ? current.id : null
-  const [bottom, setBottom] = useState(DEFAULT_BOTTOM)
+  // The control the keyboard left to reach the toast, while focus is inside it.
+  const returnRef = useRef<HTMLElement | null>(null)
+  const currentId = current ? current.id : null
 
-  useLayoutEffect(() => {
-    if (current === null) return
-
-    const update = () => setBottom(pinnedFooterBottom())
-    update()
-
-    const footer = document.querySelector<HTMLElement>('main .clr-scroll-region__foot')
-    const observer = footer !== null && typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(update)
-      : null
-    if (footer !== null) observer?.observe(footer)
-    window.addEventListener('resize', update)
-    window.visualViewport?.addEventListener('resize', update)
-
-    return () => {
-      observer?.disconnect()
-      window.removeEventListener('resize', update)
-      window.visualViewport?.removeEventListener('resize', update)
+  const handleFocus = (event: FocusEvent<HTMLDivElement>) => {
+    const from = event.relatedTarget
+    if (from instanceof HTMLElement && !event.currentTarget.contains(from)) {
+      returnRef.current = from
     }
-  }, [current])
+  }
+  const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
+    // Focus moved on by the user's own choice: nothing to hand back.
+    const to = event.relatedTarget
+    if (to instanceof Node && !event.currentTarget.contains(to)) returnRef.current = null
+  }
+
+  // A removed toast drops focus to the document. If the keyboard was inside
+  // it, return to the action it came from — never move focus that went
+  // elsewhere, and never on arrival.
+  useLayoutEffect(() => {
+    return () => {
+      const target = returnRef.current
+      returnRef.current = null
+      if (target === null) return
+      queueMicrotask(() => {
+        const active = document.activeElement
+        const lost = active === null || active === document.body
+        if (lost && target.isConnected) target.focus()
+      })
+    }
+  }, [currentId])
 
   // Settle on the phosphor decay's own end. A native listener, not the React
   // prop: the animation runs on this DOM element, and the native event is
@@ -103,9 +100,11 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
   return (
     <div
       data-clear-toast-host
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       style={{
         position: 'fixed',
-        bottom,
+        bottom: 'var(--spacing-500)',
         left: '50%',
         transform: 'translateX(-50%)',
         width: 'calc(100% - var(--spacing-400) * 2)',

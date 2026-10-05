@@ -92,6 +92,19 @@ describe('ActiveSessionPrompt', () => {
     expect(actions).toEqual(['Resume workout', 'Abandon it'])
   })
 
+  it('makes Resume the one main action, first for focus', async () => {
+    landOn(DEEP_LINK)
+
+    await waitFor(() => expect(promptIsOpen()).toBe(true))
+    // Two main actions would leave the package row in DOM order, with Resume
+    // on the left of the wider row. Abandoning is critical where it is
+    // confirmed, not where it is offered.
+    const [resume, abandon] = within(prompt()).getAllByRole('button')
+    expect(resume).toHaveClass('clr-btn--primary')
+    expect(abandon).not.toHaveClass('clr-btn--primary', 'clr-btn--critical')
+    expect(prompt().querySelector('.clr-actions')).toContainElement(resume)
+  })
+
   it('resumes into the focus shell', async () => {
     const user = userEvent.setup()
     landOn(DEEP_LINK)
