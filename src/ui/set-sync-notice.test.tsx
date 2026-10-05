@@ -95,3 +95,33 @@ describe('the one action it offers', () => {
     )
   })
 })
+
+describe('how it is drawn', () => {
+  it('is one urgency card, with its heading, its glyph and its action inside', () => {
+    mount({ unsyncedCount: 2, sustainedFailure: true, syncing: false })
+
+    const notice = screen.getByRole('status')
+    expect(notice.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(notice.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    const body = notice.querySelector('.clr-card__body') as HTMLElement
+    expect(body).toHaveClass('clr-chamfer--urgency')
+    const heading = screen.getByRole('heading', { name: 'Sets waiting to sync' })
+    expect(body).toContainElement(heading)
+    // Severity is a glyph beside the words, not the card's colour alone.
+    expect(heading.querySelector('svg')).not.toBeNull()
+    expect(body).toContainElement(screen.getByRole('button', { name: 'Try now' }))
+  })
+
+  it('claims the view’s loop only while a pass is running', () => {
+    mount({ unsyncedCount: 1, sustainedFailure: true, syncing: true })
+    const running = screen.getByRole('button', { name: 'Try now' }).closest('[data-loop]')
+    expect(running).toHaveAttribute('data-loop', 'run')
+  })
+
+  it('claims nothing while it is only waiting', () => {
+    mount({ unsyncedCount: 1, sustainedFailure: true, syncing: false })
+    const idle = screen.getByRole('button', { name: 'Try now' }).closest('[data-loop]')
+    expect(idle).toHaveAttribute('data-loop', 'still')
+  })
+})

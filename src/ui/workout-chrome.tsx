@@ -7,9 +7,15 @@
  * `GlobalTimer` is the interesting case: the export ships `TimerDisplay`, but
  * it is a *countdown* — its accessible name is "Time remaining" and its low
  * state is time pressure. The session timer counts up and has no deadline, so
- * it composes the same shipped chamfer and the same timer tokens rather than
+ * it composes the same shipped timer card and the same timer tokens rather than
  * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
  * is the one that composes `TimerDisplay`, exactly as the IA says.
+ *
+ * Containment, from 0.14.3: a timer is its own card — one accent bar, the timer
+ * role on bar, body and emission — and is never put inside another. The rest
+ * is therefore one timer-role card with its label, digits and controls inside
+ * it rather than a `TimerDisplay` in a frame, and nothing here floats a label
+ * or a readout outside the card it belongs to.
  *
  * It also holds the one surface that is not the shell's alone:
  * `AbandonConfirmDialog`. Three places can end a session early — the shell's
@@ -41,7 +47,6 @@ import {
   Stopwatch,
   Superset,
   Button,
-  TimerDisplay,
   X,
 } from '../design-system/index'
 import { REST_EXTENSION_SECONDS, spokenRest, useRestTimer } from '../state/rest'
@@ -54,8 +59,10 @@ import type {
   StructureIdentity,
 } from '../state/workout-progress'
 import { ConfirmDialog } from './blocking-dialog'
+import { Card } from './card'
+import { useInsideCard } from './card-context'
 import { ActionRow } from './composition'
-import { Heading } from './Heading'
+import { useInterfaceLoop } from './motion'
 import './rest-timer-bar.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -74,31 +81,90 @@ export interface GlobalTimerProps {
  * `role="timer"` here is labelled, not live.
  */
 export function GlobalTimer({ seconds }: GlobalTimerProps) {
-  return (
+  const insideCard = useInsideCard()
+
+  const readout = (
     <div
       role="timer"
       aria-label="Session time"
-      className="clr-chamfer clr-chamfer--md clr-chamfer--timer"
+      className={
+        insideCard
+          ? 'clr-chamfer clr-chamfer--md clr-chamfer--timer'
+          : 'clr-chamfer clr-chamfer--md clr-card__body clr-chamfer--timer'
+      }
       style={{
         display: 'inline-flex',
         justifyContent: 'center',
         padding: 'var(--spacing-100) var(--spacing-300)',
       }}
     >
-      <span
-        aria-hidden="true"
-        style={{
-          fontFamily: 'var(--font-data)',
-          fontSize: 'var(--label-lg-size)',
-          fontWeight: 'var(--font-weight-bold)',
-          letterSpacing: 'var(--tracking-data)',
-          color: 'var(--text-timer)',
-        }}
-      >
-        {formatElapsed(seconds)}
-      </span>
+      <TimerDigits text={formatElapsed(seconds)} size="var(--label-lg-size)" />
       <span className="a11y-hidden">{spokenElapsed(seconds)}</span>
     </div>
+  )
+
+  return (
+    // The shipped timer card, as `TimerDisplay` builds it: the emission, the
+    // accent bar and the body all take the timer role, and no frame goes
+    // around it. Inside a card it is that card's element frame instead — the
+    // same timer role, without a bar of its own.
+    <span className="clr-bleed" style={TIMER_BLEED_STYLE}>
+      {insideCard ? (
+        readout
+      ) : (
+        <span className="clr-card">
+          <span className="clr-card__bar" aria-hidden="true" />
+          {readout}
+        </span>
+      )}
+    </span>
+  )
+}
+
+const TIMER_BLEED_STYLE = { '--bleed': 'var(--border-timer)' } as CSSProperties
+
+/**
+ * A timer's digits, drawn the way `TimerDisplay` draws them: each one tumbles
+ * when it changes, the colon holds still, and the colour crosses into the low
+ * state on the frame's own schedule — `--dur-alert`, stepped. Decorative; the
+ * caller supplies the accessible value.
+ */
+function TimerDigits({
+  text,
+  size,
+  low = false,
+}: {
+  text: string
+  size: string
+  low?: boolean
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      style={{
+        display: 'inline-flex',
+        fontFamily: 'var(--font-data)',
+        fontSize: size,
+        fontWeight: 'var(--font-weight-bold)',
+        letterSpacing: 'var(--tracking-data)',
+        color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',
+        transition: 'color var(--dur-alert) var(--step-4)',
+      }}
+    >
+      {text.split('').map((char, index) => (
+        <span
+          key={`${index}-${char}`}
+          className={char === ':' ? undefined : 'clr-tumble'}
+          style={{
+            display: 'inline-block',
+            minWidth: char === ':' ? undefined : '0.62em',
+            textAlign: 'center',
+          }}
+        >
+          {char}
+        </span>
+      ))}
+    </span>
   )
 }
 
@@ -126,7 +192,8 @@ export interface ProgressTrackerProps {
  * The bar is determinate because the progress is real — sections resolved out
  * of sections prescribed — and segmented so it reads as an instrument scale
  * rather than a percentage. The list beneath it is the part that carries the
- * status: the bar alone cannot say *which* section is unfinished.
+ * status: the bar alone cannot say *which* section is unfinished. Both sit in
+ * one card under its heading, so neither reads as a loose readout.
  */
 export function ProgressTracker({
   progress,
@@ -136,7 +203,7 @@ export function ProgressTracker({
   const position = Math.min(currentIndex + 1, Math.max(progress.total, 1))
 
   return (
-    <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+    <Card heading="Sections">
       <Progress
         value={progress.completed}
         max={progress.total}
@@ -164,7 +231,7 @@ export function ProgressTracker({
           </li>
         ))}
       </ol>
-    </div>
+    </Card>
   )
 }
 
@@ -236,11 +303,12 @@ export function SectionHeader({
     // section title is that level-two heading; the block/exercise sections
     // that follow advance themselves to level three. Wrapping this heading in
     // `HeadingSection` skipped h2 and made the live Workout outline invalid.
-    <section className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
-      <p style={labelStyle}>
-        Section {position} / {total} · {STATUS_WORDS[section.status]}
-      </p>
-      <Heading style={{ margin: 0 }}>{section.title}</Heading>
+    // `Card` draws the title as that heading, inside the card, with the
+    // position and status beside it — nothing sits on the atmosphere.
+    <Card
+      heading={section.title}
+      meta={`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}
+    >
       <ul
         aria-label="Structures in this section"
         style={{
@@ -259,7 +327,7 @@ export function SectionHeader({
         ))}
       </ul>
       {children}
-    </section>
+    </Card>
   )
 }
 
@@ -267,26 +335,38 @@ export interface StructureBadgeProps {
   identity: StructureIdentity
 }
 
-/** `EMOM · 10 MIN`, with the glyph the export already ships for it. */
+/**
+ * `EMOM · 10 MIN`, with the glyph the export already ships for it.
+ *
+ * An element frame, not a card: the small chamfer on the structure role, with
+ * no accent bar, emitting through its own `.clr-bleed` wrapper. That is what
+ * lets it sit inside a block's card or a section's without nesting one.
+ */
 export function StructureBadge({ identity }: StructureBadgeProps) {
   const detail = [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
 
   return (
-    <span
-      className="clr-chamfer clr-chamfer--sm clr-chamfer--structure"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 'var(--spacing-100)',
-        padding: 'var(--spacing-50) var(--spacing-200)',
-        ...labelStyle,
-      }}
-    >
-      <StructureGlyphIcon glyph={identity.glyph} />
-      {detail === '' ? identity.label : `${identity.label} · ${detail}`}
+    <span className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
+      <span
+        className="clr-chamfer clr-chamfer--sm clr-chamfer--structure"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 'var(--spacing-100)',
+          padding: 'var(--spacing-50) var(--spacing-200)',
+          ...labelStyle,
+        }}
+      >
+        <StructureGlyphIcon glyph={identity.glyph} />
+        {detail === '' ? identity.label : `${identity.label} · ${detail}`}
+      </span>
     </span>
   )
 }
+
+const STRUCTURE_BLEED_STYLE = {
+  '--bleed': 'var(--border-frame-structure)',
+} as CSSProperties
 
 function StructureGlyphIcon({ glyph }: { glyph: StructureGlyph }) {
   switch (glyph) {
@@ -359,7 +439,7 @@ export function AbandonConfirmDialog({
 // Rest
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The last stretch of a rest, where the fill takes the timer's urgency colour. */
+/** The last stretch of a rest, where the card crosses into the timer's low state. */
 const REST_URGENT_SECONDS = 10
 
 /**
@@ -374,70 +454,85 @@ const REST_URGENT_SECONDS = 10
  * carries no entrance: the bar appears in the same tap that logs a set, and
  * the IA is explicit that no list or route motion fires while a set is being
  * logged. The only moving parts are the digits, which tumble when they change,
- * and the fill, which steps.
+ * the fill, which steps, and the low state.
+ *
+ * The low state is the shipped one and nothing more. The card changes role, so
+ * bar, body and digits step to the low colours over `--dur-alert`, and the
+ * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
+ * own. The pulse is an `urgent` claim on the view's one loop: it outranks a
+ * loading region waiting beside it, and under reduced motion it is still, with
+ * the word, the digits and the colour all unchanged.
  */
 export function RestTimerBar() {
   const { rest, remainingSeconds, extend, skip } = useRestTimer()
 
-  if (rest === null || remainingSeconds <= 0) return null
+  const running = rest !== null && remainingSeconds > 0
+  const urgent = running && remainingSeconds <= REST_URGENT_SECONDS
+  const loop = useInterfaceLoop('urgent', urgent)
+
+  if (!running) return null
 
   const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
-  const urgent = remainingSeconds <= REST_URGENT_SECONDS
 
   return (
+    // The pulse runs on the wrapper so bar and body dim together.
     <section
       aria-label="Rest"
-      className="clr-rest-bar clr-stack--tight"
+      className={urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
       data-urgent={urgent ? 'true' : 'false'}
-      style={{ display: 'flex', flexDirection: 'column' }}
+      {...loop}
     >
-      <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
-        <p
-          style={{
-            margin: 0,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--spacing-100)',
-            fontFamily: 'var(--font-data)',
-            fontSize: 'var(--label-xs-size)',
-            letterSpacing: 'var(--tracking-data)',
-            textTransform: 'uppercase',
-            color: 'var(--text-card-label)',
-          }}
-        >
-          <span aria-hidden="true" style={{ display: 'flex' }}>
-            <Rest />
-          </span>
-          Rest after {rest.label}
-        </p>
-        <TimerDisplay seconds={remainingSeconds} lowThreshold={REST_URGENT_SECONDS} />
-      </div>
-      {urgent && (
-        <p
-          role="status"
-          aria-live="polite"
-          style={{ ...labelStyle, color: 'var(--text-timer-low)' }}
-        >
-          Final 10 seconds
-        </p>
-      )}
-      <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
+      <Card role={urgent ? 'timer-low' : 'timer'}>
+        <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <p
+            style={{
+              ...labelStyle,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--spacing-100)',
+            }}
+          >
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <Rest />
+            </span>
+            Rest after {rest.label}
+          </p>
+          {/* Labelled once and not live: the milestone below is what speaks. */}
+          <div role="timer" aria-label="Time remaining" style={{ display: 'inline-flex' }}>
+            <TimerDigits
+              text={formatElapsed(remainingSeconds)}
+              size="var(--label-xl-size)"
+              low={urgent}
+            />
+            <span className="a11y-hidden">{spokenRest(remainingSeconds)}</span>
+          </div>
+        </div>
+        {urgent && (
+          <p
+            role="status"
+            aria-live="polite"
+            style={{ ...labelStyle, color: 'var(--text-timer-low)' }}
+          >
+            Final 10 seconds
+          </p>
+        )}
 
-      <div className="clr-rest-bar__track" aria-hidden="true">
-        <div
-          className="clr-rest-bar__fill"
-          style={{ width: `${Math.round(fraction * 1000) / 10}%` }}
-        />
-      </div>
+        <div className="clr-rest-bar__track" aria-hidden="true">
+          <div
+            className="clr-rest-bar__fill"
+            style={{ width: `${Math.round(fraction * 1000) / 10}%` }}
+          />
+        </div>
 
-      <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-        <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
-          Add {REST_EXTENSION_SECONDS}s
-        </Button>
-        <Button variant="quiet" icon={<X />} onClick={skip}>
-          Skip rest
-        </Button>
-      </div>
+        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+          <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
+            Add {REST_EXTENSION_SECONDS}s
+          </Button>
+          <Button variant="quiet" icon={<X />} onClick={skip}>
+            Skip rest
+          </Button>
+        </div>
+      </Card>
     </section>
   )
 }
@@ -471,10 +566,15 @@ export function WorkoutNavigation({
   onFinish,
   busy = false,
 }: WorkoutNavigationProps) {
+  // Finishing is a real wait and its button scans, so it takes its turn with
+  // every other loop in view; the button stays busy either way.
+  const loop = useInterfaceLoop('busy', busy && !canGoForward)
+
   return (
     <ActionRow
       as="nav"
       aria-label="Workout sections"
+      {...loop}
     >
       <Button
         variant="secondary"
