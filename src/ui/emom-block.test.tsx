@@ -179,6 +179,35 @@ function marked(word: string): string[] {
 }
 
 describe('the EMOM runs the clock the block prescribes', () => {
+  it('keeps the timer in its own single frame without remounting the movement list', async () => {
+    const user = setup()
+    const mounted = mount()
+    const movementList = screen.getByRole('list', { name: 'Movements in this EMOM' })
+
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+
+    const expectSingleTimerFrame = (seconds: string) => {
+      const timer = screen.getByRole('timer')
+      const frame = timer.closest('.clr-card')
+      expect(frame).not.toBeNull()
+      expect(frame?.parentElement?.closest('.clr-card')).toBeNull()
+      expect(within(timer).getByText(seconds)).toBeInTheDocument()
+      expect(screen.getByRole('list', { name: 'Movements in this EMOM' })).toBe(movementList)
+    }
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    expectSingleTimerFrame('01:00')
+
+    mounted.advance(20)
+    await user.click(screen.getByRole('button', { name: 'Minute done' }))
+    expect(screen.getByText('REST')).toBeInTheDocument()
+    expectSingleTimerFrame('00:40')
+
+    mounted.advance(580)
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expectSingleTimerFrame('00:00')
+  })
+
   it('states the window from timer_seconds once the clock is started', async () => {
     const user = setup()
     mount()

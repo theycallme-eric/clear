@@ -96,92 +96,97 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
   }
 
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
+    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+      {shape.size > 0 && view.phase !== 'untimed' && view.phase !== 'ready' && (
+        <TimerDisplay seconds={view.secondsRemaining} />
+      )}
+      <Card>
+        <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+            <StructureBadge identity={block.identity} />
+            <span style={labelStyle}>
+              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+            </span>
+          </div>
+
+          {shape.size === 0 ? (
+            <p style={{ margin: 0 }}>
+              Nothing left to perform in this block — every movement in it was swapped
+              out.
+            </p>
+          ) : (
+            <>
+              {view.phase === 'untimed' ? (
+                // The block carries no clock, so there is no grid to draw and no
+                // minute to assign a movement to. Saying which minute is active
+                // would be inventing the one column the block does not have.
+                <p style={{ margin: 0 }}>
+                  This block prescribes no clock. Work through the movements as
+                  prescribed.
+                </p>
+              ) : (
+                <SectionTimer view={view} onStart={start} onMinuteDone={minuteDone} />
+              )}
+
+              <ol
+                aria-label="Movements in this EMOM"
+                style={{
+                  listStyle: 'none',
+                  margin: 0,
+                  padding: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--spacing-300)',
+                }}
+              >
+                {block.exercises.map((exercise) => (
+                  <EmomMovement
+                    key={exercise.exerciseId}
+                    exercise={exercise}
+                    assignment={
+                      view.phase === 'untimed'
+                        ? null
+                        : minuteAssignment(exercise.position, shape)
+                    }
+                    marker={markerFor(exercise.position, view)}
+                  />
+                ))}
+              </ol>
+
+              {/*
+                Once, at the foot of the card, and only when the block prescribes
+                a window inside the minute: an EMOM that prescribes none rests for
+                whatever is left of the minute, which is the structure rather than
+                a number to print (`superset-circuit-clarity.md` §8).
+              */}
+              {shape.restSeconds > 0 && view.phase !== 'untimed' && (
+                <p style={{ margin: 0 }}>
+                  {shape.restSeconds}s rest at the end of each minute
+                </p>
+              )}
+
+              {view.phase === 'finished' && (
+                <p style={{ margin: 0 }}>
+                  Every prescribed minute is done. Record the block when you are ready.
+                </p>
+              )}
+            </>
+          )}
+
+          {/*
+            The minutes the user actually got through — the outcome this structure
+            observed, and the only field it supplies. An EMOM whose clock never
+            ran observed nothing, and says so by supplying nothing rather than a
+            zero (DATA_MODEL §8).
+          */}
+          <BlockCompletionControl
+            blockId={block.blockId}
+            outcome={observedOutcome(view)}
+            label="Complete EMOM"
+          />
         </div>
-
-        {shape.size === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            {view.phase === 'untimed' ? (
-              // The block carries no clock, so there is no grid to draw and no
-              // minute to assign a movement to. Saying which minute is active
-              // would be inventing the one column the block does not have.
-              <p style={{ margin: 0 }}>
-                This block prescribes no clock. Work through the movements as
-                prescribed.
-              </p>
-            ) : (
-              <SectionTimer view={view} onStart={start} onMinuteDone={minuteDone} />
-            )}
-
-            <ol
-              aria-label="Movements in this EMOM"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--spacing-300)',
-              }}
-            >
-              {block.exercises.map((exercise) => (
-                <EmomMovement
-                  key={exercise.exerciseId}
-                  exercise={exercise}
-                  assignment={
-                    view.phase === 'untimed'
-                      ? null
-                      : minuteAssignment(exercise.position, shape)
-                  }
-                  marker={markerFor(exercise.position, view)}
-                />
-              ))}
-            </ol>
-
-            {/*
-              Once, at the foot of the card, and only when the block prescribes
-              a window inside the minute: an EMOM that prescribes none rests for
-              whatever is left of the minute, which is the structure rather than
-              a number to print (`superset-circuit-clarity.md` §8).
-            */}
-            {shape.restSeconds > 0 && view.phase !== 'untimed' && (
-              <p style={{ margin: 0 }}>
-                {shape.restSeconds}s rest at the end of each minute
-              </p>
-            )}
-
-            {view.phase === 'finished' && (
-              <p style={{ margin: 0 }}>
-                Every prescribed minute is done. Record the block when you are ready.
-              </p>
-            )}
-          </>
-        )}
-
-        {/*
-          The minutes the user actually got through — the outcome this structure
-          observed, and the only field it supplies. An EMOM whose clock never
-          ran observed nothing, and says so by supplying nothing rather than a
-          zero (DATA_MODEL §8).
-        */}
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={observedOutcome(view)}
-          label="Complete EMOM"
-        />
-      </div>
-    </Card>
+      </Card>
+    </div>
   )
 }
 
@@ -219,8 +224,6 @@ function SectionTimer({
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
-      {view.phase !== 'ready' && <TimerDisplay seconds={view.secondsRemaining} />}
-
       <p style={{ ...labelStyle, color: 'var(--text-timer)' }}>{minuteText(view)}</p>
       <p style={labelStyle}>{PHASE_WORDS[view.phase]}</p>
 
