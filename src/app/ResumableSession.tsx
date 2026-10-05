@@ -44,9 +44,11 @@ import {
   useWorkoutClients,
 } from '../state/workout-queries'
 import { Card } from '../ui/card'
-import { Heading } from '../ui/Heading'
 import { ErrorView } from '../ui/view-state'
 import { AbandonConfirmDialog, GlobalTimer } from '../ui/workout-chrome'
+
+/** The slot's name: the same group the ordinary actions head, once answered. */
+const RESUMABLE_HEADING = 'Train today'
 
 export function ResumableSession({
   fallback = null,
@@ -133,12 +135,11 @@ function ResumableCard({
 
   return (
     <>
-      <Card>
+      <Card heading={RESUMABLE_HEADING}>
         <div
           className="clr-stack--tight"
           style={{ display: 'flex', flexDirection: 'column' }}
         >
-          <Heading style={{ margin: 0 }}>Train today</Heading>
           <p style={labelStyle}>
             <Pulse size={16} /> In progress · {snapshot.session.title}
           </p>

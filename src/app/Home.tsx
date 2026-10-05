@@ -55,8 +55,16 @@
  * same direct-Review resolver as History. Favorites restore through their own
  * saved snapshot path. Neither entry makes a generation request.
  */
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from 'react'
+import { Link, useHref, useLinkClickHandler, useNavigate, type To } from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -67,6 +75,7 @@ import {
   Streak as StreakGlyph,
   TabBar,
   TabPanel,
+  TextAction,
   Zap,
 } from '../design-system/index'
 import { useFavoritesQuery } from '../state/favorite-queries'
@@ -138,8 +147,9 @@ import {
   TabBand,
 } from '../ui/composition'
 import { FavoriteList } from '../ui/favorite-list'
-import { Heading } from '../ui/Heading'
+import { HeadingSection } from '../ui/Heading'
 import { HistoryList } from '../ui/history-list'
+import { useArrivalStagger } from '../ui/motion'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
@@ -164,7 +174,10 @@ export const VIEW_HISTORY_LABEL = 'View history'
 /** The template's own h1 — the screen is "Today", the app is the wordmark. */
 export const HOME_HEADING = 'Today'
 
+/** The daily groups, each named inside its own card. */
+export const TRAIN_TODAY_LABEL = 'Train today'
 export const WEEK_STRIP_LABEL = 'This week'
+export const REST_DAY_LABEL = 'Rest day'
 export const RECENT_WORKOUTS_LABEL = 'Recent workouts'
 export const SUGGESTION_LABEL = 'Suggested next'
 
@@ -263,7 +276,7 @@ export function Home() {
           </PhoneFooter>
         }
       >
-        <div className="clr-stack">
+        <ArrivingStack>
           {/* One top slot: an active workout replaces Train Today, while an
               empty active-session read renders the ordinary actions. */}
           <ResumableSession
@@ -289,9 +302,43 @@ export function Home() {
               already done, and the tab is the IA's answer to which one they
               are looking at. */}
           <WorkoutTabs query={history} entries={recents} />
-        </div>
+        </ArrivingStack>
       </Screen>
     </GenerationLoadingHost>
+  )
+}
+
+/**
+ * Home's groups, arriving as one set: 40ms apart, once. The stagger is the
+ * screen's and not a region's, so a group that re-renders or a tab that
+ * changes is an inline update and nothing arrives twice.
+ */
+function ArrivingStack({ children }: { children: ReactNode }) {
+  const { className, ...arrival } = useArrivalStagger()
+
+  return (
+    <div {...arrival} className={['clr-stack', className].filter(Boolean).join(' ')}>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * A quiet way to another screen: the public `TextAction` as a real link, with
+ * the router's own click handling so it navigates in place and a modified
+ * click still opens a tab.
+ */
+function RouteAction({ to, children }: { to: To; children: ReactNode }) {
+  const href = useHref(to)
+  const follow = useLinkClickHandler<HTMLAnchorElement>(to)
+
+  return (
+    <TextAction
+      href={href}
+      onClick={(event) => follow(event as MouseEvent<HTMLAnchorElement>)}
+    >
+      {children}
+    </TextAction>
   )
 }
 
@@ -331,9 +378,8 @@ function TrainingWeek({
           : viewReady(week)
 
   return (
-    <Card>
+    <Card heading={WEEK_STRIP_LABEL}>
       <div className="clr-stack clr-stack--tight">
-        <Heading>This week</Heading>
         <StreakCount />
         <ViewStateSwitch
           state={state}
@@ -406,54 +452,54 @@ function RestDayControl({
   }
 
   return (
-    <section className="clr-stack clr-stack--tight" aria-label="Rest day">
-      <p className="label" style={{ margin: 0 }}>
-        Rest day
-      </p>
-      {today.reason === null ? (
-        <p style={{ margin: 0 }}>
-          Not training today? Mark why so your streak follows the right rule.
-        </p>
-      ) : (
-        <p style={{ margin: 0 }}>
-          Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
-        </p>
-      )}
+    // Inside the week's card this is a ruled sub-group, one level under it.
+    <HeadingSection aria-label={REST_DAY_LABEL}>
+      <Card heading={REST_DAY_LABEL}>
+        {today.reason === null ? (
+          <p style={{ margin: 0 }}>
+            Not training today? Mark why so your streak follows the right rule.
+          </p>
+        ) : (
+          <p style={{ margin: 0 }}>
+            Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
+          </p>
+        )}
 
-      {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
-      {failure && (
-        <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-          The rest day wasn’t saved. Try again.
-        </p>
-      )}
+        {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
+        {failure && (
+          <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+            The rest day wasn’t saved. Try again.
+          </p>
+        )}
 
-      {!editing ? (
-        <Button variant="secondary" onClick={begin}>
-          {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-        </Button>
-      ) : (
-        <>
-          <Select
-            label="Reason"
-            value={reason}
-            options={REST_DAY_REASONS.map((value) => ({
-              value,
-              label: REST_DAY_REASON_LABELS[value],
-            }))}
-            helperText={REST_DAY_REASON_EFFECTS[reason]}
-            onChange={(value) => setReason(value as RestDayReason)}
-          />
-          <div className="clr-row">
-            <Button variant="primary" loading={write.marking} onClick={() => void save()}>
-              Save rest day
-            </Button>
-            <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
-              Cancel
-            </Button>
-          </div>
-        </>
-      )}
-    </section>
+        {!editing ? (
+          <Button variant="secondary" onClick={begin}>
+            {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+          </Button>
+        ) : (
+          <>
+            <Select
+              label="Reason"
+              value={reason}
+              options={REST_DAY_REASONS.map((value) => ({
+                value,
+                label: REST_DAY_REASON_LABELS[value],
+              }))}
+              helperText={REST_DAY_REASON_EFFECTS[reason]}
+              onChange={(value) => setReason(value as RestDayReason)}
+            />
+            <div className="clr-row">
+              <Button variant="primary" loading={write.marking} onClick={() => void save()}>
+                Save rest day
+              </Button>
+              <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
+                Cancel
+              </Button>
+            </div>
+          </>
+        )}
+      </Card>
+    </HeadingSection>
   )
 }
 
@@ -547,28 +593,26 @@ function SuggestedSession({
   if (suggestion === null) return null
 
   return (
-    <section
-      aria-label={SUGGESTION_LABEL}
-      className="clr-stack clr-stack--tight"
-    >
-      <p className="label" style={{ margin: 0 }}>{SUGGESTION_LABEL}</p>
-      <p style={{ margin: 0 }}>
-        {suggestion.focusLabel} · intensity {suggestion.intensity}
-      </p>
-      {/* The reason is pattern-level on purpose: "no hinge in 11 days"
-          is a fact about training, "no lower body" is a fact about labels. */}
-      <p style={{ margin: 0 }}>
-        {suggestion.reason} {suggestion.intensityReason}
-      </p>
-      <div className="clr-row" style={SUGGESTION_ACTIONS}>
-        <Button variant="secondary" onClick={() => void navigate(suggestion.path)}>
-          Use this
-        </Button>
-        <Button variant="quiet" onClick={dismiss}>
-          Dismiss
-        </Button>
-      </div>
-    </section>
+    <HeadingSection aria-label={SUGGESTION_LABEL}>
+      <Card heading={SUGGESTION_LABEL}>
+        <p style={{ margin: 0 }}>
+          {suggestion.focusLabel} · intensity {suggestion.intensity}
+        </p>
+        {/* The reason is pattern-level on purpose: "no hinge in 11 days"
+            is a fact about training, "no lower body" is a fact about labels. */}
+        <p style={{ margin: 0 }}>
+          {suggestion.reason} {suggestion.intensityReason}
+        </p>
+        <div className="clr-row" style={SUGGESTION_ACTIONS}>
+          <Button variant="secondary" onClick={() => void navigate(suggestion.path)}>
+            Use this
+          </Button>
+          <Button variant="quiet" onClick={dismiss}>
+            Dismiss
+          </Button>
+        </div>
+      </Card>
+    </HeadingSection>
   )
 }
 
@@ -602,9 +646,8 @@ function QuickActions({
   const refusal = refused ? (plan?.refusal ?? null) : null
 
   return (
-    <Card>
+    <Card heading={TRAIN_TODAY_LABEL}>
       <div className="clr-stack">
-        <Heading>Train today</Heading>
         <p style={{ margin: 0 }}>
           Compose a session from how you feel today, or repeat the last one.
         </p>
@@ -636,9 +679,7 @@ function QuickActions({
                   </span>
                   {refusal}
                 </p>
-                <p style={{ margin: 0 }}>
-                  <Link to={SETTINGS_ROUTE}>{QUICK_START_SETTINGS_LABEL}</Link>
-                </p>
+                <RouteAction to={SETTINGS_ROUTE}>{QUICK_START_SETTINGS_LABEL}</RouteAction>
               </div>
             )}
           </>
@@ -714,7 +755,13 @@ function RecentWorkouts({
           : viewReady(entries)
 
   return (
-    <div className="clr-stack clr-stack--tight">
+    // The recents are the head of the chronology; the whole of it is one quiet
+    // action away in every state, because History answers its own empty and
+    // error rather than inheriting these.
+    <Card
+      heading={RECENT_WORKOUTS_LABEL}
+      meta={<RouteAction to={HISTORY_ROUTE}>{VIEW_HISTORY_LABEL}</RouteAction>}
+    >
       <ViewStateSwitch
         state={state}
         loadingLabel="Reading your recent workouts"
@@ -737,13 +784,7 @@ function RecentWorkouts({
           />
         )}
       </ViewStateSwitch>
-      {/* The recents are the head of the chronology; the whole of it is one
-          link away in every state, because History answers its own empty and
-          error rather than inheriting these. */}
-      <p>
-        <Link to={HISTORY_ROUTE}>{VIEW_HISTORY_LABEL}</Link>
-      </p>
-    </div>
+    </Card>
   )
 }
 
@@ -828,34 +869,37 @@ function FavoriteWorkouts() {
   }
 
   return (
-    <div className="clr-stack clr-stack--tight">
-      {failure !== null && (
-        <p role="alert" style={FAVORITE_FAILURE_STYLE}>
-          <span aria-hidden="true" style={{ display: 'flex' }}>
-            <AlertCircle size={16} />
-          </span>
-          {failure}
-        </p>
-      )}
-
-      <ViewStateSwitch
-        state={state}
-        loadingLabel="Reading your favorites"
-        errorTitle="Your favorites didn’t load"
-        onRetry={query.refetch}
-        empty={<ListMessage title="No favorites yet" message={FAVORITES_EMPTY} />}
-      >
-        {(favorited) => (
-          <FavoriteList
-            entries={favorited}
-            label={FAVORITES_LABEL}
-            onStart={start}
-            onRemove={setConfirming}
-            removingId={removingId}
-          />
+    <>
+      <Card heading={FAVORITES_LABEL}>
+        {failure !== null && (
+          <p role="alert" style={FAVORITE_FAILURE_STYLE}>
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <AlertCircle size={16} />
+            </span>
+            {failure}
+          </p>
         )}
-      </ViewStateSwitch>
 
+        <ViewStateSwitch
+          state={state}
+          loadingLabel="Reading your favorites"
+          errorTitle="Your favorites didn’t load"
+          onRetry={query.refetch}
+          empty={<ListMessage title="No favorites yet" message={FAVORITES_EMPTY} />}
+        >
+          {(favorited) => (
+            <FavoriteList
+              entries={favorited}
+              label={FAVORITES_LABEL}
+              onStart={start}
+              onRemove={setConfirming}
+              removingId={removingId}
+            />
+          )}
+        </ViewStateSwitch>
+      </Card>
+
+      {/* An overlay, not content: it stays outside the card it answers for. */}
       <ConfirmDialog
         open={confirming !== null}
         critical
@@ -870,7 +914,7 @@ function FavoriteWorkouts() {
         Tracked data including completion history and personal bests will be
         lost. The workout itself stays in your history.
       </ConfirmDialog>
-    </div>
+    </>
   )
 }
 
