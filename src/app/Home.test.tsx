@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { act, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -155,8 +155,14 @@ describe('Home', () => {
     await user.click(screen.getByRole('tab', { name: 'Favorites' }))
 
     const favorites = await screen.findByRole('list', { name: 'Favorites' })
-    expect(favorites).toHaveClass('clr-list', 'clr-chamfer')
+    // The card is the one frame: the list inside it is bare rows, never a
+    // second frame of its own.
+    expect(favorites).toHaveClass('clr-list')
+    expect(favorites).not.toHaveClass('clr-chamfer')
     expect(favorites.querySelectorAll(':scope > .clr-list__row')).toHaveLength(1)
+    const card = favorites.closest<HTMLElement>('.clr-card__body')
+    expect(card).not.toBeNull()
+    expect(within(card!).getByRole('heading', { level: 2, name: 'Favorites' })).toHaveClass('label')
 
     await user.click(within(favorites).getByRole('button', { name: 'Start' }))
 
@@ -215,6 +221,180 @@ describe('Home', () => {
     })
     expect(await screen.findByText('Today is marked: Unwell.')).toBeInTheDocument()
     expect(screen.getByText('Rest day saved.')).toBeInTheDocument()
+  })
+})
+
+/**
+ * REQ-018 and REQ-009 on the real route tree: Home's groups are 0.14.3 cards
+ * with their headings inside, they arrive once as one staggered set, and the
+ * quiet ways out are the public TextAction — with nothing from the package's
+ * worked example standing in for a product feature.
+ *
+ * jsdom runs no stylesheet, so this proves structure, classes and semantics;
+ * what the frames look like is the rendered audit's to prove.
+ */
+describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
+  function reduceMotion(reduced: boolean) {
+    vi.spyOn(window, 'matchMedia').mockImplementation(
+      (query: string) =>
+        ({
+          matches: reduced,
+          media: query,
+          onchange: null,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+          addListener: () => {},
+          removeListener: () => {},
+          dispatchEvent: () => false,
+        }) as MediaQueryList,
+    )
+  }
+
+  function populatedHome() {
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: 'b0000004-0000-4000-8000-000000000000',
+          location_id: LOCATION_ID,
+          date: '2026-09-24',
+        }),
+      ],
+    })
+    renderApp(
+      ['/'],
+      signedIn({
+        workout: workout.clients,
+        generation: createFakeGenerationClient(),
+        restDays: createFakeRestDayClient(),
+      }),
+    )
+    return screen.findByRole('button', { name: 'Quick start' })
+  }
+
+  function cardOf(heading: string): HTMLElement {
+    const title = screen.getByRole('heading', { level: 2, name: heading })
+    expect(title).toHaveClass('label')
+    const body = title.closest<HTMLElement>('.clr-card__body')
+    if (body === null) throw new Error(`"${heading}" is not headed inside a card`)
+    return body.closest<HTMLElement>('.clr-card')!
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('heads every group inside its own barred card, and never nests a card', async () => {
+    await populatedHome()
+
+    for (const heading of ['Train today', 'This week', 'Recent workouts']) {
+      const card = cardOf(heading)
+      expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+    }
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+    expect(document.querySelectorAll('.clr-card__bar--lg')).toHaveLength(0)
+
+    // The list is the card's content: bare rows, no second frame.
+    const recents = screen.getByRole('list', { name: 'Recent workouts' })
+    expect(cardOf('Recent workouts')).toContainElement(recents)
+    expect(recents).not.toHaveClass('clr-chamfer')
+  })
+
+  it('keeps the streak, the week and the rest-day sub-group contained in the week card', async () => {
+    await populatedHome()
+
+    const week = cardOf('This week')
+    expect(within(week).getByText(/^Current streak: \d+ days?/)).toBeInTheDocument()
+
+    const strip = within(week).getByRole('list', { name: 'This week' })
+    expect(strip.children).toHaveLength(7)
+    for (const day of Array.from(strip.children)) {
+      expect(day).toHaveClass('clr-chamfer', 'clr-chamfer--sm')
+    }
+
+    // A sub-group is a ruled heading one level under the card's, not a card.
+    const rest = await within(week).findByRole('region', { name: 'Rest day' })
+    expect(within(rest).getByRole('heading', { level: 3, name: 'Rest day' })).toHaveClass('label')
+    expect(rest.querySelector('.clr-card__bar')).toBeNull()
+    expect(within(rest).getByRole('button', { name: 'Mark Rest Day' })).toHaveClass('clr-btn')
+  })
+
+  it('arrives as one staggered set, once, and not again for an inline update', async () => {
+    const user = userEvent.setup()
+    reduceMotion(false)
+    await populatedHome()
+
+    const sets = document.querySelectorAll('.clr-boot')
+    expect(sets).toHaveLength(1)
+    const set = sets[0] as HTMLElement
+    expect(set).toHaveClass('clr-stack')
+    // Train today, This week, and the tabs: the groups are the set's children.
+    expect(set.children).toHaveLength(3)
+    expect(set.children[0]).toContainElement(cardOf('Train today'))
+    expect(set.children[1]).toContainElement(cardOf('This week'))
+    expect(set.children[2]).toContainElement(screen.getByRole('tablist'))
+
+    // jsdom lacks AnimationEvent; React detects its prefixed fallback at import.
+    for (const type of ['animationend', 'webkitAnimationEnd']) {
+      const landed = new Event(type, { bubbles: true })
+      Object.assign(landed, { animationName: 'clr-boot-in' })
+      fireEvent(set.lastElementChild!, landed)
+    }
+    expect(document.querySelectorAll('.clr-boot')).toHaveLength(0)
+
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+    expect(await screen.findByText('No favorites yet')).toBeInTheDocument()
+    expect(document.querySelectorAll('.clr-boot')).toHaveLength(0)
+  })
+
+  it('is in its final state at once under reduced motion', async () => {
+    reduceMotion(true)
+    await populatedHome()
+
+    expect(document.querySelectorAll('.clr-boot')).toHaveLength(0)
+    expect(cardOf('Train today')).toBeVisible()
+  })
+
+  it('uses the public TextAction for the quiet way into History, and frames the rest', async () => {
+    await populatedHome()
+
+    const history = screen.getByRole('link', { name: VIEW_HISTORY_LABEL })
+    expect(history.tagName).toBe('A')
+    expect(history).toHaveClass('clr-text-action')
+    expect(history).toHaveAttribute('href', HISTORY_ROUTE)
+    expect(cardOf('Recent workouts')).toContainElement(history)
+
+    // Primary and secondary actions keep their frames; neither became a link.
+    const generate = screen.getByRole('button', { name: 'Generate workout' })
+    expect(generate).toHaveClass('clr-btn')
+    expect(generate).not.toHaveClass('clr-text-action')
+    expect(generate.closest('.clr-footer')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Quick start' })).toHaveClass('clr-btn')
+    expect(cardOf('Train today')).toContainElement(
+      screen.getByRole('button', { name: 'Quick start' }),
+    )
+  })
+
+  it('keeps the tabs, and adds nothing from the package’s worked example', async () => {
+    await populatedHome()
+
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'Recent workouts',
+      'Favorites',
+    ])
+    expect(screen.getByRole('tablist').closest('.clr-band')).not.toBeNull()
+    expect(screen.getByRole('tablist').closest('.clr-card')).toBeNull()
+
+    for (const placeholder of [
+      /view all/i,
+      /on pace/i,
+      /week \d/i,
+      /no workout scheduled/i,
+      /\d+ \/ 7 complete/i,
+      /paused \d+ minutes ago/i,
+    ]) {
+      expect(screen.queryByText(placeholder)).not.toBeInTheDocument()
+    }
   })
 })
 
@@ -562,6 +742,7 @@ describe('Home’s Quick Start uses the standing Goal (REQ-010)', () => {
     expect(alert).toHaveTextContent(reason)
     const link = within(alert).getByRole('link', { name: QUICK_START_SETTINGS_LABEL })
     expect(link).toHaveAttribute('href', SETTINGS_ROUTE)
+    expect(link).toHaveClass('clr-text-action')
     expect(generation.calls).toEqual([])
     expect(screen.getByRole('heading', { level: 1, name: HOME_HEADING })).toBeInTheDocument()
 
