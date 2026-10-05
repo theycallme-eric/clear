@@ -8,13 +8,28 @@
  * the screen's own factual `EmptyState`, and error is an alert with the
  * `AppError` message, its requestId when present, and a retry action.
  *
+ * Containment: `ScanLoader` and `EmptyState` are cards themselves, and a card
+ * never holds another card. Standalone, loading and error render those public
+ * components. Inside a `Card` they render the same region as content of that
+ * card — the card keeps its heading and frame, and the state adds the scan,
+ * one line ending in the cursor, or the failure and its action.
+ *
  * Convention: `docs/conventions/state-contract.md`.
  */
 import type { CSSProperties, ReactNode } from 'react'
 
-import { AlertTriangle, Button, EmptyState, ScanLoader } from '../design-system/index'
+import {
+  AlertTriangle,
+  Button,
+  EmptyState,
+  Progress,
+  ScanLoader,
+} from '../design-system/index'
 import type { AppError } from '../state/errors'
 import { useSlowThreshold, type ViewState } from '../state/view-state'
+
+import { useInsideCard } from './card-context'
+import { useInterfaceLoop } from './motion'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Loading
@@ -26,7 +41,10 @@ export const SLOW_LOADING_LABEL = 'Taking longer than usual'
 export interface LoadingViewProps {
   /** Says what is happening: "Generating session", "Reading history". */
   label: ReactNode
-  /** Decorative boot rows, passed through to ScanLoader. */
+  /**
+   * Decorative boot rows, passed through to ScanLoader. Inside a card the
+   * region is one cursor line, so they are not rendered there.
+   */
   lines?: ReactNode[]
   /** Supply with `max` only when progress is real. */
   value?: number
@@ -39,6 +57,9 @@ export interface LoadingViewProps {
  * The loading state of the contract. Renders a `ScanLoader` (there is no
  * spinner in this system); past the threshold it switches to the honest
  * `slow` status and says so, so a slow operation never appears frozen.
+ *
+ * Every loading region claims the view's one loop: the first keeps its sweep
+ * and the rest are stilled, each still `aria-busy` with its own label.
  */
 export function LoadingView({
   label,
@@ -48,14 +69,44 @@ export function LoadingView({
   thresholdMs,
 }: LoadingViewProps) {
   const slow = useSlowThreshold(thresholdMs)
+  const insideCard = useInsideCard()
+  const loop = useInterfaceLoop('busy')
+  const shown = slow ? SLOW_LOADING_LABEL : label
+
+  if (insideCard) {
+    const determinate = typeof value === 'number' && typeof max === 'number' && max > 0
+
+    return (
+      <div
+        className="clr-scan clr-stack clr-stack--tight"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+        {...loop}
+      >
+        <span className="clr-scan-band" aria-hidden="true" />
+        <p className="label clr-cursor" style={{ margin: 0 }}>
+          {shown}
+        </p>
+        {determinate ? (
+          <Progress
+            value={value}
+            max={max}
+            aria-label={typeof shown === 'string' ? shown : undefined}
+          />
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <ScanLoader
-      label={slow ? SLOW_LOADING_LABEL : label}
+      label={shown}
       status={slow ? 'slow' : 'ok'}
       lines={lines}
       value={value}
       max={max}
+      {...loop}
     />
   )
 }
@@ -74,10 +125,19 @@ export interface ErrorViewProps {
   onRetry?: () => void
 }
 
+const REQUEST_ID_STYLE: CSSProperties = {
+  display: 'block',
+  marginTop: 'var(--spacing-200)',
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-xs-size)',
+  letterSpacing: 'var(--tracking-data)',
+}
+
 /**
- * Whole-screen failure. Severity carries a glyph, not just colour; the
- * failure frame speaks urgency on both layers (surface and border); the
- * requestId, when present, is shown for support correlation.
+ * A failed view. Severity carries a glyph, not just colour; the failure
+ * glitches once on arrival; the requestId, when present, is shown for support
+ * correlation. Standalone the failure frame speaks urgency on both layers
+ * (surface and border); inside a card it is that card's content.
  */
 export function ErrorView({
   error,
@@ -85,42 +145,41 @@ export function ErrorView({
   actionLabel = 'Retry',
   onRetry,
 }: ErrorViewProps) {
+  const insideCard = useInsideCard()
+
+  const icon = (
+    <span style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}>
+      <AlertTriangle />
+    </span>
+  )
+  const message = (
+    <>
+      {error.message}
+      {error.requestId && <span style={REQUEST_ID_STYLE}>{error.requestId}</span>}
+    </>
+  )
+
   return (
-    <div role="alert" className="clr-stack clr-stack--tight">
-      <EmptyState
-        icon={
-          <span
-            style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-          >
-            <AlertTriangle />
-          </span>
-        }
-        title={title}
-        message={
-          <>
-            {error.message}
-            {error.requestId && (
-              <span
-                style={{
-                  display: 'block',
-                  marginTop: 'var(--spacing-200)',
-                  fontFamily: 'var(--font-data)',
-                  fontSize: 'var(--label-xs-size)',
-                  letterSpacing: 'var(--tracking-data)',
-                }}
-              >
-                {error.requestId}
-              </span>
-            )}
-          </>
-        }
-        style={
-          {
-            '--surface': 'var(--surface-toast-negative)',
-            '--brd': 'var(--border-toast-negative)',
-          } as CSSProperties
-        }
-      />
+    <div role="alert" className="clr-stack clr-stack--tight clr-glitch">
+      {insideCard ? (
+        <>
+          {icon}
+          <p style={{ margin: 0 }}>{title}</p>
+          <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{message}</p>
+        </>
+      ) : (
+        <EmptyState
+          icon={icon}
+          title={title}
+          message={message}
+          style={
+            {
+              '--surface': 'var(--surface-toast-negative)',
+              '--brd': 'var(--border-toast-negative)',
+            } as CSSProperties
+          }
+        />
+      )}
       {onRetry === undefined ? null : (
         <Button variant="secondary" onClick={onRetry}>
           {actionLabel}
