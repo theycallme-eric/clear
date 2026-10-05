@@ -58,6 +58,7 @@ import { showErrorToast, toastQueue } from '../state/toasts'
 import { SLOW_THRESHOLD_MS } from '../state/view-state'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { ActionRow, PhoneFooter } from '../ui/composition'
+import { useInterfaceLoop } from '../ui/motion'
 import { screenAtmosphere } from './atmosphere'
 import { Screen } from './Screen'
 
@@ -111,6 +112,10 @@ export function GenerationLoading({
 }: GenerationLoadingProps) {
   const slow = useSlowAttempt(state, slowThresholdMs)
   const view = generationLoadingView({ state, stage, slow })
+
+  // A run in flight is a real wait and claims the view's one loop; a failed
+  // one is answered, not waited on, and gives the loop up.
+  const loop = useInterfaceLoop('busy', view.status !== 'failed')
 
   // The screen carries the level while it is up and puts the route's own back
   // on the way out. `RootLayout` re-resolves from the pathname whenever that
@@ -184,6 +189,7 @@ export function GenerationLoading({
             }
             status={view.status}
             lines={[...view.lines]}
+            {...loop}
           />
         </div>
       </Screen>

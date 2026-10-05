@@ -274,6 +274,40 @@ describe('GEN-05 · a failure hands off to pattern 3', () => {
     expect(screen.getByRole('status')).toHaveAttribute('aria-busy', 'true')
   })
 
+  it('glitches once on failure, gives the loop up, and scans again on retry', async () => {
+    const user = userEvent.setup()
+    const client = createFakeGenerationClient()
+    mountJourney(client)
+
+    await user.click(screen.getByRole('button', { name: GENERATE }))
+
+    // The screen's own card: ScanLoader is not wrapped in another one.
+    const running = screen.getByRole('status')
+    expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(running.closest('.clr-card')).not.toBeNull()
+    expect(running).toHaveAttribute('data-loop', 'run')
+    expect(running).not.toHaveClass('clr-glitch')
+
+    await act(async () => {
+      client.fail(makeGenerationError())
+    })
+
+    const failed = screen.getByRole('status')
+    expect(failed).toHaveClass('clr-glitch')
+    expect(failed).not.toHaveClass('clr-glitch--loop')
+    expect(failed).toHaveAttribute('data-loop', 'still')
+    expect(failed).toHaveAttribute('aria-busy', 'false')
+
+    const alert = await screen.findByRole('alert')
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+
+    const retried = screen.getByRole('status')
+    expect(retried).toHaveTextContent(GENERATION_LOADING_TITLE)
+    expect(retried).toHaveAttribute('aria-busy', 'true')
+    expect(retried).toHaveAttribute('data-loop', 'run')
+    expect(retried).not.toHaveClass('clr-glitch')
+  })
+
   it('offers the request instead of a retry when a retry cannot work', async () => {
     const user = userEvent.setup()
     const client = createFakeGenerationClient()
