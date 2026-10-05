@@ -107,7 +107,10 @@ export function ActiveSessionPrompt() {
             <Button variant="primary" onClick={resume}>
               Resume workout
             </Button>
-            <Button variant="critical" loading={abandoning} onClick={() => setConfirming(true)}>
+            {/* Secondary, so Resume is the row's one main action: the package
+                row then keeps it on top on a phone and sets it on the right
+                when wider. The critical button is the confirm's. */}
+            <Button variant="secondary" loading={abandoning} onClick={() => setConfirming(true)}>
               Abandon it
             </Button>
           </>
