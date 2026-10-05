@@ -81,6 +81,7 @@ import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
 import { MoodReading } from '../ui/mood'
 import { Select } from '../ui/select'
+import { TextAction } from '../ui/text-action'
 import {
   LoggedSetTable,
   SessionProvenance,
@@ -1061,6 +1062,18 @@ const LOCATIONS = [
 
 const UNCHOSEN = { value: '', label: 'Choose a location' }
 
+function TextActionButton() {
+  return <TextAction>View all</TextAction>
+}
+
+function TextActionBlock() {
+  return <TextAction block>Skip for now</TextAction>
+}
+
+function TextActionDisabled() {
+  return <TextAction disabled>View all</TextAction>
+}
+
 function SelectDefault() {
   const [value, setValue] = useState('')
 
@@ -2039,6 +2052,22 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         note: 'Native optgroup children instead of the flat option list.',
         Render: SelectGrouped,
       },
+    ],
+  },
+  {
+    component: 'TextAction',
+    requirement: 'DS-04b',
+    module: 'src/ui/text-action.tsx',
+    summary:
+      'The public quiet action — label, chevron, no frame — plus a routed form for in-app destinations. For quiet non-destructive actions only.',
+    specimens: [
+      { state: 'button', Render: TextActionButton },
+      {
+        state: 'block',
+        note: 'Full width and centred, for under a primary in a footer.',
+        Render: TextActionBlock,
+      },
+      { state: 'disabled', Render: TextActionDisabled },
     ],
   },
   {
