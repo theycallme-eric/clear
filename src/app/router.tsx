@@ -5,6 +5,7 @@ import {
   type RouteObject,
 } from 'react-router-dom'
 
+import type { RouteMotion } from '../ui/motion'
 import { AppChrome } from './AppChrome'
 import { Generate } from './Generate'
 import { ONBOARDING_ROUTE, OnboardingOnly, Protected, PublicOnly } from './guards'
@@ -41,10 +42,25 @@ const DevGallery = import.meta.env.DEV
     }))
   : null
 
+/**
+ * How each route is arrived at (IA.md, each screen's Motion line). `AppChrome`
+ * reads this off the matched route and gives the screen the shipped
+ * `.route-enter-*` for the direction it resolves to.
+ *
+ * `depth` is the route's place in the flow — arriving somewhere shallower is
+ * going back, whatever kind of navigation carried it. The workout is a focus
+ * mode, entered upward and left downward; a review is handed up from
+ * generation; the gallery and the fallback sit outside the flow and cut in.
+ */
+function motion(route: RouteMotion): { motion: RouteMotion } {
+  return { motion: route }
+}
+
 const devRoutes: RouteObject[] = DevGallery
   ? [
       {
         path: 'dev/gallery/*',
+        handle: motion({ depth: 0, arrive: 'fade' }),
         // A `React.lazy` element rather than a route-level `lazy`: the route
         // tree stays synchronous, so a gallery URL gets its atmosphere and its
         // shell on the first paint and only the gallery's own contents wait for
@@ -72,6 +88,7 @@ export const routes: RouteObject[] = [
           // ask, and a reader can see the whole guard map in one place.
           {
             path: '/',
+            handle: motion({ depth: 3 }),
             element: (
               <Protected title="CLEAR">
                 <Home />
@@ -83,6 +100,7 @@ export const routes: RouteObject[] = [
           // onboarded one Home, so the wizard is strictly first-run.
           {
             path: ONBOARDING_ROUTE,
+            handle: motion({ depth: 2 }),
             element: (
               <OnboardingOnly title={ONBOARDING_TITLE}>
                 <Onboarding />
@@ -94,6 +112,7 @@ export const routes: RouteObject[] = [
           // rows, and `Workout` redirects Home when there is not.
           {
             path: '/workout',
+            handle: motion({ depth: 6, focus: true }),
             element: (
               <Protected title="Workout">
                 <Workout />
@@ -106,6 +125,7 @@ export const routes: RouteObject[] = [
           // the way to add one when there is none.
           {
             path: '/generate',
+            handle: motion({ depth: 4 }),
             element: (
               <Protected title="Generate workout">
                 <Generate />
@@ -120,6 +140,7 @@ export const routes: RouteObject[] = [
           // and a redirect would bounce between the two.
           {
             path: '/review',
+            handle: motion({ depth: 5, arrive: 'up' }),
             element: (
               <Protected title="Review">
                 <ReviewRoute />
@@ -130,6 +151,7 @@ export const routes: RouteObject[] = [
           // production screen uses. In from Home's recents, out to Home.
           {
             path: '/history',
+            handle: motion({ depth: 4 }),
             element: (
               <Protected title="History">
                 <History />
@@ -143,6 +165,7 @@ export const routes: RouteObject[] = [
           // error state rather than the route with a redirect.
           {
             path: '/history/:id',
+            handle: motion({ depth: 5 }),
             element: (
               <Protected title="Workout">
                 <SessionDetail />
@@ -151,6 +174,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: '/welcome',
+            handle: motion({ depth: 0 }),
             element: (
               <PublicOnly title="Welcome">
                 <Welcome />
@@ -163,6 +187,7 @@ export const routes: RouteObject[] = [
           // when there is none (IA.md §1, state-dependent guards).
           {
             path: '/summary',
+            handle: motion({ depth: 4 }),
             element: (
               <Protected title="Summary">
                 <Summary />
@@ -171,6 +196,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: '/login',
+            handle: motion({ depth: 1 }),
             element: (
               <PublicOnly title="Sign in">
                 <Login />
@@ -182,6 +208,7 @@ export const routes: RouteObject[] = [
           // them is routed until the screen behind it exists.
           {
             path: '/settings',
+            handle: motion({ depth: 4 }),
             element: (
               <Protected title="Settings">
                 <Settings />
@@ -190,6 +217,7 @@ export const routes: RouteObject[] = [
           },
           {
             path: '/settings/locations',
+            handle: motion({ depth: 5 }),
             element: (
               <Protected title="Places and equipment">
                 <LocationSettings />
@@ -197,7 +225,11 @@ export const routes: RouteObject[] = [
             ),
           },
           ...devRoutes,
-          { path: '*', element: <NotFound /> },
+          {
+            path: '*',
+            handle: motion({ depth: 0, arrive: 'fade' }),
+            element: <NotFound />,
+          },
         ],
       },
     ],
