@@ -4,9 +4,9 @@
  * A sheet and a dialog are the same interaction differing only in geometry,
  * and CLEAR bans rounded corners, so a sheet lost its signature anyway
  * (decided 2026-08-25, `docs/specs/design/ATOMIC.md` §12). What a sheet was
- * really offering was arrival, and that comes from `AppDialog`'s motion
- * instead: the frame traces itself on, the contents materialize, the backdrop
- * hard-cuts, and dismissal decays through `.clr-phosphor-out`.
+ * really offering was arrival, and that is the 0.14.3 `Dialog`'s own: the
+ * panel phosphors in over a four-step backdrop fade, and dismissal reverses
+ * both before the platform close.
  *
  * `ConfirmDialog` is a decision the user must take before anything continues;
  * `ErrorDialog` is the blocking third of the `AppError` contract — the
@@ -41,8 +41,11 @@ export interface ConfirmDialogProps {
 /**
  * A blocking decision. The cancel action comes first in DOM order because
  * `showModal()` focuses the first focusable child: the safe choice is the one
- * a stray Enter takes. The backdrop is never a dismissal — the shipped
- * `Dialog` defaults `dismissOnBackdrop` false for exactly this case.
+ * a stray Enter takes. The confirm is the row's one main action, so the
+ * shipped `.clr-actions` lifts it to the top on a phone and sets it on the
+ * right of the wider row without moving focus. The backdrop is never a
+ * dismissal — the shipped `Dialog` defaults `dismissOnBackdrop` false for
+ * exactly this case.
  */
 export function ConfirmDialog({
   open,

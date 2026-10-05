@@ -8,7 +8,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import { act, fireEvent, screen } from '@testing-library/react'
+import { act, fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -18,6 +18,10 @@ import { ConfirmDialog, ErrorDialog } from './blocking-dialog'
 
 afterEach(() => vi.useRealTimers())
 
+/** The package's "main action" selector, as shipped in `.clr-actions`. */
+const MAIN_ACTION =
+  '.clr-actions > :is(.clr-btn--primary, .clr-btn--critical, [data-primary], :has(> .clr-btn--primary, > .clr-btn--critical))'
+
 function getDialog(): HTMLDialogElement {
   const dialog = document.querySelector('dialog')
   if (!dialog) throw new Error('no dialog rendered')
@@ -25,7 +29,7 @@ function getDialog(): HTMLDialogElement {
 }
 
 describe('ConfirmDialog — a confirmation is a Dialog, not a sheet', () => {
-  it('renders a native modal dialog wearing the composed entrance', () => {
+  it('renders a native modal dialog on the package arrival, with no app-owned motion', () => {
     renderWithProviders(
       <ConfirmDialog
         open
@@ -41,10 +45,36 @@ describe('ConfirmDialog — a confirmation is a Dialog, not a sheet', () => {
     const dialog = screen.getByRole('dialog', { name: 'Discard workout' })
     expect(dialog.tagName).toBe('DIALOG')
     expect(getDialog().open).toBe(true)
-    expect(dialog).toHaveClass('clr-app-dialog-enter')
-    // A dialog constructs itself; only a toast phosphors in.
-    expect(dialog).not.toHaveClass('clr-phosphor-in')
-    expect(dialog.querySelector('.clr-phosphor-in')).toBeNull()
+    expect(dialog.className).toBe('clr-dialog')
+    expect(within(dialog).getByRole('heading', { level: 2, name: 'Discard workout' })).toBeInTheDocument()
+  })
+
+  it.each([
+    { critical: false, main: 'clr-btn--primary' },
+    { critical: true, main: 'clr-btn--critical' },
+  ])('gives the package one main action to reorder (critical: $critical)', ({ critical, main }) => {
+    renderWithProviders(
+      <ConfirmDialog
+        open
+        title="Delete workout"
+        confirmLabel="Delete"
+        critical={critical}
+        onConfirm={() => {}}
+        onCancel={() => {}}
+      >
+        Body
+      </ConfirmDialog>,
+    )
+
+    // Cancel stays first for focus and is never the main action; the confirm
+    // is the only one the row lifts to the top on a phone and sets on the
+    // right from 560px.
+    const row = getDialog().querySelector<HTMLElement>('.clr-actions')
+    const [cancel, confirm] = within(row as HTMLElement).getAllByRole('button')
+    expect(cancel).toHaveTextContent('Cancel')
+    expect(cancel).not.toHaveClass('clr-btn--primary', 'clr-btn--critical')
+    expect(confirm).toHaveClass(main)
+    expect(getDialog().querySelectorAll(MAIN_ACTION)).toHaveLength(1)
   })
 
   it('puts the safe action first in DOM order, where showModal lands focus', () => {
@@ -149,6 +179,34 @@ describe('ErrorDialog — a blocking AppError', () => {
       .getAllByRole('button')
       .filter((button) => button.textContent === 'Retry')
     expect(retries).toHaveLength(1)
+  })
+
+  it('keeps Close first for focus and Retry as the one main action', () => {
+    renderWithProviders(
+      <ErrorDialog open error={error} onRetry={() => {}} onDismiss={() => {}} />,
+    )
+
+    const labels = screen.getAllByRole('button').map((button) => button.textContent)
+    expect(labels).toEqual(['Close', 'Retry'])
+    const main = getDialog().querySelectorAll(MAIN_ACTION)
+    expect(main).toHaveLength(1)
+    expect(main[0]).toHaveTextContent('Retry')
+  })
+
+  it('Esc reports one dismissal and never a retry', () => {
+    vi.useFakeTimers()
+    const onRetry = vi.fn()
+    const onDismiss = vi.fn()
+    renderWithProviders(
+      <ErrorDialog open error={error} onRetry={onRetry} onDismiss={onDismiss} />,
+    )
+
+    fireEvent(getDialog(), new Event('cancel', { cancelable: true }))
+    act(() => vi.advanceTimersByTime(200))
+
+    expect(getDialog().open).toBe(false)
+    expect(onDismiss).toHaveBeenCalledTimes(1)
+    expect(onRetry).not.toHaveBeenCalled()
   })
 
   it('carries severity as a glyph, never colour alone', () => {
