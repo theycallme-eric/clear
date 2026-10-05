@@ -4,7 +4,6 @@ import { resolve } from 'node:path'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
 import {
@@ -16,9 +15,9 @@ import {
   IconButton,
   Progress,
   RadioButton,
+  TextAction,
 } from '../design-system/index'
 import { CheckboxGroup } from './checkbox-group'
-import { TextAction } from './text-action'
 
 const foundation = readFileSync(
   resolve(import.meta.dirname, '../design-system/css/foundation.css'),
@@ -188,13 +187,13 @@ describe('selector, progress and header integration through the public API', () 
 describe('framed actions keep their hierarchy beside the quiet action', () => {
   it('primary, destructive and icon-only stay framed; only the quiet action is frameless', () => {
     render(
-      <MemoryRouter>
+      <>
         <Button variant="primary">Start</Button>
         <Button variant="critical">Delete place</Button>
         <IconButton label="Back" icon={<ArrowLeft />} />
         <TextAction onClick={() => undefined}>Skip for now</TextAction>
-        <TextAction to="/history">View history</TextAction>
-      </MemoryRouter>,
+        <TextAction href="/history">View history</TextAction>
+      </>,
     )
 
     const primary = screen.getByRole('button', { name: 'Start' })

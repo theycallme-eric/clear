@@ -6,11 +6,10 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 
-import { Input } from '../design-system/index'
+import { Input, TextAction } from '../design-system/index'
 import { renderWithProviders } from '../test/render'
 import { focusFirstInvalid, useInvalidFocus } from './formFocus'
 import { Select } from './select'
-import { TextAction } from './text-action'
 
 describe('focusFirstInvalid (CORE-05, export pattern 1)', () => {
   it('focuses the first control marked aria-invalid, in DOM order', () => {
@@ -284,7 +283,7 @@ describe('the shared helper against the 0.14.3 framed fields', () => {
       <form aria-label="Sample">
         <Input label="Reps" />
         <TextAction onClick={() => undefined}>Skip for now</TextAction>
-        <TextAction to="/history">View history</TextAction>
+        <TextAction href="/history">View history</TextAction>
       </form>,
     )
 
