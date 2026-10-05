@@ -3,10 +3,11 @@
  *
  * IA.md §4: atmosphere `full`, guard `authed + not onboarded`, in from the
  * first verified login, out to `/` on the atomic commit. Composition is
- * 0.9.7's direct Form Screen — the shell and its atmosphere are `RootLayout`'s,
- * the header is `Screen`'s single `<h1>`, the question is direct content, and
- * navigation is in the measured pinned footer. The confirmation alone is a
- * framed list because it is a related collection rather than an input panel.
+ * 0.14.3's contained form — the shell and its atmosphere are `RootLayout`'s,
+ * the header is `Screen`'s single `<h1>` and the only text on the atmosphere,
+ * each step is one `Card` holding its own heading, grouped controls and
+ * validation line, and navigation is in the measured pinned footer. The
+ * confirmation's list drops its own frame because the card already is one.
  *
  * Everything about the wizard as data is `state/onboarding.ts`: the five steps,
  * the vocabularies, the reducer and `toAnswers`. This file renders that and owns
@@ -67,9 +68,9 @@ import {
 import { useQueryClient } from '../state/query'
 import type { Location } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey, useUserData } from '../state/user-queries'
+import { Card } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { ActionRow, ListFrame, ListRow, PhoneFooter } from '../ui/composition'
-import { Heading } from '../ui/Heading'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { AUTHENTICATED_HOME } from './guards'
 import { Screen } from './Screen'
@@ -110,7 +111,11 @@ export function Onboarding() {
   const answers = toAnswers(draft)
   // The reducer answers the same object for an edit that changes nothing, so
   // identity is exactly "these are still the answers that were refused".
-  const refusal = commit.status === 'refused' && commit.draft === draft ? commit.message : null
+  const refusal =
+    commit.status === 'refused' && commit.draft === draft && step === 'confirm'
+      ? commit.message
+      : null
+  const failed = commit.status === 'failed' && step === 'confirm'
 
   function go(to: number, towards: Direction) {
     setDirection(towards)
@@ -203,31 +208,31 @@ export function Onboarding() {
           label={`Step ${stepNumber(step)} of ${ONBOARDING_STEPS.length}`}
         />
 
-        {commit.status === 'failed' && step === 'confirm' && (
-          <>
-            <ErrorView
-              error={commit.error}
-              title={COMMIT_FAILED_TITLE}
-            />
-            <p>{COMMIT_FAILED_MESSAGE}</p>
-          </>
-        )}
-
         <div
           // Keyed so each step enters on its own; never a full-screen replay.
           key={step}
           className={direction === 'forward' ? 'route-enter-forward' : 'route-enter-back'}
         >
-          <div className="clr-stack">
-            <Heading>{STEP_TITLES[step]}</Heading>
-            <StepView step={step} draft={draft} dispatch={dispatch} />
-            {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
-            {refusal !== null && step === 'confirm' && (
-              <p role="alert" style={{ margin: 0 }}>
-                {refusal}
-              </p>
-            )}
-          </div>
+          <Card
+            heading={STEP_TITLES[step]}
+            role={failed || refusal !== null ? 'urgency' : undefined}
+          >
+            <div className="clr-stack">
+              {commit.status === 'failed' && failed && (
+                <>
+                  <ErrorView error={commit.error} title={COMMIT_FAILED_TITLE} />
+                  <p style={{ margin: 0 }}>{COMMIT_FAILED_MESSAGE}</p>
+                </>
+              )}
+              <StepView step={step} draft={draft} dispatch={dispatch} />
+              {blocked !== null && <p style={{ margin: 0 }}>{blocked}</p>}
+              {refusal !== null && (
+                <p role="alert" style={{ margin: 0 }}>
+                  {refusal}
+                </p>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
     </Screen>
