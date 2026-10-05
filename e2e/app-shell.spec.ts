@@ -72,9 +72,8 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
   const boxes = await page.evaluate(() => {
     const top = (selector: string) =>
       document.querySelector(selector)?.getBoundingClientRect().top ?? -1
-    const lastAction = document.querySelector(
-      'main .clr-footer button:last-of-type',
-    )
+    const actions = document.querySelectorAll('main .clr-footer button')
+    const lastAction = actions.item(actions.length - 1)
     return {
       heading: top('main h1'),
       card: top('main .clr-card'),
@@ -87,6 +86,7 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
   expect(boxes.heading).toBeGreaterThanOrEqual(0)
   expect(boxes.card).toBeGreaterThan(boxes.heading)
   expect(boxes.foot).toBeGreaterThan(boxes.card)
+  expect(boxes.lastActionBottom).toBeGreaterThan(0)
   expect(boxes.lastActionBottom).toBeLessThanOrEqual(boxes.viewport)
   expect(boxes.overflow).toBeLessThanOrEqual(0)
   await page.screenshot({ path: testInfo.outputPath('vibe-d-welcome.png') })
