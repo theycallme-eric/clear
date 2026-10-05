@@ -228,7 +228,7 @@ function Debrief({ completed }: { completed: CompletedSession }) {
           </MetricGrid>
           {/* FAV-01 remains distinct from the result readouts: it is an action,
               not a statistic, and it keeps its one-tap behavior. */}
-          <Card barWidth="md">
+          <Card>
             <FavoriteToggle sessionId={session.id} />
           </Card>
         </div>

@@ -139,7 +139,7 @@ function CardBody() {
 
 function CardDefault() {
   return (
-    <Card barWidth="md">
+    <Card>
       <CardBody />
     </Card>
   )
@@ -147,7 +147,7 @@ function CardDefault() {
 
 function CardWideBar() {
   return (
-    <Card barWidth="lg">
+    <Card>
       <CardBody />
     </Card>
   )

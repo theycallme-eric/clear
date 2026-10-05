@@ -462,7 +462,7 @@ function ReviewSectionCard({
   ...suggestion
 }: { section: ReviewSectionView } & SuggestionProps) {
   return (
-    <Card barWidth="md">
+    <Card>
       <CollapsibleSection
         // A plain label rather than a `Heading`: the trigger *is* a button, and
         // a heading nested inside one is read as part of the control's name
