@@ -385,7 +385,8 @@ for (const skin of ['clear', 'vapour', 'signal', 'mono'] as const) {
         atmosphereMarkers: document.querySelectorAll(
           '[data-atmosphere]:not([data-atmosphere="full"])',
         ).length,
-        cardGround: token('--card-ground-alpha'),
+        // CSS minification may spell 0.7 as .7; the contract is numeric opacity.
+        cardGround: Number(token('--card-ground-alpha')),
         emitNear: token('--emit-near'),
         emitFar: token('--emit-far'),
         glowSpread: token('--glow-spread'),
@@ -410,7 +411,7 @@ for (const skin of ['clear', 'vapour', 'signal', 'mono'] as const) {
     expect(rendered.skin).toBe(skin)
     expect(rendered.atmosphereMarkers).toBe(0)
     expect(rendered).toMatchObject({
-      cardGround: '0.7',
+      cardGround: 0.7,
       emitNear: '1.5px',
       emitFar: '5px',
       glowSpread: '6px',
