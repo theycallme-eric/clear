@@ -2,9 +2,17 @@
  * DS-05 acceptance, host half: one root host renders at most one toast and
  * queues later messages; removal waits for `.clr-phosphor-out` when the
  * animation runs and never waits when it cannot; dismissal is a keyboard
- * reachable button that steals no focus; only `negative` announces
- * assertively (`role="alert"`) — a success stays a polite `status`.
+ * reachable button that steals no focus and hands focus back to the action it
+ * came from; only `negative` announces assertively (`role="alert"`) — a
+ * success stays a polite `status`.
+ *
+ * Placement is the 0.14.3 overlay contract, not the retired 0.9.7 VIBE-D
+ * footer-clearance geometry: a toast is a temporary, dismissable overlay that
+ * may cover the footer action and never reserves space for itself.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
 import { act, screen, waitFor } from '@testing-library/react'
 import { fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -239,38 +247,204 @@ describe('announcement severity', () => {
   })
 })
 
-describe('pinned action clearance', () => {
-  it('places a toast above the measured screen footer', () => {
-    const queue = createToastQueue()
-    const { container } = renderWithProviders(
-      <>
-        <main>
-          <div className="clr-scroll-region__foot" data-testid="pinned-footer" />
-        </main>
-        <ToastHost queue={queue} />
-      </>,
+/** jsdom runs no stylesheet, so the package's own rules are read as shipped. */
+function vendored(path: string) {
+  return readFileSync(resolve(process.cwd(), 'src/design-system', path), 'utf8')
+}
+
+function renderOverPinnedAction(queue: ToastQueue) {
+  const view = renderWithProviders(
+    <>
+      <main>
+        <div className="clr-scroll-region__foot" data-testid="pinned-footer">
+          <button type="button">Start session</button>
+        </div>
+      </main>
+      <ToastHost queue={queue} />
+    </>,
+  )
+  // A footer the 0.9.7 host would have measured and lifted the toast above.
+  vi.spyOn(screen.getByTestId('pinned-footer'), 'getBoundingClientRect').mockReturnValue({
+    x: 0,
+    y: 680,
+    top: 680,
+    right: 800,
+    bottom: 760,
+    left: 0,
+    width: 800,
+    height: 80,
+    toJSON: () => ({}),
+  })
+  return view
+}
+
+describe('0.14.3 overlay placement', () => {
+  it('the package rules a toast a temporary overlay that may cover the footer action', () => {
+    expect(vendored('README.md')).toMatch(
+      /\*\*Overlay:\*\*[^\n]*`Toast`[^\n]*A toast may cover the footer action, because it's temporary and dismissable\./,
     )
-    const footer = screen.getByTestId('pinned-footer')
-    vi.spyOn(footer, 'getBoundingClientRect').mockReturnValue({
-      x: 0,
-      y: 680,
-      top: 680,
-      right: 800,
-      bottom: 760,
-      left: 0,
-      width: 800,
-      height: 80,
-      toJSON: () => ({}),
-    })
+  })
+
+  it('sits at one token offset whatever the screen has pinned beneath it', () => {
+    const queue = createToastQueue()
+    const { container } = renderOverPinnedAction(queue)
 
     act(() => {
       queue.show({ variant: 'negative', message: 'Sync failed.' })
     })
 
-    expect(container.querySelector('[data-clear-toast-host]')).toHaveStyle({
-      bottom: 'calc(88px + var(--spacing-300))',
-      zIndex: '3',
+    const host = container.querySelector<HTMLElement>('[data-clear-toast-host]')
+    expect(host).toHaveStyle({ position: 'fixed', zIndex: '3' })
+    // No measured footer inset: the retired clearance wrote a pixel calc here.
+    expect(host?.style.bottom).toBe('var(--spacing-500)')
+
+    // A resize does not re-measure the footer either.
+    act(() => {
+      window.dispatchEvent(new Event('resize'))
     })
+    expect(host?.style.bottom).toBe('var(--spacing-500)')
+  })
+
+  it('adds no permanent obstruction: nothing stays mounted once the toast is gone', () => {
+    const queue = createToastQueue()
+    const { container } = renderOverPinnedAction(queue)
+    expect(container.querySelector('[data-clear-toast-host]')).toBeNull()
+
+    let id = 0
+    act(() => {
+      id = queue.show({ variant: 'info', message: 'Saved locally' })
+    })
+    expect(container.querySelector('[data-clear-toast-host]')).not.toBeNull()
+    // The covered action is never disabled, hidden or made inert by the overlay.
+    const action = screen.getByRole('button', { name: 'Start session' })
+    expect(action).toBeEnabled()
+    expect(action.closest('[inert], [aria-hidden="true"]')).toBeNull()
+
+    act(() => queue.dismiss(id))
+    expect(container.querySelector('[data-clear-toast-host]')).toBeNull()
+  })
+})
+
+describe('phosphor arrival and decay', () => {
+  it('arrives on the package phosphor class and leaves on its decay', () => {
+    vi.useFakeTimers()
+    const queue = createToastQueue()
+    renderHost(queue)
+
+    act(() => {
+      queue.show({ variant: 'info', message: 'Saved locally' })
+    })
+    const toast = screen.getByRole('status')
+    expect(toast).toHaveClass('clr-phosphor-in')
+    expect(toast).not.toHaveClass('clr-phosphor-out')
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
+    expect(toast).toHaveClass('clr-phosphor-out')
+    expect(toast).not.toHaveClass('clr-phosphor-in')
+  })
+
+  it('the package defines both phases and silences them under reduced motion', () => {
+    const css = vendored('css/motion.css')
+    expect(css).toMatch(/@keyframes clr-phosphor-in\b/)
+    expect(css).toMatch(/@keyframes clr-phosphor-out\b/)
+    expect(css).toMatch(/\.clr-phosphor-in\s*\{[^}]*animation:\s*clr-phosphor-in\b/)
+    expect(css).toMatch(/\.clr-phosphor-out\s*\{[^}]*animation:\s*clr-phosphor-out\b/)
+    const reduced = css.slice(css.indexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(reduced).toMatch(/\.clr-phosphor-out, \.clr-phosphor-in\b/)
+  })
+})
+
+describe('keyboard dismissal returns to the action', () => {
+  it('tabbing from the covered action into the toast and dismissing lands back on it', async () => {
+    const user = userEvent.setup()
+    const queue = createToastQueue()
+    renderOverPinnedAction(queue)
+    const action = screen.getByRole('button', { name: 'Start session' })
+    action.focus()
+
+    act(() => {
+      queue.show({ variant: 'negative', message: 'Sync failed.' })
+    })
+    expect(action).toHaveFocus()
+
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    await waitFor(() => expect(action).toHaveFocus())
+  })
+
+  it('a toast action taken from the keyboard returns there too', async () => {
+    const user = userEvent.setup()
+    const queue = createToastQueue()
+    renderOverPinnedAction(queue)
+    const action = screen.getByRole('button', { name: 'Start session' })
+    action.focus()
+
+    const onRetry = vi.fn()
+    act(() => {
+      queue.show(errorToast(createError(ErrorCode.GENERATION_FAILED), { onRetry }))
+    })
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Retry' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    expect(onRetry).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    await waitFor(() => expect(action).toHaveFocus())
+  })
+
+  it('does not pull focus back when the user never entered the toast', async () => {
+    const queue = createToastQueue()
+    renderWithProviders(
+      <>
+        <button type="button">Start session</button>
+        <input aria-label="Session notes" />
+        <ToastHost queue={queue} />
+      </>,
+    )
+    const input = screen.getByRole('textbox', { name: 'Session notes' })
+    input.focus()
+
+    let id = 0
+    act(() => {
+      id = queue.show({ variant: 'info', message: 'Saved locally' })
+    })
+    act(() => queue.dismiss(id))
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(input).toHaveFocus()
+  })
+
+  it('does not pull focus back after the user tabbed on out of the toast', async () => {
+    const user = userEvent.setup()
+    const queue = createToastQueue()
+    renderWithProviders(
+      <>
+        <button type="button">Start session</button>
+        <ToastHost queue={queue} />
+        <input aria-label="Session notes" />
+      </>,
+    )
+    screen.getByRole('button', { name: 'Start session' }).focus()
+
+    let id = 0
+    act(() => {
+      id = queue.show({ variant: 'info', message: 'Saved locally' })
+    })
+    await user.tab()
+    await user.tab()
+    const input = screen.getByRole('textbox', { name: 'Session notes' })
+    expect(input).toHaveFocus()
+
+    act(() => queue.dismiss(id))
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(input).toHaveFocus()
   })
 })
 
