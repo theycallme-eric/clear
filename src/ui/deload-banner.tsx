@@ -20,6 +20,7 @@ import {
   DELOAD_RPE_CAP,
   type DeloadSuggestion,
 } from '../state/deload'
+import { Card } from './card'
 
 /** §4: "If the same trigger fires after the snooze, the banner returns with the count." */
 export function suggestedAgo(sessions: number | null): string | null {
@@ -51,49 +52,46 @@ export function DeloadBanner({ suggestion, applied, onApply, onDismiss }: Deload
       // owns the app's own live region) and an unnamed one is announced as an
       // anonymous update rather than as the thing the app noticed.
       aria-label="Deload suggestion"
-      className="clr-chamfer clr-chamfer--md clr-stack--tight"
-      style={
-        {
-          display: 'flex',
-          flexDirection: 'column',
-          padding: 'var(--spacing-400)',
-          '--surface': 'var(--surface-toast-info)',
-          '--brd': 'var(--border-toast-info)',
-        } as CSSProperties
-      }
     >
-      <p
-        style={{
-          margin: 0,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 'var(--spacing-200)',
-          fontFamily: 'var(--font-data)',
-          letterSpacing: 'var(--tracking-data)',
-          color: 'var(--icon-toast-info)',
-        }}
+      {/* An info card with its heading inside. Standing alone it carries the
+          bar, and body, bar and emission share the info role; inside a form's
+          card the adapter makes it that card's ruled sub-group, never a
+          second card. The live region wraps it because the card's own `role`
+          is the frame's, not ARIA's. */}
+      <Card
+        role="info"
+        heading={
+          <span style={HEADING_STYLE}>
+            <span aria-hidden="true" style={{ display: 'flex' }}>
+              <Gauge size={16} />
+            </span>
+            {applied ? 'Deload applied' : 'Deload suggested'}
+          </span>
+        }
       >
-        <span aria-hidden="true" style={{ display: 'flex' }}>
-          <Gauge />
-        </span>
-        {applied ? 'Deload applied' : 'Deload suggested'}
-      </p>
+        <p style={{ margin: 0 }}>{suggestion.reason}</p>
+        {ago !== null && !applied && <p style={{ margin: 0 }}>{ago}</p>}
 
-      <p style={{ margin: 0 }}>{suggestion.reason}</p>
-      {ago !== null && !applied && <p style={{ margin: 0 }}>{ago}</p>}
-
-      {applied ? (
-        <p style={{ margin: 0 }}>{DELOAD_TERMS} Change the intensity if you disagree.</p>
-      ) : (
-        <div className="clr-row" style={{ gap: 'var(--spacing-200)', flexWrap: 'wrap' }}>
-          <Button variant="secondary" onClick={onApply}>
-            Apply deload
-          </Button>
-          <Button variant="quiet" onClick={onDismiss}>
-            Not today
-          </Button>
-        </div>
-      )}
+        {applied ? (
+          <p style={{ margin: 0 }}>{DELOAD_TERMS} Change the intensity if you disagree.</p>
+        ) : (
+          <div className="clr-row" style={{ gap: 'var(--spacing-200)', flexWrap: 'wrap' }}>
+            <Button variant="secondary" onClick={onApply}>
+              Apply deload
+            </Button>
+            <Button variant="quiet" onClick={onDismiss}>
+              Not today
+            </Button>
+          </div>
+        )}
+      </Card>
     </div>
   )
+}
+
+/** The glyph rides beside the words, so severity is never the hue alone. */
+const HEADING_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-200)',
 }

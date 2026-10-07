@@ -74,7 +74,7 @@ async function stubSupabase(page: Page, onboarded: boolean) {
   await page.route('**/functions/v1/**', (route) => answer(route, {}))
 }
 
-test('onboarding uses direct questions, a pinned footer, and one framed confirmation list', async ({
+test('onboarding holds each step in one card with a pinned footer action', async ({
   page,
   visit,
 }, testInfo) => {
@@ -91,24 +91,63 @@ test('onboarding uses direct questions, a pinned footer, and one framed confirma
   ).toBe(0.4)
 
   const footer = () => page.locator('main .clr-footer')
-  await expect(page.locator('main .clr-card')).toHaveCount(0)
-  await expect(page.getByText('Choose the setup closest to yours.')).toBeVisible()
-  await expect(footer().getByRole('button', { name: 'Next' })).toBeVisible()
+  const card = page.locator('main .clr-card')
+
+  // Every step is one card that holds its own heading without clipping it,
+  // with the step's action in the pinned footer, on screen and outside the card.
+  const expectContainedStep = async (title: string, action: string) => {
+    await expect(card).toHaveCount(1)
+    const heading = card.getByRole('heading', { level: 2, name: title })
+    await expect(heading).toBeVisible()
+
+    const body = await card.locator('.clr-card__body').boundingBox()
+    const label = await heading.boundingBox()
+    expect(body).not.toBeNull()
+    expect(label).not.toBeNull()
+    expect(label!.x).toBeGreaterThanOrEqual(body!.x)
+    expect(label!.x + label!.width).toBeLessThanOrEqual(body!.x + body!.width)
+    expect(
+      await heading.evaluate((element) => element.scrollWidth <= element.clientWidth),
+    ).toBe(true)
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+    ).toBe(true)
+
+    const button = footer().getByRole('button', { name: action })
+    await expect(button).toBeVisible()
+    await expect(button).toBeInViewport({ ratio: 1 })
+    await expect(card.getByRole('button', { name: action })).toHaveCount(0)
+  }
+
+  await expectContainedStep('What’s your gym setup?', 'Next')
+  await expect(card.getByText('Choose the setup closest to yours.')).toBeVisible()
+  await expect(footer().getByRole('button', { name: 'Next' })).toBeDisabled()
   await page.screenshot({ path: testInfo.outputPath('vibe-d-onboarding-question.png') })
 
   await page.getByRole('radio', { name: 'Home gym' }).click()
-  const equipment = page.getByRole('group', { name: 'Equipment' })
+  await expect(page.getByRole('radio', { name: 'Home gym' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  )
+  const equipment = card.getByRole('group', { name: 'Equipment' })
   await expect(equipment).toHaveCSS('border-top-width', '0px')
+  await expectContainedStep('What’s your gym setup?', 'Next')
   await footer().getByRole('button', { name: 'Next' }).click()
 
+  await expectContainedStep('How familiar are you with the gym?', 'Next')
   await page.getByRole('radio', { name: 'Some experience' }).click()
   await footer().getByRole('button', { name: 'Next' }).click()
 
+  await expectContainedStep('What are you going for?', 'Next')
   await page.getByRole('radio', { name: 'Balanced' }).click()
-  await expect(page.getByRole('group', { name: 'Sections' })).toHaveCSS('border-top-width', '0px')
+  await expect(card.getByRole('group', { name: 'Sections' })).toHaveCSS('border-top-width', '0px')
+  await expectContainedStep('What are you going for?', 'Next')
   await footer().getByRole('button', { name: 'Next' }).click()
 
-  await expect(page.getByRole('group', { name: 'Work around' })).toHaveCSS(
+  await expectContainedStep('Anything we should work around?', 'Skip')
+  await expect(card.getByRole('group', { name: 'Work around' })).toHaveCSS(
     'border-top-width',
     '0px',
   )
@@ -117,10 +156,20 @@ test('onboarding uses direct questions, a pinned footer, and one framed confirma
   ).toHaveCount(0)
   await footer().getByRole('button', { name: 'Skip' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
-  await expect(page.locator('main .clr-list')).toHaveCount(1)
-  await expect(footer().getByRole('button', { name: 'Finish setup' })).toBeVisible()
+  await expectContainedStep('Here’s your setup', 'Finish setup')
+  // The confirmation list is the card's content, not a second frame inside it.
+  await expect(card.locator('.clr-list')).toHaveCount(1)
+  await expect(card.locator('.clr-list.clr-chamfer')).toHaveCount(0)
   await page.screenshot({ path: testInfo.outputPath('vibe-d-onboarding-confirmation.png') })
+
+  // Stepping back keeps the answer that was given.
+  await footer().getByRole('button', { name: 'Back' }).click()
+  await footer().getByRole('button', { name: 'Back' }).click()
+  await expectContainedStep('What are you going for?', 'Next')
+  await expect(page.getByRole('radio', { name: 'Balanced' })).toHaveAttribute(
+    'aria-checked',
+    'true',
+  )
 })
 
 test('Generate and Settings follow the direct-form and measured-footer rulings', async ({

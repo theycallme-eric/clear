@@ -29,24 +29,37 @@ const LIST_STYLE: CSSProperties = {
   gap: 'var(--spacing-100)',
 }
 
-const DAY_STYLE: CSSProperties = {
+/**
+ * Each day is a small element frame inside the week's card: the shipped
+ * chamfer draws the border and the solid ground, and the day only says which
+ * state it is in through the frame's own `--surface` / `--brd`.
+ */
+const DAY_CLASS = 'clr-chamfer clr-chamfer--sm'
+
+const DAY_STYLE = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: 'var(--spacing-100)',
   padding: 'var(--spacing-200) var(--spacing-100)',
-  background: 'var(--surface-frame-structure-quiet)',
-  border: 'var(--border-width) solid var(--border-card)',
-}
+  '--surface': 'var(--surface-unselected)',
+  '--brd': 'var(--border-unselected)',
+} as CSSProperties
 
-const TODAY_STYLE: CSSProperties = {
+/** A trained day takes the selection state, beside its tick. */
+const TRAINED_STYLE = {
+  '--surface': 'var(--surface-selected)',
+  '--brd': 'var(--border-selected)',
+} as CSSProperties
+
+const TODAY_STYLE = {
   // The doubled border is the export's own cue for "this one" (ATOMIC.md §9 —
   // a chamfer expresses focus as a widened border, because a colour change
   // alone is not an indicator), and it survives a skin, a contrast preference
   // and a monochrome screen.
-  borderWidth: 'var(--focus-ring-width)',
-  borderColor: 'var(--border-selected)',
-}
+  '--bw': 'var(--focus-ring-width)',
+  '--brd': 'var(--border-selected)',
+} as CSSProperties
 
 const LETTER_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
@@ -92,7 +105,12 @@ export function WeekStrip({ days, label }: WeekStripProps) {
       {days.map((day) => (
         <li
           key={day.day}
-          style={day.isToday ? { ...DAY_STYLE, ...TODAY_STYLE } : DAY_STYLE}
+          className={DAY_CLASS}
+          style={{
+            ...DAY_STYLE,
+            ...(day.state === 'workout' ? TRAINED_STYLE : null),
+            ...(day.isToday ? TODAY_STYLE : null),
+          }}
         >
           <span aria-hidden="true" style={LETTER_STYLE}>
             {day.initial}
