@@ -234,6 +234,9 @@ describe('REQ-015 · the status is one card under the wordmark', () => {
     renderBoot()
 
     const heading = screen.getByRole('heading', { level: 1 })
+    expect(heading).toHaveAccessibleName('CLEAR')
+    expect(heading.firstElementChild).toHaveAttribute('role', 'img')
+    expect(heading.firstElementChild).toHaveAccessibleName('CLEAR')
     expect(heading.firstElementChild).toHaveStyle({
       display: 'flex',
       justifyContent: 'center',

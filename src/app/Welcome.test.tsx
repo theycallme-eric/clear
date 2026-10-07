@@ -13,6 +13,9 @@ describe('Welcome', () => {
     renderApp(['/welcome'])
 
     const heading = screen.getByRole('heading', { level: 1, name: 'CLEAR' })
+    expect(within(heading).getByRole('img', { name: 'CLEAR' })).toBe(
+      heading.firstElementChild,
+    )
     expect(heading.firstElementChild).toHaveStyle({
       display: 'flex',
       justifyContent: 'center',

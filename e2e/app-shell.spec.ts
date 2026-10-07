@@ -53,6 +53,11 @@ test('the skip link is the first thing a keyboard reaches', async ({
 
 test('welcome groups one card under the wordmark, pins its entries, and auth uses a direct form', async ({ page, visit }, testInfo) => {
   await visit('/welcome')
+  await expect(
+    page.getByRole('heading', { level: 1, name: 'CLEAR' }).getByRole('img', {
+      name: 'CLEAR',
+    }),
+  ).toBeVisible()
 
   // REQ-015: the line under the wordmark is the card's, not a floating label,
   // and the card holds no action — both entries are the pinned footer.

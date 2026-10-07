@@ -35,7 +35,7 @@ export function Welcome() {
     <Screen
       title="Welcome"
       heading={
-        <span style={BRAND_HEADING_STYLE}>
+        <span role="img" aria-label="CLEAR" style={BRAND_HEADING_STYLE}>
           <ClearLogo size="xl" boot />
         </span>
       }

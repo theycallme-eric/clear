@@ -80,7 +80,7 @@ export function BootSequence({ view, onRetry }: BootSequenceProps) {
           <Screen
             title="CLEAR"
             heading={
-              <span style={BRAND_HEADING_STYLE}>
+              <span role="img" aria-label="CLEAR" style={BRAND_HEADING_STYLE}>
                 <ClearLogo size="lg" boot />
               </span>
             }
