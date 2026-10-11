@@ -5,8 +5,11 @@
  * Review. Composition is the export's Form Screen template — a stack inside the
  * shell, the standing Goal as context, the Focus — recommended, or a label plus
  * a wrapping row of chips to choose one — the `IntensitySlider`, the inputs,
- * and one full-width primary action in the measured pinned footer. The form is
- * direct on the atmosphere; 0.9.7 does not use a generic card as form padding.
+ * and one full-width primary action in the measured pinned footer. 0.14.3
+ * contains the form: only the screen title sits on the atmosphere, and one
+ * `Card` holds every group, label and field. The deload suggestion is that
+ * card's ruled sub-group rather than a second card, the Focus read's loading
+ * state is content of it, and the action stays outside it in the footer.
  *
  * The form itself is `state/generation-form.ts`: this file renders a draft and
  * the edits that can be made to it, and decides nothing about them. Four
@@ -118,6 +121,7 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppDialog } from '../ui/app-dialog'
+import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
@@ -552,9 +556,12 @@ function GenerateForm({
           </PhoneFooter>
         }
       >
+        {/* The one form card. A refused draft is the card's own state: it
+            takes the urgency role, and the sentence is inside it. */}
+        <Card role={refusal !== null ? 'urgency' : undefined}>
         <div className="clr-stack">
           {refusal !== null && (
-            <p role="alert" style={{ color: 'var(--text-negative)' }}>
+            <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
               {refusal.message}
             </p>
           )}
@@ -747,6 +754,7 @@ function GenerateForm({
             onChange={(value) => setDraft(withNotes(draft, value))}
           />
         </div>
+        </Card>
       </Screen>
 
       {/* §4: confirm once, then honour it. The user knows things the app doesn't. */}
