@@ -54,7 +54,7 @@ import {
 } from '../ui/load-suggestion'
 import { renderWithProviders, signedIn } from '../test/render'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
-import { REGENERATE_LABEL, Review, START_LABEL } from './Review'
+import { FACTS_LABEL, OVERVIEW_LABEL, REGENERATE_LABEL, Review, START_LABEL } from './Review'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -173,17 +173,73 @@ describe('all generated content renders', () => {
     ).toBeInTheDocument()
   })
 
-  it('keeps the facts individually framed and both decisions at the measured edge', async () => {
+  it('heads the facts inside one overview card, as readouts rather than frames', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    expect(
-      screen.getByText('Strength', { selector: 'dd' }).closest('.clr-metric-frame'),
-    ).toBeInTheDocument()
+    const card = screen
+      .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
+      .closest<HTMLElement>('.clr-card')!
+    expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    // The description list is the card's content; each fact keeps its own
+    // readout and none of them draws a second frame inside the card.
+    const facts = card.querySelector<HTMLElement>('dl')!
+    expect(facts).toHaveAttribute('aria-label', FACTS_LABEL)
+    const strength = within(facts).getByText('Strength', { selector: 'dd' })
+    const readout = strength.closest<HTMLElement>('.clr-metric-frame')!
+    expect(readout).not.toHaveClass('clr-chamfer')
+    expect(facts.querySelectorAll('.clr-metric-frame')).toHaveLength(5)
+    expect(facts.querySelector('.clr-chamfer')).toBeNull()
+  })
+
+  it('gives every section its own card and nests no card anywhere', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const cards = [...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card')]
+    const sections = screen.getAllByRole('region').filter((region) =>
+      region.classList.contains('clr-collapsible__region'),
+    )
+
+    // One overview card and one card per section, each with its single bar.
+    expect(sections.length).toBeGreaterThan(0)
+    expect(cards).toHaveLength(sections.length + 1)
+    for (const section of sections) {
+      const card = section.closest<HTMLElement>('.clr-card')!
+      expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+      // The heading row is inside the card: the trigger that names the section.
+      expect(card.querySelector('.clr-collapsible__trigger')).not.toBeNull()
+    }
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+    // Nothing but the title is left on the atmosphere.
+    const stack = cards[0].closest('.clr-stack')!
+    expect([...stack.children].every((child) => child.querySelector('.clr-card') !== null)).toBe(
+      true,
+    )
+  })
+
+  it('keeps both decisions at the measured edge, primary over secondary', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
     const footer = screen.getByRole('contentinfo')
     expect(footer.closest('.clr-scroll-region__foot')).toBeInTheDocument()
-    expect(within(footer).getByRole('button', { name: START_LABEL })).toBeInTheDocument()
-    expect(within(footer).getByRole('button', { name: REGENERATE_LABEL })).toBeInTheDocument()
+    expect(footer.closest('.clr-card')).toBeNull()
+
+    const start = within(footer).getByRole('button', { name: START_LABEL })
+    const regenerate = within(footer).getByRole('button', { name: REGENERATE_LABEL })
+    expect(start).toHaveClass('clr-btn--primary')
+    // Secondary is the framed button with no variant modifier.
+    expect(regenerate).toHaveClass('clr-btn', 'clr-chamfer')
+    expect(regenerate).not.toHaveClass('clr-btn--primary')
+    expect(regenerate).not.toHaveClass('clr-btn--quiet')
+    // Discarding is confirmed and irreversible, so it is never a text action,
+    // and the footer holds exactly these two.
+    expect(regenerate).not.toHaveClass('clr-text-action')
+    expect(within(footer).getAllByRole('button')).toHaveLength(2)
+    expect(footer.querySelectorAll('.clr-btn--primary')).toHaveLength(1)
+    expect(start.closest('.clr-actions')).toBe(regenerate.closest('.clr-actions'))
   })
 
   it('renders every section, in the order it will be performed', async () => {
@@ -645,6 +701,20 @@ describe('the suggested load, its confidence, and why', () => {
     expect(suggestion).toHaveTextContent(sessionCountText(4))
   })
 
+  it('offers the suggestion as a text action inside its section’s card', async () => {
+    renderSquatDay()
+
+    const suggestion = await screen.findByRole('button', { name: SUGGESTION_NAME })
+    expect(suggestion).toHaveClass('clr-text-action')
+    expect(suggestion).not.toHaveClass('clr-btn')
+    expect(suggestion.closest('.clr-chamfer')).toBe(suggestion.closest('.clr-card__body'))
+    expect(suggestion.closest('.clr-collapsible__region')).not.toBeNull()
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+    // Quiet beside the screen's one primary, which stays in the footer.
+    expect(document.querySelectorAll('.clr-btn--primary')).toHaveLength(1)
+    expect(screen.getByRole('button', { name: START_LABEL })).toHaveClass('clr-btn--primary')
+  })
+
   it('shows no suggestion, and no zero, where there is no anchor', async () => {
     renderSquatDay()
     await screen.findByRole('button', { name: SUGGESTION_NAME })
@@ -740,7 +810,9 @@ describe('the suggested load, its confidence, and why', () => {
       },
     })
 
-    expect(await screen.findByText(new RegExp(SUGGESTIONS_LOADING_LABEL))).toBeInTheDocument()
+    const loading = await screen.findByText(new RegExp(SUGGESTIONS_LOADING_LABEL))
+    expect(loading.closest('[aria-busy="true"]')).not.toBeNull()
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
     expect(screen.getByRole('heading', { level: 1, name: 'Squat day' })).toBeInTheDocument()
     expect(briefingText()).toContain('back squat')
 
@@ -760,6 +832,10 @@ describe('the suggested load, its confidence, and why', () => {
 
     const alert = await screen.findByRole('alert')
     expect(alert).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
+    // The failure is a card of its own between the overview and the sections.
+    expect(alert.closest('.clr-card')).toBeNull()
+    expect(alert.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
     expect(screen.getByRole('heading', { level: 1, name: 'Squat day' })).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: SUGGESTION_NAME })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: START_LABEL })).toBeEnabled()

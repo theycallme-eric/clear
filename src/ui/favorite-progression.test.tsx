@@ -17,7 +17,13 @@ import {
 } from '../state/favorite-progression'
 import { renderWithProviders } from '../test/render'
 import { reconstructionFixture, type SectionFixture } from '../test/workout-double'
-import { FavoriteProgressionCard, PB_BADGE_LABEL } from './favorite-progression'
+import {
+  FavoriteProgressionCard,
+  HISTORY_LABEL,
+  LAST_WEIGHTS_LABEL,
+  PB_BADGE_LABEL,
+  PROGRESSION_TITLE,
+} from './favorite-progression'
 
 /** A run of the same favorite: one For Time block and one loaded lift. */
 function run(day: string, elapsed: number, weight: number, underCap = true): FavoriteRun {
@@ -65,6 +71,30 @@ function capped(day: string): FavoriteRun {
 }
 
 describe('the repeat surface', () => {
+  it('is one card headed inside, with each group a ruled sub-group one level down', () => {
+    renderWithProviders(
+      <FavoriteProgressionCard
+        progression={favoriteProgression(RUNS)}
+        timesCompleted={2}
+      />,
+    )
+
+    const title = screen.getByRole('heading', { name: PROGRESSION_TITLE })
+    const card = title.closest<HTMLElement>('.clr-card')!
+    expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    const level = Number(title.tagName.slice(1))
+    const groups = [BESTS_LABEL_COMPETITIVE, LAST_WEIGHTS_LABEL, HISTORY_LABEL].map((name) =>
+      within(card).getByRole('heading', { name }),
+    )
+    for (const group of groups) {
+      expect(group.tagName).toBe(`H${level + 1}`)
+      expect(group.closest('.clr-chamfer')).toBe(title.closest('.clr-chamfer'))
+    }
+    expect(within(card).getAllByRole('heading')).toHaveLength(5)
+  })
+
   it('states the last comparable performance with the day it was measured on', () => {
     renderWithProviders(
       <FavoriteProgressionCard
