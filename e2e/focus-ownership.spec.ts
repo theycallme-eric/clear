@@ -304,26 +304,58 @@ for (const skin of SKINS) {
       await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
       await expect(page.locator('html')).toHaveAttribute('data-clr-focus', 'brackets')
 
+      const card = page.locator('main .clr-card')
+      await expect(card).toHaveCount(1)
+      await expect(card.getByRole('heading', { level: 2, name: 'Your email' })).toBeVisible()
+      await expect(card.getByLabel('Email')).toBeVisible()
+      await expect(card.locator('form')).toHaveCount(1)
+      await expect(card.getByRole('button')).toHaveCount(0)
+      const footer = page.locator('main .clr-footer')
+      await expect(footer).toHaveCount(1)
+      const submit = footer.getByRole('button', { name: 'Send code' })
+      const formId = await card.locator('form').getAttribute('id')
+      expect(formId).toBeTruthy()
+      await expect(submit).toHaveAttribute('form', formId!)
+
       await captureResting(page)
       const stops = await tabThroughMain(page, true)
 
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       expect(stops.some((stop) => stop.kind === 'brackets')).toBe(true)
+      expect(stops.some((stop) => stop.kind === 'field' &&
+        stop.ancestors.some((ancestor) => ancestor.name.includes('clr-card__body')))).toBe(true)
+      expect(stops.some((stop) => stop.kind === 'brackets' &&
+        stop.focused.startsWith('<button') && stop.focused.includes('Send code'))).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      await expect(page.locator('main .clr-card')).toHaveCount(0)
-      await expect(page.locator('main .clr-footer')).toHaveCount(1)
     })
 
-    test('the one-time code step follows the 0.9.7 focus contract', async ({ page, visit }) => {
+    test('the one-time code step follows the 0.9.7 focus contract', async ({ page, visit, checkA11y }) => {
       const edge = await stubSupabase(page)
       await openCodeStep(page, visit, edge)
+      await checkA11y()
+      const card = page.locator('main .clr-card')
+      await expect(card).toHaveCount(1)
+      await expect(card.getByRole('heading', { level: 2, name: 'Your code' })).toBeVisible()
+      await expect(card.getByLabel('Code', { exact: true })).toBeVisible()
+      await expect(card.locator('form')).toHaveCount(1)
+      await expect(card.getByRole('button')).toHaveCount(0)
+      const footer = page.locator('main .clr-footer')
+      await expect(footer).toHaveCount(1)
+      const submit = footer.getByRole('button', { name: 'Verify', exact: true })
+      const formId = await card.locator('form').getAttribute('id')
+      expect(formId).toBeTruthy()
+      await expect(submit).toHaveAttribute('form', formId!)
+      await expect(footer.getByRole('button', { name: /^Resend/ })).toBeVisible()
+      await expect(footer.getByRole('button', { name: 'Use a different email' })).toBeVisible()
       await captureResting(page)
       const stops = await tabThroughMain(page, true)
 
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
+      expect(stops.some((stop) => stop.kind === 'field' &&
+        stop.ancestors.some((ancestor) => ancestor.name.includes('clr-card__body')))).toBe(true)
+      expect(stops.some((stop) => stop.kind === 'brackets' &&
+        stop.focused.startsWith('<button') && stop.focused.includes('Verify'))).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      await expect(page.locator('main .clr-card')).toHaveCount(0)
-      await expect(page.locator('main .clr-footer')).toHaveCount(1)
     })
 
     test('Settings follows the 0.9.7 focus contract', async ({ page, visit }) => {
