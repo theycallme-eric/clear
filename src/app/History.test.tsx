@@ -72,6 +72,22 @@ function historyList() {
   return screen.findByRole('list', { name: HISTORY_LIST_LABEL })
 }
 
+/** The one card the collection lives in, found by the heading inside it. */
+function historyCard(): HTMLElement {
+  const heading = screen.getByRole('heading', { level: 2, name: HISTORY_LIST_LABEL })
+  const body = heading.closest<HTMLElement>('.clr-card__body')
+  if (body === null) throw new Error('The history heading is not inside a card')
+  return body
+}
+
+/** One card, one accent bar, and nothing card-shaped inside it. */
+function expectOneCard() {
+  const main = screen.getByRole('main')
+  expect(main.querySelectorAll('.clr-card')).toHaveLength(1)
+  expect(main.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+  expect(main.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+}
+
 describe('History route', () => {
   it('mounts /history behind Protected at the atmosphere the table records', async () => {
     const { container } = renderHistory({}, sessionRows(2))
@@ -201,6 +217,53 @@ describe('History route', () => {
     expect(
       screen.queryByRole('button', { name: HISTORY_LOAD_MORE_LABEL }),
     ).not.toBeInTheDocument()
+  })
+
+  it('keeps the filter, the list and every other state inside one card', async () => {
+    const user = userEvent.setup()
+    const recording = recordingHistory(sessionRows(2), async () =>
+      err(createError(ErrorCode.NETWORK_OFFLINE)),
+    )
+    renderHistory(recording.history)
+
+    // Error: the failure is the card's content, not a second frame.
+    const failure = await screen.findByText(HISTORY_ERROR_TITLE)
+    expect(historyCard()).toContainElement(failure)
+    expectOneCard()
+
+    // Populated: bare rows under the card's frame, ruled by the list itself.
+    await user.click(screen.getByRole('button', { name: 'Retry' }))
+    const list = await historyList()
+    expect(historyCard()).toContainElement(list)
+    expect(historyCard()).toContainElement(screen.getByLabelText(HISTORY_FILTER_LABEL))
+    expect(list).not.toHaveClass('clr-chamfer')
+    const rows = list.querySelectorAll(':scope > .clr-list__row')
+    expect(rows.length).toBeGreaterThan(1)
+    for (const row of rows) {
+      expect(row).not.toHaveClass('clr-card')
+      expect(row).not.toHaveClass('clr-chamfer')
+      expect(row.querySelector('.clr-card')).toBeNull()
+    }
+    expectOneCard()
+
+    // Filtered to nothing: the same card, still holding the filter.
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    expect(historyCard()).toContainElement(await screen.findByText(HISTORY_NO_MATCH_TITLE))
+    expect(historyCard()).toContainElement(screen.getByLabelText(HISTORY_FILTER_LABEL))
+    expectOneCard()
+  })
+
+  it('keeps loading and the first-run empty inside the same card', async () => {
+    const pending = renderHistory({ page: () => new Promise(() => {}) })
+    const loading = await screen.findByText(HISTORY_LOADING_LABEL)
+    expect(historyCard()).toContainElement(loading)
+    expect(loading.closest('[role="status"]')).toHaveAttribute('aria-busy', 'true')
+    expectOneCard()
+    pending.unmount()
+
+    renderHistory({}, [])
+    expect(historyCard()).toContainElement(await screen.findByText(HISTORY_EMPTY_TITLE))
+    expectOneCard()
   })
 
   it('offers a way back to Home', async () => {
