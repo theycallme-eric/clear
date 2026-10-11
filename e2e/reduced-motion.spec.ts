@@ -181,10 +181,11 @@ test.describe('with motion allowed', () => {
 
     // Welcome is one arriving card, not a multirow set. Its pinned actions
     // must stay outside the arrival and remain usable without animation.
-    const card = page.locator('main .clr-boot > .clr-card')
-    await expect(page.locator('main .clr-boot > *')).toHaveCount(1)
-    await expect(card).toHaveCSS('animation-name', 'clr-boot-in')
-    await expect(card).toHaveCSS('animation-delay', '0s')
+    const arrival = page.locator('main .clr-boot > *')
+    await expect(arrival).toHaveCount(1)
+    await expect(arrival.locator('.clr-card')).toHaveCount(1)
+    await expect(arrival).toHaveCSS('animation-name', 'clr-boot-in')
+    await expect(arrival).toHaveCSS('animation-delay', '0s')
     await expect(page.locator('main .clr-boot button')).toHaveCount(0)
     const actions = page.locator('main .clr-scroll-region__foot button')
     await expect(actions).toHaveText(['Sign in', 'Create account'])
@@ -196,25 +197,25 @@ test.describe('with motion allowed', () => {
     // Preserve the multirow 40ms browser-CSS contract with an explicitly inert
     // off-screen fixture, not invented extra content in the real Welcome.
     const delays = await page.evaluate(() => {
-        const card = document.querySelector<HTMLElement>('main .clr-boot > .clr-card')
-        if (!card) throw new Error('the Welcome card is missing')
-        const fixture = document.createElement('div')
-        fixture.className = 'clr-boot'
-        fixture.inert = true
-        fixture.setAttribute('aria-hidden', 'true')
-        fixture.style.position = 'fixed'
-        fixture.style.left = '-10000px'
-        fixture.style.width = `${card.offsetWidth}px`
-        for (let row = 0; row < 3; row += 1) fixture.append(card.cloneNode(true))
-        document.body.append(fixture)
-        try {
-          return [...fixture.children].map((row) => {
-            const style = getComputedStyle(row)
-            return { keyframes: style.animationName, delay: style.animationDelay }
-          })
-        } finally {
-          fixture.remove()
-        }
+      const arrival = document.querySelector<HTMLElement>('main .clr-boot > *')
+      if (!arrival?.querySelector('.clr-card')) throw new Error('the Welcome card is missing')
+      const fixture = document.createElement('div')
+      fixture.className = 'clr-boot'
+      fixture.inert = true
+      fixture.setAttribute('aria-hidden', 'true')
+      fixture.style.position = 'fixed'
+      fixture.style.left = '-10000px'
+      fixture.style.width = `${arrival.offsetWidth}px`
+      for (let row = 0; row < 3; row += 1) fixture.append(arrival.cloneNode(true))
+      document.body.append(fixture)
+      try {
+        return [...fixture.children].map((row) => {
+          const style = getComputedStyle(row)
+          return { keyframes: style.animationName, delay: style.animationDelay }
+        })
+      } finally {
+        fixture.remove()
+      }
     })
 
     expect(delays).toHaveLength(3)
