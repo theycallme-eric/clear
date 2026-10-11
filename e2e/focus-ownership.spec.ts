@@ -336,7 +336,7 @@ for (const skin of SKINS) {
       const card = page.locator('main .clr-card')
       await expect(card).toHaveCount(1)
       await expect(card.getByRole('heading', { level: 2, name: 'Your code' })).toBeVisible()
-      await expect(card.getByLabel('Code', { exact: true })).toBeVisible()
+      await expect(card.getByRole('textbox', { name: 'Code', exact: true })).toBeVisible()
       await expect(card.locator('form')).toHaveCount(1)
       await expect(card.getByRole('button')).toHaveCount(0)
       const footer = page.locator('main .clr-footer')
