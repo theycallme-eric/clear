@@ -48,6 +48,12 @@ async function expectPinnedAction(page: Page, name: string) {
   const action = page.getByRole('button', { name, exact: true })
   const foot = action.locator('xpath=ancestor::*[contains(@class,"clr-scroll-region__foot")]')
   await expect(foot, `${name} stays in the measured footer`).toBeVisible()
+  // The bound is on where the footer rests. A screen entering a mode shifts up
+  // into place over `route-enter-up`, and a box read during that shift is
+  // displaced by the animation's own offset rather than by the layout.
+  await page
+    .locator('main')
+    .evaluate((main) => Promise.all(main.getAnimations().map((animation) => animation.finished)))
   const box = await foot.boundingBox()
   const viewport = page.viewportSize()
   expect(box, `${name}'s footer has no box`).not.toBeNull()
@@ -370,7 +376,12 @@ test.describe('history-detail — History list to Review or Session Detail on th
       page.locator('.clr-band').filter({ has: page.getByRole('tablist') }),
     ).toHaveCount(1)
     await expect(page.getByRole('list', { name: 'Recent workouts' })).toHaveClass(/clr-list/)
-    await page.getByRole('link', { name: VIEW_HISTORY, exact: true }).click()
+    // Not `exact`: the public TextAction ends in a CSS-generated chevron, and a
+    // browser computes that into the link's name after the label.
+    const viewHistory = page.getByRole('link', { name: VIEW_HISTORY })
+    await expect(viewHistory).toHaveCount(1)
+    await expect(viewHistory).toHaveText(VIEW_HISTORY)
+    await viewHistory.click()
 
     await expect(page).toHaveURL(/\/history$/)
     await expect(page.locator('main h1')).toHaveText('History')
@@ -378,6 +389,14 @@ test.describe('history-detail — History list to Review or Session Detail on th
     const list = page.getByRole('list', { name: HISTORY_LIST })
     await expect(list).toHaveClass(/clr-list/)
     await expect(list.locator(':scope > .clr-list__row')).toHaveCount(3)
+    // One card holds the filter and the chronology; no row is a card itself.
+    const card = page.locator('main .clr-card')
+    await expect(card).toHaveCount(1)
+    await expect(card.getByRole('heading', { level: 2, name: HISTORY_LIST })).toBeVisible()
+    await expect(card.getByRole('list', { name: HISTORY_LIST })).toHaveCount(1)
+    await expect(card.getByRole('combobox')).toHaveCount(1)
+    await expect(list).not.toHaveClass(/clr-chamfer/)
+    await expect(list.locator('.clr-card, .clr-chamfer')).toHaveCount(0)
     const completedRow = list.getByRole('link', { name: TITLES.completed })
     const unstartedRow = list.getByRole('link', { name: TITLES.unstarted })
     // A rest run is not a link — there is no session behind it — and it reads
