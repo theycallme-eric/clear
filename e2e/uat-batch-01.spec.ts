@@ -172,7 +172,7 @@ test('onboarding holds each step in one card with a pinned footer action', async
   )
 })
 
-test('Generate and Settings follow the direct-form and measured-footer rulings', async ({
+test('Generate and Settings follow the contained-form and measured-footer rulings', async ({
   page,
   visit,
 }, testInfo) => {
@@ -181,12 +181,54 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   await visit('/generate')
 
   await expect(page.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeVisible()
-  await expect(page.locator('main .clr-card')).toHaveCount(0)
-  await expect(page.getByLabel('Place')).toHaveValue(LOCATION.id)
+
+  // 0.14.3 containment: one card holds every group, label and field, and only
+  // the screen title sits on the atmosphere.
+  const formCard = page.locator('main .clr-card')
+  await expect(formCard).toHaveCount(1)
+  await expect(formCard.getByText('Goal:')).toBeVisible()
+  await expect(formCard.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible()
+  await expect(formCard.getByRole('slider')).toBeVisible()
+  await expect(formCard.getByLabel('Place')).toHaveValue(LOCATION.id)
+  await expect(formCard.getByLabel('Time available')).toBeVisible()
+  await expect(formCard.getByLabel('Notes')).toBeVisible()
+  await expect(formCard.getByRole('heading', { level: 1 })).toHaveCount(0)
+  await expect(formCard.getByRole('button', { name: 'Generate workout' })).toHaveCount(0)
 
   const footer = page.locator('main .clr-scroll-region__foot')
   const scroller = page.locator('main .clr-scroll-region__scroller')
-  await expect(footer.getByRole('button', { name: 'Generate workout' })).toBeVisible()
+  const generate = footer.getByRole('button', { name: 'Generate workout' })
+  await expect(generate).toBeVisible()
+
+  // Held until there is a Focus; choosing one is the chip's own selected state.
+  await expect(generate).toBeDisabled()
+  const upper = formCard.getByRole('button', { name: 'Upper body', exact: true })
+  await upper.click()
+  await expect(upper).toHaveAttribute('aria-pressed', 'true')
+  await expect(generate).toBeEnabled()
+
+  const contained = await page.evaluate(() => {
+    const card = document.querySelector<HTMLElement>('main .clr-card')
+    const button = document.querySelector<HTMLElement>('main .clr-scroll-region__foot button')
+    if (!card || !button) return null
+    const cardBox = card.getBoundingClientRect()
+    const buttonBox = button.getBoundingClientRect()
+    return {
+      fieldsInside: [...card.querySelectorAll<HTMLElement>('input, select, textarea')].every(
+        (field) => {
+          const box = field.getBoundingClientRect()
+          return box.left >= cardBox.left - 1 && box.right <= cardBox.right + 1
+        },
+      ),
+      actionInViewport:
+        buttonBox.top >= 0 &&
+        buttonBox.bottom <= window.innerHeight + 1 &&
+        buttonBox.left >= 0 &&
+        buttonBox.right <= window.innerWidth + 1,
+      noOverflow: document.documentElement.scrollWidth <= window.innerWidth,
+    }
+  })
+  expect(contained).toEqual({ fieldsInside: true, actionInViewport: true, noOverflow: true })
 
   const separated = await page.evaluate(() => {
     const content = document.querySelector<HTMLElement>('main .clr-scroll-region__scroller')
@@ -207,7 +249,7 @@ test('Generate and Settings follow the direct-form and measured-footer rulings',
   await page.screenshot({ path: testInfo.outputPath('vibe-d-settings.png') })
 })
 
-test('generation loading and failure remain honest at every supported width', async ({
+test('Generate loading and failure remain honest at every supported width', async ({
   page,
   visit,
 }, testInfo) => {
@@ -246,6 +288,14 @@ test('generation loading and failure remain honest at every supported width', as
 
   await expect(page.locator('main h1')).toHaveAccessibleName('Generating session')
   await expect(page).toHaveURL((url) => url.pathname === '/generate')
+  // The held request is one truthfully busy card — the loader's own, not a
+  // card wrapped around it — with the way out pinned in the footer.
+  const loader = page.locator('main').getByRole('status')
+  await expect(loader).toHaveAttribute('aria-busy', 'true')
+  await expect(page.locator('main .clr-card')).toHaveCount(1)
+  await expect(
+    page.locator('main .clr-scroll-region__foot').getByRole('button', { name: 'Cancel' }),
+  ).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('vibe-d-loading.png') })
 
   answerGeneration()
