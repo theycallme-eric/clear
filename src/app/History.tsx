@@ -15,6 +15,11 @@
  * loaded window keeps one ordering, one page boundary and one derivation, and
  * "load more" widens the window rather than the filter.
  *
+ * **One card holds the collection.** The filter, the rows and the loading,
+ * empty and error states are all content of a single `Card` headed inside it;
+ * rows are the list's own, separated by its inset rule, never cards of their
+ * own. The screen's one action stays in the pinned footer.
+ *
  * Each session row retains `/history/:id` as its durable fallback. A completed
  * record whose stored prescription validates opens directly in Review; every
  * other record follows the fallback into Session Detail. Home's recents use
@@ -46,6 +51,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { Card } from '../ui/card'
 import { HistoryList } from '../ui/history-list'
 import { ActionRow, ListMessage, PhoneFooter } from '../ui/composition'
 import { Select } from '../ui/select'
@@ -128,35 +134,38 @@ export function History() {
           )
         }
       >
-        {/* The control belongs to a history that exists. With none, there is
-            nothing to narrow, and an inert dropdown above "No workouts yet"
-            would be the screen offering an action that cannot do anything. */}
-        {entries.length > 0 && (
-          <Select
-            label={HISTORY_FILTER_LABEL}
-            value={filter}
-            options={[...HISTORY_FILTERS]}
-            onChange={(value) => setFilter(historyFilterOf(value))}
-          />
-        )}
+        {/* One card for the whole collection, as Home's recents are: the
+            filter, the rows and each of the other three states are its
+            content, so no state brings a second frame and no row is a card. */}
+        <Card heading={HISTORY_LIST_LABEL}>
+          {/* The control belongs to a history that exists. With none, there is
+              nothing to narrow, and an inert dropdown above "No workouts yet"
+              would be the screen offering an action that cannot do anything. */}
+          {entries.length > 0 && (
+            <Select
+              label={HISTORY_FILTER_LABEL}
+              value={filter}
+              options={[...HISTORY_FILTERS]}
+              onChange={(value) => setFilter(historyFilterOf(value))}
+            />
+          )}
 
-        <ViewStateSwitch
-          state={state}
-          loadingLabel={HISTORY_LOADING_LABEL}
-          errorTitle={HISTORY_ERROR_TITLE}
-          empty={
-            filtered ? (
-              <ListMessage
-                title={HISTORY_NO_MATCH_TITLE}
-                message={HISTORY_NO_MATCH_MESSAGE}
-              />
-            ) : (
-              <ListMessage title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
-            )
-          }
-        >
-          {(data) => (
-            <>
+          <ViewStateSwitch
+            state={state}
+            loadingLabel={HISTORY_LOADING_LABEL}
+            errorTitle={HISTORY_ERROR_TITLE}
+            empty={
+              filtered ? (
+                <ListMessage
+                  title={HISTORY_NO_MATCH_TITLE}
+                  message={HISTORY_NO_MATCH_MESSAGE}
+                />
+              ) : (
+                <ListMessage title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
+              )
+            }
+          >
+            {(data) => (
               <HistoryList
                 entries={data}
                 label={HISTORY_LIST_LABEL}
@@ -164,9 +173,9 @@ export function History() {
                 onOpen={(entry) => void session.open(entry)}
                 openingId={session.openingId}
               />
-            </>
-          )}
-        </ViewStateSwitch>
+            )}
+          </ViewStateSwitch>
+        </Card>
       </Screen>
     </>
   )
