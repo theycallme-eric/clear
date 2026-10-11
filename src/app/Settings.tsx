@@ -2,9 +2,11 @@
  * Settings — `/settings` (SET-01).
  *
  * IA.md §4: atmosphere `full`, protected, in from Home, out to Home and the
- * sub-views. The editors use 0.9.7's direct-form composition. Places and the
- * session destination share one framed list with inset row rules instead of
- * becoming one generic card per block.
+ * sub-views. Composition is 0.14.3's contained form: the screen `<h1>` is the
+ * only text on the atmosphere, and each section — training, limitations,
+ * appearance, places, session — is one `Card` holding its own heading, its
+ * controls and its save line. Nothing is pinned while the screen is usable,
+ * because every change saves itself; the footer carries Retry alone.
  *
  * What this screen is for is one resolved decision (IA.md §6): **onboarding is
  * strictly first-run**. Every question the wizard asks is answered again here
@@ -28,10 +30,10 @@
  *      (`profiles_enabled_sections_not_empty`). Both refusals are sentences
  *      next to the control, never a silently ignored tap.
  *   3. **Locations and equipment are not edited here.** SET-02 owns that
- *      screen; a control now would be an affordance that lies, so this row
- *      states where the answer lives and offers nothing.
+ *      screen; a control now would be an affordance that lies, so this card
+ *      states where the answer lives and offers only the way there.
  */
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -43,7 +45,7 @@ import {
   EmptyState,
   Input,
   LogOut,
-  ChevronRight,
+  TextAction,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { constraintsQueryKey, useConstraintsQuery, useUserConstraints } from '../state/constraint-queries'
@@ -78,8 +80,8 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppearancePicker } from '../ui/appearance-picker'
-import { ActionRow, ListFrame, ListRow, PhoneFooter } from '../ui/composition'
-import { Heading } from '../ui/Heading'
+import { Card } from '../ui/card'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
@@ -137,14 +139,35 @@ export function Settings() {
             <PreferencesSection profile={state.data} />
             <LimitationsSection />
             <AppearanceSection />
-            <ListFrame>
-              <TrainingPlacesRow />
-              <SignOutRow />
-            </ListFrame>
+            <TrainingPlacesSection />
+            <SessionSection />
           </div>
         )}
       </Screen>
     </>
+  )
+}
+
+/**
+ * One settings section: a landmark named by the heading its card holds. The
+ * card's heading slot is the real heading at the screen's outline level, so
+ * the id rides on its text rather than on a second element.
+ */
+function SettingsCard({
+  id,
+  heading,
+  children,
+}: {
+  id: string
+  heading: string
+  children: ReactNode
+}) {
+  return (
+    <section aria-labelledby={id}>
+      <Card heading={<span id={id}>{heading}</span>}>
+        <div className="clr-stack">{children}</div>
+      </Card>
+    </section>
   )
 }
 
@@ -189,64 +212,66 @@ function PreferencesSection({ profile }: { profile: Profile }) {
   }
 
   return (
-    <section className="clr-stack" aria-labelledby="settings-training">
-      <Heading id="settings-training">Training</Heading>
-
+    <SettingsCard id="settings-training" heading="Training">
       <ChoiceGroup
-          legend="Goal"
-          options={goalOptions().map((goal) => ({
-            value: goal.value,
-            label: goal.label,
-          }))}
-          // A goal that needs correcting is not one of the options, so nothing
-          // is shown as chosen and the sentence below says what to do.
-          value={correction === null ? (preferences.goal_preset ?? undefined) : undefined}
-          onChange={(next) => {
-            const goal = single(next) as Enums<'goal_preset'>
-            void store(withGoal(preferences, goal))
-          }}
+        legend="Goal"
+        options={goalOptions().map((goal) => ({
+          value: goal.value,
+          label: goal.label,
+        }))}
+        // A goal that needs correcting is not one of the options, so nothing
+        // is shown as chosen and the sentence below says what to do.
+        value={correction === null ? (preferences.goal_preset ?? undefined) : undefined}
+        onChange={(next) => {
+          const goal = single(next) as Enums<'goal_preset'>
+          void store(withGoal(preferences, goal))
+        }}
       />
-      {correction !== null && <p>{correction}</p>}
+      {correction !== null && <p style={{ margin: 0 }}>{correction}</p>}
 
       <ChoiceGroup
-          legend="Experience"
-          options={EXPERIENCE_LEVELS.map((level) => ({
-            value: level.value,
-            label: level.label,
-          }))}
-          value={preferences.experience_level ?? undefined}
-          onChange={(next) => {
-            void store(
-              withExperience(preferences, single(next) as Enums<'experience_level'>),
-            )
-          }}
+        legend="Experience"
+        options={EXPERIENCE_LEVELS.map((level) => ({
+          value: level.value,
+          label: level.label,
+        }))}
+        value={preferences.experience_level ?? undefined}
+        onChange={(next) => {
+          void store(
+            withExperience(preferences, single(next) as Enums<'experience_level'>),
+          )
+        }}
       />
 
       <CheckboxGroup legend="Sections">
-          {locked && <p>{LOCKED_SECTIONS_REASON}</p>}
-          {SECTIONS.map((section) => (
-            <Checkbox
-              key={section.value}
-              label={section.label}
-              checked={preferences.enabled_sections.includes(section.value)}
-              // Disabled rather than silently ineffective: while the goal fixes
-              // the set, the control says so above and cannot be moved.
-              disabled={locked}
-              onChange={() => {
-                const reason = sectionRefusal(preferences, section.value)
-                if (reason !== null) {
-                  setRefusal(reason)
-                  return
-                }
-                void store(withSection(preferences, section.value))
-              }}
-            />
-          ))}
-          {refusal !== null && <p role="alert">{refusal}</p>}
+        {locked && <p style={{ margin: 0 }}>{LOCKED_SECTIONS_REASON}</p>}
+        {SECTIONS.map((section) => (
+          <Checkbox
+            key={section.value}
+            label={section.label}
+            checked={preferences.enabled_sections.includes(section.value)}
+            // Disabled rather than silently ineffective: while the goal fixes
+            // the set, the control says so above and cannot be moved.
+            disabled={locked}
+            onChange={() => {
+              const reason = sectionRefusal(preferences, section.value)
+              if (reason !== null) {
+                setRefusal(reason)
+                return
+              }
+              void store(withSection(preferences, section.value))
+            }}
+          />
+        ))}
+        {refusal !== null && (
+          <p role="alert" style={{ margin: 0 }}>
+            {refusal}
+          </p>
+        )}
       </CheckboxGroup>
 
       <SaveStatusLine status={status} />
-    </section>
+    </SettingsCard>
   )
 }
 
@@ -281,8 +306,7 @@ function LimitationsSection() {
           : viewReady(query.state.data)
 
   return (
-    <section className="clr-stack" aria-labelledby="settings-limitations">
-      <Heading id="settings-limitations">Limitations</Heading>
+    <SettingsCard id="settings-limitations" heading="Limitations">
       <ViewStateSwitch
         state={state}
         loadingLabel="Reading your limitations"
@@ -294,7 +318,7 @@ function LimitationsSection() {
       >
         {(constraints) => <LimitationsEditor constraints={constraints} />}
       </ViewStateSwitch>
-    </section>
+    </SettingsCard>
   )
 }
 
@@ -376,7 +400,9 @@ function LimitationsEditor({
   return (
     <div className="clr-stack">
       {constraints.length === 0 && (
-        <p>Nothing recorded. Tick anything a workout should work around.</p>
+        <p style={{ margin: 0 }}>
+          Nothing recorded. Tick anything a workout should work around.
+        </p>
       )}
 
       <CheckboxGroup legend="Work around">
@@ -431,52 +457,45 @@ function AppearanceSection() {
   const [appearance, choose] = useAppearance()
 
   return (
-    <section className="clr-stack" aria-labelledby="settings-appearance">
-      <Heading id="settings-appearance">Appearance</Heading>
+    <SettingsCard id="settings-appearance" heading="Appearance">
       <AppearancePicker legend="Skin" value={appearance} onChange={choose} />
-    </section>
+    </SettingsCard>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The rows this screen does not own
+// The cards this screen does not edit in
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Where you train, and what is there. SET-02's sub-views own the editing, so
- * this row says where the answer lives and offers no control — a disabled
- * button now would be an affordance that lies.
+ * this card says where the answer lives and offers the way there as the quiet
+ * action it is — an editing control here would be an affordance that lies.
  */
-function TrainingPlacesRow() {
+function TrainingPlacesSection() {
   const navigate = useNavigate()
 
   return (
-    <ListRow>
-      <div className="clr-stack">
-        <Heading>Places and equipment</Heading>
-        <p>Manage where you train and the equipment available at each place.</p>
-        <Button
-          variant="secondary"
-          icon={<ChevronRight size={20} />}
-          onClick={() => void navigate('/settings/locations')}
-        >
-          Manage places
-        </Button>
-      </div>
-    </ListRow>
+    <SettingsCard id="settings-places" heading="Places and equipment">
+      <p style={{ margin: 0 }}>
+        Manage where you train and the equipment available at each place.
+      </p>
+      <TextAction onClick={() => void navigate('/settings/locations')}>
+        Manage places
+      </TextAction>
+    </SettingsCard>
   )
 }
 
-function SignOutRow() {
+function SessionSection() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)
 
   return (
-    <ListRow>
-      <div className="clr-stack">
-        <Heading>Session</Heading>
-        <p>Signing out clears this device’s copy of your data.</p>
+    <SettingsCard id="settings-session" heading="Session">
+      <p style={{ margin: 0 }}>Signing out clears this device’s copy of your data.</p>
+      <ActionRow>
         <Button
           variant="secondary"
           loading={signingOut}
@@ -495,7 +514,7 @@ function SignOutRow() {
         >
           Sign out
         </Button>
-      </div>
-    </ListRow>
+      </ActionRow>
+    </SettingsCard>
   )
 }
