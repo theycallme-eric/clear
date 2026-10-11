@@ -137,6 +137,17 @@ const group = (name: string) => screen.getByRole('group', { name })
 const chipIn = (name: string, label: string) =>
   within(group(name)).getByRole('button', { name: new RegExp(label, 'i') })
 const cta = () => screen.getByRole('button', { name: /generate workout/i })
+
+/** Every card in the screen's content. 0.14.3 never leaves a region outside one. */
+const cards = () => [
+  ...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card'),
+]
+
+/** The screen's one card: a second one would be a group that escaped it. */
+function formCard() {
+  expect(cards()).toHaveLength(1)
+  return cards()[0]!
+}
 const slider = () => screen.getByRole('slider')
 
 describe('the screen’s composition (Form Screen template)', () => {
@@ -159,8 +170,28 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(screen.getByLabelText(/time available/i)).toHaveValue(45)
     expect(screen.getByLabelText(/notes/i)).toHaveValue('')
     expect(cta()).toBeInTheDocument()
-    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
     expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(cta())
+  })
+
+  it('holds every group, label and field in one card and keeps the action in the footer', () => {
+    renderGenerate()
+
+    const card = formCard()
+    expect(card).toContainElement(screen.getByText('Strength'))
+    expect(card).toContainElement(screen.getByRole('link', { name: CHANGE_GOAL_LABEL }))
+    expect(card).toContainElement(screen.getByRole('button', { name: RECOVERY_LABEL }))
+    expect(card).toContainElement(group('Anchor'))
+    expect(card).toContainElement(screen.getByText(FIRST_WORKOUT_MESSAGE))
+    expect(card).toContainElement(slider())
+    expect(card).toContainElement(screen.getByLabelText(/place/i))
+    expect(card).toContainElement(screen.getByLabelText(/time available/i))
+    expect(card).toContainElement(screen.getByLabelText(/notes/i))
+
+    // Only the screen title sits on the atmosphere, and the action is not a
+    // field: it is pinned in the measured footer, outside the card.
+    expect(card).not.toContainElement(screen.getByRole('heading', { level: 1 }))
+    expect(card).not.toContainElement(cta())
+    expect(card.querySelector('.clr-chamfer--urgency')).toBeNull()
   })
 
   it('prefills the default place rather than the first one listed', () => {
@@ -523,6 +554,9 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
     expect(cta()).toBeDisabled()
     expect(generation.calls).toEqual([])
+
+    // The read is content of the form's card, not a loader card inside it.
+    expect(formCard()).toContainElement(screen.getByText(HISTORY_LOADING_LABEL))
   })
 
   it('says history could not be read, offers Retry, and is not the first-workout state', async () => {
@@ -646,6 +680,12 @@ await user.click(chipIn('Anchor', 'Upper body'))
     expect(generation.calls).toEqual([])
     expect(screen.getByRole('alert')).toHaveTextContent(REFUSAL_SUMMARY)
     expect(screen.getByText(/whole number of minutes/i)).toBeInTheDocument()
+
+    // The refusal is the card's state, said inside it — not a line above it.
+    const card = formCard()
+    expect(card).toContainElement(screen.getByRole('alert'))
+    expect(card).toContainElement(screen.getByText(/whole number of minutes/i))
+    expect(card.querySelector('.clr-chamfer--urgency')).not.toBeNull()
   })
 
   it('sends once the refused field is fixed', async () => {
@@ -919,6 +959,7 @@ describe('the four states', () => {
 
     expect(screen.getByText(/reading your places/i)).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
+    expect(formCard()).toContainElement(screen.getByText(/reading your places/i))
   })
 
   it('shows the failure and a retry when the places do not load', async () => {
@@ -936,7 +977,11 @@ describe('the four states', () => {
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent(/didn’t load/i)
     })
-    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument()
+    const retry = screen.getByRole('button', { name: /retry/i })
+    // The shared error region is the alert, and its card is the screen's one.
+    expect(screen.getByRole('alert')).toContainElement(formCard())
+    expect(formCard()).toHaveTextContent(/didn’t load/i)
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(retry)
   })
 
   it('offers the way to add a place when there is none to generate from', async () => {
@@ -953,8 +998,10 @@ describe('the four states', () => {
     await waitFor(() => {
       expect(screen.getByText(/no places yet/i)).toBeInTheDocument()
     })
-    expect(screen.getByRole('button', { name: /add a place/i })).toBeInTheDocument()
+    const add = screen.getByRole('button', { name: /add a place/i })
     expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
+    expect(formCard()).toContainElement(screen.getByText(/no places yet/i))
+    expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(add)
   })
 })
 
@@ -1051,6 +1098,12 @@ describe('OVR-04 — the deload suggestion', () => {
     expect(within(banner()!).getByText(/deload suggested/i)).toBeInTheDocument()
     expect(applyButton()).toBeInTheDocument()
     expect(dismissButton()).toBeInTheDocument()
+
+    // A sub-group of the form's card, above the intensity it is about.
+    expect(formCard()).toContainElement(banner())
+    expect(
+      banner()!.compareDocumentPosition(slider()) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 
   it('changes nothing until Apply is pressed, and never sends a deload nobody asked for', async () => {
