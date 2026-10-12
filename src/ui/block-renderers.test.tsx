@@ -266,7 +266,7 @@ describe('the shared block frame', () => {
       <div data-testid="countdown" key="second">Rest countdown</div>,
       null,
       undefined,
-    ]) {
+    ] as const) {
       rerender(frame(timer))
       expect(screen.getByRole('textbox', { name: 'Retained set entry' })).toBe(entry)
       expect(entry).toHaveValue('12')
