@@ -5,7 +5,7 @@
  * echoes whatever fields the renderer observed, so an EMOM and an AMRAP are
  * answered through the same control rather than through six of them.
  */
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -140,5 +140,140 @@ describe('BlockEffortDialog', () => {
     )
 
     expect(screen.getByRole('button', { name: 'Not now' })).toBeDisabled()
+  })
+
+  it('takes no second answer while the row is being written', async () => {
+    const user = userEvent.setup()
+    const onConfirm = vi.fn()
+    renderWithProviders(
+      <BlockEffortDialog
+        open
+        saving
+        identity={identityOf('emom', 600)}
+        outcome={{}}
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />,
+    )
+
+    const record = screen.getByRole('button', { name: 'Record effort' })
+    expect(record).toBeDisabled()
+    expect(record).toHaveAttribute('aria-busy', 'true')
+    await user.click(record)
+
+    expect(onConfirm).not.toHaveBeenCalled()
+  })
+
+  it('records the effort the slider was moved to, once', async () => {
+    const user = userEvent.setup()
+    const onConfirm = vi.fn()
+    renderWithProviders(
+      <BlockEffortDialog
+        open
+        identity={identityOf('amrap', 480)}
+        outcome={{ roundsCompleted: 6 }}
+        onConfirm={onConfirm}
+        onCancel={vi.fn()}
+      />,
+    )
+
+    const slider = screen.getByRole('slider')
+    expect(slider).toHaveFocus()
+    // jsdom does not step a range from the keyboard; the change is the input's.
+    fireEvent.change(slider, { target: { value: '7' } })
+    expect(slider).toHaveAttribute('aria-valuetext', '7 of 10, hard')
+    await user.click(screen.getByRole('button', { name: 'Record effort' }))
+
+    expect(onConfirm).toHaveBeenCalledTimes(1)
+    expect(onConfirm).toHaveBeenCalledWith(7)
+  })
+
+  it('asks each block afresh rather than pre-answering with the last one', () => {
+    const props = {
+      identity: identityOf('emom', 600),
+      outcome: {},
+      onConfirm: vi.fn(),
+      onCancel: vi.fn(),
+    }
+    const { rerender } = renderWithProviders(<BlockEffortDialog open {...props} />)
+
+    fireEvent.change(screen.getByRole('slider'), { target: { value: '10' } })
+    expect(screen.getByRole('slider')).toHaveAttribute('aria-valuetext', '10 of 10, maximal')
+
+    rerender(<BlockEffortDialog open={false} {...props} />)
+    rerender(<BlockEffortDialog open {...props} />)
+
+    expect(screen.getByRole('slider', { hidden: true })).toHaveAttribute(
+      'aria-valuetext',
+      '5 of 10, moderate',
+    )
+  })
+
+  it('puts the safe action first and makes exactly one action primary', () => {
+    renderWithProviders(
+      <BlockEffortDialog
+        open
+        identity={identityOf('emom', 600)}
+        outcome={{}}
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    )
+
+    const dialog = screen.getByRole('heading', { name: 'EMOM complete' }).closest('dialog')
+    const actions = within(dialog as HTMLElement).getAllByRole('button')
+    expect(actions.map((action) => action.textContent)).toEqual(['Not now', 'Record effort'])
+    expect(actions[0]).not.toHaveClass('clr-btn--primary')
+    expect(actions[1]).toHaveClass('clr-btn--primary')
+  })
+
+  it('groups the summary, the score readout and the one field without a card', () => {
+    renderWithProviders(
+      <BlockEffortDialog
+        open
+        identity={identityOf('amrap', 480)}
+        outcome={{ roundsCompleted: 2 }}
+        score={{
+          format: 'amrap',
+          unit: 'reps_per_minute',
+          value: 6,
+          label: '6 reps/min',
+          completedUnderCap: null,
+        }}
+        absence="first_attempt"
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    )
+
+    const dialog = screen.getByRole('heading', { name: 'AMRAP complete' }).closest('dialog')
+    const summary = within(dialog as HTMLElement).getByText('Recorded: 2 rounds.')
+    const group = summary.parentElement as HTMLElement
+    expect(group).toHaveClass('clr-stack')
+    expect(group).not.toHaveClass('clr-stack--tight')
+
+    // One element frame for the score, holding the score and its context.
+    const readouts = group.querySelectorAll('.clr-metric-frame')
+    expect(readouts).toHaveLength(1)
+    expect(readouts[0]).toHaveClass('clr-chamfer')
+    expect(readouts[0]).toHaveTextContent('Score: 6 reps/min')
+    expect(readouts[0]).toHaveTextContent('First attempt at this piece')
+    expect(group).toContainElement(screen.getByRole('slider'))
+    expect((dialog as HTMLElement).querySelector('.clr-card')).toBeNull()
+  })
+
+  it('draws no score readout for a block that is not scored', () => {
+    renderWithProviders(
+      <BlockEffortDialog
+        open
+        identity={identityOf('emom', 600)}
+        outcome={{ minutesCompleted: 10 }}
+        onConfirm={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    )
+
+    const dialog = screen.getByRole('heading', { name: 'EMOM complete' }).closest('dialog')
+    expect((dialog as HTMLElement).querySelector('.clr-metric-frame')).toBeNull()
   })
 })

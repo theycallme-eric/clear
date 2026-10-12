@@ -15,12 +15,30 @@
  * Colour is not a cue here at all. Ahead, level and behind are *words*, so the
  * direction survives a monochrome skin, a screen reader and a photograph of a
  * phone in the sun.
+ *
+ * The frame is the shared readout's, `MetricFrame`: one small element frame
+ * where the score stands in a dialog, and a bare readout wherever a card
+ * already surrounds it — so the score is never a floating line and never a
+ * card inside a card.
  */
+import type { CSSProperties } from 'react'
+
 import type {
   ComparisonAbsence,
   ConditioningScore,
   ScoreComparison,
 } from '../state/conditioning'
+import { MetricFrame } from './composition'
+
+/** The score itself: the data face, as every other readout's value is. */
+const SCORE_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  letterSpacing: 'var(--tracking-data)',
+}
+
+/** The comparison, or its absence: context for the score, and quieter than it. */
+const CONTEXT_STYLE: CSSProperties = { margin: 0, color: 'var(--text-secondary)' }
 
 /** What each direction says, in words rather than in a colour or an arrow. */
 const DIRECTION_WORDS: Readonly<Record<ScoreComparison['direction'], string>> = {
@@ -56,8 +74,8 @@ export function ConditioningScoreLine({
   if (score === null) return null
 
   return (
-    <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
-      <p style={{ margin: 0 }}>
+    <MetricFrame>
+      <p style={SCORE_STYLE}>
         {/*
           The rate, named. "8.4 reps/min" on its own is a number looking for a
           question, and the label is what makes it an answer.
@@ -66,13 +84,13 @@ export function ConditioningScoreLine({
         {score.completedUnderCap === false ? ' · cap reached' : ''}
       </p>
       {comparison !== null ? (
-        <p style={{ margin: 0 }}>
+        <p style={CONTEXT_STYLE}>
           {comparison.label} · {DIRECTION_WORDS[comparison.direction]}
         </p>
       ) : absence !== null ? (
-        <p style={{ margin: 0 }}>{ABSENCE_WORDS[absence]}</p>
+        <p style={CONTEXT_STYLE}>{ABSENCE_WORDS[absence]}</p>
       ) : null}
-    </div>
+    </MetricFrame>
   )
 }
 

@@ -23,6 +23,7 @@ import {
   snapshotFixture,
   type BlockFixture,
 } from '../test/workout-double'
+import { Card } from './card'
 import { ABSENCE_WORDS, ConditioningScoreLine } from './conditioning-score'
 
 const EARLIER_BLOCK = fixtureId('9', 3)
@@ -223,6 +224,42 @@ describe('ConditioningScoreLine', () => {
 
     expect(screen.getByText('Score: 6 reps/min')).toBeInTheDocument()
     expect(container.querySelectorAll('p')).toHaveLength(1)
+  })
+
+  it('stands in one small element frame where no card surrounds it', () => {
+    const earlier = attemptAt(AMRAP, { rounds_completed: 1 })
+    const { container } = render(
+      <ConditioningScoreLine {...likeForLike(AMRAP, TWO_ROUNDS, history(earlier))} />,
+    )
+
+    const frames = container.querySelectorAll('.clr-metric-frame')
+    expect(frames).toHaveLength(1)
+    expect(frames[0]).toHaveClass('clr-chamfer', 'clr-chamfer--sm')
+    // Score and comparison are both inside it: nothing floats beside the frame.
+    expect(frames[0]).toContainElement(screen.getByText('Score: 6 reps/min'))
+    expect(frames[0]).toContainElement(screen.getByText(/Ahead of your previous best/))
+    expect(container.querySelector('.clr-card')).toBeNull()
+  })
+
+  it('is a bare readout inside a card, never a frame within the frame', () => {
+    const { container } = render(
+      <Card heading="Conditioning">
+        <ConditioningScoreLine {...likeForLike(AMRAP, TWO_ROUNDS, [])} />
+      </Card>,
+    )
+
+    const readout = container.querySelector('.clr-metric-frame')
+    expect(readout).not.toBeNull()
+    expect(readout).not.toHaveClass('clr-chamfer')
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+  })
+
+  it('sets the score in the data face and keeps direction in words', () => {
+    const earlier = attemptAt(AMRAP, { rounds_completed: 3 })
+    render(<ConditioningScoreLine {...likeForLike(AMRAP, TWO_ROUNDS, history(earlier))} />)
+
+    expect(screen.getByText('Score: 6 reps/min').style.fontFamily).toBe('var(--font-data)')
+    expect(screen.getByText(/Behind your previous best/)).toBeInTheDocument()
   })
 
   it('renders nothing for a block with no score', () => {
