@@ -3,11 +3,13 @@
  *
  * IA.md §4: atmosphere `full`, public-only, in from Welcome, out to `/` (the
  * onboarding question is a profile question, and this screen reads no profile).
- * Composition is 0.9.7's direct Form Screen: the shell and its atmosphere come
- * from `RootLayout`, `PageHeader` is `AppHeader`, the current field sits on the
- * atmosphere, and the actions use the measured pinned footer. `?mode=create`
- * keeps first-run intent explicit through refresh and history while using the
- * same OTP backend.
+ * Composition is the 0.14.3 form contract: the shell and its atmosphere come
+ * from `RootLayout`, `PageHeader` is `AppHeader`, and only the screen title
+ * sits on the atmosphere. The step's heading, its guidance, the failure and the
+ * current field are one form `Card`; the actions use the measured pinned
+ * footer, with the quiet way back as a `TextAction` under the primary.
+ * `?mode=create` keeps first-run intent explicit through refresh and history
+ * while using the same OTP backend.
  *
  * Two things here are the requirement rather than decoration:
  *
@@ -27,23 +29,34 @@
  *     indicator, aria-busy, activation blocked) rather than to the whole
  *     screen, because replacing a filled-in form with a loading panel loses
  *     the caret and the context.
- *   · error — a typed message in an alert region, carrying a glyph so severity
- *     never rests on colour alone.
+ *   · error — a typed message in an alert region inside the card, carrying a
+ *     glyph so severity never rests on colour alone; a refused field is also an
+ *     invalid `Input`, which draws its own urgency frame and warning glyph.
  *   · empty — n/a, per the IA entry: there is nothing to have none of.
  *   · populated — the form.
  *
  * Motion: the step swap is `.clr-interlace` (keyed on the step, so React
- * remounts it and the animation runs once); validation and failure text sits
- * outside that subtree and appears with no entrance animation, per IA.md §4.
+ * remounts it and the animation runs once); the card, its heading and the
+ * failure text sit outside that subtree, so the card does not replay an
+ * arrival for an inline update and a failure appears with no entrance
+ * animation, per IA.md §4.
  */
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import type { OtpError } from '../data/otp'
 import { isCodeLike, isEmailLike, otpError } from '../data/otp'
-import { AlertCircle, AppHeader, Button, ClearLogo, Input } from '../design-system/index'
+import {
+  AlertCircle,
+  AppHeader,
+  Button,
+  ClearLogo,
+  Input,
+  TextAction,
+} from '../design-system/index'
 import { useCountdown } from '../state/cooldown'
 import { useSignInClients } from '../state/sign-in-context'
+import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { Screen } from './Screen'
@@ -214,93 +227,92 @@ function LoginScreen() {
                   >
                     {resendLabel}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="quiet"
-                    onClick={onUseAnotherEmail}
-                    disabled={busy !== null}
-                  >
+                  <TextAction block onClick={onUseAnotherEmail} disabled={busy !== null}>
                     Use a different email
-                  </Button>
+                  </TextAction>
                 </>
               )}
             </ActionRow>
           </PhoneFooter>
         }
       >
-        <div className="clr-stack">
-          <p>
-            {isCreatingAccount
-              ? 'Enter your email to create your account. We’ll send a one-time code.'
-              : 'We email a one-time code. No password to forget.'}
-          </p>
+        {/* One form card for both steps, outside the keyed subtree: the card
+            stays put while the field inside it swaps. */}
+        <Card heading={step === 'request' ? 'Your email' : 'Your code'}>
+          <div className="clr-stack">
+            <p style={{ margin: 0 }}>
+              {isCreatingAccount
+                ? 'Enter your email to create your account. We’ll send a one-time code.'
+                : 'We email a one-time code. No password to forget.'}
+            </p>
 
-          {/* Outside the keyed subtree: a failure must not animate in. */}
-          {error !== null && (
-            <div role="alert" className="clr-row">
-              <span
-                aria-hidden="true"
-                style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-              >
-                <AlertCircle />
-              </span>
-              <span>{error.message}</span>
-            </div>
-          )}
-
-          <div key={step} className="clr-interlace clr-stack">
-            {step === 'request' ? (
-              <form
-                id={REQUEST_FORM_ID}
-                className="clr-stack"
-                onSubmit={onSubmit(onRequest)}
-                noValidate
-              >
-                <Input
-                  label="Email"
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={setEmail}
-                  placeholder="you@example.com"
-                  invalid={error?.failure === 'invalid-email'}
-                  required
-                />
-              </form>
-            ) : (
-              <form
-                id={VERIFY_FORM_ID}
-                className="clr-stack"
-                onSubmit={onSubmit(onVerify)}
-                noValidate
-              >
-                <Input
-                  label="Code"
-                  type="text"
-                  name="one-time-code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  value={code}
-                  onChange={setCode}
-                  placeholder="6–10 digits"
-                  helperText={`Sent to ${email.trim()}`}
-                  invalid={
-                    error?.failure === 'invalid-code' ||
-                    error?.failure === 'expired-code'
-                  }
-                  inputRef={codeRef}
-                  required
-                />
-              </form>
+            {/* Outside the keyed subtree: a failure must not animate in. */}
+            {error !== null && (
+              <div role="alert" className="clr-row">
+                <span
+                  aria-hidden="true"
+                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
+                >
+                  <AlertCircle />
+                </span>
+                <span>{error.message}</span>
+              </div>
             )}
-          </div>
 
-          {/* Polite, and only ever one sentence: the step swap is visible, so
-              this exists for the person who cannot see it. */}
-          <div role="status" aria-live="polite" className="a11y-hidden">
-            {notice}
+            <div key={step} className="clr-interlace clr-stack">
+              {step === 'request' ? (
+                <form
+                  id={REQUEST_FORM_ID}
+                  className="clr-stack"
+                  onSubmit={onSubmit(onRequest)}
+                  noValidate
+                >
+                  <Input
+                    label="Email"
+                    type="email"
+                    name="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={setEmail}
+                    placeholder="you@example.com"
+                    invalid={error?.failure === 'invalid-email'}
+                    required
+                  />
+                </form>
+              ) : (
+                <form
+                  id={VERIFY_FORM_ID}
+                  className="clr-stack"
+                  onSubmit={onSubmit(onVerify)}
+                  noValidate
+                >
+                  <Input
+                    label="Code"
+                    type="text"
+                    name="one-time-code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={setCode}
+                    placeholder="6–10 digits"
+                    helperText={`Sent to ${email.trim()}`}
+                    invalid={
+                      error?.failure === 'invalid-code' ||
+                      error?.failure === 'expired-code'
+                    }
+                    inputRef={codeRef}
+                    required
+                  />
+                </form>
+              )}
+            </div>
           </div>
+        </Card>
+
+        {/* Polite, and only ever one sentence: the step swap is visible, so
+            this exists for the person who cannot see it. */}
+        <div role="status" aria-live="polite" className="a11y-hidden">
+          {notice}
         </div>
       </Screen>
     </>
