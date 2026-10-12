@@ -30,6 +30,7 @@ import type {
   SectionDetailView,
 } from '../state/session-detail'
 import { Card } from './card'
+import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
 import { StructureBadge } from './workout-chrome'
 
@@ -142,17 +143,27 @@ export function StructureResultBadge({ block }: StructureResultBadgeProps) {
   )
 }
 
-/** One reading: what was measured, then what it said. */
+const MEASUREMENT_STYLE: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'baseline',
+  gap: 'var(--spacing-100)',
+}
+
+/**
+ * One reading: what was measured, then what it said. Standalone it is a small
+ * element frame; inside a card it is a bare readout, as `MetricFrame` is, so
+ * the card stays the only frame around a block's result.
+ */
 function Measurement({ label, value }: { label: string; value: ReactNode }) {
+  const insideCard = useInsideCard()
   return (
     <span
-      className="clr-chamfer clr-chamfer--sm"
-      style={{
-        display: 'inline-flex',
-        alignItems: 'baseline',
-        gap: 'var(--spacing-100)',
-        padding: 'var(--spacing-50) var(--spacing-200)',
-      }}
+      className={insideCard ? undefined : 'clr-chamfer clr-chamfer--sm'}
+      style={
+        insideCard
+          ? MEASUREMENT_STYLE
+          : { ...MEASUREMENT_STYLE, padding: 'var(--spacing-50) var(--spacing-200)' }
+      }
     >
       <span style={DATA_STYLE}>{label}</span>
       <span style={VALUE_STYLE}>{value}</span>
@@ -262,11 +273,21 @@ export interface SessionSectionCardProps {
   defaultExpanded?: boolean
 }
 
+/** A block after the first: set off by the card's internal rule, not a frame. */
+const RULED_BLOCK_STYLE: CSSProperties = {
+  ...STACK_STYLE,
+  paddingTop: 'var(--spacing-200)',
+  borderTop: 'var(--border-width) solid var(--border-region-rule)',
+}
+
 /**
  * One section of the workout: its blocks, each with its result and its
  * movements. Disclosed rather than always-open, because a full session is long
  * — and `CollapsibleSection` keeps collapsed content in the accessibility tree,
  * so nothing here is hidden from a screen reader or from find-in-page.
+ *
+ * The card is the section's one frame and the disclosure trigger is its
+ * heading row. Blocks are groups inside it, separated by a rule.
  */
 export function SessionSectionCard({
   section,
@@ -276,8 +297,12 @@ export function SessionSectionCard({
     <Card>
       <CollapsibleSection label={section.title} defaultExpanded={defaultExpanded}>
         <div style={STACK_STYLE}>
-          {section.blocks.map((block) => (
-            <div key={block.id} style={STACK_STYLE}>
+          {section.blocks.map((block, index) => (
+            <div
+              key={block.id}
+              data-detail-block=""
+              style={index === 0 ? STACK_STYLE : RULED_BLOCK_STYLE}
+            >
               <StructureResultBadge block={block} />
               {block.notes !== null && (
                 <p style={{ ...VALUE_STYLE, margin: 0 }}>{block.notes}</p>
