@@ -179,20 +179,53 @@ test.describe('with motion allowed', () => {
   test('a set arrives 40ms apart', async ({ page, visit }) => {
     await visit('/welcome')
 
-    const delays = await page.evaluate(() =>
-      [...document.querySelectorAll('main .clr-boot > *')].map((row) => {
-        const style = getComputedStyle(row)
-        return { keyframes: style.animationName, delay: style.animationDelay }
-      }),
-    )
+    // Welcome is one arriving card, not a multirow set. Its pinned actions
+    // must stay outside the arrival and remain usable without animation.
+    const arrival = page.locator('main .clr-boot > *')
+    await expect(arrival).toHaveCount(1)
+    await expect(arrival.locator('.clr-card')).toHaveCount(1)
+    await expect(arrival).toHaveCSS('animation-name', 'clr-boot-in')
+    await expect(arrival).toHaveCSS('animation-delay', '0s')
+    await expect(page.locator('main .clr-boot button')).toHaveCount(0)
+    const actions = page.locator('main .clr-scroll-region__foot button')
+    await expect(actions).toHaveText(['Sign in', 'Create account'])
+    for (const action of await actions.all()) {
+      await expect(action).toHaveCSS('animation-name', 'none')
+      await expect(action).toBeVisible()
+    }
 
-    expect(delays.length).toBeGreaterThan(1)
+    // Preserve the multirow 40ms browser-CSS contract with an explicitly inert
+    // off-screen fixture, not invented extra content in the real Welcome.
+    const delays = await page.evaluate(() => {
+      const arrival = document.querySelector<HTMLElement>('main .clr-boot > *')
+      if (!arrival?.querySelector('.clr-card')) throw new Error('the Welcome card is missing')
+      const fixture = document.createElement('div')
+      fixture.className = 'clr-boot'
+      fixture.inert = true
+      fixture.setAttribute('aria-hidden', 'true')
+      fixture.style.position = 'fixed'
+      fixture.style.left = '-10000px'
+      fixture.style.width = `${arrival.offsetWidth}px`
+      for (let row = 0; row < 3; row += 1) fixture.append(arrival.cloneNode(true))
+      document.body.append(fixture)
+      try {
+        return [...fixture.children].map((row) => {
+          const style = getComputedStyle(row)
+          return { keyframes: style.animationName, delay: style.animationDelay }
+        })
+      } finally {
+        fixture.remove()
+      }
+    })
+
+    expect(delays).toHaveLength(3)
     expect(delays).toEqual(
       delays.map((_, index) => ({
         keyframes: 'clr-boot-in',
         delay: index === 0 ? '0s' : `${(index * 0.04).toFixed(2)}s`,
       })),
     )
+    await expect(page.locator('main .clr-boot > *')).toHaveCount(1)
   })
 
   test('a navigation that lands mid-entry cuts it rather than waiting', async ({
