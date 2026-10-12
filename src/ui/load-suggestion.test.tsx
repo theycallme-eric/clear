@@ -20,6 +20,7 @@ import {
 } from '../state/load-suggestions'
 import type { AnchorEvidenceRow, LoadAnchorRow } from '../state/schemas'
 import { anchorRow, evidenceRows, suggestionAcceptance } from '../test/load-suggestion-fixtures'
+import { Card } from './card'
 import {
   APPLY_OVERRIDE_LABEL,
   CLEAR_OVERRIDE_LABEL,
@@ -75,7 +76,30 @@ describe('the suggestion affordance', () => {
       text.indexOf(weightText(suggestion.weight ?? 0, 'kg')),
     )
     expect(button).toHaveAccessibleName(expect.stringContaining(LOW_CONFIDENCE_LABEL))
-    expect(button.style.border).toContain('dashed')
+    // The tier's own glyph leads it, and the number is not the display figure.
+    expect(button).toHaveAttribute('data-confidence', 'low')
+    expect(button.firstElementChild?.querySelector('svg')).not.toBeNull()
+    const weight = within(button).getByText(weightText(suggestion.weight ?? 0, 'kg'))
+    expect(weight.style.fontFamily).toBe('var(--font-data)')
+  })
+
+  it('is the public text action: a native button with no frame of its own', async () => {
+    const user = userEvent.setup()
+    const onOpen = vi.fn()
+    render(
+      <LoadSuggestionButton suggestion={suggestionFor([anchorRow()])} override={null} onOpen={onOpen} />,
+    )
+
+    const button = screen.getByRole('button')
+    expect(button).toHaveAttribute('type', 'button')
+    expect(button).toHaveAttribute('aria-haspopup', 'dialog')
+    expect(button).toHaveClass('clr-text-action')
+    expect(button).not.toHaveClass('clr-chamfer')
+    expect(button.style.border).toBe('')
+    expect(button.closest('.clr-card')).toBeNull()
+
+    await user.click(button)
+    expect(onOpen).toHaveBeenCalledTimes(1)
   })
 
   it('says there is no number rather than showing a zero', () => {
@@ -181,7 +205,27 @@ describe('the surface’s loading and error states', () => {
   it('announces loading with a ScanLoader', () => {
     render(<LoadSuggestionsStatus status="loading" />)
 
-    expect(screen.getByText(new RegExp(SUGGESTIONS_LOADING_LABEL))).toBeInTheDocument()
+    const label = screen.getByText(new RegExp(SUGGESTIONS_LOADING_LABEL))
+    expect(label).toBeInTheDocument()
+    expect(label.closest('[aria-busy="true"]')).not.toBeNull()
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+  })
+
+  it('renders both states as content of a card that already surrounds them', () => {
+    render(
+      <Card heading="Briefing">
+        <LoadSuggestionsStatus status="loading" />
+        <LoadSuggestionsStatus
+          status="error"
+          error={createError(ErrorCode.PERSISTENCE_READ_FAILED)}
+          onRetry={() => undefined}
+        />
+      </Card>,
+    )
+
+    expect(screen.getByRole('status')).toHaveTextContent(SUGGESTIONS_LOADING_LABEL)
+    expect(screen.getByRole('alert')).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
+    expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
   })
 
   it('names the failure and offers a retry', async () => {
@@ -195,8 +239,12 @@ describe('the surface’s loading and error states', () => {
       />,
     )
 
-    expect(screen.getByRole('alert')).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
-    await user.click(screen.getByRole('button', { name: 'Retry' }))
-    expect(onRetry).toHaveBeenCalled()
+    const alert = screen.getByRole('alert')
+    expect(alert).toHaveTextContent(SUGGESTIONS_ERROR_TITLE)
+    // Standalone it is one card, with the severity glyph beside the words.
+    expect(alert.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(alert.querySelector('svg')).not.toBeNull()
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+    expect(onRetry).toHaveBeenCalledTimes(1)
   })
 })

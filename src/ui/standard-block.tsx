@@ -14,48 +14,33 @@
  *     standard block observes nothing a clock would have measured. A zero it
  *     never watched would be a measurement (DATA_MODEL §8).
  *
+ * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
+ * card, the identity row and the single completion are `BlockPanel`'s, and the
+ * movements are rows of its list — never a card inside the card.
+ *
  * The block's own state is not a query and has no four states of its own: the
  * shell owns loading and error for the session, and a block with no active
  * prescriptions left is a real, drawable case rather than an empty view —
  * everything in it was swapped out, and it says so.
  */
 import type { BlockRendererProps } from './block-renderers'
-import { BlockCompletionControl } from './block-completion-control'
-import { Card } from './card'
+import { BlockPanel } from './block-renderers-frame'
 import { ExerciseSetLogger } from './set-logger'
-import { StructureBadge } from './workout-chrome'
 
 export function StandardBlock({ block }: BlockRendererProps) {
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span
-            style={{
-              fontFamily: 'var(--font-data)',
-              fontSize: 'var(--label-xs-size)',
-              letterSpacing: 'var(--tracking-data)',
-              color: 'var(--text-card-label)',
-            }}
-          >
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
-
-        {block.exercises.length === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          block.exercises.map((exercise) => (
-            <ExerciseSetLogger key={exercise.exerciseId} exercise={exercise} />
-          ))
-        )}
-
-        <BlockCompletionControl blockId={block.blockId} outcome={{}} />
-      </div>
-    </Card>
+    <BlockPanel block={block}>
+      {block.exercises.length === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <BlockPanel.MovementList label="Movements in this block">
+          {block.exercises.map((exercise) => (
+            <BlockPanel.MovementItem key={exercise.exerciseId}>
+              <ExerciseSetLogger exercise={exercise} />
+            </BlockPanel.MovementItem>
+          ))}
+        </BlockPanel.MovementList>
+      )}
+    </BlockPanel>
   )
 }
