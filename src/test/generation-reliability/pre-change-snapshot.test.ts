@@ -437,6 +437,8 @@ describe('the manifest rules', () => {
   })
 
   it('refuses a short commit, a missing relation, and an unverified rollback', async () => {
+    const baseline = await acceptable()
+
     for (const edit of [
       (manifest: Draft) => (manifest.deployedCommit.sha = DEPLOYED_SHA.slice(0, 7)),
       (manifest: Draft) => manifest.capture.relations.pop(),
@@ -445,7 +447,11 @@ describe('the manifest rules', () => {
       (manifest: Draft) => (manifest.rollback.exercisesRestored -= 1),
       (manifest: Draft) => (manifest.deployedMatrix.sectionTiers[0].candidates += 1),
     ]) {
-      expect(manifestProblems(await edited(edit), rules.enums)).not.toEqual([])
+      const manifest = JSON.parse(baseline) as Draft
+      edit(manifest)
+      const contents = `${JSON.stringify(manifest, null, 2)}\n`
+
+      expect(manifestProblems(contents, rules.enums)).not.toEqual([])
     }
   })
 

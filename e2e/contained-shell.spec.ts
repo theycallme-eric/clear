@@ -72,12 +72,25 @@ test('a short phone keeps the last action reachable at a hard edge', async ({
   const scroller = region.locator('.clr-scroll-region__scroller')
   const streak = region.locator('.clr-scroll-region__streak--bottom')
   const bar = region.locator('.clr-scroll-region__bar')
+  const foot = region.locator('.clr-scroll-region__foot')
+  const lastAction = page.getByRole('button', { name: 'Create account' })
 
   await expect(region).toHaveAttribute('data-measured', '')
+  await expect(lastAction).toBeVisible()
+  await expect(scroller.getByRole('button')).toHaveCount(0)
+  await expect(foot.getByRole('button')).toHaveText(['Sign in', 'Create account'])
+  const initialHeight = await scroller.evaluate((element) => element.clientHeight)
+
+  // The approved singleton card fits at 320px; a real reduced viewport must
+  // still overflow in the one owner without putting the actions below it.
+  await page.setViewportSize({ width: 390, height: 280 })
+  await expect.poll(() => scroller.evaluate((element) => element.clientHeight))
+    .toBeLessThan(initialHeight)
   expect(await scroller.evaluate((element) => element.scrollHeight)).toBeGreaterThan(
     await scroller.evaluate((element) => element.clientHeight),
   )
 
+  const before = await foot.boundingBox()
   const reached = await scroller.evaluate((element) => {
     element.scrollTop = element.scrollHeight
     element.dispatchEvent(new Event('scroll'))
@@ -85,13 +98,42 @@ test('a short phone keeps the last action reachable at a hard edge', async ({
   })
   expect(reached).toBeGreaterThan(0)
   await expect(bar).toHaveCSS('width', '2px')
+  const after = await foot.boundingBox()
+  expect(before).not.toBeNull()
+  expect(after).not.toBeNull()
+  expect(after?.y).toBeCloseTo(before?.y ?? 0, 0)
+  expect(after?.height).toBeCloseTo(before?.height ?? 0, 0)
 
-  const lastAction = page.getByRole('button', { name: 'Create account' })
-  const isInsideViewport = await lastAction.evaluate((element) => {
+  // A very short footer can clip its own contents. Native keyboard traversal
+  // must reveal the last action inside that clip as well as inside the window.
+  await page.getByRole('button', { name: 'Sign in' }).focus()
+  await page.keyboard.press('Tab')
+  await expect(lastAction).toBeFocused()
+  const geometry = await lastAction.evaluate((element) => {
+    const region = element.closest('.clr-scroll-region')
+    const foot = element.closest('.clr-scroll-region__foot')
+    const scroller = region?.querySelector('.clr-scroll-region__scroller')
+    if (!region || !foot || !scroller) throw new Error('the pinned footer is missing')
     const rect = element.getBoundingClientRect()
-    return rect.top >= 0 && rect.bottom <= window.innerHeight
+    const footRect = foot.getBoundingClientRect()
+    return {
+      insideViewport: rect.top >= 0 && rect.bottom <= window.innerHeight,
+      insideFooter: rect.top >= footRect.top && rect.bottom <= footRect.bottom,
+      measuredFoot: parseFloat(getComputedStyle(region).getPropertyValue('--foot-h')),
+      footHeight: footRect.height,
+      scrollerBottom: scroller.getBoundingClientRect().bottom,
+      footTop: footRect.top,
+      bodyTop: document.scrollingElement?.scrollTop ?? -1,
+      bodyHeight: document.scrollingElement?.scrollHeight ?? -1,
+      bodyClientHeight: document.scrollingElement?.clientHeight ?? -1,
+    }
   })
-  expect(isInsideViewport).toBe(true)
+  expect(geometry.insideViewport).toBe(true)
+  expect(geometry.insideFooter).toBe(true)
+  expect(geometry.measuredFoot).toBeCloseTo(geometry.footHeight, 0)
+  expect(geometry.scrollerBottom).toBeLessThanOrEqual(geometry.footTop + 1)
+  expect(geometry.bodyTop).toBe(0)
+  expect(geometry.bodyHeight).toBe(geometry.bodyClientHeight)
 
   await expect(region).not.toHaveAttribute('data-scrolling', '', {
     timeout: 1_500,
