@@ -448,7 +448,23 @@ test.describe('history-detail — History list to Review or Session Detail on th
 
     await expect(page).toHaveURL(new RegExp(`/history/${seeded.unstartedId}$`))
     await expect(page.locator('main h1')).toHaveText(TITLES.unstarted)
-    await expect(page.getByRole('region', { name: 'Sections' })).toBeVisible()
+    const sections = page.getByRole('region', { name: 'Sections' })
+    await expect(sections).toBeVisible()
+    // One overview card heads the facts, the provenance and the debrief; each
+    // section is a card of its own and no card holds another.
+    const overview = page
+      .locator('main .clr-card')
+      .filter({ has: page.getByRole('heading', { level: 2, name: 'Overview' }) })
+    await expect(overview).toHaveCount(1)
+    await expect(overview.getByText('Never started', { exact: true })).toBeVisible()
+    await expect(overview.getByRole('heading', { level: 3, name: 'Mood' })).toBeVisible()
+    await expect(overview.getByRole('heading', { level: 3, name: 'Notes' })).toBeVisible()
+    await expect(overview.locator('dl .clr-chamfer')).toHaveCount(0)
+    await expect(sections.locator('.clr-card')).not.toHaveCount(0)
+    await expect(page.locator('main .clr-card')).toHaveCount(
+      (await sections.locator('.clr-card').count()) + 1,
+    )
+    await expect(page.locator('main .clr-card .clr-card')).toHaveCount(0)
     await expect(page.locator('main .clr-scroll-region__foot .clr-footer')).toContainText(
       'Only a completed workout can be restarted.',
     )

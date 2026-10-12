@@ -52,7 +52,8 @@ import {
 } from '../state/session-restart'
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
-import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { HeadingSection } from '../ui/Heading'
 import { MoodReading } from '../ui/mood'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
@@ -69,6 +70,9 @@ export const SESSION_DETAIL_NOT_FOUND_TITLE = 'Workout not found'
 export const SESSION_DETAIL_NOT_FOUND_ACTION = 'Open history'
 export const SESSION_DETAIL_ERROR_TITLE = 'Workout didn’t load'
 
+/** The overview card's heading, inside it. */
+export const SESSION_DETAIL_OVERVIEW_LABEL = 'Overview'
+export const SESSION_DETAIL_FACTS_LABEL = 'Workout facts'
 export const SESSION_DETAIL_MOOD_LABEL = 'Mood'
 export const SESSION_DETAIL_NOTES_LABEL = 'Notes'
 export const SESSION_DETAIL_NO_NOTES = 'No notes'
@@ -77,17 +81,6 @@ export const SESSION_DETAIL_RESTART_LABEL = 'Restart'
 
 const HISTORY_PATH = '/history'
 
-const META_STYLE: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 'var(--spacing-200)',
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const LABEL_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
@@ -95,6 +88,14 @@ const LABEL_STYLE: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--text-card-label)',
   margin: 0,
+}
+
+const VALUE_STYLE: CSSProperties = {
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-sm-size)',
+  letterSpacing: 'var(--tracking-data)',
+  color: 'var(--text-card-body)',
+  marginInlineStart: 0,
 }
 
 const BODY_STYLE: CSSProperties = {
@@ -204,41 +205,60 @@ function SessionDetailErrorAction({
   )
 }
 
-/** The populated record: what it was, where the answer came from, and each section. */
+/**
+ * The populated record: what it was, where the answer came from, and each
+ * section. One overview card holds the facts, the provenance and the debrief;
+ * each section is a card of its own. Nothing but the title sits on the
+ * atmosphere, and no card holds another.
+ */
 function SessionDetailBody({
   view,
 }: {
   view: SessionDetailView
 }) {
-  return (
-    <div style={STACK_STYLE}>
-      <p style={META_STYLE}>
-        <span>{view.day}</span>
-        <span>{view.focus}</span>
-        <span>{view.stateLabel}</span>
-        {view.duration !== null && <span>{view.duration}</span>}
-        <span>Intensity {view.intensity}/10</span>
-      </p>
-      <SessionProvenance provenance={view.provenance} />
+  const facts: readonly (readonly [string, string])[] = [
+    ['Date', view.day],
+    ['Focus', view.focus],
+    ['Status', view.stateLabel],
+    // A session nobody timed has no duration, and no term for one.
+    ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
+    ['Intensity', `${view.intensity}/10`],
+  ]
 
-      <Card>
-        <div style={STACK_STYLE}>
-          <div>
-            <p style={LABEL_STYLE}>{SESSION_DETAIL_MOOD_LABEL}</p>
+  return (
+    <div className="clr-stack">
+      <Card heading={SESSION_DETAIL_OVERVIEW_LABEL}>
+        {/* Inside the card `MetricFrame` is a bare readout, so the card is the
+            only frame around the facts. */}
+        <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
+          {facts.map(([label, value]) => (
+            <MetricFrame key={label}>
+              <dt style={LABEL_STYLE}>{label}</dt>
+              <dd style={VALUE_STYLE}>{value}</dd>
+            </MetricFrame>
+          ))}
+        </MetricGrid>
+        <SessionProvenance provenance={view.provenance} />
+
+        {/* The debrief's two answers are ruled sub-groups one level down,
+            never a second frame. */}
+        <HeadingSection>
+          <Card heading={SESSION_DETAIL_MOOD_LABEL}>
             <MoodReading step={view.mood} />
-          </div>
-          <div>
-            <p style={LABEL_STYLE}>{SESSION_DETAIL_NOTES_LABEL}</p>
+          </Card>
+        </HeadingSection>
+        <HeadingSection>
+          <Card heading={SESSION_DETAIL_NOTES_LABEL}>
             {/* An unwritten note is said, not left blank: an empty panel reads
                 as a note that failed to load. */}
             <p style={view.notes === null ? LABEL_STYLE : BODY_STYLE}>
               {view.notes ?? SESSION_DETAIL_NO_NOTES}
             </p>
-          </div>
-        </div>
+          </Card>
+        </HeadingSection>
       </Card>
 
-      <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} style={STACK_STYLE}>
+      <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} className="clr-stack">
         {view.sections.map((section) => (
           <SessionSectionCard key={section.id} section={section} />
         ))}

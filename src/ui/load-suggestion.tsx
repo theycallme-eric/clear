@@ -7,9 +7,9 @@
  * which is where `suggestLoad` is called. This file decides treatment only:
  *
  *   * **Low confidence is a different affordance, not a footnote.** It leads
- *     with its own glyph and the words "Low confidence", the frame is dashed
- *     rather than solid and the number drops to the muted data face — so the
- *     tier reads before the weight does, in every skin and to a screen reader.
+ *     with its own glyph and the words "Low confidence" and the number drops
+ *     to the muted data face — so the tier reads before the weight does, in
+ *     every skin and to a screen reader.
  *   * **A suggestion with no number says so** in words, and never as a zero.
  *     A prescription with no anchor has no entry at all, and the caller renders
  *     nothing for it.
@@ -23,12 +23,11 @@
 import { useState, type CSSProperties } from 'react'
 
 import {
-  AlertTriangle,
   Button,
   HelpCircle,
   Input,
   Pencil,
-  ScanLoader,
+  TextAction,
   WeightPlate,
 } from '../design-system/index'
 import type { AppError } from '../state/errors'
@@ -49,6 +48,7 @@ import {
   type LoadSuggestionView,
 } from '../state/load-suggestions'
 import { AppDialog } from './app-dialog'
+import { ErrorView, LoadingView } from './view-state'
 
 export const WHY_TITLE = 'Why this number'
 export const LAST_SESSION_LABEL = 'Last session'
@@ -74,6 +74,7 @@ const VALUE_STYLE: CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontSize: 'var(--heading-h6-size)',
   color: 'var(--text-card-header)',
+  textTransform: 'none',
   margin: 0,
 }
 
@@ -103,34 +104,43 @@ export interface LoadSuggestionButtonProps {
 }
 
 /**
- * One prescription's suggestion, as the control that explains it. The whole
- * reading is the accessible name, so "Low confidence" and the session count are
- * heard in the same breath as the number.
+ * The action's own row. It may wrap, because a low-confidence reading with a
+ * delta is longer than a phone-width card, and it starts at the row's edge.
+ */
+const ACTION_STYLE: CSSProperties = {
+  alignSelf: 'flex-start',
+  flexWrap: 'wrap',
+  textAlign: 'start',
+  paddingBlock: 'var(--spacing-100)',
+}
+
+/** A weight keeps the case its unit is written in, inside an uppercase label. */
+const UNIT_CASE_STYLE: CSSProperties = { textTransform: 'none' }
+
+/** The low-confidence number: the label face, so the tier outweighs it. */
+const MUTED_VALUE_STYLE: CSSProperties = { ...DATA_STYLE, ...UNIT_CASE_STYLE }
+
+/**
+ * One prescription's suggestion, as the control that explains it: the public
+ * `TextAction`, the quietest action a card holds, so it adds no frame inside
+ * the section's card and keeps the 40px target. The whole reading is the
+ * accessible name, so "Low confidence" and the session count are heard in the
+ * same breath as the number.
  */
 export function LoadSuggestionButton({ suggestion, override, onOpen }: LoadSuggestionButtonProps) {
   const low = suggestion.confidence === 'low'
   const delta = override === null ? deltaText(suggestion.delta, suggestion.unit) : null
 
   return (
-    <button
-      type="button"
+    <TextAction
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-label={suggestionSummary(suggestion, override)}
       data-confidence={suggestion.confidence}
-      style={{
-        ...ROW_STYLE,
-        alignSelf: 'flex-start',
-        background: 'transparent',
-        color: 'inherit',
-        cursor: 'pointer',
-        padding: 'var(--spacing-100) var(--spacing-200)',
-        border: `var(--border-width) ${low ? 'dashed' : 'solid'} var(--border-card)`,
-        borderRadius: 0,
-      }}
+      style={ACTION_STYLE}
     >
       {low && (
-        <span style={{ ...DATA_STYLE, ...ROW_STYLE, textTransform: 'uppercase' }}>
+        <span style={ROW_STYLE}>
           <HelpCircle size={16} />
           {LOW_CONFIDENCE_LABEL}
         </span>
@@ -140,23 +150,23 @@ export function LoadSuggestionButton({ suggestion, override, onOpen }: LoadSugge
       )}
       {override !== null ? (
         <>
-          <span style={{ ...DATA_STYLE, textTransform: 'uppercase' }}>{OVERRIDE_LABEL}</span>
+          <span>{OVERRIDE_LABEL}</span>
           <span style={VALUE_STYLE}>{weightText(override.weight, override.unit)}</span>
           <Pencil size={16} />
         </>
       ) : suggestion.weight === null ? (
-        <span style={DATA_STYLE}>{NO_SUGGESTION_LABEL}</span>
+        <span>{NO_SUGGESTION_LABEL}</span>
       ) : (
         <>
-          <span style={{ ...DATA_STYLE, textTransform: 'uppercase' }}>{SUGGESTION_LABEL}</span>
-          <span style={low ? DATA_STYLE : VALUE_STYLE}>
+          <span>{SUGGESTION_LABEL}</span>
+          <span style={low ? MUTED_VALUE_STYLE : VALUE_STYLE}>
             {weightText(suggestion.weight, suggestion.unit)}
           </span>
-          {delta !== null && <span style={DATA_STYLE}>{delta}</span>}
+          {delta !== null && <span style={UNIT_CASE_STYLE}>{delta}</span>}
         </>
       )}
       <span style={DATA_STYLE}>{sessionCountText(suggestion.sessionCount)}</span>
-    </button>
+    </TextAction>
   )
 }
 
@@ -287,27 +297,23 @@ export type LoadSuggestionsStatusProps =
   | { readonly status: 'error'; readonly error: AppError; readonly onRetry: () => void }
 
 /**
- * The loading and error states of the anchor reads. Inline and small, because
- * they qualify one part of the briefing rather than replace it: the workout is
- * still readable and still startable while suggestions are missing.
+ * The loading and error states of the anchor reads, through the shared state
+ * renderers: a card of their own beside the briefing's cards, or that card's
+ * content when a caller places them inside one. They qualify one part of the
+ * briefing rather than replace it: the workout is still readable and still
+ * startable while suggestions are missing.
  */
 export function LoadSuggestionsStatus(props: LoadSuggestionsStatusProps) {
   if (props.status === 'loading') {
-    return <ScanLoader label={SUGGESTIONS_LOADING_LABEL} />
+    return <LoadingView label={SUGGESTIONS_LOADING_LABEL} />
   }
 
   return (
-    <div role="alert" style={{ ...ROW_STYLE, justifyContent: 'space-between' }}>
-      <p style={{ ...ROW_STYLE, margin: 0 }}>
-        <span style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}>
-          <AlertTriangle size={16} />
-        </span>
-        <span>{SUGGESTIONS_ERROR_TITLE}</span>
-        <span style={DATA_STYLE}>{props.error.message}</span>
-      </p>
-      <Button variant="quiet" size="sm" onClick={props.onRetry}>
-        {SUGGESTIONS_RETRY_LABEL}
-      </Button>
-    </div>
+    <ErrorView
+      error={props.error}
+      title={SUGGESTIONS_ERROR_TITLE}
+      actionLabel={SUGGESTIONS_RETRY_LABEL}
+      onRetry={props.onRetry}
+    />
   )
 }

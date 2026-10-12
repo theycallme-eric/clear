@@ -1,8 +1,9 @@
 /**
  * Review — REV-01. The pre-workout briefing, and the handoff into SES-01.
  *
- * IA.md §4 gives this screen the composition it has: a header of the four
- * facts the workout was composed under, one card per section, and two actions.
+ * IA.md §4 gives this screen the composition it has: an overview card of the
+ * facts the workout was composed under, one card per section, and two actions
+ * in the pinned footer. Nothing but the title sits on the atmosphere.
  * Everything it renders comes from `reviewBriefing`, which is where the
  * decisions about *words* live; this file is the markup and the two things the
  * markup cannot be — starting, and discarding.
@@ -99,6 +100,9 @@ import { Screen } from './Screen'
 export const REVIEW_TITLE = 'Review'
 export const START_LABEL = 'Start workout'
 export const REGENERATE_LABEL = 'Regenerate'
+/** The overview card's heading, inside it. */
+export const OVERVIEW_LABEL = 'Overview'
+export const FACTS_LABEL = 'Workout facts'
 
 export interface ReviewProps {
   /**
@@ -274,9 +278,8 @@ export function Review({
         className="clr-stack"
         style={{ display: 'flex', flexDirection: 'column' }}
       >
-        {briefing.overview !== null && <p style={{ margin: 0 }}>{briefing.overview}</p>}
-
-        <BriefingHeader
+        <BriefingOverview
+          overview={briefing.overview}
           facts={briefing.facts}
           adjustment={briefing.adjustment}
           movementCount={briefing.movementCount}
@@ -357,7 +360,7 @@ interface SuggestionProps {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The header
+// The overview
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -402,29 +405,35 @@ const DATA_STYLE: CSSProperties = {
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
 /**
- * The four facts, as a description list, because that is what they are: four
- * terms and their values. A grid of divs would render the same and say nothing
- * about which value belongs to which label.
+ * The composer's sentence and the facts, in one card under its own heading.
+ * The facts are a description list, because that is what they are: terms and
+ * their values. A grid of divs would render the same and say nothing about
+ * which value belongs to which label. Inside the card `MetricFrame` is a bare
+ * readout, so the card is the only frame here.
  */
-function BriefingHeader({
+function BriefingOverview({
+  overview,
   facts,
   adjustment,
   movementCount,
 }: {
+  overview: string | null
   facts: readonly ReviewFact[]
   adjustment: string | null
   movementCount: number
 }) {
   return (
-    <div className="clr-stack--tight" style={STACK_STYLE}>
-      <MetricGrid as="dl" aria-label="Workout facts" style={{ margin: 0 }}>
+    <Card heading={OVERVIEW_LABEL}>
+      {overview !== null && <p style={{ margin: 0 }}>{overview}</p>}
+
+      <MetricGrid as="dl" aria-label={FACTS_LABEL} style={{ margin: 0 }}>
         {facts.map((fact) => (
           <MetricFrame key={fact.label}>
-              <dt style={LABEL_STYLE}>
-                {FACT_GLYPHS[fact.label]}
-                {fact.label}
-              </dt>
-              <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{fact.value}</dd>
+            <dt style={LABEL_STYLE}>
+              {FACT_GLYPHS[fact.label]}
+              {fact.label}
+            </dt>
+            <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{fact.value}</dd>
           </MetricFrame>
         ))}
         <MetricFrame>
@@ -440,7 +449,7 @@ function BriefingHeader({
           {adjustment}
         </p>
       )}
-    </div>
+    </Card>
   )
 }
 
@@ -457,6 +466,11 @@ function BriefingHeader({
  * collapsed content in the accessibility tree either way, so closing one is
  * visual economy on a long session rather than removal.
  */
+const SECTION_META_STYLE: CSSProperties = {
+  marginInlineStart: 'auto',
+  color: 'var(--text-secondary)',
+}
+
 function ReviewSectionCard({
   section,
   ...suggestion
@@ -466,16 +480,17 @@ function ReviewSectionCard({
       <CollapsibleSection
         // A plain label rather than a `Heading`: the trigger *is* a button, and
         // a heading nested inside one is read as part of the control's name
-        // instead of as an outline entry. `SessionSectionCard` makes the same
-        // call for the same reason.
+        // instead of as an outline entry. The trigger already speaks the card
+        // heading's label face, so the title inherits it and the count sits
+        // where a card's `meta` does: the same row, at its far end.
         label={
-          <span className="clr-row" style={{ gap: 'var(--spacing-200)' }}>
-            <span style={VALUE_STYLE}>{section.title}</span>
-            <span style={DATA_STYLE}>
+          <>
+            <span>{section.title}</span>
+            <span style={SECTION_META_STYLE}>
               {section.movementCount}{' '}
               {section.movementCount === 1 ? 'movement' : 'movements'}
             </span>
-          </span>
+          </>
         }
         defaultExpanded
       >

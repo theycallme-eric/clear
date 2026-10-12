@@ -15,6 +15,10 @@
  * fills in is reps, seconds or a distance in its own unit. No string is parsed
  * anywhere in this file, because there is no string to parse.
  *
+ * It is drawn with the shared block frame's parts (`block-renderers-frame.tsx`)
+ * — a movement, its notes and a field row — and with no frame of its own: the
+ * block it sits in is the card, so composing it can never nest one.
+ *
  * Two smaller rules the spec is explicit about, both visible here:
  *   · rest is never rendered as `Rest: 0s` — no rest is no line
  *     (`superset-circuit-clarity.md` §8);
@@ -57,10 +61,10 @@ import {
   type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
-import { Heading, HeadingSection } from './Heading'
 
 export interface ExerciseSetLoggerProps {
   exercise: ExerciseProgress
@@ -122,22 +126,14 @@ export function ExerciseSetLogger({
   }
 
   return (
-    <HeadingSection
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
+    <BlockPanel.Movement
+      title={ordinal === undefined ? name : `${ordinal} ${name}`}
+      detail={prescriptionText(prescription)}
     >
-      <Heading style={{ margin: 0, textTransform: 'uppercase' }}>
-        {ordinal === undefined ? name : `${ordinal} ${name}`}
-      </Heading>
-
-      <p style={{ margin: 0, fontFamily: 'var(--font-data)', letterSpacing: 'var(--tracking-data)' }}>
-        {prescriptionText(prescription)}
-      </p>
-
       {prescription.tempo === null ? null : (
-        <p style={{ margin: 0 }}>Tempo {prescription.tempo}</p>
+        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
       )}
-      {rest === null ? null : <p style={{ margin: 0 }}>{rest}</p>}
+      {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
 
       <LoggedSetList sets={logged} />
 
@@ -167,7 +163,7 @@ export function ExerciseSetLogger({
         whose library read failed leaves the set form above it untouched.
       */}
       <ExerciseCoaching exercise={exercise} />
-    </HeadingSection>
+    </BlockPanel.Movement>
   )
 }
 
@@ -190,7 +186,7 @@ function nextSetNumber(logged: readonly LoggedSet[]): number {
  */
 function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
   if (sets.length === 0) {
-    return <p style={{ margin: 0 }}>No sets logged yet.</p>
+    return <BlockPanel.Note>No sets logged yet.</BlockPanel.Note>
   }
 
   return (
@@ -355,17 +351,14 @@ function SetEntryForm({
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column' }}
     >
-      <p style={{ margin: 0 }}>
+      <BlockPanel.Note>
         {setNumber > prescribed
           ? `Extra set ${setNumber}`
           : `Set ${setNumber} of ${prescribed}`}
         {targetLabel === null ? '' : ` · Target ${targetLabel}`}
-      </p>
+      </BlockPanel.Note>
 
-      <div
-        className="clr-row"
-        style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)', alignItems: 'flex-start' }}
-      >
+      <BlockPanel.FieldRow>
         <Input
           label={weightUnit === null ? 'Weight' : `Weight (${weightUnit})`}
           type="number"
@@ -400,7 +393,7 @@ function SetEntryForm({
           invalid={rpeInvalid}
           errorText={rpeInvalid ? `RPE runs ${RPE_MIN} to ${RPE_MAX}` : undefined}
         />
-      </div>
+      </BlockPanel.FieldRow>
 
       <Checkbox label="Warmup set" checked={warmup} onChange={setWarmup} />
 

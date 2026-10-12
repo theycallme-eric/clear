@@ -32,10 +32,15 @@ import { REVIEW_PATH } from './ReviewRoute'
 import { routes } from './router'
 import {
   SESSION_DETAIL_ERROR_TITLE,
+  SESSION_DETAIL_FACTS_LABEL,
   SESSION_DETAIL_LOADING_LABEL,
+  SESSION_DETAIL_MOOD_LABEL,
   SESSION_DETAIL_NOT_FOUND_ACTION,
   SESSION_DETAIL_NOT_FOUND_TITLE,
+  SESSION_DETAIL_NOTES_LABEL,
+  SESSION_DETAIL_OVERVIEW_LABEL,
   SESSION_DETAIL_RESTART_LABEL,
+  SESSION_DETAIL_SECTIONS_LABEL,
 } from './SessionDetail'
 
 /**
@@ -295,6 +300,145 @@ describe('Session Detail populated state', () => {
     await screen.findByRole('heading', { level: 1, name: 'Quiet day' })
     expect(screen.getByText('Not recorded')).toBeInTheDocument()
     expect(screen.getByText('No notes')).toBeInTheDocument()
+  })
+})
+
+describe('Session Detail containment', () => {
+  async function renderFull() {
+    renderDetail(recordingSessions(async () => ok(fullRecord())).sessions)
+    await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' })
+  }
+
+  function overviewCard(): HTMLElement {
+    return screen
+      .getByRole('heading', { level: 2, name: SESSION_DETAIL_OVERVIEW_LABEL })
+      .closest<HTMLElement>('.clr-card')!
+  }
+
+  it('heads the facts and their provenance inside one overview card, as readouts', async () => {
+    await renderFull()
+
+    const card = overviewCard()
+    expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+
+    // A description list of terms and values; each fact keeps its readout and
+    // none of them draws a second frame inside the card.
+    const facts = card.querySelector<HTMLElement>('dl')!
+    expect(facts).toHaveAttribute('aria-label', SESSION_DETAIL_FACTS_LABEL)
+    expect([...facts.querySelectorAll('dt')].map((term) => term.textContent)).toEqual([
+      'Date',
+      'Focus',
+      'Status',
+      'Duration',
+      'Intensity',
+    ])
+    expect(within(facts).getByText('Completed', { selector: 'dd' })).toBeInTheDocument()
+    expect(within(facts).getByText('47 min', { selector: 'dd' })).toBeInTheDocument()
+    expect(facts.querySelectorAll('.clr-metric-frame')).toHaveLength(5)
+    expect(facts.querySelector('.clr-chamfer')).toBeNull()
+
+    expect(within(card).getByText(/As performed · read at .*2026/)).toBeInTheDocument()
+  })
+
+  it('rules the debrief answers as sub-groups one level down, not as frames', async () => {
+    await renderFull()
+
+    const card = overviewCard()
+    const mood = within(card).getByRole('heading', { level: 3, name: SESSION_DETAIL_MOOD_LABEL })
+    const notes = within(card).getByRole('heading', { level: 3, name: SESSION_DETAIL_NOTES_LABEL })
+    for (const heading of [mood, notes]) {
+      // The contained card is a ruled group: its heading row carries the rule
+      // and the nearest frame is still the overview card's own body.
+      expect(heading.parentElement!.style.borderBottom).toContain('--border-region-rule')
+      expect(heading.closest('.clr-chamfer')).toBe(card.querySelector('.clr-card__body'))
+    }
+    expect(within(mood.closest('section')!).getByText('4 of 5')).toBeInTheDocument()
+    expect(
+      within(notes.closest('section')!).getByText('Legs heavy, moved well after set two.'),
+    ).toBeInTheDocument()
+  })
+
+  it('gives every section its own card and nests no card anywhere', async () => {
+    await renderFull()
+
+    const cards = [...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card')]
+    const region = screen.getByRole('region', { name: SESSION_DETAIL_SECTIONS_LABEL })
+    const sections = [...region.querySelectorAll<HTMLElement>('.clr-collapsible__region')]
+
+    // One overview card and one card per section, each with its single bar.
+    expect(sections.length).toBeGreaterThan(1)
+    expect(cards).toHaveLength(sections.length + 1)
+    for (const section of sections) {
+      const card = section.closest<HTMLElement>('.clr-card')!
+      expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
+      // The heading row is inside the card: the trigger that names the section.
+      expect(card.querySelector('.clr-collapsible__trigger')).not.toBeNull()
+    }
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+
+    // Nothing but the title is left on the atmosphere.
+    const stack = overviewCard().closest('.clr-stack')!
+    expect([...stack.children].every((child) => child.querySelector('.clr-card') !== null)).toBe(
+      true,
+    )
+  })
+
+  it('separates a section’s blocks by an internal rule and frames no readout', async () => {
+    await renderFull()
+
+    const region = screen.getByRole('region', { name: SESSION_DETAIL_SECTIONS_LABEL })
+    const multiBlock = [...region.querySelectorAll<HTMLElement>('.clr-card')].find(
+      (card) => card.querySelectorAll('[data-detail-block]').length > 1,
+    )!
+    expect(multiBlock).toBeDefined()
+
+    const [first, ...rest] = multiBlock.querySelectorAll<HTMLElement>('[data-detail-block]')
+    expect(first.style.borderTop).toBe('')
+    for (const block of rest) {
+      expect(block.style.borderTop).toContain('--border-region-rule')
+      expect(block).not.toHaveClass('clr-chamfer')
+    }
+
+    // A measurement is a bare label and value inside the card; the structure
+    // badge is the block's one element frame.
+    const effort = within(region).getByText('8 of 10')
+    expect(effort.closest('.clr-chamfer')).toBe(
+      effort.closest('.clr-card')!.querySelector('.clr-card__body'),
+    )
+    expect(within(region).getByText('Not scored').closest('.clr-chamfer')).toBe(
+      within(region).getByText('Not scored').closest('.clr-card__body'),
+    )
+  })
+
+  it('keeps an incomplete record on the same contained layout, with its absences said', async () => {
+    renderDetail(
+      recordingSessions(async () =>
+        ok(reconstructionFixture({ sessionId: SESSION_ID, title: 'Quiet day' })),
+      ).sessions,
+    )
+    await screen.findByRole('heading', { level: 1, name: 'Quiet day' })
+
+    const card = overviewCard()
+    expect(within(card).getByText('Not recorded')).toBeInTheDocument()
+    expect(within(card).getByText('No notes')).toBeInTheDocument()
+    expect(
+      screen.getByRole('region', { name: SESSION_DETAIL_SECTIONS_LABEL }),
+    ).toBeInTheDocument()
+    expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
+  })
+
+  it('shows a refused or missing record as one error card and none of the record', async () => {
+    renderDetail(
+      recordingSessions(async () => err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))).sessions,
+    )
+
+    const alert = await screen.findByRole('alert')
+    expect(within(alert).getByText(SESSION_DETAIL_NOT_FOUND_TITLE)).toBeInTheDocument()
+    expect(screen.getByRole('main').querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(screen.queryByRole('heading', { name: SESSION_DETAIL_OVERVIEW_LABEL })).toBeNull()
+    expect(screen.queryByRole('region', { name: SESSION_DETAIL_SECTIONS_LABEL })).toBeNull()
+    expect(screen.queryByRole('table')).toBeNull()
+    expect(screen.queryByRole('button', { name: SESSION_DETAIL_RESTART_LABEL })).toBeNull()
   })
 })
 
