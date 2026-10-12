@@ -125,7 +125,12 @@ export function BlockEffortDialog({
         </>
       }
     >
-      <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+      {/*
+        Three groups at the system's group rhythm: what was recorded, the score
+        in its readout frame, and the one field. The dialog is the surface, so
+        nothing here is a card.
+      */}
+      <div className="clr-stack">
         <p style={{ margin: 0 }}>{outcomeSummary(outcome)}</p>
         <ConditioningScoreLine score={score} comparison={comparison} absence={absence} />
         <IntensitySlider

@@ -21,8 +21,10 @@
  * a read, reads fail, and a swap panel that renders nothing while it loads is
  * indistinguishable from one that found nothing.
  */
+import type { CSSProperties } from 'react'
+
 import { AppDialog } from './app-dialog'
-import { Button, EmptyState, RefreshCw } from '../design-system/index'
+import { Button, EmptyState, RefreshCw, TextAction } from '../design-system/index'
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
@@ -33,6 +35,27 @@ import { ErrorView, LoadingView } from './view-state'
 // On the movement's card
 // ─────────────────────────────────────────────────────────────────────────────
 
+const ACTIONS_STYLE: CSSProperties = { gap: 'var(--spacing-200)', flexWrap: 'wrap' }
+
+const OPTION_LIST_STYLE: CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+/** One alternative: a full-width framed choice, read from its leading edge. */
+const OPTION_STYLE: CSSProperties = { width: '100%', justifyContent: 'flex-start' }
+
+/** The equipment, in the terse data-face label every block caption uses. */
+const EQUIPMENT_STYLE: CSSProperties = {
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-xs-size)',
+  letterSpacing: 'var(--tracking-data)',
+  marginInlineStart: 'var(--spacing-200)',
+}
+
 export interface ExerciseSwapControlsProps {
   exercise: ExerciseProgress
 }
@@ -41,6 +64,11 @@ export interface ExerciseSwapControlsProps {
  * Swap this movement, and — once it has been swapped — put the previous one
  * back. Undo is drawn only for a slot that has a predecessor, because an undo
  * that cannot name what it restores is a button with no meaning.
+ *
+ * Both are the public `TextAction`: the quietest action a card holds, so a
+ * movement's row gains no frame of its own and keeps the 40px target. While a
+ * write is in flight they are disabled and busy rather than animated — the
+ * dialog's loader is the one loop on screen.
  */
 export function ExerciseSwapControls({ exercise }: ExerciseSwapControlsProps) {
   const swap = useExerciseSwap()
@@ -51,26 +79,26 @@ export function ExerciseSwapControls({ exercise }: ExerciseSwapControlsProps) {
   const busy = swap.isBusy(exercise.exerciseId)
 
   return (
-    <div className="clr-row" style={{ gap: 'var(--spacing-200)', flexWrap: 'wrap' }}>
-      <Button
-        variant="quiet"
-        icon={<RefreshCw />}
+    <div className="clr-row" style={ACTIONS_STYLE}>
+      <TextAction
         aria-label={`Swap ${name}`}
-        loading={busy}
+        aria-busy={busy || undefined}
+        disabled={busy}
         onClick={() => swap.open(exercise.exerciseId)}
       >
+        <RefreshCw size={16} />
         Swap
-      </Button>
+      </TextAction>
 
       {previous === null ? null : (
-        <Button
-          variant="quiet"
+        <TextAction
           aria-label={`Undo swap — back to ${exerciseName(previous)}`}
-          loading={busy}
+          aria-busy={busy || undefined}
+          disabled={busy}
           onClick={() => swap.undo(exercise.exerciseId)}
         >
           Undo swap
-        </Button>
+        </TextAction>
       )}
     </div>
   )
@@ -161,11 +189,7 @@ function SwapOptionsView({
 
     case 'ready':
       return (
-        <ul
-          aria-label="Alternatives"
-          className="clr-stack--tight"
-          style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column' }}
-        >
+        <ul aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
           {options.options.map((option) => (
             <li key={option.exerciseId}>
               <Button
@@ -173,19 +197,10 @@ function SwapOptionsView({
                 size="lg"
                 disabled={busy}
                 onClick={() => onChoose(option)}
-                style={{ width: '100%', justifyContent: 'flex-start' }}
+                style={OPTION_STYLE}
               >
                 {option.name}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-data)',
-                    fontSize: 'var(--label-xs-size)',
-                    letterSpacing: 'var(--tracking-data)',
-                    marginInlineStart: 'var(--spacing-200)',
-                  }}
-                >
-                  {equipmentText(option.equipment)}
-                </span>
+                <span style={EQUIPMENT_STYLE}>{equipmentText(option.equipment)}</span>
               </Button>
             </li>
           ))}
