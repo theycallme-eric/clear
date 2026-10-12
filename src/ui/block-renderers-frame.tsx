@@ -130,10 +130,9 @@ export function BlockPanel({
     </Card>
   )
 
-  if (timer === undefined || timer === null || timer === false) return card
   return (
     <div className="clr-stack" style={STACK_STYLE}>
-      {timer}
+      {timer === undefined || timer === null || timer === false ? null : timer}
       {card}
     </div>
   )

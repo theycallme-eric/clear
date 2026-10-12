@@ -9,7 +9,7 @@
  */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactElement } from 'react'
+import { useState, type ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { Constants, type Enums } from '../data/database.types'
@@ -79,6 +79,18 @@ function renderSlot(block: BlockProgress, api: BlockCompletionApi) {
     <BlockCompletionContext value={api}>
       <BlockSlot block={block} />
     </BlockCompletionContext>,
+  )
+}
+
+/** A stateful consumer whose entry must survive a timer appearing or disappearing. */
+function StatefulPanelField() {
+  const [value, setValue] = useState('')
+  return (
+    <input
+      aria-label="Retained set entry"
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
   )
 }
 
@@ -230,6 +242,38 @@ describe('the shared block frame', () => {
     expect(countdown.compareDocumentPosition(card as Element)).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )
+  })
+
+  it('preserves child state, identity and focus across absent and present timer states', async () => {
+    const user = userEvent.setup()
+    const block = blockFixture('standard')
+    const { api } = completionDouble()
+    const frame = (timer?: ReactElement | null | false) => (
+      <BlockCompletionContext value={api}>
+        <BlockPanel block={block} timer={timer}>
+          <StatefulPanelField />
+        </BlockPanel>
+      </BlockCompletionContext>
+    )
+    const { container, rerender } = render(frame())
+    const entry = screen.getByRole('textbox', { name: 'Retained set entry' })
+    await user.type(entry, '12')
+    expect(entry).toHaveFocus()
+
+    for (const timer of [
+      <div data-testid="countdown" key="first">Rest countdown</div>,
+      false,
+      <div data-testid="countdown" key="second">Rest countdown</div>,
+      null,
+      undefined,
+    ]) {
+      rerender(frame(timer))
+      expect(screen.getByRole('textbox', { name: 'Retained set entry' })).toBe(entry)
+      expect(entry).toHaveValue('12')
+      expect(entry).toHaveFocus()
+      expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+      expect(container.querySelector('.clr-card .clr-card')).toBeNull()
+    }
   })
 
   it('keeps a headed group a ruled sub-group, inside a card and outside one', () => {
