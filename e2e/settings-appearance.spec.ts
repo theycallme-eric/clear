@@ -27,6 +27,10 @@ import { backend } from './support/backend'
  *     removed, and that the skin then follows the OS contrast preference again
  *     — `mono` under `prefers-contrast: more`, the app default without it.
  *
+ * REQ-026 adds the composition and the profile's half of persistence: every
+ * section is one 0.14.3 card with its heading inside, and a preference saved
+ * under a chosen skin comes back with that skin after the same reload.
+ *
  * The session is minted by the harness rather than typed: the OTP screen has
  * its own spec, and this journey starts at Home.
  */
@@ -50,12 +54,28 @@ const appliedSkin = (page: Page) =>
 const storedSkin = (page: Page) =>
   page.evaluate((key) => window.localStorage.getItem(key), SKIN_KEY)
 
+/** The Settings sections, in order — each one card with this heading inside. */
+const SECTION_HEADINGS = [
+  'Training',
+  'Limitations',
+  'Appearance',
+  'Places and equipment',
+  'Session',
+]
+
+const sectionCard = (page: Page, name: string) =>
+  page
+    .locator('main .clr-card')
+    .filter({ has: page.getByRole('heading', { level: 2, name, exact: true }) })
+
 test('the journey walks Home to Settings, and the registry is not empty', () => {
   // Credential-free, so it holds on every lane: the journey this file proves
   // is the one the inventory names, and there are skins to choose between.
   expect(journey?.steps).toEqual(['Home', 'Settings'])
   expect(SKINS.length).toBeGreaterThan(1)
   expect(new Set(SKINS).size).toBe(SKINS.length)
+  // 0.14.3 ships four, and the walk below visits each one of them.
+  expect(SKINS).toHaveLength(4)
 })
 
 test.describe('Settings to appearance', () => {
@@ -107,7 +127,7 @@ test.describe('Settings to appearance', () => {
     page,
     visit,
     checkA11y,
-  }) => {
+  }, testInfo) => {
     // Home, the journey's entry.
     await page.emulateMedia({ contrast: 'no-preference' })
     await visit('/')
@@ -120,10 +140,30 @@ test.describe('Settings to appearance', () => {
     await expect(page.locator('main h1')).toHaveText(/settings/i)
     await checkA11y()
 
+    // 0.14.3 containment: every section is one card with its heading inside,
+    // and only the screen title sits on the atmosphere.
+    const cards = page.locator('main .clr-card')
+    await expect(cards).toHaveCount(SECTION_HEADINGS.length)
+    for (const [index, name] of SECTION_HEADINGS.entries()) {
+      await expect(
+        cards.nth(index).getByRole('heading', { level: 2, name, exact: true }),
+      ).toBeVisible()
+    }
+    await expect(page.locator('main .clr-card .clr-card')).toHaveCount(0)
+    await page.screenshot({ path: testInfo.outputPath('settings-cards.png') })
+    await expect(cards.getByRole('heading', { level: 1 })).toHaveCount(0)
+    await expect(
+      sectionCard(page, 'Places and equipment').getByRole('button', { name: 'Manage places' }),
+    ).toHaveClass(/clr-text-action/)
+
     const picker = page
       .getByRole('radiogroup')
       .filter({ has: page.getByRole('radio', { name: SYSTEM_LABEL }) })
     await expect(picker).toHaveCount(1)
+    await expect(sectionCard(page, 'Appearance').getByRole('radiogroup')).toHaveCount(1)
+    await expect(
+      sectionCard(page, 'Appearance').getByRole('radio', { name: SYSTEM_LABEL }),
+    ).toBeVisible()
     const radios = picker.getByRole('radio')
 
     // One option per registry entry, plus System — as a whole list, in order,
@@ -161,8 +201,26 @@ test.describe('Settings to appearance', () => {
     await picker.getByRole('radio', { name: skinLabel(chosen) }).click()
     await expect(page.locator('html')).toHaveAttribute('data-skin', chosen)
 
+    // A saved preference, changed under that skin: the card that made the
+    // save says so, and the same reload has to bring both back.
+    const training = sectionCard(page, 'Training')
+    const levels = training.getByRole('group', { name: 'Experience' }).getByRole('radio')
+    const unchosen = levels.and(page.locator('[aria-checked="false"]')).first()
+    const level = (await unchosen.textContent())?.trim() ?? ''
+    expect(level, 'no experience level left to choose').not.toBe('')
+    await unchosen.click()
+    await expect(training.getByRole('status')).toHaveText('Saved')
+    await expect(training.getByRole('radio', { name: level, exact: true })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+
     await page.reload()
     await expect(page.locator('main h1')).toHaveText(/settings/i)
+    await expect(
+      sectionCard(page, 'Training').getByRole('radio', { name: level, exact: true }),
+      'the saved preference did not survive the reload',
+    ).toHaveAttribute('aria-checked', 'true')
     expect(await appliedSkin(page), 'the choice did not survive the reload').toBe(chosen)
     expect(await storedSkin(page)).toBe(chosen)
     await expect(

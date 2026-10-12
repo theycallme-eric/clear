@@ -15,6 +15,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { SKINS } from '../design-system/skin'
 import { useAppearance } from '../state/appearance'
 import { AppearancePicker } from './appearance-picker'
+import { Card } from './card'
 
 const STORAGE_KEY = 'clear.skin'
 
@@ -65,6 +66,33 @@ describe('the control', () => {
     render(<AppearanceSetting />)
 
     expect(screen.getByRole('radio', { name: /^System/ })).toBeChecked()
+  })
+
+  it('is content for a card, never a card of its own', () => {
+    const { container } = render(
+      <Card heading="Appearance">
+        <AppearanceSetting />
+      </Card>,
+    )
+
+    // One frame — the surrounding card's — with the group and its legend inside.
+    const cards = container.querySelectorAll('.clr-card')
+    expect(cards).toHaveLength(1)
+    expect(cards[0]).toContainElement(screen.getByRole('group', { name: 'Appearance' }))
+    expect(cards[0]).toContainElement(screen.getByRole('heading', { name: 'Appearance' }))
+  })
+
+  it('shows exactly one selection under every skin it offers', async () => {
+    const user = userEvent.setup()
+    render(<AppearanceSetting />)
+
+    for (const skin of SKINS) {
+      const option = screen.getByRole('radio', { name: new RegExp(`^${skin}`, 'i') })
+      await user.click(option)
+
+      expect(document.documentElement.getAttribute('data-skin')).toBe(skin)
+      expect(screen.getAllByRole('radio', { checked: true })).toEqual([option])
+    }
   })
 
   it('starts on the stored choice after a reload', () => {

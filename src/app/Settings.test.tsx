@@ -110,8 +110,6 @@ describe('the hub answers every question onboarding asked', () => {
       expect(screen.getByRole('checkbox', { name: pattern.label })).toBeVisible()
     }
     expect(screen.getByLabelText(/note/i)).toBeVisible()
-    expect(screen.getByRole('main').querySelector('.clr-card')).not.toBeInTheDocument()
-    expect(screen.getByRole('main').querySelectorAll('.clr-list')).toHaveLength(1)
   })
 
   it('shows what is stored rather than an empty form', async () => {
@@ -136,6 +134,149 @@ describe('the hub answers every question onboarding asked', () => {
     renderSettings()
 
     expect(await screen.findByText(/where you train/i)).toBeVisible()
+  })
+})
+
+/** The card a section is: found by the heading it holds, never by position. */
+async function sectionCard(name: string) {
+  const heading = await screen.findByRole('heading', { level: 2, name })
+  const card = heading.closest<HTMLElement>('.clr-card')
+  expect(card, `"${name}" is not headed inside a card`).not.toBeNull()
+  // The section is the landmark, named by that same heading.
+  expect(screen.getByRole('region', { name })).toContainElement(card)
+  return card!
+}
+
+describe('each section is one card with its heading inside', () => {
+  const SECTION_HEADINGS = [
+    'Training',
+    'Limitations',
+    'Appearance',
+    'Places and equipment',
+    'Session',
+  ]
+
+  it('is five headed cards, with only the title on the atmosphere', async () => {
+    renderSettings()
+
+    const cards: HTMLElement[] = []
+    for (const name of SECTION_HEADINGS) cards.push(await sectionCard(name))
+
+    const main = screen.getByRole('main')
+    expect([...main.querySelectorAll('.clr-card')]).toEqual(cards)
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(SECTION_HEADINGS)
+    // A card holds content and element frames, never another card or a list frame.
+    for (const card of cards) {
+      expect(card.querySelector('.clr-card')).toBeNull()
+      expect(card.querySelector('.clr-list')).toBeNull()
+    }
+    const title = screen.getByRole('heading', { level: 1, name: 'Settings' })
+    expect(title.closest('.clr-card')).toBeNull()
+    // Every change saves itself, so nothing is pinned while the screen is usable.
+    expect(main.querySelector('.clr-footer')).toBeNull()
+  })
+
+  it('keeps each group, its refusal and its save line in the card that owns it', async () => {
+    const user = userEvent.setup()
+    renderSettings({
+      profile: onboardedProfile({ goal_preset: 'strength', enabled_sections: ['core'] }),
+    })
+
+    const training = within(await sectionCard('Training'))
+    expect(training.getByRole('group', { name: 'Goal' })).toBeVisible()
+    expect(training.getByRole('group', { name: 'Experience' })).toBeVisible()
+    expect(training.getByRole('group', { name: 'Sections' })).toBeVisible()
+    expect(training.getByRole('status')).toBeInTheDocument()
+
+    await user.click(training.getByRole('checkbox', { name: 'Core' }))
+    expect(training.getByRole('alert')).toHaveTextContent(LAST_SECTION_REASON)
+
+    const limitations = within(await sectionCard('Limitations'))
+    expect(limitations.getByRole('group', { name: 'Work around' })).toBeVisible()
+    expect(limitations.getByLabelText(/note/i)).toBeVisible()
+    expect(limitations.getByRole('status')).toBeInTheDocument()
+    expect(
+      limitations.getByText('Nothing recorded. Tick anything a workout should work around.'),
+    ).toBeVisible()
+
+    const appearance = within(await sectionCard('Appearance'))
+    expect(
+      within(appearance.getByRole('group', { name: 'Skin' })).getAllByRole('radio'),
+    ).toHaveLength(SKINS.length + 1)
+  })
+
+  it('says a save happened in the card that made it, and nowhere else', async () => {
+    const user = userEvent.setup()
+    renderSettings()
+
+    const training = within(await sectionCard('Training'))
+    await user.click(training.getByRole('radio', { name: 'Confident' }))
+
+    await waitFor(() => {
+      expect(training.getByRole('status')).toHaveTextContent('Saved')
+    })
+    expect(within(await sectionCard('Limitations')).getByRole('status')).not.toHaveTextContent(
+      'Saved',
+    )
+  })
+
+  it('offers the way to places as a quiet action, and sign out as a framed one', async () => {
+    const user = userEvent.setup()
+    renderSettings()
+
+    const places = within(await sectionCard('Places and equipment'))
+    const manage = places.getByRole('button', { name: 'Manage places' })
+    expect(manage).toHaveClass('clr-text-action')
+    expect(places.getAllByRole('button')).toEqual([manage])
+
+    const session = within(await sectionCard('Session'))
+    const signOut = session.getByRole('button', { name: 'Sign out' })
+    expect(signOut).not.toHaveClass('clr-text-action')
+    expect(session.getAllByRole('button')).toEqual([signOut])
+
+    await user.click(manage)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Places and equipment' }),
+    ).toBeVisible()
+  })
+
+  it('holds the limitations loading and error states inside the same card', async () => {
+    const user = userEvent.setup()
+    let attempts = 0
+    let settle: () => void = () => {}
+    const constraints = createFakeConstraintsClient({
+      listInForce: () => {
+        attempts += 1
+        if (attempts > 1) return Promise.resolve(ok([]))
+        return new Promise<Result<UserConstraint[]>>((resolve) => {
+          settle = () => {
+            resolve(err(createError(ErrorCode.PERSISTENCE_READ_FAILED)))
+          }
+        })
+      },
+    })
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
+
+    renderApp(['/settings'], signedIn({ queryClient: cache, constraints }))
+
+    const card = await sectionCard('Limitations')
+    const busy = await within(card).findByText(/reading your limitations/i)
+    expect(busy.closest('[aria-busy="true"]')).not.toBeNull()
+    expect(card.querySelector('.clr-card')).toBeNull()
+
+    settle()
+    const alert = await within(card).findByRole('alert')
+    expect(alert).toHaveTextContent(/limitations didn’t load/i)
+    expect(card.querySelector('.clr-card')).toBeNull()
+    // The other cards are still the screen; the failure cost one of five.
+    expect(screen.getByRole('main').querySelectorAll('.clr-card')).toHaveLength(5)
+
+    await user.click(within(card).getByRole('button', { name: /retry|try again/i }))
+    expect(await within(card).findByRole('group', { name: 'Work around' })).toBeVisible()
   })
 })
 

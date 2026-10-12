@@ -335,8 +335,14 @@ for (const skin of SKINS) {
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       expect(stops.some((stop) => stop.kind === 'brackets')).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
-      await expect(page.locator('main .clr-card')).toHaveCount(0)
-      await expect(page.locator('main .clr-list')).toHaveCount(1)
+      const cards = page.locator('main .clr-card')
+      await expect(cards).toHaveCount(5)
+      await expect(page.locator('main .clr-list')).toHaveCount(0)
+      for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Session']) {
+        const heading = page.getByRole('heading', { level: 2, name, exact: true })
+        await expect(cards.filter({ has: heading })).toHaveCount(1)
+        await expect(heading).toBeVisible()
+      }
     })
   })
 }
