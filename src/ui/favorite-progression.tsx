@@ -27,7 +27,6 @@ import type { CSSProperties, ReactNode } from 'react'
 import {
   ArrowDown,
   ArrowUp,
-  CalendarCheck,
   Minus,
   Trophy,
   WeightPlate,
@@ -38,7 +37,7 @@ import type {
   ProgressionDirection,
 } from '../state/favorite-progression'
 import { Card } from './card'
-import { Heading, HeadingSection } from './Heading'
+import { HeadingSection } from './Heading'
 
 export const PROGRESSION_TITLE = 'Last time'
 export const LAST_WEIGHTS_LABEL = 'What you lifted last time'
@@ -76,22 +75,6 @@ const META_STYLE: CSSProperties = {
   letterSpacing: 'var(--tracking-data)',
   color: 'var(--text-card-label)',
   margin: 0,
-}
-
-const TITLE_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h5-size)',
-  color: 'var(--text-card-header)',
-  margin: 0,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-200)',
-}
-
-const GROUP_LABEL_STYLE: CSSProperties = {
-  ...META_STYLE,
-  textTransform: 'uppercase',
-  marginTop: 'var(--spacing-300)',
 }
 
 const LIST_STYLE: CSSProperties = {
@@ -150,32 +133,26 @@ export function FavoriteProgressionCard({
   } = progression
 
   return (
-    <HeadingSection>
-      <Card>
-        <Heading style={TITLE_STYLE}>
-          <span aria-hidden="true" style={GLYPH_STYLE}>
-            <CalendarCheck size={16} />
-          </span>
-          {PROGRESSION_TITLE}
-        </Heading>
+    // One card, headed inside at the screen's own level. Each group below is
+    // a ruled sub-group one level down, never a second frame.
+    <Card heading={PROGRESSION_TITLE}>
+      <p style={META_STYLE}>
+        {timesCompletedText(timesCompleted)}
+        {/* The headline of the most recent run, sourced to its day. A
+            favorite never completed has neither, and says nothing. */}
+        {lastRunOn === null ? '' : ` · ${lastRunOn}`}
+      </p>
+      {lastRunHeadline !== null && <p style={ROW_STYLE}>{lastRunHeadline}</p>}
 
-        <p style={{ ...META_STYLE, marginTop: 'var(--spacing-200)' }}>
-          {timesCompletedText(timesCompleted)}
-          {/* The headline of the most recent run, sourced to its day. A
-              favorite never completed has neither, and says nothing. */}
-          {lastRunOn === null ? '' : ` · ${lastRunOn}`}
+      {note !== null && (
+        <p style={META_STYLE} role="note">
+          {note}
         </p>
-        {lastRunHeadline !== null && <p style={ROW_STYLE}>{lastRunHeadline}</p>}
+      )}
 
-        {note !== null && (
-          <p style={{ ...META_STYLE, marginTop: 'var(--spacing-200)' }} role="note">
-            {note}
-          </p>
-        )}
-
-        {bests.length > 0 && (
-          <>
-            <p style={GROUP_LABEL_STYLE}>{bestsLabel}</p>
+      {bests.length > 0 && (
+        <HeadingSection>
+          <Card heading={bestsLabel}>
             <ul style={LIST_STYLE}>
               {bests.map((best) => (
                 <li key={best.key} style={ROW_STYLE}>
@@ -194,12 +171,13 @@ export function FavoriteProgressionCard({
                 </li>
               ))}
             </ul>
-          </>
-        )}
+          </Card>
+        </HeadingSection>
+      )}
 
-        {comparisonLabel !== null && (
-          <>
-            <p style={GROUP_LABEL_STYLE}>{comparisonLabel}</p>
+      {comparisonLabel !== null && (
+        <HeadingSection>
+          <Card heading={comparisonLabel}>
             <ul style={LIST_STYLE}>
               {deltas.map((delta) => (
                 <li key={delta.key}>
@@ -207,12 +185,13 @@ export function FavoriteProgressionCard({
                 </li>
               ))}
             </ul>
-          </>
-        )}
+          </Card>
+        </HeadingSection>
+      )}
 
-        {lastWeights.length > 0 && (
-          <>
-            <p style={GROUP_LABEL_STYLE}>{LAST_WEIGHTS_LABEL}</p>
+      {lastWeights.length > 0 && (
+        <HeadingSection>
+          <Card heading={LAST_WEIGHTS_LABEL}>
             <ul style={LIST_STYLE}>
               {lastWeights.map((weight) => (
                 <li key={weight.key} style={ROW_STYLE}>
@@ -225,12 +204,13 @@ export function FavoriteProgressionCard({
                 </li>
               ))}
             </ul>
-          </>
-        )}
+          </Card>
+        </HeadingSection>
+      )}
 
-        {runCount > 0 && (
-          <>
-            <p style={GROUP_LABEL_STYLE}>{HISTORY_LABEL}</p>
+      {runCount > 0 && (
+        <HeadingSection>
+          <Card heading={HISTORY_LABEL}>
             <ul style={LIST_STYLE} aria-label={HISTORY_LABEL}>
               {history.map((entry) => (
                 <li key={entry.key} style={ROW_STYLE}>
@@ -249,10 +229,10 @@ export function FavoriteProgressionCard({
                 </li>
               ))}
             </ul>
-          </>
-        )}
-      </Card>
-    </HeadingSection>
+          </Card>
+        </HeadingSection>
+      )}
+    </Card>
   )
 }
 

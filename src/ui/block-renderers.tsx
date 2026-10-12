@@ -24,6 +24,10 @@
  * which counts the window down and records its score; and `for_time` is
  * EXE-04b's `ForTimeBlock`, which races the cap. EXE-04a's `LadderBlock` is the
  * one override keyed by rep scheme; see `blockRendererFor`.
+ *
+ * What a renderer is *drawn with* — `BlockPanel`, the block's one card, and its
+ * ruled groups, movement rows and field row — is `block-renderers-frame.tsx`,
+ * a leaf every renderer can import without importing this registry back.
  */
 import { createElement, type ReactElement } from 'react'
 
@@ -31,15 +35,12 @@ import type { Enums } from '../data/database.types'
 import { isLadderScheme } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from './amrap-block'
-import { BlockCompletionControl } from './block-completion-control'
-import { Card } from './card'
 import { CircuitBlock } from './circuit-block'
 import { EmomBlock } from './emom-block'
 import { ForTimeBlock } from './for-time-block'
 import { LadderBlock } from './ladder-block'
 import { StandardBlock } from './standard-block'
 import { SupersetBlock } from './superset-block'
-import { StructureBadge } from './workout-chrome'
 
 export interface BlockRendererProps {
   readonly block: BlockProgress
@@ -47,42 +48,6 @@ export interface BlockRendererProps {
 
 /** What every structure's renderer is: a block in, an element out. */
 export type BlockRenderer = (props: BlockRendererProps) => ReactElement
-
-/**
- * One block, as the shell knows it: its structure identity, how much is in it,
- * and the completion the shell owns.
- *
- * The *contents* are not here and are not meant to be — the movements, the
- * clock and the per-structure controls are EXE-02…EXE-04c's. What this does
- * carry is the contract they inherit: `completeBlock` with what was observed,
- * and nothing else.
- */
-export function BlockPanel({ block }: BlockRendererProps) {
-  return (
-    <Card>
-      <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span
-            style={{
-              fontFamily: 'var(--font-data)',
-              fontSize: 'var(--label-xs-size)',
-              letterSpacing: 'var(--tracking-data)',
-              color: 'var(--text-card-label)',
-            }}
-          >
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
-        {/*
-          No outcome fields: this panel runs no clock and counts no rounds, and
-          a zero it never observed would be a measurement (DATA_MODEL §8).
-        */}
-        <BlockCompletionControl blockId={block.blockId} outcome={{}} />
-      </div>
-    </Card>
-  )
-}
 
 /**
  * Structure type → the renderer that performs it. Total by type, which is the
