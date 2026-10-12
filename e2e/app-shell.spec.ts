@@ -101,9 +101,21 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
   await expect(
     page.getByRole('heading', { level: 1, name: 'Create account' }),
   ).toBeVisible()
-  await expect(page.locator('main .clr-card')).toHaveCount(0)
-  await expect(page.locator('main .clr-footer')).toHaveCount(1)
-  await expect(page.getByRole('button', { name: 'Send code' })).toBeVisible()
+  // 0.14.3 groups the native form in one card; the submit stays pinned.
+  const formCard = page.locator('main .clr-card')
+  await expect(formCard).toHaveCount(1)
+  await expect(formCard.getByRole('heading', { level: 2, name: 'Your email' })).toBeVisible()
+  await expect(formCard.getByLabel('Email')).toBeVisible()
+  await expect(formCard.locator('form')).toHaveCount(1)
+  await expect(formCard.getByRole('button')).toHaveCount(0)
+  const footer = page.locator('main .clr-footer')
+  await expect(footer).toHaveCount(1)
+  const submit = footer.getByRole('button', { name: 'Send code' })
+  await expect(submit).toBeVisible()
+  await expect(submit).toHaveAttribute('type', 'submit')
+  const formId = await formCard.locator('form').getAttribute('id')
+  expect(formId).toBeTruthy()
+  await expect(submit).toHaveAttribute('form', formId!)
   await page.screenshot({ path: testInfo.outputPath('vibe-d-create-account.png') })
 })
 
