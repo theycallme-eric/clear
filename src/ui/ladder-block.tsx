@@ -26,12 +26,15 @@
  *     when EXE-04b lands it drives this same state from the real clock.
  *   · **the write.** The outcome goes to `BlockCompletionControl` and the shell
  *     writes the row, once, for every structure type (EXE-01).
+ *   · **the frame.** The one card, the identity row and the single completion
+ *     are `BlockPanel`'s (`block-renderers-frame.tsx`), and the movements are
+ *     rows of its list — never a card inside the card.
  *
  * `highest_rung` is the **rung number**, not the rep target — "which rung was
  * reached" (DATA_MODEL §`block_results`). The screen never says it that way:
  * a rung is identified to the user by its target, per the quickfix spec.
  */
-import { useState, type CSSProperties } from 'react'
+import { useState } from 'react'
 
 import { ChoiceGroup } from '../design-system/index'
 import type { BlockOutcome } from '../state/block-completion'
@@ -43,12 +46,9 @@ import {
 } from '../state/ladder'
 import { exerciseName, targetText } from '../state/prescription'
 import type { ExerciseProgress } from '../state/workout-progress'
-import { BlockCompletionControl } from './block-completion-control'
 import type { BlockRendererProps } from './block-renderers'
-import { Card } from './card'
-import { Heading, HeadingSection } from './Heading'
+import { BlockPanel } from './block-renderers-frame'
 import { LadderRungs } from './ladder-rungs'
-import { StructureBadge } from './workout-chrome'
 
 /**
  * How the block ended, as the user says it.
@@ -99,108 +99,84 @@ export function LadderBlock({ block }: BlockRendererProps) {
   const { laddered, interval } = ladderMovements(block.exercises)
 
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
+    <BlockPanel
+      block={block}
+      completion={{ outcome: ladderOutcome(ending, reached, rungs) }}
+    >
+      {block.exercises.length === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <>
+          {rungs.length === 0 ? (
+            // A ladder scheme with no sequence on any movement: the block is
+            // malformed, and saying so is better than drawing an empty rail.
+            <BlockPanel.Note>
+              This ladder prescribes no rungs — perform the movements as written.
+            </BlockPanel.Note>
+          ) : ending === 'capped' ? (
+            // The cap is where the row stops being a display and becomes the
+            // question (`ladder-for-time.md` §3, Path B). One row, two modes
+            // — never both at once.
+            <LadderRungs
+              rungs={rungs}
+              unit={unit}
+              label="How far did you get?"
+              reached={reached}
+              onSelect={setReached}
+            />
+          ) : (
+            <LadderRungs
+              rungs={rungs}
+              unit={unit}
+              label="Ladder"
+              // Read-only while the block is being performed, and still
+              // read-only once it is finished — with every rung climbed.
+              reached={ending === 'finished' ? rungs.length : null}
+            />
+          )}
 
-        {block.exercises.length === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            {rungs.length === 0 ? (
-              // A ladder scheme with no sequence on any movement: the block is
-              // malformed, and saying so is better than drawing an empty rail.
-              <p style={{ margin: 0 }}>
-                This ladder prescribes no rungs — perform the movements as written.
-              </p>
-            ) : ending === 'capped' ? (
-              // The cap is where the row stops being a display and becomes the
-              // question (`ladder-for-time.md` §3, Path B). One row, two modes
-              // — never both at once.
-              <LadderRungs
-                rungs={rungs}
-                unit={unit}
-                label="How far did you get?"
-                reached={reached}
-                onSelect={setReached}
-              />
-            ) : (
-              <LadderRungs
-                rungs={rungs}
-                unit={unit}
-                label="Ladder"
-                // Read-only while the block is being performed, and still
-                // read-only once it is finished — with every rung climbed.
-                reached={ending === 'finished' ? rungs.length : null}
-              />
-            )}
+          {/*
+            "Do all of these at each of those numbers." One movement needs no
+            such line — the rungs already imply it (quickfix spec §1).
+          */}
+          {laddered.length > 1 && <BlockPanel.Label>Each rung</BlockPanel.Label>}
 
+          <BlockPanel.MovementList label="Movements in this ladder">
+            {laddered.map((movement) => (
+              <BlockPanel.MovementItem key={movement.exerciseId}>
+                <LadderMovement movement={movement} companions={interval} />
+              </BlockPanel.MovementItem>
+            ))}
             {/*
-              "Do all of these at each of those numbers." One movement needs no
-              such line — the rungs already imply it (quickfix spec §1).
+              A block whose scheme is a ladder but whose movements carry no
+              sequence still has movements to name. They are listed plainly
+              rather than as companions to a ladder that does not exist.
             */}
-            {laddered.length > 1 && <p style={labelStyle}>Each rung</p>}
-
-            <ul
-              aria-label="Movements in this ladder"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--spacing-200)',
-              }}
-            >
-              {laddered.map((movement) => (
-                <li key={movement.exerciseId}>
-                  <LadderMovement movement={movement} companions={interval} />
-                </li>
+            {laddered.length === 0 &&
+              interval.map((movement) => (
+                <BlockPanel.MovementItem key={movement.exerciseId}>
+                  <LadderMovement movement={movement} companions={[]} />
+                </BlockPanel.MovementItem>
               ))}
-              {/*
-                A block whose scheme is a ladder but whose movements carry no
-                sequence still has movements to name. They are listed plainly
-                rather than as companions to a ladder that does not exist.
-              */}
-              {laddered.length === 0 &&
-                interval.map((movement) => (
-                  <li key={movement.exerciseId}>
-                    <LadderMovement movement={movement} companions={[]} />
-                  </li>
-                ))}
-            </ul>
+          </BlockPanel.MovementList>
 
-            {rungs.length === 0 ? null : (
-              <ChoiceGroup
-                legend="How did this block end?"
-                options={ENDING_OPTIONS}
-                value={ending === 'undeclared' ? '' : ending}
-                onChange={(value) => {
-                  const chosen = Array.isArray(value) ? value[0] : value
-                  setEnding(chosen === 'capped' ? 'capped' : 'finished')
-                  // The rung only means something for a cap hit; finishing
-                  // reached them all.
-                  if (chosen !== 'capped') setReached(null)
-                }}
-              />
-            )}
-          </>
-        )}
-
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={ladderOutcome(ending, reached, rungs)}
-        />
-      </div>
-    </Card>
+          {rungs.length === 0 ? null : (
+            <ChoiceGroup
+              legend="How did this block end?"
+              options={ENDING_OPTIONS}
+              value={ending === 'undeclared' ? '' : ending}
+              onChange={(value) => {
+                const chosen = Array.isArray(value) ? value[0] : value
+                setEnding(chosen === 'capped' ? 'capped' : 'finished')
+                // The rung only means something for a cap hit; finishing
+                // reached them all.
+                if (chosen !== 'capped') setReached(null)
+              }}
+            />
+          )}
+        </>
+      )}
+    </BlockPanel>
   )
 }
 
@@ -221,28 +197,13 @@ function LadderMovement({
   companions: readonly ExerciseProgress[]
 }) {
   return (
-    <HeadingSection
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      <Heading style={{ margin: 0, textTransform: 'uppercase' }}>
-        {exerciseName(movement.prescription.exercise_id)}
-      </Heading>
+    <BlockPanel.Movement title={exerciseName(movement.prescription.exercise_id)}>
       {companions.map((companion) => (
-        <p key={companion.exerciseId} style={{ margin: 0 }}>
+        <BlockPanel.Note key={companion.exerciseId}>
           {targetText(companion.prescription)}{' '}
           {exerciseName(companion.prescription.exercise_id)} between each rung
-        </p>
+        </BlockPanel.Note>
       ))}
-    </HeadingSection>
+    </BlockPanel.Movement>
   )
-}
-
-const labelStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  textTransform: 'uppercase',
-  color: 'var(--text-card-label)',
 }

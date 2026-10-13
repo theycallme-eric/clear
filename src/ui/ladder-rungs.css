@@ -34,14 +34,18 @@
   border: 0;
 }
 
+/* The row's caption is a group label like any other in the block's card —
+   `BlockPanel.Label`'s face, size and colour — so "Ladder" and "Each rung"
+   read as the same kind of line. */
 .clr-rungs__legend {
+  margin: var(--spacing-0);
   padding: var(--spacing-0);
   font-family: var(--font-data);
   font-size: var(--label-xs-size);
   line-height: var(--label-xs-line-height);
   letter-spacing: var(--tracking-data);
   text-transform: uppercase;
-  color: var(--text-card-header);
+  color: var(--text-card-label);
 }
 
 .clr-rung {
