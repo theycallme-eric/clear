@@ -23,6 +23,11 @@
  *     counted down once at each round boundary;
  *   · the current movement is named in words (`NOW`, `NEXT`) and carries
  *     `aria-current`, because position is never colour alone.
+ *
+ * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
+ * card, the identity row and the single completion are `BlockPanel`'s, the
+ * movements are rows of its list, and the rest countdown goes to its `timer`
+ * slot — `TimerDisplay` is already a card, and is never put inside another.
  */
 import { Button, ChevronRight, Rest, TimerDisplay } from '../design-system/index'
 import {
@@ -38,12 +43,9 @@ import {
   usePersistedCircuit,
   type ShellStorage,
 } from '../state/workout-persistence'
-import type { ExerciseProgress } from '../state/workout-progress'
-import { BlockCompletionControl } from './block-completion-control'
-import { Card } from './card'
-import { ExerciseSetLogger } from './set-logger'
-import { StructureBadge } from './workout-chrome'
 import type { BlockRendererProps } from './block-renderers'
+import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
+import { ExerciseSetLogger } from './set-logger'
 
 export interface CircuitBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -70,101 +72,90 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   const view = circuitView(circuit.state, shape, restElapsed)
 
   const advance = () => {
-    circuit.advanceTo(advanceCircuit(circuit.state, shape, now()))
+    // The displayed work action must advance, not consume a tap clearing a
+    // rest whose deadline has already passed. Active-rest skip stays unchanged.
+    const state =
+      view.phase === 'work' && circuit.state.restStartedAt !== null
+        ? { ...circuit.state, restStartedAt: null }
+        : circuit.state
+    circuit.advanceTo(advanceCircuit(state, shape, now()))
   }
 
+  const resting = shape.size > 0 && view.phase === 'rest'
+
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
+    <BlockPanel
+      block={block}
+      // The round boundary's one countdown: the shipped `TimerDisplay`, a real
+      // deadline with urgency in its last seconds, beside the card.
+      timer={resting ? <TimerDisplay seconds={view.restRemaining} /> : null}
+      // The rounds the user actually got through — the outcome this structure
+      // observed, and the only field it supplies. A circuit with nothing left
+      // to perform observed no rounds at all, and says so by supplying
+      // nothing rather than a zero (DATA_MODEL §8).
+      completion={{
+        outcome: shape.size === 0 ? {} : { roundsCompleted: view.roundsCompleted },
+        label: 'Complete circuit',
+      }}
+    >
+      {shape.size === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <>
+          <BlockPanel.Label>{positionText(view)}</BlockPanel.Label>
 
-        {shape.size === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            <p style={labelStyle}>{positionText(view)}</p>
+          {view.phase === 'rest' && <RoundRest view={view} onSkip={advance} />}
 
-            {view.phase === 'rest' && <RoundRest view={view} onSkip={advance} />}
+          <BlockPanel.Label>Each round:</BlockPanel.Label>
 
-            <p style={labelStyle}>Each round:</p>
-
-            <ol
-              aria-label="Movements in this circuit"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--spacing-300)',
-              }}
-            >
-              {block.exercises.map((exercise) => (
-                <CircuitMovement
-                  key={exercise.exerciseId}
-                  exercise={exercise}
-                  marker={markerFor(exercise.position, view)}
-                />
-              ))}
-            </ol>
-
-            {/*
-              Once, at the bottom, and only when there is rest to take: a
-              circuit that prescribes none says nothing rather than `Rest: 0s`
-              (superset-circuit-clarity.md §8).
-            */}
-            {shape.restSeconds > 0 && (
-              <p style={{ margin: 0 }}>
-                {shape.restSeconds}s rest between rounds
-              </p>
-            )}
-
-            {/*
-              One forward control, wherever the user is. While the rest is
-              running it is the rest bar's own button — two "Start round 3"s,
-              one in the bar and one at the foot of the card, would be the same
-              tap twice over.
-            */}
-            {view.phase === 'work' && (
-              <Button
-                variant="primary"
-                size="lg"
-                icon={<ChevronRight />}
-                onClick={advance}
+          <BlockPanel.MovementList label="Movements in this circuit">
+            {block.exercises.map((exercise) => (
+              <BlockPanel.MovementItem
+                key={exercise.exerciseId}
+                marker={markerFor(exercise.position, view)}
               >
-                {advanceLabel(view)}
-              </Button>
-            )}
+                {/*
+                  No rest bar per movement: a circuit rests once per round, and
+                  that countdown is the round boundary's (EXE-05).
+                */}
+                <ExerciseSetLogger
+                  exercise={exercise}
+                  ordinal={`${exercise.position}.`}
+                  restSeconds={null}
+                />
+              </BlockPanel.MovementItem>
+            ))}
+          </BlockPanel.MovementList>
 
-            {view.phase === 'finished' && (
-              <p style={{ margin: 0 }}>
-                Every prescribed round is done. Record the block when you are ready.
-              </p>
-            )}
-          </>
-        )}
+          {/*
+            Once, at the bottom, and only when there is rest to take: a
+            circuit that prescribes none says nothing rather than `Rest: 0s`
+            (superset-circuit-clarity.md §8).
+          */}
+          {shape.restSeconds > 0 && (
+            <BlockPanel.Note>{shape.restSeconds}s rest between rounds</BlockPanel.Note>
+          )}
 
-        {/*
-          The rounds the user actually got through — the outcome this structure
-          observed, and the only field it supplies. A circuit with nothing left
-          to perform observed no rounds at all, and says so by supplying
-          nothing rather than a zero (DATA_MODEL §8).
-        */}
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={shape.size === 0 ? {} : { roundsCompleted: view.roundsCompleted }}
-          label="Complete circuit"
-        />
-      </div>
-    </Card>
+          {/*
+            One forward control, wherever the user is. While the rest is
+            running it is the rest's own button — two "Start round 3"s, one
+            under the rest line and one at the foot of the card, would be the
+            same tap twice over.
+          */}
+          {view.phase === 'work' && (
+            <Button variant="primary" size="lg" icon={<ChevronRight />} onClick={advance}>
+              {advanceLabel(view)}
+            </Button>
+          )}
+
+          {view.phase === 'finished' && (
+            <BlockPanel.Note>
+              Every prescribed round is done. Record the block when you are ready.
+            </BlockPanel.Note>
+          )}
+        </>
+      )}
+    </BlockPanel>
   )
 }
 
@@ -195,51 +186,16 @@ function advanceLabel(view: CircuitView): string {
   return view.position < view.size ? 'Next movement' : `Finish round ${view.round}`
 }
 
-type MovementMarker = 'now' | 'next' | null
-
 /**
  * Which movement is live. During rest it is the one the next round opens with
  * — labelled `NEXT` rather than `NOW`, because the user is resting and being
- * told to start would be wrong.
+ * told to start would be wrong. The word and `aria-current` are
+ * `BlockPanel.MovementItem`'s to draw.
  */
-function markerFor(position: number, view: CircuitView): MovementMarker {
+function markerFor(position: number, view: CircuitView): BlockMovementMarker {
   if (view.phase === 'finished') return null
   if (view.phase === 'rest') return position === 1 ? 'next' : null
   return position === view.position ? 'now' : null
-}
-
-const MARKER_WORDS: Readonly<Record<'now' | 'next', string>> = {
-  now: 'Now',
-  next: 'Next',
-}
-
-function CircuitMovement({
-  exercise,
-  marker,
-}: {
-  exercise: ExerciseProgress
-  marker: MovementMarker
-}) {
-  return (
-    <li
-      // The status word above is the message; `aria-current` is how the same
-      // fact reaches a screen reader without it being read as decoration.
-      aria-current={marker === 'now' ? 'step' : undefined}
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      {marker !== null && <p style={labelStyle}>{MARKER_WORDS[marker]}</p>}
-      {/*
-        No rest bar per movement: a circuit rests once per round, and that
-        countdown is `RoundRest`'s (EXE-05).
-      */}
-      <ExerciseSetLogger
-        exercise={exercise}
-        ordinal={`${exercise.position}.`}
-        restSeconds={null}
-      />
-    </li>
-  )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -247,12 +203,11 @@ function CircuitMovement({
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The round boundary: one countdown, taken once, between two rounds.
+ * The round boundary, inside the block's card: the rest in words, and the one
+ * control that ends it. The countdown itself is `BlockPanel`'s `timer`.
  *
- * `TimerDisplay` is the shipped countdown and this is what it is for — a real
- * deadline, urgency in the last seconds, digits that tumble. The button beside
- * it is the same `advance` the movements use, so ending the rest early and
- * letting it run out arrive at the same state rather than at two.
+ * The button is the same `advance` the movements use, so ending the rest early
+ * and letting it run out arrive at the same state rather than at two.
  */
 function RoundRest({ view, onSkip }: { view: CircuitView; onSkip: () => void }) {
   return (
@@ -260,20 +215,10 @@ function RoundRest({ view, onSkip }: { view: CircuitView; onSkip: () => void }) 
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
-      <p style={labelStyle}>Rest between rounds</p>
-      <TimerDisplay seconds={view.restRemaining} />
+      <BlockPanel.Label>Rest between rounds</BlockPanel.Label>
       <Button variant="primary" size="lg" icon={<Rest />} onClick={onSkip}>
         Start round {view.round}
       </Button>
     </div>
   )
 }
-
-const labelStyle = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  textTransform: 'uppercase',
-  color: 'var(--text-card-label)',
-} as const
