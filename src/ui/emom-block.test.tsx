@@ -14,13 +14,23 @@
  * fail here as it does in the wild. A refresh is a fresh mount over the same
  * storage, because that is what a refresh is.
  *
+ * And the 0.14.3 composition of the same block: it draws with the shared
+ * `BlockPanel` frame, the countdown is its own card beside the block's and never
+ * inside it, and a minute running out is the shipped low state — the stepped
+ * `--dur-alert` crossing and the 80% pulse, as the view's one loop, still under
+ * reduced motion with nothing it was saying lost.
+ *
  * `EmomBlock` is mounted directly rather than through `BlockSlot` — the
  * dispatch is `block-renderers.test.tsx`'s subject, and the injected clock and
  * storage are what these assertions are about.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import type { ReactNode } from 'react'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi, type Mock } from 'vitest'
+import { afterEach, describe, expect, it, vi, type Mock } from 'vitest'
 
 import {
   BlockCompletionContext,
@@ -40,6 +50,36 @@ import {
   type ExerciseFixture,
 } from '../test/workout-double'
 import { EmomBlock } from './emom-block'
+import { LoadingView } from './view-state'
+
+// jsdom applies no stylesheet, so motion is proved as classes, attributes and
+// the rule text the classes resolve to.
+const MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../design-system/css/motion.css'),
+  'utf-8',
+)
+const APP_MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../styles/app-motion.css'),
+  'utf-8',
+)
+
+afterEach(() => vi.restoreAllMocks())
+
+function reduceMotion(reduced: boolean) {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: reduced && query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) as MediaQueryList,
+  )
+}
 
 /** The id the double would mint for a logged set; no test here logs one. */
 const MINTED = 'a0000001-0000-4000-8000-000000000000'
@@ -83,6 +123,8 @@ function mount(
     block?: BlockFixture
     /** What a previous visit left behind for this block. */
     stored?: EmomState
+    /** Something else in view with the block — a wait that owns a loop. */
+    beside?: ReactNode
   } = {},
 ): Mounted {
   const snapshot = snapshotFixture({
@@ -128,6 +170,7 @@ function mount(
           onFailure={() => {}}
           newId={() => MINTED}
         >
+          {options.beside}
           <EmomBlock block={block} storage={storage} now={() => current} />
         </SetLoggingProvider>
       </BlockCompletionContext>
@@ -170,12 +213,39 @@ function movement(name: string) {
   return within(item)
 }
 
-/** Every movement carrying the live marker, by the word it carries. */
+/**
+ * Every movement carrying the live marker, by the word it carries — the shared
+ * frame's `Now` / `Next`, which the label style sets in capitals.
+ */
 function marked(word: string): string[] {
   return screen
     .getAllByRole('listitem')
     .filter((item) => item.textContent?.includes(word) === true)
     .map((item) => item.querySelector('h1, h2, h3, h4, h5, h6')?.textContent ?? '')
+}
+
+/** The countdown's readout: the shipped timer's own labelled frame. */
+function timer(): HTMLElement {
+  return screen.getByRole('timer')
+}
+
+/** The decorative digits: the timer's first child. */
+function digits(): HTMLElement {
+  return timer().firstElementChild as HTMLElement
+}
+
+/** What owns the countdown's loop, and says whether the minute is running out. */
+function countdown(): HTMLElement {
+  return timer().closest('[data-loop]') as HTMLElement
+}
+
+/** Every card frame in the document, and the ones that sit inside another. */
+function cards(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('.clr-card'))
+}
+
+function nestedCards(): HTMLElement[] {
+  return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
 }
 
 describe('the EMOM runs the clock the block prescribes', () => {
@@ -259,14 +329,14 @@ describe('the minute boundary flips the active work', () => {
     const mounted = mount()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    expect(marked('NOW')).toEqual(['1. hollow body hold'])
-    expect(movement('1. hollow body hold').getByText('NOW')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expect(movement('1. hollow body hold').getByText('Now')).toBeInTheDocument()
 
     // The phone was in a pocket for the rest of minute one.
     mounted.advance(60)
 
     expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
-    expect(marked('NOW')).toEqual(['2. v up'])
+    expect(marked('Now')).toEqual(['2. v up'])
     expect(screen.getByText('WORK')).toBeInTheDocument()
   })
 
@@ -281,14 +351,14 @@ describe('the minute boundary flips the active work', () => {
     expect(screen.getByText('REST')).toBeInTheDocument()
     // Resting, so the card names what is coming rather than telling the user to
     // start: colour is never the only cue, and neither is the word.
-    expect(marked('NEXT')).toEqual(['2. v up'])
+    expect(marked('Next')).toEqual(['2. v up'])
     expect(screen.queryByRole('button', { name: 'Minute done' })).not.toBeInTheDocument()
 
     // And the next boundary puts the work back without anything being pressed.
     mounted.advance(40)
 
     expect(screen.getByText('WORK')).toBeInTheDocument()
-    expect(marked('NOW')).toEqual(['2. v up'])
+    expect(marked('Now')).toEqual(['2. v up'])
   })
 
   it('rests for the window the block prescribes at the end of every minute', async () => {
@@ -319,7 +389,7 @@ describe('the minute boundary flips the active work', () => {
 
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
     expect(screen.getByText(/Every prescribed minute is done/)).toBeInTheDocument()
-    expect(marked('NOW')).toEqual([])
+    expect(marked('Now')).toEqual([])
     expect(screen.queryByRole('button', { name: 'Minute done' })).not.toBeInTheDocument()
   })
 
@@ -400,7 +470,7 @@ describe('the timed state survives a refresh', () => {
     // Not minute one, and not a clock that restarted: the stored timestamp is
     // read against the wall clock exactly as it was before.
     expect(screen.getByText('MIN 4 OF 10')).toBeInTheDocument()
-    expect(marked('NOW')).toEqual(['2. v up'])
+    expect(marked('Now')).toEqual(['2. v up'])
   })
 
   it('restores a record written by an earlier visit', () => {
@@ -495,6 +565,255 @@ describe('completion supplies the minutes the EMOM observed', () => {
     await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
 
     expect(mounted.completeBlock).toHaveBeenCalledExactlyOnceWith(mounted.block.blockId, {})
+  })
+})
+
+describe('the EMOM draws with the shared block frame', () => {
+  it('is one block card beside one timer card, with neither inside the other', async () => {
+    const user = setup()
+    mount()
+
+    // Before the clock: the block's card and nothing else.
+    expect(cards()).toHaveLength(1)
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+
+    expect(cards()).toHaveLength(2)
+    expect(nestedCards()).toEqual([])
+
+    // The timer's card is the shipped one, and it holds the readout alone: the
+    // minute, the phase, the movements and the controls are the block card's.
+    const timerCard = timer().closest('.clr-card') as HTMLElement
+    const blockCard = screen
+      .getByRole('list', { name: 'Movements in this EMOM' })
+      .closest('.clr-card') as HTMLElement
+    expect(blockCard).not.toBe(timerCard)
+    expect(within(timerCard).queryByRole('button')).not.toBeInTheDocument()
+    const inside = within(blockCard)
+    expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expect(inside.getByText('WORK')).toBeInTheDocument()
+    expect(inside.getByRole('button', { name: 'Minute done' })).toBeInTheDocument()
+  })
+
+  it('carries the identity row, the movement rows and exactly one completion', () => {
+    mount()
+
+    const blockCard = cards()[0]
+    const inside = within(blockCard)
+    expect(inside.getByText('EMOM · 10 MIN')).toBeInTheDocument()
+    expect(inside.getByText('2 movements')).toBeInTheDocument()
+    expect(inside.getAllByRole('button', { name: 'Complete EMOM' })).toHaveLength(1)
+
+    // Rows of one list, each headed by its movement — never cards of their own.
+    const rows = within(
+      inside.getByRole('list', { name: 'Movements in this EMOM' }),
+    ).getAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    for (const row of rows) {
+      expect(within(row).getByRole('heading')).toBeInTheDocument()
+      expect(row.querySelector('.clr-card')).toBeNull()
+    }
+  })
+
+  it('keeps every movement loggable whichever one the minute is on', async () => {
+    const user = setup()
+    mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+
+    // The movement the minute is not on is neither disabled nor hidden.
+    for (const name of ['1. hollow body hold', '2. v up']) {
+      const controls = movement(name).getAllByRole('button')
+      expect(controls.length).toBeGreaterThan(0)
+      for (const control of controls) expect(control).toBeEnabled()
+    }
+  })
+})
+
+describe('the countdown takes the shipped low state and nothing more', () => {
+  it('is not low, and claims no loop, while the minute has time left', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(49)
+
+    expect(timer()).toHaveTextContent('00:11')
+    expect(timer()).toHaveClass('clr-chamfer--timer')
+    expect(timer()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
+    expect(countdown()).toHaveAttribute('data-urgent', 'false')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+  })
+
+  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(50)
+
+    // One role change moves bar, body and emission together.
+    expect(timer()).toHaveTextContent('00:10')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(timer()).not.toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // The pulse is on the whole timer card and is the view's running loop.
+    expect(timer().closest('.clr-pulse-micro')).not.toBeNull()
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(countdown()).toHaveAttribute('data-urgent', 'true')
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(countdown().querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+    expect(
+      MOTION_CSS.includes(
+        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
+      ),
+    ).toBe(true)
+  })
+
+  it('leaves the low state on the minute boundary, and comes back to it every minute', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(55)
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('01:00')
+    expect(timer()).toHaveClass('clr-chamfer--timer')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+
+    mounted.advance(52)
+    expect(timer()).toHaveTextContent('00:08')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+  })
+
+  it('stays low through the rest remainder, with the phase still in words', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(52)
+    await user.click(screen.getByRole('button', { name: 'Minute done' }))
+
+    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:08')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+  })
+
+  it('gives the loop up once the last minute has elapsed', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount({ block: { timerSeconds: 120 } })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(115)
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+
+    mounted.advance(5)
+
+    // A finished clock holds the low colours at zero and does not pulse on.
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:00')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    expect(APP_MOTION_CSS).toMatch(
+      /\[data-loop='still'\] \.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
+    )
+  })
+
+  it('stays a labelled timer that is not a live region', async () => {
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(52)
+
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toBe(timer())
+    expect(timer()).not.toHaveAttribute('aria-live')
+    expect(digits()).toHaveAttribute('aria-hidden', 'true')
+    expect(countdown().querySelector('[aria-live], [role="status"]')).toBeNull()
+  })
+
+  it('takes the one loop from a loading region beside it, and gives it back', async () => {
+    reduceMotion(false)
+    const user = setup()
+    const mounted = mount({
+      beside: <LoadingView label="Reading coaching for hollow body hold" />,
+    })
+    const wait = screen
+      .getByText('Reading coaching for hollow body hold')
+      .closest('[data-loop]') as HTMLElement
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+
+    // A minute that is not low has no loop, so the wait keeps its own.
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+
+    mounted.advance(52)
+
+    // Low: the pulse carries more state, so it runs and the wait is stilled —
+    // still on screen, still busy, still saying what it is waiting for.
+    expect(countdown()).toHaveAttribute('data-loop', 'run')
+    expect(wait).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('aria-busy', 'true')
+    expect(wait).toHaveTextContent('Reading coaching for hollow body hold')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+
+    mounted.advance(8)
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+  })
+
+  it('is still under reduced motion and loses nothing it was saying', async () => {
+    reduceMotion(true)
+    const user = setup()
+    const mounted = mount()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(52)
+
+    expect(countdown()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+
+    // The reading, the words, the colour role and the controls are all there.
+    expect(countdown()).toHaveAttribute('data-urgent', 'true')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(timer()).toHaveTextContent('00:08')
+    expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
+    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expect(screen.getByRole('button', { name: 'Minute done' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
+
+    // The shipped rule that makes a reduced pulse static.
+    expect(MOTION_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
+    )
   })
 })
 

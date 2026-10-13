@@ -8,15 +8,14 @@
  * `emom-clarity.md` is a list of four things the old screen failed to say, and
  * all four are said here:
  *
- *   · **Which minute it is.** `MIN 4 OF 10`, directly under the countdown, in
- *     the data face and the timer's own colour (§1). The number comes from the
+ *   · **Which minute it is.** `MIN 4 OF 10`, at the head of the card, in the
+ *     data face and the timer's own colour (§1). The number comes from the
  *     block's `timer_seconds`; a block that carries no window says `MIN 4` and
  *     runs until the user completes it, rather than inventing a last minute.
  *   · **Which movement is active now.** The minute decides it —
  *     `((minute - 1) % movements) + 1` — so a 2-movement EMOM alternates and a
  *     3-movement one rotates (§2). The live movement is named in words (`NOW`,
- *     `NEXT`) and carries `aria-current`, with the rule down its left edge as
- *     the second cue rather than the only one; the others are not dimmed into
+ *     `NEXT`) and carries `aria-current`; the others are not dimmed into
  *     unreadability, because their set fields stay usable and a 40%-opacity
  *     input is a contrast failure rather than a hint.
  *   · **The alternation pattern.** Each movement states the minutes it covers —
@@ -27,6 +26,11 @@
  *     seconds left of *this minute*: the readout turns to the urgency treatment
  *     in the last ten seconds of every minute and resets on the boundary
  *     (§4, option A). Nothing here sets a colour to say it.
+ *
+ * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
+ * card, the identity row and the single completion are `BlockPanel`'s, the
+ * movements are rows of its list, and the countdown is handed to its `timer`
+ * slot — `TimerDisplay` is already a card, and is never put inside another.
  *
  * Two rules from the shared clarity spec shape the rest of the card. Rest is
  * the block's and is honored once per minute rather than once per movement, so
@@ -59,10 +63,9 @@ import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
-import { BlockCompletionControl } from './block-completion-control'
-import { Card } from './card'
+import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
+import { useInterfaceLoop } from './motion'
 import { ExerciseSetLogger } from './set-logger'
-import { StructureBadge } from './workout-chrome'
 
 export interface EmomBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -95,98 +98,64 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
     emom.update(markMinuteDone(emom.state, view))
   }
 
+  const counting = shape.size > 0 && view.phase !== 'untimed' && view.phase !== 'ready'
+
   return (
-    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-      {shape.size > 0 && view.phase !== 'untimed' && view.phase !== 'ready' && (
-        <TimerDisplay seconds={view.secondsRemaining} />
-      )}
-      <Card>
-        <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-            <StructureBadge identity={block.identity} />
-            <span style={labelStyle}>
-              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-            </span>
-          </div>
-
-          {shape.size === 0 ? (
-            <p style={{ margin: 0 }}>
-              Nothing left to perform in this block — every movement in it was swapped
-              out.
-            </p>
+    <BlockPanel
+      block={block}
+      timer={counting ? <MinuteCountdown view={view} /> : null}
+      // The minutes the user actually got through — the outcome this structure
+      // observed, and the only field it supplies. An EMOM whose clock never
+      // ran observed nothing, and says so by supplying nothing rather than a
+      // zero (DATA_MODEL §8).
+      completion={{ outcome: observedOutcome(view), label: 'Complete EMOM' }}
+    >
+      {shape.size === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <>
+          {view.phase === 'untimed' ? (
+            // The block carries no clock, so there is no grid to draw and no
+            // minute to assign a movement to. Saying which minute is active
+            // would be inventing the one column the block does not have.
+            <BlockPanel.Note>
+              This block prescribes no clock. Work through the movements as prescribed.
+            </BlockPanel.Note>
           ) : (
-            <>
-              {view.phase === 'untimed' ? (
-                // The block carries no clock, so there is no grid to draw and no
-                // minute to assign a movement to. Saying which minute is active
-                // would be inventing the one column the block does not have.
-                <p style={{ margin: 0 }}>
-                  This block prescribes no clock. Work through the movements as
-                  prescribed.
-                </p>
-              ) : (
-                <SectionTimer view={view} onStart={start} onMinuteDone={minuteDone} />
-              )}
-
-              <ol
-                aria-label="Movements in this EMOM"
-                style={{
-                  listStyle: 'none',
-                  margin: 0,
-                  padding: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 'var(--spacing-300)',
-                }}
-              >
-                {block.exercises.map((exercise) => (
-                  <EmomMovement
-                    key={exercise.exerciseId}
-                    exercise={exercise}
-                    assignment={
-                      view.phase === 'untimed'
-                        ? null
-                        : minuteAssignment(exercise.position, shape)
-                    }
-                    marker={markerFor(exercise.position, view)}
-                  />
-                ))}
-              </ol>
-
-              {/*
-                Once, at the foot of the card, and only when the block prescribes
-                a window inside the minute: an EMOM that prescribes none rests for
-                whatever is left of the minute, which is the structure rather than
-                a number to print (`superset-circuit-clarity.md` §8).
-              */}
-              {shape.restSeconds > 0 && view.phase !== 'untimed' && (
-                <p style={{ margin: 0 }}>
-                  {shape.restSeconds}s rest at the end of each minute
-                </p>
-              )}
-
-              {view.phase === 'finished' && (
-                <p style={{ margin: 0 }}>
-                  Every prescribed minute is done. Record the block when you are ready.
-                </p>
-              )}
-            </>
+            <SectionTimer view={view} onStart={start} onMinuteDone={minuteDone} />
           )}
 
+          <BlockPanel.MovementList label="Movements in this EMOM">
+            {block.exercises.map((exercise) => (
+              <EmomMovement
+                key={exercise.exerciseId}
+                exercise={exercise}
+                assignment={
+                  view.phase === 'untimed' ? null : minuteAssignment(exercise.position, shape)
+                }
+                marker={markerFor(exercise.position, view)}
+              />
+            ))}
+          </BlockPanel.MovementList>
+
           {/*
-            The minutes the user actually got through — the outcome this structure
-            observed, and the only field it supplies. An EMOM whose clock never
-            ran observed nothing, and says so by supplying nothing rather than a
-            zero (DATA_MODEL §8).
+            Once, at the foot of the card, and only when the block prescribes
+            a window inside the minute: an EMOM that prescribes none rests for
+            whatever is left of the minute, which is the structure rather than
+            a number to print (`superset-circuit-clarity.md` §8).
           */}
-          <BlockCompletionControl
-            blockId={block.blockId}
-            outcome={observedOutcome(view)}
-            label="Complete EMOM"
-          />
-        </div>
-      </Card>
-    </div>
+          {shape.restSeconds > 0 && view.phase !== 'untimed' && (
+            <BlockPanel.Note>{shape.restSeconds}s rest at the end of each minute</BlockPanel.Note>
+          )}
+
+          {view.phase === 'finished' && (
+            <BlockPanel.Note>
+              Every prescribed minute is done. Record the block when you are ready.
+            </BlockPanel.Note>
+          )}
+        </>
+      )}
+    </BlockPanel>
   )
 }
 
@@ -201,14 +170,49 @@ function observedOutcome(view: EmomView): BlockOutcome {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The minute the user is in: the countdown, the minute out of the window, the
- * phase in words, and the one control that belongs to the phase.
+ * The last stretch of a minute, where the readout crosses into its low state.
+ * Ten, which is the shipped `TimerDisplay`'s own default — stated here so the
+ * loop claim below and the readout cannot disagree about when that is.
+ */
+const MINUTE_LOW_SECONDS = 10
+
+/**
+ * The countdown, as `BlockPanel`'s `timer`: the shipped `TimerDisplay`, which
+ * is its own frame and is drawn beside the block's card rather than inside it.
  *
- * `TimerDisplay` is handed the seconds left of *this minute* rather than of the
- * whole block, which is what makes its urgency treatment mean "wrap up this
- * minute" and reset at every boundary. The minute line is not a live region:
- * announcing a number every second makes the rest of the screen unusable, so
- * the phase word beside it is what a screen reader is meant to find.
+ * It is handed the seconds left of *this minute* rather than of the whole
+ * block, which is what makes its urgency treatment mean "wrap up this minute"
+ * and reset at every boundary. The low state is the shipped one and nothing
+ * more: the stepped `--dur-alert` crossing and the dim to 80%, with no glow of
+ * its own. The pulse is an `urgent` claim on the view's one loop for as long as
+ * a minute is actually running out — it outranks a wait beside it, and it is
+ * given up once the last minute has elapsed, so a finished clock at `00:00`
+ * holds the low colours without pulsing for ever. Under reduced motion it is
+ * still, with the digits, the colour and the phase word all unchanged.
+ */
+function MinuteCountdown({ view }: { view: EmomView }) {
+  const low = view.secondsRemaining <= MINUTE_LOW_SECONDS
+  const running = view.phase === 'work' || view.phase === 'rest'
+  const loop = useInterfaceLoop('urgent', low && running)
+
+  return (
+    <div
+      style={{ display: 'flex', flexDirection: 'column' }}
+      data-urgent={low ? 'true' : 'false'}
+      {...loop}
+    >
+      <TimerDisplay seconds={view.secondsRemaining} lowThreshold={MINUTE_LOW_SECONDS} />
+    </div>
+  )
+}
+
+/**
+ * The minute the user is in, inside the block's card: the minute out of the
+ * window, the phase in words, and the one control that belongs to the phase.
+ *
+ * Neither line is a live region: announcing a number every second makes the
+ * rest of the screen unusable, so the phase word is what a screen reader is
+ * meant to find.
  */
 function SectionTimer({
   view,
@@ -224,8 +228,8 @@ function SectionTimer({
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
-      <p style={{ ...labelStyle, color: 'var(--text-timer)' }}>{minuteText(view)}</p>
-      <p style={labelStyle}>{PHASE_WORDS[view.phase]}</p>
+      <BlockPanel.Label style={{ color: 'var(--text-timer)' }}>{minuteText(view)}</BlockPanel.Label>
+      <BlockPanel.Label>{PHASE_WORDS[view.phase]}</BlockPanel.Label>
 
       {view.phase === 'ready' && (
         <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
@@ -266,15 +270,13 @@ const PHASE_WORDS: Readonly<Record<EmomView['phase'], string>> = {
 // The rotation
 // ─────────────────────────────────────────────────────────────────────────────
 
-type MovementMarker = 'now' | 'next' | null
-
 /**
  * Which movement is live. During the rest remainder — and before the clock is
  * started — it is the movement the *next* minute opens with, labelled `NEXT`
  * rather than `NOW`: the user is resting, and being told to start is the one
  * thing the card must not say.
  */
-function markerFor(position: number, view: EmomView): MovementMarker {
+function markerFor(position: number, view: EmomView): BlockMovementMarker {
   switch (view.phase) {
     case 'work':
       return position === view.activePosition ? 'now' : null
@@ -288,11 +290,11 @@ function markerFor(position: number, view: EmomView): MovementMarker {
   }
 }
 
-const MARKER_WORDS: Readonly<Record<'now' | 'next', string>> = {
-  now: 'NOW',
-  next: 'NEXT',
-}
-
+/**
+ * One movement of the rotation, as a row of the block's list. The live one is
+ * `BlockPanel.MovementItem`'s to mark — a word, and `aria-current` — so colour
+ * is never the cue.
+ */
 function EmomMovement({
   exercise,
   assignment,
@@ -300,41 +302,11 @@ function EmomMovement({
 }: {
   exercise: ExerciseProgress
   assignment: string | null
-  marker: MovementMarker
+  marker: BlockMovementMarker
 }) {
-  const live = marker !== null
-
   return (
-    <li
-      // The words above are the message; `aria-current` is how the same fact
-      // reaches a screen reader without it being read as decoration.
-      aria-current={marker === 'now' ? 'step' : undefined}
-      className="clr-stack--tight"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        // Colour is never the only cue: the rule is the second one, under the
-        // word. Transparent rather than absent when the movement is not live,
-        // so nothing shifts on a minute boundary.
-        borderLeft: `var(--border-width) solid ${
-          live ? 'var(--border-frame-selection)' : 'transparent'
-        }`,
-        paddingLeft: 'var(--spacing-200)',
-      }}
-    >
-      {(marker !== null || assignment !== null) && (
-        <div
-          className="clr-row"
-          style={{ justifyContent: marker === null ? 'flex-end' : 'space-between' }}
-        >
-          {marker !== null && (
-            <span style={{ ...labelStyle, color: 'var(--text-card-header)' }}>
-              {MARKER_WORDS[marker]}
-            </span>
-          )}
-          {assignment !== null && <span style={labelStyle}>{assignment}</span>}
-        </div>
-      )}
+    <BlockPanel.MovementItem marker={marker}>
+      {assignment !== null && <BlockPanel.Label>{assignment}</BlockPanel.Label>}
 
       {/*
         Rest is the block's, stated once per minute at the foot of the card: a
@@ -346,15 +318,6 @@ function EmomMovement({
         ordinal={`${exercise.position}.`}
         statesRest={false}
       />
-    </li>
+    </BlockPanel.MovementItem>
   )
 }
-
-const labelStyle = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  textTransform: 'uppercase',
-  color: 'var(--text-card-label)',
-} as const
