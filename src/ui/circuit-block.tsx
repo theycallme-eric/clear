@@ -72,7 +72,13 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   const view = circuitView(circuit.state, shape, restElapsed)
 
   const advance = () => {
-    circuit.advanceTo(advanceCircuit(circuit.state, shape, now()))
+    // The displayed work action must advance, not consume a tap clearing a
+    // rest whose deadline has already passed. Active-rest skip stays unchanged.
+    const state =
+      view.phase === 'work' && circuit.state.restStartedAt !== null
+        ? { ...circuit.state, restStartedAt: null }
+        : circuit.state
+    circuit.advanceTo(advanceCircuit(state, shape, now()))
   }
 
   const resting = shape.size > 0 && view.phase === 'rest'

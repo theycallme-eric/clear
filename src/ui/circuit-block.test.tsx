@@ -377,6 +377,47 @@ describe('the shared rest', () => {
     expect(screen.getByText('Round 2 of 3 · Movement 1 of 3')).toBeInTheDocument()
   })
 
+  it('advances and persists on the first tap after expired rest, including a remount', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+
+    for (const restoreAfterExpiry of [false, true]) {
+      clock = START
+      const storage = fakeStorage()
+      const block = circuitBlock({ roundRestSeconds: 30 })
+      let mounted = renderCircuit(block, storage, completionDouble().api)
+
+      await user.click(screen.getByRole('button', { name: 'Next movement' }))
+      await user.click(screen.getByRole('button', { name: 'Next movement' }))
+      await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
+
+      if (restoreAfterExpiry) mounted.unmount()
+      clock = START + 30_000
+      if (restoreAfterExpiry) {
+        mounted = renderCircuit(block, storage, completionDouble().api)
+      } else {
+        await vi.advanceTimersByTimeAsync(1000)
+      }
+
+      expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+      expect(screen.getByText('Round 2 of 3 · Movement 1 of 3')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Next movement' }))
+
+      expect(screen.getByText('Round 2 of 3 · Movement 2 of 3')).toBeInTheDocument()
+      expect(readCircuitState(storage, block.blockId)).toEqual({
+        round: 2,
+        position: 2,
+        restStartedAt: null,
+      })
+
+      mounted.unmount()
+      const restored = renderCircuit(block, storage, completionDouble().api)
+      expect(screen.getByText('Round 2 of 3 · Movement 2 of 3')).toBeInTheDocument()
+      restored.unmount()
+    }
+  })
+
   it('can be ended early, and the round starts from the same place', async () => {
     const user = userEvent.setup()
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
