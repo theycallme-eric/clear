@@ -7,8 +7,18 @@
  *   · finishing under the cap stops the clock at the finish, not at the cap;
  *   · the urgency treatment appears near the cap and in no other state;
  *   · the clock survives a refresh — here, a remount against the same storage.
+ *
+ * And the 0.14.3 composition it is drawn with: the shared block frame, the clock
+ * as its own timer card beside the block's card and never inside it, and the
+ * shipped low state — the stepped `--dur-alert` crossing and the 80% pulse, as
+ * the view's one loop, still under reduced motion with nothing it was saying
+ * lost.
  */
-import { render, screen } from '@testing-library/react'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+import type { ReactNode } from 'react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -22,6 +32,34 @@ import type { BlockProgress } from '../state/workout-progress'
 import { sessionProgress } from '../state/workout-progress'
 import { snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { ForTimeBlock } from './for-time-block'
+import { LoadingView } from './view-state'
+
+// jsdom applies no stylesheet, so motion is proved as classes, attributes and
+// the rule text the classes resolve to.
+const MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../design-system/css/motion.css'),
+  'utf-8',
+)
+const APP_MOTION_CSS = readFileSync(
+  resolve(import.meta.dirname, '../styles/app-motion.css'),
+  'utf-8',
+)
+
+function reduceMotion(reduced: boolean) {
+  vi.spyOn(window, 'matchMedia').mockImplementation(
+    (query: string) =>
+      ({
+        matches: reduced && query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        addListener: () => {},
+        removeListener: () => {},
+        dispatchEvent: () => false,
+      }) as MediaQueryList,
+  )
+}
 
 /** A moment the race can be measured from, and a clock the test moves. */
 const START = Date.parse('2026-09-24T10:00:00.000Z')
@@ -70,9 +108,11 @@ function renderForTime(
   block: BlockProgress,
   storage: ShellStorage,
   api: BlockCompletionApi,
+  beside: ReactNode = null,
 ) {
   return render(
     <BlockCompletionContext value={api}>
+      {beside}
       <ForTimeBlock block={block} storage={storage} now={now} />
     </BlockCompletionContext>,
   )
@@ -81,6 +121,28 @@ function renderForTime(
 /** The readout, by the accessible name it carries in every phase. */
 function readout(): HTMLElement {
   return screen.getByRole('timer', { name: 'Block time' })
+}
+
+/** The timer card's frame: the one element whose role moves bar, body and emission. */
+function timerFrame(): HTMLElement {
+  return readout().closest('.clr-card__body') as HTMLElement
+}
+
+/** The clock as a whole: the element that owns the pulse and the loop claim. */
+function raceClock(): HTMLElement {
+  return readout().closest('[data-loop]') as HTMLElement
+}
+
+function digits(): HTMLElement {
+  return readout().querySelector('[aria-hidden="true"]') as HTMLElement
+}
+
+function cards(): HTMLElement[] {
+  return Array.from(document.querySelectorAll<HTMLElement>('.clr-card'))
+}
+
+function nestedCards(): HTMLElement[] {
+  return cards().filter((card) => card.parentElement?.closest('.clr-card') != null)
 }
 
 /**
@@ -94,7 +156,8 @@ function readout(): HTMLElement {
  */
 async function wallClockReaches(milliseconds: number): Promise<void> {
   clock = milliseconds
-  await vi.advanceTimersByTimeAsync(1000)
+  // Inside `act`, so the loop claim the repaint makes is settled before a read.
+  await act(() => vi.advanceTimersByTimeAsync(1000))
 }
 
 function userWithTimers() {
@@ -108,6 +171,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers()
+  vi.restoreAllMocks()
 })
 
 describe('before the clock starts', () => {
@@ -169,9 +233,9 @@ describe('while the clock runs', () => {
 
     await wallClockReaches(START + 60_000)
 
-    expect(readout().className).toContain('clr-chamfer--timer')
-    expect(readout().className).not.toContain('clr-chamfer--timer-low')
-    expect(readout()).not.toHaveClass('clr-pulse-micro')
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer')
+    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
   it('turns urgent in the last ten seconds — words, pulse and hue together', async () => {
@@ -185,8 +249,8 @@ describe('while the clock runs', () => {
     // The sentence changes, not just the colour — the pulse is disabled under
     // `prefers-reduced-motion`, so the words have to carry it too.
     expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
-    expect(readout().className).toContain('clr-chamfer--timer-low')
-    expect(readout()).toHaveClass('clr-pulse-micro')
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(raceClock()).toHaveClass('clr-pulse-micro')
   })
 })
 
@@ -233,8 +297,9 @@ describe('the first completion path: finished under the cap', () => {
     clock = START + (CAP_SECONDS - 1) * 1000
     await user.click(screen.getByRole('button', { name: 'Finish' }))
 
-    expect(readout().className).not.toContain('clr-chamfer--timer-low')
-    expect(readout()).not.toHaveClass('clr-pulse-micro')
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer')
+    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 })
 
@@ -261,9 +326,9 @@ describe('the second completion path: the cap is reached', () => {
     await wallClockReaches(START + CAP_SECONDS * 1000)
 
     expect(screen.queryByText('Finished under cap')).not.toBeInTheDocument()
-    expect(readout().className).toContain('clr-chamfer--timer-low')
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
     // The clock has stopped: nothing is running out, so nothing pulses.
-    expect(readout()).not.toHaveClass('clr-pulse-micro')
+    expect(document.querySelector('.clr-pulse-micro')).toBeNull()
   })
 
   it('supplies the cap and the cap-expiry outcome to the shell', async () => {
@@ -374,7 +439,7 @@ describe('a block with no cap', () => {
 
     expect(screen.getByText('Racing the clock')).toBeInTheDocument()
     expect(screen.queryByText(/cap/i)).not.toBeInTheDocument()
-    expect(readout().className).not.toContain('clr-chamfer--timer-low')
+    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer-low')
 
     await user.click(screen.getByRole('button', { name: 'Finish' }))
     await user.click(screen.getByRole('button', { name: 'Record For Time' }))
@@ -382,5 +447,264 @@ describe('a block with no cap', () => {
     expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
       elapsedSeconds: 1_000,
     })
+  })
+})
+
+describe('For Time draws with the shared block frame', () => {
+  it('is one block card beside one timer card, with neither inside the other', async () => {
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    const timerCard = readout().closest('.clr-card') as HTMLElement
+    const blockCard = screen
+      .getByRole('list', { name: 'Movements in this block' })
+      .closest('.clr-card') as HTMLElement
+
+    expect(cards()).toHaveLength(2)
+    expect(timerCard).not.toBe(blockCard)
+    expect(nestedCards()).toEqual([])
+
+    // The same two cards in every phase: ready, running, urgent, capped.
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    expect(cards()).toHaveLength(2)
+    await wallClockReaches(START + (CAP_SECONDS - 5) * 1000)
+    expect(cards()).toHaveLength(2)
+    await wallClockReaches(START + CAP_SECONDS * 1000)
+    expect(cards()).toHaveLength(2)
+    expect(nestedCards()).toEqual([])
+  })
+
+  it('keeps the clock’s words inside the clock’s own card', async () => {
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    const timerCard = within(readout().closest('.clr-card') as HTMLElement)
+    expect(timerCard.getByRole('status')).toHaveTextContent('Ready')
+    expect(timerCard.getByText('08:00 cap')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + 60_000)
+
+    expect(timerCard.getByRole('status')).toHaveTextContent('Racing the clock')
+    expect(timerCard.getByText('Cap in 07:00')).toBeInTheDocument()
+    // The controls are the block's, not the timer's.
+    expect(timerCard.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('carries the identity row, the movement rows and exactly one completion', () => {
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    const blockCard = screen
+      .getByRole('list', { name: 'Movements in this block' })
+      .closest('.clr-card') as HTMLElement
+
+    expect(within(blockCard).getByText('2 movements')).toBeInTheDocument()
+    expect(within(blockCard).getByText('All of it:')).toBeInTheDocument()
+
+    const rows = within(blockCard).getAllByRole('listitem')
+    expect(rows).toHaveLength(2)
+    for (const row of rows) {
+      // Rows, not cards — and read, not logged.
+      expect(row.querySelector('.clr-card')).toBeNull()
+      expect(within(row).getByRole('heading')).toBeInTheDocument()
+      expect(row.querySelector('input')).toBeNull()
+    }
+
+    expect(within(blockCard).getAllByRole('button', { name: 'Record For Time' })).toHaveLength(1)
+    expect(within(blockCard).getByRole('button', { name: 'Start For Time' })).toBeInTheDocument()
+  })
+
+  it('states the two endings with a glyph beside the words, not by hue alone', async () => {
+    const user = userWithTimers()
+    const finished = renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    clock = START + 383_000
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('Finished under cap')
+    expect(screen.getByRole('status').querySelector('svg')).not.toBeNull()
+    expect(screen.getByText('08:00 cap')).toBeInTheDocument()
+    finished.unmount()
+
+    clock = START
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + CAP_SECONDS * 1000)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Cap reached')
+    expect(screen.getByRole('status').querySelector('svg')).not.toBeNull()
+    expect(screen.getByRole('status').style.color).toBe('var(--text-timer-low)')
+    expect(screen.getByText('08:00 cap')).toBeInTheDocument()
+  })
+
+  it('draws the swapped-out block as one card with no clock', () => {
+    renderForTime(forTimeBlock({ exercises: [] }), fakeStorage(), completionDouble().api)
+
+    expect(cards()).toHaveLength(1)
+    expect(document.querySelector('[data-loop]')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Start For Time' })).not.toBeInTheDocument()
+  })
+})
+
+describe('the clock takes the shipped low state and nothing more', () => {
+  it('is not low, and claims no loop, while there is time left', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 11) * 1000)
+
+    expect(screen.getByText('Cap in 00:11')).toBeInTheDocument()
+    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(digits().style.color).toBe('var(--text-timer)')
+  })
+
+  it('goes low in the last ten seconds: stepped over --dur-alert, pulsing to 80%, no glow', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 10) * 1000)
+
+    // One role change moves bar, body and emission together.
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(timerFrame()).not.toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+
+    // The digits cross over on the frame's schedule, and each one tumbles.
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(digits().style.transition).toBe('color var(--dur-alert) var(--step-4)')
+    expect(digits().querySelectorAll('.clr-tumble')).toHaveLength(4)
+
+    // The pulse is on the whole timer card and is the view's running loop.
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    // No glow of the timer's own: the extra glow is the primary action's.
+    expect(raceClock().querySelector('.clr-glow')).toBeNull()
+
+    // What those classes resolve to in the shipped package.
+    expect(MOTION_CSS).toMatch(/--dur-slow:\s*400ms/)
+    expect(MOTION_CSS).toMatch(/--dur-alert:\s*var\(--dur-slow\)/)
+    expect(MOTION_CSS).toMatch(/--step-4:\s*steps\(4, end\)/)
+    expect(
+      MOTION_CSS.includes(
+        '@keyframes clr-micro-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }',
+      ),
+    ).toBe(true)
+  })
+
+  it('gives the loop up at the cap and at a finish, keeping the outcome’s colours', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    const capped = renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    await wallClockReaches(START + CAP_SECONDS * 1000)
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(raceClock()).toHaveAttribute('data-urgent', 'false')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+    capped.unmount()
+
+    clock = START
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 3) * 1000)
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+
+    await user.click(screen.getByRole('button', { name: 'Finish' }))
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer')
+    expect(digits().style.color).toBe('var(--text-timer)')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+  })
+
+  it('stays a labelled timer that is not a live region', async () => {
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + 383_000)
+
+    expect(readout()).not.toHaveAttribute('aria-live')
+    expect(readout().querySelector('[aria-live], [role="status"]')).toBeNull()
+    expect(digits()).toHaveAttribute('aria-hidden', 'true')
+    // The value a screen reader is given is words, and only when it asks.
+    expect(readout().querySelector('.a11y-hidden')).toHaveTextContent(/6 minutes 23 seconds/)
+  })
+
+  it('takes the one loop from a loading region beside it, and gives it back', async () => {
+    reduceMotion(false)
+    const user = userWithTimers()
+    renderForTime(
+      forTimeBlock(),
+      fakeStorage(),
+      completionDouble().api,
+      <LoadingView label="Reading coaching for the next movement" />,
+    )
+    const wait = screen
+      .getByText('Reading coaching for the next movement')
+      .closest('[data-loop]') as HTMLElement
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+
+    // A clock with time left has no loop, so the wait keeps its own.
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+
+    await wallClockReaches(START + (CAP_SECONDS - 8) * 1000)
+
+    // Low: the pulse carries more state, so it runs and the wait is stilled —
+    // still on screen, still busy, still saying what it is waiting for.
+    expect(raceClock()).toHaveAttribute('data-loop', 'run')
+    expect(wait).toHaveAttribute('data-loop', 'still')
+    expect(wait).toHaveAttribute('aria-busy', 'true')
+    expect(wait).toHaveTextContent('Reading coaching for the next movement')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+
+    // The cap arrives: nothing is running out, and the wait has its loop back.
+    await wallClockReaches(START + CAP_SECONDS * 1000)
+    expect(wait).toHaveAttribute('data-loop', 'run')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(APP_MOTION_CSS).toMatch(
+      /\[data-loop='still'\]\.clr-pulse-micro,[\s\S]*?\{[^}]*animation: none/,
+    )
+  })
+
+  it('is still under reduced motion and loses nothing it was saying', async () => {
+    reduceMotion(true)
+    const user = userWithTimers()
+    renderForTime(forTimeBlock(), fakeStorage(), completionDouble().api)
+
+    await user.click(screen.getByRole('button', { name: 'Start For Time' }))
+    await wallClockReaches(START + (CAP_SECONDS - 7) * 1000)
+
+    expect(raceClock()).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelector('[data-loop="run"]')).toBeNull()
+
+    // The reading, the words, the colour role and the controls are all there.
+    expect(raceClock()).toHaveAttribute('data-urgent', 'true')
+    expect(timerFrame()).toHaveClass('clr-chamfer--timer-low')
+    expect(digits().style.color).toBe('var(--text-timer-low)')
+    expect(readout()).toHaveTextContent('07:53')
+    expect(screen.getByText('Racing the clock')).toBeInTheDocument()
+    expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Record For Time' })).toBeEnabled()
+
+    // The shipped rule that makes a reduced pulse static.
+    expect(MOTION_CSS).toMatch(
+      /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
+    )
   })
 })
