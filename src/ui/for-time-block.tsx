@@ -23,9 +23,15 @@
  * are actually running out. The pulse is disabled under `prefers-reduced-motion`
  * (motion.css), which is exactly why the words have to carry it too.
  *
+ * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
+ * card, the identity row and the single completion are `BlockPanel`'s, the
+ * movements are rows of its list, and the clock is handed to its `timer` slot —
+ * a timer is its own card, with its words inside it, and is never put inside
+ * another.
+ *
  * What this file does *not* own: the `block_results` write, which is the shell's
  * for every structure type (EXE-01). It supplies `elapsed_seconds` and
- * `completed_under_cap` through `BlockCompletionControl` and nothing else — and
+ * `completed_under_cap` through `BlockPanel`'s completion and nothing else — and
  * rung selection, which is a ladder's (EXE-04a) even when the ladder is performed
  * for time.
  */
@@ -50,10 +56,9 @@ import {
 } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
-import { BlockCompletionControl } from './block-completion-control'
+import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
-import { Heading, HeadingSection } from './Heading'
-import { StructureBadge } from './workout-chrome'
+import { useInterfaceLoop } from './motion'
 
 export interface ForTimeBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -87,141 +92,148 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
   const finish = () => clock.moveTo(finishForTime(clock.state, now()))
 
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
+    <BlockPanel
+      block={block}
+      timer={shape.size === 0 ? null : <ForTimeClock view={view} />}
+      // What this structure observed: the seconds it took and whether they
+      // beat the cap. A block nobody started observed neither, and says so by
+      // supplying nothing rather than a zero (DATA_MODEL §8).
+      completion={{
+        outcome: shape.size === 0 ? {} : forTimeOutcome(view),
+        label: 'Record For Time',
+      }}
+    >
+      {shape.size === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <>
+          <BlockPanel.Label>{shape.size === 1 ? 'The work:' : 'All of it:'}</BlockPanel.Label>
 
-        {shape.size === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            {/*
-              The outcome in words, and the one thing here that changes without
-              the user touching anything: the cap arrives on its own, so this is
-              the status a screen reader is told about politely.
-            */}
-            <p role="status" style={statusStyle(view)}>
-              <PhaseGlyph view={view} />
-              {PHASE_WORDS[view.phase]}
-            </p>
+          <BlockPanel.MovementList label="Movements in this block">
+            {block.exercises.map((exercise) => (
+              <BlockPanel.MovementItem key={exercise.exerciseId}>
+                <ForTimeMovement exercise={exercise} />
+              </BlockPanel.MovementItem>
+            ))}
+          </BlockPanel.MovementList>
 
-            <ElapsedReadout view={view} />
+          {/*
+            One forward control, and which one it is *is* the phase: starting
+            the race, or ending it. Neither exists once the attempt is over —
+            a second Start would discard the time it took, and the cap cannot
+            be un-reached.
+          */}
+          {view.phase === 'ready' && (
+            <Button variant="primary" size="lg" icon={<Play />} onClick={start}>
+              Start For Time
+            </Button>
+          )}
 
-            <CapLine view={view} />
-
-            <p style={labelStyle}>{shape.size === 1 ? 'The work:' : 'All of it:'}</p>
-
-            <ol
-              aria-label="Movements in this block"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--spacing-300)',
-              }}
-            >
-              {block.exercises.map((exercise) => (
-                <li key={exercise.exerciseId}>
-                  <ForTimeMovement exercise={exercise} />
-                </li>
-              ))}
-            </ol>
-
-            {/*
-              One forward control, and which one it is *is* the phase: starting
-              the race, or ending it. Neither exists once the attempt is over —
-              a second Start would discard the time it took, and the cap cannot
-              be un-reached.
-            */}
-            {view.phase === 'ready' && (
-              <Button variant="primary" size="lg" icon={<Play />} onClick={start}>
-                Start For Time
-              </Button>
-            )}
-
-            {view.phase === 'running' && (
-              <Button variant="primary" size="lg" icon={<Stop />} onClick={finish}>
-                Finish
-              </Button>
-            )}
-          </>
-        )}
-
-        {/*
-          What this structure observed: the seconds it took and whether they
-          beat the cap. A block nobody started observed neither, and says so by
-          supplying nothing rather than a zero (DATA_MODEL §8).
-        */}
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={shape.size === 0 ? {} : forTimeOutcome(view)}
-          label="Record For Time"
-        />
-      </div>
-    </Card>
+          {view.phase === 'running' && (
+            <Button variant="primary" size="lg" icon={<Stop />} onClick={finish}>
+              Finish
+            </Button>
+          )}
+        </>
+      )}
+    </BlockPanel>
   )
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The readout
+// The clock
 // ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The race, as `BlockPanel`'s `timer`: one timer-role card holding the outcome
+ * in words, the elapsed reading and the cap, drawn beside the block's card
+ * rather than inside it. Nothing of the clock floats outside its own card.
+ *
+ * The low state is the shipped one and nothing more. The card changes role, so
+ * bar, body and digits step to the low colours over `--dur-alert`, and the
+ * whole card takes `.clr-pulse-micro` — the dim to 80% — with no glow of its
+ * own. The pulse is an `urgent` claim on the view's one loop, held only while
+ * the seconds are actually running out: it outranks a wait beside it, it is
+ * still under reduced motion with the words, digits and colour unchanged, and a
+ * capped block gives it up — pulsing it would animate a number that has stopped
+ * moving.
+ */
+function ForTimeClock({ view }: { view: ForTimeView }) {
+  const low = view.urgent || view.phase === 'capped'
+  const loop = useInterfaceLoop('urgent', view.urgent)
+
+  return (
+    // The pulse runs on the wrapper so bar and body dim together.
+    <div
+      className={view.urgent ? 'clr-pulse-micro' : undefined}
+      data-urgent={view.urgent ? 'true' : 'false'}
+      {...loop}
+    >
+      <Card role={low ? 'timer-low' : 'timer'}>
+        <div className="clr-row" style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          {/*
+            The outcome in words, and the one thing here that changes without
+            the user touching anything: the cap arrives on its own, so this is
+            the status a screen reader is told about politely.
+          */}
+          <p role="status" style={statusStyle(view)}>
+            <PhaseGlyph view={view} />
+            {PHASE_WORDS[view.phase]}
+          </p>
+
+          <ElapsedReadout view={view} low={low} />
+        </div>
+
+        <CapLine view={view} />
+      </Card>
+    </div>
+  )
+}
 
 /**
  * The elapsed time, and the only number this block is scored on.
  *
  * App-owned rather than the export's `TimerDisplay` for the same reason the
  * shell's `GlobalTimer` is: `TimerDisplay` is a *countdown*, and what For Time
- * records is the time that has passed. The export's timer treatments are still
- * what dresses it — `--timer` at rest, `--timer-low` under time pressure — so the
- * urgency vocabulary is the system's and not this file's invention.
+ * records is the time that has passed. The digits are still drawn the way
+ * `TimerDisplay` draws them — each one tumbles when it changes, the colon holds
+ * still, and the colour crosses into the low state on the frame's own schedule,
+ * `--dur-alert`, stepped.
  *
  * The digits are decorative and the accessible value is spoken in words, so a
  * screen reader hears "six minutes 23 seconds" rather than "06 colon 23", and
  * hears it when the user asks: `role="timer"` here is labelled, never live.
  */
-function ElapsedReadout({ view }: { view: ForTimeView }) {
-  const low = view.urgent || view.phase === 'capped'
-
+function ElapsedReadout({ view, low }: { view: ForTimeView; low: boolean }) {
   return (
-    <div
-      role="timer"
-      aria-label="Block time"
-      className={[
-        'clr-chamfer clr-chamfer--md',
-        low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer',
-        // Only while the seconds are actually running out. A capped block is
-        // over; pulsing it would animate a number that has stopped moving.
-        view.urgent ? 'clr-pulse-micro' : null,
-      ]
-        .filter(Boolean)
-        .join(' ')}
-      style={{
-        display: 'inline-flex',
-        justifyContent: 'center',
-        padding: 'var(--spacing-200) var(--spacing-500)',
-      }}
-    >
+    <div role="timer" aria-label="Block time" style={{ display: 'inline-flex' }}>
       <span
         aria-hidden="true"
         style={{
+          display: 'inline-flex',
           fontFamily: 'var(--font-data)',
           fontSize: 'var(--label-xl-size)',
           fontWeight: 'var(--font-weight-bold)',
           letterSpacing: 'var(--tracking-data)',
           color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',
+          transition: 'color var(--dur-alert) var(--step-4)',
         }}
       >
-        {formatElapsed(view.elapsedSeconds)}
+        {formatElapsed(view.elapsedSeconds)
+          .split('')
+          .map((char, index) => (
+            <span
+              key={`${index}-${char}`}
+              className={char === ':' ? undefined : 'clr-tumble'}
+              style={{
+                display: 'inline-block',
+                minWidth: char === ':' ? undefined : '0.62em',
+                textAlign: 'center',
+              }}
+            >
+              {char}
+            </span>
+          ))}
       </span>
       <span className="a11y-hidden">{spokenElapsed(view.elapsedSeconds)}</span>
     </div>
@@ -244,15 +256,15 @@ function CapLine({ view }: { view: ForTimeView }) {
 
   if (view.phase === 'running' && view.remainingSeconds !== null) {
     return (
-      <p style={view.urgent ? urgentLineStyle : labelStyle}>
+      <BlockPanel.Label style={view.urgent ? urgentLineStyle : undefined}>
         {view.urgent
           ? `Cap in ${formatElapsed(view.remainingSeconds)} — finish now`
           : `Cap in ${formatElapsed(view.remainingSeconds)}`}
-      </p>
+      </BlockPanel.Label>
     )
   }
 
-  return <p style={labelStyle}>{formatElapsed(view.capSeconds)} cap</p>
+  return <BlockPanel.Label>{formatElapsed(view.capSeconds)} cap</BlockPanel.Label>
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -299,23 +311,10 @@ function ForTimeMovement({ exercise }: { exercise: ExerciseProgress }) {
   const prescription = exercise.prescription
 
   return (
-    <HeadingSection
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      <Heading style={{ margin: 0, textTransform: 'uppercase' }}>
-        {exercise.position}. {exerciseName(prescription.exercise_id)}
-      </Heading>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: 'var(--font-data)',
-          letterSpacing: 'var(--tracking-data)',
-        }}
-      >
-        {prescriptionText(prescription)}
-      </p>
-    </HeadingSection>
+    <BlockPanel.Movement
+      title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+      detail={prescriptionText(prescription)}
+    />
   )
 }
 
@@ -330,10 +329,9 @@ const labelStyle: CSSProperties = {
   color: 'var(--text-card-label)',
 }
 
-/** The same label, saying the thing that is about to happen. */
+/** The cap line, saying the thing that is about to happen. */
 const urgentLineStyle: CSSProperties = {
-  ...labelStyle,
-  color: 'var(--text-negative)',
+  color: 'var(--text-timer-low)',
   fontWeight: 'var(--font-weight-bold)',
 }
 
@@ -341,10 +339,11 @@ const PHASE_COLOURS: Readonly<Record<ForTimeView['phase'], string>> = {
   ready: 'var(--text-card-label)',
   running: 'var(--text-card-label)',
   // The two endings, and the only two places this card leaves the label colour:
-  // selection for the result that beat the cap, urgency for the one the cap cut
-  // off (ATOMIC.md §3 — urgency is time pressure *and* failure).
+  // the timer's own colour for the result that beat the cap, its low colour for
+  // the one the cap cut off (ATOMIC.md §3 — urgency is time pressure *and*
+  // failure).
   finished: 'var(--text-timer)',
-  capped: 'var(--text-negative)',
+  capped: 'var(--text-timer-low)',
 }
 
 function statusStyle(view: ForTimeView): CSSProperties {
