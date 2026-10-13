@@ -1,0 +1,691 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "onboarding: real new user, every step, selection, kept draft, held commit and retry",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--selection-incomplete-disabled--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "selection-incomplete-disabled",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "selection-incomplete-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-0-a5b492e9709d138b.png",
+        "sha256": "60cf1c8923441366f4e2ea8dd7935303785931c2625b842fffa8e5a55fc88fd8",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--selection-incomplete-disabled--desktop--clear.png",
+        "sha256": "2d4a047fb32b81f88d14c77d30f2661f30808f6e752147b2d7ba271abee58087",
+        "bytes": 205508,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "setup-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--setup-selected--desktop--clear.png",
+        "sha256": "2aba37a3c5a66e4943dd0d439d4d97f1f20770eb796e0b6f8a05ab145fac2b4d",
+        "bytes": 231684,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "experience",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-5-1ccd13575842386f.png",
+        "sha256": "ebe79baa9e84534bd54e36cd26b6baa4053d53460808d39ccab6733506d66f3a",
+        "variant": "experience"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--experience--desktop--clear.png",
+        "sha256": "9238fcb6c6e5448895ed064af426acb106df0e8c5286c544f32814714ff42f21",
+        "bytes": 213380,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--desktop--clear.png",
+        "sha256": "f61846399696445154d83a0d82d84c9203b1b6d9302a51b2a418dd569e21fc2a",
+        "bytes": 218184,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "limitations",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-7-dc1690ba9245aaf2.png",
+        "sha256": "321e37304be701023b0e06716fc4e4428ec65cf55ab95f991b1491f152b8fec1",
+        "variant": "limitations"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--limitations--desktop--clear.png",
+        "sha256": "e1a5912c96ead4e4d811d34670448a569d24e7a6ed5ab044f0f507f8fd768ffa",
+        "bytes": 226411,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "limitations-multiline-focus",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--limitations-multiline-focus--desktop--clear.png",
+        "sha256": "68d2c4b8f7c5883e6e082919ae01d5b85169dd7693967dbe028531fef501db02",
+        "bytes": 237168,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "confirmation",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-8-301efb9d1e47557c.png",
+        "sha256": "51250d41b614efcb9d8095612fb23a0b6257cb7f3c1a9b3f8b1317132fcc8595",
+        "variant": "confirmation"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--confirmation--desktop--clear.png",
+        "sha256": "377b408a9baefc13e60d7da3658d1bb81f55e2861d9564e8dd260923d21bb901",
+        "bytes": 239152,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--back-preserves-draft--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "back-preserves-draft",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "back-preserves-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-2-b583c0dcef47df45.png",
+        "sha256": "9c0314a1796f9b9ad2c146cd24f8b16d4bb38cbe4cf8df5fe52d7a0f7a809d9d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--back-preserves-draft--desktop--clear.png",
+        "sha256": "a692780e93101d4f7e06c78c0fdf76380575abd59b8f6f2daf9e70b353d53e5d",
+        "bytes": 232053,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--committing--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "committing",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "committing"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-3-5c3878d0778a33ff.png",
+        "sha256": "ad4127f65a6500a7c3506f8687f00861230b75954a5b301bba6f27586a0718dd",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--committing--desktop--clear.png",
+        "sha256": "df0c882ee78ed5121ef89d9efa2af12de0f71ce4c98d0496acb72c557f631054",
+        "bytes": 202806,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--commit-error-retry--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "commit-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "commit-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-4-1c539748f19f5425.png",
+        "sha256": "638bf2ee1b8ce56c6bcf314cd98597dbb65f972de99f9d67926db924a27a854b",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--commit-error-retry--desktop--clear.png",
+        "sha256": "edf770dd5e18dd41bb032526a9ab4a6965eff3dedfd18a586cf3129c043c2b62",
+        "bytes": 272221,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--success-home--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "success-home",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "success-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-9-c183d0ede8d06f31.png",
+        "sha256": "926986741069661385a260bf5aa98fbbe30c773514925fe2bd70f7d81d2cf744",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--success-home--transition-destination--desktop--clear.png",
+        "sha256": "c1ea8da7ed3f3c45c3f87d9c901347417b41106c74f5b11b9360765404ab2d11",
+        "bytes": 260141,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A namespaced real new user verified through the public endpoint; the first onboarding commit is held then answered 500, the retry is the genuine RPC."
+    },
+    {
+      "kind": "contract",
+      "text": "Successful new-user verification landed on /onboarding (existing guard), not Home."
+    },
+    {
+      "kind": "contract",
+      "text": "Onboarding step 1 of 5 lights 4 of 20 discrete progress segments.",
+      "data": {
+        "segments": 20,
+        "lit": 4,
+        "unlit": 16,
+        "sized": false,
+        "overlay": 0,
+        "now": "1",
+        "max": "5"
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The setup radiogroup is one tab stop; ArrowRight moves focus and selection, and the static bracket layer frames the focused chip.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "radio",
+        "name": "Building gym",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Space toggles a focused section checkbox; the checked state is a solid 10px square, the unchecked state has no mark.",
+      "data": {
+        "focus": {
+          "mode": "brackets",
+          "tag": "input",
+          "role": null,
+          "name": "",
+          "layers": 1,
+          "bracketOpacity": 0
+        },
+        "unchecked": {
+          "content": "none",
+          "width": "auto",
+          "height": "auto",
+          "markRadius": "0px",
+          "boxRadius": "0px",
+          "solid": false,
+          "target": 40
+        }
+      }
+    },
+    {
+      "kind": "discrepancy",
+      "text": "The owned routes render no native RadioButton: every single choice is a ChoiceGroup of Chips with radio semantics. The solid-square mark is therefore proved on the real Checkbox, whose .clr-check__box rule the package RadioButton shares.",
+      "data": {
+        "source": "src/design-system/components/Selection/RadioButton.jsx"
+      }
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

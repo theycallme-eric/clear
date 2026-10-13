@@ -1,0 +1,1222 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "generate: the full real form, selection, disabled, validation and recovery states",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--phone--clear.png",
+        "sha256": "43c3d7b89d7d56e4bbc0720ecbb6b88cfa105089682026663ae6e95527030727",
+        "bytes": 159293,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--short--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--short--clear.png",
+        "sha256": "f302d1ad6a0722ecfd1e004e2f318f2ace30673cb6b66d16c383be6d10ca06ee",
+        "bytes": 65520,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--phone--clear.png",
+        "sha256": "123915df90981bdcad36ef2c4ba149696a95b4ebb370358cd259bee216525528",
+        "bytes": 158177,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "anchor-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--anchor-selected--phone--clear.png",
+        "sha256": "b7d58480096060be4747d0a736adc3bd6668bb9c0f2a0807b038d9e73bba4508",
+        "bytes": 159757,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--vapour",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "anchor-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--anchor-selected--phone--vapour.png",
+        "sha256": "982d09501dcf8440351e50f2db7d3f7b223a81273cdc6923f268bf9c73760456",
+        "bytes": 165568,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--signal",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "anchor-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--anchor-selected--phone--signal.png",
+        "sha256": "3723dc9e460879eb62d6d17d8e07811d95a37aed3f0bf8ccca606ea566a15661",
+        "bytes": 164626,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--mono",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "anchor-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--anchor-selected--phone--mono.png",
+        "sha256": "49d14271837902eaaf5ce32b976eee277b3af3a84e7a990b7d1190e5427b8f79",
+        "bytes": 88609,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--short--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "anchor-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--anchor-selected--short--clear.png",
+        "sha256": "f6ada0935a164eb0a1e7f120de715330abe5fa0747588fe0ea03bb4991ec5af4",
+        "bytes": 68420,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": "invalid-duration",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--invalid-duration--phone--clear.png",
+        "sha256": "8190ce11b998ea18af2b8c008e9712e2f9e731dcbf87cba392379a73da5cd551",
+        "bytes": 174044,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--phone--vapour",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": "invalid-duration",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--invalid-duration--phone--vapour.png",
+        "sha256": "f9d07306fdba5f87f48cdf5f55dff74bbc0d22877146051978061d6daaa00965",
+        "bytes": 179975,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--phone--signal",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": "invalid-duration",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--invalid-duration--phone--signal.png",
+        "sha256": "811028a3aaf8b65888c11539e5be9555fcc9382a53bcb957eeb207489421eec8",
+        "bytes": 180120,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--phone--mono",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": "invalid-duration",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--invalid-duration--phone--mono.png",
+        "sha256": "7841d269dc14771da7c289e64d091dcd43948be72feed295ddc9037eb6ac2980",
+        "bytes": 96343,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--request-validation-disabled--short--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "request-validation-disabled",
+      "variant": "invalid-duration",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "request-validation-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-1-4d23a9b289ac4542.png",
+        "sha256": "51527f21bfdc20e342ef31911c1ab3dbeb7f5fb61124e104e399c065ba2a8d76",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--request-validation-disabled--invalid-duration--short--clear.png",
+        "sha256": "40182b9c0c10a609bc21d10a515568768a800355243af46809741f9ac1ae67a6",
+        "bytes": 74116,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "notes-multiline",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--notes-multiline--phone--clear.png",
+        "sha256": "f6459326fb46126e3ab54ab13b4acb06458a9845c4c7866f3516d7c402a22312",
+        "bytes": 172417,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--first-or-stale-history-manual-focus--short--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "first-or-stale-history-manual-focus",
+      "variant": "notes-multiline",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "first-or-stale-history-manual-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-0-bbedf2d77d98157f.png",
+        "sha256": "b60a96d32d1295af82685e6efe1651a3b9a4a40fec99c200643e1d9af195e765",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--first-or-stale-history-manual-focus--notes-multiline--short--clear.png",
+        "sha256": "0156741fcfa77177c833323326cf5a2ab8ba789466383fe050252e62ea324754",
+        "bytes": 60410,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--recovery-override--phone--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "recovery-override",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "recovery-override"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-2-616ceb1e651fb07f.png",
+        "sha256": "4500b5d934113eb2813f2a64f1f140f46401705b917ab4b9261b8ad4c2284775",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--recovery-override--phone--clear.png",
+        "sha256": "6e662fe4da8fd5f0a2541fde460f43c3ed28b8c7637a0dc5ce78631eaf301ca9",
+        "bytes": 187579,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--recovery-override--phone--vapour",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "recovery-override",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "recovery-override"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-2-616ceb1e651fb07f.png",
+        "sha256": "4500b5d934113eb2813f2a64f1f140f46401705b917ab4b9261b8ad4c2284775",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--recovery-override--phone--vapour.png",
+        "sha256": "8449e5e0ad4d18da72d89c47ada24e0e39282f0b380b4a6e331ec8ab5f0decfc",
+        "bytes": 190396,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--recovery-override--phone--signal",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "recovery-override",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "recovery-override"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-2-616ceb1e651fb07f.png",
+        "sha256": "4500b5d934113eb2813f2a64f1f140f46401705b917ab4b9261b8ad4c2284775",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--recovery-override--phone--signal.png",
+        "sha256": "432e6e03ddc931ff263e816cc6987f825e59cb198f2f2acfc4fed13c37752adf",
+        "bytes": 188426,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--recovery-override--phone--mono",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "recovery-override",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "recovery-override"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2fa927167cdbeeec6aeb1ac0-2-616ceb1e651fb07f.png",
+        "sha256": "4500b5d934113eb2813f2a64f1f140f46401705b917ab4b9261b8ad4c2284775",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate--generate--recovery-override--phone--mono.png",
+        "sha256": "cb5f9442a2d07cfbf6eb6b35a73c94adc298bcf6182edac74efeca3d2c536f97",
+        "bytes": 103701,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "contract",
+      "text": "Successful returning-user verification landed on Home (/) and reached Generate with the same session.",
+      "data": {
+        "screens": [
+          "Welcome",
+          "OTP Login",
+          "Home",
+          "Generate"
+        ],
+        "verificationRequests": 1
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Time available carries a non-editable, non-selectable \"min\" unit inside its frame, tied to the input by aria-describedby.",
+      "data": {
+        "framed": true,
+        "radius": "0px",
+        "labelAbove": true,
+        "inViewport": true,
+        "rawOverride": false,
+        "glyph": false,
+        "unit": {
+          "text": "min",
+          "insideFrame": true,
+          "selectable": false,
+          "editable": false,
+          "describes": true
+        },
+        "resize": "none",
+        "fieldSizing": "fixed",
+        "clipped": false,
+        "height": 40
+      }
+    },
+    {
+      "kind": "discrepancy",
+      "text": "Before this task Time available stated its unit as helper text (\"Minutes.\") below the field; the route now passes the package unit prop instead, so the unit sits in the frame as the 0.14.3 Input specimen shows.",
+      "data": {
+        "source": "src/app/Generate.tsx",
+        "specimen": "src/design-system/components/Input/Input.jsx"
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Intensity: label and readout above the track; the installed thumb rule is a 16px square with radius 0.",
+      "data": {
+        "labelAbove": true,
+        "readoutInLabel": true,
+        "thumbs": [
+          {
+            "width": "16px",
+            "height": "16px",
+            "radius": "0px"
+          }
+        ],
+        "radius": "0px"
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Arrow keys step the focused Intensity slider and return it.",
+      "data": {
+        "mode": "brackets",
+        "tag": "input",
+        "role": null,
+        "name": "",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "A focused Anchor chip is framed by the static bracket layer; Enter/Space toggle it as a pressed button.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": null,
+        "name": "Upper body",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "discrepancy",
+      "text": "No field on the owned routes is disabled or read-only in a reachable state: disabled is carried by buttons and chips (pictured), and the package Input disabled/read-only frame remains covered by the focused component tests.",
+      "data": {
+        "sources": [
+          "src/ui/formFocus.test.tsx",
+          "src/test/design-system-0.9.7.test.tsx"
+        ]
+      }
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "profile-or-places-loading"
+      },
+      "reason": "BootGate follows the same shared query keys and withholds the route tree while they are pending; the native surface is Boot, pictured by the boot case.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/BootSequence.tsx",
+        "src/app/Generate.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "read-error-retry"
+      },
+      "reason": "Masked by BootGate on a cold load, as recorded for the before state; the branch stays covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Generate.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "history-loading"
+      },
+      "reason": "Masked by BootGate on a cold load, as recorded for the before state; the branch stays covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Generate.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "history-error-manual-or-retry"
+      },
+      "reason": "Masked by BootGate on a cold load, as recorded for the before state; the branch stays covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Generate.test.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

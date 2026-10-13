@@ -737,7 +737,7 @@ function GenerateForm({
           inputMode="numeric"
           min={1}
           value={draft.durationMins}
-          helperText="Minutes."
+          unit="min"
           errorText={refusal?.fields.requested_duration_mins}
           onChange={(value) => setDraft(withDuration(draft, value))}
         />
