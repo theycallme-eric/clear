@@ -62,6 +62,7 @@ function sequence(
 interface Mounted {
   block: BlockProgress
   completeBlock: ReturnType<typeof vi.fn<(id: string, outcome: BlockOutcome) => void>>
+  container: HTMLElement
 }
 
 function mount(
@@ -96,14 +97,14 @@ function mount(
     isBlockRecorded: () => options.recorded === true,
   }
 
-  render(
+  const { container } = render(
     <BlockCompletionContext value={completion}>
       {/* Dispatched rather than named: the registry decides the renderer. */}
       <BlockSlot block={blockProgress} />
     </BlockCompletionContext>,
   )
 
-  return { block: blockProgress, completeBlock }
+  return { block: blockProgress, completeBlock, container }
 }
 
 /** The rungs, as the row presents them to someone who cannot see it. */
@@ -406,6 +407,106 @@ describe('a ladder block the rows do not describe as one', () => {
       screen.getByText(/every movement in it was swapped\s+out/),
     ).toBeInTheDocument()
     expect(screen.queryByRole('radio')).not.toBeInTheDocument()
+  })
+})
+
+describe('a ladder block is one card of the shared frame', () => {
+  it('draws one card, with no card inside it, whichever mode the rungs are in', async () => {
+    const user = userEvent.setup()
+    const { container } = mount({
+      exercises: [
+        sequence('thruster', [21, 15, 9]),
+        sequence('pull-up', [21, 15, 9]),
+      ],
+    })
+
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+
+    await declare(user, 'Hit the time cap')
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+  })
+
+  it('lists its movements as rows in prescribed order, each headed by its name', () => {
+    mount({
+      exercises: [
+        sequence('thruster', [21, 15, 9]),
+        sequence('pull-up', [21, 15, 9]),
+      ],
+    })
+
+    const list = screen.getByRole('list', { name: 'Movements in this ladder' })
+    const rows = within(list).getAllByRole('listitem')
+
+    expect(rows).toHaveLength(2)
+    expect(within(rows[0]).getByRole('heading', { name: 'thruster' })).toBeInTheDocument()
+    expect(within(rows[1]).getByRole('heading', { name: 'pull up' })).toBeInTheDocument()
+    // A ladder tracks no position among its movements, so none is marked live.
+    expect(list.querySelector('[aria-current]')).toBeNull()
+  })
+
+  it('captions the rungs and the movements with the same group label', () => {
+    mount({
+      exercises: [
+        sequence('thruster', [21, 15, 9]),
+        sequence('pull-up', [21, 15, 9]),
+      ],
+    })
+
+    // The block's own group label carries the frame's label style inline; the
+    // rung row's caption carries the same tokens from its co-located CSS.
+    const eachRung = screen.getByText('Each rung')
+    expect(eachRung.style.color).toBe('var(--text-card-label)')
+    expect(eachRung.style.fontSize).toBe('var(--label-xs-size)')
+
+    expect(screen.getByText('Ladder')).toHaveClass('clr-rungs__legend')
+    const legend = /\.clr-rungs__legend\s*\{([^}]*)\}/.exec(declarations)?.[1] ?? ''
+    expect(legend).toContain('color: var(--text-card-label)')
+    expect(legend).toContain('font-size: var(--label-xs-size)')
+    expect(legend).toContain('font-family: var(--font-data)')
+  })
+
+  it('draws its one completion inside the card, below the ending it asks for', () => {
+    const { container } = mount()
+
+    const card = container.querySelector('.clr-card') as HTMLElement
+    const completions = within(card).getAllByRole('button', { name: 'Complete block' })
+    expect(completions).toHaveLength(1)
+
+    const ending = screen.getByRole('group', { name: 'How did this block end?' })
+    expect(card).toContainElement(ending)
+    expect(
+      ending.compareDocumentPosition(completions[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('keeps the rung choice and the completion live after the cap is declared', async () => {
+    const user = userEvent.setup()
+    const { block, completeBlock } = mount()
+
+    await declare(user, 'Hit the time cap')
+    await user.click(screen.getByRole('radio', { name: '9 reps' }))
+
+    expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+
+    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+      highestRung: 3,
+    })
+  })
+
+  it('says an emptied block is empty, and still offers its completion', () => {
+    mount({
+      exercises: [
+        sequence('kettlebell-swing', [15, 12, 9], { revision_status: 'superseded' }),
+      ],
+    })
+
+    expect(screen.getByText(/every movement in it was swapped\s+out/)).toBeInTheDocument()
+    expect(
+      screen.queryByRole('list', { name: 'Movements in this ladder' }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
   })
 })
 
