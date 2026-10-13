@@ -87,7 +87,8 @@ export function LocationSettings() {
   const query = useLocationsQuery()
   const { status, save } = useInlineSave()
   const [editor, setEditor] = useState<EditorTarget>(null)
-  const [editorSaving, setEditorSaving] = useState(false)
+  const [editorVersion, setEditorVersion] = useState(0)
+  const [savingEditorVersion, setSavingEditorVersion] = useState<number | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Location | null>(null)
   const [refusal, setRefusal] = useState<Refusal | null>(null)
   // The list's one save line belongs to the card whose action started it.
@@ -103,7 +104,8 @@ export function LocationSettings() {
     editor === 'new' || (editing !== null && equipmentQuery.state.status === 'ready')
 
   function open(target: Location | 'new') {
-    setEditorSaving(false)
+    setEditorVersion((current) => current + 1)
+    setSavingEditorVersion(null)
     setEditor(target)
   }
 
@@ -188,7 +190,7 @@ export function LocationSettings() {
                     type="submit"
                     form={EDITOR_FORM_ID}
                     variant="primary"
-                    loading={editorSaving}
+                    loading={savingEditorVersion === editorVersion}
                   >
                     Save place
                   </Button>
@@ -236,7 +238,13 @@ export function LocationSettings() {
                 location={editing}
                 locations={locations}
                 equipment={equipmentQuery}
-                onSaving={setEditorSaving}
+                onSaving={(saving) => {
+                  // A canceled/replaced editor may still finish its request.
+                  // Its completion must not unlock the current editor's Save.
+                  setSavingEditorVersion((current) =>
+                    saving ? editorVersion : current === editorVersion ? null : current,
+                  )
+                }}
                 onClose={() => setEditor(null)}
               />
             )}

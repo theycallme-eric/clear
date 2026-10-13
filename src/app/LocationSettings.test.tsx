@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
@@ -377,6 +377,51 @@ describe('the editor is one form card with its actions pinned', () => {
     await user.click(within(editor).getByRole('button', { name: 'Retry' }))
     expect(await within(editor).findByRole('checkbox', { name: 'Dumbbells' })).toBeChecked()
     expect(buttonNames(footer())).toEqual(['Save place', 'Cancel'])
+  })
+
+  it('keeps the current save busy when a canceled editor finishes its failed save', async () => {
+    const user = userEvent.setup()
+    const pending: Array<(result: Result<LocationSetup>) => void> = []
+    const { userData } = renderLocations([home(), office()], {
+      saveLocation: () =>
+        new Promise<Result<LocationSetup>>((resolve) => {
+          pending.push(resolve)
+        }),
+    })
+
+    await user.click(within(card('Home')).getByRole('button', { name: 'Edit' }))
+    await screen.findByRole('textbox', { name: 'Name' })
+    await user.click(within(footer()).getByRole('button', { name: 'Save place' }))
+    expect(userData.locationWrites).toHaveLength(1)
+    expect(userData.locationWrites[0]).toMatchObject({ id: HOME_ID })
+    await user.click(within(footer()).getByRole('button', { name: 'Cancel' }))
+
+    await user.click(within(card('Office')).getByRole('button', { name: 'Edit' }))
+    await screen.findByRole('textbox', { name: 'Name' })
+    await user.click(within(footer()).getByRole('button', { name: 'Save place' }))
+    expect(userData.locationWrites).toHaveLength(2)
+    expect(userData.locationWrites[1]).toMatchObject({ id: OFFICE_ID })
+
+    const save = within(footer()).getByRole('button', { name: 'Save place' })
+    expect(save).toBeDisabled()
+    expect(save).toHaveAttribute('aria-busy', 'true')
+    const [first, second] = pending
+    if (first === undefined || second === undefined) throw new Error('Both saves must start')
+    await act(async () => {
+      first(err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)))
+    })
+
+    expect(card('Edit Office')).toBeVisible()
+    expect(save).toBeDisabled()
+    expect(save).toHaveAttribute('aria-busy', 'true')
+    await user.click(save)
+    expect(userData.locationWrites).toHaveLength(2)
+
+    await act(async () => {
+      second(err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)))
+    })
+    expect(save).toBeEnabled()
+    expect(save).not.toHaveAttribute('aria-busy', 'true')
   })
 
   it('keeps the editor and puts the list back when the save is refused', async () => {
