@@ -26,17 +26,18 @@
  *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
  * the structured prescription and writes each set through the shell's one path,
- * and completion is `BlockCompletionControl` with an empty outcome — a superset
- * runs no clock, and a zero it never watched would be a measurement
- * (DATA_MODEL §8).
+ * and completion is the frame's own with an empty outcome — a superset runs no
+ * clock, and a zero it never watched would be a measurement (DATA_MODEL §8).
+ *
+ * It draws with the shared block frame (`block-renderers-frame.tsx`): the one
+ * card, the identity row and the single completion are `BlockPanel`'s, and the
+ * pair are rows of its list — never a card inside the card.
  */
 import type { CSSProperties } from 'react'
 
 import type { BlockRendererProps } from './block-renderers'
-import { BlockCompletionControl } from './block-completion-control'
-import { Card } from './card'
+import { BlockPanel } from './block-renderers-frame'
 import { ExerciseSetLogger } from './set-logger'
-import { StructureBadge } from './workout-chrome'
 
 /**
  * The label for one member of the pair: `A1`, `A2`, `A3`.
@@ -73,83 +74,58 @@ export function SupersetBlock({ block }: BlockRendererProps) {
   const rest = supersetRestText(block.roundRestSeconds, movements.length)
 
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
+    <BlockPanel block={block}>
+      {movements.length === 0 ? (
+        <BlockPanel.EmptyNote />
+      ) : (
+        <>
+          {/*
+            The alternation in words. Two movements are the pair the spec
+            describes; one is what is left of it after a swap, and saying
+            "alternate" of a single movement would be a lie.
+          */}
+          {movements.length > 1 && (
+            <BlockPanel.Label>
+              Alternate{' '}
+              {movements.map((exercise) => supersetOrdinal(exercise.position)).join(' → ')}{' '}
+              — no rest between movements
+            </BlockPanel.Label>
+          )}
 
-        {movements.length === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            {/*
-              The alternation in words. Two movements are the pair the spec
-              describes; one is what is left of it after a swap, and saying
-              "alternate" of a single movement would be a lie.
-            */}
-            {movements.length > 1 && (
-              <p style={labelStyle}>
-                Alternate{' '}
-                {movements
-                  .map((exercise) => supersetOrdinal(exercise.position))
-                  .join(' → ')}{' '}
-                — no rest between movements
-              </p>
-            )}
-
-            {/*
-              The connector: one rule down the left of the pair, so A1 and A2
-              read as one linked unit. Inset from the card's own accent bar
-              rather than replacing it, and it shifts no text — the padding it
-              sits in is the component's, not the card's.
-            */}
-            <div
-              className="clr-stack--tight"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                borderLeft:
-                  movements.length > 1
-                    ? 'var(--border-width) solid var(--border-frame-structure)'
-                    : undefined,
-                paddingLeft: movements.length > 1 ? 'var(--spacing-200)' : undefined,
-              }}
-            >
+          {/*
+            The connector: one rule down the left of the pair, so A1 and A2
+            read as one linked unit. Inset from the card's own accent bar
+            rather than replacing it, and it shifts no text — the padding it
+            sits in is the component's, not the card's.
+          */}
+          <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
+            <BlockPanel.MovementList label="Movements in this superset">
               {movements.map((exercise, index) => (
-                <ExerciseSetLogger
-                  key={exercise.exerciseId}
-                  exercise={exercise}
-                  ordinal={supersetOrdinal(exercise.position)}
-                  // Rest here is the block's, stated once below the pair.
-                  statesRest={false}
-                  // And taken once, after the movement that closes the pair:
-                  // A1 → A2 has no rest by definition (EXE-05).
-                  restSeconds={index === movements.length - 1 ? block.roundRestSeconds : null}
-                />
+                <BlockPanel.MovementItem key={exercise.exerciseId}>
+                  <ExerciseSetLogger
+                    exercise={exercise}
+                    ordinal={supersetOrdinal(exercise.position)}
+                    // Rest here is the block's, stated once below the pair.
+                    statesRest={false}
+                    // And taken once, after the movement that closes the pair:
+                    // A1 → A2 has no rest by definition (EXE-05).
+                    restSeconds={
+                      index === movements.length - 1 ? block.roundRestSeconds : null
+                    }
+                  />
+                </BlockPanel.MovementItem>
               ))}
-            </div>
+            </BlockPanel.MovementList>
+          </div>
 
-            {rest === null ? null : <p style={{ margin: 0 }}>{rest}</p>}
-          </>
-        )}
-
-        <BlockCompletionControl blockId={block.blockId} outcome={{}} />
-      </div>
-    </Card>
+          {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
+        </>
+      )}
+    </BlockPanel>
   )
 }
 
-const labelStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
+const PAIR_STYLE: CSSProperties = {
+  borderLeft: 'var(--border-width) solid var(--border-frame-structure)',
+  paddingLeft: 'var(--spacing-200)',
 }
