@@ -1,0 +1,322 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "generate-reads: Goal and Focus ownership, missing goal, no place and deload confirmation",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--goal-correction--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "goal-correction",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "goal-correction"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-30404395da78afd6c793792f-0-3abf4c6665aa644c.png",
+        "sha256": "ebf6f13796d8fae8eabf9b1e969da7e3b970f8d5547a76558b9c2b6dc7883ec8",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate-reads--generate--goal-correction--tablet--clear.png",
+        "sha256": "850b3348063fe28d6677c706644a05e3d9689f4909b84d3b98280e4dc233ea0d",
+        "bytes": 172846,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--no-place--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "no-place",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "no-place"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-30404395da78afd6c793792f-1-9b7807c8b6a2b6cc.png",
+        "sha256": "c500e4b9483d1071926461ada9c53ad4fdd88c13dbc01217ebe77f6990dc005f",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate-reads--generate--no-place--tablet--clear.png",
+        "sha256": "e2324086752fbfd488cdee2fe4430b21c8b08169ec41042c74652ade23d7d3f5",
+        "bytes": 170036,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--history-recommended-focus--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "history-recommended-focus",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "history-recommended-focus"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-e80a2736eb4ee197cf737a19-0-a151605d60aada20.png",
+        "sha256": "34799723c6d1433fe3ed97bdf3ea4f233e90c09e566e8c335023b9918d5b69df",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate-reads--generate--history-recommended-focus--tablet--clear.png",
+        "sha256": "40b2c1e719134d910dbb8ea579b0efd7179903decb7b396ba9f2c585eb2c8ead",
+        "bytes": 219815,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--focus-override--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "focus-override",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "focus-override"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-e80a2736eb4ee197cf737a19-1-cded05fae0e840cf.png",
+        "sha256": "272dd732ab5e11a18f24deaca932d7fb87784fc6f1811eb7c39e9e1cec2b24be",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate-reads--generate--focus-override--tablet--clear.png",
+        "sha256": "455aef049cac80b9ffdcfb87c30da37042cfa01141cf4a90ec0619dcc24e0550",
+        "bytes": 230534,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--deload-confirmation--tablet--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "deload-confirmation",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "deload-confirmation"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-08d9949584474552edec40e7-0-235af5f0c69fbfdc.png",
+        "sha256": "03a264e344401767e6ef08c7ad58d2862e977803d6cad17fd5669323d52bd55e",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "generate-reads--generate--deload-confirmation--tablet--clear.png",
+        "sha256": "4f2fe372298c8769a49e82ac6e859bc534b923c1a66c0e16f135e99f616b92de",
+        "bytes": 726799,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Scoped reads for the real session user only: profile with goal_preset null; an empty locations list; three parsed history rows; six anchor_evidence rows."
+    },
+    {
+      "kind": "contract",
+      "text": "Focus stays Generate’s for this workout only: the override lives in the URL and \"Use the recommended focus\" returns to the history recommendation."
+    },
+    {
+      "kind": "keyboard",
+      "text": "The deload confirmation holds focus inside the native dialog and Escape dismisses it without raising intensity.",
+      "data": {
+        "mode": "brackets",
+        "tag": "input",
+        "role": null,
+        "name": "",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

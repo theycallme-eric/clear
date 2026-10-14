@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "boot: authenticated checking, failed read, retry and reduced-motion handoff",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--tablet--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--tablet--clear.png",
+        "sha256": "bd682b7eb19a6fdbe5a83c8109d247812d47e267e0de33aed9cdb7243f2787c6",
+        "bytes": 167647,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--tablet--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--tablet--clear.png",
+        "sha256": "64c8a9b3514f4b318ce558743a89198a190cc5e3fe2700331bd7184d62f10bf5",
+        "bytes": 159217,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--ready--tablet--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "ready",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-2-e5b2a180520d55a7.png",
+        "sha256": "41f5af9e8e6a827a35e1296ea6046a5c297f0dbef3046a4be1ce4dc700402a7b",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--ready--transition-destination--tablet--clear.png",
+        "sha256": "4c1e696ba36584891fcd2c21a8fce57b4c061b765976f9cf81240ea3a1f6a936",
+        "bytes": 224081,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Only the real session user’s profile GET is held then failed; Retry reads the actual profile. Every other initialization read is genuine."
+    },
+    {
+      "kind": "contract",
+      "text": "Boot progress is discrete segments, each lit or not.",
+      "data": {
+        "segments": 20,
+        "lit": 15,
+        "unlit": 5,
+        "sized": false,
+        "overlay": 0,
+        "now": "3",
+        "max": "4"
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Retry is reachable by keyboard on the failed boot and is the only action offered.",
+      "data": {
+        "mode": null,
+        "tag": "button",
+        "role": null,
+        "name": "Retry",
+        "layers": 0,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Retry reran the failed profile read once and reached the requested protected route; the reads that had succeeded were kept.",
+      "data": {
+        "profileReads": 2,
+        "readsSeenBeforeFailure": [
+          "locations",
+          "workout_sessions"
+        ]
+      }
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "session-restoring"
+      },
+      "reason": "Auth restoration is shown by Boot checking before the public guards; Welcome’s actions are never flashed.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Welcome.test.tsx",
+        "src/app/guards.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

@@ -1,0 +1,474 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "loading: a held request, the slow threshold, an actionable failure and a kept draft",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--generating--desktop--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "generating",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "generating"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-0-55a902813d7bdd63.png",
+        "sha256": "3414fafc9eddf29331bb1381d952f6e903d922a700c6ef974a078f19d623aa38",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--generate--generating--desktop--clear.png",
+        "sha256": "7aaeedad0ffe8095c32e92fefc669a2c4d9d3d1340de2764b7b1e2aee3dcae8b",
+        "bytes": 201820,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "loading--surface--active-stage--desktop--clear",
+      "screen": "Loading",
+      "route": null,
+      "state": "active-stage",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "active-stage"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-2-b7a86c5e06537288.png",
+        "sha256": "0d9b29bf261be865cb2ad0285e18f17eda650fea85970caea43174aeef61c7f9",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--loading--active-stage--desktop--clear.png",
+        "sha256": "0f6fac6ce95e1407a3669f6531ad3fe614b440b5d58ad793ce1e10147e0c38bd",
+        "bytes": 202411,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "loading--surface--slow-still-working--desktop--clear",
+      "screen": "Loading",
+      "route": null,
+      "state": "slow-still-working",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "slow-still-working"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-3-830f0b9491801a8c.png",
+        "sha256": "e0e648d70083b043f54f29878e841b0869f7e59a823c8cdd6c5c7caaac8ed62d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--loading--slow-still-working--desktop--clear.png",
+        "sha256": "3ac4044dc25f4d1b31f587613ec6663630206b7e4b2a2fc2d96c4f7bf0ebf546",
+        "bytes": 212819,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "loading--surface--typed-retriable-failure--desktop--clear",
+      "screen": "Loading",
+      "route": null,
+      "state": "typed-retriable-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "typed-retriable-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-4-24a5f0d99b9afe8f.png",
+        "sha256": "0a31811e20880abbd738d3ae001717ebffc78af5843916a3047c101875d43f87",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--loading--typed-retriable-failure--desktop--clear.png",
+        "sha256": "fbb186e4e34854e20b37bbfcce3daae727ddec136956494a515e8316241488c9",
+        "bytes": 235057,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "loading--surface--terminal-or-input-refusal--desktop--clear",
+      "screen": "Loading",
+      "route": null,
+      "state": "terminal-or-input-refusal",
+      "variant": "input-refusal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "terminal-or-input-refusal"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-5-423d9f5b9d012598.png",
+        "sha256": "8a773ad1731e05be80b234b8a3d2582cc7a22b4ec27eea3549e35086e94bc36a",
+        "variant": "input-refusal"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--loading--terminal-or-input-refusal--input-refusal--desktop--clear.png",
+        "sha256": "5dfa7d0b24a25b865568613af371c520a86672f2e976072dbe4e5bf13e85df7b",
+        "bytes": 230339,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "generate--generate--cancel-preserves-draft--desktop--clear",
+      "screen": "Generate",
+      "route": "/generate",
+      "state": "cancel-preserves-draft",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Generate",
+        "route": "/generate",
+        "state": "cancel-preserves-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-1-de329dc88f1bd8a9.png",
+        "sha256": "fadec181d4a5b126e49fbcbfe237dc2a6828212bfa7d55e16729d75cef755b7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--generate--cancel-preserves-draft--desktop--clear.png",
+        "sha256": "e53af74ca9952d6083cee47bd5bb33630cfb1da43892ed020d8902ed44c78224",
+        "bytes": 230989,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "loading--surface--cancel--desktop--clear",
+      "screen": "Loading",
+      "route": null,
+      "state": "cancel",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "cancel"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-33b90f0bedecec28c781594e-7-cb26ed56bac5913a.png",
+        "sha256": "0fd967bd1dc5690875f6ebfa36275edbe7b5aa63adea3a80606c70262d800b3b",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "loading--loading--cancel--transition-destination--desktop--clear.png",
+        "sha256": "886f991e8aefe866e2e597b8b2c604aeb2d2a39628479166741509777ee428aa",
+        "bytes": 230991,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "The generate-workout POST is held and answered locally with typed failures; nothing is forwarded to a provider, so this is not generation proof."
+    },
+    {
+      "kind": "contract",
+      "text": "All three held generation POSTs carried the same request keys, the chosen anchor, the 30-minute duration and the typed notes, each with an x-request-id.",
+      "data": {
+        "requestKeys": [
+          "date",
+          "deload",
+          "focus",
+          "goal",
+          "location_id",
+          "notes",
+          "request_id",
+          "requested_duration_mins",
+          "requested_intensity"
+        ],
+        "posts": 3
+      }
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "pending-before-stage"
+      },
+      "reason": "The client emits its first stages synchronously before its first await; the stage-null branch is not a stable native hold.",
+      "sources": [
+        "src/data/generation.ts",
+        "src/app/GenerationLoading.test.tsx",
+        "src/state/generation-loading.ts"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Loading",
+        "route": null,
+        "state": "success-review"
+      },
+      "reason": "Success hands off to Review, whose after evidence belongs to the workout-lifecycle group; this deterministic lane asserts no provider success.",
+      "sources": [
+        "src/app/GenerationLoadingHost.tsx",
+        "e2e/core-loop.spec.ts"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 3,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

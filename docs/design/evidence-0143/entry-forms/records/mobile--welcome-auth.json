@@ -1,0 +1,1419 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "welcome-auth: Welcome, credentials, code errors, busy and disabled states",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--phone--clear",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--phone--clear.png",
+        "sha256": "cc04bfc1e039433029d53e8e05291e958ff0717ac4d9278c24e6a901028ba6e2",
+        "bytes": 95318,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--phone--vapour",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--phone--vapour.png",
+        "sha256": "460ba2441a42b20d88ee5fb782b65c99a35abed8ae24b23c5eac9d7af3d10436",
+        "bytes": 99935,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--phone--signal",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--phone--signal.png",
+        "sha256": "46c54f6309529e65ef56f442da5ad98ac0f2b58da8940dbfbde94797e88f449f",
+        "bytes": 98821,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--phone--mono",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--phone--mono.png",
+        "sha256": "18b38ea54e3090d41c8e1f1ca83d570430ceaebaf0328b7d37727174c009f756",
+        "bytes": 40581,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--short--clear",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--short--clear.png",
+        "sha256": "bbbe5f7f3eaf8c25a6bdd20359ce6e48d918d11450df860f9f5bb7075d7677a9",
+        "bytes": 51491,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--anonymous-ready--phone--clear",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "anonymous-ready",
+      "variant": "reduced-motion",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "anonymous-ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-0-4a0ef7c411291e04.png",
+        "sha256": "03942bbb365b5927d9df930b87d9031fde0f1770c4ae3c84038f95a1159ac30d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "screenshot": {
+        "name": "welcome-auth--welcome--anonymous-ready--reduced-motion--phone--clear.png",
+        "sha256": "8e798961fa0df106e861e30f75aacbbd0028160970df55da6bc4c3478fab2488",
+        "bytes": 83383,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-step--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-step",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-step"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-1-3d9ae8adcce72c40.png",
+        "sha256": "0dbf49aff57e38ad0c4f513d8e6c7bce2e1daea0c1d1708c094ffa4676cf88ef",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-step--phone--clear.png",
+        "sha256": "95bcd2694d63070d718cb6ca0d9b569783f3deaaca4230e5fdc08153b1865d1b",
+        "bytes": 104976,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-step--short--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-step",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-step"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-1-3d9ae8adcce72c40.png",
+        "sha256": "0dbf49aff57e38ad0c4f513d8e6c7bce2e1daea0c1d1708c094ffa4676cf88ef",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-step--short--clear.png",
+        "sha256": "b8ecbad08b59990ae6a9c9b2dacb7054a797f42911f69c34e079da7e96e2066a",
+        "bytes": 59655,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-invalid--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-2-9739da187a9c47eb.png",
+        "sha256": "359863debbc6572ef580abf9283563d3127c14d1cde277ef42c6224a0814e4ec",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-invalid--phone--clear.png",
+        "sha256": "cb72f5484964b34db852d692a7b94d20a41d2474837a383d5ef353731bf8c067",
+        "bytes": 114252,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-invalid--phone--vapour",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-2-9739da187a9c47eb.png",
+        "sha256": "359863debbc6572ef580abf9283563d3127c14d1cde277ef42c6224a0814e4ec",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-invalid--phone--vapour.png",
+        "sha256": "a19b00c2b65a041f88f9fed1732d0020134c1a2a76314625ab041c614945b881",
+        "bytes": 118071,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-invalid--phone--signal",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-2-9739da187a9c47eb.png",
+        "sha256": "359863debbc6572ef580abf9283563d3127c14d1cde277ef42c6224a0814e4ec",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-invalid--phone--signal.png",
+        "sha256": "a17e8a9dec4e8ad2301a2a644565159445f89b29ea0b4ff4ebc61cac03d8c50a",
+        "bytes": 117553,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-invalid--phone--mono",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-2-9739da187a9c47eb.png",
+        "sha256": "359863debbc6572ef580abf9283563d3127c14d1cde277ef42c6224a0814e4ec",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-invalid--phone--mono.png",
+        "sha256": "3b88fb2a83ee2e0cb5a212765d8b4e9a60f32d7dcfa168f7b9e9f8321a77cfff",
+        "bytes": 54923,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--email-invalid--short--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "email-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "email-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-2-9739da187a9c47eb.png",
+        "sha256": "359863debbc6572ef580abf9283563d3127c14d1cde277ef42c6224a0814e4ec",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--email-invalid--short--clear.png",
+        "sha256": "bcc4b81034a683e7338bdc50b5f9caf7857b8a25e31610b7f86defe7a1a55633",
+        "bytes": 62091,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--send-busy--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "send-busy",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "send-busy"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-3-97eb065fbce3515c.png",
+        "sha256": "06f2a43930a667b09a4abc53dbec4426ed0d8737e9600c2d17beed29f95a61b6",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--send-busy--phone--clear.png",
+        "sha256": "d4b2da946b7fa0f35c910cd9562c1945f59035e39869245d04e868e1a185f820",
+        "bytes": 108597,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--send-error--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "send-error",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "send-error"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-4-7c7628ccb2fe149c.png",
+        "sha256": "93c9800003662a8de9cb6bf94d2f48640d2cf5a88cb18401ad9b7925db336e09",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--send-error--phone--clear.png",
+        "sha256": "6bb79010a77af171d2579c0d612dd5063f7909181a8b24acd3180ef1d01acde7",
+        "bytes": 125011,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--code-step--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "code-step",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "code-step"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-5-9b3ab3cbe87e41f2.png",
+        "sha256": "62ec8b299a599c6171b8c68b1f34eef4a799b48192d60ffca2073e52b8022adb",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--code-step--phone--clear.png",
+        "sha256": "d379398e2719ec4fa8cda0d6682baf9bb1be114e6da249059a130d7ea34440eb",
+        "bytes": 117867,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--resend-cooldown--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "resend-cooldown",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "resend-cooldown"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-6-ef29732f4cd769f6.png",
+        "sha256": "bb376e94cd41bb31d6cdaaab2d99cac3c949cdc9593b949293ea7cad244a10d2",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--resend-cooldown--phone--clear.png",
+        "sha256": "16a2ccccedf16936c93d0b5ffd233ae4091077362064ddb75dac3ed0a50e274d",
+        "bytes": 117831,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--resend-cooldown--phone--vapour",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "resend-cooldown",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "resend-cooldown"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-6-ef29732f4cd769f6.png",
+        "sha256": "bb376e94cd41bb31d6cdaaab2d99cac3c949cdc9593b949293ea7cad244a10d2",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--resend-cooldown--phone--vapour.png",
+        "sha256": "b52da1198df3b7faad908f449b417af2f9042b7e4ad3064c80fced8fc7c46ce3",
+        "bytes": 125323,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--resend-cooldown--phone--signal",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "resend-cooldown",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "resend-cooldown"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-6-ef29732f4cd769f6.png",
+        "sha256": "bb376e94cd41bb31d6cdaaab2d99cac3c949cdc9593b949293ea7cad244a10d2",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--resend-cooldown--phone--signal.png",
+        "sha256": "ba78082ed8f0563029dcefa8ecef602ecf3e3e3336bd4b469bac48c0e9a7b6af",
+        "bytes": 123768,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--resend-cooldown--phone--mono",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "resend-cooldown",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "resend-cooldown"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-6-ef29732f4cd769f6.png",
+        "sha256": "bb376e94cd41bb31d6cdaaab2d99cac3c949cdc9593b949293ea7cad244a10d2",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--resend-cooldown--phone--mono.png",
+        "sha256": "da13c97deda65aca105f9f34b505397fef66a78063031e2023f0230293fd59b7",
+        "bytes": 56445,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--code-invalid--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "code-invalid",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "code-invalid"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-7-b88361103d46fe3b.png",
+        "sha256": "835a0877b77635bbc6e3bf6a0f8b072357cf988c018ffedb4269229c2520b2d5",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--code-invalid--phone--clear.png",
+        "sha256": "81569b9e9dcacb5e52fa675fa4ddb79d07f82f6f697e29f53aaf109e96145ca3",
+        "bytes": 128142,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--verify-busy--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "verify-busy",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "verify-busy"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-8-cc88d15f2dc77936.png",
+        "sha256": "01f0572552b90c393ec3f4b1c9293424d00b8ffadc66e16009f4d30098d1eaa8",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--verify-busy--phone--clear.png",
+        "sha256": "178457f52988fa8e3cbeb4df955bf3ad2b227a55ac078b4ae8e985c1b5d0a884",
+        "bytes": 112776,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--wrong-code--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "wrong-code",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "wrong-code"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-9-73feb116c69bb4ba.png",
+        "sha256": "ed70be2b6f6531b9bf3200618130d786a6952b34f0e5e557e501992eb66c56ce",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--wrong-code--phone--clear.png",
+        "sha256": "cf7d9f917cf1bb3946a799e7eacb9e80dc74e87106a228cbcb86dfe8871437ea",
+        "bytes": 125620,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--wrong-code--short--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "wrong-code",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "wrong-code"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-9-73feb116c69bb4ba.png",
+        "sha256": "ed70be2b6f6531b9bf3200618130d786a6952b34f0e5e557e501992eb66c56ce",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--wrong-code--short--clear.png",
+        "sha256": "a4b8187a057e45404d86e6432a8f286a9ae84c9d10fb91b9ee6ef81b6133b3ed",
+        "bytes": 57619,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--expired-code--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "expired-code",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "expired-code"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a8f6fabb7ea42d43a7de07c0-10-b75732d1cf1db5bd.png",
+        "sha256": "4104c90c3b4434f2816e22eee2831c5d24672d0b07ecbe7e04bb89b043beba40",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/login",
+        "heading": "Sign in",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "welcome-auth--otp-login--expired-code--phone--clear.png",
+        "sha256": "19c46c2a664a73e136b5253c2f043df1c8aea805e2448bc8ecbf0158fb638a22",
+        "bytes": 121390,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "OTP delivery is held and answered locally; verify negatives are typed boundary answers. No sample auth screen is involved."
+    },
+    {
+      "kind": "contract",
+      "text": "Anonymous boot reached Welcome with zero /rest/v1 initialization reads.",
+      "data": {
+        "restRequests": 0
+      }
+    },
+    {
+      "kind": "motion",
+      "text": "Under prefers-reduced-motion the anonymous boot hands off to Welcome with no running animation or transition.",
+      "data": {
+        "running": 0
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Tab from Sign in on Welcome moves to the next action; the root bracket layer follows it.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": null,
+        "name": "Create account",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Email field owns its focus: its frame lights and the bracket layer stays hidden.",
+      "data": {
+        "mode": "brackets",
+        "tag": "input",
+        "role": null,
+        "name": "",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

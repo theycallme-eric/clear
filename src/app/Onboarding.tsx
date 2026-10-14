@@ -204,7 +204,6 @@ export function Onboarding() {
         <Progress
           value={stepNumber(step)}
           max={ONBOARDING_STEPS.length}
-          segments={ONBOARDING_STEPS.length}
           label={`Step ${stepNumber(step)} of ${ONBOARDING_STEPS.length}`}
         />
 
