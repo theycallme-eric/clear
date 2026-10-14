@@ -8,7 +8,9 @@
  * `PageHeader` is `AppHeader`, the five mood icons are one `ChoiceGroup`
  * (ATOMIC.md §11: a radiogroup whose selection already carries a tick as well
  * as a colour), and the textarea is `Input multiline`, because the export has
- * no separate Textarea and never needed one.
+ * no separate Textarea and never needed one. Per 0.14.3 containment each key
+ * number is its own small card and the debrief's fields share one card, labels
+ * inside; only the screen title sits on the atmosphere.
  *
  * Three things here are the requirement rather than decoration:
  *
@@ -41,15 +43,11 @@ import {
   Check,
   ChoiceGroup,
   ClearLogo,
-  Frown,
   Input,
-  Meh,
-  Smile,
-  SmilePlus,
-  ThumbsDown,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import type { AppError } from '../state/errors'
+import { MOOD_SCALE } from '../state/mood'
 import { useQueryClient } from '../state/query'
 import { previousDay, type LocalDay, type Streak } from '../state/streak'
 import {
@@ -68,6 +66,7 @@ import {
 import { Card } from '../ui/card'
 import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
+import { MOOD_ICONS } from '../ui/mood'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { FavoriteToggle } from './FavoriteToggle'
 import { AUTHENTICATED_HOME } from './guards'
@@ -93,18 +92,18 @@ export const STREAK_WEEK_DAYS = 7
 /** Lets the hard-edge footer submit the form that remains in the scroller. */
 export const SUMMARY_FORM_ID = 'summary-debrief'
 
+/** The debrief card's heading, inside the card with the fields it names. */
+export const DEBRIEF_HEADING = 'Debrief'
+
 /**
- * The 1–5 scale, worst to best. The four middle words are the export's own
- * (`DebriefScreen`, `MOODS`); `Spent` is the fifth the 1–5 range needs and the
- * scale the column stores — `workout_sessions_mood_range` is 1 to 5, not 1 to 4.
+ * The stored 1–5 scale and its public glyphs, from the one shared list that
+ * HIST-01's report also reads — no local copy of the faces lives here.
  */
-const MOODS = [
-  { value: 1, label: 'Spent', Icon: ThumbsDown },
-  { value: 2, label: 'Worn', Icon: Frown },
-  { value: 3, label: 'Flat', Icon: Meh },
-  { value: 4, label: 'Ready', Icon: Smile },
-  { value: 5, label: 'Peak', Icon: SmilePlus },
-] as const
+const MOODS = MOOD_SCALE.map(({ value, label, glyph }) => ({
+  value,
+  label,
+  Icon: MOOD_ICONS[glyph],
+}))
 
 export function Summary() {
   const query = useCompletedSessionQuery()
@@ -216,9 +215,8 @@ function Debrief({ completed }: { completed: CompletedSession }) {
       }
     >
       <div className="clr-stack">
-        {/* The acknowledgment, and then straight to the debrief. */}
-        <p>{session.title}, done.</p>
-
+        {/* Only the screen title sits on the atmosphere: the acknowledgment,
+            each key number and the debrief are each inside a card. */}
         <div className="clr-stack clr-boot">
           <MetricGrid>
             {durationMins !== null && (
@@ -229,73 +227,76 @@ function Debrief({ completed }: { completed: CompletedSession }) {
           {/* FAV-01 remains distinct from the result readouts: it is an action,
               not a statistic, and it keeps its one-tap behavior. */}
           <Card>
+            <p>{session.title}, done.</p>
             <FavoriteToggle sessionId={session.id} />
           </Card>
         </div>
 
-        <form
-          id={SUMMARY_FORM_ID}
-          className="clr-stack"
-          onSubmit={onSubmit(save)}
-          noValidate
-        >
-        {error !== null && (
-          <div role="alert" className="clr-row">
-            <span
-              aria-hidden="true"
-              style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
-            >
-              <AlertCircle />
-            </span>
-            <span>{error.message}</span>
-          </div>
-        )}
+        {/* A form sits inside one card, its labels with it; the primary
+            action stays pinned in the footer and submits it by id. */}
+        <form id={SUMMARY_FORM_ID} onSubmit={onSubmit(save)} noValidate>
+          <Card heading={DEBRIEF_HEADING}>
+            {error !== null && (
+              <div role="alert" className="clr-row">
+                <span
+                  aria-hidden="true"
+                  style={{ color: 'var(--icon-toast-negative)', display: 'flex' }}
+                >
+                  <AlertCircle />
+                </span>
+                <span>{error.message}</span>
+              </div>
+            )}
 
-        <ChoiceGroup
-          legend="How do you feel?"
-          options={MOODS.map(({ value, label, Icon }) => ({
-            value: String(value),
-            label: (
-              <span className="clr-row">
-                <Icon size={20} />
-                {label}
-              </span>
-            ),
-          }))}
-          value={mood === null ? undefined : String(mood)}
-          onChange={(next) => {
-            setMood(Number(Array.isArray(next) ? next[0] : next))
-          }}
-        />
+            <ChoiceGroup
+              legend="How do you feel?"
+              options={MOODS.map(({ value, label, Icon }) => ({
+                value: String(value),
+                label: (
+                  <span className="clr-row">
+                    <Icon size={20} />
+                    {label}
+                  </span>
+                ),
+              }))}
+              value={mood === null ? undefined : String(mood)}
+              onChange={(next) => {
+                setMood(Number(Array.isArray(next) ? next[0] : next))
+              }}
+            />
 
-        <Input
-          label="Notes · optional"
-          name="session_notes"
-          multiline
-          rows={4}
-          value={notes}
-          onChange={setNotes}
-          placeholder="Overhead felt heavy today. Lateral raises easy."
-          errorText={
-            tooLong
-              ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
-              : undefined
-          }
-        />
-
+            <Input
+              label="Notes · optional"
+              name="session_notes"
+              multiline
+              rows={4}
+              value={notes}
+              onChange={setNotes}
+              placeholder="Overhead felt heavy today. Lateral raises easy."
+              errorText={
+                tooLong
+                  ? `Notes are kept to ${NOTES_MAX_LENGTH} characters.`
+                  : undefined
+              }
+            />
+          </Card>
         </form>
       </div>
     </Screen>
   )
 }
 
-/** One figure with its stencilled label — the export's `Stat`, in app markup. */
+/**
+ * One key number in its own small card, its label the card's heading. The
+ * readout inside drops its own frame, so there is never a frame in a frame.
+ */
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <MetricFrame>
-      <span className="label">{label}</span>
-      <p>{value}</p>
-    </MetricFrame>
+    <Card heading={label} padding="sm">
+      <MetricFrame>
+        <p>{value}</p>
+      </MetricFrame>
+    </Card>
   )
 }
 
@@ -321,22 +322,19 @@ function StreakPanel() {
           : viewReady(query.state.data)
 
   return (
-    <MetricFrame>
-      <ViewStateSwitch
-        state={state}
-        loadingLabel="Reading your streak"
-        errorTitle="Your streak didn’t load"
-        onRetry={query.refetch}
-        empty={
-          <div className="clr-stack clr-stack--tight">
-            <span className="label">Streak</span>
-            <p>No streak yet. Sessions on consecutive days build one.</p>
-          </div>
-        }
-      >
-        {(streak) => <WeekStreak streak={streak} />}
-      </ViewStateSwitch>
-    </MetricFrame>
+    <Card heading="Streak" padding="sm">
+      <MetricFrame>
+        <ViewStateSwitch
+          state={state}
+          loadingLabel="Reading your streak"
+          errorTitle="Your streak didn’t load"
+          onRetry={query.refetch}
+          empty={<p>No streak yet. Sessions on consecutive days build one.</p>}
+        >
+          {(streak) => <WeekStreak streak={streak} />}
+        </ViewStateSwitch>
+      </MetricFrame>
+    </Card>
   )
 }
 
@@ -346,7 +344,6 @@ function WeekStreak({ streak }: { streak: Streak }) {
 
   return (
     <div className="clr-stack clr-stack--tight">
-      <span className="label">Streak</span>
       <p>
         {streak.days} {streak.days === 1 ? 'day' : 'days'}
         {streak.includesToday ? '' : ', through yesterday'}

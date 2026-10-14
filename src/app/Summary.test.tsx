@@ -35,7 +35,15 @@ import {
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
 import { routes } from './router'
-import { SAVE_FAVORITE_FAILED, SAVE_FAVORITE_LABEL, SAVED_FAVORITE_LABEL } from './Summary'
+import { renderToStaticMarkup } from 'react-dom/server'
+
+import { Frown, Meh, Smile, SmilePlus, ThumbsDown } from '../design-system/index'
+import {
+  DEBRIEF_HEADING,
+  SAVE_FAVORITE_FAILED,
+  SAVE_FAVORITE_LABEL,
+  SAVED_FAVORITE_LABEL,
+} from './Summary'
 
 const COMPLETED = completedSession()
 const SESSION_ID = COMPLETED.session.id
@@ -162,11 +170,66 @@ describe('Summary — the debrief', () => {
     expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
   })
 
-  it('frames each result and keeps completion associated with the scrolling form', async () => {
+  it('puts each key number in its own small card, its label the heading inside', async () => {
     await debrief()
 
-    expect(screen.getByText('Duration').closest('.clr-metric-frame')).toBeInTheDocument()
-    expect(screen.getByText('Streak').closest('.clr-metric-frame')).toBeInTheDocument()
+    const duration = screen.getByRole('heading', { name: 'Duration' }).closest('.clr-card')
+    const streak = (await screen.findByRole('heading', { name: 'Streak' })).closest('.clr-card')
+    expect(duration).toBeInTheDocument()
+    expect(streak).toBeInTheDocument()
+    expect(duration).not.toBe(streak)
+    expect(within(duration as HTMLElement).getByText('42 min')).toBeInTheDocument()
+    // Inside a card the readout drops its own frame: never a frame in a frame.
+    expect(duration?.querySelector('.clr-metric-frame.clr-chamfer')).toBeNull()
+    expect(streak?.querySelector('.clr-card .clr-card')).toBeNull()
+    // Only the screen title sits on the atmosphere; the acknowledgment is carded.
+    expect(screen.getByText(`${TITLE}, done.`).closest('.clr-card')).toBeInTheDocument()
+  })
+
+  it('keeps the debrief fields in one card, labels inside, and the action pinned', async () => {
+    await debrief()
+
+    const form = document.getElementById('summary-debrief') as HTMLElement
+    const cards = form.querySelectorAll('.clr-card')
+    expect(cards).toHaveLength(1)
+    const card = within(cards[0] as HTMLElement)
+    expect(card.getByRole('heading', { name: DEBRIEF_HEADING })).toBeInTheDocument()
+    expect(card.getByRole('group', { name: 'How do you feel?' })).toBeInTheDocument()
+    expect(card.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
+    expect(card.getByText(/Notes · optional/)).toBeInTheDocument()
+    expect(card.queryByRole('button', { name: DONE })).not.toBeInTheDocument()
+  })
+
+  it('draws the moods with the public glyphs, faces round and SmilePlus without a plus', async () => {
+    await debrief()
+    const option = (label: string) => screen.getByRole('radio', { name: label })
+
+    const expected: [string, typeof Frown][] = [
+      ['Spent', ThumbsDown],
+      ['Worn', Frown],
+      ['Flat', Meh],
+      ['Ready', Smile],
+      ['Peak', SmilePlus],
+    ]
+    for (const [label, Icon] of expected) {
+      const drawn = option(label).querySelector('.clr-row > svg')
+      expect(drawn).not.toBeNull()
+      expect(drawn?.outerHTML).toBe(
+        new DOMParser()
+          .parseFromString(renderToStaticMarkup(<Icon size={20} />), 'text/html')
+          .body.querySelector('svg')?.outerHTML,
+      )
+    }
+    // The four faces are round and line-drawn; the top one is a wider smile
+    // and nothing else — one stroked mouth, no plus mark beside it.
+    const peak = option('Peak').querySelector('.clr-row > svg') as SVGElement
+    expect(peak.querySelector('circle[fill="none"]')).not.toBeNull()
+    expect(peak.querySelectorAll('path')).toHaveLength(1)
+  })
+
+  it('keeps completion associated with the scrolling form', async () => {
+    await debrief()
+
     const done = screen.getByRole('button', { name: DONE })
     expect(done).toHaveAttribute('form', 'summary-debrief')
     expect(done.closest('.clr-scroll-region__foot')).toBeInTheDocument()
