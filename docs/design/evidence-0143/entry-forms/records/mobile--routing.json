@@ -1,0 +1,468 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "routing: signed-in entry redirects, the unmatched route and its way back",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "welcome--welcome--authenticated-redirect--phone--clear",
+      "screen": "Welcome",
+      "route": "/welcome",
+      "state": "authenticated-redirect",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "authenticated-redirect"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-1-f59b996cb398b65a.png",
+        "sha256": "df0391fd3b280ed3263d380b54dfe81dafe192ec48cb9d90dc8ba96309acfbd9",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--welcome--authenticated-redirect--transition-destination--phone--clear.png",
+        "sha256": "3cfb8443e0d624aec87bfe0117679e9d968e9d39d4d295afe153ce76d83d1579",
+        "bytes": 188764,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "otp-login--login--authenticated-redirect--phone--clear",
+      "screen": "OTP Login",
+      "route": "/login",
+      "state": "authenticated-redirect",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "OTP Login",
+        "route": "/login",
+        "state": "authenticated-redirect"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-2-2c6111cfe0778d6d.png",
+        "sha256": "8b9971fbcc265ae7b473e9317745461004cffcde6659d5d6ce9667ef7be2a74b",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--otp-login--authenticated-redirect--transition-destination--phone--clear.png",
+        "sha256": "c0ce4323a6fb3c943297215c7536db233c2d160bef494b8cd5220e4ab8d2aca9",
+        "bytes": 189146,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--unmatched-route--phone--clear",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "unmatched-route",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "unmatched-route"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-0-c054df16b35864b2.png",
+        "sha256": "027fe9e7d1ff6c616b8633dfc94269f122bac617bcf75cb0ca7e4dc6a2d6ac0d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/task-034-unmatched",
+        "heading": "Page not found",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--unmatched-route--phone--clear.png",
+        "sha256": "6a38861cae93abc45195f2b670fc073aaf514de48a058f8999c79d8d4004ba67",
+        "bytes": 85759,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--unmatched-route--phone--vapour",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "unmatched-route",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "unmatched-route"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-0-c054df16b35864b2.png",
+        "sha256": "027fe9e7d1ff6c616b8633dfc94269f122bac617bcf75cb0ca7e4dc6a2d6ac0d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/task-034-unmatched",
+        "heading": "Page not found",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--unmatched-route--phone--vapour.png",
+        "sha256": "1fcc58e23fc682aaaee7364093479054b641af3da08e3180c8e705e8871b019c",
+        "bytes": 90741,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--unmatched-route--phone--signal",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "unmatched-route",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "unmatched-route"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-0-c054df16b35864b2.png",
+        "sha256": "027fe9e7d1ff6c616b8633dfc94269f122bac617bcf75cb0ca7e4dc6a2d6ac0d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/task-034-unmatched",
+        "heading": "Page not found",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--unmatched-route--phone--signal.png",
+        "sha256": "39d626220677ec800afc2b44c20b391f41868fa767c2292a59f8c0f3b92c8377",
+        "bytes": 88632,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--unmatched-route--phone--mono",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "unmatched-route",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "unmatched-route"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-0-c054df16b35864b2.png",
+        "sha256": "027fe9e7d1ff6c616b8633dfc94269f122bac617bcf75cb0ca7e4dc6a2d6ac0d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/task-034-unmatched",
+        "heading": "Page not found",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--unmatched-route--phone--mono.png",
+        "sha256": "e3d5d753cb1488ec83a8499cbd10081c157c8cb6bf8706989cdc374e67b9af7c",
+        "bytes": 32105,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--unmatched-route--short--clear",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "unmatched-route",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "unmatched-route"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-0-c054df16b35864b2.png",
+        "sha256": "027fe9e7d1ff6c616b8633dfc94269f122bac617bcf75cb0ca7e4dc6a2d6ac0d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/task-034-unmatched",
+        "heading": "Page not found",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--unmatched-route--short--clear.png",
+        "sha256": "d71cc63757d2c077260864c13bfa4332dc7920adc899fb362ca4d6b455ceb88e",
+        "bytes": 50082,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "not-found--root--home-or-welcome-return--phone--clear",
+      "screen": "Not Found",
+      "route": "*",
+      "state": "home-or-welcome-return",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Not Found",
+        "route": "*",
+        "state": "home-or-welcome-return"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-3-984f2eddf58b99ba.png",
+        "sha256": "658e6b1068fdcad2691eb01dd7d2012868ff8f6b327c0f9e5411be22d669c3fd",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "routing--not-found--home-or-welcome-return--transition-destination--phone--clear.png",
+        "sha256": "a086b943f66fac84920a2633ca61c3af4f5a71f023450e6b034953c2af77e1de",
+        "bytes": 187237,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "keyboard",
+      "text": "Return to CLEAR is followed with Enter from the unmatched route and lands a signed-in user on Home."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

@@ -1,0 +1,94 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "onboarding-refusal: an impossible saved preference is refused and the draft is kept",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--typed-viability-refusal--desktop--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "typed-viability-refusal",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "typed-viability-refusal"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-69e196c2145055f06fb80148-0-77cfb3ba12acaf40.png",
+        "sha256": "be17210431f743e05b17c010e9e2258a8980dbe6151229b163856c8f06a3a5a7",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding-refusal--onboarding--typed-viability-refusal--desktop--clear.png",
+        "sha256": "0ab87ed068b014addd4e9c48bedfaa7348b28557ab90ca232bcf834bc20cc941",
+        "bytes": 260269,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A namespaced real new user; the impossible Minimal + Carries proposal is refused by the genuine onboarding RPC."
+    },
+    {
+      "kind": "contract",
+      "text": "After the typed refusal no profile was onboarded, and Back shows the note, limitation, goal and section exactly as chosen."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

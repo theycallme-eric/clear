@@ -1,0 +1,1393 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "onboarding: real new user, every step, selection, kept draft, held commit and retry",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--selection-incomplete-disabled--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "selection-incomplete-disabled",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "selection-incomplete-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-0-a5b492e9709d138b.png",
+        "sha256": "60cf1c8923441366f4e2ea8dd7935303785931c2625b842fffa8e5a55fc88fd8",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--selection-incomplete-disabled--phone--clear.png",
+        "sha256": "8c77d72840b398a1f46d0cbaed871d7fcd8b4f68e320911aec84a6a253ce763a",
+        "bytes": 110559,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--selection-incomplete-disabled--short--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "selection-incomplete-disabled",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "selection-incomplete-disabled"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-0-a5b492e9709d138b.png",
+        "sha256": "60cf1c8923441366f4e2ea8dd7935303785931c2625b842fffa8e5a55fc88fd8",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--selection-incomplete-disabled--short--clear.png",
+        "sha256": "e3df1bb461f68d0e8b7969a0ef4fdc91c5cdeaccee74c300b7429c0931cf48a3",
+        "bytes": 55761,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "setup-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--setup-selected--phone--clear.png",
+        "sha256": "257929f29fab3633de3b1d74812c86198c02f30f1e3f717770bf4e7b4cc3ca2d",
+        "bytes": 161560,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--vapour",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "setup-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--setup-selected--phone--vapour.png",
+        "sha256": "b3a7817a5ef9f187870c7030fbd33f3e4100983634d1ebb0df86457cf1922cbe",
+        "bytes": 165683,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--signal",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "setup-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--setup-selected--phone--signal.png",
+        "sha256": "b2d17c2731548121ccd89ac9106fb9364738a0265729deb51c1e3f09b500c6af",
+        "bytes": 164153,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--mono",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "setup-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--setup-selected--phone--mono.png",
+        "sha256": "11fafc02a13a64166e5893a6a5d64eb317a3014744525d54d98d8a1f1d295667",
+        "bytes": 86160,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "experience",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-5-1ccd13575842386f.png",
+        "sha256": "ebe79baa9e84534bd54e36cd26b6baa4053d53460808d39ccab6733506d66f3a",
+        "variant": "experience"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--experience--phone--clear.png",
+        "sha256": "33e7e6a8e3572b87d8f8423112a91c8eee3aae8ed45d33dff03a04669c1f5086",
+        "bytes": 114443,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--phone--clear.png",
+        "sha256": "4b2af37b1b73c41e10edb6ed3e2823658d18eeafec3681ebaf6306e9a53664e7",
+        "bytes": 136460,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--vapour",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--phone--vapour.png",
+        "sha256": "98cd37b182f1a0a1cca537360f3ef3961224928d2026ff60fb8c2bf920df0110",
+        "bytes": 144505,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--signal",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--phone--signal.png",
+        "sha256": "490146736295aead0f3d099bd2bbfaca79523d879fa703e9d92e59396a8ea5e7",
+        "bytes": 144184,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--mono",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--phone--mono.png",
+        "sha256": "2c3705b220205f1331077d7309808df4032eff1bf14c9321f90680a25b7f9fe2",
+        "bytes": 72490,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--short--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "goal",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-6-d96d562ebba299bb.png",
+        "sha256": "9b2484f4be878d00bd0d7cf15e0aea825f67b4a2e08b7a3c70fc5693eb014111",
+        "variant": "goal"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--goal--short--clear.png",
+        "sha256": "27cbf8d089719ab7e3a5392255f3c9913f1770679dcf56c7cba3417f0a13bdd0",
+        "bytes": 52770,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "limitations",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-7-dc1690ba9245aaf2.png",
+        "sha256": "321e37304be701023b0e06716fc4e4428ec65cf55ab95f991b1491f152b8fec1",
+        "variant": "limitations"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--limitations--phone--clear.png",
+        "sha256": "50a1523015d1f43c8a1c1c344db9ceaadd525e0423d61db20f1a2b39cf31f4e3",
+        "bytes": 147825,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "limitations-multiline-focus",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--limitations-multiline-focus--phone--clear.png",
+        "sha256": "2d44adbf211fb17988de098a918ee181176a4490bd86caf7f9fb96a32ee33d0c",
+        "bytes": 165545,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--short--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "limitations-multiline-focus",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-1-503f03b70464246f.png",
+        "sha256": "ab120a9123d1c84cdfbb5ff8b4b2c9fbdff703783e407984fc4a54b292c8c5ea",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--limitations-multiline-focus--short--clear.png",
+        "sha256": "92f4f1ec1d222862f635edaabcf0490ea6dd4b42d2ab39819ecc78268640087a",
+        "bytes": 56784,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "confirmation",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-8-301efb9d1e47557c.png",
+        "sha256": "51250d41b614efcb9d8095612fb23a0b6257cb7f3c1a9b3f8b1317132fcc8595",
+        "variant": "confirmation"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--confirmation--phone--clear.png",
+        "sha256": "5af35af96d815c20b2285fca55d580316763070c08b544540fcc669f179df1a6",
+        "bytes": 154666,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--five-step-draft--short--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "five-step-draft",
+      "variant": "confirmation",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "five-step-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-8-301efb9d1e47557c.png",
+        "sha256": "51250d41b614efcb9d8095612fb23a0b6257cb7f3c1a9b3f8b1317132fcc8595",
+        "variant": "confirmation"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--five-step-draft--confirmation--short--clear.png",
+        "sha256": "e35a00ed05fd2508038c6f8758d8493aa0f9d1614bf7416946dd2ff72cb33528",
+        "bytes": 49158,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--back-preserves-draft--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "back-preserves-draft",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "back-preserves-draft"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-2-b583c0dcef47df45.png",
+        "sha256": "9c0314a1796f9b9ad2c146cd24f8b16d4bb38cbe4cf8df5fe52d7a0f7a809d9d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--back-preserves-draft--phone--clear.png",
+        "sha256": "aee8f8dd373e14da958ea8003c0fbea18015dfeace8d0ff393067fc2c53a7800",
+        "bytes": 139824,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--committing--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "committing",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "committing"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-3-5c3878d0778a33ff.png",
+        "sha256": "ad4127f65a6500a7c3506f8687f00861230b75954a5b301bba6f27586a0718dd",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--committing--phone--clear.png",
+        "sha256": "8e73c29363402d2695642f9a79357119bf2d717d32b968aaf5f48a4a3d01b12e",
+        "bytes": 88147,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--commit-error-retry--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "commit-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "commit-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-4-1c539748f19f5425.png",
+        "sha256": "638bf2ee1b8ce56c6bcf314cd98597dbb65f972de99f9d67926db924a27a854b",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--commit-error-retry--phone--clear.png",
+        "sha256": "fd7fdbb3533ee304ff29ec7a25719ba2d8c354ecefa24eb689d218397cade82d",
+        "bytes": 173781,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--commit-error-retry--phone--vapour",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "commit-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "commit-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-4-1c539748f19f5425.png",
+        "sha256": "638bf2ee1b8ce56c6bcf314cd98597dbb65f972de99f9d67926db924a27a854b",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--commit-error-retry--phone--vapour.png",
+        "sha256": "8541964a1954f84be50e1de915673dde8f34d433b0877230fa0d9380e07009b8",
+        "bytes": 178552,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--commit-error-retry--phone--signal",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "commit-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "commit-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-4-1c539748f19f5425.png",
+        "sha256": "638bf2ee1b8ce56c6bcf314cd98597dbb65f972de99f9d67926db924a27a854b",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--commit-error-retry--phone--signal.png",
+        "sha256": "f1fe6cd4770c22fb283d2c0efc45e3b070d3615a381b4b9f73b89c76a66db64e",
+        "bytes": 178582,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--commit-error-retry--phone--mono",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "commit-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "commit-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-4-1c539748f19f5425.png",
+        "sha256": "638bf2ee1b8ce56c6bcf314cd98597dbb65f972de99f9d67926db924a27a854b",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/onboarding",
+        "heading": "Set up CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--commit-error-retry--phone--mono.png",
+        "sha256": "a9b020d730c92e2f9dc19040a80d721548a51b6402fae8c77120fe54dc146b91",
+        "bytes": 95655,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "onboarding--onboarding--success-home--phone--clear",
+      "screen": "Onboarding",
+      "route": "/onboarding",
+      "state": "success-home",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Onboarding",
+        "route": "/onboarding",
+        "state": "success-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a79680cb49db403f1535e1b9-9-c183d0ede8d06f31.png",
+        "sha256": "926986741069661385a260bf5aa98fbbe30c773514925fe2bd70f7d81d2cf744",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "onboarding--onboarding--success-home--transition-destination--phone--clear.png",
+        "sha256": "af21bd3803becc53b8b974ec999eedf5388ad1f71cbb79b1aeef0c7a8a00de59",
+        "bytes": 191684,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A namespaced real new user verified through the public endpoint; the first onboarding commit is held then answered 500, the retry is the genuine RPC."
+    },
+    {
+      "kind": "contract",
+      "text": "Successful new-user verification landed on /onboarding (existing guard), not Home."
+    },
+    {
+      "kind": "contract",
+      "text": "Onboarding step 1 of 5 lights 4 of 20 discrete progress segments.",
+      "data": {
+        "segments": 20,
+        "lit": 4,
+        "unlit": 16,
+        "sized": false,
+        "overlay": 0,
+        "now": "1",
+        "max": "5"
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The setup radiogroup is one tab stop; ArrowRight moves focus and selection, and the static bracket layer frames the focused chip.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "radio",
+        "name": "Building gym",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Space toggles a focused section checkbox; the checked state is a solid 10px square, the unchecked state has no mark.",
+      "data": {
+        "focus": {
+          "mode": "brackets",
+          "tag": "input",
+          "role": null,
+          "name": "",
+          "layers": 1,
+          "bracketOpacity": 0
+        },
+        "unchecked": {
+          "content": "none",
+          "width": "auto",
+          "height": "auto",
+          "markRadius": "0px",
+          "boxRadius": "0px",
+          "solid": false,
+          "target": 44
+        }
+      }
+    },
+    {
+      "kind": "discrepancy",
+      "text": "The owned routes render no native RadioButton: every single choice is a ChoiceGroup of Chips with radio semantics. The solid-square mark is therefore proved on the real Checkbox, whose .clr-check__box rule the package RadioButton shares.",
+      "data": {
+        "source": "src/design-system/components/Selection/RadioButton.jsx"
+      }
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

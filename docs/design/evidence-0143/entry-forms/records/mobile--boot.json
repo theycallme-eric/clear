@@ -1,0 +1,746 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 380,
+  "consumer": "entry-forms",
+  "phase": "after",
+  "caseTitle": "boot: authenticated checking, failed read, retry and reduced-motion handoff",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/entry-forms.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "40094592ceed8a18f41ba82864c4194922febaeea76655d79fcc75ea342fef24",
+    "applicationCommit": "3c8490c33876abef43b9595be7ac9198ae36e474",
+    "testedDeployment": "http://127.0.0.1:63328"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--phone--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--phone--clear.png",
+        "sha256": "9a7a78effb409edf5f4ed6468f50a6ec4c58cdc5c4f8dbe094379e274737cd7e",
+        "bytes": 105065,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--phone--vapour",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--phone--vapour.png",
+        "sha256": "fc4ba46f98770f5723071b792c6e33022585ce95a9c3b2a3aac9006a3b1c9d7b",
+        "bytes": 108535,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--phone--signal",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--phone--signal.png",
+        "sha256": "207f41c2af00ea291995af7d0ce8613e94eb87757d71e37a0d30ce526da12eed",
+        "bytes": 106592,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--phone--mono",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--phone--mono.png",
+        "sha256": "fee1f1c030305dc6aa7d163885d73a861cef64eb877526ee34b11ba9ab0ba5bc",
+        "bytes": 44273,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--checking--short--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "checking",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "checking"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-0-0a97ab65b45d2e49.png",
+        "sha256": "adf7067cba81e507b75631fc57549493acf35e1ef3cbf07b675072082ea85b74",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--checking--short--clear.png",
+        "sha256": "9d087f6989c1c8d2af34f287f1edd08e94f8683ec94b3334ed831fbca9df64ce",
+        "bytes": 65207,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--phone--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--phone--clear.png",
+        "sha256": "79e38182a941e0e687473dd3dc9dbc65a00ea553545a12d6ded80688507f0c19",
+        "bytes": 105428,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--phone--vapour",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--phone--vapour.png",
+        "sha256": "48f36c9df28f3de8898935074b2a2eefbb36573a50e399a232d5972e6aa027db",
+        "bytes": 112748,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--phone--signal",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--phone--signal.png",
+        "sha256": "aecca8c35c662bb06f5d203f02a9c50272d5db1ef4b28af6283761db2d389bc3",
+        "bytes": 112596,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--phone--mono",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--phone--mono.png",
+        "sha256": "865a99c38292875f8e9eea94dcf88dd7f1a5fb9e49f75771920efcbaa85e6f5d",
+        "bytes": 46895,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--failed-retry--short--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "failed-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "failed-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-1-be62cd49b62cdefd.png",
+        "sha256": "47b212ded88c2e57aada683bcb687f0291bea07d46af8e94e03f847f2713523d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--failed-retry--short--clear.png",
+        "sha256": "5628402e5d0698a70ce7405bfec08a73664db92e042edc5c69a4acc2ca37437c",
+        "bytes": 58816,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--ready--phone--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "ready",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-2-e5b2a180520d55a7.png",
+        "sha256": "41f5af9e8e6a827a35e1296ea6046a5c297f0dbef3046a4be1ce4dc700402a7b",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--ready--transition-destination--phone--clear.png",
+        "sha256": "4823500a1b41d9ed72908623821463d1cdcd5c9fa513661bae0a0b34e21484a1",
+        "bytes": 159027,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "non-route-surface",
+      "pairId": "bootsequence--surface--ready--phone--clear",
+      "screen": "BootSequence",
+      "route": null,
+      "state": "ready",
+      "variant": "reduced-motion-handoff",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "BootSequence",
+        "route": null,
+        "state": "ready"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-567a08ddfeb3b413103a802b-2-e5b2a180520d55a7.png",
+        "sha256": "41f5af9e8e6a827a35e1296ea6046a5c297f0dbef3046a4be1ce4dc700402a7b",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "screenshot": {
+        "name": "boot--bootsequence--ready--reduced-motion-handoff--phone--clear.png",
+        "sha256": "8854ff04c56d58b40afa8fd6301e77fec0cad49d38f74fd9a604bd61ef1a98d8",
+        "bytes": 136959,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Only the real session user’s profile GET is held then failed; Retry reads the actual profile. Every other initialization read is genuine."
+    },
+    {
+      "kind": "contract",
+      "text": "Boot progress is discrete segments, each lit or not.",
+      "data": {
+        "segments": 20,
+        "lit": 10,
+        "unlit": 10,
+        "sized": false,
+        "overlay": 0,
+        "now": "2",
+        "max": "4"
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "Retry is reachable by keyboard on the failed boot and is the only action offered.",
+      "data": {
+        "mode": null,
+        "tag": "button",
+        "role": null,
+        "name": "Retry",
+        "layers": 0,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Retry reran the failed profile read once and reached the requested protected route; the reads that had succeeded were kept.",
+      "data": {
+        "profileReads": 2,
+        "readsSeenBeforeFailure": [
+          "locations",
+          "workout_sessions"
+        ]
+      }
+    },
+    {
+      "kind": "motion",
+      "text": "Under prefers-reduced-motion an authenticated boot hands off to the requested route with nothing left animating."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Welcome",
+        "route": "/welcome",
+        "state": "session-restoring"
+      },
+      "reason": "Auth restoration is shown by Boot checking before the public guards; Welcome’s actions are never flashed.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Welcome.test.tsx",
+        "src/app/guards.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
