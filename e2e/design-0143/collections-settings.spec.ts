@@ -6,6 +6,8 @@ import type { Locator, Page, Route, TestInfo } from '@playwright/test'
 import { namespaceId } from '../../scripts/e2e/namespace.mjs'
 import { expect, test as base } from '../fixtures'
 import { backend } from '../support/backend'
+import type { WorkoutSessionRow } from '../../src/state/schemas'
+import { suggestSession, suggestionDay, SUGGESTION_DISMISSAL_STORAGE_KEY } from '../../src/state/session-suggestion'
 import { captureIdentity, capturePairId } from './capture'
 import { installDeterministicCapture, playwrightCaptureDriver } from './fixtures'
 import {
@@ -96,6 +98,8 @@ interface ShotOptions {
   readonly variant?: string
   /** Also picture the state in the other three skins (phone project only). */
   readonly skins?: boolean
+  /** Add only the missing representative non-phone skins and short-phone skins. */
+  readonly responsiveSample?: boolean
   /** Also picture it at 390x320 with this action still reachable (phone project only). */
   readonly short?: Locator
 }
@@ -204,8 +208,8 @@ const test = base.extend<{ evidence: Evidence }>({
       async shot(screen, route, state, at, title, assertState, options = {}) {
         const variant = options.variant ?? ''
         await take(screen, route, state, at, title, assertState, variant)
-        if (!phone) return
-        if (options.skins) {
+        if (!phone && !options.responsiveSample) return
+        if (options.skins || (options.responsiveSample && !phone)) {
           const chosen = skin
           for (const next of CAPTURE_SKINS.filter((candidate) => candidate !== chosen)) {
             await setSkin(next)
@@ -213,17 +217,22 @@ const test = base.extend<{ evidence: Evidence }>({
           }
           await setSkin(chosen)
         }
-        if (options.short) {
+        if (options.short && phone) {
           const action = options.short
+          const chosen = skin
           await setViewport('short')
-          await take(screen, route, state, at, title, async () => {
-            await assertState()
-            await action.scrollIntoViewIfNeeded()
-            await expect(action).toBeInViewport()
-            // The page itself never scrolls; the screen's own region does.
-            expect(await page.evaluate(() =>
-              document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true)
-          }, variant ? `${variant}-short` : 'short')
+          for (const next of options.responsiveSample ? CAPTURE_SKINS : [chosen]) {
+            await setSkin(next)
+            await take(screen, route, state, at, title, async () => {
+              await assertState()
+              await action.scrollIntoViewIfNeeded()
+              await expect(action).toBeInViewport()
+              // The page itself never scrolls; the screen's own region does.
+              expect(await page.evaluate(() =>
+                document.documentElement.scrollHeight <= window.innerHeight + 1)).toBe(true)
+            }, variant ? `${variant}-short` : 'short')
+          }
+          await setSkin(chosen)
           await setViewport('phone')
         }
       },
@@ -815,14 +824,147 @@ backendTest('home: groups, arrival, tabs, favorites, routing and resume', async 
     evidence.disposition('Home', '/', 'incompatible-detail-fallback',
       'Home recents and History rows share useOpenHistorySession; the incompatible fallback is exercised on History, where a not-started record is listed.',
       ['src/app/useOpenHistorySession.ts', 'src/app/Home.tsx', SOURCE_FILE])
-    evidence.disposition('Home', '/', 'suggestion-selected-dismissed',
-      'The suggestion needs a multi-week pattern history; its Card composition is shared with Train today and is covered by Home.test.tsx.',
-      ['src/app/Home.tsx', 'src/app/Home.test.tsx'])
+    evidence.note('contract', 'The reachable Suggested next selection/dismissal is rendered in the additive suggestion case; the original saved source-only disposition remains historical, not a current substitute for that state.')
     expect(evidence.modelAttempts()).toBe(0)
   } finally { await removeActors(cleanup) }
 })
 
 // ── History ────────────────────────────────────────────────────────────────
+
+backendTest('responsive: representative route families in the missing skins and short-phone sizes', async ({ page, visit, evidence }, testInfo) => {
+  test.setTimeout(360_000)
+  const cleanup: string[] = []
+  try {
+    const actor = await makeActor(testInfo, 'responsive', cleanup, page)
+    const done = await actor.completed(TITLE, 1, { sections: 2 })
+    const detailPath = `/history/${done.session.id}`
+    const generate = page.getByRole('button', { name: 'Generate workout', exact: true })
+    const responsive = { responsiveSample: true, variant: 'representative-responsive' }
+    evidence.note('fixture', 'Additive representative layouts only: non-phone projects add all four skins; the phone project adds all four short-phone skins. Existing full-phone skin evidence and every original record/picture are retained. This is not every state/skin/width combination or deployed proof.')
+
+    await visit(detailPath)
+    await page.getByRole('button', { name: 'Save as favorite', exact: true }).click()
+    await visibleText(page, 'Saved to favorites')
+    await visit('/')
+    await evidence.shot('Home', '/', 'history-populated', '/', 'Today', async () => {
+      await expect(page.getByRole('tabpanel').getByText(TITLE, { exact: true })).toBeVisible()
+      await expectCurrentCards(page, 'Responsive Home', ['Train today', 'This week', 'Recent workouts'])
+      await expectReachableFooter(generate, 'Responsive Home')
+    }, { ...responsive, short: generate })
+    await page.getByRole('tab', { name: 'Favorites', exact: true }).click()
+    await evidence.shot('Home', '/', 'favorites-populated', '/', 'Today', async () => {
+      await expect(page.getByRole('tabpanel').getByText(TITLE).first()).toBeVisible()
+      await expectCurrentCards(page, 'Responsive Favorites', ['Favorites'])
+    }, { ...responsive, short: generate })
+
+    await visit('/history')
+    const filter = page.getByLabel('Show')
+    await filter.selectOption('completed')
+    const home = page.getByRole('button', { name: 'Home', exact: true })
+    await evidence.shot('History', '/history', 'selected-filters', '/history', 'History', async () => {
+      await expect(filter).toHaveValue('completed')
+      await expect(page.getByRole('list', { name: 'Workout history' }).getByText(TITLE, { exact: true })).toBeVisible()
+      await expectCurrentCards(page, 'Responsive History', ['Workout history'])
+    }, { ...responsive, short: home })
+
+    await visit(detailPath)
+    const restart = page.getByRole('button', { name: 'Restart', exact: true })
+    await evidence.shot('Session Detail', '/history/:id', 'as-performed-populated', detailPath, TITLE, async () => {
+      await expect(page.getByText(/^As performed/)).toBeVisible()
+      await expect(page.getByRole('table').first()).toBeVisible()
+      await expectCurrentCards(page, 'Responsive Session Detail', ['Overview'])
+      await expectReachableFooter(restart, 'Responsive Session Detail')
+    }, { ...responsive, short: restart })
+
+    await visit('/settings')
+    const signOut = page.getByRole('button', { name: 'Sign out', exact: true })
+    await evidence.shot('Settings', '/settings', 'preferences-populated', '/settings', 'Settings', async () => {
+      for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Session']) {
+        await expect(page.getByRole('region', { name, exact: true })).toBeVisible()
+      }
+      await expectCurrentCards(page, 'Responsive Settings', ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Session'])
+    }, { ...responsive, short: signOut })
+    const appearance = page.getByRole('region', { name: 'Appearance', exact: true })
+    await evidence.shot('Settings', '/settings', 'appearance-system-or-skin', '/settings', 'Settings', async () => {
+      await appearance.scrollIntoViewIfNeeded()
+      await expect(appearance).toBeVisible()
+      await expect(appearance.getByRole('radio')).toHaveCount(5)
+    }, { ...responsive, short: appearance.getByRole('radio', { name: /^Clear\b/i }) })
+    evidence.note('fixture', 'Responsive palette sampling uses the existing owned screenshot fixture to set the stored skin and document attribute; real appearance-picker persistence and selection remain asserted in the original settings case. These are layout pictures, not new preference behavior.')
+
+    await visit('/settings/locations')
+    const add = page.getByRole('button', { name: 'Add place', exact: true })
+    await evidence.shot('Settings', '/settings/locations', 'list-populated', '/settings/locations', 'Places and equipment', async () => {
+      await expect(page.getByRole('heading', { name: PLACE, exact: true })).toBeVisible()
+      await visibleText(page, 'Default for generation')
+      await expectReachableFooter(add, 'Responsive Places')
+    }, { ...responsive, short: add })
+    expect(evidence.modelAttempts()).toBe(0)
+  } finally { await removeActors(cleanup) }
+})
+
+backendTest('suggestion: real qualifying history, Use this and persistent Dismiss destinations', async ({ page, visit, evidence }, testInfo) => {
+  test.setTimeout(360_000)
+  const cleanup: string[] = []
+  try {
+    const actor = await makeActor(testInfo, 'suggestion', cleanup, page)
+    await actor.completed('TASK-035 suggestion history', 1)
+    const rows = must<WorkoutSessionRow[]>(await actor.client.selectAsService('workout_sessions', {
+      select: '*', user_id: `eq.${actor.id}`, order: 'date.desc',
+    }), 'Owned suggestion history read')
+    const suggestion = suggestSession(rows)
+    expect(suggestion, 'the actual recent completed fixture must qualify for a suggestion').not.toBeNull()
+    if (!suggestion) throw new Error('Owned completed history did not qualify for a suggestion')
+    const prompt = page.getByLabel('Suggested next')
+    const useThis = prompt.getByRole('button', { name: 'Use this', exact: true })
+    const dismiss = prompt.getByRole('button', { name: 'Dismiss', exact: true })
+    const generate = page.getByRole('button', { name: 'Generate workout', exact: true })
+    evidence.note('fixture', 'A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected recommendation/path are derived from the actual owned rows, not a mocked Home suggestion or a model response.')
+
+    await visit('/')
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
+      await expect(prompt).toBeVisible()
+      await expect(prompt.getByText(`${suggestion.focusLabel} · intensity ${suggestion.intensity}`, { exact: true })).toBeVisible()
+      await expect(prompt.getByText(`${suggestion.reason} ${suggestion.intensityReason}`, { exact: true })).toBeVisible()
+      await expect(useThis).toBeEnabled()
+      await expect(dismiss).toBeEnabled()
+      await expectCurrentCards(page, 'Home suggestion', ['Train today'])
+    }, { variant: 'suggested-next', skins: true, short: useThis })
+    await useThis.click()
+    const selected = new URL(suggestion.path, 'https://owned-fixture.invalid')
+    await expect(page).toHaveURL((url) => url.pathname === selected.pathname && url.search === selected.search)
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate workout', async () => {
+      await visibleText(page, suggestion.focusLabel)
+      await visibleText(page, suggestion.reason)
+      await expect(page.getByRole('slider')).toHaveValue(String(suggestion.intensity))
+      await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
+    }, { variant: 'use-this-destination' })
+
+    await visit('/')
+    await expect(prompt).toBeVisible()
+    await dismiss.click()
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
+      await expect(prompt).toHaveCount(0)
+      await expect(generate).toBeEnabled()
+      expect(await page.evaluate((key) => localStorage.getItem(key), SUGGESTION_DISMISSAL_STORAGE_KEY)).toBe(suggestionDay())
+    }, { variant: 'dismissed', skins: true, short: generate })
+    await page.reload()
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
+      await expect(prompt).toHaveCount(0)
+      await expect(generate).toBeEnabled()
+    }, { variant: 'dismissed-after-reload' })
+    await generate.click()
+    await expect(page).toHaveURL((url) => url.pathname === '/generate' && url.search === '')
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate workout', async () => {
+      await visibleText(page, suggestion.reason)
+      await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
+    }, { variant: 'default-destination-after-dismiss' })
+    evidence.note('contract', 'Use this follows the actual recommendation path. Dismiss persists for today across reload and Generate opens without suggestion-prefill query parameters; the form independently derives its recommendation from the same history. No Generate/Quick start/model POST was submitted.')
+    expect(evidence.modelAttempts()).toBe(0)
+  } finally { await removeActors(cleanup) }
+})
+
+// ── Original History cases ─────────────────────────────────────────────────
 
 backendTest('history: one card, filters, pagination, routing, loading and error', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(360_000)

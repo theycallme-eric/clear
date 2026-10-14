@@ -15,8 +15,9 @@ proof and not deployed proof, and every record says so.
 
 `e2e/design-0143/collections-settings.spec.ts` produces all of it. A case writes its record and
 pictures the first time it passes and leaves them alone afterwards, so a later verification run
-asserts the same behaviour without rebinding committed pictures to a different tree. To
-re-record, delete `records/` and `screenshots/` and run the spec.
+asserts the same behaviour without rebinding committed pictures to a different tree. Add missing
+evidence in uniquely named additive cases; preserve the original records and pictures rather than
+deleting or rebinding them.
 
 ## Identity
 
@@ -25,7 +26,7 @@ re-record, delete `records/` and `screenshots/` and run the spec.
   changes no runtime source.
 - Tested deployment: the wrapper's owned local Vite server. No deployed origin was exercised.
 
-## Coverage
+## Original preserved coverage (before the two acceptance-gap corrections)
 
 240 pictures from 15 passing cases (`home`, `history`, `detail`, `settings`, `places` in each of
 `mobile`, `tablet`, `desktop`): phone 127, tablet 48, desktop 48, short phone (390x320) 17; skin
@@ -50,6 +51,23 @@ and 8 are source dispositions with no rendered claim:
 
 The History list's first read is Boot-watched, so its `loading` and `error-retry` pictures hold
 and then fail the second page that Load older workouts asks for, as TASK-040 did.
+
+## Additive original acceptance-gap correction — execution pending
+
+The original exact-head review identified missing Signal/Vapour non-phone and short-phone
+evidence and a reachable Suggested next state that a source disposition did not prove. The owned
+spec now adds one representative responsive case and one actual suggestion-transition case in the
+three original projects. This is not a full state/skin/width Cartesian product. The existing 15
+records and 240 pictures remain byte-identical; no passing outcome or new total is claimed here
+until actual execution.
+
+The historical multi-week-history explanation above is not the installed eligibility rule: one
+recent completed session is enough. The additive case writes that real disposable actor's session
+through the original RPCs, derives the expectation from its actual owned rows, and renders Use
+this, Dismiss, persistent dismissal and both Generate destinations without a model POST. The
+responsive case samples Home, Favorites, History, Session Detail, Settings/Appearance and Places
+in missing non-phone/short-phone skins. Native full verification, new exact-head independent
+acceptance, protected delivery, final deployed proof and owner UAT remain required.
 
 ## What each case proves
 
