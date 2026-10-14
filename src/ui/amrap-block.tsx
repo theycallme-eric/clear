@@ -31,6 +31,13 @@
  * window itself is never stored as a tick count — `startedAt` is stamped once and
  * the remaining time is read against the clock, so the buzzer can go while the
  * tab is asleep.
+ *
+ * Containment, as 0.14.3 draws it. `TimerDisplay` is a card of its own, so the
+ * countdown stands above the block's card rather than inside it, and its low
+ * state is the package's — the stepped colour and the pulse, with nothing added
+ * around it. Everything else is one card: the counters and the round are its
+ * ruled sub-groups with their labels inside, the settled time is the shared
+ * bare readout, and the two partial-round toggles are frameless text actions.
  */
 import { useId } from 'react'
 
@@ -42,6 +49,7 @@ import {
   Play,
   Plus,
   Stop,
+  TextAction,
   TimerDisplay,
   X,
 } from '../design-system/index'
@@ -70,6 +78,7 @@ import {
 import type { ExerciseProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
+import { MetricFrame } from './composition'
 import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
 import type { BlockRendererProps } from './block-renderers'
@@ -100,113 +109,116 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
   const roundsLabelId = useId()
 
   return (
-    <Card>
-      <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
-          <span style={labelStyle}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-          </span>
-        </div>
+    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+      {/*
+        The shipped timer card, beside the block's card and never within it. Only
+        a window that is open and has a deadline has anything to count down.
+      */}
+      {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
+        <TimerDisplay seconds={view.remainingSeconds} size="lg" />
+      )}
+      <Card>
+        <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
+            <StructureBadge identity={block.identity} />
+            <span style={labelStyle}>
+              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+            </span>
+          </div>
 
-        {shape.size === 0 ? (
-          <p style={{ margin: 0 }}>
-            Nothing left to perform in this block — every movement in it was swapped
-            out.
-          </p>
-        ) : (
-          <>
-            <Window
-              view={view}
-              onStart={() => amrap.update(startAmrap(amrap.state, now()))}
-              // Read from the clock at the moment of the tap rather than from the
-              // rendered countdown: the repaint is throttled to twice a second,
-              // and the time the user stopped at is the time they stopped at.
-              onFinish={() =>
-                amrap.update(
-                  finishAmrap(
-                    amrap.state,
-                    shape,
-                    elapsedSeconds(amrap.state.startedAt, now()),
-                  ),
-                )
-              }
-            />
-
-            {/*
-              Live from the moment the window opens, and still there once it has
-              closed: one tap, on the card, with nothing to submit.
-            */}
-            {view.phase !== 'ready' && (
-              <div
-                className="clr-stack--tight"
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-              >
-                <p id={roundsLabelId} style={labelStyle}>
-                  Rounds completed
-                </p>
-                <Counter
-                  labelledBy={roundsLabelId}
-                  value={view.roundsCompleted}
-                  decrementLabel="Take back a round"
-                  incrementLabel="Add a completed round"
-                  onChange={(delta) => amrap.update(countRound(amrap.state, delta))}
-                />
-              </div>
-            )}
-
-            {/*
-              At the cap and nowhere else: how far into the round the buzzer
-              caught the user is a question that only has an answer once it has.
-            */}
-            {view.phase === 'complete' && (
-              <PartialRound
-                reps={view.partialRoundReps}
-                onChange={(reps) =>
-                  amrap.update(setPartialRoundReps(amrap.state, reps))
+          {shape.size === 0 ? (
+            <p style={{ margin: 0 }}>
+              Nothing left to perform in this block — every movement in it was swapped
+              out.
+            </p>
+          ) : (
+            <>
+              <Window
+                view={view}
+                onStart={() => amrap.update(startAmrap(amrap.state, now()))}
+                // Read from the clock at the moment of the tap rather than from the
+                // rendered countdown: the repaint is throttled to twice a second,
+                // and the time the user stopped at is the time they stopped at.
+                onFinish={() =>
+                  amrap.update(
+                    finishAmrap(
+                      amrap.state,
+                      shape,
+                      elapsedSeconds(amrap.state.startedAt, now()),
+                    ),
+                  )
                 }
               />
-            )}
 
-            {/*
-              The quickfix's label, on its own terms: two or more movements make
-              a round worth naming, and a single-movement AMRAP is already
-              obvious (`quickfix-amrap-round-label.md`).
-            */}
-            {shape.size > 1 && <p style={labelStyle}>Each round:</p>}
+              {/*
+                Live from the moment the window opens, and still there once it has
+                closed: one tap, on the card, with nothing to submit.
+              */}
+              {view.phase !== 'ready' && (
+                <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
+                  <Counter
+                    labelledBy={roundsLabelId}
+                    value={view.roundsCompleted}
+                    decrementLabel="Take back a round"
+                    incrementLabel="Add a completed round"
+                    onChange={(delta) => amrap.update(countRound(amrap.state, delta))}
+                  />
+                </Card>
+              )}
 
-            <ol
-              aria-label="Movements in this AMRAP"
-              style={{
-                listStyle: 'none',
-                margin: 0,
-                padding: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--spacing-300)',
-              }}
-            >
-              {block.exercises.map((exercise) => (
-                <li key={exercise.exerciseId}>
-                  <Movement exercise={exercise} />
-                </li>
-              ))}
-            </ol>
-          </>
-        )}
+              {/*
+                At the cap and nowhere else: how far into the round the buzzer
+                caught the user is a question that only has an answer once it has.
+              */}
+              {view.phase === 'complete' && (
+                <PartialRound
+                  reps={view.partialRoundReps}
+                  onChange={(reps) =>
+                    amrap.update(setPartialRoundReps(amrap.state, reps))
+                  }
+                />
+              )}
 
-        {/*
-          The score, through the one path every structure completes through. An
-          AMRAP nobody started measured nothing — no rounds, no time — and says
-          so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
-        */}
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={shape.size === 0 ? {} : amrapOutcome(view)}
-          label="Complete AMRAP"
-        />
-      </div>
-    </Card>
+              {/*
+                The quickfix's label, on its own terms: two or more movements make
+                a round worth naming, and a single-movement AMRAP is already
+                obvious (`quickfix-amrap-round-label.md`).
+              */}
+              <Card heading={shape.size > 1 ? 'Each round:' : undefined}>
+                <ol
+                  aria-label="Movements in this AMRAP"
+                  style={{
+                    listStyle: 'none',
+                    margin: 0,
+                    padding: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--spacing-300)',
+                  }}
+                >
+                  {block.exercises.map((exercise) => (
+                    <li key={exercise.exerciseId}>
+                      <Movement exercise={exercise} />
+                    </li>
+                  ))}
+                </ol>
+              </Card>
+            </>
+          )}
+
+          {/*
+            The score, through the one path every structure completes through. An
+            AMRAP nobody started measured nothing — no rounds, no time — and says
+            so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
+          */}
+          <BlockCompletionControl
+            blockId={block.blockId}
+            outcome={shape.size === 0 ? {} : amrapOutcome(view)}
+            label="Complete AMRAP"
+          />
+        </div>
+      </Card>
+    </div>
   )
 }
 
@@ -215,12 +227,14 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The clock, in whichever of its three states it is in.
+ * The card's side of the clock, in whichever of its three states it is in. The
+ * countdown itself is the block's `TimerDisplay`, above the card.
  *
  * Running is the passive one on purpose: the phone is on the floor and the
  * countdown is all it is being asked to do (`amrap-logging.md`, design
  * principle). Complete is static and carries a tick — the window is settled, and
  * a red countdown at `00:00` would be urgency about a deadline that has passed.
+ * Whether the cap or the user settled it is said in words.
  */
 function Window({
   view,
@@ -251,13 +265,11 @@ function Window({
         className="clr-stack--tight"
         style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
       >
-        {view.capSeconds === null ? (
+        {view.capSeconds === null && (
           <p style={{ margin: 0 }}>
             No window prescribed — the clock is yours, and it reads{' '}
             {formatElapsed(view.elapsedSeconds)}.
           </p>
-        ) : (
-          <TimerDisplay seconds={view.remainingSeconds} size="lg" />
         )}
         <Button variant="secondary" size="lg" icon={<Stop />} onClick={onFinish}>
           {view.capSeconds === null ? 'Finish' : 'Finish early'}
@@ -267,27 +279,15 @@ function Window({
   }
 
   return (
-    <div
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-    >
-      <p style={labelStyle}>AMRAP complete</p>
-      <p
-        className="clr-row"
-        style={{
-          margin: 0,
-          fontFamily: 'var(--font-data)',
-          fontSize: 'var(--label-xl-size)',
-          fontWeight: 'var(--font-weight-bold)',
-          letterSpacing: 'var(--tracking-data)',
-          color: 'var(--text-disabled)',
-        }}
-      >
-        {/* The tick is the cue; the colour is deliberately the quiet one. */}
+    <MetricFrame>
+      <span style={labelStyle}>AMRAP complete</span>
+      <p className="clr-row" style={READOUT_STYLE}>
+        {/* The tick is the cue that the window is settled. */}
         <Check />
         {formatElapsed(view.elapsedSeconds)} on the clock
       </p>
-    </div>
+      {view.expired && <p style={CONTEXT_STYLE}>Cap reached</p>}
+    </MetricFrame>
   )
 }
 
@@ -386,21 +386,16 @@ function PartialRound({
         style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
       >
         <p style={{ margin: 0 }}>No partial round recorded.</p>
-        <Button variant="quiet" icon={<Plus />} onClick={() => onChange(0)}>
+        <TextAction onClick={() => onChange(0)}>
+          <Plus size={16} />
           Partial round
-        </Button>
+        </TextAction>
       </div>
     )
   }
 
   return (
-    <div
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
-    >
-      <p id={labelId} style={labelStyle}>
-        Reps into the next round
-      </p>
+    <Card heading={<span id={labelId}>Reps into the next round</span>}>
       <Counter
         labelledBy={labelId}
         value={reps}
@@ -408,10 +403,13 @@ function PartialRound({
         incrementLabel="One more rep in the partial round"
         onChange={(delta) => onChange(reps + delta)}
       />
-      <Button variant="quiet" icon={<X />} onClick={() => onChange(null)}>
-        No partial round
-      </Button>
-    </div>
+      <div>
+        <TextAction onClick={() => onChange(null)}>
+          <X size={16} />
+          No partial round
+        </TextAction>
+      </div>
+    </Card>
   )
 }
 
@@ -458,6 +456,18 @@ const touchTarget = {
   minWidth: 'var(--spacing-1000)',
   minHeight: 'var(--spacing-1000)',
 } as const
+
+/** The settled time: the data face, as every other readout's value is. */
+const READOUT_STYLE = {
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-xl-size)',
+  fontWeight: 'var(--font-weight-bold)',
+  letterSpacing: 'var(--tracking-data)',
+} as const
+
+/** What ended the window: context for the time, and quieter than it. */
+const CONTEXT_STYLE = { margin: 0, color: 'var(--text-secondary)' } as const
 
 const labelStyle = {
   margin: 0,

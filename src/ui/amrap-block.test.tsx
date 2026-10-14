@@ -401,6 +401,162 @@ describe('what it supplies to the shell', () => {
   })
 })
 
+describe('the 0.14.3 card, timer and group grammar', () => {
+  /** An AMRAP already `elapsedMs` into its window, as a refresh would find it. */
+  async function resumeAt(elapsedMs: number, api = completionDouble().api) {
+    const user = userEvent.setup()
+    const storage = fakeStorage()
+    const block = amrapBlock()
+    clock = START
+    const first = renderAmrap(block, storage, api)
+    await start(user)
+    await addRound(user)
+    first.unmount()
+
+    clock = START + elapsedMs
+    return { user, block, ...renderAmrap(block, storage, api) }
+  }
+
+  it('stands the countdown beside the block’s card, never inside one', async () => {
+    const { container } = await resumeAt(60_000)
+
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    const timerCard = timer.closest('.clr-card')
+    expect(timerCard).not.toBeNull()
+    expect(timerCard?.parentElement?.closest('.clr-card')).toBeNull()
+
+    // One timer card and one block card, and no card within either.
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(2)
+    expect(container.querySelector('.clr-card .clr-card')).toBeNull()
+
+    // The controls stay with the block, in its card rather than the timer's.
+    const finish = screen.getByRole('button', { name: 'Finish early' })
+    expect(finish.closest('.clr-card')).not.toBe(timerCard)
+  })
+
+  it('keeps the countdown a labelled timer that is not a live region', async () => {
+    await resumeAt(60_000)
+
+    const timer = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(timer).toHaveTextContent('07:00')
+    for (let node: Element | null = timer; node !== null; node = node.parentElement) {
+      expect(node).not.toHaveAttribute('aria-live')
+    }
+  })
+
+  it('leaves urgency to the timer’s own low state, with nothing added around it', async () => {
+    const calm = await resumeAt(60_000)
+    const resting = screen.getByRole('timer')
+    expect(resting).toHaveClass('clr-chamfer--timer')
+    expect(resting.closest('.clr-bleed')).not.toHaveClass('clr-pulse-micro')
+    calm.unmount()
+
+    const { container } = await resumeAt(472_000)
+    const low = screen.getByRole('timer', { name: 'Time remaining' })
+    expect(low).toHaveTextContent('00:08')
+    expect(low).toHaveClass('clr-chamfer--timer-low')
+
+    // The package's stepped pulse on the timer's own emission — and that is the
+    // only loop on the block.
+    const bleed = low.closest('.clr-bleed')
+    expect(bleed).toHaveClass('clr-pulse-micro')
+    expect(bleed?.parentElement).toBe(container.firstElementChild)
+    expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+
+    // Urgent, and still one tap to bank a round.
+    expect(rounds()).toBe('1')
+  })
+
+  it('labels each group inside the card it belongs to', async () => {
+    const { user } = await resumeAt(60_000)
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await user.click(screen.getByRole('button', { name: 'Partial round' }))
+
+    const card = screen.getByRole('button', { name: 'Complete AMRAP' }).closest('.clr-card')
+    expect(card).not.toBeNull()
+
+    for (const label of ['Rounds completed', 'Reps into the next round', 'Each round:']) {
+      const heading = screen.getByRole('heading', { name: label })
+      expect(heading.closest('.clr-card')).toBe(card)
+    }
+    for (const name of ['Rounds completed', 'Reps into the next round']) {
+      expect(screen.getByRole('group', { name }).closest('.clr-card')).toBe(card)
+    }
+    expect(
+      screen.getByRole('list', { name: 'Movements in this AMRAP' }).closest('.clr-card'),
+    ).toBe(card)
+  })
+
+  it('draws the settled time as the shared bare readout, and says when the cap ended it', async () => {
+    await resumeAt(600_000)
+
+    const readout = screen.getByText('AMRAP complete').closest('.clr-metric-frame')
+    expect(readout).not.toBeNull()
+    // Inside a card the readout takes no frame of its own.
+    expect(readout).not.toHaveClass('clr-chamfer')
+    expect(within(readout as HTMLElement).getByText('08:00 on the clock')).toBeInTheDocument()
+    expect(within(readout as HTMLElement).getByText('Cap reached')).toBeInTheDocument()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('does not call an early finish a cap', async () => {
+    const { user } = await resumeAt(323_000)
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+
+    expect(screen.getByText('05:23 on the clock')).toBeInTheDocument()
+    expect(screen.queryByText('Cap reached')).not.toBeInTheDocument()
+  })
+
+  it('makes the partial-round toggles frameless text actions', async () => {
+    const { user } = await resumeAt(60_000)
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+
+    const open = screen.getByRole('button', { name: 'Partial round' })
+    expect(open).toHaveClass('clr-text-action')
+    expect(open).not.toHaveClass('clr-btn')
+
+    await user.click(open)
+    const close = screen.getByRole('button', { name: 'No partial round' })
+    expect(close).toHaveClass('clr-text-action')
+  })
+
+  it('disables the completion once the block is recorded, and still shows the score', async () => {
+    const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+    const { user } = await resumeAt(600_000, { completeBlock, isBlockRecorded: () => true })
+
+    const recorded = screen.getByRole('button', { name: 'Block recorded' })
+    expect(recorded).toBeDisabled()
+    await user.click(recorded)
+    expect(completeBlock).not.toHaveBeenCalled()
+
+    expect(rounds()).toBe('1')
+    expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
+  })
+
+  it('says a block with nothing to perform in plain copy inside the one card', () => {
+    const { container } = renderAmrap(
+      amrapBlock({ exercises: [] }),
+      fakeStorage(),
+      completionDouble().api,
+    )
+
+    const message = screen.getByText(/every movement in it was swapped out/i)
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(message.closest('.clr-card')).not.toBeNull()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+  })
+
+  it('recovers from an unusable stored record without a timer or a score', () => {
+    const storage = fakeStorage()
+    storage.setItem(WORKOUT_AMRAP_STORAGE_KEY, 'not json')
+    const { container } = renderAmrap(amrapBlock(), storage, completionDouble().api)
+
+    expect(screen.getByRole('button', { name: 'Start AMRAP' })).toBeEnabled()
+    expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
+    expect(screen.queryByText('AMRAP complete')).not.toBeInTheDocument()
+  })
+})
+
 describe('surviving a refresh', () => {
   it('comes back to the rounds that were banked, and to the window that is left', async () => {
     const user = userEvent.setup()
