@@ -1200,37 +1200,46 @@ describe('Workout — the session’s one rest', () => {
     expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
   })
 
-  it('runs one loop when a coaching wait and a low rest are on screen together', async () => {
-    const user = userEvent.setup()
-    await shell({
-      session: activeSession(REST_SECTIONS),
-      exercises: { definition: () => new Promise(() => {}) },
-    })
-    await logSet('back squat', 1)
-    advance(82)
-    returnToForeground()
+  it.each(['skip', 'expiry'] as const)(
+    'hands the one loop back to coaching after urgent rest ends by %s',
+    async (ending) => {
+      const user = userEvent.setup()
+      await shell({
+        session: activeSession(REST_SECTIONS),
+        exercises: { definition: () => new Promise(() => {}) },
+      })
+      await logSet('back squat', 1)
+      advance(82)
+      returnToForeground()
 
-    await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
-    const panel = screen.getByRole('region', { name: COACHING_PANEL })
-    const wait = within(panel)
-      .getAllByRole('status')
-      .find((status) => status.textContent?.includes('Reading coaching for back squat'))
-    if (!wait) throw new Error('no coaching wait')
-    expect(wait).toHaveAttribute('aria-busy', 'true')
+      await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
+      const panel = screen.getByRole('region', { name: COACHING_PANEL })
+      const wait = within(panel)
+        .getAllByRole('status')
+        .find((status) => status.textContent?.includes('Reading coaching for back squat'))
+      if (!wait) throw new Error('no coaching wait')
+      expect(wait).toHaveAttribute('aria-busy', 'true')
 
-    // The low rest outranks the wait; the wait is stilled, not removed.
-    expect(restBars()[0]).toHaveAttribute('data-loop', 'run')
-    expect(wait).toHaveAttribute('data-loop', 'still')
-    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+      // The low rest outranks the wait; the wait is stilled, not removed.
+      expect(restBars()[0]).toHaveAttribute('data-loop', 'run')
+      expect(wait).toHaveAttribute('data-loop', 'still')
+      expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
 
-    // With the rest gone the wait is still a labelled, busy wait, and the view
-    // still runs no more than one loop.
-    await user.click(screen.getByRole('button', { name: 'Skip rest' }))
-    expect(restBars()).toEqual([])
-    expect(wait).toHaveAttribute('aria-busy', 'true')
-    expect(wait).toHaveTextContent('Reading coaching for back squat')
-    expect(document.querySelectorAll('[data-loop="run"]').length).toBeLessThanOrEqual(1)
-  })
+      // The visible wait must regain the loop; a closed dialog owns no hidden claim.
+      if (ending === 'skip') {
+        await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+      } else {
+        advance(8)
+        returnToForeground()
+      }
+      expect(restBars()).toEqual([])
+      expect(wait).toHaveAttribute('aria-busy', 'true')
+      expect(wait).toHaveTextContent('Reading coaching for back squat')
+      expect(wait).toHaveAttribute('data-loop', 'run')
+      expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+      expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    },
+  )
 
   it('groups coaching inside its own card, with every label inside the group', async () => {
     const user = userEvent.setup()
@@ -1284,10 +1293,7 @@ describe('Workout — the session’s one rest', () => {
     expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
     expect(screen.queryByRole('timer', { name: 'Time remaining' })).not.toBeInTheDocument()
     // Nothing on the visible shell is moving: no countdown, no urgency, no loop.
-    const running = Array.from(document.querySelectorAll('[data-loop="run"]')).filter(
-      (node) => node.closest('dialog:not([open])') === null,
-    )
-    expect(running).toEqual([])
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(0)
     expect(document.querySelector('[data-urgent="true"]')).toBeNull()
     expect(document.querySelector('.clr-chamfer--timer-low')).toBeNull()
   })
