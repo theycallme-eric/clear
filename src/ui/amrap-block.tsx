@@ -116,19 +116,18 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
   const roundsLabelId = useId()
 
   return (
-    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+    <div
+      className="clr-stack"
+      style={{ display: 'flex', flexDirection: 'column' }}
+      data-urgent={urgent ? 'true' : undefined}
+      {...(urgent ? loop : {})}
+    >
       {/*
         The shipped timer card, beside the block's card and never within it. Only
         a window that is open and has a deadline has anything to count down.
       */}
       {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
-        <div
-          style={{ display: 'flex', flexDirection: 'column' }}
-          data-urgent={urgent ? 'true' : 'false'}
-          {...loop}
-        >
-          <TimerDisplay seconds={view.remainingSeconds} size="lg" />
-        </div>
+        <TimerDisplay seconds={view.remainingSeconds} size="lg" />
       )}
       <Card>
         <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
