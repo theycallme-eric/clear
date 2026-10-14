@@ -1,0 +1,573 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "home: groups, arrival, tabs, favorites, routing and resume",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:59927"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--no-history--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "no-history",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "no-history"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-0-fcb6f758bb9c3efb.png",
+        "sha256": "ba3345ea5d37a0b65febb2323d0abcdca3867d0526c1702e8d47f1a2fc276b10",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--no-history--desktop--clear.png",
+        "sha256": "263cf5c664270e5dfc66f6dd382acc53a7d7043136460b1c837243d263277153",
+        "bytes": 247644,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-empty--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-empty",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-empty"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-1-0e739aa62ed8eb66.png",
+        "sha256": "014785307b454afe503ae243e5dee818b343a25b168b6e059e1af1c7f2d15d0c",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--favorites-empty--desktop--clear.png",
+        "sha256": "90c71a9fde9a1c378bb252f1b1445fb3b78e5f97875895b51c4f1dce9f1f15f8",
+        "bytes": 247985,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--history-populated--desktop--clear.png",
+        "sha256": "677be097a2b1f4ccb9232c69fed4b37f58cb3ea90223dcbbb9bd0df620b2be92",
+        "bytes": 247938,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--compatible-review-entry--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "compatible-review-entry",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "compatible-review-entry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-5-2c362783c822ac2c.png",
+        "sha256": "98f834aafaa881c96465e107d9e2b5ddfe7632a2398f35220ba8778d4d8f583c",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--compatible-review-entry--transition-destination--desktop--clear.png",
+        "sha256": "6b73c7c294b1830fe1840c01bbf4bd7bddacd3b638dee0686548d3c9c2ce099d",
+        "bytes": 239996,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--favorites-populated--desktop--clear.png",
+        "sha256": "87e2089ad8841fd7e9e1a08217e024c5344c180b46f6f983d7e266a80121aae3",
+        "bytes": 240138,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--reads-loading--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "reads-loading",
+      "variant": "favorites-list",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "reads-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2a0821315cbd7ae14c6700ef-7-e90a6275572d43e9.png",
+        "sha256": "4980338ebae704cc9aa528f0a480f23adb6c0b7da47a8e57fd836e5211c9460d",
+        "variant": "favorites-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--reads-loading--favorites-list--desktop--clear.png",
+        "sha256": "0f045f098d7ce22ea0d5436ca2b493027a4064b87d013c632a24f4ce18a7c4e5",
+        "bytes": 251338,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--read-error-retry--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "read-error-retry",
+      "variant": "favorites-list",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "read-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2a0821315cbd7ae14c6700ef-8-92734a0d6652060b.png",
+        "sha256": "8f641e86470e1e06450b4ae87d9e370a11d8c9de4930fcc5630b68765f306f12",
+        "variant": "favorites-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--read-error-retry--favorites-list--desktop--clear.png",
+        "sha256": "4cea4ee1c6245bdff14bf22dcc686f136256177307d25d744a9b3c365ed0e7ae",
+        "bytes": 249370,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--active-session-resume--desktop--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "active-session-resume",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "active-session-resume"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-b46b5121bb4dcd5ceeec7568-0-d79a4f866a66e5c7.png",
+        "sha256": "4291834826981704b4dc9e70fd06ee7cb01e03ee7a536437bbdd95d3ce2d027c",
+        "variant": null
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "home--home--active-session-resume--desktop--clear.png",
+        "sha256": "519e3337ae911a60e7bdd6361039aa995b5c52ce2173e0b1acd99265ec8e0b0b",
+        "bytes": 214211,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user onboarded through complete_onboarding; sessions are written with persist_session/start_session/complete_session, the favorite through the app’s own Save as favorite."
+    },
+    {
+      "kind": "contract",
+      "text": "Home groups are Train today, This week and the Recent workouts / Favorites tab panel: each a current Card with its 12px accent bar and an internal heading, none nested.",
+      "data": [
+        {
+          "heading": "Train today",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        },
+        {
+          "heading": "This week",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        },
+        {
+          "heading": "Recent workouts",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        }
+      ]
+    },
+    {
+      "kind": "motion",
+      "text": "Home’s three groups arrive as one .clr-boot set, 40ms apart, once; switching tabs is an inline update and replays nothing.",
+      "data": {
+        "arrivals": [
+          {
+            "label": "",
+            "delays": [
+              "0s"
+            ]
+          },
+          {
+            "label": "Train today | This week | Recent workouts",
+            "delays": [
+              "0s",
+              "0.04s",
+              "0.08s"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Home tablist is the package TabBar: ArrowRight moves focus and selection from Recent workouts to Favorites, and the bracket layer frames the focused tab.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "tab",
+        "name": "Favorites",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A completed recent whose stored prescription validates opens in Review, not Session Detail."
+    },
+    {
+      "kind": "contract",
+      "text": "Save as favorite wrote one saved_workouts row for the owner; the Favorites tab lists it after a full reload."
+    },
+    {
+      "kind": "contract",
+      "text": "With an active session the footer is Resume workout and leads to /workout; Generate workout is not offered."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "incompatible-detail-fallback"
+      },
+      "reason": "Home recents and History rows share useOpenHistorySession; the incompatible fallback is exercised on History, where a not-started record is listed.",
+      "sources": [
+        "src/app/useOpenHistorySession.ts",
+        "src/app/Home.tsx",
+        "e2e/design-0143/collections-settings.spec.ts"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "reason": "The suggestion needs a multi-week pattern history; its Card composition is shared with Train today and is covered by Home.test.tsx.",
+      "sources": [
+        "src/app/Home.tsx",
+        "src/app/Home.test.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

@@ -1,0 +1,1681 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "detail: metadata, ruled sections, refusals, restart and favorite",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:59927"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--phone--clear.png",
+        "sha256": "88699c9ed0b330bf8b9ca7922c0d9e0b8bcb49a11366ea0192072816aee2003b",
+        "bytes": 153550,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--phone--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--phone--vapour.png",
+        "sha256": "8e377db9b542e325844cb983e9af90029eb5c4a2f9a02ee522a2b39b407faccd",
+        "bytes": 158254,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--phone--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--phone--signal.png",
+        "sha256": "f6c693a513e745252754c8a579974a4a9d57c7ea7a3cd6f3b54116f41072706a",
+        "bytes": 156658,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--phone--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--phone--mono.png",
+        "sha256": "789a64f2a9d5580782a970ae4c416c0a119daa57bdd9ca42b7b03bd98941956e",
+        "bytes": 81596,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--short--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--short--short--clear.png",
+        "sha256": "589e7cbd00c2e4a1422d13e70c6aeca9b9fec9d5688acfeb4a6a4ed1e3885076",
+        "bytes": 61634,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--section-collapsed--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "section-collapsed",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "section-collapsed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-8-79be81203283092a.png",
+        "sha256": "371ef48095809e6f2fa14c9002c769a0a77ecf8bbf182d1dd2b38139799ba634",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--section-collapsed--phone--clear.png",
+        "sha256": "03a836e46e7dfd15b28751695169e33c681d261c9bda51c4626a2824e7d977bf",
+        "bytes": 140082,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--favorite-save-failure--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "favorite-save-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png",
+        "sha256": "497d6d9a713628ceda59ad7a31a93b65f43d40f492047d19240775bcfe1bc556",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--favorite-save-failure--phone--clear.png",
+        "sha256": "07676c663733c280c45bb2c85305c9d7030e19f64e2b8a764f088de8ca5f800e",
+        "bytes": 156366,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--favorite-save-failure--phone--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "favorite-save-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png",
+        "sha256": "497d6d9a713628ceda59ad7a31a93b65f43d40f492047d19240775bcfe1bc556",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--favorite-save-failure--phone--vapour.png",
+        "sha256": "f2b58aba55cc6ba64e84c2ffd2f0cc96a9d5ed29b71d53e8a1efe2f8bbd3d28e",
+        "bytes": 162879,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--favorite-save-failure--phone--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "favorite-save-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png",
+        "sha256": "497d6d9a713628ceda59ad7a31a93b65f43d40f492047d19240775bcfe1bc556",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--favorite-save-failure--phone--signal.png",
+        "sha256": "22f8ff3d2b44887d6df374571fdb07344a255687996b1ef9263ff4ca742e0b03",
+        "bytes": 163590,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--favorite-save-failure--phone--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "favorite-save-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png",
+        "sha256": "497d6d9a713628ceda59ad7a31a93b65f43d40f492047d19240775bcfe1bc556",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--favorite-save-failure--phone--mono.png",
+        "sha256": "ea2f7a98ca54ebd4e1ea8fbc507c05205fc337cbd2ce7b44dc5e70d1e88cd14c",
+        "bytes": 83657,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-read-validation-error--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-read-validation-error",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-read-validation-error"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-10-f12c4b0c6696813c.png",
+        "sha256": "35ca61552adf6756e427ddb5a830fff3150000da7f7f23e36bd6706da1dcc2bc",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/803f5d3d-a6cf-4843-9c94-2783a2a9c825",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-read-validation-error--phone--clear.png",
+        "sha256": "7deee5fe2c4874e99d0c0b6d6ab434132c5bdad29e75dea8ed16f1ed1a959a19",
+        "bytes": 175771,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-review--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-review",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-review"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-11-f66541ec89a7e933.png",
+        "sha256": "d7317edeb20e74dd1bf0a4f82f6cc5190d6f89585d277742bfe241e119501db9",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-review--transition-destination--phone--clear.png",
+        "sha256": "e203ab57f47f419d36f9aaa3615afb0b0d179af45848486acfdd4cfeead0f209",
+        "bytes": 162540,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--unscored-or-unlogged--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "unscored-or-unlogged",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "unscored-or-unlogged"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-4-97d223665ef3a4c3.png",
+        "sha256": "6bf9d3c7a846258359665646990756bec92a6543364ddb702c29876e1dd6ddbe",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "TASK-035 unlogged session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--unscored-or-unlogged--phone--clear.png",
+        "sha256": "21cca0392a4343274ad7a8de14e607bf73bb34159607097926855c41932e6b75",
+        "bytes": 149185,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-ineligible--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-ineligible"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png",
+        "sha256": "0e37741eb83d0579bf6365f1bb88d855b931f19a370682cc8bf74b3fa7192bdf",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/dfc56114-3e78-4bd5-a708-69721bee998c",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-ineligible--phone--clear.png",
+        "sha256": "3f782c975fa6cb12c88c1c59053b17438d94e8b6962e52a8817dd79e78c25614",
+        "bytes": 174575,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-ineligible--phone--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-ineligible"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png",
+        "sha256": "0e37741eb83d0579bf6365f1bb88d855b931f19a370682cc8bf74b3fa7192bdf",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/dfc56114-3e78-4bd5-a708-69721bee998c",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-ineligible--phone--vapour.png",
+        "sha256": "9fd8e627195ab19f9498d6c575e913e40621388a8d1968c107871668f1f324eb",
+        "bytes": 179425,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-ineligible--phone--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-ineligible"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png",
+        "sha256": "0e37741eb83d0579bf6365f1bb88d855b931f19a370682cc8bf74b3fa7192bdf",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/dfc56114-3e78-4bd5-a708-69721bee998c",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-ineligible--phone--signal.png",
+        "sha256": "ee3d4a021ff83ae4dfb58444ea06e0472d45c7886800fd94d21860eaaf70d38e",
+        "bytes": 177184,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-ineligible--phone--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-ineligible"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png",
+        "sha256": "0e37741eb83d0579bf6365f1bb88d855b931f19a370682cc8bf74b3fa7192bdf",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/dfc56114-3e78-4bd5-a708-69721bee998c",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-ineligible--phone--mono.png",
+        "sha256": "de712f3658f7f1c0ad75a425d597ee59a3d23388ead6ad99e421a80367a0bcd5",
+        "bytes": 92142,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/ad8f1934-f0a1-4ebb-8031-efe35401ef2f",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours--phone--clear.png",
+        "sha256": "51f91fe109731bd24748777010ff83e5facd92ab4bc9e498fcc4a662b2a49608",
+        "bytes": 95921,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--phone--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/ad8f1934-f0a1-4ebb-8031-efe35401ef2f",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours--phone--vapour.png",
+        "sha256": "4f861716e328631c9e2613c6eecfd55a9c522001cb276e7d26f20ab075411a10",
+        "bytes": 99606,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--phone--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/ad8f1934-f0a1-4ebb-8031-efe35401ef2f",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours--phone--signal.png",
+        "sha256": "55b3d1a5319d18db64f44c94da62b7b48c151239e6ff64331cf93fd47d2fa503",
+        "bytes": 97149,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--phone--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/ad8f1934-f0a1-4ebb-8031-efe35401ef2f",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours--phone--mono.png",
+        "sha256": "a711919a5e4d77f6af0f5de7ced901e75de3a83d0c32d022a1a75f784421e14d",
+        "bytes": 39166,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--short--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/ad8f1934-f0a1-4ebb-8031-efe35401ef2f",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours-short--short--clear.png",
+        "sha256": "10c78a1bb72b4ee7b9ae4f9b4452716b5d542b9ad0af7d726c0d2b2b275e9e8a",
+        "bytes": 52650,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "missing",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/0915c710-de7a-4c5c-8887-2355a42d58d3",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--missing--phone--clear.png",
+        "sha256": "a9a8ed5bd63e9674d92bfe534dd54c3a571bc20b8da2f31dbe341cafea93dbfb",
+        "bytes": 95470,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--loading--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "loading",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-2-f1765262c741be63.png",
+        "sha256": "0d28a56b01290e27d3e02b61367d1065644558594464a61a13eecd14dea805b6",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--loading--phone--clear.png",
+        "sha256": "eb5c85657c672c26b400e47d4c3412ced0782dc271b46b973ae0002340bc0ebd",
+        "bytes": 90878,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--phone--clear.png",
+        "sha256": "eeb57025a50270025842af1e50234188e2c21e85d8031ddb19b1ef18325dcbc4",
+        "bytes": 97949,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--phone--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--phone--vapour.png",
+        "sha256": "81739b0d31c91a460875d099b3a0c62cd5b1740388578a9fac70c2b39d7063f6",
+        "bytes": 101543,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--phone--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--phone--signal.png",
+        "sha256": "0a1ef9aae265007b50ec856ccac290b69fe9af0f9254501b0846dfb590946d7f",
+        "bytes": 99478,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--phone--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--phone--mono.png",
+        "sha256": "6da47c2f28f5db104cb912a4cad42878f5f2521c74ba5acf37771a604b9363aa",
+        "bytes": 40775,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--short--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": "short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/7028cfed-aeb2-46e6-b5a0-98d6bdcc8aa8",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--short--short--clear.png",
+        "sha256": "372b632c0c442ffe16b621f46c17d0f55bd5025c5bcba934f5a935786e2cf44f",
+        "bytes": 55538,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Two disposable namespaced users. The viewer owns a logged completed record, an unlogged completed record and a never-started record; the other user owns one completed record."
+    },
+    {
+      "kind": "contract",
+      "text": "Session Detail: one Overview card holds the facts (dl), provenance and the Mood/Notes sub-groups, each with a ruled heading; each section is one card whose later blocks are separated by an internal rule; the outline never skips a level.",
+      "data": {
+        "outline": [
+          {
+            "level": 1,
+            "text": "TASK-035 reviewable session"
+          },
+          {
+            "level": 2,
+            "text": "Overview"
+          },
+          {
+            "level": 3,
+            "text": "Mood"
+          },
+          {
+            "level": 3,
+            "text": "Notes"
+          }
+        ],
+        "blocks": [
+          "none",
+          "solid",
+          "none"
+        ],
+        "subgroups": [
+          {
+            "text": "Mood",
+            "rule": "solid"
+          },
+          {
+            "text": "Notes",
+            "rule": "solid"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "A section heading is a disclosure button: Enter toggles aria-expanded, and the focused trigger is bracketed.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": null,
+        "name": "Standard",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Another user’s completed record and a random id both answer Workout not found with no sections disclosed; Open history returns to /history."
+    },
+    {
+      "kind": "contract",
+      "text": "Back on a directly entered record goes to /history; Back on a record opened from History returns to the prior in-app route."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-active-confirmation"
+      },
+      "reason": "Restart with an active session raises the shared workout-chrome confirmation, whose after evidence belongs to the workout lifecycle group.",
+      "sources": [
+        "src/app/SessionDetail.tsx",
+        "src/ui/workout-chrome.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

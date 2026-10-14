@@ -1,0 +1,713 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "detail: metadata, ruled sections, refusals, restart and favorite",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:59927"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/6660c6c7-1fb8-48d8-ad40-ce1ddf3786cc",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--as-performed-populated--desktop--clear.png",
+        "sha256": "2c14375b79b948efb8969760110f8c027b6beee38686b872889bf9fc68f9b89d",
+        "bytes": 224295,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--section-collapsed--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "section-collapsed",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "section-collapsed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-8-79be81203283092a.png",
+        "sha256": "371ef48095809e6f2fa14c9002c769a0a77ecf8bbf182d1dd2b38139799ba634",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/6660c6c7-1fb8-48d8-ad40-ce1ddf3786cc",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--section-collapsed--desktop--clear.png",
+        "sha256": "364b16355b2b3a91c2ea83a586095efbd5370c55c2c9dc285651accff4797772",
+        "bytes": 220408,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--favorite-save-failure--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "favorite-save-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png",
+        "sha256": "497d6d9a713628ceda59ad7a31a93b65f43d40f492047d19240775bcfe1bc556",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/6660c6c7-1fb8-48d8-ad40-ce1ddf3786cc",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--favorite-save-failure--desktop--clear.png",
+        "sha256": "b09c0088dd8774de899568ebf7ac8d8ed5a6238fbb1df045be93991465f67c92",
+        "bytes": 239838,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-read-validation-error--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-read-validation-error",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-read-validation-error"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-10-f12c4b0c6696813c.png",
+        "sha256": "35ca61552adf6756e427ddb5a830fff3150000da7f7f23e36bd6706da1dcc2bc",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/6660c6c7-1fb8-48d8-ad40-ce1ddf3786cc",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-read-validation-error--desktop--clear.png",
+        "sha256": "da38a1fd2f2042a6aae91ade7c694ee3ce8646bdf048a9ec35832ac3441e6057",
+        "bytes": 263260,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-review--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-review",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-review"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-11-f66541ec89a7e933.png",
+        "sha256": "d7317edeb20e74dd1bf0a4f82f6cc5190d6f89585d277742bfe241e119501db9",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-review--transition-destination--desktop--clear.png",
+        "sha256": "aba413e3e0e6145e14dedac060df80126b11a46a475f3b4f200ca4e3d23ae421",
+        "bytes": 247199,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--unscored-or-unlogged--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "unscored-or-unlogged",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "unscored-or-unlogged"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-4-97d223665ef3a4c3.png",
+        "sha256": "6bf9d3c7a846258359665646990756bec92a6543364ddb702c29876e1dd6ddbe",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/4e7065ad-fa99-4761-9ff5-fd3990cfb911",
+        "heading": "TASK-035 unlogged session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--unscored-or-unlogged--desktop--clear.png",
+        "sha256": "840baad9fa8500077a9497f59afc309cf719e78ee92291fe28ab10778b2d7c03",
+        "bytes": 222116,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--restart-ineligible--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-ineligible"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png",
+        "sha256": "0e37741eb83d0579bf6365f1bb88d855b931f19a370682cc8bf74b3fa7192bdf",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/e4b2893e-c4f0-4944-8eb5-2e3bf05121c5",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--restart-ineligible--desktop--clear.png",
+        "sha256": "52b398ae9108e60a7e20ae8df7a7cf753df76ecdf2973c5d9dd2253279353014",
+        "bytes": 250047,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "not-yours",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/325bac9a-d8e9-42da-ac11-67c7990fe6cc",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--not-yours--desktop--clear.png",
+        "sha256": "b510246b51197c4075a37179f7d8336916f4a1fa03fa85de272fcd825cd9b282",
+        "bytes": 189895,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--missing-or-not-yours--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "variant": "missing",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "missing-or-not-yours"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png",
+        "sha256": "99f3947d4f3e18ab6c2f6a1f164a0cfc3aebc906e665dfd034cf33a8c90549de",
+        "variant": "missing"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/80cf81e5-7e1f-4190-b261-4de5e6b6fb90",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--missing-or-not-yours--missing--desktop--clear.png",
+        "sha256": "b510246b51197c4075a37179f7d8336916f4a1fa03fa85de272fcd825cd9b282",
+        "bytes": 189895,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--loading--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "loading",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-2-f1765262c741be63.png",
+        "sha256": "0d28a56b01290e27d3e02b61367d1065644558594464a61a13eecd14dea805b6",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/4e7065ad-fa99-4761-9ff5-fd3990cfb911",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--loading--desktop--clear.png",
+        "sha256": "80ee3a5be3360706082eeb3ab6b4f840a26e266b3ca0afe81ea814e010fa41c5",
+        "bytes": 192280,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--error-retry--desktop--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png",
+        "sha256": "1f5def7723d52ebac4c952d525dabd9977c01b07fecfbf88c5cedf0bb1324d66",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/4e7065ad-fa99-4761-9ff5-fd3990cfb911",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "detail--session-detail--error-retry--desktop--clear.png",
+        "sha256": "2fe1b732115c4fa8804912418f44ca7d23870be24c0c351ef68652e6ff3284b9",
+        "bytes": 193275,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Two disposable namespaced users. The viewer owns a logged completed record, an unlogged completed record and a never-started record; the other user owns one completed record."
+    },
+    {
+      "kind": "contract",
+      "text": "Session Detail: one Overview card holds the facts (dl), provenance and the Mood/Notes sub-groups, each with a ruled heading; each section is one card whose later blocks are separated by an internal rule; the outline never skips a level.",
+      "data": {
+        "outline": [
+          {
+            "level": 1,
+            "text": "TASK-035 reviewable session"
+          },
+          {
+            "level": 2,
+            "text": "Overview"
+          },
+          {
+            "level": 3,
+            "text": "Mood"
+          },
+          {
+            "level": 3,
+            "text": "Notes"
+          }
+        ],
+        "blocks": [
+          "none",
+          "solid",
+          "none"
+        ],
+        "subgroups": [
+          {
+            "text": "Mood",
+            "rule": "solid"
+          },
+          {
+            "text": "Notes",
+            "rule": "solid"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "A section heading is a disclosure button: Enter toggles aria-expanded, and the focused trigger is bracketed.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": null,
+        "name": "Standard",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Another user’s completed record and a random id both answer Workout not found with no sections disclosed; Open history returns to /history."
+    },
+    {
+      "kind": "contract",
+      "text": "Back on a directly entered record goes to /history; Back on a record opened from History returns to the prior in-app route."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-active-confirmation"
+      },
+      "reason": "Restart with an active session raises the shared workout-chrome confirmation, whose after evidence belongs to the workout lifecycle group.",
+      "sources": [
+        "src/app/SessionDetail.tsx",
+        "src/ui/workout-chrome.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
