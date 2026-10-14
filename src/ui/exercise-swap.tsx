@@ -156,7 +156,7 @@ export function SwapDialog({
           onRetry={onRetry}
           onChoose={onChoose}
         />
-      )
+      )}
     </AppDialog>
   )
 }
