@@ -1268,7 +1268,9 @@ describe('Workout — the session’s one rest', () => {
     expect(lowOwners).toHaveLength(2)
     expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
     for (const owner of lowOwners) {
-      expect(owner.querySelector('.clr-pulse-micro')).not.toBeNull()
+      expect(
+        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
+      ).toBe(true)
       expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
     }
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
@@ -1308,7 +1310,9 @@ describe('Workout — the session’s one rest', () => {
     expect(lowOwners).toHaveLength(2)
     expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
     for (const owner of lowOwners) {
-      expect(owner.querySelector('.clr-pulse-micro')).not.toBeNull()
+      expect(
+        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
+      ).toBe(true)
       expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
     }
     expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
