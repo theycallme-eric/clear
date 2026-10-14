@@ -1,0 +1,1304 @@
+{
+  "version": 1,
+  "task": "TASK-036",
+  "issue": 382,
+  "consumer": "workout-lifecycle",
+  "phase": "after",
+  "caseTitle": "structures: seven renderers, rest urgency, timers, coaching, effort, swap, finish",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:63518"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-standard-superset-circuit--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-standard-superset-circuit",
+      "variant": "standard",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-standard-superset-circuit"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-3-7743e45827c4b303.png",
+        "sha256": "8b09fe5854ff26556e5d97aebd923f1891888f92e5fa6f9a0f28cabedb206294",
+        "variant": "standard"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-standard-superset-circuit--standard--tablet--clear.png",
+        "sha256": "e8459aa656457bb04d8cc958b406de62333ad4ebcd8e580c7ab3c766c3553391",
+        "bytes": 225224,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-standard-superset-circuit--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-standard-superset-circuit",
+      "variant": "swap-options",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-standard-superset-circuit"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-3-7743e45827c4b303.png",
+        "sha256": "8b09fe5854ff26556e5d97aebd923f1891888f92e5fa6f9a0f28cabedb206294",
+        "variant": "standard"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-standard-superset-circuit--swap-options--tablet--clear.png",
+        "sha256": "5c24af4dfb759511c1c726846b568d7fcc396b72d1daeadfb97cddc462d45c3e",
+        "bytes": 620426,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--rest-running-urgent-skipped--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "rest-running-urgent-skipped",
+      "variant": "running",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "rest-running-urgent-skipped"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-4-760ab910cdb8bb0a.png",
+        "sha256": "dc2ce300f1a34362291854cab04b8afc08bc6218fe12b26d8ff35800b45b52e2",
+        "variant": "running-urgent"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--rest-running-urgent-skipped--running--tablet--clear.png",
+        "sha256": "4a929137c441b009b1b2b333c40ff2487adfa84a0bb00931a80f7431f57c161a",
+        "bytes": 229389,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--rest-running-urgent-skipped--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "rest-running-urgent-skipped",
+      "variant": "running-urgent",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "rest-running-urgent-skipped"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-4-760ab910cdb8bb0a.png",
+        "sha256": "dc2ce300f1a34362291854cab04b8afc08bc6218fe12b26d8ff35800b45b52e2",
+        "variant": "running-urgent"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-micro-pulse"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--rest-running-urgent-skipped--running-urgent--tablet--clear.png",
+        "sha256": "904279c5ed774ce6583fde0a760a0c3443704acf9a08bd97bae6d48cdcbddf77",
+        "bytes": 230096,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--rest-running-urgent-skipped--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "rest-running-urgent-skipped",
+      "variant": "rest-with-coaching-loading",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "rest-running-urgent-skipped"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-4-760ab910cdb8bb0a.png",
+        "sha256": "dc2ce300f1a34362291854cab04b8afc08bc6218fe12b26d8ff35800b45b52e2",
+        "variant": "running-urgent"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-micro-pulse"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--rest-running-urgent-skipped--rest-with-coaching-loading--tablet--clear.png",
+        "sha256": "1c893574d3182a8925927f577d396c5d0c8e86fe80431fb65c02dcb6a86f8fa7",
+        "bytes": 223089,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-standard-superset-circuit--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-standard-superset-circuit",
+      "variant": "coaching-open",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-standard-superset-circuit"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-3-7743e45827c4b303.png",
+        "sha256": "8b09fe5854ff26556e5d97aebd923f1891888f92e5fa6f9a0f28cabedb206294",
+        "variant": "standard"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-micro-pulse"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-standard-superset-circuit--coaching-open--tablet--clear.png",
+        "sha256": "8b36e9f8fcd2315dea5de296c14243c3259df75d928f1bf7529de5f348c68e66",
+        "bytes": 234724,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--rest-running-urgent-skipped--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "rest-running-urgent-skipped",
+      "variant": "skipped",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "rest-running-urgent-skipped"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-5-5c7632044d455af2.png",
+        "sha256": "af33dff46d4be53455a12a0442ff9e5e94bb47f31b66d7c5837ef48999cd542f",
+        "variant": "skipped"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--rest-running-urgent-skipped--skipped--tablet--clear.png",
+        "sha256": "cdd73e7e5f859a698cc0dc8604c7851192e929c8fb2cfe0b5a0f77ea9c09bf23",
+        "bytes": 230759,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--block-effort-dismissed-or-recorded--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "block-effort-dismissed-or-recorded",
+      "variant": "question",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "block-effort-dismissed-or-recorded"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-6-fa9b1743286ab797.png",
+        "sha256": "29368efad24ca664b0ba14c5c98cbda3a24d29d6edc5e0d15af6fff144551543",
+        "variant": "question"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--block-effort-dismissed-or-recorded--question--tablet--clear.png",
+        "sha256": "045743c40f9509298639b004c9d7ffb9792bef40af3e1a54dda6cdfc99c4fd39",
+        "bytes": 745468,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--block-effort-dismissed-or-recorded--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "block-effort-dismissed-or-recorded",
+      "variant": "recorded",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "block-effort-dismissed-or-recorded"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-8-7f41edce468a3da8.png",
+        "sha256": "c6a5a9529d5a18bc0294be92d908d43a475a1340df5ed99d02e918722d0ca110",
+        "variant": "recorded"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--block-effort-dismissed-or-recorded--recorded--tablet--clear.png",
+        "sha256": "42c635dfe6b410b0122acbbc1a77d12bd65e9c7be8d3059dda8bf342cab5ca4a",
+        "bytes": 223378,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-standard-superset-circuit--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-standard-superset-circuit",
+      "variant": "superset",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-standard-superset-circuit"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-9-02507ae87e3d1e17.png",
+        "sha256": "79697a0dfbed1090b2120d4186084ff77c38a2eac674f1d01435480001bbfb6e",
+        "variant": "superset"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-standard-superset-circuit--superset--tablet--clear.png",
+        "sha256": "ffc456eb5502261ced61ea370295a61d029e0bf7c891b1df0db7291c90a8784e",
+        "bytes": 236900,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-standard-superset-circuit--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-standard-superset-circuit",
+      "variant": "circuit",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-standard-superset-circuit"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-10-b5aa8c0c93d9f2d1.png",
+        "sha256": "0016c92707f26930c8db598ae494e196d6289390f08dafe0b66ae2775ab540f6",
+        "variant": "circuit"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-standard-superset-circuit--circuit--tablet--clear.png",
+        "sha256": "2227d65f185315b2878e4033f82e976700597765d4c0233e29853fc9279a5dc4",
+        "bytes": 235341,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "emom-ready",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--emom-ready--tablet--clear.png",
+        "sha256": "07326408853f61443f6e320fc8a4bdb6f0df64174611aa031d7f38d4a331b023",
+        "bytes": 227554,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "emom-active",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--emom-active--tablet--clear.png",
+        "sha256": "e190bd1042ff9be0489ccc0e0c40de8439da21c65565bc163c0f8370d30ff1ce",
+        "bytes": 229538,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "emom-urgent",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-micro-pulse"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--emom-urgent--tablet--clear.png",
+        "sha256": "3a3f045727af1ce01c0888ae08703622184b23756937d2b7b77969e0d0f52ae9",
+        "bytes": 230752,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "amrap-active",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--amrap-active--tablet--clear.png",
+        "sha256": "16fc1d8293d0787ec4228368344487a4d397bc33762d57a2333e1e777382c899",
+        "bytes": 229146,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "for-time-active",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--for-time-active--tablet--clear.png",
+        "sha256": "b638209b8f4a8cfec297187c9c8e67643915e624ed0252d0b4fa9bd146643069",
+        "bytes": 227065,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-emom-amrap-for-time-ladder--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-emom-amrap-for-time-ladder",
+      "variant": "ladder-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-emom-amrap-for-time-ladder"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-11-40e64ad36d2cfba0.png",
+        "sha256": "14c25bb7e0341f3c10b40137e1cc0491d7f05cfba20e299f41437633f162eef3",
+        "variant": "emom"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--active-emom-amrap-for-time-ladder--ladder-selected--tablet--clear.png",
+        "sha256": "e56b7e90341351710517b9718f2fe6584ff4735579ea13d636c4ba19ac6e33ad",
+        "bytes": 232538,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--abandon-confirmation--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "abandon-confirmation",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "abandon-confirmation"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-16-e35a82cdc50aa597.png",
+        "sha256": "ad7198b41acead85451f938800a84d27514b04903c05a22d69a7a59e50f68300",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--abandon-confirmation--tablet--clear.png",
+        "sha256": "10ccb4eb12f0ae53b1fc2895fa73840b70dd227f535c809a9ebcd452b2286a82",
+        "bytes": 754596,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--finish-pending--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "finish-pending",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "finish-pending"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-17-ba8581f6e963e6bc.png",
+        "sha256": "17c620fbc918acefe43a71f7983d0b533e8c250302175909f52073e39223a9b4",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--finish-pending--tablet--clear.png",
+        "sha256": "f21ec2d1540b744a67ac73ae1fb5705bcb0b4de91529bd2e051fbe2677eeb3f4",
+        "bytes": 232093,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--finish-error-retry--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "finish-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "finish-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-18-186dd3450e33600c.png",
+        "sha256": "34ee53b53ae660587872b39059b2b883852bf8b5c492f1629110098639ce6e3a",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--finish-error-retry--tablet--clear.png",
+        "sha256": "c7e905c4894aa8af8e20d5006430d59074b04856bbb7bbe4df6fe0c41f44a0d3",
+        "bytes": 767410,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--finish-summary--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "finish-summary",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "finish-summary"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-19-c5bbb2d718ceb09b.png",
+        "sha256": "34d83f78af7eab75779154f1aa2edb0665dc9d500603f0dfcc51670c3420f218",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "structures--workout--finish-summary--tablet--clear.png",
+        "sha256": "bd86bd786bb4b54d8d76b9e8c04ac3bd12eb8d8e374f803c7df9049fc3d7973e",
+        "bytes": 197040,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A persisted seven-structure prescription started through start_session; the clock is Playwright's, advanced and paused so urgency and timing are observed at exact points."
+    },
+    {
+      "kind": "containment",
+      "text": "Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live timer card.",
+      "data": {
+        "cards": 3,
+        "nested": 0,
+        "fieldsOutsideCards": [],
+        "radius": 0
+      }
+    },
+    {
+      "kind": "timer",
+      "text": "Paused at two clock points six seconds apart, Session time advanced by six and the rest counted down by six: one wall clock drives both.",
+      "data": {
+        "before": {
+          "session": 17,
+          "rest": 15
+        },
+        "after": {
+          "session": 23,
+          "rest": 9
+        }
+      }
+    },
+    {
+      "kind": "timer",
+      "text": "Rest low state: the card takes the timer-low role, digits cross colour over 0.4s in four steps, the card dims to 80% on the 4s two-step pulse, and no glow is added to the timer.",
+      "data": {
+        "name": "Time remaining",
+        "role": "timer",
+        "live": null,
+        "cardDepth": 1,
+        "digits": "00:09",
+        "crossing": {
+          "duration": "0.4s",
+          "timing": "steps(4)"
+        },
+        "digitGlow": {
+          "own": "0px 0px 2px, 0px 0px 6px",
+          "body": "0px 0px 2px, 0px 0px 6px",
+          "inline": null
+        },
+        "low": true,
+        "pulse": {
+          "animation": "clr-micro-pulse",
+          "duration": "4s",
+          "timing": "steps(2)",
+          "minimumOpacity": 0.8,
+          "running": "running",
+          "boxShadow": "none"
+        }
+      }
+    },
+    {
+      "kind": "motion",
+      "text": "Coaching loading beside an urgent rest: the rest pulse holds the one interface loop and the loading region is stilled but still busy.",
+      "data": {
+        "running": [
+          "Rest"
+        ],
+        "stilled": 3
+      }
+    },
+    {
+      "kind": "containment",
+      "text": "Coaching: cues, regression and the note field are ruled sub-groups with their labels inside one card, never a card in a card.",
+      "data": {
+        "sameCard": true,
+        "regressionInSameCard": true,
+        "noteInSameCard": true
+      }
+    },
+    {
+      "kind": "timer",
+      "text": "EMOM low state: the shipped TimerDisplay is its own card beside the block card, steps its colour over 0.4s and pulses to 80% on the one loop, with no extra glow.",
+      "data": {
+        "name": "Time remaining",
+        "role": "timer",
+        "live": null,
+        "cardDepth": 1,
+        "digits": "00:08",
+        "crossing": {
+          "duration": "0.4s",
+          "timing": "steps(4)"
+        },
+        "digitGlow": {
+          "own": "0px 0px 2px, 0px 0px 6px",
+          "body": "0px 0px 2px, 0px 0px 6px",
+          "inline": null
+        },
+        "low": true,
+        "pulse": {
+          "animation": "clr-micro-pulse",
+          "duration": "4s",
+          "timing": "steps(2)",
+          "minimumOpacity": 0.8,
+          "running": "running",
+          "boxShadow": "none"
+        }
+      }
+    },
+    {
+      "kind": "containment",
+      "text": "Finish workout stays inside the 390x320 short viewport on the last section (TASK-040's recorded overflow condition, now executed)."
+    },
+    {
+      "kind": "contract",
+      "text": "A failed completion keeps the session active behind its dialog; Finish again completes the stored session and lands on Summary."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "rest-running-urgent-skipped"
+      },
+      "reason": "No generic pause exists in the product: the rest is extended (Add 30s) or skipped, and timed blocks start and finish. \"Paused\" is pictured as the clock held at exact points, not as a pause control.",
+      "sources": [
+        "src/ui/workout-chrome.tsx",
+        "src/ui/emom-block.tsx",
+        "src/ui/amrap-block.tsx",
+        "src/ui/for-time-block.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

@@ -1,0 +1,912 @@
+{
+  "version": 1,
+  "task": "TASK-036",
+  "issue": 382,
+  "consumer": "workout-lifecycle",
+  "phase": "after",
+  "caseTitle": "review-boundaries: actual favorite history loading/error/retry and missing-location regenerate fallback",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:64892"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-loading--desktop--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-loading",
+      "variant": "favorite-real-history-read",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-0-1873e41929262bfd.png",
+        "sha256": "b2ab3848195d2bbfdba7377c0521c38d42de56d11f176f99e39d922176194666",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-loading--favorite-real-history-read--desktop--clear.png",
+        "sha256": "7698b4d3c94c666ddc50ebfe080d73306a2e6108788a0facbc28bec421feb230",
+        "bytes": 237824,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-loading--desktop--vapour",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-loading",
+      "variant": "favorite-real-history-read",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-0-1873e41929262bfd.png",
+        "sha256": "b2ab3848195d2bbfdba7377c0521c38d42de56d11f176f99e39d922176194666",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-loading--favorite-real-history-read--desktop--vapour.png",
+        "sha256": "443867340031f8c2acff9aa15ddb111df0e5aa1e40e178d1a5e2a8c730381a95",
+        "bytes": 248105,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-loading--desktop--signal",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-loading",
+      "variant": "favorite-real-history-read",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-0-1873e41929262bfd.png",
+        "sha256": "b2ab3848195d2bbfdba7377c0521c38d42de56d11f176f99e39d922176194666",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-loading--favorite-real-history-read--desktop--signal.png",
+        "sha256": "d2c07528419ff06f553e69b62766c679ca87cd43f03615ff1c716bce7573d773",
+        "bytes": 242216,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-loading--desktop--mono",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-loading",
+      "variant": "favorite-real-history-read",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-0-1873e41929262bfd.png",
+        "sha256": "b2ab3848195d2bbfdba7377c0521c38d42de56d11f176f99e39d922176194666",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-loading--favorite-real-history-read--desktop--mono.png",
+        "sha256": "008f2753b32673e5e3fd41c1e7c56c26f729833dc1822c1d2c5298ac120e9b6f",
+        "bytes": 110597,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-error",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-error--desktop--clear.png",
+        "sha256": "990c9cf891535a970ee8213f0bba70fc169dd62d0e7bd4d4ad214636ac2e42bb",
+        "bytes": 232936,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--vapour",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-error",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-error--desktop--vapour.png",
+        "sha256": "a58126798a54344c2137c5beab11d22e78817723417d7850600d8bf4638ff3cf",
+        "bytes": 248329,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--signal",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-error",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-error--desktop--signal.png",
+        "sha256": "d6affa9253d4ab8ed428080df26dbf42eb3ccf4ab997afe847c617b376ece3b6",
+        "bytes": 246900,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--mono",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-error",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-error--desktop--mono.png",
+        "sha256": "84288a02e73f5a15775858fb94c6a120307c43eb97c285987648b38204f2ed25",
+        "bytes": 111436,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-retry",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-retry--desktop--clear.png",
+        "sha256": "d3e0dde6e4a61d46310d52d1f1452a3c57231be7d562b66bfc72fe5dbd2d4d53",
+        "bytes": 258963,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--vapour",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-retry",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-retry--desktop--vapour.png",
+        "sha256": "0045975ca7382ac1b5c363c547d0ccfc87637493d612033dc5569ebe3b52f9b3",
+        "bytes": 270733,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--signal",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-retry",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-retry--desktop--signal.png",
+        "sha256": "cbce591b183a610ae7aff35b2ed2ebc7bb5de9c0bc8ae58c3b67661f2dff880d",
+        "bytes": 261583,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--favorite-progression-error-retry--desktop--mono",
+      "screen": "Review",
+      "route": "/review",
+      "state": "favorite-progression-error-retry",
+      "variant": "favorite-real-history-retry",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-fed250db1ba54ecedaa7b07b-1-85201208fce3e1aa.png",
+        "sha256": "e3660ed2e22c49d9154b35efe13a887ca6e8912046b9accbe8d4ddaab47da0f3",
+        "variant": "attempts-list"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--favorite-progression-error-retry--favorite-real-history-retry--desktop--mono.png",
+        "sha256": "90fe11716c83bae2847eee5b8c76ab93caca95a10de715eeb985880607726d9e",
+        "bytes": 118592,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--missing-or-invalid-handoff--desktop--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "missing-or-invalid-handoff",
+      "variant": "regenerate-missing-location-fallback",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "missing-or-invalid-handoff"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-15-925f113aa245f2c9.png",
+        "sha256": "fa4afc075c6fdadf34dc1de60e90b1a778e59187a7d046546c44475e76f7382f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--missing-or-invalid-handoff--regenerate-missing-location-fallback--desktop--clear.png",
+        "sha256": "1b7e03f92c7d49a80d594be7b087b9ac4eabc1170f14a888b6beeb5edcd9c0bc",
+        "bytes": 223113,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--missing-or-invalid-handoff--desktop--vapour",
+      "screen": "Review",
+      "route": "/review",
+      "state": "missing-or-invalid-handoff",
+      "variant": "regenerate-missing-location-fallback",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "missing-or-invalid-handoff"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-15-925f113aa245f2c9.png",
+        "sha256": "fa4afc075c6fdadf34dc1de60e90b1a778e59187a7d046546c44475e76f7382f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--missing-or-invalid-handoff--regenerate-missing-location-fallback--desktop--vapour.png",
+        "sha256": "32cb99599e73bac3a4e38bc200f8e7cdc83247084f1f325f118362370d9c121a",
+        "bytes": 235635,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--missing-or-invalid-handoff--desktop--signal",
+      "screen": "Review",
+      "route": "/review",
+      "state": "missing-or-invalid-handoff",
+      "variant": "regenerate-missing-location-fallback",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "missing-or-invalid-handoff"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-15-925f113aa245f2c9.png",
+        "sha256": "fa4afc075c6fdadf34dc1de60e90b1a778e59187a7d046546c44475e76f7382f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--missing-or-invalid-handoff--regenerate-missing-location-fallback--desktop--signal.png",
+        "sha256": "9d354bedea90dfee530b58b303d0c76f77f85e9f67ba90a1382e0c9f68ddccfa",
+        "bytes": 230139,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--missing-or-invalid-handoff--desktop--mono",
+      "screen": "Review",
+      "route": "/review",
+      "state": "missing-or-invalid-handoff",
+      "variant": "regenerate-missing-location-fallback",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "missing-or-invalid-handoff"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-15-925f113aa245f2c9.png",
+        "sha256": "fa4afc075c6fdadf34dc1de60e90b1a778e59187a7d046546c44475e76f7382f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review-boundaries--review--missing-or-invalid-handoff--regenerate-missing-location-fallback--desktop--mono.png",
+        "sha256": "fc536555f1a60ef85153cf3bcf3df4a058b930166bc3abf2dd72459c02c98b9c",
+        "bytes": 106208,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "contract",
+      "text": "The favorite was saved through the actual Summary action; its real progression read is held/fails on one boundary, retries to the actual first completion (confirmed by its stored counter), and never blocks Start or dispatches generation."
+    },
+    {
+      "kind": "contract",
+      "text": "A real completed fixture with no location follows History Restart into Review; confirmed Regenerate routes to the existing Generate form without a provider request. No route, persistence or generation code changed."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

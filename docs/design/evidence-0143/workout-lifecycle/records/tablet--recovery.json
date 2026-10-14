@@ -1,0 +1,524 @@
+{
+  "version": 1,
+  "task": "TASK-036",
+  "issue": 382,
+  "consumer": "workout-lifecycle",
+  "phase": "after",
+  "caseTitle": "recovery: active read, set-sync failure and retry, re-entry, abandon error and home",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:62877"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--no-active-session-home--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "no-active-session-home",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "no-active-session-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-925e1ce7f998fd7f7c616e09-0-8f4458dd1cb0131d.png",
+        "sha256": "c0e23785fb2f3a58a66befddec1ff7c2cca48411535975ea0626af3adc52e677",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--no-active-session-home--tablet--clear.png",
+        "sha256": "a27febbff7bc5a44e6c1d88e636178c4823ab2c8d31ba7552764664af6be53e0",
+        "bytes": 242320,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--no-completed-session-home--tablet--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "no-completed-session-home",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "no-completed-session-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-925e1ce7f998fd7f7c616e09-1-d2e63c9436a5169f.png",
+        "sha256": "e68e1fe6510dd1f9ef00be8f308d9386456bc2c23e549481c2cb4b814997f6e5",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--summary--no-completed-session-home--tablet--clear.png",
+        "sha256": "5a6feb6b013ab80b18813db093f150f6c95ee8aba36e0a6054889898ff3230b0",
+        "bytes": 242425,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-read-loading--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-read-loading",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-read-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-34620744cea479747979166b-0-23a7aa2cd08b7a56.png",
+        "sha256": "f627e30fd5b2785c9598a5ee5f884469f5daaeb500e93e1d57beae39d9a3dd34",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--active-read-loading--tablet--clear.png",
+        "sha256": "7ea636f103564fea7bcc95f48b8d74ce15d2489d1d46a3b32fb7d69dc707be56",
+        "bytes": 144760,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--active-read-error-retry--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "active-read-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "active-read-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-34620744cea479747979166b-1-750a5a634ec958cb.png",
+        "sha256": "be619aaa1327f7427164f397fdc48abc1463e2a61597c9cb73e3c309fea69b8f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--active-read-error-retry--tablet--clear.png",
+        "sha256": "33f643dac8bbd7bef2f8e4b4da91bfa011e29dfcea05097ac8fff7ec934e6ff7",
+        "bytes": 154872,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--set-sync-sustained-failure-retry--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "set-sync-sustained-failure-retry",
+      "variant": "sustained-failure",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "set-sync-sustained-failure-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-4a24f22ee93ac5293d98b603-1-ed432cd2d67f89fd.png",
+        "sha256": "a87b83c6012e1b94a64713d31b5ae0bf4a77f96bce19bd9b237fcf6b707fcf65",
+        "variant": "sustained-failure"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--set-sync-sustained-failure-retry--sustained-failure--tablet--clear.png",
+        "sha256": "3357d1f3a3f0bbc545cff1fcd7e87883a3d0a35078a4526535fa6b03f40e344b",
+        "bytes": 272423,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--set-sync-sustained-failure-retry--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "set-sync-sustained-failure-retry",
+      "variant": "retry-confirmed",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "set-sync-sustained-failure-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-4a24f22ee93ac5293d98b603-1-ed432cd2d67f89fd.png",
+        "sha256": "a87b83c6012e1b94a64713d31b5ae0bf4a77f96bce19bd9b237fcf6b707fcf65",
+        "variant": "sustained-failure"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--set-sync-sustained-failure-retry--retry-confirmed--tablet--clear.png",
+        "sha256": "6c385e6b04f3eeec7ec786fa7feebbe45e748915b22d76ed1a013377cdcf70ad",
+        "bytes": 239845,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--background-resume--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "background-resume",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "background-resume"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-4a24f22ee93ac5293d98b603-3-c9f5cb473789410f.png",
+        "sha256": "f743daa1278b59befe0260b1ab93cc2cdafe56626d11a38908fdf82eaf3e98df",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--background-resume--tablet--clear.png",
+        "sha256": "f88d974de4652b74881f156c9dcfd4350238eebfefd160ea2a791f6e070b3aed",
+        "bytes": 232392,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--abandon-error-retry--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "abandon-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "abandon-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3fcd02d7ee1623310d265888-0-cef479a5ff5d972f.png",
+        "sha256": "f79d82b3786f3c1957bd7fd7c9ea15574d3c6e04e8c019d13ad8acbb7441ed4d",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--abandon-error-retry--tablet--clear.png",
+        "sha256": "f87c9ae8725f02b864b8fd13953d7461caa73624ed922cc93fcfc8571eaae3d5",
+        "bytes": 787738,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "workout--workout--abandon-home--tablet--clear",
+      "screen": "Workout",
+      "route": "/workout",
+      "state": "abandon-home",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Workout",
+        "route": "/workout",
+        "state": "abandon-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3fcd02d7ee1623310d265888-1-43d2e5ddf15aa56a.png",
+        "sha256": "5f8ad931c62190f697bc96f4e9a7cc1f98316e938b569fb04b4cb11f9774dfc0",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "recovery--workout--abandon-home--tablet--clear.png",
+        "sha256": "3ff9767dc09b4558ef055738ef6cd72ce3d26db1a534f897bac123e7654c2462",
+        "bytes": 221975,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "contract",
+      "text": "A set whose writes fail stays on the device with one factual notice; Try now sends the same set and the database then holds exactly one row."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

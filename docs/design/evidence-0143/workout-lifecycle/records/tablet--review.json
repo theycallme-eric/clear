@@ -1,0 +1,692 @@
+{
+  "version": 1,
+  "task": "TASK-036",
+  "issue": 382,
+  "consumer": "workout-lifecycle",
+  "phase": "after",
+  "caseTitle": "review: briefing geometry, load suggestion, regenerate, start busy, failure and start",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:63035"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--validated-workout--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "validated-workout",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "validated-workout"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-5-885713b2aeb407b8.png",
+        "sha256": "80754b1e5a383d8e197536ab5b7cf82f99489fe608e267d599e4909b6e10f8c2",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--validated-workout--tablet--clear.png",
+        "sha256": "e7cd4950a680de47a7bffb6776fafe6452a7d649a9bd499ca12aa981254886e3",
+        "bytes": 236125,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--validated-workout--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "validated-workout",
+      "variant": "load-suggestion-explained",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "validated-workout"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-5-885713b2aeb407b8.png",
+        "sha256": "80754b1e5a383d8e197536ab5b7cf82f99489fe608e267d599e4909b6e10f8c2",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--validated-workout--load-suggestion-explained--tablet--clear.png",
+        "sha256": "66447cdb97eb1a5f2f1dd4cbd7ab9107d13ab9cd4f3f21d17019cd47b092f5f5",
+        "bytes": 727630,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--validated-workout--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "validated-workout",
+      "variant": "section-collapsed",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "validated-workout"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-5-885713b2aeb407b8.png",
+        "sha256": "80754b1e5a383d8e197536ab5b7cf82f99489fe608e267d599e4909b6e10f8c2",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--validated-workout--section-collapsed--tablet--clear.png",
+        "sha256": "75bf111747cc5fe24e983479eb923d4d743f339ee66f41f05a677f2d476e9b33",
+        "bytes": 239657,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--regenerate-confirmation--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "regenerate-confirmation",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "regenerate-confirmation"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-6-a62d8898c41f030e.png",
+        "sha256": "947ed1427872010852cec9db1863d7e89266d093e796ffd2fd26f2f9ee7052f6",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--regenerate-confirmation--tablet--clear.png",
+        "sha256": "d8a61817a0a6f7d2b9e3d7c86c26baa4e51e60912fb885cfa836894ff1b749eb",
+        "bytes": 769364,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--start-busy--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "start-busy",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "start-busy"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-0-5374a08230ac8ec1.png",
+        "sha256": "9d8c3cf8517119fb5b7ee6d8162db29ac7de0e2992ad72694c598d8e8cdab1e4",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--start-busy--tablet--clear.png",
+        "sha256": "eefa2a49748a19dc580007279a7df6f137957acec0a61a460fff8b9b8799c56d",
+        "bytes": 244436,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--start-failure--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "start-failure",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "start-failure"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-1-7155842e229b6dcc.png",
+        "sha256": "7bba5c3762e1a1c3ed7a166f249921c0069ef11443e7ead9b583551c2189bb07",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-036 lifecycle spectrum",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--start-failure--tablet--clear.png",
+        "sha256": "88893e9b2b0b4cf753749b354ffe51b1646d4fb4c89342c11b75b66666e8afab",
+        "bytes": 782669,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--regenerating-cancel--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "regenerating-cancel",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "regenerating-cancel"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-aa0579c123000bc5e6c90aee-0-59b964d12311cad9.png",
+        "sha256": "cb6bdd69299fd57d20462c644077e42291667ef884a3163cb5e19a5ca69f181e",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "Generating session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--regenerating-cancel--tablet--clear.png",
+        "sha256": "3406a09597c740a6baf9c53d6faea726da72d286a580892562f1c7db441b6c77",
+        "bytes": 170100,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--regenerating-cancel--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "regenerating-cancel",
+      "variant": "cancelled-discarded",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "regenerating-cancel"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-aa0579c123000bc5e6c90aee-0-59b964d12311cad9.png",
+        "sha256": "cb6bdd69299fd57d20462c644077e42291667ef884a3163cb5e19a5ca69f181e",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "Nothing to review",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--regenerating-cancel--cancelled-discarded--tablet--clear.png",
+        "sha256": "1698cda0f4b1a570f7606656f2dbae093e2791b4d45cf0903c8259f61e627c86",
+        "bytes": 182018,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--missing-or-invalid-handoff--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "missing-or-invalid-handoff",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "missing-or-invalid-handoff"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-15-925f113aa245f2c9.png",
+        "sha256": "fa4afc075c6fdadf34dc1de60e90b1a778e59187a7d046546c44475e76f7382f",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "Nothing to review",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--missing-or-invalid-handoff--tablet--clear.png",
+        "sha256": "8ca963c3b4f2175c3ac9409dbfa2b8360a8c358aadddb86169e5f33c397a319f",
+        "bytes": 171126,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "review--review--start-workout--tablet--clear",
+      "screen": "Review",
+      "route": "/review",
+      "state": "start-workout",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "start-workout"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-01859935e22c7daed931c2c1-2-f67a4e2d48c6b5ce.png",
+        "sha256": "3d51caaa7058e56a5be85f8083fc004a6b06b5924d48ab330bfb3fb031ecdb6d",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/workout",
+        "heading": "Workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "review--review--start-workout--tablet--clear.png",
+        "sha256": "5009468bac098ab373cbf1f6b8d4f9c0cd48544ffcde3ec01a2c77b04b1e282a",
+        "bytes": 227197,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A completed persisted fixture with one weighted working set; anchors are the app's own deriveAnchors over the real anchor_evidence read, stored through set_load_anchors. Review is reached through History Restart, not a sample screen."
+    },
+    {
+      "kind": "containment",
+      "text": "Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start and Regenerate pinned in the footer.",
+      "data": {
+        "cards": 8,
+        "nested": 0,
+        "fieldsOutsideCards": [],
+        "radius": 0
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The load suggestion is the public TextAction: a real button with the chevron, a 40px target, reached by Tab with keyboard focus and opening its dialog on Enter.",
+      "data": {
+        "action": {
+          "tag": "button",
+          "type": "button",
+          "chevron": "\"›\"",
+          "height": 40,
+          "framed": true,
+          "name": "Suggested 90 lb · +1.82 lb · Low confidence · 1 session",
+          "popup": "dialog"
+        },
+        "focused": {
+          "tag": "button",
+          "className": "clr-text-action",
+          "name": "Suggested 90 lb · +1.82 lb · Low confidence · 1 session",
+          "focusVisible": true,
+          "brackets": 1,
+          "height": 40
+        }
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A failed Start leaves the briefing in place behind its blocking dialog, with Start offered again; no session was started."
+    },
+    {
+      "kind": "contract",
+      "text": "Regenerate asks first; confirming discards the briefing and runs a generation (held locally, never forwarded); Cancel returns to Review with nothing to review rather than the discarded workout."
+    },
+    {
+      "kind": "contract",
+      "text": "Start persists and starts the restarted session and lands on /workout with the first set form."
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-loading"
+      },
+      "reason": "Reached only from a favorite's repeat surface; this lane restarts from History. The panel's four states are proved in src/ui/favorite-progression.test.tsx and src/app/ReviewRoute.test.tsx.",
+      "sources": [
+        "src/app/ReviewRoute.tsx",
+        "src/ui/favorite-progression.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "favorite-progression-error-retry"
+      },
+      "reason": "As favorite-progression-loading.",
+      "sources": [
+        "src/app/ReviewRoute.tsx",
+        "src/ui/favorite-progression.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "swap-confirmation"
+      },
+      "reason": "Review renders no swap control in the current source; Swap lives on the Workout exercise card and is pictured there (active-standard-superset-circuit, variant swap-options).",
+      "sources": [
+        "src/app/Review.tsx",
+        "src/ui/exercise-swap.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Review",
+        "route": "/review",
+        "state": "swap-failure"
+      },
+      "reason": "As swap-confirmation; the swap list's failure state is proved in src/ui/exercise-swap.test.tsx and e2e/d6-swap-persistence.spec.ts.",
+      "sources": [
+        "src/ui/exercise-swap.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 1,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
