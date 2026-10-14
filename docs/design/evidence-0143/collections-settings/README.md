@@ -52,14 +52,16 @@ and 8 are source dispositions with no rendered claim:
 The History list's first read is Boot-watched, so its `loading` and `error-retry` pictures hold
 and then fail the second page that Load older workouts asks for, as TASK-040 did.
 
-## Additive original acceptance-gap correction — execution pending
+## Additive original acceptance-gap correction — six local diagnostic passes
 
 The original exact-head review identified missing Signal/Vapour non-phone and short-phone
 evidence and a reachable Suggested next state that a source disposition did not prove. The owned
 spec now adds one representative responsive case and one actual suggestion-transition case in the
 three original projects. This is not a full state/skin/width Cartesian product. The existing 15
-records and 240 pictures remain byte-identical; no passing outcome or new total is claimed here
-until actual execution.
+records and 240 pictures remain byte-identical. The selected new cases actually passed in all
+three original projects: 6 expected, 0 unexpected, 0 flaky and 0 skipped, on the wrapper's owned
+local server; no model request was made. This is the additive diagnostic, not the later original
+full native verification or exact-head product acceptance.
 
 The historical multi-week-history explanation above is not the installed eligibility rule: one
 recent completed session is enough. The additive case writes that real disposable actor's session
@@ -68,6 +70,17 @@ this, Dismiss, persistent dismissal and both Generate destinations without a mod
 responsive case samples Home, Favorites, History, Session Detail, Settings/Appearance and Places
 in missing non-phone/short-phone skins. Native full verification, new exact-head independent
 acceptance, protected delivery, final deployed proof and owner UAT remain required.
+
+The preserved-plus-additive dataset now contains 21 saved passing case records and354pictures:
+the original15/240 plus6/114new. All354picture hashes match their actual records, all354have a
+BEFORE picture, and42original states are now pictured. Width totals are phone145, tablet81,
+desktop81, short47; skin totals Clear202, Mono54, Signal49, Vapour49. Every skin now has all three
+widths and short-phone pictures; the seven representative layout states include the original
+route families. The351pictures whose atmosphere loops are still running remain explicitly
+measured, not silently marked settled. The new114pictures name their actual local source commit
+10e9b806 and unchanged runtime/package identities; they are not rebound to a later synchronized
+or delivered head. These are two local invocation provenances, not a claim that21cases all ran in
+one fresh invocation or that354deployed tests passed.
 
 ## What each case proves
 

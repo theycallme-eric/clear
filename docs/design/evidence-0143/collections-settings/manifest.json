@@ -11,6 +11,14 @@
       "packageVersion": "0.14.3",
       "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
       "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+      "applicationCommit": "10e9b806d955d53efae85cd87b968c5476bdce4b",
+      "testedDeployment": "http://127.0.0.1:53354"
+    },
+    {
+      "packageName": "clear-design-system",
+      "packageVersion": "0.14.3",
+      "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+      "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
       "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
       "testedDeployment": "http://127.0.0.1:59414"
     },
@@ -64,9 +72,21 @@
       },
       {
         "project": "desktop",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 28
+      },
+      {
+        "project": "desktop",
         "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
         "status": "passed",
         "captures": 10
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 5
       },
       {
         "project": "mobile",
@@ -94,9 +114,21 @@
       },
       {
         "project": "mobile",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 35
+      },
+      {
+        "project": "mobile",
         "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
         "status": "passed",
         "captures": 21
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 13
       },
       {
         "project": "tablet",
@@ -124,9 +156,21 @@
       },
       {
         "project": "tablet",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 28
+      },
+      {
+        "project": "tablet",
         "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
         "status": "passed",
         "captures": 10
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 5
       }
     ],
     "generation": {
@@ -136,27 +180,27 @@
     }
   },
   "matrix": {
-    "captures": 240,
-    "withBeforePicture": 240,
+    "captures": 354,
+    "withBeforePicture": 354,
     "withoutBeforePicture": [],
     "byViewport": {
-      "desktop": 48,
-      "phone": 127,
-      "short": 17,
-      "tablet": 48
+      "desktop": 81,
+      "phone": 145,
+      "short": 47,
+      "tablet": 81
     },
     "bySkin": {
-      "clear": 157,
-      "mono": 31,
-      "signal": 26,
-      "vapour": 26
+      "clear": 202,
+      "mono": 54,
+      "signal": 49,
+      "vapour": 49
     },
     "byScreen": {
-      "History /history": 43,
-      "Home /": 47,
-      "Session Detail /history/:id": 51,
-      "Settings /settings": 41,
-      "Settings /settings/locations": 58
+      "History /history": 56,
+      "Home /": 96,
+      "Session Detail /history/:id": 64,
+      "Settings /settings": 67,
+      "Settings /settings/locations": 71
     },
     "stillMovingAtCapture": [
       {
@@ -590,6 +634,315 @@
         ]
       },
       {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
         "screenshot": "settings--settings--preferences-populated--desktop--clear.png",
         "running": [
           "clr-drift-a",
@@ -690,6 +1043,61 @@
       },
       {
         "screenshot": "settings--settings--sign-out--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--desktop--clear.png",
         "running": [
           "clr-drift-a",
           "clr-breathe",
@@ -2050,6 +2458,395 @@
         ]
       },
       {
+        "screenshot": "responsive--home--history-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--clear.png",
+        "running": [
+          "box-shadow",
+          "opacity",
+          "box-shadow",
+          "opacity",
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
         "screenshot": "settings--settings--preferences-populated--phone--clear.png",
         "running": [
           "clr-drift-a",
@@ -2249,6 +3046,149 @@
       },
       {
         "screenshot": "settings--settings--sign-out--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--phone--clear.png",
         "running": [
           "clr-drift-a",
           "clr-breathe",
@@ -2687,6 +3627,315 @@
         ]
       },
       {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
         "screenshot": "settings--settings--preferences-populated--tablet--clear.png",
         "running": [
           "clr-drift-a",
@@ -2787,6 +4036,61 @@
       },
       {
         "screenshot": "settings--settings--sign-out--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--tablet--clear.png",
         "running": [
           "clr-drift-a",
           "clr-breathe",
@@ -2919,7 +4223,20 @@
         "history--history--selected-filters--phone--mono.png",
         "history--history--selected-filters--phone--signal.png",
         "history--history--selected-filters--phone--vapour.png",
-        "history--history--selected-filters--tablet--clear.png"
+        "history--history--selected-filters--tablet--clear.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--clear.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--mono.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--signal.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--vapour.png",
+        "responsive--history--selected-filters--representative-responsive--phone--clear.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--clear.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--mono.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--signal.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--vapour.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--clear.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--mono.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--signal.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--vapour.png"
       ]
     },
     {
@@ -2982,7 +4299,20 @@
         "home--home--favorites-populated--phone--signal.png",
         "home--home--favorites-populated--phone--vapour.png",
         "home--home--favorites-populated--short--short--clear.png",
-        "home--home--favorites-populated--tablet--clear.png"
+        "home--home--favorites-populated--tablet--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--mono.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--signal.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--vapour.png",
+        "responsive--home--favorites-populated--representative-responsive--phone--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--mono.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--signal.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--vapour.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--clear.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--mono.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--signal.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--vapour.png"
       ]
     },
     {
@@ -2999,7 +4329,20 @@
         "home--home--history-populated--phone--signal.png",
         "home--home--history-populated--phone--vapour.png",
         "home--home--history-populated--short--short--clear.png",
-        "home--home--history-populated--tablet--clear.png"
+        "home--home--history-populated--tablet--clear.png",
+        "responsive--home--history-populated--representative-responsive--desktop--clear.png",
+        "responsive--home--history-populated--representative-responsive--desktop--mono.png",
+        "responsive--home--history-populated--representative-responsive--desktop--signal.png",
+        "responsive--home--history-populated--representative-responsive--desktop--vapour.png",
+        "responsive--home--history-populated--representative-responsive--phone--clear.png",
+        "responsive--home--history-populated--representative-responsive--tablet--clear.png",
+        "responsive--home--history-populated--representative-responsive--tablet--mono.png",
+        "responsive--home--history-populated--representative-responsive--tablet--signal.png",
+        "responsive--home--history-populated--representative-responsive--tablet--vapour.png",
+        "responsive--home--history-populated--representative-responsive-short--short--clear.png",
+        "responsive--home--history-populated--representative-responsive-short--short--mono.png",
+        "responsive--home--history-populated--representative-responsive-short--short--signal.png",
+        "responsive--home--history-populated--representative-responsive-short--short--vapour.png"
       ]
     },
     {
@@ -3050,6 +4393,39 @@
       ]
     },
     {
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "before": [
+        "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png"
+      ],
+      "after": [
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--mono.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--signal.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--vapour.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-short--short--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--mono.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--signal.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--vapour.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next-short--short--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--tablet--clear.png"
+      ]
+    },
+    {
       "screen": "Session Detail",
       "route": "/history/:id",
       "state": "as-performed-populated",
@@ -3063,7 +4439,20 @@
         "detail--session-detail--as-performed-populated--phone--signal.png",
         "detail--session-detail--as-performed-populated--phone--vapour.png",
         "detail--session-detail--as-performed-populated--short--short--clear.png",
-        "detail--session-detail--as-performed-populated--tablet--clear.png"
+        "detail--session-detail--as-performed-populated--tablet--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--vapour.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--phone--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--vapour.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--vapour.png"
       ]
     },
     {
@@ -3209,6 +4598,19 @@
         "task-040-supp-ee73f5391eaa608f491a8391-4-d693249957e6f8a2.png"
       ],
       "after": [
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--vapour.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--phone--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--vapour.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--vapour.png",
         "settings--settings--appearance-system-or-skin--chosen-clear--desktop--clear.png",
         "settings--settings--appearance-system-or-skin--chosen-clear--phone--clear.png",
         "settings--settings--appearance-system-or-skin--chosen-clear--tablet--clear.png",
@@ -3263,6 +4665,19 @@
         "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png"
       ],
       "after": [
+        "responsive--settings--preferences-populated--representative-responsive--desktop--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--vapour.png",
+        "responsive--settings--preferences-populated--representative-responsive--phone--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--vapour.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--vapour.png",
         "settings--settings--preferences-populated--desktop--clear.png",
         "settings--settings--preferences-populated--phone--clear.png",
         "settings--settings--preferences-populated--phone--mono.png",
@@ -3398,7 +4813,20 @@
         "places--settings--list-populated--phone--signal.png",
         "places--settings--list-populated--phone--vapour.png",
         "places--settings--list-populated--short--short--clear.png",
-        "places--settings--list-populated--tablet--clear.png"
+        "places--settings--list-populated--tablet--clear.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--clear.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--mono.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--signal.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--vapour.png",
+        "responsive--settings--list-populated--representative-responsive--phone--clear.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--clear.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--mono.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--signal.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--vapour.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--clear.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--mono.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--signal.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--vapour.png"
       ]
     },
     {
@@ -3853,6 +5281,16 @@
     },
     {
       "kind": "contract",
+      "text": "Use this follows the actual recommendation path. Dismiss persists for today across reload and Generate opens without suggestion-prefill query parameters; the form independently derives its recommendation from the same history. No Generate/Quick start/model POST was submitted.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
       "text": "With an active session the footer is Resume workout and leads to /workout; Generate workout is not offered.",
       "projects": [
         "desktop",
@@ -3894,6 +5332,36 @@
     {
       "kind": "fixture",
       "text": "A disposable namespaced user; the first experience PATCH is held then answered with the typed settings_not_viable refusal, every later write is the real endpoint.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected recommendation/path are derived from the actual owned rows, not a mocked Home suggestion or a model response.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "Additive representative layouts only: non-phone projects add all four skins; the phone project adds all four short-phone skins. Existing full-phone skin evidence and every original record/picture are retained. This is not every state/skin/width combination or deployed proof.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "Responsive palette sampling uses the existing owned screenshot fixture to set the stored skin and document attribute; real appearance-picker persistence and selection remain asserted in the original settings case. These are layout pictures, not new preference behavior.",
       "projects": [
         "desktop",
         "mobile",

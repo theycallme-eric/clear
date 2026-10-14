@@ -1,0 +1,1934 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+  "project": "mobile",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "10e9b806d955d53efae85cd87b968c5476bdce4b",
+    "testedDeployment": "http://127.0.0.1:53354"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--phone--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--history-populated--representative-responsive--phone--clear.png",
+        "sha256": "bb87979f023d758f527c9af779523558b4f2ea77144239f1d29271f449f40def",
+        "bytes": 178152,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--short--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--history-populated--representative-responsive-short--short--clear.png",
+        "sha256": "e8ed47c4a0d96fca41692ccda73457eaece3e47ba05d5ac4b431a6361351a27c",
+        "bytes": 67944,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--short--vapour",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--history-populated--representative-responsive-short--short--vapour.png",
+        "sha256": "4a0cf9943430f766fcf241a014cd19b9b3aaf2145328556eb9c86018efa68c29",
+        "bytes": 71394,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--short--signal",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--history-populated--representative-responsive-short--short--signal.png",
+        "sha256": "1c332cb6f7f445dbe7c5e1fc50825795d0c77f3efec150d20de9beae0f8206e8",
+        "bytes": 71696,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--history-populated--short--mono",
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "history-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png",
+        "sha256": "a50c52dfb4a3bf2dac0dfbfe0a0293ddff446e082af884041e579b0f558027d4",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--history-populated--representative-responsive-short--short--mono.png",
+        "sha256": "b54fbec3aea9764e07d64cd69a3d83307711cea0df5edfb9e15c7cb2bfde2495",
+        "bytes": 35237,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--phone--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--favorites-populated--representative-responsive--phone--clear.png",
+        "sha256": "d67d40f6a741ef3d50f29a2aafceca7b3ce4df98205bde2aff894d6951c2453c",
+        "bytes": 182058,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--short--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--favorites-populated--representative-responsive-short--short--clear.png",
+        "sha256": "a38e6257da36176e0b44b63598306135df5264b7aa84ceae965bd7995deb742b",
+        "bytes": 68511,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--short--vapour",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--favorites-populated--representative-responsive-short--short--vapour.png",
+        "sha256": "77a88398dc48d0562386bb6cd097838e6ce2955c32c2bc035de3e2a3b5f5d919",
+        "bytes": 71976,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--short--signal",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--favorites-populated--representative-responsive-short--short--signal.png",
+        "sha256": "e4443c8128bab0a9a73c37fcfb128d342c5f7aab0a1079d4445996952e00ed57",
+        "bytes": 71977,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--favorites-populated--short--mono",
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "favorites-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png",
+        "sha256": "5fe0fa95da8603368a4f53b0e31167b0e7be67e0bee9d8f2a1db1d0fcbf60d7d",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--home--favorites-populated--representative-responsive-short--short--mono.png",
+        "sha256": "05a271a0c727f5080a92daa9ac54a406519d13af7dccedd4381a762ab8ca8664",
+        "bytes": 35635,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--phone--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--history--selected-filters--representative-responsive--phone--clear.png",
+        "sha256": "bb9729f6f3923e24981646ed18b0b1682188245c5a4ca0175d77450e43ac058e",
+        "bytes": 112174,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--short--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--history--selected-filters--representative-responsive-short--short--clear.png",
+        "sha256": "8227935b3331a0056f8d33555b2a34df1b270e697b01d3da917728bba7754a37",
+        "bytes": 64615,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--short--vapour",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--history--selected-filters--representative-responsive-short--short--vapour.png",
+        "sha256": "aad2d39d3c81b25458d7fc032e1bef143a7d962f0aa71e9fa1b90118ddf1488f",
+        "bytes": 67371,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--short--signal",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--history--selected-filters--representative-responsive-short--short--signal.png",
+        "sha256": "e5d4fc041cec0ffe75057032ae30e75480af6e7befe0d884aaec49e90936a82b",
+        "bytes": 67288,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--short--mono",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--history--selected-filters--representative-responsive-short--short--mono.png",
+        "sha256": "5905cf743d4bf288d280f6a5a4b6e5fd2910a38a433f1d0ffdb077922eb64106",
+        "bytes": 32563,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--phone--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/27f5eb30-77db-4fdc-a0ce-f3793126caa1",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--session-detail--as-performed-populated--representative-responsive--phone--clear.png",
+        "sha256": "5b848502090ac056875de027ca9ad7aa9d9b29d4623cee6aa465b571e5e00747",
+        "bytes": 162712,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--short--clear",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/27f5eb30-77db-4fdc-a0ce-f3793126caa1",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--clear.png",
+        "sha256": "ecba2adc269ac69b4d895de6db98e55d220ee3724939c259d726dbc5ae91a12a",
+        "bytes": 66014,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--short--vapour",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/history/27f5eb30-77db-4fdc-a0ce-f3793126caa1",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--vapour.png",
+        "sha256": "cb3427a2273b762f2ebf4e037a81d6829283f07d52d1fde565a84db1545f5a46",
+        "bytes": 68782,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--short--signal",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/history/27f5eb30-77db-4fdc-a0ce-f3793126caa1",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--signal.png",
+        "sha256": "c0b12d41baab7a12800c6facbcc95720cf2279a261bedf503e2fb47b58706632",
+        "bytes": 69214,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "session-detail--history-id--as-performed-populated--short--mono",
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "as-performed-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png",
+        "sha256": "aa8e562b8692fbe078cace85608505d90ca3fddd3ac841952ee5cf91efc64943",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/history/27f5eb30-77db-4fdc-a0ce-f3793126caa1",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--mono.png",
+        "sha256": "437c0760d71e50ecfb7d12cf80486d93983c91a151d7c16321283236cbb2218f",
+        "bytes": 33609,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--phone--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--preferences-populated--representative-responsive--phone--clear.png",
+        "sha256": "019768d8e0bfd9a3dffa77c3999e90a290ce813cbc42590c9e0966b2ca33cd0e",
+        "bytes": 138499,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--short--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--preferences-populated--representative-responsive-short--short--clear.png",
+        "sha256": "2069289f23da842f89ed967f972d297416dae5a6832fc6ce804be94cf3f491ad",
+        "bytes": 55216,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--short--vapour",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--preferences-populated--representative-responsive-short--short--vapour.png",
+        "sha256": "56da910fdb879c0f0247e9d596154259a6ef511422a10f469bb78740f841218d",
+        "bytes": 57838,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--short--signal",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--preferences-populated--representative-responsive-short--short--signal.png",
+        "sha256": "cb66ae97c633e5c6182c3ea0de3a25a99632e2147e7e1bce1fbc02dff9ae41fd",
+        "bytes": 57909,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--short--mono",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--preferences-populated--representative-responsive-short--short--mono.png",
+        "sha256": "c989c97cb834dbadce179d6563a9c6c33f482193de7d356137301b70ac4066a6",
+        "bytes": 26440,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--phone--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--appearance-system-or-skin--representative-responsive--phone--clear.png",
+        "sha256": "02f0da6c0d9dc63eeb332e495f927ee9f70d6c3c8e3bc783c4fa73365e978e55",
+        "bytes": 157416,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--short--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "box-shadow",
+          "opacity",
+          "box-shadow",
+          "opacity",
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--clear.png",
+        "sha256": "ee5546b1442dfe7ad94bc0d9950a8e854d64677c482bf31bb73d0042ca5efdb3",
+        "bytes": 55471,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--short--vapour",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--vapour.png",
+        "sha256": "88cea2ccee1256ea6df1c307f728f503a2691dc0c859f0f38d5e089c8cfa389c",
+        "bytes": 59125,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--short--signal",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--signal.png",
+        "sha256": "a447a3a21064b608d1b1ee21a06522b67cd9c6e0764a3896ff9d4fac295f21a5",
+        "bytes": 57891,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--short--mono",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--mono.png",
+        "sha256": "cbe490b6f45fd2403cb06270d60831a632ee68dd20eb4827743af5171d2efcde",
+        "bytes": 29133,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings-locations--list-populated--phone--clear",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "variant": "representative-responsive",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "list-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png",
+        "sha256": "7507169ebfdc0dca396a86f2e3426bd08b83cf19d2bba126e0f855fc4c74b339",
+        "variant": null
+      },
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings/locations",
+        "heading": "Places and equipment",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--list-populated--representative-responsive--phone--clear.png",
+        "sha256": "b88159d1829edb61369d2e7b658e863959f074e75900b7b44b60e137d3c913dd",
+        "bytes": 123998,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings-locations--list-populated--short--clear",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "list-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png",
+        "sha256": "7507169ebfdc0dca396a86f2e3426bd08b83cf19d2bba126e0f855fc4c74b339",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings/locations",
+        "heading": "Places and equipment",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--list-populated--representative-responsive-short--short--clear.png",
+        "sha256": "10925f55b0d3f00e2641891558afd734490f751587dfb2fc0bf2acdcf707e956",
+        "bytes": 79892,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings-locations--list-populated--short--vapour",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "list-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png",
+        "sha256": "7507169ebfdc0dca396a86f2e3426bd08b83cf19d2bba126e0f855fc4c74b339",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "vapour",
+      "reached": {
+        "pathname": "/settings/locations",
+        "heading": "Places and equipment",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--list-populated--representative-responsive-short--short--vapour.png",
+        "sha256": "4b26d402fb992b4710e3280d897383634345a886babfbf9d129469f83050bf72",
+        "bytes": 82477,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings-locations--list-populated--short--signal",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "list-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png",
+        "sha256": "7507169ebfdc0dca396a86f2e3426bd08b83cf19d2bba126e0f855fc4c74b339",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "signal",
+      "reached": {
+        "pathname": "/settings/locations",
+        "heading": "Places and equipment",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--list-populated--representative-responsive-short--short--signal.png",
+        "sha256": "8f569befb2c764db2eaa5ab344f54fd48181f4a136e8e44a623b305f044cdc5c",
+        "bytes": 83193,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings-locations--list-populated--short--mono",
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "variant": "representative-responsive-short",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "list-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png",
+        "sha256": "7507169ebfdc0dca396a86f2e3426bd08b83cf19d2bba126e0f855fc4c74b339",
+        "variant": null
+      },
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/settings/locations",
+        "heading": "Places and equipment",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "responsive--settings--list-populated--representative-responsive-short--short--mono.png",
+        "sha256": "4138161ca7795116812c32149205bb360ae4f75a7e329f68453ba0490c4d59e5",
+        "bytes": 42111,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "Additive representative layouts only: non-phone projects add all four skins; the phone project adds all four short-phone skins. Existing full-phone skin evidence and every original record/picture are retained. This is not every state/skin/width combination or deployed proof."
+    },
+    {
+      "kind": "fixture",
+      "text": "Responsive palette sampling uses the existing owned screenshot fixture to set the stored skin and document attribute; real appearance-picker persistence and selection remain asserted in the original settings case. These are layout pictures, not new preference behavior."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
