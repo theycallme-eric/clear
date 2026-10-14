@@ -1,0 +1,651 @@
+{
+  "version": 1,
+  "task": "TASK-036",
+  "issue": 382,
+  "consumer": "workout-lifecycle",
+  "phase": "after",
+  "caseTitle": "summary: metric cards, debrief card, public moods, save busy, error, home and persisted",
+  "project": "desktop",
+  "sourceFile": "e2e/design-0143/workout-lifecycle.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:63274"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--completed-read-loading--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "completed-read-loading",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "completed-read-loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-c0c265f1a7cf6cf8b6006eb3-0-ace1dc9683792218.png",
+        "sha256": "453249ad99de988fb741ba54f2373009cc2645d8b2d33b947b489812eca368b8",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--completed-read-loading--desktop--clear.png",
+        "sha256": "91fa326d63e6ddb1b634e2da3700a791a149938be2a2781103a305431f665288",
+        "bytes": 192742,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--completed-read-error-retry--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "completed-read-error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "completed-read-error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-c0c265f1a7cf6cf8b6006eb3-1-5573e8646312c55a.png",
+        "sha256": "432ee1c15c1ca8a11c6bc9aaf99f216283003b5a8939481081bf28edcfd1cc26",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--completed-read-error-retry--desktop--clear.png",
+        "sha256": "3064335a04d444df39b7d18190555d48751bb2214dfe0164521e9024925c5d39",
+        "bytes": 199333,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--debrief-unrecorded-or-saved--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "debrief-unrecorded-or-saved",
+      "variant": "unrecorded",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "debrief-unrecorded-or-saved"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-0-1b4349fb6e6c0512.png",
+        "sha256": "de6ef919a8f2822a814d4830f9d1662e8bcc190e07e45d96f6cd708329c414ce",
+        "variant": "unrecorded"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--debrief-unrecorded-or-saved--unrecorded--desktop--clear.png",
+        "sha256": "2e4a6a13942c2ecaae44ccfd6545a66c058a2028f4380618fca83efb7475336b",
+        "bytes": 214793,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--debrief-unrecorded-or-saved--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "debrief-unrecorded-or-saved",
+      "variant": "peak-selected",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "debrief-unrecorded-or-saved"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-0-1b4349fb6e6c0512.png",
+        "sha256": "de6ef919a8f2822a814d4830f9d1662e8bcc190e07e45d96f6cd708329c414ce",
+        "variant": "unrecorded"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--debrief-unrecorded-or-saved--peak-selected--desktop--clear.png",
+        "sha256": "6f81ea842d8599a2aafd37deae38eae1823b4001bd065c76f13bde2f367fdea9",
+        "bytes": 206150,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--favorite-save-failure-secondary--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "favorite-save-failure-secondary",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "favorite-save-failure-secondary"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-1-87083fead4bd0bf6.png",
+        "sha256": "0ef3ab4d887d0272c0896d6f4a7f052d6b61082aad31427af9c0c5713c4eaa1b",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--favorite-save-failure-secondary--desktop--clear.png",
+        "sha256": "407ea1c6f87e2cade9ea299519d25b47c4df9db5a6465169929ab9ecf90fa791",
+        "bytes": 224041,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--save-busy--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "save-busy",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "save-busy"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-2-baad53aa64095027.png",
+        "sha256": "b28ed218909573765e520ad046e1425ed26d2163c284bda0ed18659ce1bf6bd9",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--save-busy--desktop--clear.png",
+        "sha256": "9e7ca13df57b03e9c5bedf3969b49fad9a09e181753c949a6511223d2c58bb86",
+        "bytes": 224884,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--save-error-draft-retry--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "save-error-draft-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "save-error-draft-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-3-f37670ceba4afd95.png",
+        "sha256": "1df31121903ba9b5397ad667c9bb0612b65040b5ecbe2258c17ba99a4796b036",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--save-error-draft-retry--desktop--clear.png",
+        "sha256": "87dfdd89a2857450b8a62da12afdc61a24b6d82f54f8574ad6b5953b360c3ed1",
+        "bytes": 234589,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--streak-empty-or-error--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "streak-empty-or-error",
+      "variant": "independent-error",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "streak-empty-or-error"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-c0c265f1a7cf6cf8b6006eb3-3-662a8505affe1d15.png",
+        "sha256": "ac6ad6da8ae13aadf6a174c18b20003b646e5b8b372caa8266107536ceb89dea",
+        "variant": "independent-error"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--streak-empty-or-error--independent-error--desktop--clear.png",
+        "sha256": "5da7ef5e1c8f8b86fa73ab9e0bf96541d8fd2362a280d2fd3e6153b10da28215",
+        "bytes": 224596,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--done-home--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "done-home",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "done-home"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-4-494b3783e0efb09d.png",
+        "sha256": "958a97d91cbfee3b795286c87b98e77d391396f67c4beca61133784dff9d1c53",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--done-home--desktop--clear.png",
+        "sha256": "b6240da20ead0d9a50bf6cf3c5dfc544f0499779eda3d5d9b0132d12b47671dc",
+        "bytes": 247259,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "summary--summary--debrief-unrecorded-or-saved--desktop--clear",
+      "screen": "Summary",
+      "route": "/summary",
+      "state": "debrief-unrecorded-or-saved",
+      "variant": "saved",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Summary",
+        "route": "/summary",
+        "state": "debrief-unrecorded-or-saved"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-0f98c31e037fc1dbd4f007f3-5-4080885901ef485f.png",
+        "sha256": "0444a7f7efe6d99b605ccc6b7b8934f9d4debe30f1e10578add10d9effd29050",
+        "variant": "saved"
+      },
+      "viewport": {
+        "id": "desktop",
+        "width": 1280,
+        "height": 720
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/summary",
+        "heading": "Nice work",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "summary--summary--debrief-unrecorded-or-saved--saved--desktop--clear.png",
+        "sha256": "28cd95b6ef3cc412403421428a4966269ff544b15518118ed1c2915799ea5eb9",
+        "bytes": 216699,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "containment",
+      "text": "Summary: Duration and Streak are each their own small card; the mood choice and notes share one debrief card with their labels inside; Save and close is pinned in the footer outside the scroller.",
+      "data": {
+        "durationOwnCard": true,
+        "streakOwnCard": true,
+        "durationSmall": true,
+        "debriefOneCard": true,
+        "debriefSeparateFromMetrics": true,
+        "pinned": true,
+        "cards": 4,
+        "nested": 0,
+        "fieldsOutsideCards": [],
+        "radius": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Worn/Flat/Ready/Peak draw the public Frown/Meh/Smile/SmilePlus exactly (mouth path read from the vendored icons.tsx); SmilePlus is one wide smile with no plus; no app source defines a face of its own.",
+      "data": [
+        {
+          "label": "Spent",
+          "paths": [],
+          "circles": 0,
+          "lines": 0
+        },
+        {
+          "label": "Worn",
+          "paths": [
+            "M8 16 Q12 12 16 16"
+          ],
+          "circles": 3,
+          "lines": 0
+        },
+        {
+          "label": "Flat",
+          "paths": [
+            "M8 15 L16 15"
+          ],
+          "circles": 3,
+          "lines": 0
+        },
+        {
+          "label": "Ready",
+          "paths": [
+            "M8 14 Q12 18 16 14"
+          ],
+          "circles": 3,
+          "lines": 0
+        },
+        {
+          "label": "Peak",
+          "paths": [
+            "M7.5 13 Q12 19 16.5 13"
+          ],
+          "circles": 3,
+          "lines": 0
+        }
+      ]
+    },
+    {
+      "kind": "keyboard",
+      "text": "Mood is a radio group: arrow keys move focus, Space selects, keyboard focus is visible, and the selected face carries a tick as well as a tint.",
+      "data": {
+        "tag": "button",
+        "className": "clr-chamfer clr-chamfer--sm clr-chip clr-chamfer--selected",
+        "name": "Peak",
+        "focusVisible": true,
+        "brackets": 1,
+        "height": 40
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Save writes mood 5 (Peak) and the notes to the completed session row and returns Home; reopening Summary reads the same stored debrief. A failed save keeps the draft."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
