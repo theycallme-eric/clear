@@ -79,6 +79,7 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { MetricFrame } from './composition'
+import { useInterfaceLoop } from './motion'
 import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
 import type { BlockRendererProps } from './block-renderers'
@@ -106,6 +107,12 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
   const elapsed = useElapsedSeconds(amrap.state.startedAt, now)
   const view = amrapView(amrap.state, shape, elapsed)
 
+  const urgent =
+    shape.size > 0 &&
+    view.phase === 'running' &&
+    view.capSeconds !== null &&
+    view.remainingSeconds <= 10
+  const loop = useInterfaceLoop('urgent', urgent)
   const roundsLabelId = useId()
 
   return (
@@ -115,7 +122,13 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
         a window that is open and has a deadline has anything to count down.
       */}
       {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
-        <TimerDisplay seconds={view.remainingSeconds} size="lg" />
+        <div
+          style={{ display: 'flex', flexDirection: 'column' }}
+          data-urgent={urgent ? 'true' : 'false'}
+          {...loop}
+        >
+          <TimerDisplay seconds={view.remainingSeconds} size="lg" />
+        </div>
       )}
       <Card>
         <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>

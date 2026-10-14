@@ -1241,6 +1241,81 @@ describe('Workout — the session’s one rest', () => {
     },
   )
 
+  it('coordinates a low AMRAP window with the low session rest across navigation', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([
+        ...REST_SECTIONS,
+        {
+          title: 'Finisher',
+          sectionType: 'conditioning',
+          blocks: [{ structureType: 'amrap', timerType: 'countdown', timerSeconds: 480 }],
+        },
+      ]),
+    })
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    advance(420)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await logSet('bench press', 1)
+    await logSet('barbell row', 1)
+    advance(52)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+
+    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(lowOwners).toHaveLength(2)
+    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    for (const owner of lowOwners) {
+      expect(owner.querySelector('.clr-pulse-micro')).not.toBeNull()
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    }
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    expect(restTimer()).toHaveTextContent('00:08')
+  })
+
+  it('coordinates a low Circuit round rest with the low session rest across navigation', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([
+        ...REST_SECTIONS,
+        {
+          title: 'Finisher',
+          sectionType: 'conditioning',
+          blocks: [{
+            structureType: 'circuit',
+            rounds: 2,
+            roundRestSeconds: 90,
+            exercises: ['not_started'],
+          }],
+        },
+      ]),
+    })
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
+    advance(30)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await logSet('bench press', 1)
+    await logSet('barbell row', 1)
+    advance(52)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+
+    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(lowOwners).toHaveLength(2)
+    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    for (const owner of lowOwners) {
+      expect(owner.querySelector('.clr-pulse-micro')).not.toBeNull()
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    }
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    expect(restTimer()).toHaveTextContent('00:08')
+  })
+
   it('groups coaching inside its own card, with every label inside the group', async () => {
     const user = userEvent.setup()
     await shell({
