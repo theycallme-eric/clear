@@ -46,6 +46,7 @@ import {
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseSetLogger } from './set-logger'
+import { useInterfaceLoop } from './motion'
 
 export interface CircuitBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -82,13 +83,25 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   }
 
   const resting = shape.size > 0 && view.phase === 'rest'
+  const urgent = resting && view.restRemaining <= 10
+  const loop = useInterfaceLoop('urgent', urgent)
 
   return (
     <BlockPanel
       block={block}
       // The round boundary's one countdown: the shipped `TimerDisplay`, a real
       // deadline with urgency in its last seconds, beside the card.
-      timer={resting ? <TimerDisplay seconds={view.restRemaining} /> : null}
+      timer={
+        resting ? (
+          <div
+            style={{ display: 'flex', flexDirection: 'column' }}
+            data-urgent={urgent ? 'true' : 'false'}
+            {...loop}
+          >
+            <TimerDisplay seconds={view.restRemaining} />
+          </div>
+        ) : null
+      }
       // The rounds the user actually got through — the outcome this structure
       // observed, and the only field it supplies. A circuit with nothing left
       // to perform observed no rounds at all, and says so by supplying

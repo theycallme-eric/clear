@@ -149,12 +149,14 @@ export function SwapDialog({
         </Button>
       }
     >
-      <SwapOptionsView
-        options={options}
-        busy={busy}
-        onRetry={onRetry}
-        onChoose={onChoose}
-      />
+      {open && (
+        <SwapOptionsView
+          options={options}
+          busy={busy}
+          onRetry={onRetry}
+          onChoose={onChoose}
+        />
+      )}
     </AppDialog>
   )
 }

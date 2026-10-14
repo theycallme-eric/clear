@@ -18,6 +18,12 @@
  * And the sixth thing the shell owns: **block completion**. Every structure
  * type writes its `block_results` row through this one path, with perceived
  * effort captured once, by the shell's dialog.
+ *
+ * And, from 0.14.3, what the composed route must still be once every renderer
+ * and the shared chrome are in it: the timers are self-framed cards never put
+ * inside another, the low rest takes the stepped 80% pulse with no glow of its
+ * own, a coaching wait beside it yields the view's one loop, and reduced motion
+ * keeps every word, digit and colour.
  */
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -1110,5 +1116,304 @@ describe('Workout — the session’s one rest', () => {
       /route-enter|clr-boot|clr-reveal|clr-scan/.test(node.getAttribute('class') ?? ''),
     )
     expect(animated).toEqual([])
+  })
+
+  // ── 0.14.3: timer cards, the low state and the view's one loop ────────────
+
+  /** The rest's own card body, whose role is what the low state changes. */
+  function restBody(): HTMLElement {
+    const body = restBars()[0]?.querySelector<HTMLElement>('.clr-card__body')
+    if (!body) throw new Error('no rest card body')
+    return body
+  }
+
+  /** Every card the shell draws that sits inside another card — never any. */
+  function nestedCards(): Element[] {
+    return Array.from(document.querySelectorAll('.clr-card')).filter(
+      (card) => card.parentElement?.closest('.clr-card') != null,
+    )
+  }
+
+  /** Under reduced motion, as the platform reports it. */
+  function preferReducedMotion() {
+    const original = window.matchMedia
+    vi.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      ...original(query),
+      matches: query === '(prefers-reduced-motion: reduce)',
+    }))
+  }
+
+  const COACHING_PANEL = 'Coaching and notes — back squat'
+
+  it('draws the session timer and the rest as two self-framed cards, neither inside another', async () => {
+    await restShell()
+    await logSet('back squat', 1)
+
+    const session = screen.getByRole('timer', { name: 'Session time' })
+    expect(session.closest('.clr-card')).not.toBeNull()
+    expect(restTimer().closest('.clr-card')).not.toBe(session.closest('.clr-card'))
+    expect(restBody()).toHaveClass('clr-chamfer--timer')
+    expect(nestedCards()).toEqual([])
+  })
+
+  it('keeps an active rest still and in the timer role until its final ten seconds', async () => {
+    await restShell()
+    await logSet('back squat', 1)
+
+    const [bar] = restBars()
+    expect(bar).toHaveAttribute('data-urgent', 'false')
+    expect(bar).not.toHaveClass('clr-pulse-micro')
+    expect(bar).toHaveAttribute('data-loop', 'still')
+    expect(restBody()).not.toHaveClass('clr-chamfer--timer-low')
+    expect(screen.queryByText('Final 10 seconds')).not.toBeInTheDocument()
+  })
+
+  it('takes the low state for the final ten seconds, on the rest alone and with no glow', async () => {
+    await restShell()
+    await logSet('back squat', 1)
+    advance(81)
+    returnToForeground()
+
+    const [bar] = restBars()
+    expect(restTimer()).toHaveTextContent('00:09')
+    expect(bar).toHaveAttribute('data-urgent', 'true')
+    expect(bar).toHaveClass('clr-pulse-micro')
+    expect(bar).toHaveAttribute('data-loop', 'run')
+    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    // The milestone is the one thing that speaks; the timers stay labelled
+    // and not live.
+    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
+    for (const timer of screen.getAllByRole('timer')) {
+      expect(timer).not.toHaveAttribute('aria-live')
+    }
+
+    // Only the primary action glows: no timer, urgent or not, takes a glow of
+    // its own, and the session's own timer takes no low state.
+    for (const glow of document.querySelectorAll('.clr-glow')) {
+      expect(glow.querySelector('[role="timer"]')).toBeNull()
+      expect(glow.firstElementChild?.tagName).toBe('BUTTON')
+    }
+    expect(bar.querySelector('.clr-glow')).toBeNull()
+    const session = screen.getByRole('timer', { name: 'Session time' })
+    expect(session).not.toHaveClass('clr-chamfer--timer-low')
+    expect(session.closest('.clr-pulse-micro')).toBeNull()
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
+  })
+
+  it.each(['skip', 'expiry'] as const)(
+    'hands the one loop back to coaching after urgent rest ends by %s',
+    async (ending) => {
+      const user = userEvent.setup()
+      await shell({
+        session: activeSession(REST_SECTIONS),
+        exercises: { definition: () => new Promise(() => {}) },
+      })
+      await logSet('back squat', 1)
+      advance(82)
+      returnToForeground()
+
+      await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
+      const panel = screen.getByRole('region', { name: COACHING_PANEL })
+      const wait = within(panel)
+        .getAllByRole('status')
+        .find((status) => status.textContent?.includes('Reading coaching for back squat'))
+      if (!wait) throw new Error('no coaching wait')
+      expect(wait).toHaveAttribute('aria-busy', 'true')
+
+      // The low rest outranks the wait; the wait is stilled, not removed.
+      expect(restBars()[0]).toHaveAttribute('data-loop', 'run')
+      expect(wait).toHaveAttribute('data-loop', 'still')
+      expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+
+      // The visible wait must regain the loop; a closed dialog owns no hidden claim.
+      if (ending === 'skip') {
+        await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+      } else {
+        advance(8)
+        returnToForeground()
+      }
+      expect(restBars()).toEqual([])
+      expect(wait).toHaveAttribute('aria-busy', 'true')
+      expect(wait).toHaveTextContent('Reading coaching for back squat')
+      expect(wait).toHaveAttribute('data-loop', 'run')
+      expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+      expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    },
+  )
+
+  it('coordinates a low AMRAP window with the low session rest across navigation', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([
+        ...REST_SECTIONS,
+        {
+          title: 'Finisher',
+          sectionType: 'conditioning',
+          blocks: [{ structureType: 'amrap', timerType: 'countdown', timerSeconds: 480 }],
+        },
+      ]),
+    })
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    advance(420)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await logSet('bench press', 1)
+    await logSet('barbell row', 1)
+    advance(52)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+
+    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(lowOwners).toHaveLength(2)
+    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    for (const owner of lowOwners) {
+      expect(
+        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
+      ).toBe(true)
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    }
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    expect(restTimer()).toHaveTextContent('00:08')
+  })
+
+  it('coordinates a low Circuit round rest with the low session rest across navigation', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([
+        ...REST_SECTIONS,
+        {
+          title: 'Finisher',
+          sectionType: 'conditioning',
+          blocks: [{
+            structureType: 'circuit',
+            rounds: 2,
+            roundRestSeconds: 90,
+            exercises: ['not_started'],
+          }],
+        },
+      ]),
+    })
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
+    advance(30)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await logSet('bench press', 1)
+    await logSet('barbell row', 1)
+    advance(52)
+    returnToForeground()
+    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+
+    const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
+    expect(lowOwners).toHaveLength(2)
+    expect(lowOwners.map((owner) => owner.getAttribute('data-loop')).sort()).toEqual(['run', 'still'])
+    for (const owner of lowOwners) {
+      expect(
+        owner.matches('.clr-pulse-micro') || owner.querySelector('.clr-pulse-micro') !== null,
+      ).toBe(true)
+      expect(owner.querySelector('[role="timer"]')).toHaveTextContent('00:08')
+    }
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(1)
+    expect(document.querySelectorAll('dialog:not([open]) [data-loop="run"]')).toHaveLength(0)
+    expect(restTimer()).toHaveTextContent('00:08')
+  })
+
+  it('groups coaching inside its own card, with every label inside the group', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession(REST_SECTIONS),
+      definitions: { 'back-squat': definitionFixture() },
+    })
+    await logSet('back squat', 1)
+
+    await user.click(screen.getByRole('button', { name: COACHING_PANEL }))
+    const panel = screen.getByRole('region', { name: COACHING_PANEL })
+    expect(await within(panel).findByText('Cues')).toBeInTheDocument()
+    expect(within(panel).getByText('Regression')).toBeInTheDocument()
+    expect(within(panel).getByRole('list', { name: 'Coaching cues' })).toBeInTheDocument()
+    expect(nestedCards()).toEqual([])
+  })
+
+  it('keeps every word, digit and colour of the low state under reduced motion', async () => {
+    preferReducedMotion()
+    await restShell()
+    await logSet('back squat', 1)
+    advance(85)
+    returnToForeground()
+
+    const [bar] = restBars()
+    expect(restTimer()).toHaveTextContent('00:05')
+    expect(within(bar).getByRole('status')).toHaveTextContent('Final 10 seconds')
+    expect(restBody()).toHaveClass('clr-chamfer--timer-low')
+    expect(bar).toHaveAttribute('data-loop', 'still')
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(0)
+  })
+
+  it('claims no loop for a section clock that has not been started', async () => {
+    await shell({
+      session: activeSession([
+        {
+          title: 'Conditioning',
+          sectionType: 'conditioning',
+          blocks: [
+            {
+              structureType: 'emom',
+              timerType: 'per_minute',
+              timerSeconds: 600,
+              exercises: ['not_started', 'not_started'],
+            },
+          ],
+        },
+      ]),
+    })
+
+    expect(screen.getByRole('button', { name: 'Start EMOM' })).toBeInTheDocument()
+    expect(screen.queryByRole('timer', { name: 'Time remaining' })).not.toBeInTheDocument()
+    // Nothing on the visible shell is moving: no countdown, no urgency, no loop.
+    expect(document.querySelectorAll('[data-loop="run"]')).toHaveLength(0)
+    expect(document.querySelector('[data-urgent="true"]')).toBeNull()
+    expect(document.querySelector('.clr-chamfer--timer-low')).toBeNull()
+  })
+
+  it('leaves global time and the finish untouched by a running rest', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell({
+      session: activeSession([...REST_SECTIONS, { title: 'Finisher', blocks: [{}] }]),
+    })
+
+    await logSet('back squat', 1)
+    advance(60)
+    returnToForeground()
+    expect(restTimer()).toHaveTextContent('00:30')
+    await waitFor(() =>
+      expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('13:30'),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(double.completed()).toEqual([{ sessionId: FIXTURE_SESSION_ID, minutes: 13 }])
+    expect(double.loggedSets()).toHaveLength(1)
+    expect(restBars()).toEqual([])
+  })
+
+  it('abandons from an urgent rest and lands Home with no rest left behind', async () => {
+    const user = userEvent.setup()
+    const { double } = await restShell()
+    await logSet('back squat', 1)
+    advance(85)
+    returnToForeground()
+
+    await user.click(screen.getByRole('button', { name: 'Abandon' }))
+    await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
+    await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
+
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    expect(double.abandoned()).toEqual([FIXTURE_SESSION_ID])
+    expect(restBars()).toEqual([])
+    expect(document.querySelectorAll('.clr-pulse-micro')).toHaveLength(0)
   })
 })
