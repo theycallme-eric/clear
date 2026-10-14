@@ -471,6 +471,11 @@ const expectFramedField = async (control: Locator, where: string) => {
   return probe
 }
 
+// ENV-07: the Preview lane has no privileged backend credentials. Register only
+// these backend-dependent cases as ineligible there, before their fixtures run.
+// The original credentialed task verification still runs all 24 cases unchanged.
+const backendTest = backend.available ? test : test.skip
+
 // ── Welcome and sign-in ────────────────────────────────────────────────────
 
 test('welcome-auth: Welcome, credentials, code errors, busy and disabled states', async ({ page, visit, evidence }) => {
@@ -657,7 +662,7 @@ async function newUser(project: string, purpose: string) {
   } }
 }
 
-test('onboarding: real new user, every step, selection, kept draft, held commit and retry', async ({ page, visit, evidence }, testInfo) => {
+backendTest('onboarding: real new user, every step, selection, kept draft, held commit and retry', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(240_000)
   const user = await newUser(testInfo.project.name, 'onboarding')
   const hold = deferred()
@@ -823,7 +828,7 @@ test('onboarding: real new user, every step, selection, kept draft, held commit 
   }
 })
 
-test('onboarding-refusal: an impossible saved preference is refused and the draft is kept', async ({ page, visit, evidence }, testInfo) => {
+backendTest('onboarding-refusal: an impossible saved preference is refused and the draft is kept', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(180_000)
   const user = await newUser(testInfo.project.name, 'refusal')
   evidence.note('fixture', 'A namespaced real new user; the impossible Minimal + Carries proposal is refused by the genuine onboarding RPC.')
@@ -865,7 +870,7 @@ test('onboarding-refusal: an impossible saved preference is refused and the draf
 
 // ── Generate ───────────────────────────────────────────────────────────────
 
-test('generate: the full real form, selection, disabled, validation and recovery states', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('generate: the full real form, selection, disabled, validation and recovery states', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   test.setTimeout(150_000)
   // The worker's own journey is the returning-user proof: one real verification, then Home.
   expect(session.journey.screens).toEqual(['Welcome', 'OTP Login', 'Home', 'Generate'])
@@ -1005,7 +1010,7 @@ async function fixtureHistory(page: Page, userId: string, rows: ReturnType<typeo
   })
 }
 
-test('generate-reads: Goal and Focus ownership, missing goal, no place and deload confirmation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('generate-reads: Goal and Focus ownership, missing goal, no place and deload confirmation', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   test.setTimeout(150_000)
   const at = '/generate'
   evidence.note('fixture', 'Scoped reads for the real session user only: profile with goal_preset null; an empty locations list; three parsed history rows; six anchor_evidence rows.')
@@ -1093,7 +1098,7 @@ test('generate-reads: Goal and Focus ownership, missing goal, no place and deloa
 
 // ── Loading ────────────────────────────────────────────────────────────────
 
-test('loading: a held request, the slow threshold, an actionable failure and a kept draft', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('loading: a held request, the slow threshold, an actionable failure and a kept draft', async ({ authenticatedPage: page, visit, evidence }) => {
   test.setTimeout(180_000)
   evidence.note('fixture', 'The generate-workout POST is held and answered locally with typed failures; nothing is forwarded to a provider, so this is not generation proof.')
   let held = deferred()
@@ -1196,7 +1201,7 @@ test('loading: a held request, the slow threshold, an actionable failure and a k
 
 // ── Boot and routing ───────────────────────────────────────────────────────
 
-test('boot: authenticated checking, failed read, retry and reduced-motion handoff', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
+backendTest('boot: authenticated checking, failed read, retry and reduced-motion handoff', async ({ authenticatedPage: page, authenticatedSession: session, visit, evidence }) => {
   test.setTimeout(150_000)
   const hold = deferred()
   let fail = true
@@ -1285,7 +1290,7 @@ test('boot: authenticated checking, failed read, retry and reduced-motion handof
   } finally { hold.release() }
 })
 
-test('routing: signed-in entry redirects, the unmatched route and its way back', async ({ authenticatedPage: page, visit, evidence }) => {
+backendTest('routing: signed-in entry redirects, the unmatched route and its way back', async ({ authenticatedPage: page, visit, evidence }) => {
   test.setTimeout(120_000)
   const home = () => expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeEnabled()
   await visit('/welcome')
