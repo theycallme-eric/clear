@@ -709,6 +709,15 @@ test.describe('onboarding', () => {
     if (testInfo.project.name === 'mobile') await expectShortReachable(page, '/onboarding')
     const kinds = await expectFocusOwnership(page, '/onboarding')
     expect(kinds.has('brackets')).toBe(true)
+
+    // TASK026-R1: this authenticated, not-yet-onboarded athlete must also
+    // arrive at the actual wizard with reduced motion, not fall back to Welcome.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await visit('/onboarding')
+    await reached(page, '/onboarding', 'Set up CLEAR')
+    expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true)
+    await expectResolvedImmediately(page, '/onboarding (authenticated reduced motion)')
+    await expect(page.locator('main')).not.toHaveClass(/route-enter-/)
   })
 })
 
