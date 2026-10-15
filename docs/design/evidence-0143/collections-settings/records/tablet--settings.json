@@ -1,0 +1,694 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:59927"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--preferences-populated--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "preferences-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png",
+        "sha256": "07cc8d90341c46a96171ae758a0d608b28b636cdc207429eadb8922dbf99ee29",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--preferences-populated--tablet--clear.png",
+        "sha256": "ff1d2befe137f167a0a4f859aef36bb63494c994d0a0252c12271b531c89ffef",
+        "bytes": 250385,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--constraints-loading-empty-error-populated--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "constraints-loading-empty-error-populated",
+      "variant": "empty",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "constraints-loading-empty-error-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-1-c55c8939d7d2d559.png",
+        "sha256": "6c3698b294912fb7d7c7de5772c9d19280af427b630856cf7e79da59d3a33f92",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--constraints-loading-empty-error-populated--empty--tablet--clear.png",
+        "sha256": "855b31cff6cb8211ea6d4935790358387be5243513c3d1f5cf00ad23c277b028",
+        "bytes": 250636,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--inline-save-pending-saved--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "inline-save-pending-saved",
+      "variant": "pending",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "inline-save-pending-saved"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-2-c1fc887a46cc675b.png",
+        "sha256": "0bb9d4e3134653f8584afc879c0fd8a1d549b96980ea5975b3d8a5ac6169f1c2",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--inline-save-pending-saved--pending--tablet--clear.png",
+        "sha256": "e4cf157988686bbe4472185307b8160bd007e5c52d0e2696f6dbf6e1c5318535",
+        "bytes": 252136,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--save-refusal-rollback--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "save-refusal-rollback",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "save-refusal-rollback"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-3-c88cc360d5d036f1.png",
+        "sha256": "3aeb992e1fbccecf0470160e713068caa0ec2dc238619abae4d71cabcaeecae7",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--save-refusal-rollback--tablet--clear.png",
+        "sha256": "b15da24d20beef438adbad20e7c3bdfcee90127ee1256c97fbfffd186b931b51",
+        "bytes": 263249,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--inline-save-pending-saved--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "inline-save-pending-saved",
+      "variant": "actual-saved",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "inline-save-pending-saved"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-4-4ef7030964649141.png",
+        "sha256": "164ca25adc289b87e9f60a382b8470eb0d8611de9bf2afcc00b27a82d47b8203",
+        "variant": "actual-saved"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--inline-save-pending-saved--actual-saved--tablet--clear.png",
+        "sha256": "1876cc9c4c2889d17d5d954bc32fc84a67e878188509a2ee80d2931c9dfd3875",
+        "bytes": 252793,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--constraints-loading-empty-error-populated--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "constraints-loading-empty-error-populated",
+      "variant": "actual-populated-after-reload",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "constraints-loading-empty-error-populated"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-caa7650b6d2bedf9df16aa38-1-c55c8939d7d2d559.png",
+        "sha256": "6c3698b294912fb7d7c7de5772c9d19280af427b630856cf7e79da59d3a33f92",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--tablet--clear.png",
+        "sha256": "df935706930af36c7d9ba3a60e6c63749a7611b565d64be27d8a792e1aeb45e4",
+        "bytes": 238004,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "chosen-clear",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--appearance-system-or-skin--chosen-clear--tablet--clear.png",
+        "sha256": "573996d0de2d4f32109caf33ea949a48335c562421c04b4eb5899b21476eed01",
+        "bytes": 254400,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--tablet--mono",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "chosen-mono",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "sha256": "272a9ca2c6a3a36040a57ccbf9dd7e990e1e1823f410574c30043363b7566e17",
+        "variant": null
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--appearance-system-or-skin--chosen-mono--tablet--mono.png",
+        "sha256": "f66dbcfeb9c1780906e8b6d5749c85fc46991d6aed491c5ab2458ee4f02d24ff",
+        "bytes": 129958,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--appearance-system-or-skin--tablet--mono",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "variant": "system-contrast",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "appearance-system-or-skin"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-ee73f5391eaa608f491a8391-4-d693249957e6f8a2.png",
+        "sha256": "6e0c68375618dc70b643c594fd95c4a76f8243988027c8e1c9e793b72a6e297a",
+        "variant": "system-contrast"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "mono",
+      "reached": {
+        "pathname": "/settings",
+        "heading": "Settings",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--appearance-system-or-skin--system-contrast--tablet--mono.png",
+        "sha256": "eecdaf5d359a26496fcdbc695d9aec95eac0ac60676eeea7a8b8c3c60f989784",
+        "bytes": 130909,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "settings--settings--sign-out--tablet--clear",
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "sign-out",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "sign-out"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-8f1b80a252244f8aeab70843-4-370400f99fa8f754.png",
+        "sha256": "2d7bbf050891f565fec31a5c8eb5b4ada3b3a56af0c775353572a313de0f5a5c",
+        "variant": "transition-destination"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/welcome",
+        "heading": "CLEAR",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "settings--settings--sign-out--transition-destination--tablet--clear.png",
+        "sha256": "5040d884f240f83641abe75099f63e99435a5c728e60df5d99d7cabf18e2d9e5",
+        "bytes": 160013,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user; the first experience PATCH is held then answered with the typed settings_not_viable refusal, every later write is the real endpoint."
+    },
+    {
+      "kind": "contract",
+      "text": "Settings is five landmark sections, each a current card with a 12px bar and its heading inside: Training, Limitations, Appearance, Places and equipment, Session.",
+      "data": [
+        {
+          "level": 1,
+          "text": "Settings"
+        },
+        {
+          "level": 2,
+          "text": "Training"
+        },
+        {
+          "level": 2,
+          "text": "Limitations"
+        },
+        {
+          "level": 2,
+          "text": "Appearance"
+        },
+        {
+          "level": 2,
+          "text": "Places and equipment"
+        },
+        {
+          "level": 2,
+          "text": "Session"
+        }
+      ]
+    },
+    {
+      "kind": "contract",
+      "text": "A typed settings_not_viable refusal rolls the control back to the stored value and says so; the stored profile still reads experience_level=some."
+    },
+    {
+      "kind": "contract",
+      "text": "After a full reload the saved Confident experience and the Hard conditioning limitation are still selected, and the stored profile reads experience_level=confident."
+    },
+    {
+      "kind": "contract",
+      "text": "Choosing a skin writes clear.skin and data-skin through the picker; the stored key is what boot applies on reload (the same path every capture here uses to pin its skin)."
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Goal radiogroup is reached by Tab and framed by the static bracket layer.",
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "radio",
+        "name": "Balanced",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The limitations note owns its focus: the bracket layer stays hidden on a text field.",
+      "data": {
+        "mode": "brackets",
+        "tag": "textarea",
+        "role": null,
+        "name": "",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "profile-loading"
+      },
+      "reason": "The profile read is Boot-watched; BootGate withholds the route tree while it is pending, so Boot is the native surface.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "profile-error-retry"
+      },
+      "reason": "A failed Boot-watched profile read is answered by Boot’s own retry before Settings mounts; the Settings footer Retry is covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "missing-profile"
+      },
+      "reason": "The guard sends a user with no onboarded profile to /onboarding; the empty branch is unreachable through the route.",
+      "sources": [
+        "src/app/guards.tsx",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

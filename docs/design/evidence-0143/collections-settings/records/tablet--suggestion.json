@@ -1,0 +1,310 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "10e9b806d955d53efae85cd87b968c5476bdce4b",
+    "testedDeployment": "http://127.0.0.1:53354"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--suggestion-selected-dismissed--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "variant": "suggested-next",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png",
+        "sha256": "7f9c3ef86f7f2b851162502d509e242b2e0cce1da9120cb1646a556fcbec3a60",
+        "variant": "recommendation-offered-before-selection"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "suggestion--home--suggestion-selected-dismissed--suggested-next--tablet--clear.png",
+        "sha256": "1fc8ed321ad76fa85421c6f5c03de4b61432a4782895b5fe50eeeb0c7ee41fa9",
+        "bytes": 260509,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--suggestion-selected-dismissed--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "variant": "use-this-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png",
+        "sha256": "7f9c3ef86f7f2b851162502d509e242b2e0cce1da9120cb1646a556fcbec3a60",
+        "variant": "recommendation-offered-before-selection"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "suggestion--home--suggestion-selected-dismissed--use-this-destination--tablet--clear.png",
+        "sha256": "547b74df36b074e2606e04dddcac8991ba117d85c02a60d8efb510e60f84203e",
+        "bytes": 220622,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--suggestion-selected-dismissed--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "variant": "dismissed",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png",
+        "sha256": "7f9c3ef86f7f2b851162502d509e242b2e0cce1da9120cb1646a556fcbec3a60",
+        "variant": "recommendation-offered-before-selection"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "suggestion--home--suggestion-selected-dismissed--dismissed--tablet--clear.png",
+        "sha256": "f3dac6e868d50dd5259e523fee214f92bd795ad28a138520789d7e9bb91be4a0",
+        "bytes": 235045,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--suggestion-selected-dismissed--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "variant": "dismissed-after-reload",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png",
+        "sha256": "7f9c3ef86f7f2b851162502d509e242b2e0cce1da9120cb1646a556fcbec3a60",
+        "variant": "recommendation-offered-before-selection"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/",
+        "heading": "Today",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--tablet--clear.png",
+        "sha256": "8ce33e1ff10f3ce92c3187a3a6520cca7137b72e74e9cd8aca65049c290c498b",
+        "bytes": 234695,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "home--root--suggestion-selected-dismissed--tablet--clear",
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "variant": "default-destination-after-dismiss",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png",
+        "sha256": "7f9c3ef86f7f2b851162502d509e242b2e0cce1da9120cb1646a556fcbec3a60",
+        "variant": "recommendation-offered-before-selection"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/generate",
+        "heading": "Generate workout",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--tablet--clear.png",
+        "sha256": "b7abc56001bd8f5ec1d403fc6391cea9ca5e0957fc6f8ef842d53c0b3803a2e5",
+        "bytes": 220373,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected recommendation/path are derived from the actual owned rows, not a mocked Home suggestion or a model response."
+    },
+    {
+      "kind": "contract",
+      "text": "Use this follows the actual recommendation path. Dismiss persists for today across reload and Generate opens without suggestion-prefill query parameters; the form independently derives its recommendation from the same history. No Generate/Quick start/model POST was submitted."
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}

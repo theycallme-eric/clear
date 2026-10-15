@@ -1,0 +1,5521 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": [
+    {
+      "packageName": "clear-design-system",
+      "packageVersion": "0.14.3",
+      "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+      "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+      "applicationCommit": "10e9b806d955d53efae85cd87b968c5476bdce4b",
+      "testedDeployment": "http://127.0.0.1:53354"
+    },
+    {
+      "packageName": "clear-design-system",
+      "packageVersion": "0.14.3",
+      "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+      "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+      "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+      "testedDeployment": "http://127.0.0.1:59414"
+    },
+    {
+      "packageName": "clear-design-system",
+      "packageVersion": "0.14.3",
+      "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+      "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+      "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+      "testedDeployment": "http://127.0.0.1:59927"
+    },
+    {
+      "packageName": "clear-design-system",
+      "packageVersion": "0.14.3",
+      "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+      "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+      "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+      "testedDeployment": "http://127.0.0.1:60253"
+    }
+  ],
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "screenshotDirectory": "docs/design/evidence-0143/collections-settings/screenshots",
+  "beforeDirectory": "docs/design/0143-intake-baseline/screenshots",
+  "run": {
+    "cases": [
+      {
+        "project": "desktop",
+        "caseTitle": "detail: metadata, ruled sections, refusals, restart and favorite",
+        "status": "passed",
+        "captures": 11
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "history: one card, filters, pagination, routing, loading and error",
+        "status": "passed",
+        "captures": 8
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "home: groups, arrival, tabs, favorites, routing and resume",
+        "status": "passed",
+        "captures": 8
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "places: list, editor, CRUD, refusals, default rules, delete and reload",
+        "status": "passed",
+        "captures": 11
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 28
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
+        "status": "passed",
+        "captures": 10
+      },
+      {
+        "project": "desktop",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 5
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "detail: metadata, ruled sections, refusals, restart and favorite",
+        "status": "passed",
+        "captures": 29
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "history: one card, filters, pagination, routing, loading and error",
+        "status": "passed",
+        "captures": 27
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "home: groups, arrival, tabs, favorites, routing and resume",
+        "status": "passed",
+        "captures": 31
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "places: list, editor, CRUD, refusals, default rules, delete and reload",
+        "status": "passed",
+        "captures": 36
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 35
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
+        "status": "passed",
+        "captures": 21
+      },
+      {
+        "project": "mobile",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 13
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "detail: metadata, ruled sections, refusals, restart and favorite",
+        "status": "passed",
+        "captures": 11
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "history: one card, filters, pagination, routing, loading and error",
+        "status": "passed",
+        "captures": 8
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "home: groups, arrival, tabs, favorites, routing and resume",
+        "status": "passed",
+        "captures": 8
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "places: list, editor, CRUD, refusals, default rules, delete and reload",
+        "status": "passed",
+        "captures": 11
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "responsive: representative route families in the missing skins and short-phone sizes",
+        "status": "passed",
+        "captures": 28
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "settings: sections, held save, refusal, reload, skins and focus",
+        "status": "passed",
+        "captures": 10
+      },
+      {
+        "project": "tablet",
+        "caseTitle": "suggestion: real qualifying history, Use this and persistent Dismiss destinations",
+        "status": "passed",
+        "captures": 5
+      }
+    ],
+    "generation": {
+      "requests": 0,
+      "forwardedToProvider": 0,
+      "blockedUnexpected": 0
+    }
+  },
+  "matrix": {
+    "captures": 354,
+    "withBeforePicture": 354,
+    "withoutBeforePicture": [],
+    "byViewport": {
+      "desktop": 81,
+      "phone": 145,
+      "short": 47,
+      "tablet": 81
+    },
+    "bySkin": {
+      "clear": 202,
+      "mono": 54,
+      "signal": 49,
+      "vapour": 49
+    },
+    "byScreen": {
+      "History /history": 56,
+      "Home /": 96,
+      "Session Detail /history/:id": 64,
+      "Settings /settings": 67,
+      "Settings /settings/locations": 71
+    },
+    "stillMovingAtCapture": [
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--section-collapsed--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-read-validation-error--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-review--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--unscored-or-unlogged--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--missing--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--loading--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--loading--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--compatible-review-entry--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--incompatible-detail-fallback--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--compatible-review-entry--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--reads-loading--favorites-list--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--loading-member--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--edit-inline-save--after-reload--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-change-rollback--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--after-default-reassignment-and-delete-reload--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--empty--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--pending--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--actual-saved--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-clear--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-mono--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--system-contrast--desktop--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--sign-out--transition-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--desktop--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--section-collapsed--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-read-validation-error--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-review--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--unscored-or-unlogged--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--missing--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--loading--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--loading--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--compatible-review-entry--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--incompatible-detail-fallback--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--compatible-review-entry--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--reads-loading--favorites-list--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--loading-member--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--edit-inline-save--after-reload--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-change-rollback--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--after-default-reassignment-and-delete-reload--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--clear.png",
+        "running": [
+          "box-shadow",
+          "opacity",
+          "box-shadow",
+          "opacity",
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive-short--short--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--empty--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--pending--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--actual-saved--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-clear--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-vapour--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-signal--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-mono--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--system-contrast--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--sign-out--transition-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--phone--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-short--short--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--phone--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--as-performed-populated--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--section-collapsed--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--favorite-save-failure--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-read-validation-error--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-review--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--unscored-or-unlogged--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--restart-ineligible--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--not-yours--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--missing-or-not-yours--missing--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--loading--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan",
+          "clr-scan-sweep"
+        ]
+      },
+      {
+        "screenshot": "detail--session-detail--error-retry--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--no-workouts-empty--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--populated-load-more--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--loading--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "history--history--error-retry--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--filtered-no-matches--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--selected-filters--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--compatible-review-entry--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "history--history--incompatible-detail-fallback--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--no-history--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-empty--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--history-populated--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--compatible-review-entry--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--favorites-populated--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--reads-loading--favorites-list--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "home--home--read-error-retry--favorites-list--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "home--home--active-session-resume--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--loading-member--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ]
+      },
+      {
+        "screenshot": "places--settings--equipment-loading-error--error-member--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--new-location-editor--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--edit-inline-save--after-reload--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--typed-viability-refusal-rollback--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-change-rollback--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--default-delete-reassignment--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--delete-confirmation--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--list-populated--after-default-reassignment-and-delete-reload--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "places--settings--no-locations-empty--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--history-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--home--favorites-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--history--selected-filters--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-btn-scan"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--session-detail--as-performed-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--preferences-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--vapour.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--signal.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "responsive--settings--list-populated--representative-responsive--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--preferences-populated--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--empty--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--pending--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--save-refusal-rollback--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--inline-save-pending-saved--actual-saved--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-clear--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--chosen-mono--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--appearance-system-or-skin--system-contrast--tablet--mono.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "settings--settings--sign-out--transition-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--suggested-next--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--use-this-destination--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      },
+      {
+        "screenshot": "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--tablet--clear.png",
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ]
+      }
+    ]
+  },
+  "states": [
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "compatible-review-entry",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-4-8f089f7594cc9834.png"
+      ],
+      "after": [
+        "history--history--compatible-review-entry--transition-destination--desktop--clear.png",
+        "history--history--compatible-review-entry--transition-destination--phone--clear.png",
+        "history--history--compatible-review-entry--transition-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "error-retry",
+      "before": [
+        "task-040-supp-87ef7d0f13721bc11736f654-1-1cc7349922f6da17.png"
+      ],
+      "after": [
+        "history--history--error-retry--desktop--clear.png",
+        "history--history--error-retry--phone--clear.png",
+        "history--history--error-retry--phone--mono.png",
+        "history--history--error-retry--phone--signal.png",
+        "history--history--error-retry--phone--vapour.png",
+        "history--history--error-retry--short--short--clear.png",
+        "history--history--error-retry--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "filtered-no-matches",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-2-2e5e5bf4bec13e9a.png"
+      ],
+      "after": [
+        "history--history--filtered-no-matches--desktop--clear.png",
+        "history--history--filtered-no-matches--phone--clear.png",
+        "history--history--filtered-no-matches--phone--mono.png",
+        "history--history--filtered-no-matches--phone--signal.png",
+        "history--history--filtered-no-matches--phone--vapour.png",
+        "history--history--filtered-no-matches--short--short--clear.png",
+        "history--history--filtered-no-matches--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "incompatible-detail-fallback",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-12-a2f4a6f0499f4ac2.png"
+      ],
+      "after": [
+        "history--history--incompatible-detail-fallback--transition-destination--desktop--clear.png",
+        "history--history--incompatible-detail-fallback--transition-destination--phone--clear.png",
+        "history--history--incompatible-detail-fallback--transition-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "loading",
+      "before": [
+        "task-040-supp-87ef7d0f13721bc11736f654-0-8c98027442680936.png"
+      ],
+      "after": [
+        "history--history--loading--desktop--clear.png",
+        "history--history--loading--phone--clear.png",
+        "history--history--loading--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "no-workouts-empty",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-0-222ca1fe80da48eb.png"
+      ],
+      "after": [
+        "history--history--no-workouts-empty--desktop--clear.png",
+        "history--history--no-workouts-empty--phone--clear.png",
+        "history--history--no-workouts-empty--phone--mono.png",
+        "history--history--no-workouts-empty--phone--signal.png",
+        "history--history--no-workouts-empty--phone--vapour.png",
+        "history--history--no-workouts-empty--short--short--clear.png",
+        "history--history--no-workouts-empty--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "populated-load-more",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-1-02ea5c2ea8d5008f.png"
+      ],
+      "after": [
+        "history--history--populated-load-more--desktop--clear.png",
+        "history--history--populated-load-more--phone--clear.png",
+        "history--history--populated-load-more--phone--mono.png",
+        "history--history--populated-load-more--phone--signal.png",
+        "history--history--populated-load-more--phone--vapour.png",
+        "history--history--populated-load-more--short--short--clear.png",
+        "history--history--populated-load-more--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png"
+      ],
+      "after": [
+        "history--history--selected-filters--desktop--clear.png",
+        "history--history--selected-filters--phone--clear.png",
+        "history--history--selected-filters--phone--mono.png",
+        "history--history--selected-filters--phone--signal.png",
+        "history--history--selected-filters--phone--vapour.png",
+        "history--history--selected-filters--tablet--clear.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--clear.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--mono.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--signal.png",
+        "responsive--history--selected-filters--representative-responsive--desktop--vapour.png",
+        "responsive--history--selected-filters--representative-responsive--phone--clear.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--clear.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--mono.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--signal.png",
+        "responsive--history--selected-filters--representative-responsive--tablet--vapour.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--clear.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--mono.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--signal.png",
+        "responsive--history--selected-filters--representative-responsive-short--short--vapour.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "active-session-resume",
+      "before": [
+        "task-040-supp-b46b5121bb4dcd5ceeec7568-0-d79a4f866a66e5c7.png"
+      ],
+      "after": [
+        "home--home--active-session-resume--desktop--clear.png",
+        "home--home--active-session-resume--phone--clear.png",
+        "home--home--active-session-resume--phone--mono.png",
+        "home--home--active-session-resume--phone--signal.png",
+        "home--home--active-session-resume--phone--vapour.png",
+        "home--home--active-session-resume--short--short--clear.png",
+        "home--home--active-session-resume--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "compatible-review-entry",
+      "before": [
+        "task-040-supp-a5a08c9cccfe5926a26566bd-5-2c362783c822ac2c.png"
+      ],
+      "after": [
+        "home--home--compatible-review-entry--transition-destination--desktop--clear.png",
+        "home--home--compatible-review-entry--transition-destination--phone--clear.png",
+        "home--home--compatible-review-entry--transition-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-empty",
+      "before": [
+        "task-040-supp-bc36f5da09d34efa0fcd57cc-1-0e739aa62ed8eb66.png"
+      ],
+      "after": [
+        "home--home--favorites-empty--desktop--clear.png",
+        "home--home--favorites-empty--phone--clear.png",
+        "home--home--favorites-empty--phone--mono.png",
+        "home--home--favorites-empty--phone--signal.png",
+        "home--home--favorites-empty--phone--vapour.png",
+        "home--home--favorites-empty--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "favorites-populated",
+      "before": [
+        "task-040-supp-bc36f5da09d34efa0fcd57cc-3-7b10a56b1aa19126.png"
+      ],
+      "after": [
+        "home--home--favorites-populated--desktop--clear.png",
+        "home--home--favorites-populated--phone--clear.png",
+        "home--home--favorites-populated--phone--mono.png",
+        "home--home--favorites-populated--phone--signal.png",
+        "home--home--favorites-populated--phone--vapour.png",
+        "home--home--favorites-populated--short--short--clear.png",
+        "home--home--favorites-populated--tablet--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--mono.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--signal.png",
+        "responsive--home--favorites-populated--representative-responsive--desktop--vapour.png",
+        "responsive--home--favorites-populated--representative-responsive--phone--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--clear.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--mono.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--signal.png",
+        "responsive--home--favorites-populated--representative-responsive--tablet--vapour.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--clear.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--mono.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--signal.png",
+        "responsive--home--favorites-populated--representative-responsive-short--short--vapour.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "history-populated",
+      "before": [
+        "task-040-supp-bc36f5da09d34efa0fcd57cc-2-6ce220c20cea3d96.png"
+      ],
+      "after": [
+        "home--home--history-populated--desktop--clear.png",
+        "home--home--history-populated--phone--clear.png",
+        "home--home--history-populated--phone--mono.png",
+        "home--home--history-populated--phone--signal.png",
+        "home--home--history-populated--phone--vapour.png",
+        "home--home--history-populated--short--short--clear.png",
+        "home--home--history-populated--tablet--clear.png",
+        "responsive--home--history-populated--representative-responsive--desktop--clear.png",
+        "responsive--home--history-populated--representative-responsive--desktop--mono.png",
+        "responsive--home--history-populated--representative-responsive--desktop--signal.png",
+        "responsive--home--history-populated--representative-responsive--desktop--vapour.png",
+        "responsive--home--history-populated--representative-responsive--phone--clear.png",
+        "responsive--home--history-populated--representative-responsive--tablet--clear.png",
+        "responsive--home--history-populated--representative-responsive--tablet--mono.png",
+        "responsive--home--history-populated--representative-responsive--tablet--signal.png",
+        "responsive--home--history-populated--representative-responsive--tablet--vapour.png",
+        "responsive--home--history-populated--representative-responsive-short--short--clear.png",
+        "responsive--home--history-populated--representative-responsive-short--short--mono.png",
+        "responsive--home--history-populated--representative-responsive-short--short--signal.png",
+        "responsive--home--history-populated--representative-responsive-short--short--vapour.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "no-history",
+      "before": [
+        "task-040-supp-bc36f5da09d34efa0fcd57cc-0-fcb6f758bb9c3efb.png"
+      ],
+      "after": [
+        "home--home--no-history--desktop--clear.png",
+        "home--home--no-history--phone--clear.png",
+        "home--home--no-history--phone--mono.png",
+        "home--home--no-history--phone--signal.png",
+        "home--home--no-history--phone--vapour.png",
+        "home--home--no-history--reduced-motion--phone--clear.png",
+        "home--home--no-history--short--short--clear.png",
+        "home--home--no-history--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "read-error-retry",
+      "before": [
+        "task-040-supp-2a0821315cbd7ae14c6700ef-8-92734a0d6652060b.png"
+      ],
+      "after": [
+        "home--home--read-error-retry--favorites-list--desktop--clear.png",
+        "home--home--read-error-retry--favorites-list--phone--clear.png",
+        "home--home--read-error-retry--favorites-list--phone--mono.png",
+        "home--home--read-error-retry--favorites-list--phone--signal.png",
+        "home--home--read-error-retry--favorites-list--phone--vapour.png",
+        "home--home--read-error-retry--favorites-list--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "reads-loading",
+      "before": [
+        "task-040-supp-2a0821315cbd7ae14c6700ef-7-e90a6275572d43e9.png"
+      ],
+      "after": [
+        "home--home--reads-loading--favorites-list--desktop--clear.png",
+        "home--home--reads-loading--favorites-list--phone--clear.png",
+        "home--home--reads-loading--favorites-list--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Home",
+      "route": "/",
+      "state": "suggestion-selected-dismissed",
+      "before": [
+        "task-040-supp-a5a08c9cccfe5926a26566bd-0-8d8984f774b1b1af.png"
+      ],
+      "after": [
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--default-destination-after-dismiss--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--mono.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--signal.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--phone--vapour.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-after-reload--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--dismissed-short--short--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--mono.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--signal.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--phone--vapour.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next--tablet--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--suggested-next-short--short--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--desktop--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--phone--clear.png",
+        "suggestion--home--suggestion-selected-dismissed--use-this-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "as-performed-populated",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-7-c00ed6b58c97cbc7.png"
+      ],
+      "after": [
+        "detail--session-detail--as-performed-populated--desktop--clear.png",
+        "detail--session-detail--as-performed-populated--phone--clear.png",
+        "detail--session-detail--as-performed-populated--phone--mono.png",
+        "detail--session-detail--as-performed-populated--phone--signal.png",
+        "detail--session-detail--as-performed-populated--phone--vapour.png",
+        "detail--session-detail--as-performed-populated--short--short--clear.png",
+        "detail--session-detail--as-performed-populated--tablet--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--desktop--vapour.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--phone--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive--tablet--vapour.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--clear.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--mono.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--signal.png",
+        "responsive--session-detail--as-performed-populated--representative-responsive-short--short--vapour.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "error-retry",
+      "before": [
+        "task-040-supp-87ef7d0f13721bc11736f654-3-839c3fb0e3010f2e.png"
+      ],
+      "after": [
+        "detail--session-detail--error-retry--desktop--clear.png",
+        "detail--session-detail--error-retry--phone--clear.png",
+        "detail--session-detail--error-retry--phone--mono.png",
+        "detail--session-detail--error-retry--phone--signal.png",
+        "detail--session-detail--error-retry--phone--vapour.png",
+        "detail--session-detail--error-retry--short--short--clear.png",
+        "detail--session-detail--error-retry--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "favorite-save-failure",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-9-1474b8d2b2a7a689.png"
+      ],
+      "after": [
+        "detail--session-detail--favorite-save-failure--desktop--clear.png",
+        "detail--session-detail--favorite-save-failure--phone--clear.png",
+        "detail--session-detail--favorite-save-failure--phone--mono.png",
+        "detail--session-detail--favorite-save-failure--phone--signal.png",
+        "detail--session-detail--favorite-save-failure--phone--vapour.png",
+        "detail--session-detail--favorite-save-failure--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "loading",
+      "before": [
+        "task-040-supp-87ef7d0f13721bc11736f654-2-f1765262c741be63.png"
+      ],
+      "after": [
+        "detail--session-detail--loading--desktop--clear.png",
+        "detail--session-detail--loading--phone--clear.png",
+        "detail--session-detail--loading--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "missing-or-not-yours",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-14-15bbb2c2ec9145e2.png"
+      ],
+      "after": [
+        "detail--session-detail--missing-or-not-yours--missing--desktop--clear.png",
+        "detail--session-detail--missing-or-not-yours--missing--phone--clear.png",
+        "detail--session-detail--missing-or-not-yours--missing--tablet--clear.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--desktop--clear.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--phone--clear.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--phone--mono.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--phone--signal.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--phone--vapour.png",
+        "detail--session-detail--missing-or-not-yours--not-yours--tablet--clear.png",
+        "detail--session-detail--missing-or-not-yours--not-yours-short--short--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-ineligible",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-13-9eccfd351132ae06.png"
+      ],
+      "after": [
+        "detail--session-detail--restart-ineligible--desktop--clear.png",
+        "detail--session-detail--restart-ineligible--phone--clear.png",
+        "detail--session-detail--restart-ineligible--phone--mono.png",
+        "detail--session-detail--restart-ineligible--phone--signal.png",
+        "detail--session-detail--restart-ineligible--phone--vapour.png",
+        "detail--session-detail--restart-ineligible--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-read-validation-error",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-10-f12c4b0c6696813c.png"
+      ],
+      "after": [
+        "detail--session-detail--restart-read-validation-error--desktop--clear.png",
+        "detail--session-detail--restart-read-validation-error--phone--clear.png",
+        "detail--session-detail--restart-read-validation-error--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "restart-review",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-11-f66541ec89a7e933.png"
+      ],
+      "after": [
+        "detail--session-detail--restart-review--transition-destination--desktop--clear.png",
+        "detail--session-detail--restart-review--transition-destination--phone--clear.png",
+        "detail--session-detail--restart-review--transition-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "section-collapsed",
+      "before": [
+        "task-040-supp-2e78b0bdac9c5997c9aae21f-8-79be81203283092a.png"
+      ],
+      "after": [
+        "detail--session-detail--section-collapsed--desktop--clear.png",
+        "detail--session-detail--section-collapsed--phone--clear.png",
+        "detail--session-detail--section-collapsed--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Session Detail",
+      "route": "/history/:id",
+      "state": "unscored-or-unlogged",
+      "before": [
+        "task-040-supp-87ef7d0f13721bc11736f654-4-97d223665ef3a4c3.png"
+      ],
+      "after": [
+        "detail--session-detail--unscored-or-unlogged--desktop--clear.png",
+        "detail--session-detail--unscored-or-unlogged--phone--clear.png",
+        "detail--session-detail--unscored-or-unlogged--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "appearance-system-or-skin",
+      "before": [
+        "task-040-supp-ee73f5391eaa608f491a8391-0-713853bbc4c84646.png",
+        "task-040-supp-ee73f5391eaa608f491a8391-4-d693249957e6f8a2.png"
+      ],
+      "after": [
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--desktop--vapour.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--phone--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive--tablet--vapour.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--clear.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--mono.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--signal.png",
+        "responsive--settings--appearance-system-or-skin--representative-responsive-short--short--vapour.png",
+        "settings--settings--appearance-system-or-skin--chosen-clear--desktop--clear.png",
+        "settings--settings--appearance-system-or-skin--chosen-clear--phone--clear.png",
+        "settings--settings--appearance-system-or-skin--chosen-clear--tablet--clear.png",
+        "settings--settings--appearance-system-or-skin--chosen-mono--desktop--mono.png",
+        "settings--settings--appearance-system-or-skin--chosen-mono--phone--mono.png",
+        "settings--settings--appearance-system-or-skin--chosen-mono--tablet--mono.png",
+        "settings--settings--appearance-system-or-skin--chosen-signal--phone--signal.png",
+        "settings--settings--appearance-system-or-skin--chosen-vapour--phone--vapour.png",
+        "settings--settings--appearance-system-or-skin--system-contrast--desktop--mono.png",
+        "settings--settings--appearance-system-or-skin--system-contrast--phone--mono.png",
+        "settings--settings--appearance-system-or-skin--system-contrast--tablet--mono.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "constraints-loading-empty-error-populated",
+      "before": [
+        "task-040-supp-caa7650b6d2bedf9df16aa38-1-c55c8939d7d2d559.png"
+      ],
+      "after": [
+        "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--desktop--clear.png",
+        "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--phone--clear.png",
+        "settings--settings--constraints-loading-empty-error-populated--actual-populated-after-reload--tablet--clear.png",
+        "settings--settings--constraints-loading-empty-error-populated--empty--desktop--clear.png",
+        "settings--settings--constraints-loading-empty-error-populated--empty--phone--clear.png",
+        "settings--settings--constraints-loading-empty-error-populated--empty--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "inline-save-pending-saved",
+      "before": [
+        "task-040-supp-caa7650b6d2bedf9df16aa38-2-c1fc887a46cc675b.png",
+        "task-040-supp-caa7650b6d2bedf9df16aa38-4-4ef7030964649141.png"
+      ],
+      "after": [
+        "settings--settings--inline-save-pending-saved--actual-saved--desktop--clear.png",
+        "settings--settings--inline-save-pending-saved--actual-saved--phone--clear.png",
+        "settings--settings--inline-save-pending-saved--actual-saved--tablet--clear.png",
+        "settings--settings--inline-save-pending-saved--pending--desktop--clear.png",
+        "settings--settings--inline-save-pending-saved--pending--phone--clear.png",
+        "settings--settings--inline-save-pending-saved--pending--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "preferences-populated",
+      "before": [
+        "task-040-supp-caa7650b6d2bedf9df16aa38-0-5f3c1688c99c2f53.png"
+      ],
+      "after": [
+        "responsive--settings--preferences-populated--representative-responsive--desktop--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive--desktop--vapour.png",
+        "responsive--settings--preferences-populated--representative-responsive--phone--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive--tablet--vapour.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--clear.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--mono.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--signal.png",
+        "responsive--settings--preferences-populated--representative-responsive-short--short--vapour.png",
+        "settings--settings--preferences-populated--desktop--clear.png",
+        "settings--settings--preferences-populated--phone--clear.png",
+        "settings--settings--preferences-populated--phone--mono.png",
+        "settings--settings--preferences-populated--phone--signal.png",
+        "settings--settings--preferences-populated--phone--vapour.png",
+        "settings--settings--preferences-populated--reduced-motion--phone--clear.png",
+        "settings--settings--preferences-populated--reduced-motion-short--short--clear.png",
+        "settings--settings--preferences-populated--short--short--clear.png",
+        "settings--settings--preferences-populated--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "save-refusal-rollback",
+      "before": [
+        "task-040-supp-caa7650b6d2bedf9df16aa38-3-c88cc360d5d036f1.png"
+      ],
+      "after": [
+        "settings--settings--save-refusal-rollback--desktop--clear.png",
+        "settings--settings--save-refusal-rollback--phone--clear.png",
+        "settings--settings--save-refusal-rollback--phone--mono.png",
+        "settings--settings--save-refusal-rollback--phone--signal.png",
+        "settings--settings--save-refusal-rollback--phone--vapour.png",
+        "settings--settings--save-refusal-rollback--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings",
+      "state": "sign-out",
+      "before": [
+        "task-040-supp-8f1b80a252244f8aeab70843-4-370400f99fa8f754.png"
+      ],
+      "after": [
+        "settings--settings--sign-out--transition-destination--desktop--clear.png",
+        "settings--settings--sign-out--transition-destination--phone--clear.png",
+        "settings--settings--sign-out--transition-destination--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "default-change-rollback",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-4-f1aa025c2d860a43.png"
+      ],
+      "after": [
+        "places--settings--default-change-rollback--desktop--clear.png",
+        "places--settings--default-change-rollback--phone--clear.png",
+        "places--settings--default-change-rollback--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "default-delete-reassignment",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-5-521ada6e354e95ef.png"
+      ],
+      "after": [
+        "places--settings--default-delete-reassignment--desktop--clear.png",
+        "places--settings--default-delete-reassignment--phone--clear.png",
+        "places--settings--default-delete-reassignment--phone--mono.png",
+        "places--settings--default-delete-reassignment--phone--signal.png",
+        "places--settings--default-delete-reassignment--phone--vapour.png",
+        "places--settings--default-delete-reassignment--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "delete-confirmation",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-6-b47f867ade160ca3.png"
+      ],
+      "after": [
+        "places--settings--delete-confirmation--desktop--clear.png",
+        "places--settings--delete-confirmation--phone--clear.png",
+        "places--settings--delete-confirmation--phone--mono.png",
+        "places--settings--delete-confirmation--phone--signal.png",
+        "places--settings--delete-confirmation--phone--vapour.png",
+        "places--settings--delete-confirmation--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "edit-inline-save",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-3-611009aa416d4418.png"
+      ],
+      "after": [
+        "places--settings--edit-inline-save--after-reload--desktop--clear.png",
+        "places--settings--edit-inline-save--after-reload--phone--clear.png",
+        "places--settings--edit-inline-save--after-reload--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "equipment-loading-error",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-1-c933cbcff05ddb32.png",
+        "task-040-supp-3f9b85dffd905f363d54ecd8-7-376f44195f3985fe.png"
+      ],
+      "after": [
+        "places--settings--equipment-loading-error--error-member--desktop--clear.png",
+        "places--settings--equipment-loading-error--error-member--phone--clear.png",
+        "places--settings--equipment-loading-error--error-member--phone--mono.png",
+        "places--settings--equipment-loading-error--error-member--phone--signal.png",
+        "places--settings--equipment-loading-error--error-member--phone--vapour.png",
+        "places--settings--equipment-loading-error--error-member--tablet--clear.png",
+        "places--settings--equipment-loading-error--loading-member--desktop--clear.png",
+        "places--settings--equipment-loading-error--loading-member--phone--clear.png",
+        "places--settings--equipment-loading-error--loading-member--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "list-populated",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-0-70f9da955ace8c1a.png"
+      ],
+      "after": [
+        "places--settings--list-populated--after-default-reassignment-and-delete-reload--desktop--clear.png",
+        "places--settings--list-populated--after-default-reassignment-and-delete-reload--phone--clear.png",
+        "places--settings--list-populated--after-default-reassignment-and-delete-reload--tablet--clear.png",
+        "places--settings--list-populated--desktop--clear.png",
+        "places--settings--list-populated--phone--clear.png",
+        "places--settings--list-populated--phone--mono.png",
+        "places--settings--list-populated--phone--signal.png",
+        "places--settings--list-populated--phone--vapour.png",
+        "places--settings--list-populated--short--short--clear.png",
+        "places--settings--list-populated--tablet--clear.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--clear.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--mono.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--signal.png",
+        "responsive--settings--list-populated--representative-responsive--desktop--vapour.png",
+        "responsive--settings--list-populated--representative-responsive--phone--clear.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--clear.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--mono.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--signal.png",
+        "responsive--settings--list-populated--representative-responsive--tablet--vapour.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--clear.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--mono.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--signal.png",
+        "responsive--settings--list-populated--representative-responsive-short--short--vapour.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "new-location-editor",
+      "before": [
+        "task-040-supp-3f9b85dffd905f363d54ecd8-2-83314b953f6ec562.png"
+      ],
+      "after": [
+        "places--settings--new-location-editor--desktop--clear.png",
+        "places--settings--new-location-editor--phone--clear.png",
+        "places--settings--new-location-editor--phone--mono.png",
+        "places--settings--new-location-editor--phone--signal.png",
+        "places--settings--new-location-editor--phone--vapour.png",
+        "places--settings--new-location-editor--short--short--clear.png",
+        "places--settings--new-location-editor--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "no-locations-empty",
+      "before": [
+        "task-040-supp-30404395da78afd6c793792f-2-92ba22ec23c362fc.png"
+      ],
+      "after": [
+        "places--settings--no-locations-empty--desktop--clear.png",
+        "places--settings--no-locations-empty--phone--clear.png",
+        "places--settings--no-locations-empty--phone--mono.png",
+        "places--settings--no-locations-empty--phone--signal.png",
+        "places--settings--no-locations-empty--phone--vapour.png",
+        "places--settings--no-locations-empty--short--short--clear.png",
+        "places--settings--no-locations-empty--tablet--clear.png"
+      ]
+    },
+    {
+      "screen": "Settings",
+      "route": "/settings/locations",
+      "state": "typed-viability-refusal-rollback",
+      "before": [
+        "task-040-supp-a079d16e9fac29d0496eb8d7-0-bcd34c4229e4116e.png"
+      ],
+      "after": [
+        "places--settings--typed-viability-refusal-rollback--desktop--clear.png",
+        "places--settings--typed-viability-refusal-rollback--phone--clear.png",
+        "places--settings--typed-viability-refusal-rollback--phone--mono.png",
+        "places--settings--typed-viability-refusal-rollback--phone--signal.png",
+        "places--settings--typed-viability-refusal-rollback--phone--vapour.png",
+        "places--settings--typed-viability-refusal-rollback--short--short--clear.png",
+        "places--settings--typed-viability-refusal-rollback--tablet--clear.png"
+      ]
+    }
+  ],
+  "dispositions": [
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "incompatible-detail-fallback"
+      },
+      "reason": "Home recents and History rows share useOpenHistorySession; the incompatible fallback is exercised on History, where a not-started record is listed.",
+      "sources": [
+        "src/app/useOpenHistorySession.ts",
+        "src/app/Home.tsx",
+        "e2e/design-0143/collections-settings.spec.ts"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Home",
+        "route": "/",
+        "state": "suggestion-selected-dismissed"
+      },
+      "reason": "The suggestion needs a multi-week pattern history; its Card composition is shared with Train today and is covered by Home.test.tsx.",
+      "sources": [
+        "src/app/Home.tsx",
+        "src/app/Home.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Session Detail",
+        "route": "/history/:id",
+        "state": "restart-active-confirmation"
+      },
+      "reason": "Restart with an active session raises the shared workout-chrome confirmation, whose after evidence belongs to the workout lifecycle group.",
+      "sources": [
+        "src/app/SessionDetail.tsx",
+        "src/ui/workout-chrome.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "missing-profile"
+      },
+      "reason": "The guard sends a user with no onboarded profile to /onboarding; the empty branch is unreachable through the route.",
+      "sources": [
+        "src/app/guards.tsx",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "profile-error-retry"
+      },
+      "reason": "A failed Boot-watched profile read is answered by Boot’s own retry before Settings mounts; the Settings footer Retry is covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings",
+        "state": "profile-loading"
+      },
+      "reason": "The profile read is Boot-watched; BootGate withholds the route tree while it is pending, so Boot is the native surface.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/Settings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "locations-error-retry"
+      },
+      "reason": "A failed Boot-watched locations read is answered by Boot’s retry before this route mounts; the footer Retry branch is covered by the mounted component test.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/LocationSettings.test.tsx"
+      ],
+      "renderedClaim": false
+    },
+    {
+      "kind": "source-branch-disposition",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "Settings",
+        "route": "/settings/locations",
+        "state": "locations-loading"
+      },
+      "reason": "The locations read is Boot-watched; BootGate withholds the route tree while it is pending.",
+      "sources": [
+        "src/state/boot-queries.ts",
+        "src/app/LocationSettings.test.tsx"
+      ],
+      "renderedClaim": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "contract",
+      "text": "A completed recent whose stored prescription validates opens in Review, not Session Detail.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "A completed, valid record opens Review; a never-started record follows its durable /history/:id fallback into Session Detail.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "reviewable": "distinct"
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A held then failed page read keeps the one card and puts Retry in the footer; Retry re-reads and Load older workouts widens the window to the remaining records.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "before": 20,
+        "after": 23
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A typed settings_not_viable refusal rolls the control back to the stored value and says so; the stored profile still reads experience_level=some.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "After a full reload the saved Confident experience and the Hard conditioning limitation are still selected, and the stored profile reads experience_level=confident.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Another user’s completed record and a random id both answer Workout not found with no sections disclosed; Open history returns to /history.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Back on a directly entered record goes to /history; Back on a record opened from History returns to the prior in-app route.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Choosing a skin writes clear.skin and data-skin through the picker; the stored key is what boot applies on reload (the same path every capture here uses to pin its skin).",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Create then rename are real save_location writes: after a full reload the renamed place is listed and stored once.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "History is one Workout history card: the filter, rows and every state are its content, rows are list items with inset rules and no frame, and Load older workouts sits in the pinned footer.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "rowRules": [
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          },
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          },
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Home groups are Train today, This week and the Recent workouts / Favorites tab panel: each a current Card with its 12px accent bar and an internal heading, none nested.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": [
+        {
+          "heading": "Train today",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        },
+        {
+          "heading": "This week",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        },
+        {
+          "heading": "Recent workouts",
+          "barWidth": "12px",
+          "headingLevel": "2"
+        }
+      ]
+    },
+    {
+      "kind": "contract",
+      "text": "Save as favorite wrote one saved_workouts row for the owner; the Favorites tab lists it after a full reload.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Saving a nameless place is refused before any write: the Name field is marked invalid and takes focus.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Session Detail: one Overview card holds the facts (dl), provenance and the Mood/Notes sub-groups, each with a ruled heading; each section is one card whose later blocks are separated by an internal rule; the outline never skips a level.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "outline": [
+          {
+            "level": 1,
+            "text": "TASK-035 reviewable session"
+          },
+          {
+            "level": 2,
+            "text": "Overview"
+          },
+          {
+            "level": 3,
+            "text": "Mood"
+          },
+          {
+            "level": 3,
+            "text": "Notes"
+          }
+        ],
+        "blocks": [
+          "none",
+          "solid",
+          "none"
+        ],
+        "subgroups": [
+          {
+            "text": "Mood",
+            "rule": "solid"
+          },
+          {
+            "text": "Notes",
+            "rule": "solid"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "Settings is five landmark sections, each a current card with a 12px bar and its heading inside: Training, Limitations, Appearance, Places and equipment, Session.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": [
+        {
+          "level": 1,
+          "text": "Settings"
+        },
+        {
+          "level": 2,
+          "text": "Training"
+        },
+        {
+          "level": 2,
+          "text": "Limitations"
+        },
+        {
+          "level": 2,
+          "text": "Appearance"
+        },
+        {
+          "level": 2,
+          "text": "Places and equipment"
+        },
+        {
+          "level": 2,
+          "text": "Session"
+        }
+      ]
+    },
+    {
+      "kind": "contract",
+      "text": "The default cannot be deleted until another place is made default; a failed default change rolls back; the confirmed delete removes the stored row and survives reload.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "Use this follows the actual recommendation path. Dismiss persists for today across reload and Generate opens without suggestion-prefill query parameters; the form independently derives its recommendation from the same history. No Generate/Quick start/model POST was submitted.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "contract",
+      "text": "With an active session the footer is Resume workout and leads to /workout; Generate workout is not offered.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user onboarded through complete_onboarding; sessions are written with persist_session/start_session/complete_session, the favorite through the app’s own Save as favorite.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user with one onboarded place; creates, renames, default changes and deletes are real writes. Only the named equipment read, default change and viability refusal are answered locally for that user.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user; one completed reviewable record, one never-started record and twenty-one older prescriptions written through persist_session.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user; the first experience PATCH is held then answered with the typed settings_not_viable refusal, every later write is the real endpoint.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected recommendation/path are derived from the actual owned rows, not a mocked Home suggestion or a model response.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "Additive representative layouts only: non-phone projects add all four skins; the phone project adds all four short-phone skins. Existing full-phone skin evidence and every original record/picture are retained. This is not every state/skin/width combination or deployed proof.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "Responsive palette sampling uses the existing owned screenshot fixture to set the stored skin and document attribute; real appearance-picker persistence and selection remain asserted in the original settings case. These are layout pictures, not new preference behavior.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "fixture",
+      "text": "Two disposable namespaced users. The viewer owns a logged completed record, an unlogged completed record and a never-started record; the other user owns one completed record.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "keyboard",
+      "text": "A section heading is a disclosure button: Enter toggles aria-expanded, and the focused trigger is bracketed.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": null,
+        "name": "Standard",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Goal radiogroup is reached by Tab and framed by the static bracket layer.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "radio",
+        "name": "Balanced",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Home tablist is the package TabBar: ArrowRight moves focus and selection from Recent workouts to Favorites, and the bracket layer frames the focused tab.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "mode": "brackets",
+        "tag": "button",
+        "role": "tab",
+        "name": "Favorites",
+        "layers": 1,
+        "bracketOpacity": 1
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Show filter is a native select reached by Tab; as a field it owns its focus.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "mode": "brackets",
+        "tag": "select",
+        "role": null,
+        "name": "All entriesCompletedPartialNot startedRe",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The delete confirmation is a native dialog: focus is held inside it while open and Escape dismisses it without deleting.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": null
+    },
+    {
+      "kind": "keyboard",
+      "text": "The limitations note owns its focus: the bracket layer stays hidden on a text field.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "mode": "brackets",
+        "tag": "textarea",
+        "role": null,
+        "name": "",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "motion",
+      "text": "Home’s three groups arrive as one .clr-boot set, 40ms apart, once; switching tabs is an inline update and replays nothing.",
+      "projects": [
+        "desktop",
+        "mobile",
+        "tablet"
+      ],
+      "data": {
+        "arrivals": [
+          {
+            "label": "",
+            "delays": [
+              "0s"
+            ]
+          },
+          {
+            "label": "Train today | This week | Recent workouts",
+            "delays": [
+              "0s",
+              "0.04s",
+              "0.08s"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "kind": "motion",
+      "text": "Under prefers-reduced-motion Home resolves at once: no .clr-boot arrival and no running animation.",
+      "projects": [
+        "mobile"
+      ],
+      "data": null
+    },
+    {
+      "kind": "motion",
+      "text": "Under prefers-reduced-motion Settings comes to rest after reload with no animation or transition left running.",
+      "projects": [
+        "mobile"
+      ],
+      "data": null
+    }
+  ]
+}

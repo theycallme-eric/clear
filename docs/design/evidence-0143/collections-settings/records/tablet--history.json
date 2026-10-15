@@ -1,0 +1,520 @@
+{
+  "version": 1,
+  "task": "TASK-035",
+  "issue": 381,
+  "consumer": "collections-settings",
+  "phase": "after",
+  "caseTitle": "history: one card, filters, pagination, routing, loading and error",
+  "project": "tablet",
+  "sourceFile": "e2e/design-0143/collections-settings.spec.ts",
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "8157cfd3e33ce7e9ad3aaa91994e45072f02cd15adfd2864a17b2adff9749e70",
+    "applicationCommit": "4a5e512ffe96fae223a205c72284021d627dbcca",
+    "testedDeployment": "http://127.0.0.1:59414"
+  },
+  "status": "passed",
+  "captures": [
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--no-workouts-empty--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "no-workouts-empty",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "no-workouts-empty"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-0-222ca1fe80da48eb.png",
+        "sha256": "1c566216fcb8746e3315d9ab7b4c9a125328ed3179e01d57670a5d2238226b6a",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--no-workouts-empty--tablet--clear.png",
+        "sha256": "d29f4901a75f3a4588c4400cb76328cef4bfb6917b5d49494f781652bdcccaba",
+        "bytes": 169880,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--populated-load-more--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "populated-load-more",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "populated-load-more"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-1-02ea5c2ea8d5008f.png",
+        "sha256": "ddded9013b35638488f0c3b9dafc9286c95735a1b971534d709c81eae043dfee",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--populated-load-more--tablet--clear.png",
+        "sha256": "aeb8512e405c9a5dbbd93d46d42448c6dc0326b3596c9106f05b142961b5b826",
+        "bytes": 256267,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--loading--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "loading",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "loading"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-0-8c98027442680936.png",
+        "sha256": "d3a7003d408f49756846aad646c22352ee11388a5d69ffdcdf8ff78973ecf5ba",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe",
+          "clr-scan-sweep",
+          "clr-cursor-blink"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--loading--tablet--clear.png",
+        "sha256": "6f415642be2a2b7c45cb41bac78c4bfe066338394c0b393ed6c9d5212f5222f8",
+        "bytes": 153369,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--error-retry--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "error-retry",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "error-retry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-87ef7d0f13721bc11736f654-1-1cc7349922f6da17.png",
+        "sha256": "51aff3e8cb528858a9bbc25a3f920cb11a60abc0f08d8dcc2d8796e8c685d349",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--error-retry--tablet--clear.png",
+        "sha256": "796788f93ae09fb144a11cb11f156764c3ab3a0142d4e22c4e846da6c476f91d",
+        "bytes": 161026,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--filtered-no-matches--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "filtered-no-matches",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "filtered-no-matches"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-2-2e5e5bf4bec13e9a.png",
+        "sha256": "2bfd171030cfb87f83cf9ec54157c507c171ae8afd0c17cf237af655917c9c57",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--filtered-no-matches--tablet--clear.png",
+        "sha256": "a460e560eab53f9eb3fe5b64f8698cefc36f05f6bb76de4c92755b3c39370db9",
+        "bytes": 172089,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--selected-filters--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "selected-filters",
+      "variant": null,
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "selected-filters"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-3-db8eaa7b882417f3.png",
+        "sha256": "629d397756679bd7441edb861d3d2e6fab86809758e7cb47a2ffb3863c09427e",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history",
+        "heading": "History",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--selected-filters--tablet--clear.png",
+        "sha256": "72677cca42f485f68e8250f9ad644b77af6290e4643696bb2597bc982aa77f94",
+        "bytes": 167617,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--compatible-review-entry--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "compatible-review-entry",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "compatible-review-entry"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-4-8f089f7594cc9834.png",
+        "sha256": "58626cd42a7c6675ff0e57cbbf282f5b8cfc011dcae4556cb7f2d3023d616da8",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/review",
+        "heading": "TASK-035 reviewable session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--compatible-review-entry--transition-destination--tablet--clear.png",
+        "sha256": "ddd070e55ddffabb21486971dbcb805838ccbe43bc6e3928f8e2a3beaaa70f75",
+        "bytes": 221413,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    },
+    {
+      "phase": "after",
+      "kind": "route-state",
+      "pairId": "history--history--incompatible-detail-fallback--tablet--clear",
+      "screen": "History",
+      "route": "/history",
+      "state": "incompatible-detail-fallback",
+      "variant": "transition-destination",
+      "baseline": {
+        "task": "TASK-001",
+        "inventory": "docs/design/0143-intake-baseline/route-state-inventory.json",
+        "mainSha": "f83ddc9770d2f013f65b0e5140ada09ca84b7583",
+        "screen": "History",
+        "route": "/history",
+        "state": "incompatible-detail-fallback"
+      },
+      "before": {
+        "directory": "docs/design/0143-intake-baseline/screenshots",
+        "screenshot": "task-040-supp-2e78b0bdac9c5997c9aae21f-12-a2f4a6f0499f4ac2.png",
+        "sha256": "d0046799ad5249431514e82d37752d2df53a50d643bda4065d47904f6e1fa3af",
+        "variant": "default"
+      },
+      "viewport": {
+        "id": "tablet",
+        "width": 768,
+        "height": 1024
+      },
+      "skin": "clear",
+      "reached": {
+        "pathname": "/history/616bf37b-7b03-41d7-9284-5e99b872cbaa",
+        "heading": "TASK-035 not-started session",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": false,
+        "running": [
+          "clr-drift-a",
+          "clr-breathe",
+          "clr-drift-b",
+          "clr-breathe",
+          "clr-drift-c",
+          "clr-breathe"
+        ],
+        "settled": false
+      },
+      "screenshot": {
+        "name": "history--history--incompatible-detail-fallback--transition-destination--tablet--clear.png",
+        "sha256": "34cf3557607001d837557756e05ce01d4966badadd92a34f99b0cbb33f730aa6",
+        "bytes": 229113,
+        "explicit": true
+      },
+      "deterministic": true,
+      "liveGeneration": false
+    }
+  ],
+  "observations": [
+    {
+      "kind": "fixture",
+      "text": "A disposable namespaced user; one completed reviewable record, one never-started record and twenty-one older prescriptions written through persist_session."
+    },
+    {
+      "kind": "contract",
+      "text": "History is one Workout history card: the filter, rows and every state are its content, rows are list items with inset rules and no frame, and Load older workouts sits in the pinned footer.",
+      "data": {
+        "rowRules": [
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          },
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          },
+          {
+            "top": "0px",
+            "bottom": "0px",
+            "radius": "0px"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A held then failed page read keeps the one card and puts Retry in the footer; Retry re-reads and Load older workouts widens the window to the remaining records.",
+      "data": {
+        "before": 20,
+        "after": 23
+      }
+    },
+    {
+      "kind": "keyboard",
+      "text": "The Show filter is a native select reached by Tab; as a field it owns its focus.",
+      "data": {
+        "mode": "brackets",
+        "tag": "select",
+        "role": null,
+        "name": "All entriesCompletedPartialNot startedRe",
+        "layers": 1,
+        "bracketOpacity": 0
+      }
+    },
+    {
+      "kind": "contract",
+      "text": "A completed, valid record opens Review; a never-started record follows its durable /history/:id fallback into Session Detail.",
+      "data": {
+        "reviewable": "distinct"
+      }
+    }
+  ],
+  "dispositions": [],
+  "generation": {
+    "requests": 0,
+    "forwardedToProvider": 0,
+    "blockedUnexpected": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false
+}
