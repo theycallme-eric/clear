@@ -1881,7 +1881,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'DS-04a',
     module: 'src/ui/card.tsx',
     summary:
-      'The public 0.14.3 Card: one mandatory 12px bar, a corner picked from its height and the 70% card ground. The card imposes no heading level on its content.',
+      'The public 0.14.3 Card: one mandatory fixed-width bar, a corner picked from its height and the 70% card ground. The card imposes no heading level on its content.',
     specimens: [
       { state: 'default', Render: CardDefault },
       {
