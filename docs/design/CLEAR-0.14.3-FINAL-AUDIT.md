@@ -130,8 +130,18 @@ document is committed before they run so that both commands prove its exact head
 
 | Lane | Command | What it proves |
 | --- | --- | --- |
-| Deterministic integration | `execution-support.py browser --grep-invert 'live generation\|core loop:'` | current 0.14.3 local Playwright coverage in mobile, tablet and desktop: the three evidence specs re-assert behaviour without rebinding pictures, plus accessibility, reduced motion, shell, viewport and route checks. Historical 0.9.7 BEFORE captures remain in their original package lane; the deployed-only matrix requires a deployed origin. The shared public OTP case remains selected. |
-| Bounded genuine core loop | `execution-support.py live` | `e2e/core-loop.spec.ts` only: Welcome to Home with one genuine generation per viewport behind the fail-closed single-dispatch guard (`attempted 1, forwarded 1, blocked 0`), the release gate refusing a dirty or unrecorded head |
+| Deterministic integration | `execution-support.py browser --grep-invert 'live generation\|core loop:'` | current 0.14.3 applicable mobile-project coverage under the owner phone-only direction, executed in exact-case small batches through the reviewed original/actual command binding: the three evidence specs re-assert behaviour without rebinding pictures, plus accessibility, reduced motion, shell, viewport and route checks. Historical 0.9.7 BEFORE captures remain in their original package lane; the deployed-only matrix requires a deployed origin. The shared public OTP case remains selected. |
+| Bounded genuine core loop | `execution-support.py live` | `e2e/core-loop.spec.ts` only: Welcome to Home with one genuine generation for the selected phone proof behind the fail-closed single-dispatch guard (`attempted 1, forwarded 1, blocked 0`), the release gate refusing a dirty or unrecorded head. Same-source cached mobile proof retains its original commitAtCheck and is identified as cached validation; the failed extra tablet invocation remains reported |
+
+Recorded October15 on6b2c152: the7phone batches produced254passes and2existing inapplicable
+viewport-identity skips out of256actual named rows. The genuine phone core loop passed. The
+unchanged broad live helper then failed on an extra tablet invocation when the backend rejected
+the generated workout with GENERATION_FAILED / generation.duration_implausible (HTTP500).
+The aggregate command remains failed; the ledger retains both reserved slots and both outcomes.
+The explicit phone-only direction permits selecting the existing source-bound mobile result
+with fresh deterministic prerequisites; no new generation, ledger reset, helper/backend change
+or final deployed/owner acceptance follows from that cache selection. Final-head original
+verification and the exact deployed obligations below remain required.
 
 The live lane is bounded by the original pessimistic phase-wide five-proof-attempt ledger the
 wrapper holds outside this repository. This task does not reset, extend or widen it, and authorizes
