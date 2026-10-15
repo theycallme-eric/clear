@@ -16,13 +16,16 @@ is out of date in places. In order:
 1. Component implementations and declarations (`components/*/*.jsx`, `*.d.ts`), through the public
    entry `index.js` / `index.d.ts`.
 2. Shipped CSS (`styles.css` → `css/foundation.css`, `css/motion.css`, `css/skins.css`).
-3. The latest entries in `docs/decisions.md` and `CHANGELOG.md`. A later release overrides an
+3. The latest entries in `exports/clear-design-system-0.14.3/docs/decisions.md` and
+   `exports/clear-design-system-0.14.3/CHANGELOG.md`. A later release overrides an
    earlier entry.
 4. Rendered specimens (`preview/`, `components/*/card.html`).
-5. README, `docs/patterns.md`, `docs/register-status.md` and the worked app's notes: context only,
+5. README, `exports/clear-design-system-0.14.3/docs/patterns.md`,
+   `exports/clear-design-system-0.14.3/docs/register-status.md` and the worked app's notes: context only,
    where they agree with 1–4.
 
-All paths above are relative to `exports/clear-design-system-0.14.3/`, which is byte-identical to the
+Qualified `exports/` paths are repository-relative; other package entries above are relative to
+`exports/clear-design-system-0.14.3/`, which is byte-identical to the
 runtime copy `src/design-system/`. Stale prose never triggers a vendor edit. Rejected explorations
 were deleted by the export itself (CHANGELOG 0.10.0–0.10.1), and none is promoted here.
 
@@ -62,7 +65,7 @@ None is an open product question.
 | DISC-02 | README "Screen layout" puts the heading above the card, while README "Containment", the Card definition and the decisions put it inside | Follow the current Card: headings inside, field labels above | `src/ui/card.tsx` renders a real `Heading` inside the public card body (EXC-01) | `exports/clear-design-system-0.14.3/components/Card/Card.jsx`; `src/ui/card.test.tsx` |
 | DISC-03 | The decision index and kit notes still call light a "2px bleed" | Stale prose; follow the dual-halo emission, and keep the primary glow separate | Vendor `.clr-bleed` halo through the components, with glow only on the primary `Button` | `exports/clear-design-system-0.14.3/css/foundation.css` |
 | DISC-04 | README calls `--chamfer-xl` deprecated, but 0.10.1 and the CSS removed it | Treat as removed; use sm, md, lg or auto | Lint gate and production guard reject `xl` frames | `scripts/adherence/ds-config.mjs`; `src/test/design-system-097-deprecations.test.ts` |
-| DISC-05 | `docs/register-status.md` says "as of 0.10.1" but records 0.14.0 work; the index icon comment says no curves despite the 0.14.2 faces | Stale metadata; use the current TextAction and the explicit mood-face exception | Public `TextAction`; `src/ui/mood.tsx` | `src/ui/text-action.test.tsx`; `src/ui/mood.test.tsx` |
+| DISC-05 | `exports/clear-design-system-0.14.3/docs/register-status.md` says "as of 0.10.1" but records 0.14.0 work; the index icon comment says no curves despite the 0.14.2 faces | Stale metadata; use the current TextAction and the explicit mood-face exception | Public `TextAction`; `src/ui/mood.tsx` | `src/ui/text-action.test.tsx`; `src/ui/mood.test.tsx` |
 | DISC-06 | The critical Dialog sets an urgency border while its surface and halo stay in the card role | Verify before acting; keep the exact vendor; add an adapter only for a reproduced defect | Exact vendor. The critical appearance is not restyled; the critical button and the title carry severity in text. No defect was reproduced, so there is no adapter. | `exports/clear-design-system-0.14.3/components/Dialog/Dialog.jsx`; `src/ui/blocking-dialog.test.tsx` |
 | DISC-07 | README says no input waits for animation, but the native Dialog stays modal through its 200ms exit | Adopt the component-owned exit; regression-test close, reopen, Esc, backdrop and reduced motion | `src/ui/app-dialog.tsx` reports each user dismissal once after the vendor exit, and reduced motion closes at once (EXC-02) | `src/ui/app-dialog.test.tsx` |
 | DISC-08 | Kit notes describe sample View all, abandon and save behaviours on older content | Visual behaviour only; preserve the real product | Routes keep the product's navigation, persistence and recovery 011 behaviour | `docs/design/evidence-0143/workout-lifecycle/manifest.json` |

@@ -185,7 +185,7 @@ worked app, templates or previews is an adherence failure.
 | `Card` | `heading`, `meta`, `role`, `padding`; automatic corner; the 12px bar is always drawn. Compose it through `src/ui/card.tsx` (§4.1) |
 | `ChamferedFrame` | Exact SVG frame; prefer `role`; `cornerSize` is `auto`/`sm`/`md`/`lg` |
 | `Button`, `IconButton` | One primary forward action per screen; icon-only is always framed and needs an accessible label |
-| `TextAction` | Quiet non-destructive action: a real link (`href`) or button with a chevron, 40px target, optional `block` |
+| `TextAction` | Low-emphasis non-destructive action: a real link (`href`) or button with a chevron, 40px target, optional `block` |
 | `Chip` | Toggle with `aria-pressed` and a tick |
 | `Checkbox`, `RadioButton` | Native controls; square; checked state is a solid inner block |
 | `ChoiceGroup` | Fieldset/legend semantics over `Chip`; radio or multi-toggle behavior |
