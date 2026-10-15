@@ -245,7 +245,8 @@ test.describe('after verification: route guard, profile loading, session continu
       // check, so that is the screen that owns this failure: it names what
       // could not be read and offers the one retry.
       const failure = page.getByRole('alert').filter({ hasText: 'Could not read your profile' })
-      const retry = failure.getByRole('button', { name: 'Retry', exact: true })
+      // Retry is pinned in the screen footer, outside the error alert.
+      const retry = page.getByRole('button', { name: 'Retry', exact: true })
 
       async function expectProfileError() {
         await expect(failure, 'the profile error is not shown').toBeVisible({ timeout: 30_000 })
