@@ -185,10 +185,16 @@ describe('gallery coverage of app-composed components', () => {
     expect(requirements).toContain('DS-06')
   })
 
-  it('gives every part at least two states, and names each one once', () => {
+  it('shows only the current atmosphere, keeps other parts multi-state, and names each state once', () => {
     for (const entry of GALLERY_ENTRIES) {
       const states = entry.specimens.map((specimen) => specimen.state)
-      expect(states.length, entry.component).toBeGreaterThan(1)
+      if (entry.component === 'AtmosphereLayer') {
+        // 0.14.3 removed the atmosphere modes. Require exactly the shipped ground,
+        // rather than inventing a retired comparison mode to satisfy the old minimum.
+        expect(states, entry.component).toEqual(['data-atmosphere="full"'])
+      } else {
+        expect(states.length, entry.component).toBeGreaterThan(1)
+      }
       expect(new Set(states).size, entry.component).toBe(states.length)
     }
   })
@@ -241,15 +247,17 @@ describe('the app-composed section', () => {
     expect(body).not.toHaveClass('clr-chamfer--focus-owner')
   })
 
-  it('shows all three atmosphere levels at once', () => {
+  it('shows the one shipped atmosphere and no removed mode', () => {
     const { container } = renderWithProviders(<AppComposedParts />)
 
-    for (const level of ['full', 'quiet', 'operational']) {
-      expect(
-        container.querySelector(
-          `.clr-dev-gallery__atmosphere[data-atmosphere="${level}"] .clr-atmosphere`,
-        ),
-      ).not.toBeNull()
-    }
+    expect(
+      container.querySelector('.clr-dev-gallery__atmosphere[data-atmosphere="full"] .clr-atmosphere'),
+    ).not.toBeNull()
+    expect(container.querySelectorAll('.clr-dev-gallery__atmosphere')).toHaveLength(1)
+  })
+
+  it('specimens no retired card width', () => {
+    const card = GALLERY_ENTRIES.find((entry) => entry.component === 'Card')
+    expect(card?.specimens.map((specimen) => specimen.state).join('\n')).not.toMatch(/barWidth/)
   })
 })

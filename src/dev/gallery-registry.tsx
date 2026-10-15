@@ -145,14 +145,6 @@ function CardDefault() {
   )
 }
 
-function CardWideBar() {
-  return (
-    <Card>
-      <CardBody />
-    </Card>
-  )
-}
-
 function CardWithActions() {
   return (
     <Card>
@@ -1524,13 +1516,13 @@ const SWITCH_SPECIMENS: readonly GallerySpecimen[] = SWITCH_STATES.map(
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DS-06 — the atmosphere, at each of its three levels
+// DS-06 — the one atmosphere
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * One level, framed. The layer component is the app's own, unmodified: only the
- * dev stylesheet re-anchors its viewport-fixed position inside the frame, so
- * all three levels are comparable side by side instead of one page at a time.
+ * The atmosphere, framed. The layer component is the app's own, unmodified:
+ * only the dev stylesheet re-anchors its viewport-fixed position inside the
+ * frame, so it can be reviewed beside the other specimens.
  */
 function AtmosphereSpecimen({ level }: { level: AtmosphereLevel }) {
   return (
@@ -1544,8 +1536,7 @@ function AtmosphereSpecimen({ level }: { level: AtmosphereLevel }) {
   )
 }
 
-// Built from the level list, so a level added to the union arrives here without
-// anyone remembering to frame it.
+// Built from the shipped list, which 0.14.3 reduced to one atmosphere.
 const ATMOSPHERE_SPECIMENS: readonly GallerySpecimen[] = ATMOSPHERE_LEVELS.map(
   (level) => ({
     state: `data-atmosphere="${level}"`,
@@ -1890,10 +1881,9 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'DS-04a',
     module: 'src/ui/card.tsx',
     summary:
-      'A closed chamfered body with an optional accent bar. Bar width comes from the bar class; the card imposes no heading level on its content.',
+      'The public 0.14.3 Card: one mandatory fixed-width bar, a corner picked from its height and the 70% card ground. The card imposes no heading level on its content.',
     specimens: [
-      { state: 'barWidth="md"', Render: CardDefault },
-      { state: 'barWidth="lg"', Render: CardWideBar },
+      { state: 'default', Render: CardDefault },
       {
         state: 'with a control row',
         note: 'Dense composition: the card never styles what it contains.',
@@ -2214,7 +2204,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'DS-06',
     module: 'src/ui/atmosphere.tsx',
     summary:
-      'The export’s five-layer ground. One mount serves every screen and the level is an attribute; under reduced motion the layer drops its drift and its scanlines.',
+      'The export’s five-layer ground. One mount serves every screen and there are no modes; under reduced motion the layer drops its drift and its scanlines.',
     specimens: ATMOSPHERE_SPECIMENS,
   },
 ]

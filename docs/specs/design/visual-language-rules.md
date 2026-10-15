@@ -1,6 +1,10 @@
 # Clear — Visual Language Rules
 
-> **Status:** ACTIVE
+> **Status:** HISTORICAL — superseded by CLEAR 0.14.3. Pre-0.9 visual guidance kept as evidence only;
+> its accent column, theme swap, hue names and container layers are retired. Build from
+> `docs/specs/design/ATOMIC.md`; the rule-by-rule mapping is in
+> `docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md`.
+> **Former status:** ACTIVE
 > **Purpose:** Quick reference for how Clear looks, feels, and behaves visually. Read this before making any UI decisions.
 > **Audience:** Claude (context planning), the implementation agent (implementation), and any future contributors
 

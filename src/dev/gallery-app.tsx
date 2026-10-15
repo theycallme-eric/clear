@@ -48,8 +48,7 @@ export function AppComposedParts() {
       <p>
         {GALLERY_ENTRIES.length} parts, {stateCount} states. Everything CLEAR
         builds on top of the export: DS-04's card, select and disclosure, DS-05's
-        toast host and error surfaces, and DS-06's atmosphere at each of its
-        three levels.
+        toast host and error surfaces, and DS-06's one atmosphere.
       </p>
       {GALLERY_ENTRIES.map((entry) => (
         <EntrySection key={`${entry.component}-${entry.module}`} entry={entry} />
