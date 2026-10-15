@@ -253,7 +253,9 @@ export function Home() {
   // — the shared host makes it the screen, and cancelling puts Home back.
   return (
     <GenerationLoadingHost generation={generation} cancelTo={HOME_ROUTE}>
-      <AppHeader actions={<Link to={SETTINGS_ROUTE}>Settings</Link>}>
+      {/* TASK-026: the bare text link measured under the package's 40px touch
+          target; `.clr-hit` grows the hit area without moving the layout. */}
+      <AppHeader actions={<Link to={SETTINGS_ROUTE} className="clr-hit">Settings</Link>}>
         <ClearLogo size="md" />
       </AppHeader>
       <Screen
