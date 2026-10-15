@@ -1,5 +1,8 @@
 # CLEAR Design System 0.9.7 Reconciliation Audit
 
+> **HISTORICAL** — the 0.9.7 migration record. CLEAR 0.14.3 supersedes it: see
+> `docs/specs/design/ATOMIC.md` and `docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md`.
+
 **Status:** authoritative comparison complete; route reconciliation complete; final exact-head
 verification in progress
 **Received:** 2026-09-30  

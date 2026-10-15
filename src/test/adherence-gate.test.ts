@@ -42,6 +42,13 @@ describe('adherence gate', () => {
       file: 'component-internal-import.tsx',
       reports: /not component internals/,
     },
+    // REQ-002 / REQ-028 — the vocabulary 0.14.3 removed, and the evidence copies that are
+    // not runtime modules.
+    { name: 'a removed component prop', file: 'retired-prop.tsx', reports: /removed <ChamferedFrame glow>/ },
+    { name: 'a removed class', file: 'retired-class.tsx', reports: /Retired CLEAR class or token/ },
+    { name: 'a removed hue alias', file: 'retired-token.tsx', reports: /Retired CLEAR class or token/ },
+    { name: 'a removed atmosphere mode', file: 'retired-atmosphere.tsx', reports: /one atmosphere/ },
+    { name: 'a historical kit import', file: 'historical-import.tsx', reports: /evidence, not a runtime module/ },
   ]
 
   it.each(violations)('fails the build on $name', async ({ file, reports }) => {
@@ -86,5 +93,30 @@ describe('adherence gate', () => {
       .map((rule) => (Array.isArray(rule) ? rule[0] : rule))
 
     expect(severities.filter((severity) => severity !== 'off')).not.toContain('warn')
+  })
+
+  it('adds no blanket suppression: only the export’s own index override switches a rule off', () => {
+    const off = builtConfig().flatMap((block) =>
+      Object.entries(block.rules ?? {})
+        .filter(([, rule]) => (Array.isArray(rule) ? rule[0] : rule) === 'off')
+        .map(([name]) => ({ files: block.files, name })),
+    )
+
+    expect(off).toEqual([{ files: ['**/index.js'], name: 'no-restricted-imports' }])
+    expect(builtConfig()[0].ignores).toEqual(['dist', 'coverage', 'src/design-system/**'])
+  })
+
+  it('keeps the retired vocabulary out of production while tests may name it to prove it absent', () => {
+    const [, production, , tests] = builtConfig()
+    const selectors = (block: Linter.Config) =>
+      ((block.rules?.['no-restricted-syntax'] as unknown[]).slice(1) as { selector: string }[]).map(
+        (entry) => entry.selector,
+      )
+
+    const retired = selectors(production).filter((selector) => !selectors(tests).includes(selector))
+    expect(retired.some((selector) => selector.includes("data-atmosphere"))).toBe(true)
+    expect(retired.some((selector) => selector.includes('clr-card__bar--lg'))).toBe(true)
+    // The component, enum and import rules are not among the relaxed ones.
+    expect(selectors(tests).some((selector) => selector.includes('EmptyState'))).toBe(true)
   })
 })

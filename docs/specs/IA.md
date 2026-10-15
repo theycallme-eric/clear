@@ -1,9 +1,9 @@
 # Information Architecture
 
-> **Status:** ACTIVE — reconciled to the owner-supplied CLEAR Design System 0.9.7
+> **Status:** ACTIVE — visual sections reconciled to the owner-supplied CLEAR Design System 0.14.3
 > **Purpose:** the missing layer between *what a screen does* (requirements) and *what components exist* (design system). This says **which components compose which screen, in what states, reached from where.**
 > **Consumers:** whoever builds a UI requirement. Read the screen entry before writing markup.
-> **Companion:** `docs/specs/design/ATOMIC.md` — gated on the Claude Design export — will specify each component's variants, states, and token bindings. This document names the vocabulary; that one defines it.
+> **Companion:** `docs/specs/design/ATOMIC.md` specifies each component's variants, states, token bindings and containment rules. This document names the vocabulary; that one defines it. Where a screen entry and ATOMIC.md disagree on appearance, ATOMIC.md wins.
 
 ---
 
@@ -81,7 +81,7 @@ graph TD
 
 ## 3. Component vocabulary
 
-**Read `docs/specs/design/ATOMIC.md` first.** `clear-design-system@0.9.7` ships its public
+**Read `docs/specs/design/ATOMIC.md` first.** `clear-design-system@0.14.3` ships its public
 React components, 75 icons and a set of `.clr-*` classes. This section maps the names this
 document has used since before the export landed onto what actually exists.
 
@@ -93,9 +93,10 @@ and after the export there are only **three** of those.
 | IA name | Real | Notes |
 |---|---|---|
 | `ChamferedFrame` | **ships** | or the `.clr-chamfer` class, which is the default choice |
-| `Card` | **DS-04a** | `.clr-card` ships as CSS; the React wrapper does not |
-| `CTAButton` | `Button variant="primary"` | one per screen — that is what "primary" means |
+| `Card` | **ships** | the public `Card`, always through `src/ui/card.tsx` (DS-04a), which renders a real heading inside. Mandatory 12px bar; never nested |
+| `CTAButton` | `Button variant="primary"` | one per screen — that is what "primary" means; it is the only thing that glows |
 | `ActionButton` | `Button variant="secondary"` / `IconButton` | `IconButton` requires an accessible name |
+| `TextLink` | `TextAction` | quiet, non-destructive action: real link or button, chevron, 40px target |
 | `Input` | **ships** | label / helper / error aria wiring built in |
 | `Textarea` | `Input multiline` | there is no separate component |
 | `Checkbox` · `RadioButton` | **ship** | real native inputs; radios group by shared `name` |
@@ -110,13 +111,13 @@ and after the export there are only **three** of those.
 
 **The four layouts collapse to one fixed shell and scroll contract.** `AppLayout`, `AuthLayout`,
 `OnboardingLayout` and `WorkoutLayout` are product names for compositions over
-`.clr-shell.clr-shell--fixed`, public `ScrollRegion`, Full atmosphere, and optional `AppHeader`.
+`.clr-shell.clr-shell--fixed`, public `ScrollRegion`, the one atmosphere, and optional `AppHeader`.
 The shell—not each route—owns vertical scrolling and pinned head/footer layers.
 
 | IA name | Real |
 |---|---|
-| `AppLayout` · `AuthLayout` · `OnboardingLayout` · `WorkoutLayout` | `.clr-shell.clr-shell--fixed` + `ScrollRegion` + Full atmosphere |
-| `PageHeader` | `AppHeader` — brand left, terse `meta` right, `actions` beside it |
+| `AppLayout` · `AuthLayout` · `OnboardingLayout` · `WorkoutLayout` | `.clr-shell.clr-shell--fixed` + `ScrollRegion` + the one atmosphere |
+| `PageHeader` | `AppHeader` — a transparent layer: `left` slot, terse `meta` right, `actions` beside it |
 | `TabbedPanel` | `TabBar` + `TabPanel` — ARIA tabs pattern, roving tabindex, Home/End |
 | — | `.clr-stack` / `.clr-stack--tight` / `.clr-row` — spacing-token gaps |
 
@@ -125,11 +126,11 @@ The shell—not each route—owns vertical scrolling and pinned head/footer laye
 | IA name | Real | Notes |
 |---|---|---|
 | `ErrorState` | `EmptyState` (whole screen) + `Toast variant="negative"` (interruption) | see export pattern 3 |
-| `EmptyState` | **ships** | factual title, one imperative action |
-| `LoadingSkeleton` · `LoadingScreen` · `FullscreenLoader` | `ScanLoader` | **three names, one component.** There is no spinner and no skeleton in this system |
-| `ConfirmationModal` | `Dialog critical` | native `<dialog>`; focus trap, Esc and inertness are the platform's |
-| `BottomSheet` | **retired — use `Dialog`** | no sheets in CLEAR; the arrival comes from motion, not geometry. `docs/specs/design/ATOMIC.md` §12 |
-| `ChamferedToast` | `Toast` | queueing is app state — **DS-05** |
+| `EmptyState` | **ships** | already a card: a factual message, never wrapped in another card. Its action lives in the footer |
+| `LoadingSkeleton` · `LoadingScreen` · `FullscreenLoader` | `ScanLoader` | **three names, one component**, and already a card. There is no spinner and no skeleton in this system |
+| `ConfirmationModal` | `Dialog critical` | native `<dialog>`, an overlay with no accent bar; focus trap, Esc and inertness are the platform's |
+| `BottomSheet` | **retired — use `Dialog`** | no sheets in CLEAR; the arrival comes from motion, not geometry. `docs/specs/design/ATOMIC.md` §4 |
+| `ChamferedToast` | `Toast` | an overlay that may cover the footer while shown; queueing is app state — **DS-05** |
 | — | `CollapsibleSection` | **DS-04c** — section disclosure |
 
 Every one of these is a CORE-04 obligation. A screen that can render nothing is incomplete.
@@ -167,17 +168,17 @@ three independent, parallel tickets instead of three edits to one file.
 
 **Decorative:** all shipped — `ClearLogo`, `.clr-atmosphere`, and the motion vocabulary in
 `motion.css`. `CornerAngle` and `AnimatedBackground` are retired names; the atmosphere is
-one class and one attribute.
+one layer, mounted once, with no modes.
 
 ---
 
 ## 4. Screens
 
-Each entry is a build contract. **States** are the CORE-04 four; where a state is marked *n/a* the reason is given. **Atmosphere** is Full on every screen under the 0.9.7 contract. Glanceability and reading comfort come from solid-ground frames, hierarchy, spacing, and type—not route-level atmosphere dimming.
+Each entry is a build contract. **States** are the CORE-04 four; where a state is marked *n/a* the reason is given. **Atmosphere** is the same single atmosphere on every screen; 0.14.3 has no modes for a route to choose. Glanceability and reading comfort come from cards, hierarchy, spacing, and type. **Containment** follows ATOMIC.md §3: every form and group sits in one card with its heading inside, only the large screen title sits on the atmosphere, and the primary action lives in the pinned footer.
 
 ### Welcome — `/welcome`
-**Atmosphere:** `full` — brand moment
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `BootScreen`; `docs/design/exports/clear-design-system-0.9.7/templates/boot-sequence/BootSequence.dc.html`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `BootScreen`; `exports/clear-design-system-0.14.3/templates/boot-sequence/BootSequence.dc.html`
 **Motion:** `ClearLogo` enters once with the boot sequence; subtitle and CTA use `.clr-boot`. Do not manufacture a loading delay.
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** cold open, sign-out · **Out:** `/login`
@@ -185,56 +186,56 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **States:** populated only — static screen, no data fetch.
 
 ### OTP Login — `/login`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/templates/form-screen/FormScreen.dc.html`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/templates/form-screen/FormScreen.dc.html`
 **Motion:** `.route-enter-forward` from Welcome and `.route-enter-back` on return; request/verify state swaps use `.clr-interlace`, while validation errors appear without entrance animation.
 **Guard:** public-only · **Requirements:** AUTH-02
 **In:** Welcome · **Out:** `/onboarding` (new) or `/` (returning)
-**Composition:** `AuthLayout` › `PageHeader` + form fields directly on atmosphere + pinned `.clr-footer` › `CTAButton`
+**Composition:** `AuthLayout` › `PageHeader` + one `Card` › form fields + pinned `.clr-footer` › `CTAButton`
 **States:** loading (verifying) · error (wrong/expired code — typed, never a raw Supabase string) · populated. **Empty:** n/a.
 **Interactions:** request code · enter code · resend with cooldown countdown.
 
 ### Onboarding — `/onboarding`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/templates/form-screen/FormScreen.dc.html`; `docs/specs/screens/onboarding-wireframe.md`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/templates/form-screen/FormScreen.dc.html`; `docs/specs/screens/onboarding-wireframe.md`
 **Motion:** Steps use `.route-enter-forward` / `.route-enter-back`; selection changes use the controls' baked state motion. Never replay a full-screen boot between steps.
 **Guard:** authed + not onboarded · **Requirements:** ONB-01 · **Spec:** `docs/specs/screens/onboarding-wireframe.md`
 **In:** first verified login · **Out:** `/` on atomic commit
-**Composition:** `OnboardingLayout` › `PageHeader` + step content directly on atmosphere (`RadioButton` · `Chip` · `Textarea`) + pinned `.clr-footer` › navigation/actions
+**Composition:** `OnboardingLayout` › `PageHeader` + step content in one `Card` per group (`RadioButton` · `Chip` · `Textarea`) + pinned `.clr-footer` › navigation/actions
 **States:** loading (committing) · error (commit failed — no partial profile) · populated. **Empty:** n/a.
 **Interactions:** step forward/back preserving entries · experience · goal · location + equipment · sections · limitations.
 
 ### Home — `/` ★
-**Atmosphere:** `full` — brand moment
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `HomeScreen`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `HomeScreen`
 **Motion:** Initial populated cards may stagger with `.clr-boot`; tab changes use `.clr-tab-enter`; streak digit changes use `.clr-tumble`. Refetches do not replay the page entrance.
 **Guard:** protected · **Requirements:** HOME-01, HOME-02, HOME-03
 **In:** login, onboarding, any screen's back/done · **Out:** everywhere
 **Composition:** `AppLayout` › `PageHeader` + `Card`(Train Today or active-session replacement) + `Card`(This Week + Rest Day action) + `TabbedPanel` › `WorkoutListItem` · `FavoriteListItem` + `ConfirmationModal`. The smart suggestion is part of Train Today, never a peer card.
-**States:** **all four, and this is the screen where it matters most.** Loading skeleton on first paint · empty (no history yet — distinct from loading) · error (history fetch failed, retry) · populated.
+**States:** **all four, and this is the screen where it matters most.** Per-section scan on first paint (no skeleton) · empty (no history yet — distinct from loading) · error (history fetch failed, retry) · populated.
 **Interactions:** Generate · Quick Start (reuses last config, skips `/generate`) · resume incomplete session · mark rest day · switch History/Favorites tab · open a workout · accept or dismiss a deload suggestion (OVR-04).
 
 ### Generate — `/generate`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `GenerateScreen`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `GenerateScreen`
 **Motion:** `.route-enter-forward` from Home and `.route-enter-back` on return; field and selection feedback stays inside the shipped controls. Validation never moves the whole form.
 **Guard:** protected · **Requirements:** GEN-04, OVR-04
 **In:** Home · **Out:** Loading → Review
-**Composition:** `AppLayout` › `PageHeader` + generation fields directly on atmosphere › standing Goal context · Focus recommendation/override · Recovery session · `IntensitySlider` · place · time · notes + pinned `.clr-footer` › `CTAButton`
+**Composition:** `AppLayout` › `PageHeader` + generation fields in `Card`s with their headings inside › standing Goal context · Focus recommendation/override · Recovery session · `IntensitySlider` · place · time · notes + pinned `.clr-footer` › `CTAButton`
 **States:** loading (profile defaults) · error (profile unavailable) · populated. **Empty:** n/a.
 **Interactions:** select goal → **clamps the intensity range** · select anchor · override location · time target · notes · generate. Deload banner above the intensity selector when triggered.
 
 ### Loading — transient, no route
-**Atmosphere:** `full` — brand moment
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/templates/boot-sequence/BootSequence.dc.html`; `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `BootScreen`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/templates/boot-sequence/BootSequence.dc.html`; `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `BootScreen`
 **Motion:** `ScanLoader` owns scan/tick motion; cancel exits with `.clr-phosphor-out`, success hands off with `.route-enter-up`. Progress reflects real stages and never pads latency.
 **Requirements:** GEN-05 · **Spec:** `docs/specs/screens/loading-screens.md`
 **Composition:** `.clr-shell` › `ScanLoader` + staged status copy + cancel `Button`
 **States:** loading is the whole screen. Cancel returns to Generate; stale results are discarded after unmount.
 
 ### Review — `/review` ★
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen`
 **Motion:** `.route-enter-up` from generation and `.route-enter-back` to Generate; a swapped row uses `.clr-interlace`. Dialogs trace/materialize on and phosphor out per DS-05; unchanged rows do not move.
 **Guard:** protected + workout in state · **Requirements:** REV-01, REV-03, OVR-01
 **In:** Loading (fresh) · Review (regenerate) · Home/History (favorite restart) · **Out:** `/workout`, or back to Loading
@@ -243,8 +244,8 @@ Each entry is a build contract. **States** are the CORE-04 four; where a state i
 **Interactions:** expand section · swap one exercise · swap a whole block · undo swap (3 per slot) · regenerate-nudge after the third · start · regenerate with confirm. With OVR-01: per-exercise weight suggestion, confidence, and a "why this number" `Dialog`.
 
 ### Workout — `/workout` ★★
-**Atmosphere:** `full` — solid-ground frames and hierarchy provide glanceability at arm's length
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `ActiveWorkoutScreen`
+**Atmosphere:** the one atmosphere — cards, hierarchy and type provide glanceability at arm's length
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `ActiveWorkoutScreen`
 **Motion:** `.route-enter-up` enters focus mode and `.route-enter-down` exits it. Timer digits use `.clr-tumble` only when their displayed value changes; no list/route motion fires while a set is being logged. The final ten seconds may use the TimerDisplay urgency pulse.
 **Guard:** protected + active session · **Requirements:** EXE-01…05, OVR-03 · **Specs:** `docs/specs/structures/*`
 **In:** Review, Home (resume) · **Out:** `/summary`, or abandon → Home
@@ -263,8 +264,8 @@ WorkoutLayout
 **This screen carries the most interaction surface in the app and is why the rebuild exists.**
 
 ### Summary — `/summary`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `DebriefScreen`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `DebriefScreen`
 **Motion:** `.route-enter-down` from Workout; result cards may `.clr-boot` once and a changed streak uses `.clr-tumble`. Save retries do not replay the entrance.
 **Guard:** protected + completed session · **Requirements:** SUM-01, FAV-01
 **In:** Workout completion · **Out:** Home
@@ -273,8 +274,8 @@ WorkoutLayout
 **Interactions:** mood 1–5 · session notes · save as favorite · done.
 
 ### History — `/history`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `HomeScreen` plus the shipped `.clr-band`, `.clr-list`, and `TabBar`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `HomeScreen` plus the shipped `.clr-band`, `.clr-list`, and `TabBar`
 **Motion:** Route forward/back follows navigation direction; tabs use `.clr-tab-enter`; the populated list may `.clr-boot` only on its first reveal, never on filter/refetch updates.
 **Guard:** protected · **Requirements:** HIST-01, FAV-01
 **In:** Home · **Out:** `/history/:id`, `/review` (favorite restart)
@@ -283,8 +284,8 @@ WorkoutLayout
 **Interactions:** switch tab · filter by anchor/goal/intensity · open detail · restart favorite · unfavorite.
 
 ### Session Detail — `/history/:id`
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen` section-card treatment
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/ui_kits/app/Screens.jsx` → `WorkoutReadyScreen` section-card treatment
 **Motion:** Route forward/back follows navigation direction; newly disclosed section content uses `.clr-materialize`. Logged values themselves do not animate.
 **Guard:** protected · **Requirements:** HIST-01
 **In:** History, Home recents · **Out:** back, or `/review` (restart)
@@ -293,25 +294,25 @@ WorkoutLayout
 **Interactions:** expand section · view logged sets · view structure result · restart · save as favorite.
 
 ### Settings — `/settings` (+ 4 sub-views)
-**Atmosphere:** `full` — the 0.9.7 default for every screen
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/templates/form-screen/FormScreen.dc.html`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/templates/form-screen/FormScreen.dc.html`
 **Motion:** Hub/sub-view transitions use `.route-enter-forward` / `.route-enter-back`; successful inline saves use `.clr-interlace` or the shipped Toast motion, never a page reload entrance.
 **Guard:** protected · **Requirements:** SET-01, SET-02
 **In:** Home · **Out:** Home, sub-views
-**Composition:** `AppLayout` › `PageHeader` + settings fields/choice groups directly on atmosphere; genuine setting summaries may use closed Cards; primary save/action lives in `.clr-footer`
+**Composition:** `AppLayout` › `PageHeader` + each settings section in one `Card` with its heading inside › fields/choice groups; primary save/action lives in `.clr-footer`
 **States:** loading · error (save failed — **optimistic update rolls back**) · populated. **Empty:** locations can be empty; every other view always has content.
 **Interactions:** goal preset · enabled sections · limitations · skin selection (**four skins; `skin.js` owns persistence — never hardcode the list**) · location CRUD · equipment tier · set default · sign out.
 
 ### Component Gallery — `/dev/gallery`
-**Atmosphere:** `full` — the 0.9.7 default also applies to the review surface
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/preview/`, `docs/design/exports/clear-design-system-0.9.7/components/*/card.html`, and the export's 43 preview/component review pages
+**Atmosphere:** the one atmosphere, on the review surface too
+**Visual reference:** `exports/clear-design-system-0.14.3/preview/`, `exports/clear-design-system-0.14.3/components/*/card.html`, and the export's 43 preview/component review pages
 **Motion:** Route uses `.route-enter-fade`; specimens stay still until the reviewer explicitly triggers their motion preview so simultaneous effects never obscure inspection.
 **Guard:** dev only · **Requirements:** DS-07
-The export's 43 preview/component review pages are served unmodified at `/dev/gallery/ds`, plus every app-composed part at `/dev/gallery/app`. Live skin switching remains; production route atmosphere is Full. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
+The export's 43 preview/component review pages are served unmodified at `/dev/gallery/ds`, plus every app-composed part at `/dev/gallery/app`. Live skin switching remains; the atmosphere is the same single one production uses. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
 
 ### Not Found — `*`
-**Atmosphere:** `full` — brand moment
-**Visual reference:** `docs/design/exports/clear-design-system-0.9.7/components/EmptyState/EmptyState.jsx`
+**Atmosphere:** the one atmosphere
+**Visual reference:** `exports/clear-design-system-0.14.3/components/EmptyState/EmptyState.jsx`
 **Motion:** `.route-enter-fade` with `.clr-materialize` on the EmptyState; the home CTA keeps only its baked interaction motion.
 **Requirements:** ENV-01 · `AppLayout` › `EmptyState` + `CTAButton` home.
 

@@ -81,6 +81,74 @@ function componentsWithInheritedProps() {
 }
 
 /**
+ * App-owned additions: the vocabulary 0.14.3 removed (CHANGELOG 0.9.7, 0.10.1, 0.11.2, 0.14.3).
+ * The vendored rule set describes what the current surface accepts; it cannot know what an
+ * older consumer used to write. Each selector names one removed shape so the message says what
+ * replaced it. The ledger is `docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md` (RULE-13).
+ */
+const RETIRED_NAMES = [
+  'clr-load-ticks',
+  'tracking-data-wide',
+  'surface-overlay',
+  'chamfer-xl',
+  'chamfer--xl',
+  'chamfer--open-left',
+  'chamfer--bottom-only',
+  'accent-bar-width-lg',
+  'clr-card__bar--lg',
+  'glow-emissive',
+  'text-shadow-glow',
+  'glow-box',
+  '--color-(?:orange|blue|green|red|purple|neutral)-',
+  '--font-(?:headings|label|paragraph)\\b',
+]
+const RETIRED_PATTERN = `/(?:${RETIRED_NAMES.join('|')})/`
+
+const RETIRED_VOCABULARY = [
+  ...[
+    ['EmptyState', 'actionLabel', 'the action belongs in the pinned footer'],
+    ['EmptyState', 'onAction', 'the action belongs in the pinned footer'],
+    ['ChamferedFrame', 'glow', 'only the primary action glows'],
+    ['ChamferedFrame', 'hasLeftBorder', 'frames keep all four edges'],
+    ['ChamferedFrame', 'bottomBorderOnly', 'frames keep all four edges'],
+    ['Card', 'barWidth', 'every card carries the one 12px bar'],
+  ].map(([component, prop, replacement]) => ({
+    selector: `JSXOpeningElement[name.name='${component}'] > JSXAttribute[name.name='${prop}']`,
+    message: `CLEAR 0.14.3 removed <${component} ${prop}>: ${replacement}.`,
+  })),
+  {
+    selector: "JSXAttribute[name.name='cornerSize'][value.value='xl']",
+    message: 'CLEAR 0.14.3 removed cornerSize="xl": corners are sm/md/lg or auto.',
+  },
+  {
+    selector: "JSXAttribute[name.name='data-atmosphere'][value.type='Literal'][value.value!='full']",
+    message: 'CLEAR 0.14.3 ships one atmosphere: Quiet and Operational were removed.',
+  },
+  {
+    selector: `Literal[value=${RETIRED_PATTERN}], TemplateElement[value.raw=${RETIRED_PATTERN}]`,
+    message: 'Retired CLEAR class or token name: use the 0.14.3 role token or class (ATOMIC.md §9).',
+  },
+]
+
+/**
+ * The export's `_source/`, worked app, templates and previews are evidence, as are the
+ * versioned copies under `exports/`. None of them is a runtime module.
+ */
+const HISTORICAL_IMPORTS = {
+  group: [
+    '**/design-system/_source/**',
+    '**/design-system/ui_kits/**',
+    '**/design-system/templates/**',
+    '**/design-system/preview/**',
+    '**/exports/clear-design-system-*/**',
+  ],
+  message: 'Design-system evidence, not a runtime module: compose the public entry instead.',
+}
+
+/** The app-owned selectors, so the test override can drop them. */
+const RETIRED_SELECTORS = new Set(RETIRED_VOCABULARY.map((entry) => entry.selector))
+
+/**
  * The flat config the gate runs. Callers scope it with paths: `npm run lint:ds` passes
  * `src`, the fixture suite passes one deliberately broken file at a time.
  */
@@ -102,7 +170,12 @@ export function buildAdherenceConfig() {
     const component = entry.selector?.match(UNKNOWN_PROP_SELECTOR)?.[1]
     return component === undefined || !inherited.has(component)
   })
-  const restrictedImports = expandImportPatterns(rules['no-restricted-imports'][1])
+  const vendoredImports = expandImportPatterns(rules['no-restricted-imports'][1])
+  const restrictedImports = {
+    ...vendoredImports,
+    patterns: [...vendoredImports.patterns, HISTORICAL_IMPORTS],
+  }
+  const productionSyntax = [...restrictedSyntax, ...RETIRED_VOCABULARY]
 
   return [
     {
@@ -125,7 +198,7 @@ export function buildAdherenceConfig() {
       // a negotiable one.
       linterOptions: { noInlineConfig: true },
       rules: {
-        'no-restricted-syntax': raise(['warn', ...restrictedSyntax]),
+        'no-restricted-syntax': raise(['warn', ...productionSyntax]),
         'no-restricted-imports': raise(['warn', restrictedImports]),
       },
     },
@@ -135,13 +208,16 @@ export function buildAdherenceConfig() {
       rules: { 'no-restricted-imports': 'off' },
     },
     // A test asserting `borderRadius: '0px'` is reading a rendered value back, not styling
-    // anything. The component, enum and import rules still apply to tests.
+    // anything, and a test naming a retired class is proving it absent. The component, enum
+    // and import rules still apply to tests.
     {
       files: ['**/*.test.{ts,tsx}', 'src/test/**'],
       rules: {
         'no-restricted-syntax': [
           'error',
-          ...restrictedSyntax.filter((entry) => !isRawLiteralRestriction(entry)),
+          ...productionSyntax.filter(
+            (entry) => !isRawLiteralRestriction(entry) && !RETIRED_SELECTORS.has(entry.selector),
+          ),
         ],
       },
     },

@@ -241,15 +241,17 @@ describe('the app-composed section', () => {
     expect(body).not.toHaveClass('clr-chamfer--focus-owner')
   })
 
-  it('shows all three atmosphere levels at once', () => {
+  it('shows the one shipped atmosphere and no removed mode', () => {
     const { container } = renderWithProviders(<AppComposedParts />)
 
-    for (const level of ['full', 'quiet', 'operational']) {
-      expect(
-        container.querySelector(
-          `.clr-dev-gallery__atmosphere[data-atmosphere="${level}"] .clr-atmosphere`,
-        ),
-      ).not.toBeNull()
-    }
+    expect(
+      container.querySelector('.clr-dev-gallery__atmosphere[data-atmosphere="full"] .clr-atmosphere'),
+    ).not.toBeNull()
+    expect(container.querySelectorAll('.clr-dev-gallery__atmosphere')).toHaveLength(1)
+  })
+
+  it('specimens no retired card width', () => {
+    const card = GALLERY_ENTRIES.find((entry) => entry.component === 'Card')
+    expect(card?.specimens.map((specimen) => specimen.state).join('\n')).not.toMatch(/barWidth/)
   })
 })

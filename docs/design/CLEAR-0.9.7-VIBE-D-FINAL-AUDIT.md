@@ -1,5 +1,8 @@
 # CLEAR Design System 0.9.7 — Final Application Audit
 
+> **HISTORICAL** — the 0.9.7 migration record. CLEAR 0.14.3 supersedes it: see
+> `docs/specs/design/ATOMIC.md` and `docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md`.
+
 **Status:** implementation and local evidence complete; protected exact-head verification pending  
 **Authority:** `CLEAR Design System 0.9.7..zip`  
 **Source SHA-256:** `12620dc5d9b6d7de965f25b80f86a90b8ee3e6a5eeea813eb1b85b0563d74790`  

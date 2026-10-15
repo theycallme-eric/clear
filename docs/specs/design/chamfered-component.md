@@ -1,5 +1,9 @@
 # Chamfered Component Skill
 
+> **Status:** HISTORICAL — superseded by CLEAR 0.14.3. The LeftColumn pattern and optional accent bar
+> below are retired: use the public `Card` through `src/ui/card.tsx`, as `docs/specs/design/ATOMIC.md`
+> describes. Kept as evidence only.
+
 Create components using the ChamferedFrame + LeftColumn pattern from the CLEAR design system.
 
 ## When to Use

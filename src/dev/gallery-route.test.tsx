@@ -67,11 +67,12 @@ describe('/dev/gallery', () => {
     expect(localStorage.getItem('clear.skin')).toBeNull()
   })
 
-  it('cycles all three atmosphere levels, and hands the route its own back', async () => {
+  it('offers only the one shipped atmosphere, and hands the route its own back', async () => {
     const user = userEvent.setup()
     const { unmount } = renderApp(['/dev/gallery'])
     await screen.findByRole('heading', { level: 1, name: 'Component Gallery' })
 
+    expect(ATMOSPHERE_LEVELS).toEqual(['full'])
     for (const level of ATMOSPHERE_LEVELS) {
       await user.click(
         screen.getByRole('radio', { name: new RegExp(`^${level}`) }),
