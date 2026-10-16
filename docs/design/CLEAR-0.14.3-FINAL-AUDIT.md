@@ -201,3 +201,9 @@ and owner QA outcome. Local proof, healthy CI and task counts do not fill those 
 `docs/design/CLEAR-0.14.3-OWNER-QA.md` is the owner's walk on the deployed application after
 merge: confirm the deployment SHA, then every route and state family above in the four skins at
 phone and desktop, with keyboard, reduced motion and the real core loop.
+
+## Approved capture sampling correction — 2026-10-16
+
+The owner authorized a one-line polling-options correction in the Task036-owned workout-lifecycle capture test as a specific Task027 blocking repair. The final-phone failure had107passes and 1 failure across 108 executed cases: its state assertions passed, then the15-second finite-animation settling wait repeatedly sampled one animation. Independent read-only review supports a sampling collision between the default one-second poll cadence and the intended100ms session-timer digit transition; the original predicate did not record that animation's name. Explicit intervals 100/250/500ms retain the same 15-second deadline and expected zero finite animations. No assertion or application timer behavior is removed or changed.
+
+Because an e2e source byte changes, the prior cached mobile proof is not proof for this new source. Fresh exact-source phone workout proof must reserve one original phase slot before dispatch; 2 of 5 were already consumed. All original phone cases, seven project checks, independent review/current criterion proof/protected delivery, exact-deployed proof and owner UAT remain required. The historical committed capture/image bindings remain immutable; new local behavioral checks are not relabeled as new deployed captures. Results for the new source are pending and will be retained in the existing external Task027 checkpoints before any delivery claim.

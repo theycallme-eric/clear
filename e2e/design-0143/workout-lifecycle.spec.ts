@@ -385,7 +385,7 @@ const test = base.extend<{ world: World; evidence: Evidence }>({
       await expect.poll(() => page.evaluate(() => document.getAnimations().filter((animation) =>
         animation.playState === 'running' &&
         Number.isFinite(Number(animation.effect?.getComputedTiming().endTime))).length),
-      { message: `${screen} "${state}" never came to rest`, timeout: 15_000 }).toBe(0)
+      { message: `${screen} "${state}" never came to rest`, timeout: 15_000, intervals: [100, 250, 500] }).toBe(0)
       const motion = await driver.motion()
       const name = [caseKey, slug(screen), slug(state), variant ? slug(variant) : null, viewport, skin]
         .filter(Boolean).join('--') + '.png'
