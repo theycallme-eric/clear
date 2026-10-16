@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 
 import { LOCAL_BASE_URL, readE2eEnv } from './scripts/e2e/env.mjs'
@@ -22,6 +24,30 @@ import { LOCAL_BASE_URL, readE2eEnv } from './scripts/e2e/env.mjs'
  */
 
 const e2e = readE2eEnv()
+const designSystemPackage = JSON.parse(
+  readFileSync(resolve(import.meta.dirname, 'src/design-system/package.json'), 'utf8'),
+) as { version: string }
+
+/**
+ * TASK-027: keep the original browser command, selecting cases for its target.
+ * BEFORE assertions belong to 0.9.7; deployed assertions need a deployed origin.
+ * Positive grep composes with the command's existing paid-lane grepInvert.
+ */
+export function browserTestsForTarget(packageVersion: string, baseURL: string): RegExp {
+  const exclusions: string[] = []
+  if (packageVersion === '0.14.3') {
+    exclusions.push(
+      String.raw`design-0143[\\/](?:baseline|task-040-(?:home-review|lifecycle(?:-gaps)?))\.spec\.ts`,
+      String.raw`design-0143[\\/]task-040-entry-settings\.spec\.ts(?!.*entry: Welcome and OTP validation, busy, typed failure and cooldown$)`,
+    )
+  }
+  const hostname = new URL(baseURL).hostname.toLowerCase()
+  if (hostname === 'localhost' || hostname.endsWith('.localhost') ||
+      /^127(?:\.\d{1,3}){3}$/.test(hostname) || hostname === '[::1]') {
+    exclusions.push(String.raw`generation-deployed-matrix\.spec\.ts`)
+  }
+  return exclusions.length ? new RegExp(`^(?!.*(?:${exclusions.join('|')})).*$`) : /.*/
+}
 
 /**
  * Vercel protects preview deployments with its login interstitial. CI receives
@@ -71,6 +97,7 @@ export default defineConfig({
   // `.spec.ts` only. Vitest owns `*.test.ts(x)` under `src/`, and a runner that
   // picks up the other one's files is the first thing that goes wrong here.
   testMatch: /.*\.spec\.ts$/,
+  grep: browserTestsForTarget(designSystemPackage.version, e2e.baseURL),
 
   // A run that finds no test is a broken harness reporting success.
   forbidOnly: Boolean(process.env.CI),
