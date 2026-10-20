@@ -68,6 +68,19 @@ const profileOf = (name: string): RecordedProfile => file.recordings[name].profi
 const workoutOf = (name: string): GenerationOutput =>
   generationOutputSchema.parse(file.recordings[name].response)
 
+/**
+ * The recording as acceptance carries it: unchanged except for the
+ * introductions REQ-010 suppresses at hydration, which arrive as null.
+ */
+const acceptedWorkoutOf = (name: string): GenerationOutput => {
+  const workout = workoutOf(name)
+  return {
+    ...workout,
+    overview: null,
+    sections: workout.sections.map((section) => ({ ...section, section_notes: null })),
+  }
+}
+
 function configurationOf(profile: RecordedProfile): LaneConfiguration {
   return {
     enabledSections: [...SECTIONS_BY_GOAL[profile.goal], ...profile.addedSections],
@@ -338,7 +351,7 @@ describe('a recorded valid response', () => {
     })
     // The model's prescriptions, exactly as recorded: hydration adds beside a
     // prescription and edits nothing inside one.
-    expect(success.acceptance.workout).toEqual(workoutOf(name))
+    expect(success.acceptance.workout).toEqual(acceptedWorkoutOf(name))
     expect(success.acceptance.computed_duration_mins).toBeGreaterThan(0)
   })
 
@@ -503,7 +516,9 @@ describe('a rejected response costs exactly one retry', () => {
 
     expect(response.status).toBe(200)
     expect(lane.providerCalls()).toHaveLength(2)
-    expect(generationSuccessSchema.parse(response.body).acceptance.workout).toEqual(workoutOf(name))
+    expect(generationSuccessSchema.parse(response.body).acceptance.workout).toEqual(
+      acceptedWorkoutOf(name),
+    )
   })
 })
 

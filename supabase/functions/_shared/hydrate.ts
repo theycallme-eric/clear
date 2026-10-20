@@ -190,6 +190,17 @@ export const CURRENT_VERSIONS: GenerationVersions = {
   contractVersion: CONTRACT_VERSION,
 }
 
+/**
+ * REQ-010 (U31): what `overview` and every `section_notes` hydrate to, whatever
+ * the model returned. The prompt asks for null; a response that writes an
+ * introduction anyway is otherwise valid, so it is accepted without a retry and
+ * the prose stops here — before persistence and before the client sees it. Both
+ * keys stay required and `string | null` in the contract, and historical rows
+ * keep their strings. Restoring introductions is this constant becoming the
+ * model's value again, with the seams GENERATION_CONTRACT §13 lists.
+ */
+export const SUPPRESSED_PROSE = null
+
 export interface HydrationOptions {
   readonly versions?: GenerationVersions
   /** The envelope's per-request logger, where there is one. */
@@ -260,6 +271,9 @@ export function hydrateWorkout(
 
   const sections = workout.sections.map((section) => ({
     ...section,
+    // REQ-010: introductions are requested as null, and one the model writes
+    // anyway is dropped here rather than retried — the workout is still valid.
+    section_notes: SUPPRESSED_PROSE,
     blocks: section.blocks.map((block) => ({
       ...block,
       exercises: block.exercises.map((prescription) =>
@@ -271,7 +285,7 @@ export function hydrateWorkout(
 
   return ok({
     title: workout.title,
-    overview: workout.overview,
+    overview: SUPPRESSED_PROSE,
     sections,
     promptVersion: versions.promptVersion,
     contractVersion: versions.contractVersion,

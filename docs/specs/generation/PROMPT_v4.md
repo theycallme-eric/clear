@@ -1,6 +1,6 @@
 # CLEAR composition prompt — contract 4.1
 
-> **Prompt version:** `5.1.2`\
+> **Prompt version:** `5.2.0`\
 > **Contract version:** `4.1.0`  
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
@@ -11,7 +11,13 @@
 > useful workout for the time and explain adjustments. Main work gives the workout its coherent
 > theme and goal character; saved experience is supplied only when known. Contract version unchanged.
 > **5.1.2:** encode superset shared rest on its block; reject positive member rest that execution
-> intentionally ignores. No field relocation, rest minimum, stored-row or contract-version change.
+> intentionally ignores. No field relocation, rest minimum, stored-row or contract-version change.\
+> **5.2.0 (REQ-010, U31):** request `overview` and every `section_notes` as null; remove the
+> clauses that asked for adjustment explanations in the overview or section notes and for the
+> deload/re-entry RPE ceiling in `section_notes`. The prose is removed, not relocated. Numerical
+> directive rules (set multiplier and floor, unchanged reps, conditioning intensity, re-entry set
+> reduction) are unchanged. Contract version unchanged — both keys stay required and
+> `string | null`, so the parsed shape did not move. Restoration: `GENERATION_CONTRACT.md` §13.
 
 This is the composition policy for `GEN-02b`. It carries forward the useful coaching judgment
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
@@ -41,6 +47,7 @@ Return one JSON object matching the supplied schema and no other text. Select on
 values present in the candidate group for that section. Select equipment only from that
 candidate's usable_equipment. Return structure and prescription fields only; do not return exercise
 names, equipment display strings, coaching cues, regressions, or factual catalog content.
+Return overview and every section_notes as null; write no workout overview or section introduction.
 
 PRIORITY
 1. Safety and the supplied hard boundary
@@ -95,18 +102,17 @@ LOAD GUIDANCE
 - 7–8: challenging, roughly 70–80%.
 - 9–10: heavy, roughly 80–90%+, only where the goal and candidate role support it.
 Use only the contract's load_type/load_value representation. Never invent a prior-session number.
-Never compute, state or narrate a weight, anywhere, including section_notes, block_notes, tempo and
-the overview. Code fills loads from logged history.
+Never compute, state or narrate a weight, anywhere, including block_notes and tempo. Code fills
+loads from logged history.
 
 TRAINING HISTORY AND DIRECTIVES
 TRAINING HISTORY lists recent capacity per exercise: confidence, time since training and a label,
 never loads; code fills loads afterwards.
 - SESSION DIRECTIVE normal: compose as the goal shape asks.
 - SESSION DIRECTIVE deload: the same movements rather than novelty. Apply the stated working-set
-  multiplier, hold rep targets where they are, keep conditioning at or below the stated intensity, and
-  state the RPE ceiling in section_notes.
+  multiplier, hold rep targets where they are, and keep conditioning at or below the stated intensity.
 - SESSION DIRECTIVE re_entry: one fewer working set on every exercise the block notes as re-entry,
-  conservative cues, and the exercise's RPE ceiling stated in section_notes.
+  and conservative cues.
 - CONDITIONING TREND ready: add a round, add reps per round, or shorten a time cap by about 10%.
   hold: keep the density where it was. backing_off: drop a round or lengthen the cap by about 15%.
 An exercise noted stalled may be swapped for a close variation, which is often the right answer to a
@@ -138,8 +144,8 @@ DURATION
 Compose the closest useful workout to the effective duration target. Short sessions prioritize
 goal-relevant main work: conditioning for conditioning, gentle mobility for active_recovery.
 Keep coherent warmup prep and adequate rest; omit optional parts before rushing work. With more time
-add useful volume, accessories or mobility, not filler. Explain omissions or adjustments plainly in
-overview or section_notes. Your estimated_duration_mins is diagnostic only; code checks plausibility.
+add useful volume, accessories or mobility, not filler. Your estimated_duration_mins is diagnostic
+only; code checks plausibility.
 
 Before returning, verify internally that every ID and equipment value came from the correct section,
 selected sections follow candidate-group order, target fields match target_kind, timed structures have clocks,
