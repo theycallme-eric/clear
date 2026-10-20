@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9` |
+| Runtime source hash of this audit's tree | `0afa5587a3b0660dbc8ec74dbf02e96db59871e95d13dbf7dfcea9c6235c6585` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029's non-rendering change below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -44,6 +44,10 @@ trees and this head, from `git diff`:
   its hash), then TASK-030/021/022 changes to `src/app/Summary.tsx`, `src/ui/amrap-block.tsx`,
   `src/ui/circuit-block.tsx` and `src/ui/exercise-swap.tsx`. None renders on an entry route; all
   are pictured by workout-lifecycle at `4a5e512`.
+- `a8838839…` (the audited head) to `0afa5587…`: TASK-029 makes block-completion effort optional
+  in `src/state/block-completion.ts`, `src/state/block-completion-provider.tsx` and
+  `src/data/workout.ts`. No markup, style or copy changed, and the effort dialog flow is the same,
+  so no picture is affected.
 
 The pictures are not rebound to this head. The browser lane re-asserts all three groups'
 behaviour on it (below).

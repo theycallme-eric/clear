@@ -81,6 +81,21 @@ describe('blockResultInsert', () => {
     expect(blockResultInsert(completion({ perceivedEffort: 1 })).perceived_effort).toBe(1)
     expect(blockResultInsert(completion({ perceivedEffort: 10 })).perceived_effort).toBe(10)
   })
+
+  it('records an absent or null effort as null, never as a default (E04)', () => {
+    expect(blockResultInsert({ blockId: BLOCK_ID, outcome: {} }).perceived_effort).toBeNull()
+    expect(blockResultInsert(completion({ perceivedEffort: null })).perceived_effort).toBeNull()
+  })
+
+  it('keeps observed zeros beside a missing effort', () => {
+    const row = blockResultInsert(
+      completion({ perceivedEffort: null, outcome: { roundsCompleted: 0 } }),
+    )
+
+    expect(row.rounds_completed).toBe(0)
+    expect(row.perceived_effort).toBeNull()
+    expect(row.partial_round_reps).toBeNull()
+  })
 })
 
 describe('isPerceivedEffort', () => {

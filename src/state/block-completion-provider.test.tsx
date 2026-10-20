@@ -239,6 +239,107 @@ describe('BlockCompletionProvider — one path for every structure', () => {
   })
 })
 
+/** A renderer that saves without the effort question (E04). */
+function NoEffortRenderer({
+  block,
+  outcome,
+  perceivedEffort,
+}: {
+  block: BlockProgress
+  outcome: BlockOutcome
+  perceivedEffort: number | null
+}) {
+  const { completeBlock, isBlockRecorded } = useBlockCompletion()
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        // Twice in one handler: a repeated tap must not write twice.
+        completeBlock(block.blockId, outcome, { perceivedEffort })
+        completeBlock(block.blockId, outcome, { perceivedEffort })
+      }}
+    >
+      {isBlockRecorded(block.blockId) ? 'saved' : 'save'}
+    </button>
+  )
+}
+
+function mountNoEffort(
+  outcome: BlockOutcome,
+  options: { perceivedEffort?: number | null; double?: WorkoutDouble } = {},
+) {
+  const snapshot = snapshotFixture({ sections: [{ title: 'Conditioning' }] })
+  const workout = options.double ?? createWorkoutDouble({ session: snapshot })
+  const blocks = sessionProgress(snapshot).sections.flatMap((section) => section.blocks)
+  const failures: string[] = []
+
+  render(
+    <AppProviders workout={workout.clients}>
+      <BlockCompletionProvider
+        blocks={blocks}
+        onFailure={(error) => failures.push(error.code)}
+      >
+        <NoEffortRenderer
+          block={blocks[0]}
+          outcome={outcome}
+          perceivedEffort={options.perceivedEffort ?? null}
+        />
+      </BlockCompletionProvider>
+    </AppProviders>,
+  )
+
+  return { workout, blocks, failures }
+}
+
+describe('BlockCompletionProvider — saving without effort (E04)', () => {
+  it('writes the outcome once with no effort, and asks nothing', async () => {
+    const user = userEvent.setup()
+    const { workout, blocks } = mountNoEffort({ roundsCompleted: 0 })
+
+    await user.click(screen.getByRole('button', { name: 'save' }))
+
+    await screen.findByRole('button', { name: 'saved' })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(workout.recorded()).toEqual([
+      { blockId: blocks[0].blockId, outcome: { roundsCompleted: 0 }, perceivedEffort: null },
+    ])
+
+    // Explicit completion is still refused a second time.
+    await user.click(screen.getByRole('button', { name: 'saved' }))
+    expect(workout.recorded()).toHaveLength(1)
+  })
+
+  it('passes a supplied effort through unchanged', async () => {
+    const user = userEvent.setup()
+    const { workout } = mountNoEffort({}, { perceivedEffort: 3 })
+
+    await user.click(screen.getByRole('button', { name: 'save' }))
+
+    await screen.findByRole('button', { name: 'saved' })
+    expect(workout.recorded().map((completion) => completion.perceivedEffort)).toEqual([3])
+  })
+
+  it('hands a failed no-effort write up, and leaves the block savable', async () => {
+    const user = userEvent.setup()
+    const { failures } = mountNoEffort(
+      {},
+      {
+        double: createWorkoutDouble({
+          blockResults: {
+            record: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)),
+          },
+        }),
+      },
+    )
+
+    await user.click(screen.getByRole('button', { name: 'save' }))
+
+    await waitFor(() => expect(failures).toEqual([ErrorCode.PERSISTENCE_WRITE_FAILED]))
+    expect(screen.getByRole('button', { name: 'save' })).toBeInTheDocument()
+  })
+})
+
 describe('the seam outside the shell', () => {
   it('refuses to silently drop the write', () => {
     // A renderer that has escaped the provider would otherwise complete blocks
