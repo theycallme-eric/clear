@@ -45,7 +45,13 @@ import {
   suggestLoad,
   weeksBetween,
 } from './progression'
+import {
+  applyLoadOverrides,
+  prescriptionSiteKey,
+  reviewLoadSuggestions,
+} from './load-suggestions'
 import type { AnchorEvidenceRow } from './schemas'
+import { anchorRow, evidenceRows, suggestionAcceptance } from '../test/load-suggestion-fixtures'
 
 const SESSION = 'c0000001-0000-4000-8000-000000000000'
 const TODAY = '2026-09-24'
@@ -673,5 +679,121 @@ describe('suggested weight (OVR-01b §1, §2, §5)', () => {
 
   it('is pure: the same history twice is the same suggestion', () => {
     expect(suggestLoad(input())).toEqual(suggestLoad(input()))
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Absent effort (REQ-016)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('absent effort in new and mixed history (REQ-016)', () => {
+  it('fires no RPE row and moves nothing when a completed session recorded no RPE', () => {
+    for (const goal of ['strength', 'hypertrophy', 'balanced'] as const) {
+      const step = progressionStep(read([null], [null], [null]), { ...STRENGTH, goal })
+
+      expect(step).toMatchObject({ rule: null, load: { kind: 'hold' }, repDelta: 0 })
+    }
+  })
+
+  it('suggests the held, inverted anchor — the same number as no read at all', () => {
+    const unread = suggestLoad(input({ lastSession: null }))
+    const noEffort = suggestLoad(input({ lastSession: read([null], [null], [null]) }))
+
+    expect(noEffort).toEqual(unread)
+    expect(noEffort).toMatchObject({ rule: null, repDelta: 0, weight: 245 })
+  })
+
+  it('reads a mixed session from the RPE it recorded, never from a default', () => {
+    // One historical set at RPE 6 beside two logged without one: the median is
+    // the 6 that exists, not a 6 averaged against two invented values.
+    const answer = read([6], [null], [null])
+
+    expect(answer.medianRpe).toBe(6)
+    expect(answer.firstSetRpe).toBe(6)
+    expect(ruleFor(answer)?.id).toBe('too-light')
+  })
+
+  it('still backs off on missed reps, which reads reps and not effort', () => {
+    const step = progressionStep(read([null, 3, 5], [null, 3, 5]), STRENGTH)
+
+    expect(step.rule).toBe('overshoot-missed-reps')
+    expect(step.load).toMatchObject({ kind: 'percent', direction: 'down' })
+  })
+
+  it('leaves every evidence row exactly as it was read', () => {
+    const evidence = sets({ rpe: 8 }, { rpe: null }, { rpe: 7.5, actual_reps: null })
+    const before = structuredClone(evidence)
+
+    suggestLoad(input({ lastSession: sessionRead(evidence) }))
+
+    expect(evidence).toEqual(before)
+  })
+})
+
+describe('the next persisted prescription (REQ-016)', () => {
+  /** The fixture's last session again, every set logged without an RPE. */
+  function noEffort(actualReps: readonly number[]): AnchorEvidenceRow[] {
+    return evidenceRows().map((row, index) => ({
+      ...row,
+      rpe: null,
+      actual_reps: actualReps[index],
+    }))
+  }
+
+  const squat = prescriptionSiteKey(0, 0, 0)
+
+  function suggestionFor(evidence: readonly AnchorEvidenceRow[]) {
+    const suggestion = reviewLoadSuggestions({
+      acceptance: suggestionAcceptance(),
+      anchors: [anchorRow()],
+      evidence,
+      weightUnit: 'kg',
+    }).get(squat)
+    if (suggestion === undefined) throw new Error('the anchored squat carries a suggestion')
+    return suggestion
+  }
+
+  it('holds the load when the last session completed every rep with no RPE', () => {
+    const suggestion = suggestionFor(noEffort([8, 8, 8]))
+
+    expect(suggestion.rule).toBeNull()
+    expect(suggestion.reason).toBe('no rule fired → hold load')
+    // 110 kg ÷ (1 + 10/30) = 82.5 kg, unstepped.
+    expect(suggestion.weight).toBe(82.5)
+    // The last-session view reads the absence as absence.
+    expect(suggestion.lastSession?.sets.map((set) => set.rpe)).toEqual([null, null, null])
+    expect(suggestion.lastSession?.medianRpe).toBeNull()
+  })
+
+  it('traces the missed-reps back-off into the prescription that is persisted', () => {
+    const suggestion = suggestionFor(noEffort([6, 6, 8]))
+
+    expect(suggestion.rule).toBe('overshoot-missed-reps')
+    // 82.5 kg − 5% = 78.4 kg → the 77.5 kg plate below the held 82.5.
+    expect(suggestion.weight).toBe(77.5)
+
+    // Review hands the number the athlete takes to `accept` through
+    // `applyLoadOverrides`; that payload is the persisted prescription.
+    const persisted = applyLoadOverrides(
+      suggestionAcceptance(),
+      new Map([[squat, { weight: suggestion.weight ?? 0, unit: suggestion.unit }]]),
+    )
+    const [prescription] = persisted.workout.sections[0].blocks[0].exercises
+
+    expect(prescription).toMatchObject({
+      exercise_id: 'back-squat',
+      load_type: 'absolute',
+      load_value: 77.5,
+    })
+  })
+
+  it('persists no suggested number as a load the athlete did not choose', () => {
+    const acceptance = suggestionAcceptance()
+
+    expect(applyLoadOverrides(acceptance, new Map())).toBe(acceptance)
+    expect(acceptance.workout.sections[0].blocks[0].exercises[0]).toMatchObject({
+      load_type: 'rir',
+      load_value: 2,
+    })
   })
 })

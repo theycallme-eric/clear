@@ -1142,3 +1142,54 @@ describe('the block being performed right now', () => {
     })
   })
 })
+
+describe('absent effort in new and mixed history (REQ-016)', () => {
+  // Sections finished after effort capture was removed carry no section RPE;
+  // the one before them carries the RPE it was logged with.
+  const unrated = (date: string, overrides: Partial<ConditioningHistoryRow> = {}) =>
+    row({ session_date: date, perceived_effort: null, rounds_completed: 8, ...overrides })
+  const historical = row({ session_date: '2026-09-10', perceived_effort: 6, rounds_completed: 8 })
+
+  it('gives no nudge up from finished work that recorded no effort, in a mixed window', () => {
+    const rows = [unrated('2026-09-20'), unrated('2026-09-15'), historical]
+
+    expect(conditioningDirectiveOf(rows)?.conditioning_trend).toBe('hold')
+  })
+
+  it('measures and nudges nothing when no result and no effort were entered', () => {
+    const empty = unrated('2026-09-20', { rounds_completed: null })
+    const read = conditioningSection(empty)
+
+    expect(read).toMatchObject({ completion: 'unknown', score: null, perceivedEffort: null })
+    expect(
+      conditioningDirectiveOf([empty, { ...empty, session_date: '2026-09-15' }, historical])
+        ?.conditioning_trend,
+    ).toBe('hold')
+  })
+
+  it('still backs off on capped outcomes, which read the result and not the effort', () => {
+    const capped = (date: string) =>
+      unrated(date, {
+        structure_type: 'for_time',
+        rounds: 5,
+        completed_under_cap: false,
+        rounds_completed: 2,
+      })
+
+    expect(
+      conditioningDirectiveOf([capped('2026-09-20'), capped('2026-09-15'), historical])
+        ?.conditioning_trend,
+    ).toBe('backing_off')
+  })
+
+  it('keeps the historical section RPE readable and every row unrewritten', () => {
+    const rows = [unrated('2026-09-20'), historical]
+    const before = structuredClone(rows)
+
+    const reads = conditioningSections(rows)
+    conditioningDirectiveOf(rows)
+
+    expect(reads.map((read) => read.perceivedEffort)).toEqual([null, 6])
+    expect(rows).toEqual(before)
+  })
+})

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { sessionRead } from '../state/progression'
 import type { GenerationOutput, Prescription } from '../state/schemas'
 import {
   DELOAD_ANCHOR_FACTOR,
@@ -218,5 +219,53 @@ describe('the fill', () => {
       lowConfidence: 0,
     })
     expect(JSON.stringify(fields)).not.toContain('back-squat')
+  })
+})
+
+describe('absent effort in the last session (REQ-016)', () => {
+  const read = (rpe: number | null, actualReps = 5) =>
+    sessionRead(
+      [1, 2, 3].map((setNumber) => ({
+        session_id: 'c0000001-0000-4000-8000-000000000000',
+        session_date: '2026-09-21',
+        logged_at: `2026-09-21T10:0${setNumber}:00.000Z`,
+        exercise_id: 'back-squat',
+        equipment_used: 'barbell',
+        set_number: setNumber,
+        actual_reps: actualReps,
+        prescribed_reps: 5,
+        weight: 225,
+        weight_unit: 'lb' as const,
+        rpe,
+      })),
+    )
+
+  it('fills the held number, with no rule fired, when the last session recorded no RPE', () => {
+    const [unread] = fill([prescription()], [{ ...FACT, lastSession: null }])
+    const [noEffort] = fill([prescription()], [{ ...FACT, lastSession: read(null) }])
+
+    expect(noEffort).toEqual(unread)
+    expect(noEffort.rule).toBeNull()
+    expect(noEffort.reason).toBe('no rule fired → hold load')
+  })
+
+  it('steps only where a rule reads what was recorded', () => {
+    const [held] = fill([prescription()], [{ ...FACT, lastSession: read(null) }])
+    const [measured] = fill([prescription()], [{ ...FACT, lastSession: read(8) }])
+    const [missed] = fill([prescription()], [{ ...FACT, lastSession: read(null, 3) }])
+
+    expect(measured.rule).toBe('on-target')
+    expect(measured.weight_suggested).toBeGreaterThan(held.weight_suggested ?? 0)
+    expect(missed.rule).toBe('overshoot-missed-reps')
+    expect(missed.weight_suggested).toBeLessThan(held.weight_suggested ?? 0)
+  })
+
+  it('writes the suggestion to the suggestion columns and to no performed field', () => {
+    const [load] = fill([prescription()], [{ ...FACT, lastSession: read(null) }])
+
+    expect(Object.keys(suggestedLoadFields(load))).toEqual([
+      'weight_suggested',
+      'weight_suggested_unit',
+    ])
   })
 })

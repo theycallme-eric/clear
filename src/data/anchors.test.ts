@@ -227,6 +227,49 @@ describe('recomputation (OVR-01a)', () => {
   })
 })
 
+describe('absent effort in new and mixed history (REQ-016)', () => {
+  const OLD = 'c0000001-0000-4000-8000-000000000000'
+  const NEW = 'c0000002-0000-4000-8000-000000000000'
+
+  it('reads a set logged without RPE as null, beside the RPE history recorded', async () => {
+    const { client } = setup([
+      set({ session_id: OLD, rpe: 8 }),
+      set({ session_id: NEW, session_date: '2026-09-08', rpe: null }),
+    ])
+
+    const evidence = await client.evidence(USER)
+
+    expect(!isErr(evidence) && evidence.value.map((row) => row.rpe)).toEqual([8, null])
+  })
+
+  it('writes no anchor from a history that recorded no RPE at all', async () => {
+    const { client, double } = setup([set({ rpe: null }), set({ set_number: 2, rpe: null })])
+
+    const written = await client.recompute(USER)
+
+    expect(!isErr(written) && written.value).toEqual([])
+    expect(double.rows()).toEqual([])
+  })
+
+  it('writes the anchor the RPE-bearing sessions support, and nothing the new one did not', async () => {
+    const { client, double } = setup([
+      set({ session_id: OLD, weight: 100, rpe: 8 }),
+      set({ session_id: NEW, session_date: '2026-09-08', weight: 150, rpe: null }),
+    ])
+
+    const written = await client.recompute(USER)
+
+    expect(isErr(written)).toBe(false)
+    expect(double.rows()).toHaveLength(1)
+    expect(double.rows()[0]).toMatchObject({
+      session_count: 1,
+      last_session_date: '2026-09-01',
+      // 5 reps at RPE 8 is 7 effective reps; the 150 lb set contributes nothing.
+      anchor_value: Math.round(100 * (1 + 7 / 30) * 100) / 100,
+    })
+  })
+})
+
 describe('reading the stored anchors (OVR-01a)', () => {
   it('answers the rows the caller owns, ordered by exercise', async () => {
     const stored: LoadAnchorRow = {
