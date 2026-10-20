@@ -153,11 +153,11 @@ Candidates are grouped by section, carry only what composition needs, and never 
 ```jsonc
 {
   "title": "string",
-  "overview": "string",
+  "overview": null,                     // requested null since prompt 5.2.0 (§13); parsed as string | null
   "sections": [{
     "section_type": "conditioning",
     "section_title": "string",
-    "section_notes": "string | null",
+    "section_notes": null,              // requested null since prompt 5.2.0 (§13); parsed as string | null
 
     "blocks": [{
       "structure_type": "amrap",        // standard|superset|circuit|emom|amrap|for_time
@@ -318,6 +318,11 @@ Every session records `prompt_version` (exists) and `contract_version` (new). Co
 
 This contract is `4.1.0`. Prompt version bumps to `5.0.0` — the library section is gone, the anchor section is rewritten, and the enforcement rules have moved out.
 
+Prompt `5.2.0` (REQ-010, U31) removes generated introductions: `overview` and every
+`section_notes` are requested as null. That is a composition-rule change, so the prompt version
+moves; the contract stays `4.1.0` because the output shape does not — both keys remain required
+on every object and are still parsed as `string | null`. See §13.
+
 ---
 
 ## 11. Requirement mapping
@@ -341,3 +346,61 @@ This contract is `4.1.0`. Prompt version bumps to `5.0.0` — the library sectio
 3. ~~`work_targets` for `rounds` modality~~ — **resolved.** Rounds belong to the block; exercises prescribe reps, time, or distance per round.
 4. **Retry budget** — one retry retained. Whether a duration failure should trim rather than regenerate is worth testing; trimming is cheaper and often correct.
 5. **Quality record storage** — §6 soft checks need somewhere to live. A column on the session is probably enough; a table is probably premature.
+
+---
+
+## 13. Removed introductions and how to restore them (REQ-010, U31)
+
+Generated workout overviews and section introductions are removed outright at prompt/output and
+display. Nothing replaces them: no relocated narrative, no feature flag, no parallel path. The
+fields, the columns and every historical value stay, so restoring introductions is a matter of
+reversing the seams below rather than rebuilding a contract.
+
+**Contract compatibility.** `overview` and `section_notes` remain required keys on every object
+and remain `string | null` in `generationOutputSchema`, the session/section row schemas and the
+saved-workout snapshot schema (`src/state/schemas.ts`). A legacy string still parses; null is what
+prompt `5.2.0` asks for. A response that writes an introduction anyway is otherwise valid: it is
+**accepted without a model retry** and the prose is suppressed at hydration. No hard check (§6),
+retry boundary (§9) or numerical deload/re-entry rule depends on either field.
+
+**Removed prompt/specification clauses** (prompt `5.1.2` → `5.2.0`, `PROMPT_v4.md` §2 and
+`supabase/functions/_shared/prompt.ts` together, compared byte for byte):
+
+| Removed | Was |
+|---|---|
+| DURATION | "Explain omissions or adjustments plainly in overview or section_notes." |
+| Deload directive | "…and state the RPE ceiling in section_notes." (system prompt) and `state the RPE 7 ceiling in section_notes` (DIRECTIVE RULES) |
+| Re-entry directive | "…and the exercise's RPE ceiling stated in section_notes." (system prompt) and `state that exercise's RPE ceiling in section_notes` (DIRECTIVE RULES) |
+| LOAD GUIDANCE | `section_notes` and `the overview` in the list of places a weight must not be narrated |
+| OUTPUT CONTRACT | `"overview": "string \| null"` and `"section_notes": "string \| null"` — now `null — always null` |
+
+Added: "Return overview and every section_notes as null; write no workout overview or section
+introduction." The numerical directive rules — set multiplier and floor, unchanged rep targets,
+conditioning intensity ceiling, one fewer set on re-entry, the anchor note's RPE cap — are
+unchanged, as are the deload banner and session tag.
+
+**Suppression and consumers.**
+
+- `supabase/functions/_shared/hydrate.ts` — `SUPPRESSED_PROSE` is what `overview` and each
+  section's `section_notes` hydrate to. Everything downstream reads the hydrated workout:
+  `persist.ts` (`composedWorkout` → `persist_session`, so new rows store null), the
+  `generate-workout` response, and the client's parsed acceptance in `src/data/generation.ts` /
+  `src/state/generation.ts`. Restore by returning the model's values here.
+- `supabase/functions/_shared/validate.ts` — the soft `narrated_load` observation no longer reads
+  `overview`/`section_notes`, and `directive_compliance` no longer looks for a stated RPE cap in
+  `section_notes` (its `capStated` metric is gone). Set-count compliance is unchanged. Restore both
+  halves alongside the prompt clauses.
+- Display surfaces: Review's overview card paragraph and per-section notes (`src/app/Review.tsx`
+  via `src/state/review.ts` `overview`/`notes`), and saved-workout snapshots copied by
+  `src/state/favorites.ts`. Removing these from Review, Workout and History for new, null and
+  legacy saved workouts is owned by the display tasks that follow this one; restoring means
+  rendering those briefing fields again.
+- Database: `workout_sessions.overview` and `workout_sections.section_notes` stay nullable `text`;
+  `persist_session` still writes whatever the payload carries.
+
+**Regression tests.** `src/test/generation-prompt.test.ts` (spec/source byte match, null request,
+removed clauses), `src/test/generation-training-history.test.ts` (directive rules without
+narrative), `src/test/generation-validation.test.ts` and `generation-hydration.test.ts` (prose
+accepted, no retry, suppressed), `generation-persistence.test.ts` (null stored), and
+`src/state/schemas.test.ts` (null and legacy strings both parse). Restoring introductions means
+inverting the U31 assertions in those files, not deleting them.

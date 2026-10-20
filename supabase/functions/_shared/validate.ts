@@ -54,9 +54,7 @@ import { checkDuration, estimateDuration, type WorkoutDuration } from './duratio
 import type { PromptInput } from './prompt.ts'
 import {
   DELOAD_MIN_SETS,
-  DELOAD_RPE_CAP,
   DELOAD_SET_FACTOR,
-  RE_ENTRY_RPE_CAP,
   type SessionDirective,
 } from './training-history.ts'
 
@@ -764,20 +762,18 @@ export const NARRATED_LOAD_PATTERN =
   /\b\d+(?:\.\d+)?\s*(?:#|lbs?|pounds?|kgs?|kilos?|kilograms?|plates?)\b/i
 
 /**
- * Every free-text field the model writes, with the path it lives at. The tempo
- * is here for the same reason the notes are: it is prose the app renders
- * verbatim, and "3s down at 185 lb" is a narrated weight wherever it is written.
+ * Every free-text field the model writes that the app keeps, with the path it
+ * lives at. The tempo is here for the same reason the notes are: it is prose the
+ * app renders verbatim, and "3s down at 185 lb" is a narrated weight wherever it
+ * is written. `overview` and `section_notes` are not: REQ-010 suppresses them at
+ * hydration, so a weight in either is never read next to the fill's.
  */
 function proseFields(workout: GenerationOutput): readonly { path: string; text: string }[] {
-  const fields: { path: string; text: string }[] = [
-    { path: 'title', text: workout.title },
-    { path: 'overview', text: workout.overview ?? '' },
-  ]
+  const fields: { path: string; text: string }[] = [{ path: 'title', text: workout.title }]
 
   workout.sections.forEach((section, sectionIndex) => {
     const path = sectionPath(sectionIndex)
     fields.push({ path: `${path}.section_title`, text: section.section_title })
-    fields.push({ path: `${path}.section_notes`, text: section.section_notes ?? '' })
 
     section.blocks.forEach((block, blockIndex) => {
       fields.push({
@@ -870,18 +866,17 @@ function reEntryExercises(input: PromptInput): ReadonlySet<string> {
  * §4 and §5 as an observation: did the composition actually do what the directive
  * asked of it?
  *
- * Two halves, because the directive has two halves. **Set counts** — a deload
- * multiplies the band's ceiling by `DELOAD_SET_FACTOR` and floors it at
- * `DELOAD_MIN_SETS`; a re-entry takes one working set off the exercises the block
- * flagged. **Cue language** — both directives have to state their RPE ceiling in
- * `section_notes`, which is the only place the user reads it, and a cap nobody
- * was told about is not a cap.
+ * **Set counts** — a deload multiplies the band's ceiling by `DELOAD_SET_FACTOR`
+ * and floors it at `DELOAD_MIN_SETS`; a re-entry takes one working set off the
+ * exercises the block flagged. The second half this used to observe — the RPE
+ * ceiling stated in `section_notes` — went with REQ-010: section notes are
+ * requested as null and suppressed at hydration, so there is no prose left to
+ * read it from. The numbers themselves are unchanged (GENERATION_CONTRACT §13).
  *
  * A `normal` session has nothing to comply with and records that it was composed
  * without a directive, rather than recording a vacuous pass.
  */
 function observeDirectiveCompliance(
-  workout: GenerationOutput,
   input: PromptInput,
   prescriptions: readonly PrescriptionEntry[],
 ): SoftObservation {
@@ -892,13 +887,12 @@ function observeDirectiveCompliance(
     return {
       check: SoftCheck.DIRECTIVE_COMPLIANCE,
       status: 'within',
-      summary: 'composed under no directive; set counts and cues are the goal shape’s',
-      metrics: { exercises: prescriptions.length, overSets: 0, capStated: 1 },
+      summary: 'composed under no directive; set counts are the goal shape’s',
+      metrics: { exercises: prescriptions.length, overSets: 0 },
       detail: ['directive:normal'],
     }
   }
 
-  const cap = directive === 'deload' ? DELOAD_RPE_CAP : RE_ENTRY_RPE_CAP
   const flagged = reEntryExercises(input)
 
   const overSets = prescriptions.filter((entry) => {
@@ -915,27 +909,20 @@ function observeDirectiveCompliance(
     return flagged.has(entry.exercise.exercise_id) && sets > Math.max(ceiling - 1, 1)
   })
 
-  // The cap has to be readable, so it has to be in a note the user sees, and it
-  // has to name the number rather than gesture at "taking it easy".
-  const capPattern = new RegExp(`rpe[^.\\n]{0,16}\\b${cap}\\b`, 'i')
-  const capStated = workout.sections.some((section) => capPattern.test(section.section_notes ?? ''))
-
-  const noted = [
-    ...overSets.map((entry) => `sets:${entry.exercise.exercise_id}:${entry.exercise.sets}`),
-    ...(capStated ? [] : [`missing:rpe_${cap}_in_section_notes`]),
-  ]
+  const noted = overSets.map(
+    (entry) => `sets:${entry.exercise.exercise_id}:${entry.exercise.sets}`,
+  )
 
   return {
     check: SoftCheck.DIRECTIVE_COMPLIANCE,
     status: noted.length === 0 ? 'within' : 'outside',
     summary:
       noted.length === 0
-        ? `${directive} honoured: set counts inside the directive’s ceiling and the RPE ${cap} cap stated in section_notes`
-        : `${directive} partly honoured: ${overSets.length} exercise${overSets.length === 1 ? '' : 's'} over the set ceiling, RPE ${cap} cap ${capStated ? 'stated' : 'unstated'}`,
+        ? `${directive} honoured: set counts inside the directive’s ceiling`
+        : `${directive} partly honoured: ${overSets.length} exercise${overSets.length === 1 ? '' : 's'} over the set ceiling`,
     metrics: {
       exercises: prescriptions.length,
       overSets: overSets.length,
-      capStated: capStated ? 1 : 0,
     },
     detail: [`directive:${directive}`, ...noted],
   }
@@ -1023,7 +1010,7 @@ export function observeQuality(
       observeVariety(prescriptions),
       observeRepetition(workout, input, prescriptions),
       observeNarratedLoads(workout),
-      observeDirectiveCompliance(workout, input, prescriptions),
+      observeDirectiveCompliance(input, prescriptions),
       ...(focusFit === null ? [] : [focusFit]),
     ],
   }

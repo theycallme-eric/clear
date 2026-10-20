@@ -309,6 +309,11 @@ describe('the density directive on the generation request', () => {
   })
 })
 
+/** The one `DIRECTIVE RULES` line of a user message. */
+function directiveRulesLine(message: string): string | undefined {
+  return message.split('\n').find((line) => line.startsWith('DIRECTIVE RULES:'))
+}
+
 describe('the block as the prompt carries it', () => {
   const message = buildUserMessage(promptInput())
 
@@ -339,11 +344,15 @@ describe('the block as the prompt carries it', () => {
     expect(deload).toContain('working sets × 0.6 rounded down, never below 2')
     expect(deload).toContain('rep targets unchanged')
     expect(deload).toContain('conditioning at intensity 6 or lower')
-    expect(deload).toContain('state the RPE 7 ceiling in section_notes')
     expect(deload).toContain('CONDITIONING TREND: backing_off')
+    // REQ-010 (U31): the numbers stay; the narrative about them does not.
+    expect(directiveRulesLine(deload)).toBe(
+      'DIRECTIVE RULES: working sets × 0.6 rounded down, never below 2 · rep targets unchanged · conditioning at intensity 6 or lower',
+    )
+    expect(deload).not.toMatch(/state the RPE/i)
   })
 
-  it('asks a re-entry for one fewer set and for the ceiling in the cues', () => {
+  it('asks a re-entry for one fewer set, with the ceiling in the anchor note only', () => {
     const reEntry = buildUserMessage(
       promptInput({
         training: buildTrainingHistory({
@@ -356,6 +365,10 @@ describe('the block as the prompt carries it', () => {
     expect(reEntry).toContain('SESSION DIRECTIVE: re_entry')
     expect(reEntry).toContain('one fewer working set on every exercise noted re-entry')
     expect(reEntry).toContain('re-entry — cap RPE 8')
+    expect(directiveRulesLine(reEntry)).toBe(
+      'DIRECTIVE RULES: one fewer working set on every exercise noted re-entry · conservative coaching cues',
+    )
+    expect(reEntry).not.toMatch(/RPE ceiling/i)
   })
 
   it('says none rather than printing an empty table, and still states the directive', () => {
@@ -377,7 +390,14 @@ describe('the block as the prompt carries it', () => {
 describe('what the system prompt says about loads', () => {
   it('forbids computing, stating or narrating one', () => {
     expect(SYSTEM_PROMPT).toContain('Never compute, state or narrate a weight')
-    expect(SYSTEM_PROMPT).toContain('section_notes, block_notes, tempo and\nthe overview')
+    expect(SYSTEM_PROMPT).toContain('including block_notes and tempo')
+  })
+
+  it('asks for no deload or re-entry narrative, only the numbers (REQ-010)', () => {
+    expect(SYSTEM_PROMPT).toContain('Apply the stated working-set\n  multiplier')
+    expect(SYSTEM_PROMPT).toContain('one fewer working set on every exercise the block notes as re-entry')
+    expect(SYSTEM_PROMPT).not.toMatch(/RPE ceiling/i)
+    expect(SYSTEM_PROMPT).not.toMatch(/stated in section_notes|in section_notes\./)
   })
 
   it('explains the directive it will be handed, and the trend', () => {

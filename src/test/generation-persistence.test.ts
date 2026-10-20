@@ -34,7 +34,11 @@ import {
   promptInput,
   sectionFixture,
 } from './generation-prompt-fixtures'
-import { VALID_RESPONSE } from './generation-response-fixtures'
+import {
+  INTRODUCTION_PROSE,
+  NULL_PROSE_RESPONSE,
+  VALID_RESPONSE,
+} from './generation-response-fixtures'
 import { createSessionDouble } from './session-double'
 
 import type { Enums } from '../data/database.types'
@@ -882,8 +886,55 @@ describe('one run per goal preset persists a contract-valid workout', () => {
     if (!parsed.ok) throw new Error('the valid fixture no longer parses')
 
     // Hydration adds facts beside a prescription and changes nothing inside
-    // one, so the projection is the model's own object back again.
-    expect(composedWorkout(composed)).toEqual(parsed.value)
+    // one, so the projection is the model's own object back again — less the
+    // introductions REQ-010 suppresses, which are the only edit.
+    expect(composedWorkout(composed)).toEqual({
+      ...parsed.value,
+      overview: null,
+      sections: parsed.value.sections.map((section) => ({ ...section, section_notes: null })),
+    })
+  })
+})
+
+describe('introductions never reach the stored session (REQ-010)', () => {
+  it('stores null overview and section notes when the model wrote introductions anyway', async () => {
+    const store = double()
+    const result = await persisted(store, VALID_RESPONSE)
+
+    expect(result.ok).toBe(true)
+    const { sessions, sections, blocks, exercises } = store.store()
+    expect(sessions).toHaveLength(1)
+    expect(sessions[0].overview).toBeNull()
+    expect(sections.length).toBeGreaterThan(0)
+    expect(sections.every((section) => section.section_notes === null)).toBe(true)
+    // Every structured row is still written: nothing was discarded with the prose.
+    expect(blocks).toHaveLength(3)
+    expect(exercises).toHaveLength(5)
+  })
+
+  it('persists the null-prose response exactly as it persists the legacy one', async () => {
+    const legacy = double()
+    const asked = double()
+    await persisted(legacy, VALID_RESPONSE)
+    await persisted(asked, NULL_PROSE_RESPONSE)
+
+    const shape = (store: ReturnType<typeof double>) =>
+      store.store().exercises.map((row) => [row.exercise_id, row.sets, row.target_kind])
+
+    expect(asked.store().sessions[0].overview).toBeNull()
+    expect(shape(asked)).toEqual(shape(legacy))
+  })
+
+  it('sends the write path an acceptance whose prose keys are present and null', () => {
+    const payload = acceptanceFor(hydratedFrom(VALID_RESPONSE, INPUT), INPUT, FACTS)
+    if (!payload.ok) throw new Error('acceptance refused')
+
+    expect(payload.value.workout).toHaveProperty('overview', null)
+    for (const section of payload.value.workout.sections) {
+      expect(section).toHaveProperty('section_notes', null)
+    }
+    expect(JSON.stringify(payload.value)).not.toContain(INTRODUCTION_PROSE.overview)
+    expect(JSON.stringify(payload.value)).not.toContain(INTRODUCTION_PROSE.sectionNotes)
   })
 })
 

@@ -1,5 +1,5 @@
 /**
- * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.1.1`.
+ * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.2.0`.
  *
  * This module is pure: candidates and an effective request in, two strings and
  * a measurement out. It opens no connection, reads no environment, and calls no
@@ -41,7 +41,6 @@ import { ANCHOR_RELATIONSHIPS, CONTRACT_VERSION, SESSION_FUNCTIONS } from '../..
 import {
   DELOAD_CONDITIONING_INTENSITY_MAX,
   DELOAD_MIN_SETS,
-  DELOAD_RPE_CAP,
   DELOAD_SET_FACTOR,
   type AnchoredExercise,
   type SessionDirective,
@@ -60,8 +59,14 @@ import {
  * is untouched, which is the requirement's own condition for leaving it alone.
  * 5.1.1 restores main-work thematic guidance, treats enabled sections as available
  * choices and composes to the time available. The output contract is unchanged.
+ * 5.2.0 is REQ-010 (U31): overview and section_notes are requested as null, and the
+ * clauses asking for introductions, adjustment explanations and the directive's RPE
+ * ceiling in section_notes are gone. Minor, because composition rules were removed
+ * and no field moved. `CONTRACT_VERSION` stays 4.1.0: both keys stay required and
+ * `string | null`, so the shape a response is parsed against did not change.
+ * Restoring introductions: GENERATION_CONTRACT §13.
  */
-export const PROMPT_VERSION = '5.1.2'
+export const PROMPT_VERSION = '5.2.0'
 
 export { CONTRACT_VERSION }
 
@@ -206,6 +211,7 @@ Return one JSON object matching the supplied schema and no other text. Select on
 values present in the candidate group for that section. Select equipment only from that
 candidate's usable_equipment. Return structure and prescription fields only; do not return exercise
 names, equipment display strings, coaching cues, regressions, or factual catalog content.
+Return overview and every section_notes as null; write no workout overview or section introduction.
 
 PRIORITY
 1. Safety and the supplied hard boundary
@@ -260,18 +266,17 @@ LOAD GUIDANCE
 - 7–8: challenging, roughly 70–80%.
 - 9–10: heavy, roughly 80–90%+, only where the goal and candidate role support it.
 Use only the contract's load_type/load_value representation. Never invent a prior-session number.
-Never compute, state or narrate a weight, anywhere, including section_notes, block_notes, tempo and
-the overview. Code fills loads from logged history.
+Never compute, state or narrate a weight, anywhere, including block_notes and tempo. Code fills
+loads from logged history.
 
 TRAINING HISTORY AND DIRECTIVES
 TRAINING HISTORY lists recent capacity per exercise: confidence, time since training and a label,
 never loads; code fills loads afterwards.
 - SESSION DIRECTIVE normal: compose as the goal shape asks.
 - SESSION DIRECTIVE deload: the same movements rather than novelty. Apply the stated working-set
-  multiplier, hold rep targets where they are, keep conditioning at or below the stated intensity, and
-  state the RPE ceiling in section_notes.
+  multiplier, hold rep targets where they are, and keep conditioning at or below the stated intensity.
 - SESSION DIRECTIVE re_entry: one fewer working set on every exercise the block notes as re-entry,
-  conservative cues, and the exercise's RPE ceiling stated in section_notes.
+  and conservative cues.
 - CONDITIONING TREND ready: add a round, add reps per round, or shorten a time cap by about 10%.
   hold: keep the density where it was. backing_off: drop a round or lengthen the cap by about 15%.
 An exercise noted stalled may be swapped for a close variation, which is often the right answer to a
@@ -303,8 +308,8 @@ DURATION
 Compose the closest useful workout to the effective duration target. Short sessions prioritize
 goal-relevant main work: conditioning for conditioning, gentle mobility for active_recovery.
 Keep coherent warmup prep and adequate rest; omit optional parts before rushing work. With more time
-add useful volume, accessories or mobility, not filler. Explain omissions or adjustments plainly in
-overview or section_notes. Your estimated_duration_mins is diagnostic only; code checks plausibility.
+add useful volume, accessories or mobility, not filler. Your estimated_duration_mins is diagnostic
+only; code checks plausibility.
 
 Before returning, verify internally that every ID and equipment value came from the correct section,
 selected sections follow candidate-group order, target fields match target_kind, timed structures have clocks,
@@ -335,11 +340,11 @@ object; a key with no value is null.
 
 {
   "title": "string",
-  "overview": "string | null",
+  "overview": "null — always null; no workout overview",
   "sections": [{
     "section_type": "${alternatives(enums.section_type)} — only an enabled section",
     "section_title": "string",
-    "section_notes": "string | null",
+    "section_notes": "null — always null; no section introduction",
     "blocks": [{
       "structure_type": "${alternatives(enums.structure_type)}",
       "rounds": "int > 0 | null — required for circuit, null when open-ended",
@@ -523,13 +528,11 @@ function directiveRules(directive: SessionDirective): readonly string[] {
         `working sets × ${DELOAD_SET_FACTOR} rounded down, never below ${DELOAD_MIN_SETS}`,
         'rep targets unchanged',
         `conditioning at intensity ${DELOAD_CONDITIONING_INTENSITY_MAX} or lower`,
-        `state the RPE ${DELOAD_RPE_CAP} ceiling in section_notes`,
       ]
     case 're_entry':
       return [
         'one fewer working set on every exercise noted re-entry',
         'conservative coaching cues',
-        'state that exercise’s RPE ceiling in section_notes',
       ]
     case 'normal':
       return []

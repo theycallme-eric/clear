@@ -23,8 +23,14 @@ import {
 import { createLogger, type LogLevel, type LogSink } from '../state/logger'
 import { ErrorCode } from '../state/errors'
 import { CONTRACT_VERSION, generationOutputSchema, type GenerationOutput } from '../state/schemas'
-import { promptInput, sectionFixture } from './generation-prompt-fixtures'
-import { VALID_RESPONSE, claudeResponse } from './generation-response-fixtures'
+import { buildTrainingHistory } from '../../supabase/functions/_shared/training-history.ts'
+import { TODAY, TRAINING_ANCHORS, promptInput, sectionFixture } from './generation-prompt-fixtures'
+import {
+  INTRODUCTION_PROSE,
+  NULL_PROSE_RESPONSE,
+  VALID_RESPONSE,
+  claudeResponse,
+} from './generation-response-fixtures'
 
 // GEN-02c, the validation half. Three questions, and they are not the same
 // question asked three ways:
@@ -880,5 +886,123 @@ describe('validation inside the composer’s one retry', () => {
     if (!composition.ok) return
 
     expect(composition.value.validation).toBeNull()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5. REQ-010 — introductions are requested as null and never cost a retry
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('introductory prose is accepted and never retried (REQ-010)', () => {
+  const validate = (workout: GenerationOutput, input: PromptInput) =>
+    validateComposition(workout, input)
+
+  it('still requires both keys, and accepts null and a legacy string for each', () => {
+    const asked = composed()
+    asked.overview = null
+    asked.sections.forEach((section) => (section.section_notes = null))
+    expect(generationOutputSchema.safeParse(asked).success).toBe(true)
+
+    const legacy = composed()
+    expect(legacy.overview).toBe(INTRODUCTION_PROSE.overview)
+    expect(generationOutputSchema.safeParse(legacy).success).toBe(true)
+
+    const noOverview = composed() as unknown as Record<string, unknown>
+    delete noOverview.overview
+    expect(generationOutputSchema.safeParse(noOverview).success).toBe(false)
+
+    const noNotes = composed() as unknown as { sections: Record<string, unknown>[] }
+    delete noNotes.sections[0].section_notes
+    expect(generationOutputSchema.safeParse(noNotes).success).toBe(false)
+  })
+
+  it('validates an otherwise valid response carrying introductions, with no retry', async () => {
+    const fetch = stubFetch([claudeResponse(VALID_RESPONSE), claudeResponse(NULL_PROSE_RESPONSE)])
+
+    const composition = await createComposer({
+      apiKey: API_KEY,
+      fetch: fetch.send,
+      validate,
+    }).compose(INPUT, REQUEST_ID)
+
+    expect(fetch.calls).toHaveLength(1)
+    expect(composition.ok).toBe(true)
+    if (!composition.ok) return
+
+    expect(composition.value.attempts).toBe(1)
+    expect(composition.value.retriedAfter).toBeNull()
+  })
+
+  it('validates the null-prose response the prompt asks for, also with no retry', async () => {
+    const fetch = stubFetch([claudeResponse(NULL_PROSE_RESPONSE)])
+
+    const composition = await createComposer({
+      apiKey: API_KEY,
+      fetch: fetch.send,
+      validate,
+    }).compose(INPUT, REQUEST_ID)
+
+    expect(fetch.calls).toHaveLength(1)
+    expect(composition.ok).toBe(true)
+  })
+
+  it('does not let prose excuse a structural failure: an unoffered id still fails', () => {
+    const workout = composed()
+    expect(workout.overview).not.toBeNull()
+    workout.sections[1].blocks[0].exercises[0].exercise_id = 'trap-bar-deadlift'
+
+    const verdict = validateComposition(workout, INPUT)
+    expect(verdict.ok).toBe(false)
+    if (verdict.ok) return
+    expect(verdict.error.code).toBe(GenerationFailure.INVALID_REFERENCE)
+  })
+
+  it('reads no weight out of suppressed prose, and still reads it from block notes', () => {
+    const narrated = (record: QualityRecord) =>
+      record.observations.find((observation) => observation.check === SoftCheck.NARRATED_LOAD)
+
+    const inIntroductions = composed()
+    inIntroductions.overview = 'Work up to 225 lb on the squat.'
+    inIntroductions.sections[1].section_notes = 'Top set at 102.5kg.'
+    expect(narrated(observeQuality(inIntroductions, INPUT))?.status).toBe('within')
+
+    const inBlockNotes = composed()
+    inBlockNotes.sections[1].blocks[0].block_notes = 'Work up to 225 lb.'
+    const record = narrated(observeQuality(inBlockNotes, INPUT))
+    expect(record?.status).toBe('outside')
+    expect(record?.detail).toEqual(['sections[1].blocks[0].block_notes'])
+  })
+
+  it('keeps the deload set-count observation and asks no RPE narrative of section_notes', () => {
+    const deload = promptInput({
+      training: buildTrainingHistory({ anchors: TRAINING_ANCHORS, today: TODAY, deload: true }),
+    })
+    expect(deload.training.directive).toBe('deload')
+    const compliance = (record: QualityRecord) =>
+      record.observations.find((observation) => observation.check === SoftCheck.DIRECTIVE_COMPLIANCE)
+
+    const heavy = composed()
+    heavy.sections[1].blocks[0].exercises[0].sets = 6
+    const over = compliance(observeQuality(heavy, deload))
+
+    // Primary at intensity 8: ceiling 5 × 0.6 → 3, floor 2. Six sets is over.
+    expect(over?.status).toBe('outside')
+    expect(over?.detail).toEqual(['directive:deload', 'sets:back-squat:6'])
+    expect(over?.metrics).not.toHaveProperty('capStated')
+
+    const light = composed()
+    light.sections.forEach((section) =>
+      section.blocks.forEach((block) =>
+        block.exercises.forEach((exercise) => {
+          if (exercise.sets !== null) exercise.sets = Math.min(exercise.sets, 2)
+        }),
+      ),
+    )
+    const honoured = compliance(observeQuality(light, deload))
+
+    // No section note states an RPE, and that is no longer a finding.
+    expect(light.sections.some((section) => /rpe/i.test(section.section_notes ?? ''))).toBe(false)
+    expect(honoured?.status).toBe('within')
+    expect(honoured?.detail).toEqual(['directive:deload'])
   })
 })
