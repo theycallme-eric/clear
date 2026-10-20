@@ -27,7 +27,7 @@
  * is the React half of a state contract — subscribe, reduce, render — and the
  * dialog it mounts is composed from `src/ui`, not declared here.
  */
-import { useCallback, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { BlockEffortDialog } from '../ui/block-effort'
 import {
@@ -76,47 +76,64 @@ export function BlockCompletionProvider({
   const [recorded, setRecorded] = useState<readonly string[]>([])
   const [pending, setPending] = useState<PendingCompletion | null>(null)
   const [saving, setSaving] = useState(false)
+  // Blocks whose write has been sent and not yet answered. A ref rather than
+  // state, so a second call in the same render cannot slip past the check.
+  const writing = useRef(new Set<string>())
 
-  const completion = useMemo<BlockCompletionApi>(
-    () => ({
-      completeBlock(blockId, outcome) {
-        if (recorded.includes(blockId)) return
-        const block = blocks.find((candidate) => candidate.blockId === blockId)
-        if (block === undefined) return
-        setPending({ block, outcome })
-      },
-      isBlockRecorded(blockId) {
-        return recorded.includes(blockId)
-      },
-    }),
-    [blocks, recorded],
-  )
-
-  const record = useCallback(
-    async (perceivedEffort: number) => {
-      if (pending === null) return
+  /**
+   * The one `block_results` write, for the dialog and a direct save alike.
+   * Effort is passed through as given — a number, or `null` for none — and is
+   * never defaulted here.
+   */
+  const write = useCallback(
+    async (blockId: string, outcome: BlockOutcome, perceivedEffort: number | null) => {
+      if (writing.current.has(blockId)) return
+      writing.current.add(blockId)
 
       setSaving(true)
-      const result = await blockResults.record({
-        blockId: pending.block.blockId,
-        outcome: pending.outcome,
-        perceivedEffort,
-      })
+      const result = await blockResults.record({ blockId, outcome, perceivedEffort })
       setSaving(false)
+      writing.current.delete(blockId)
 
       if (isErr(result)) {
         // The block stays completable: a performed block must never be lost
         // because one write failed, and the outcome the renderer observed is
         // still whatever the renderer will hand over on the next attempt.
-        setPending(null)
         onFailure(result.error)
         return
       }
 
-      setRecorded((current) => [...current, pending.block.blockId])
+      setRecorded((current) => [...current, blockId])
+    },
+    [blockResults, onFailure],
+  )
+
+  const completion = useMemo<BlockCompletionApi>(
+    () => ({
+      completeBlock(blockId, outcome, save) {
+        if (recorded.includes(blockId)) return
+        const block = blocks.find((candidate) => candidate.blockId === blockId)
+        if (block === undefined) return
+        if (save === undefined) {
+          setPending({ block, outcome })
+          return
+        }
+        void write(blockId, outcome, save.perceivedEffort)
+      },
+      isBlockRecorded(blockId) {
+        return recorded.includes(blockId)
+      },
+    }),
+    [blocks, recorded, write],
+  )
+
+  const record = useCallback(
+    async (perceivedEffort: number) => {
+      if (pending === null) return
+      await write(pending.block.blockId, pending.outcome, perceivedEffort)
       setPending(null)
     },
-    [blockResults, onFailure, pending],
+    [pending, write],
   )
 
   // The score is derived from the outcome this write stores, by the function

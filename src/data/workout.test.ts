@@ -150,6 +150,26 @@ describe('the block_results write (EXE-01)', () => {
     },
   )
 
+  it.each([undefined, null])(
+    'writes an effort of %s as null rather than refusing or defaulting it',
+    async (perceivedEffort) => {
+      const { clients, sent } = setup({ rows: [{ ...storedRow(), perceived_effort: null }] })
+
+      const result = await clients.blockResults.record({
+        blockId: BLOCK_ID,
+        outcome: { roundsCompleted: 0 },
+        perceivedEffort,
+      })
+
+      expect(result.ok, JSON.stringify(result)).toBe(true)
+      expect(result.ok && result.value.perceived_effort).toBeNull()
+      expect(sent).toHaveLength(1)
+      expect(sent[0].body).toEqual([
+        expect.objectContaining({ rounds_completed: 0, perceived_effort: null }),
+      ])
+    },
+  )
+
   it('treats an insert that read nothing back as a failed write', async () => {
     // RLS refused it, or no representation came back. Answering a row the
     // caller cannot have would be a guess.
