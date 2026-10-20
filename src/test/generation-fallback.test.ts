@@ -108,3 +108,21 @@ describe('there is no mock workout', () => {
     )
   })
 })
+
+describe('suppressed introductions fall back to nothing (REQ-010)', () => {
+  const runtime = sources().filter(isRuntime)
+  const hydrate = withoutComments(read(join('supabase', 'functions', '_shared', 'hydrate.ts')))
+
+  it('suppresses to null, not to a replacement sentence', () => {
+    expect(hydrate).toMatch(/export const SUPPRESSED_PROSE = null\n/)
+    expect(hydrate).toMatch(/overview: SUPPRESSED_PROSE,/)
+    expect(hydrate).toMatch(/section_notes: SUPPRESSED_PROSE,/)
+  })
+
+  it('adds no feature flag or parallel path for introductions', () => {
+    const flag = /(?:INTRODUCTION|OVERVIEW|SECTION_NOTES|PROSE)[A-Z_]*(?:FLAG|ENABLED)|(?:enable|show)(?:Introductions|Overview|SectionNotes)/i
+    const offenders = runtime.filter((file) => flag.test(withoutComments(read(file))))
+
+    expect(offenders).toEqual([])
+  })
+})

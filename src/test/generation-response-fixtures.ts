@@ -32,6 +32,11 @@ export function claudeResponse(
  * A contract-4.1.0 workout: warmup as a standard block, the primary lift, and
  * an accessory superset. Fenced the way a model fences JSON, so the happy path
  * exercises the fence stripper too.
+ *
+ * It still carries an overview and one section note — the introductory prose
+ * prompt 5.2.0 asks the model not to write (REQ-010). That is deliberate: it is
+ * the otherwise-valid response that must be accepted without a retry and have
+ * its prose suppressed. `NULL_PROSE_RESPONSE` is the same workout as asked for.
  */
 export const VALID_RESPONSE = `\`\`\`json
 {
@@ -196,6 +201,18 @@ export const VALID_RESPONSE = `\`\`\`json
   "estimated_duration_mins": 46
 }
 \`\`\``
+
+/** The introductory prose `VALID_RESPONSE` carries, which REQ-010 suppresses. */
+export const INTRODUCTION_PROSE = {
+  overview: 'Squat-led session with unilateral accessory work.',
+  sectionNotes: 'Build to a heavy set of five.',
+} as const
+
+/** `VALID_RESPONSE` exactly as prompt 5.2.0 asks for it: no introductions. */
+export const NULL_PROSE_RESPONSE = VALID_RESPONSE.replace(
+  `"overview": "${INTRODUCTION_PROSE.overview}"`,
+  '"overview": null',
+).replace(`"section_notes": "${INTRODUCTION_PROSE.sectionNotes}"`, '"section_notes": null')
 
 /** The model explaining itself instead of answering. */
 export const NOT_JSON_RESPONSE = `Happy to help! Here's a lower-body strength session.

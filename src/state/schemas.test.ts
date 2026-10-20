@@ -184,6 +184,38 @@ describe('a contract 4.1.0 sample round-trips (CORE-03)', () => {
   })
 })
 
+describe('overview and section_notes stay required and nullable (REQ-010)', () => {
+  const sectionOf = (payload: Record<string, unknown>) =>
+    (payload.sections as Record<string, unknown>[])[0]
+
+  it('parses the null introductions prompt 5.2.0 asks for', () => {
+    expect(generationOutputSchema.safeParse(output()).success).toBe(true)
+  })
+
+  it('still parses a legacy overview and section note, unchanged', () => {
+    const legacy = output()
+    legacy.overview = 'Squat-led session with unilateral accessory work.'
+    sectionOf(legacy).section_notes = 'Build to a heavy set of five.'
+
+    const parsed = generationOutputSchema.safeParse(legacy)
+    expect(parsed.success && parsed.data).toEqual(legacy)
+  })
+
+  it('refuses a response that omits either key', () => {
+    const noOverview = output()
+    delete noOverview.overview
+    const noNotes = output()
+    delete sectionOf(noNotes).section_notes
+
+    const issues = (payload: Record<string, unknown>) => {
+      const parsed = generationOutputSchema.safeParse(payload)
+      return parsed.success ? null : schemaIssues(parsed.error).map((issue) => issue.path)
+    }
+    expect(issues(noOverview)).toContain('overview')
+    expect(issues(noNotes)).toContain('sections[0].section_notes')
+  })
+})
+
 describe('the discriminated target rejects the wrong fields (check 4)', () => {
   const rejected = (overrides: Record<string, unknown>) =>
     prescriptionSchema.safeParse(prescription(overrides))

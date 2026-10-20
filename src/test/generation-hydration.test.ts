@@ -27,7 +27,11 @@ import {
   type GenerationOutput,
 } from '../state/schemas'
 import { catalogRowFixtures, promptInput } from './generation-prompt-fixtures'
-import { VALID_RESPONSE } from './generation-response-fixtures'
+import {
+  INTRODUCTION_PROSE,
+  NULL_PROSE_RESPONSE,
+  VALID_RESPONSE,
+} from './generation-response-fixtures'
 
 // GEN-02c, the hydration half. Three questions, and each acceptance criterion
 // is one of them:
@@ -103,6 +107,9 @@ function hydrated(facts: CatalogFactsById = catalogFacts()): HydratedWorkout {
 
   return result.value
 }
+
+/** The clock fields a contract block and a hydrated block share. */
+type WorkoutBlockLike = Omit<GenerationOutput['sections'][number]['blocks'][number], 'exercises'>
 
 const exercisesOf = (workout: HydratedWorkout) =>
   workout.sections.flatMap((section) => section.blocks.flatMap((block) => block.exercises))
@@ -223,7 +230,9 @@ describe('facts are hydrated by id, from the catalog, after validation', () => {
       ),
     )
     expect(after.value.title).toBe(before.workout.title)
-    expect(after.value.overview).toBe(before.workout.overview)
+    // REQ-010: the one thing hydration takes away is the introduction.
+    expect(before.workout.overview).toBe(INTRODUCTION_PROSE.overview)
+    expect(after.value.overview).toBeNull()
   })
 
   it('refuses a workout whose prescribed id the catalog cannot answer for', () => {
@@ -256,6 +265,65 @@ describe('facts are hydrated by id, from the catalog, after validation', () => {
     // is rejected before hydration is reached. Drift is impossible rather than
     // unlikely (§8).
     expect(generationOutputSchema.safeParse(payload).success).toBe(false)
+  })
+})
+
+describe('introductions are suppressed at hydration, not retried (REQ-010)', () => {
+  it('drops a model-written overview and every section note, keeping both keys', () => {
+    const before = validated()
+    expect(before.workout.sections.map((section) => section.section_notes)).toContain(
+      INTRODUCTION_PROSE.sectionNotes,
+    )
+
+    const workout = hydrated()
+    expect(workout).toHaveProperty('overview', null)
+    for (const section of workout.sections) {
+      expect(section).toHaveProperty('section_notes', null)
+    }
+    expect(JSON.stringify(workout)).not.toContain(INTRODUCTION_PROSE.overview)
+    expect(JSON.stringify(workout)).not.toContain(INTRODUCTION_PROSE.sectionNotes)
+  })
+
+  it('keeps every structured field, title, label and catalog fact beside the suppression', () => {
+    const before = validated()
+    const workout = hydrated()
+
+    expect(workout.title).toBe(before.workout.title)
+    expect(workout.sections.map((section) => [section.section_type, section.section_title])).toEqual(
+      before.workout.sections.map((section) => [section.section_type, section.section_title]),
+    )
+    const clocks = (sections: readonly { blocks: readonly WorkoutBlockLike[] }[]) =>
+      sections.flatMap((section) =>
+        section.blocks.map((block) => [
+          block.structure_type,
+          block.rounds,
+          block.timer_type,
+          block.timer_seconds,
+          block.round_rest_seconds,
+          block.rep_scheme,
+          block.block_notes,
+        ]),
+      )
+    expect(clocks(workout.sections)).toEqual(clocks(before.workout.sections))
+    expect(exercisesOf(workout).every((exercise) => exercise.coachingCues.length > 0)).toBe(true)
+  })
+
+  it('hydrates a null-prose response to the same workout as a legacy-prose one', () => {
+    const parsed = parseCompletion(NULL_PROSE_RESPONSE)
+    if (!parsed.ok) throw new Error('the null-prose fixture no longer parses')
+    const verdict = validateComposition(parsed.value, INPUT)
+    if (!verdict.ok) throw new Error(`the null-prose fixture no longer validates: ${verdict.error.code}`)
+
+    const asked = hydrateWorkout(verdict.value, catalogFacts())
+    if (!asked.ok) throw new Error('hydration failed')
+
+    const legacy = hydrated()
+    expect(asked.value.overview).toBe(legacy.overview)
+    expect(asked.value.sections).toEqual(legacy.sections)
+    expect([asked.value.promptVersion, asked.value.contractVersion]).toEqual([
+      legacy.promptVersion,
+      legacy.contractVersion,
+    ])
   })
 })
 

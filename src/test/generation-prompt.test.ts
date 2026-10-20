@@ -107,6 +107,22 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     expect(SYSTEM_PROMPT).toContain('Useful lifts may repeat across\ndays; do not force novelty or infer absent history.')
   })
 
+  it('requests null introductions and stamps 5.2.0 without moving the contract (REQ-010)', () => {
+    expect(PROMPT_VERSION).toBe('5.2.0')
+    expect(CONTRACT_VERSION).toBe('4.1.0')
+    expect(SYSTEM_PROMPT).toContain(
+      'Return overview and every section_notes as null; write no workout overview or section introduction.',
+    )
+    expect(OUTPUT_CONTRACT).toContain('"overview": "null — always null; no workout overview"')
+    expect(OUTPUT_CONTRACT).toContain('"section_notes": "null — always null; no section introduction"')
+    expect(OUTPUT_CONTRACT).not.toMatch(/"(overview|section_notes)": "string/)
+    // The removed clauses, gone from source and (byte-for-byte above) from the spec.
+    expect(SYSTEM_PROMPT).not.toMatch(/in\s+overview or section_notes/)
+    expect(SYSTEM_PROMPT).not.toMatch(/RPE ceiling/)
+    expect(SYSTEM_PROMPT).not.toMatch(/the\s+overview\./)
+    expect(read(SPEC)).toContain('**5.2.0 (REQ-010, U31):**')
+  })
+
   it('puts superset shared rest where execution reads it rather than on ignored members', () => {
     expect(SYSTEM_PROMPT).toContain('shared rest only in round_rest_seconds, member rest_seconds 0/null')
   })
@@ -264,7 +280,8 @@ describe('available parts and time-aware composition instructions', () => {
       expect(assembled.system).toContain('coherent warmup prep and adequate rest')
       expect(assembled.system).toContain('omit optional parts before rushing work')
       expect(assembled.system).toContain('With more time\nadd useful volume, accessories or mobility, not filler')
-      expect(assembled.system).toContain('Explain omissions or adjustments plainly in\noverview or section_notes')
+      // REQ-010 (U31): adjustments are no longer narrated anywhere.
+      expect(assembled.system).not.toContain('Explain omissions or adjustments')
       expect(assembled.system).toContain('selected sections follow candidate-group order')
       expect(assembled.system).not.toContain('section order matches the goal shape')
       expect(assembled.system).not.toContain('never omit a section')
