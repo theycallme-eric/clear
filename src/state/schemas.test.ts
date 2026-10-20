@@ -22,6 +22,7 @@ import type { Tables } from '../data/database.types'
 import { ErrorCode, isErr, isOk } from './errors'
 import { makeSessionAcceptance } from '../test/factories'
 import {
+  blockResultRowSchema,
   CONTRACT_VERSION,
   errorResponseSchema,
   generationOutputSchema,
@@ -577,6 +578,38 @@ describe('persisted payloads mirror their CHECK constraints', () => {
       path: 'applies_to_session_id',
       message: 'a session-scoped constraint must name its session',
     })
+  })
+
+  it('reads a block result with no effort, and range-checks one that is present', () => {
+    // `block_results_perceived_effort_range` admits null: effort is optional
+    // feedback (E04), and a historical row that carries one stays readable.
+    const blockResult = {
+      id: '90000001-0000-4000-8000-000000000000',
+      block_id: '70000001-0000-4000-8000-000000000000',
+      elapsed_seconds: null,
+      completed_under_cap: null,
+      rounds_completed: 0,
+      partial_round_reps: null,
+      minutes_completed: null,
+      highest_rung: null,
+      perceived_effort: null,
+      notes: null,
+      created_at: '2026-09-24T09:30:00+00:00',
+    }
+
+    const parsed = blockResultRowSchema.safeParse(blockResult)
+    expect(parsed.success && parsed.data).toMatchObject({
+      rounds_completed: 0,
+      perceived_effort: null,
+    })
+    expect(
+      blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: 7 }).success,
+    ).toBe(true)
+    for (const outOfRange of [0, 11, 6.5]) {
+      expect(
+        blockResultRowSchema.safeParse({ ...blockResult, perceived_effort: outOfRange }).success,
+      ).toBe(false)
+    }
   })
 
   it('ignores a column a later migration adds, rather than failing a read', () => {

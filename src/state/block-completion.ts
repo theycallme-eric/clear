@@ -55,8 +55,11 @@ export interface BlockOutcome {
 export interface BlockCompletion {
   readonly blockId: string
   readonly outcome: BlockOutcome
-  /** 1–10, captured once, at completion, by the shell. */
-  readonly perceivedEffort: number
+  /**
+   * 1–10 when the athlete gave one. Effort is optional feedback (E04): absent
+   * or `null` records `null` — not answered — and is never defaulted.
+   */
+  readonly perceivedEffort?: number | null
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -86,7 +89,7 @@ export function blockResultInsert(
     partial_round_reps: recorded(outcome.partialRoundReps),
     minutes_completed: recorded(outcome.minutesCompleted),
     highest_rung: recorded(outcome.highestRung),
-    perceived_effort: completion.perceivedEffort,
+    perceived_effort: recorded(completion.perceivedEffort),
     notes: recorded(outcome.notes),
   }
 }
@@ -104,6 +107,15 @@ export function isPerceivedEffort(value: number): boolean {
 // The seam the renderers use
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Passed to `completeBlock`, it writes the row at once instead of asking the
+ * effort question. Effort is optional feedback (E04): `null` records `null`, a
+ * number is range-checked like any other, and nothing is defaulted.
+ */
+export interface DirectSave {
+  readonly perceivedEffort: number | null
+}
+
 export interface BlockCompletionApi {
   /**
    * Hands a block's outcome to the shell. The shell asks for perceived effort
@@ -111,7 +123,7 @@ export interface BlockCompletionApi {
    * the capture to one path. Calling it twice for the same block is the shell's
    * problem to refuse, not the renderer's to remember.
    */
-  completeBlock(blockId: string, outcome: BlockOutcome): void
+  completeBlock(blockId: string, outcome: BlockOutcome, save?: DirectSave): void
   /** Blocks the shell has already written a result for, this session. */
   isBlockRecorded(blockId: string): boolean
 }

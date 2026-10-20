@@ -51,7 +51,8 @@ import { createSupabaseClient, type SupabaseConfig } from './supabase'
 export interface BlockResultsClient {
   /**
    * Writes one `block_results` row and answers it as the database stored it.
-   * An effort outside 1–10 is refused before anything is sent.
+   * A supplied effort outside 1–10 is refused before anything is sent; an
+   * absent one is written as `null`.
    */
   record(completion: BlockCompletion): Promise<Result<BlockResultRow>>
 }
@@ -274,8 +275,10 @@ export function createWorkoutClients({
       // and it is checked here because this is the one path every structure
       // type writes through: whatever control a renderer grows, an effort
       // outside 1–10 is refused in the caller's own vocabulary rather than as
-      // a 400 nobody can act on.
-      if (!isPerceivedEffort(completion.perceivedEffort)) {
+      // a 400 nobody can act on. An absent effort is not out of range: it is
+      // optional feedback, and is written as `null` (E04).
+      const effort = completion.perceivedEffort
+      if (effort !== undefined && effort !== null && !isPerceivedEffort(effort)) {
         return err(
           createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
             details: {

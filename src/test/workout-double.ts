@@ -507,7 +507,7 @@ function blockResultRow(completion: BlockCompletion): BlockResultRow {
     partial_round_reps: completion.outcome.partialRoundReps ?? null,
     minutes_completed: completion.outcome.minutesCompleted ?? null,
     highest_rung: completion.outcome.highestRung ?? null,
-    perceived_effort: completion.perceivedEffort,
+    perceived_effort: completion.perceivedEffort ?? null,
     notes: completion.outcome.notes ?? null,
     created_at: '2026-09-24T09:30:00+00:00',
   }
