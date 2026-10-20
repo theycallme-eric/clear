@@ -393,3 +393,97 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await checkA11y()
   })
 })
+
+/**
+ * U09 (TASK-005) — the reproduced baseline defect, kept as an expected failure.
+ *
+ * At 390x844 every equipment and limitation row is stretched to the stack's
+ * width, and the design system centres the (opacity 0, 44px coarse-pointer)
+ * input on that whole row. The drawn 20px box sits at the row's left edge, so
+ * a tap on it lands on the aria-hidden `.clr-check__box`, which is neither the
+ * input nor inside its label, and nothing toggles. Label and Space do toggle.
+ *
+ * `test.fail()` keeps this suite green on the unchanged baseline and turns it
+ * red the moment the box responds: whoever lands the repair (TASK-036) removes
+ * the annotation, and this becomes the passing proof.
+ */
+test.describe('U09 — equipment box activation on the phone', () => {
+  test.skip(!backend.available, backend.reason)
+
+  let email = ''
+  let client: ReturnType<typeof backend.client>
+
+  test.afterAll(async () => {
+    if (!client) return
+    const provisioned = await client.findUserByEmail(email)
+    if (provisioned) await client.deleteUser(provisioned.id)
+  })
+
+  test('box tap toggles a saved equipment choice once', async ({ page, visit }, testInfo) => {
+    test.fail(true, 'U09 reproduced on the baseline: the box is outside the input hit area')
+    test.setTimeout(60_000)
+
+    email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-u09@example.com`
+    const placeName = `U09 gym ${namespaceId()}`
+    client = backend.client()
+    const prior = await client.findUserByEmail(email)
+    if (prior) await client.deleteUser(prior.id)
+    const created = await client.ensureConfirmedUser(email)
+    const session = await client.mintSession(email)
+    const onboarded = await client.rpcAs(
+      'complete_onboarding',
+      {
+        p_location_name: placeName,
+        p_location_tier: 'home',
+        p_equipment: ['bodyweight', 'dumbbells'],
+        p_experience_level: 'some',
+        p_goal_preset: 'balanced',
+        p_sections: ['warmup', 'primary_lift', 'cooldown'],
+        p_avoid_patterns: ['squat'],
+        p_note: null,
+      },
+      session.accessToken,
+    )
+    expect(onboarded.ok, `onboarding the U09 user (status ${onboarded.status})`).toBe(true)
+
+    await page.addInitScript(
+      ({ key, value }) => {
+        if (window.localStorage.getItem(key) === null) window.localStorage.setItem(key, value)
+      },
+      {
+        key: SESSION_STORAGE_KEY,
+        value: JSON.stringify({
+          accessToken: session.accessToken,
+          refreshToken: session.refreshToken,
+          expiresAt: expiryOf(session.accessToken),
+          user: { id: created.id, email },
+        }),
+      },
+    )
+
+    await visit('/settings/locations')
+    await page
+      .locator('main .clr-card')
+      .filter({ has: page.getByRole('heading', { level: 2, name: placeName, exact: true }) })
+      .getByRole('button', { name: 'Edit', exact: true })
+      .click()
+    await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue(placeName)
+
+    const row = page.locator('.clr-check').filter({ hasText: 'Kettlebells' })
+    const checkbox = page.getByRole('checkbox', { name: 'Kettlebells', exact: true })
+    await row.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+    await expect(checkbox).not.toBeChecked()
+
+    // The two paths that work on the baseline, so the failure below is the box.
+    const label = await boxOf(row.locator('label'), 'the Kettlebells label')
+    await page.touchscreen.tap(label.x + 4, label.y + label.height / 2)
+    await expect(checkbox).toBeChecked()
+    await checkbox.focus()
+    await page.keyboard.press('Space')
+    await expect(checkbox).not.toBeChecked()
+
+    const box = await boxOf(row.locator('.clr-check__box'), 'the Kettlebells box')
+    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
+    await expect(checkbox, 'a tap on the drawn box toggles it').toBeChecked({ timeout: 2_000 })
+  })
+})
