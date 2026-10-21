@@ -838,7 +838,7 @@ describe('swapping a movement happens in Review, under the original constraints 
   it('ignores a late answer from a disclosure that was closed and reopened', async () => {
     const user = userEvent.setup()
     let release!: (value: Result<SectionCandidates[]>) => void
-    const retrieve = vi.fn< CandidatesClient['retrieve'] >()
+    const retrieve = vi.fn<CandidatesClient['retrieve']>()
       .mockImplementationOnce(() => new Promise((resolve) => { release = resolve }))
       .mockResolvedValue(ok([...CANDIDATE_SETS]))
     renderReview({ acceptance: SWAPPABLE, candidates: { retrieve } })

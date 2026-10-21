@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `2cdfb3e4278df8af7a4282cf04f3f8dcf547fae369e3a9ba9e4601f0fa9fef60` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038 and TASK-028 changes below) |
+| Runtime source hash of this audit's tree | `364f781442669f26a259bbbe9842d5f630b47017fdaf498d5377db5222e7bfa1` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038 and TASK-028 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -329,6 +329,10 @@ trees and this head, from `git diff`:
 - Combined Task028/Task038 tree: `2cdfb3e4…`, after merging actual main `5d392c0` into the
   local Task028 candidate. Both histories above are retained; the shared vendor is unchanged.
   The digest labels current source only, not fresh browser or deployed evidence.
+
+- `2cdfb3e4…` to `364f7814…`: the disclosure-owned read also retains its signed-in user identity,
+  so an old user's pending/read result cannot be displayed under another user. Current runtime
+  proof remains separate from historical rendered evidence.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

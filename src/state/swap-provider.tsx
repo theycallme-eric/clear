@@ -52,6 +52,7 @@ import { SwapDialog } from '../ui/exercise-swap'
 
 interface CandidateRead {
   readonly source: SessionAcceptance
+  readonly userId: string
   readonly site: string
   readonly state: QueryState<SectionCandidates[]>
 }
@@ -81,7 +82,7 @@ export function ReviewSwapProvider({
   const { candidates } = useWorkoutClients()
   const [read, setRead] = useState<CandidateRead | null>(null)
   // A new composition cannot display a previous composition's open dialog.
-  const current = read?.source === original ? read : null
+  const current = read?.source === original && read.userId === userId ? read : null
   const openFor = current?.site ?? null
 
   const focus = composition.session_focus
@@ -93,7 +94,7 @@ export function ReviewSwapProvider({
   // answer cannot overwrite the current dialog. No model or database write.
   const load = useCallback((site: string) => {
     if (userId === null) return
-    const pending: CandidateRead = { source: original, site, state: { status: 'loading' } }
+    const pending: CandidateRead = { source: original, userId, site, state: { status: 'loading' } }
     setRead(pending)
     void candidates.retrieve({ userId, focus, locationId, goal }).then((result) => {
       setRead((latest) => latest !== pending ? latest : {
