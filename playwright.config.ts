@@ -69,6 +69,9 @@ export function vercelProtectionHeaders(secret: string | undefined) {
     ? {
         'x-vercel-protection-bypass': secret,
         'x-vercel-set-bypass-cookie': 'true',
+        // The preview-only feedback overlay must not cover application hit areas.
+        // https://vercel.com/docs/vercel-toolbar/managing-toolbar#disable-toolbar-for-automation
+        'x-vercel-skip-toolbar': '1',
       }
     : undefined
 }

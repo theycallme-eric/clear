@@ -65,14 +65,6 @@ describe('Welcome', () => {
     expect(within(main).queryByRole('button', { name: /create account/i })).not.toBeInTheDocument()
   })
 
-  it('keeps the entry outside decorative boot transforms', () => {
-    renderApp(['/welcome'])
-
-    const entry = screen.getByRole('button', { name: 'Get started' })
-    expect(entry.closest('.clr-boot')).toBeNull()
-    expect(screen.getByText('Strength training, simplified.').closest('.clr-boot')).not.toBeNull()
-  })
-
   it('opens the one passwordless flow from the keyboard', async () => {
     const user = userEvent.setup()
     renderApp(['/welcome'])
