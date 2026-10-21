@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
 import { sessionRead } from '../state/progression'
+import { applyLoadOverrides, prescriptionSiteKey, reviewLoadSuggestions } from '../state/load-suggestions'
+import { createSessionsClient } from '../data/sessions'
+import { anchorRow, evidenceRows, suggestionAcceptance } from './load-suggestion-fixtures'
+import { createSessionDouble } from './session-double'
 import type { GenerationOutput, Prescription } from '../state/schemas'
 import {
   DELOAD_ANCHOR_FACTOR,
@@ -267,5 +271,103 @@ describe('absent effort in the last session (REQ-016)', () => {
       'weight_suggested',
       'weight_suggested_unit',
     ])
+  })
+})
+
+
+// TASK037: the live Review reader must carry an existing rule through the real
+// acceptance client, not only describe it in reason text. This uses the existing
+// local persistence double; it makes no backend or generation request.
+describe('existing rep progression reaches the next prescription', () => {
+  const key = prescriptionSiteKey(0, 0, 0)
+  const shapes = [
+    { name: 'fixed', target: { target_kind: 'fixed', target_value: 8, target_min: null, target_max: null, target_sequence: null } },
+    { name: 'range', target: { target_kind: 'range', target_value: null, target_min: 6, target_max: 8, target_sequence: null } },
+    { name: 'ladder', target: { target_kind: 'sequence', target_value: null, target_min: null, target_max: null, target_sequence: [2, 4, 6] } },
+  ] as const
+  function source(target = shapes[0].target as Partial<Prescription>) {
+    const acceptance = suggestionAcceptance()
+    acceptance.goal_preset = 'hypertrophy'
+    const block = acceptance.workout.sections[0].blocks[0]
+    block.exercises[0] = { ...block.exercises[0], ...target } as Prescription
+    // The companion has no eligible anchor. Timed/round fields are preserved.
+    block.structure_type = 'superset'
+    block.rep_scheme = target.target_kind === 'sequence' ? 'ladder_fixed_interval' : 'fixed'
+    block.rounds = 3
+    block.timer_type = 'interval'
+    block.timer_seconds = 60
+    return acceptance
+  }
+  for (const shape of shapes) {
+    for (const [rpe, delta] of [[7.5, 1], [6, 2]] as const) {
+      it(`${shape.name} carries the existing +${delta} through accept and reload once`, async () => {
+        const acceptance = source(shape.target as Partial<Prescription>)
+        const evidence = evidenceRows().map(row => ({ ...row, rpe }))
+        const original = structuredClone(acceptance)
+        const suggestions = reviewLoadSuggestions({ acceptance, anchors: [anchorRow()], evidence })
+        expect(suggestions.get(key)?.repDelta).toBe(delta)
+        const editedWeight = new Map([[key, { weight: 72.5, unit: 'kg' as const }]])
+        const next = applyLoadOverrides(acceptance, editedWeight, suggestions)
+        const proposed = next.workout.sections[0].blocks[0].exercises[0]
+        if (shape.name === 'fixed') expect(proposed.target_value).toBe(8 + delta)
+        if (shape.name === 'range') expect([proposed.target_min, proposed.target_max]).toEqual([6 + delta, 8 + delta])
+        if (shape.name === 'ladder') expect(proposed.target_sequence).toEqual([2 + delta, 4 + delta, 6 + delta])
+        expect(proposed.target_kind).toBe(shape.target.target_kind)
+        expect(proposed.load_value).toBe(72.5)
+        expect(next.workout.sections[0].blocks[0].exercises[1]).toEqual(original.workout.sections[0].blocks[0].exercises[1])
+        expect({ ...next.workout.sections[0].blocks[0], exercises: [] }).toEqual({ ...original.workout.sections[0].blocks[0], exercises: [] })
+        expect(applyLoadOverrides(next, editedWeight, suggestions)).toEqual(next)
+        expect(acceptance).toEqual(original)
+
+        const user = 'a0000001-0000-4000-8000-000000000000'
+        const double = createSessionDouble({ url: 'https://project.supabase.co', anonKey: 'anon', users: { token: user } })
+        const client = createSessionsClient({ url: 'https://project.supabase.co', anonKey: 'anon', accessToken: 'token', fetch: double.fetch })
+        const saved = await client.accept(user, next)
+        expect(saved.ok).toBe(true)
+        if (!saved.ok) throw new Error('acceptance failed')
+        const loaded = await client.asGenerated(saved.value.session.id)
+        expect(loaded.ok).toBe(true)
+        if (!loaded.ok) throw new Error('reload failed')
+        const stored = loaded.value.sections[0].blocks[0].exercises[0].exercise
+        expect(stored.target_kind).toBe(proposed.target_kind)
+        expect(stored.target_value).toBe(proposed.target_value)
+        expect(stored.target_min).toBe(proposed.target_min)
+        expect(stored.target_max).toBe(proposed.target_max)
+        expect(stored.target_sequence).toEqual(proposed.target_sequence)
+        expect(stored.load_value).toBe(72.5)
+        expect(double.store().setLogs).toEqual([])
+        expect(double.store().blockResults).toEqual([])
+      })
+    }
+  }
+
+  it('keeps null, insufficient and discarded history from inventing a rep increase', () => {
+    const acceptance = source()
+    for (const [anchor, evidence] of [
+      [anchorRow(), []],
+      [anchorRow(), evidenceRows().map(row => ({ ...row, rpe: null }))],
+      [anchorRow({ session_count: 1 }), evidenceRows()],
+      [anchorRow({ last_session_date: '2026-01-01' }), evidenceRows()],
+    ] as const) {
+      const suggestions = reviewLoadSuggestions({ acceptance, anchors: [anchor], evidence })
+      expect(applyLoadOverrides(acceptance, new Map(), suggestions)).toEqual(acceptance)
+    }
+  })
+
+  it('respects a changed rep target and unrelated edits instead of reapplying an old recommendation', () => {
+    const acceptance = source()
+    const suggestions = reviewLoadSuggestions({ acceptance, anchors: [anchorRow()], evidence: evidenceRows() })
+    const edited = structuredClone(acceptance)
+    edited.workout.sections[0].blocks[0].exercises[0] = prescription({ target_value: 12, sets: 2, rest_seconds: 40 })
+    const next = applyLoadOverrides(edited, new Map(), suggestions)
+    expect(next).toEqual(edited)
+  })
+
+  it('holds the rep targets already prescribed for deload and active recovery', () => {
+    for (const acceptance of [{ ...source(), deload: true }, { ...source(), goal_preset: 'active_recovery' as const }]) {
+      const suggestions = reviewLoadSuggestions({ acceptance, anchors: [anchorRow()], evidence: evidenceRows() })
+      expect(suggestions.get(key)?.repDelta).toBe(0)
+      expect(applyLoadOverrides(acceptance, new Map(), suggestions)).toEqual(acceptance)
+    }
   })
 })

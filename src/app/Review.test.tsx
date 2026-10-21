@@ -791,6 +791,25 @@ describe('the suggested load, its confidence, and why', () => {
     expect(recomputed).toBe(0)
   })
 
+  it('shows an existing rep increase before Start and accepts that same target once', async () => {
+    const user = userEvent.setup()
+    const acceptance = suggestionAcceptance()
+    acceptance.goal_preset = 'hypertrophy'
+    const { recorder } = renderReview({
+      acceptance,
+      anchorRows: [anchorRow()],
+      anchorEvidence: evidenceRows(),
+    })
+    await screen.findByRole('button', { name: SUGGESTION_NAME })
+    expect(await screen.findByText('3 × 9 reps')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+    const [squat, companion] = recorder.accepted[0].acceptance.workout.sections[0].blocks[0].exercises
+    expect(squat).toMatchObject({ target_kind: 'fixed', target_value: 9 })
+    expect(companion).toMatchObject({ target_kind: 'fixed', target_value: 8 })
+    expect(acceptance.workout.sections[0].blocks[0].exercises[0].target_value).toBe(8)
+  })
+
   it('accepts exactly the composed workout when nothing was overridden', async () => {
     const user = userEvent.setup()
     const { recorder } = renderSquatDay()

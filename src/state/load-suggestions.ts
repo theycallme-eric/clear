@@ -170,6 +170,10 @@ export interface LoadSuggestionView {
   /** Sessions of history behind the anchor. The confidence, as a count. */
   readonly sessionCount: number
   readonly rule: ProgressionRuleId | null
+  /** Only the existing rule's supported increase; never inferred from missing feedback. */
+  readonly repDelta: number
+  /** Absolute before/after targets make acceptance idempotent and preserve later edits. */
+  readonly repTarget: RepTargetChange | null
   /** `read → action`, from OVR-01b: "RPE 7.5–8.5, all reps completed → +1 increment". */
   readonly reason: string
   /** Whether §1's 110% clamp bound the answer. */
@@ -190,6 +194,45 @@ export type LoadOverrides = ReadonlyMap<string, LoadOverride>
 
 /** Every suggestion of one briefing, by site key. */
 export type LoadSuggestions = ReadonlyMap<string, LoadSuggestionView>
+
+type RepTarget = Pick<Prescription, 'target_kind' | 'target_value' | 'target_min' | 'target_max' | 'target_sequence'>
+interface RepTargetChange {
+  readonly from: RepTarget
+  readonly to: RepTarget
+}
+
+function repTargetOf(exercise: Prescription): RepTarget {
+  return {
+    target_kind: exercise.target_kind,
+    target_value: exercise.target_value,
+    target_min: exercise.target_min,
+    target_max: exercise.target_max,
+    target_sequence: exercise.target_sequence === null ? null : [...exercise.target_sequence],
+  }
+}
+
+/** Translate an already-computed +1/+2, keeping the target kind and pattern. */
+function repTargetChange(exercise: Prescription, delta: number): RepTargetChange | null {
+  if (exercise.modality !== 'reps' || (delta !== 1 && delta !== 2)) return null
+  const from = repTargetOf(exercise)
+  let to: RepTarget
+  switch (exercise.target_kind) {
+    case 'fixed':
+      to = { ...from, target_value: exercise.target_value + delta }
+      break
+    case 'range':
+      to = { ...from, target_min: exercise.target_min + delta, target_max: exercise.target_max + delta }
+      break
+    case 'sequence':
+      to = { ...from, target_sequence: exercise.target_sequence.map(value => value + delta) }
+      break
+  }
+  const values = [to.target_value, to.target_min, to.target_max, ...(to.target_sequence ?? [])]
+  if (values.some(value => value !== null && (!Number.isSafeInteger(value) || value <= 0))) return null
+  return { from, to }
+}
+
+const NO_REP_SUGGESTIONS: LoadSuggestions = new Map()
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Keys
@@ -333,6 +376,9 @@ function suggestionFor(args: SuggestionArgs): LoadSuggestionView {
     lastSession: read,
     recentMax: recentMax === null ? null : { value: recentMax, unit },
   })
+  // A discarded anchor supplies no supported progression. Deload already
+  // prescribes held rep targets; do not undo that instruction at acceptance.
+  const repDelta = suggestion.confidence === 'none' || acceptance.deload ? 0 : suggestion.repDelta
 
   return {
     key,
@@ -344,6 +390,8 @@ function suggestionFor(args: SuggestionArgs): LoadSuggestionView {
     confidence: suggestion.confidence,
     sessionCount: suggestion.sessionCount,
     rule: suggestion.rule,
+    repDelta,
+    repTarget: repTargetChange(exercise, repDelta),
     reason: suggestion.reason,
     clamped: suggestion.clamped,
     delta: deltaOf(suggestion.weight, lastSession?.topWeight ?? null),
@@ -595,14 +643,17 @@ export function parseOverride(text: string): number | null {
  * anchor is not touched, and could not be: this screen writes no set logs, and
  * `load_anchors` is a function of those.
  *
- * Returns the payload unchanged when there is nothing to override, so an
- * untouched briefing accepts exactly the object generation produced.
+ * Optional rep suggestions carry only an existing rule's +1/+2 into a displayed
+ * prescription. They are absolute targets, applied only to their original site,
+ * exercise, equipment and unchanged source target. Reapplying the same suggestion
+ * cannot add it again or overwrite a later rep edit. No performed field is written.
  */
 export function applyLoadOverrides(
   acceptance: SessionAcceptance,
   overrides: LoadOverrides,
+  suggestions: LoadSuggestions = NO_REP_SUGGESTIONS,
 ): SessionAcceptance {
-  if (overrides.size === 0) return acceptance
+  if (overrides.size === 0 && suggestions.size === 0) return acceptance
 
   let changed = false
 
@@ -611,13 +662,19 @@ export function applyLoadOverrides(
     blocks: section.blocks.map((block, blockIndex) => ({
       ...block,
       exercises: block.exercises.map((exercise, exerciseIndex) => {
-        const override = overrides.get(
-          prescriptionSiteKey(sectionIndex, blockIndex, exerciseIndex),
-        )
-        if (override === undefined) return exercise
+        const site = prescriptionSiteKey(sectionIndex, blockIndex, exerciseIndex)
+        const override = overrides.get(site)
+        const suggestion = suggestions.get(site)
+        const target = suggestion?.repTarget
+        const advances = exercise.modality === 'reps' && suggestion !== undefined && target != null && suggestion.exerciseId === exercise.exercise_id &&
+          suggestion.equipment === exercise.equipment &&
+          JSON.stringify(repTargetOf(exercise)) === JSON.stringify(target.from)
+        const prescribed = advances ? { ...exercise, ...target.to } as Prescription : exercise
+        if (advances) changed = true
+        if (override === undefined) return prescribed
 
         changed = true
-        return { ...exercise, load_type: 'absolute' as const, load_value: override.weight }
+        return { ...prescribed, load_type: 'absolute' as const, load_value: override.weight }
       }),
     })),
   }))

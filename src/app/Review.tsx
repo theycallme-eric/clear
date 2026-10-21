@@ -145,8 +145,6 @@ export function Review({
   const weightUnit =
     profile.state.status === 'ready' ? (profile.state.data?.weight_unit ?? null) : null
 
-  const briefing = reviewBriefing(acceptance, weightUnit)
-
   // OVR-01c. The two anchor reads feed the suggestion surface and nothing
   // else: while either is settling or has failed, the briefing renders and
   // Start works exactly as it would for a user with no history at all. The
@@ -176,6 +174,10 @@ export function Review({
   // Overrides live here and only here, until `accept` persists them as this
   // session's prescription. No anchor is written from this screen.
   const [overrides, setOverrides] = useState<LoadOverrides>(() => new Map())
+  // Display and persist the same supported rep targets. Always derive from the
+  // original composition so re-rendering/retrying never stacks the increase.
+  const personalizedAcceptance = applyLoadOverrides(acceptance, NO_OVERRIDES, suggestions)
+  const briefing = reviewBriefing(personalizedAcceptance, weightUnit)
   const [explaining, setExplaining] = useState<string | null>(null)
   const explained = explaining === null ? undefined : suggestions.get(explaining)
 
@@ -212,7 +214,7 @@ export function Review({
     // start until acceptance has written one. A failure of either leaves the
     // user on this screen with the workout still in front of them — the
     // composition is in memory and is not lost by a write that did not land.
-    const accepted = await sessions.accept(userId, applyLoadOverrides(acceptance, overrides))
+    const accepted = await sessions.accept(userId, applyLoadOverrides(personalizedAcceptance, overrides))
     if (isErr(accepted)) {
       setStarting(false)
       setFailure(accepted.error)
@@ -354,6 +356,7 @@ export function Review({
 
 /** One stable empty map, for a briefing whose anchor reads have not answered. */
 const NO_SUGGESTIONS: LoadSuggestions = new Map()
+const NO_OVERRIDES: LoadOverrides = new Map()
 
 /** What a section threads down to each prescription row. */
 interface SuggestionProps {
