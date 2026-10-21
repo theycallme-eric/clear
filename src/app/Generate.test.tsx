@@ -21,9 +21,12 @@ import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import {
   GENERATE_PATH,
   generatePath,
+  GENERATION_GOALS,
   INTENSITY_BY_GOAL,
   intentFrom,
+  NOTES_MAX_LENGTH,
   POWER_REFUSAL,
+  RECOVERY_NOTE,
   REFUSAL_SUMMARY,
 } from '../state/generation-form'
 import {
@@ -57,6 +60,8 @@ import { createTestRouter } from './router'
 import {
   CHANGE_FOCUS_LABEL,
   CHANGE_GOAL_LABEL,
+  DURATION_LABEL,
+  DURATION_UNIT,
   FIRST_WORKOUT_MESSAGE,
   Generate,
   GOAL_CORRECTION_ACTION,
@@ -65,11 +70,12 @@ import {
   HISTORY_LOADING_LABEL,
   HISTORY_RETRY_LABEL,
   LEGACY_GOAL_MESSAGE,
-  MANUAL_FOCUS_MESSAGE,
   MISSING_GOAL_MESSAGE,
+  NOTES_HELPER,
   OVERRIDE_CANCEL_LABEL,
   OVERRIDE_GROUP_LABEL,
   OVERRIDE_SCOPE,
+  PLACE_HELPER,
   RECOVERY_LABEL,
 } from './Generate'
 import {
@@ -478,11 +484,11 @@ describe('REQ-004 — the recommended Focus and its intensity', () => {
 })
 
 describe('REQ-005 — a manual Focus before the first completed workout, or on stale history', () => {
-  it('asks for one of four with nothing selected, and says CLEAR needs a starting workout', async () => {
+  it('asks for one of four with nothing selected, and says it is the first workout', async () => {
     const { user } = renderGenerate({ history: [] })
 
     expectFourUnselected()
-    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toHaveTextContent(/starting workout/i)
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toHaveTextContent(/first workout/i)
     expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     expect(cta()).toBeDisabled()
 
@@ -494,7 +500,6 @@ describe('REQ-005 — a manual Focus before the first completed workout, or on s
     renderGenerate({ history: [session(1, 30)] })
 
     expectFourUnselected()
-    expect(screen.getByText(MANUAL_FOCUS_MESSAGE)).toBeInTheDocument()
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
     expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     expect(cta()).toBeDisabled()
@@ -565,7 +570,7 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(HISTORY_ERROR_MESSAGE)
     expect(HISTORY_ERROR_MESSAGE).toMatch(/history could not be read/i)
     expect(retry()).toBeInTheDocument()
-    expect(screen.getByRole('main')).not.toHaveTextContent(/starting workout/i)
+    expect(screen.getByRole('main')).not.toHaveTextContent(/first workout/i)
     expect(screen.getByRole('main')).not.toHaveTextContent(HISTORY_CLAIM)
     expectFourUnselected()
     expect(cta()).toBeDisabled()
@@ -1591,5 +1596,182 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
     expect(generation.calls).toHaveLength(1)
     expect(generation.outstanding).toBe(1)
     expect(generation.calls[0]).toMatchObject(RECOVERY_OVERRIDE)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-015 (REQ-009: U26, U28, U29) — the form's copy
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('U26 — the goal, plainly, and first-workout guidance only when needed', () => {
+  const goalLine = () => screen.getByText(/^Goal:/)
+
+  it.each(STANDING_GOALS)('states a standing %s goal as its label alone', (goal) => {
+    renderGenerate({ goal })
+
+    const option = GENERATION_GOALS.find((candidate) => candidate.value === goal)!
+    expect(goalLine()).toHaveTextContent(new RegExp(`^Goal: ${option.label}$`))
+    expect(screen.getByRole('main')).not.toHaveTextContent(option.description!)
+    expect(screen.getByRole('link', { name: CHANGE_GOAL_LABEL })).toBeInTheDocument()
+  })
+
+  it('guides the first request until an anchor is chosen, and again if it is cleared', async () => {
+    const { user } = renderGenerate({ history: [] })
+
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+  })
+
+  it('guides a first request under another goal the same way', () => {
+    renderGenerate({ goal: 'conditioning', history: [] })
+
+    expect(goalLine()).toHaveTextContent('Goal: Conditioning')
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+  })
+
+  it('guides again when Recovery clears a chosen Power on a first request', async () => {
+    const { user } = renderGenerate({ history: [] })
+
+    await user.click(chipIn('Anchor', 'Power'))
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: RECOVERY_LABEL }))
+    expect(chipIn('Anchor', 'Power')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText(FIRST_WORKOUT_MESSAGE)).toBeInTheDocument()
+  })
+
+  it.each([
+    ['recent history (a recommendation)', () => lowerBodyDue(7)],
+    ['stale history', () => [session(1, 30)]],
+  ])('gives no first-workout guidance on %s', (_, history) => {
+    renderGenerate({ history: history() })
+
+    expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(/first workout/i)
+  })
+})
+
+describe('U28 — minutes spelled out, short helper copy that keeps each field clear', () => {
+  const minutes = () => screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))
+
+  function expectHelpers() {
+    expect(screen.getByText(PLACE_HELPER)).toBeInTheDocument()
+    expect(screen.getByText(NOTES_HELPER)).toBeInTheDocument()
+    expect(screen.getByText(DURATION_UNIT)).toBeInTheDocument()
+  }
+
+  it('says minutes in full beside the time, never min', () => {
+    renderGenerate()
+
+    const unit = screen.getByText(DURATION_UNIT)
+    expect(DURATION_UNIT).toBe('minutes')
+    expect(minutes().getAttribute('aria-describedby')).toContain(unit.id)
+    expect(screen.queryByText('min')).not.toBeInTheDocument()
+  })
+
+  it('keeps every helper short and still says what each field is for', () => {
+    for (const helper of [PLACE_HELPER, NOTES_HELPER]) {
+      expect(helper.split(/\s+/).length).toBeLessThanOrEqual(8)
+    }
+    expect(PLACE_HELPER).toMatch(/equipment/i)
+    expect(NOTES_HELPER).toMatch(/optional/i)
+    expect(NOTES_HELPER).toMatch(/today/i)
+    expect(NOTES_HELPER).toMatch(/Settings/)
+  })
+
+  it('shows the helpers on an empty time and empty notes, with no error before submit', async () => {
+    const { user } = renderGenerate()
+
+    await user.clear(minutes())
+    expect(minutes()).toHaveValue(null)
+    expect(screen.getByLabelText(/notes/i)).toHaveValue('')
+    expectHelpers()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+
+  it('says the time error on the field, with the unit and helpers still there', async () => {
+    const { user, generation } = renderGenerate()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.clear(minutes())
+    await user.click(cta())
+
+    expect(generation.calls).toEqual([])
+    expect(minutes()).toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByText(/whole number of minutes/i)).toBeInTheDocument()
+    expectHelpers()
+  })
+
+  it('sends a valid time as the minutes typed', async () => {
+    const { user, generation } = renderGenerate()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.clear(minutes())
+    await user.type(minutes(), '30')
+    expectHelpers()
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({ requested_duration_mins: 30 })
+  })
+
+  it('keeps the notes helper with a note at the length limit, and sends it whole', async () => {
+    const { user, generation } = renderGenerate()
+    const note = 'Tight hamstrings. '.repeat(200).slice(0, NOTES_MAX_LENGTH)
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    fireEvent.change(screen.getByLabelText(/notes/i), { target: { value: note } })
+
+    expect(screen.getByLabelText(/notes/i)).toHaveValue(note)
+    expectHelpers()
+    await user.click(cta())
+
+    expect(generation.calls[0]?.notes).toHaveLength(NOTES_MAX_LENGTH)
+  })
+})
+
+describe('U29 — a recovery workout says briefly that it is lighter, and stays recovery', () => {
+  it('says it is lighter, and sends the recovery goal, range and focus unchanged', async () => {
+    const { user, generation } = renderDraft()
+
+    await user.click(recovery())
+
+    expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
+    expect(RECOVERY_NOTE).toMatch(/lighter/i)
+    expect(screen.getByText(/^Goal:/)).toHaveTextContent('Goal: Strength')
+    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
+    expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
+
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'active_recovery',
+      focus: 'lower_body',
+      requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+    })
+  })
+
+  it('says the same on a suggested Recovery opened from its address', async () => {
+    const { user, generation } = renderDraft({ entry: '/generate?recovery=1' })
+
+    expect(recovery()).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
+
+    await user.click(cta())
+    expect(generation.calls[0]).toMatchObject({ goal: 'active_recovery' })
+  })
+
+  it('drops the note when Recovery is switched off', async () => {
+    const { user } = renderDraft()
+
+    await user.click(recovery())
+    await user.click(recovery())
+
+    expect(screen.queryByText(new RegExp(RECOVERY_NOTE))).not.toBeInTheDocument()
   })
 })

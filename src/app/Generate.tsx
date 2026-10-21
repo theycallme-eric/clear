@@ -88,8 +88,10 @@ import {
   inputFrom,
   intensityRange,
   intentFrom,
+  needsFirstWorkoutGuidance,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
+  RECOVERY_NOTE,
   refusalFrom,
   requestFrom,
   resolveGeneration,
@@ -197,12 +199,12 @@ export const GOAL_CORRECTION_ACTION = 'Open Settings'
 /** The Focus area while the history read is in flight. */
 export const HISTORY_LOADING_LABEL = 'Reading your history'
 
-/** Why a Focus is asked for before anything has been completed (REQ-005). */
-export const FIRST_WORKOUT_MESSAGE =
-  'CLEAR needs a starting workout. Choose the focus for this one.'
-
-/** Asked with no claim about history: stale history, or a choice already made. */
-export const MANUAL_FOCUS_MESSAGE = 'Choose the focus for this workout.'
+/**
+ * Why a Focus is asked for before anything has been completed (REQ-005), shown
+ * only while it is needed (U26). Stale history and a failed read get no
+ * guidance beyond the field's own label: neither is a first workout.
+ */
+export const FIRST_WORKOUT_MESSAGE = 'First workout: choose a starting focus.'
 
 /** A failed history read is said as one, and does not block generation (REQ-006). */
 export const HISTORY_ERROR_MESSAGE =
@@ -217,7 +219,13 @@ export const OVERRIDE_CANCEL_LABEL = 'Use the recommended focus'
 
 /** The one-workout Recovery mode, and what it says while it is on (REQ-008). */
 export const RECOVERY_LABEL = 'Recovery session'
-export const RECOVERY_SCOPE = 'Recovery applies to this workout only.'
+
+/** The field copy, kept short (U28). The unit is spelled out, never `min`. */
+export const DURATION_LABEL = 'Time available'
+export const DURATION_UNIT = 'minutes'
+export const PLACE_HELPER = 'Uses this place’s equipment.'
+export const NOTES_HELPER = 'Optional, today only. Ongoing limits go in Settings.'
+export const NOTES_PLACEHOLDER = 'Tight hamstrings today.'
 
 export function Generate() {
   const navigate = useNavigate()
@@ -564,12 +572,11 @@ function GenerateForm({
             </p>
           )}
 
-        {/* Goal — the profile's standing one, as context. It is changed in
-            Settings, never asked per workout (REQ-001). */}
+        {/* Goal — the profile's standing one, as context, said plainly (U26).
+            It is changed in Settings, never asked per workout (REQ-001). */}
         <div className="clr-stack clr-stack--tight">
           <p style={{ margin: 0 }}>
             Goal: <strong>{standingGoal?.label}</strong>
-            {standingGoal?.description === undefined ? '' : ` — ${standingGoal.description}`}
           </p>
           <p style={{ margin: 0 }}>
             <Link to={SETTINGS_ROUTE}>{CHANGE_GOAL_LABEL}</Link>
@@ -586,7 +593,7 @@ function GenerateForm({
           </div>
           {draft.recovery && (
             <p style={{ margin: 0 }}>
-              {RECOVERY_SCOPE} {POWER_REFUSAL}
+              {RECOVERY_NOTE} {POWER_REFUSAL}
             </p>
           )}
         </div>
@@ -663,11 +670,9 @@ function GenerateForm({
               label="Anchor"
               required
               helperText={
-                focusHistory?.status === 'no-completed-history'
+                needsFirstWorkoutGuidance(draft, focusHistory)
                   ? FIRST_WORKOUT_MESSAGE
-                  : focusHistory?.status === 'history-error'
-                    ? undefined
-                    : MANUAL_FOCUS_MESSAGE
+                  : undefined
               }
               errorText={refusal?.fields.focus}
             >
@@ -724,18 +729,18 @@ function GenerateForm({
             value: location.id,
             label: location.name,
           }))}
-          helperText="Uses the equipment saved at this place."
+          helperText={PLACE_HELPER}
           errorText={refusal?.fields.location_id}
           onChange={(value) => setDraft(withLocation(draft, value))}
         />
 
         <Input
-          label="Time available"
+          label={DURATION_LABEL}
           type="number"
           inputMode="numeric"
           min={1}
           value={draft.durationMins}
-          unit="min"
+          unit={DURATION_UNIT}
           errorText={refusal?.fields.requested_duration_mins}
           onChange={(value) => setDraft(withDuration(draft, value))}
         />
@@ -745,8 +750,8 @@ function GenerateForm({
             multiline
             rows={3}
             value={draft.notes}
-            placeholder="Bad left shoulder from years ago. Overhead press feels sketchy sometimes."
-            helperText="Optional, for today only. Lasting limits belong in Settings."
+            placeholder={NOTES_PLACEHOLDER}
+            helperText={NOTES_HELPER}
             errorText={refusal?.fields.notes}
             maxLength={NOTES_MAX_LENGTH}
             onChange={(value) => setDraft(withNotes(draft, value))}

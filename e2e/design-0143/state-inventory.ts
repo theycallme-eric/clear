@@ -160,7 +160,7 @@ export const AUTHENTICATED_CAPTURE_TARGETS: readonly CaptureTarget[] = [
     heading: 'Generate workout',
     state: 'first-or-stale-history-manual-focus',
     // This first-workout member of the baseline state excludes history-read errors.
-    stateText: 'CLEAR needs a starting workout. Choose the focus for this one.',
+    stateText: 'First workout: choose a starting focus.',
   },
   {
     screen: 'History',

@@ -25,9 +25,11 @@ import {
   initialDraft,
   inputFrom,
   intensityRange,
+  needsFirstWorkoutGuidance,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
   prefillFrom,
+  RECOVERY_NOTE,
   refusalFrom,
   REFUSAL_SUMMARY,
   requestFrom,
@@ -912,4 +914,68 @@ describe('the payload (CORE-03 §1)', () => {
 
     expect(isOk(request) && request.value.location_id).toBe(other)
   })
+})
+
+describe('first-workout guidance (TASK-015, U26)', () => {
+  const blank = initialDraft(LOCATION)
+  const first: FocusHistory = { status: 'no-completed-history' }
+
+  it('is needed on a first request with no anchor chosen, under every goal', () => {
+    for (const goal of STANDING_GOALS) {
+      expect(needsFirstWorkoutGuidance(blank, contextFor(goal, first).history)).toBe(true)
+    }
+  })
+
+  it('stops once an anchor is chosen, and returns when Recovery clears a Power', () => {
+    const power = withAnchor(blank, 'power')
+    const fullBody = withAnchor(blank, 'full_body')
+
+    expect(needsFirstWorkoutGuidance(power, first)).toBe(false)
+    expect(needsFirstWorkoutGuidance(withRecovery(power, true), first)).toBe(true)
+    expect(needsFirstWorkoutGuidance(withRecovery(fullBody, true), first)).toBe(false)
+  })
+
+  it('is not needed with history, stale or recent, nor while it is unread or failed', () => {
+    const histories: readonly (FocusHistory | null)[] = [
+      recommended(),
+      { status: 'stale-history' },
+      { status: 'history-error' },
+      null,
+    ]
+    for (const history of histories) {
+      expect(needsFirstWorkoutGuidance(blank, history)).toBe(false)
+    }
+  })
+})
+
+describe('the recovery note is copy only (TASK-015, U29)', () => {
+  it('says briefly that the workout is lighter, with no number to drift from the rules', () => {
+    expect(RECOVERY_NOTE).toMatch(/lighter/i)
+    expect(RECOVERY_NOTE.split(/\s+/).length).toBeLessThanOrEqual(8)
+    expect(RECOVERY_NOTE).not.toMatch(/\d/)
+    expect(POWER_REFUSAL).toMatch(/Power/)
+  })
+
+  it.each(STANDING_GOALS)(
+    'keeps a %s athlete’s recovery request on the recovery goal, range and focus rules',
+    (goal) => {
+      const draft = withRecovery(withAnchor(initialDraft(LOCATION), 'upper_body'), true)
+      const request = requestFrom(draft, contextFor(goal, recommended(9)), REQUEST_ID)
+
+      expect(isOk(request) && request.value).toMatchObject({
+        goal: 'active_recovery',
+        focus: 'upper_body',
+        requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+      })
+
+      const power = withRecovery(withAnchor(initialDraft(LOCATION), 'power'), true)
+      expect(power.anchor).toBeNull()
+      expect(resolveGeneration(power, contextFor(goal))).toMatchObject({
+        status: 'needs-focus',
+        goal: 'active_recovery',
+        focus: null,
+      })
+      expect(anchorAllowed('active_recovery', 'power')).toBe(false)
+    },
+  )
 })

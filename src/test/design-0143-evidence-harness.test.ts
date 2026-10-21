@@ -248,7 +248,7 @@ describe('the capture schema binds a screenshot to what it shows', () => {
 
   it('identifies Generate by its exclusive first-workout message, not the shared Anchor label', () => {
     const target = AUTHENTICATED_CAPTURE_TARGETS.find((candidate) => candidate.screen === 'Generate')!
-    expect(target.stateText).toBe('CLEAR needs a starting workout. Choose the focus for this one.')
+    expect(target.stateText).toBe('First workout: choose a starting focus.')
     expect(read('src/app/Generate.tsx')).toContain(`'${target.stateText}'`)
     expect(target.stateText).not.toBe('Anchor')
   })

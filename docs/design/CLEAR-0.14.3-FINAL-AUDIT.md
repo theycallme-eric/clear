@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `56a3b8df83aee39ca52484f0c53647b0b754bcbb3494193871156ee75b7aeb26` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010 and TASK-011 changes below) |
+| Runtime source hash of this audit's tree | `3e197ecdb9a48dc5321a00e3ec1c9f57958656fc10fa90c075368ea586cdd516` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011 and TASK-015 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -235,6 +235,16 @@ trees and this head, from `git diff`:
   acceptance evidence is `src/app/Home.test.tsx` and the post-import REQ-007 case in
   `e2e/design-0143/task-040-home-review.spec.ts` on the mobile project. That case is
   desktop-engine phone emulation; a real phone's native picker is a separate manual check.
+- `56a3b8df…` to `3e197ecd…`: TASK-015 (REQ-009, JOURNEY-015, U26/U28/U29) shortens
+  Generate's copy. The goal reads "Goal: <label>" without its description; the first-workout
+  guidance ("First workout: choose a starting focus.") shows only with no completed history and
+  no anchor chosen, and stale history gets no helper line. The time field's unit is spelled
+  "minutes"; the place and notes helpers and the notes placeholder are shorter. A Recovery
+  draft says "A lighter workout, for today only." beside a shorter Power refusal; the recovery
+  goal, 1–3 range and refused Power are unchanged. Changed: `src/app/Generate.tsx` and
+  `src/state/generation-form.ts`. This **does** change rendering of Generate's form card; the
+  Generate pictures above predate it and are not rebound (EX-13). Current acceptance evidence
+  is `src/app/Generate.test.tsx` and `src/state/generation-form.test.ts`.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
