@@ -898,6 +898,8 @@ const SAMPLE_LOAD_SUGGESTION: LoadSuggestionView = {
   confidence: 'high',
   sessionCount: 4,
   rule: 'on-target',
+  repDelta: 0,
+  repTarget: null,
   reason: 'RPE 7.5–8.5, all reps completed → +1 increment',
   clamped: false,
   delta: 2.5,

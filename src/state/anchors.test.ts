@@ -294,3 +294,40 @@ describe('deriving the stored anchors (OVR-01a)', () => {
     )
   })
 })
+
+describe('absent effort in new and mixed history (REQ-016)', () => {
+  // Two sessions logged before set RPE collection was removed, and one after:
+  // weights and reps recorded, no RPE on any set.
+  const mixed = [
+    ...session('s-1', '2026-08-01', [{ weight: 100, rpe: 8 }, { weight: 100, rpe: 8.5 }]),
+    ...session('s-2', '2026-08-08', [{ weight: 105, rpe: 8 }]),
+    ...session('s-3', '2026-08-15', [
+      { weight: 140, rpe: null },
+      { weight: 140, rpe: null },
+    ]),
+  ]
+
+  it('derives no estimate from a session that recorded no RPE', () => {
+    expect(deriveAnchors(session('s-3', '2026-08-15', [{ weight: 140, rpe: null }]))).toEqual([])
+  })
+
+  it('rests a mixed history on the sessions that carried RPE, unchanged by the new one', () => {
+    const [anchor] = deriveAnchors(mixed)
+    const historical = deriveAnchors(mixed.filter((row) => row.session_id !== 's-3'))
+
+    expect(anchor).toEqual(historical[0])
+    expect(anchor).toMatchObject({ session_count: 2, last_session_date: '2026-08-08' })
+    // No default effort turned the 140 into evidence of a heavier maximum.
+    expect(anchor.anchor_value).toBeLessThan(140)
+  })
+
+  it('reads the historical RPE without rewriting a row of the evidence', () => {
+    const before = structuredClone(mixed)
+
+    deriveAnchors(mixed)
+    sessionAnchors(mixed)
+
+    expect(mixed).toEqual(before)
+    expect(mixed.map((row) => row.rpe)).toEqual([8, 8.5, 8, null, null])
+  })
+})

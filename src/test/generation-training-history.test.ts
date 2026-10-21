@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { deriveAnchors, sessionAnchors } from '../state/anchors'
 import { createError, err, ErrorCode, ok } from '../state/errors'
 import type { ConditioningHistoryRow, GenerationRequest } from '../state/schemas'
 import {
@@ -146,6 +147,49 @@ describe('the TRAINING HISTORY block', () => {
       buildTrainingHistory({ anchors: [], today: TODAY, conditioningTrend: null })
         .conditioningTrend,
     ).toBeNull()
+  })
+
+  it('carries only what RPE-bearing history supports when new sessions recorded none (REQ-016)', () => {
+    const set = (session: string, date: string, weight: number, rpe: number | null) => ({
+      session_id: session,
+      session_date: date,
+      logged_at: `${date}T10:00:00.000Z`,
+      exercise_id: 'back-squat',
+      equipment_used: 'barbell',
+      set_number: 1,
+      actual_reps: 5,
+      prescribed_reps: 5,
+      weight,
+      weight_unit: 'lb' as const,
+      rpe,
+    })
+    const evidence = [
+      set('c0000001-0000-4000-8000-000000000000', '2026-09-14', 255, 8),
+      set('c0000002-0000-4000-8000-000000000000', '2026-09-18', 245, 8),
+      // Logged after effort capture was removed: heavier, and no RPE.
+      set('c0000003-0000-4000-8000-000000000000', '2026-09-22', 300, null),
+    ]
+    const before = structuredClone(evidence)
+
+    const anchors = deriveAnchors(evidence)
+    const recentValues = sessionAnchors(evidence).map((session) => session.value).reverse()
+    const history = buildTrainingHistory({
+      anchors: anchors.map((row) => ({ anchor: row, recentValues })),
+      today: TODAY,
+    })
+
+    // Two measured sessions; the unmeasured one neither counts nor moves the trend.
+    expect(history.anchors).toEqual([
+      expect.objectContaining({ sessionCount: 2, daysSinceLastSession: 7, trend: null }),
+    ])
+    expect(evidence).toEqual(before)
+
+    // A history with no RPE anywhere tells the model nothing about the lift.
+    const unmeasured = evidence.map((row) => ({ ...row, rpe: null }))
+    expect(buildTrainingHistory({
+      anchors: deriveAnchors(unmeasured).map((row) => ({ anchor: row })),
+      today: TODAY,
+    })).toEqual({ anchors: [], directive: 'normal', conditioningTrend: null })
   })
 })
 
@@ -297,6 +341,20 @@ describe('the density directive on the generation request', () => {
       err(createError(ErrorCode.PERSISTENCE_READ_FAILED)),
     )
     expect(message).not.toContain('CONDITIONING TREND')
+  })
+
+  it('states no nudge up from recent sections that recorded no effort (REQ-016)', async () => {
+    const unrated = (index: number) => section(index, { perceived_effort: null })
+
+    // Mixed: two new sections with no section RPE above one historical easy one.
+    const mixed = await composedMessage(async () => ok([unrated(1), unrated(2), easy(3)]))
+    expect(mixed).toContain('CONDITIONING TREND: hold')
+
+    // No result and no effort entered at all: nothing measured, nothing nudged.
+    const empty = (index: number) =>
+      section(index, { perceived_effort: null, rounds_completed: null })
+    const blank = await composedMessage(async () => ok([empty(1), empty(2), empty(3)]))
+    expect(blank).toContain('CONDITIONING TREND: hold')
   })
 
   it('never asks the model to work the trend out', async () => {
