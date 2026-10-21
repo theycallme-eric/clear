@@ -438,6 +438,18 @@ describe('Workout — the active section header', () => {
     expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })
 
+  it('reselects the current section without leaving focus in the collapsed jump list', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+
+    await jumpTo(user, 'Primary lift, in progress')
+
+    expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByRole('heading', { level: 2, name: 'Primary lift' })).toHaveFocus()
+    expect(double.recorded()).toEqual([])
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
+  })
+
   it('moves focus to the section Previous opens, marking nothing complete', async () => {
     const user = userEvent.setup()
     const { double } = await shell()

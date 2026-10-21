@@ -241,23 +241,29 @@ function WorkoutShell({
   // touches the session clock, which reads `started_at` and nothing else.
   const header = useRef<HTMLDivElement>(null)
   const moved = useRef(false)
-  const { setIndex } = section
-  const goTo = useCallback(
-    (next: number) => {
-      moved.current = true
-      setIndex(next)
-    },
-    [setIndex],
-  )
-  useEffect(() => {
-    if (!moved.current) return
-    moved.current = false
+  const focusSectionHeader = useCallback(() => {
     const heading = header.current?.querySelector('h2, h3, h4, h5, h6')
     if (heading instanceof HTMLElement) {
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
       heading.focus()
     }
-  }, [index])
+  }, [])
+  const { setIndex } = section
+  const goTo = useCallback(
+    (next: number) => {
+      moved.current = next !== index
+      setIndex(next)
+      // Reselecting the open section closes its jump list too, but does not
+      // change `index`: restore focus before its selected chip becomes inert.
+      if (next === index) focusSectionHeader()
+    },
+    [index, setIndex, focusSectionHeader],
+  )
+  useEffect(() => {
+    if (!moved.current) return
+    moved.current = false
+    focusSectionHeader()
+  }, [index, focusSectionHeader])
 
   const seconds = useElapsedSeconds(snapshot.session.started_at)
 
