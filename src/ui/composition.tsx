@@ -35,17 +35,20 @@ export function ActionRow(props: CompositionProps) {
   return composition('div', 'clr-actions', props)
 }
 
-/** A related collection of rows: one closed frame, or the card's when inside one. */
+/**
+ * A related collection of rows: one closed frame, or the card's when inside
+ * one. Either way the rules between rows span the frame's full inner width.
+ */
 export function ListFrame(props: CompositionProps) {
   const insideCard = useInsideCard()
   return composition(
     'div',
-    insideCard ? 'clr-list' : 'clr-list clr-chamfer clr-chamfer--md',
+    insideCard ? 'clr-list clr-list--in-card' : 'clr-list clr-chamfer clr-chamfer--md',
     props,
   )
 }
 
-/** A row inside ListFrame; adjacent rows receive the system inset rule. */
+/** A row inside ListFrame; adjacent rows are separated by a card-width rule. */
 export function ListRow(props: CompositionProps) {
   return composition('div', 'clr-list__row', props)
 }

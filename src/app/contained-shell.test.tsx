@@ -91,6 +91,36 @@ describe('CLEAR 0.14.3 contained shell', () => {
     expect(css).not.toMatch(/\.clr-actions[^{}`]*\{/)
   })
 
+  it('runs header, band and pinned-action rules edge to edge, insetting content within each layer (U01)', () => {
+    const css = readFileSync('src/styles/shell.css', 'utf8')
+    const shell = css.match(/\.clr-shell--contained > \.clr-shell__content \{[^}]*\}/s)?.[0]
+    const header = css.match(/\.clr-shell--contained > \.clr-shell__content > header \{[^}]*\}/s)?.[0]
+
+    // No side padding on the shell, so nothing inside it stops short of the edge.
+    expect(shell).toMatch(/padding-right: 0;/)
+    expect(shell).toMatch(/padding-left: 0;/)
+    // The side inset still honours the safe area; it moved into the layers.
+    expect(shell).toContain('--shell-inset-left: max(var(--spacing-400), env(safe-area-inset-left));')
+    expect(shell).toContain('--shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));')
+    expect(header).toContain('border-bottom: var(--border-width) solid var(--border-region-rule);')
+    expect(header).toContain('var(--shell-inset-left)')
+    expect(css).toMatch(
+      /\.clr-screen > \.clr-scroll-region > :is\(\.clr-scroll-region__head, \.clr-scroll-region__foot\) \{\s*padding-right: var\(--page-gutter-right\);\s*padding-left: var\(--page-gutter-left\);/,
+    )
+    expect(css).toMatch(/\.clr-screen__content \{[^}]*var\(--page-gutter-left\)/s)
+    expect(css).toMatch(/\.clr-screen__content \.clr-band \{[^}]*margin-left: calc\(var\(--page-gutter-left\) \* -1\);/s)
+  })
+
+  it('separates the fixed header from content with a rule while the header stays outside the scroller (U02)', () => {
+    const { container } = renderApp(['/login'])
+    const header = container.querySelector('.clr-shell__content > header')
+    const scroller = container.querySelector('.clr-scroll-region__scroller')
+
+    expect(header).not.toBeNull()
+    expect(scroller?.contains(header ?? null)).toBe(false)
+    expect(container.querySelector('.clr-scroll-region__foot .clr-footer')).not.toBeNull()
+  })
+
   it('keeps one owner even when screen content is long', () => {
     const rows = Array.from({ length: 30 }, (_, index) => <p key={index}>Row {index + 1}</p>)
     const { container } = renderWithProviders(<Screen title="Long screen">{rows}</Screen>)
