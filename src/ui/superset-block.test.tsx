@@ -494,13 +494,16 @@ describe('the superset draws with the shared block frame', () => {
       // The row adds no frame: the fields are the only chamfers in it.
       expect(row).not.toHaveClass('clr-chamfer')
 
-      for (const label of ['Weight (kg)', 'Reps', 'RPE']) {
+      // Weight and reps only: no effort field and no warmup checkbox (U36).
+      expect(form.getAllByRole('spinbutton')).toHaveLength(2)
+      for (const label of ['Weight (kg)', 'Reps']) {
         const field = form.getByLabelText(label)
         expect(field).toHaveClass('clr-input')
         expect(field.closest('.clr-row')).toBe(row)
         expect(field.closest('.clr-field')).not.toBeNull()
       }
-      expect(form.getByRole('checkbox', { name: 'Warmup set' })).not.toBeChecked()
+      expect(form.queryByLabelText(/RPE/i)).not.toBeInTheDocument()
+      expect(form.queryByRole('checkbox')).not.toBeInTheDocument()
     }
   })
 
@@ -635,15 +638,15 @@ describe('saving, refusing and retrying a set', () => {
     const { attempts } = mount()
 
     const form = formFor('back squat')
-    await user.type(form.getByLabelText('RPE'), '11')
+    await user.type(form.getByLabelText('Weight (kg)'), '-5')
 
     expect(form.getByRole('button', { name: 'Log set 1' })).toBeDisabled()
-    expect(form.getByLabelText('RPE')).toBeInvalid()
-    expect(form.getByText('RPE runs 1 to 10')).toBeInTheDocument()
+    expect(form.getByLabelText('Weight (kg)')).toBeInvalid()
+    expect(form.getByText('Enter a weight of zero or more')).toBeInTheDocument()
     // Only this movement's: its partner's action is its own.
     expect(formFor('romanian deadlift').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
 
-    await user.clear(form.getByLabelText('RPE'))
+    await user.clear(form.getByLabelText('Weight (kg)'))
     expect(form.getByRole('button', { name: 'Log set 1' })).toBeEnabled()
     expect(attempts).toEqual([])
   })

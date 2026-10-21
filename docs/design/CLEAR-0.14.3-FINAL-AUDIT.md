@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `3e197ecdb9a48dc5321a00e3ec1c9f57958656fc10fa90c075368ea586cdd516` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011 and TASK-015 changes below) |
+| Runtime source hash of this audit's tree | `5d0fb72bb811c81e7fec00b0d6cf2e7d9957dc29cb037f07536146f97095bfc5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015 and TASK-027 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -245,6 +245,15 @@ trees and this head, from `git diff`:
   `src/state/generation-form.ts`. This **does** change rendering of Generate's form card; the
   Generate pictures above predate it and are not rebound (EX-13). Current acceptance evidence
   is `src/app/Generate.test.tsx` and `src/state/generation-form.test.ts`.
+- `3e197ecd…` to `5d0fb72b…`: TASK-027 (REQ-015, JOURNEY-026, U36) removes the set logger's
+  RPE field and `Warmup set` checkbox. Strength and superset sets take only weight and the
+  prescribed measure, both optional. The set writer sends `rpe: null`; warm-up classification,
+  the nullable columns and historical values are kept. Changed: `src/ui/set-logger.tsx`,
+  `src/state/set-logging.ts` and `src/state/set-log-queue.ts`, with restoration notes in
+  `docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`. This **does** change rendering of
+  the workout's set-entry form; the Workout pictures above predate it and are not rebound
+  (EX-13). Current acceptance evidence is the logger, superset, set-logging, provider and queue
+  tests together with `src/app/Workout.test.tsx`.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

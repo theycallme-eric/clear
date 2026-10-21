@@ -34,7 +34,6 @@ import { useState, type ReactNode } from 'react'
 import {
   AlertTriangle,
   Button,
-  Checkbox,
   CircleCheck,
   Input,
   RefreshCw,
@@ -52,8 +51,6 @@ import {
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import {
   prefillFrom,
-  RPE_MAX,
-  RPE_MIN,
   useSetLogging,
   type LoggedSet,
   type PerformedSet,
@@ -262,7 +259,6 @@ export function loggedSetText(set: LoggedSet): string {
     parts.push(`${set.distance} ${set.distanceUnit ?? ''}`.trim())
   }
   if (set.weight !== null) parts.push(`${set.weight} ${set.weightUnit}`)
-  if (set.rpe !== null) parts.push(`RPE ${set.rpe}`)
   if (set.isWarmup) parts.push('Warmup')
 
   return parts.join(' · ')
@@ -287,13 +283,19 @@ interface SetEntryFormProps {
 }
 
 /**
- * The set the user is in, and the four things they can say about it.
+ * The set the user is in, and the two things they can say about it — the
+ * weight and the measure. Both are optional: a set logged with neither is a
+ * set performed and not measured, and nothing here blocks the workout on it.
+ * There is no effort field and no warmup checkbox (REQ-015, U36); restoring
+ * either is described in `docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`.
  *
  * Prefilled from the last set actually performed, which is the requirement's
  * "previous weight/reps when history exists": on a resumed session that is the
  * set before this one, and within a session it is the set they just did. The
  * fields stay filled afterwards, because the next set is usually the same
- * weight and retyping it is the friction this screen exists to remove.
+ * weight and retyping it is the friction this screen exists to remove. The
+ * prescription's target is never a prefill — it is printed as the target, and
+ * an observed rep count is only ever one the user typed.
  */
 function SetEntryForm({
   setNumber,
@@ -309,19 +311,12 @@ function SetEntryForm({
 }: SetEntryFormProps) {
   const [weight, setWeight] = useState(() => numberField(prefill?.weight))
   const [measure, setMeasure] = useState(() => numberField(measurePrefill(prefill, modality)))
-  const [rpe, setRpe] = useState('')
-  const [warmup, setWarmup] = useState(false)
-
   const weightValue = parsed(weight)
   const measureValue = parsed(measure)
-  const rpeValue = parsed(rpe)
 
   const weightInvalid = weightValue === 'invalid' || isNegative(weightValue)
   const measureInvalid = measureValue === 'invalid' || isNegative(measureValue)
-  const rpeInvalid =
-    rpeValue === 'invalid' ||
-    (typeof rpeValue === 'number' && (rpeValue < RPE_MIN || rpeValue > RPE_MAX))
-  const blocked = weightInvalid || measureInvalid || rpeInvalid
+  const blocked = weightInvalid || measureInvalid
 
   // The shared submit helper (CORE-05): this form says only whether the set
   // was accepted, and where the caret goes on a refusal is its decision.
@@ -334,8 +329,6 @@ function SetEntryForm({
       setNumber,
       ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
       ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
-      ...(typeof rpeValue === 'number' ? { rpe: rpeValue } : {}),
-      ...(warmup ? { isWarmup: true } : {}),
     })
 
     // Nothing is cleared here: once the row comes back the form remounts on
@@ -381,21 +374,7 @@ function SetEntryForm({
           invalid={measureInvalid}
           errorText={measureInvalid ? 'Enter zero or more' : undefined}
         />
-        <Input
-          label="RPE"
-          type="number"
-          inputMode="decimal"
-          min={RPE_MIN}
-          max={RPE_MAX}
-          step="any"
-          value={rpe}
-          onChange={setRpe}
-          invalid={rpeInvalid}
-          errorText={rpeInvalid ? `RPE runs ${RPE_MIN} to ${RPE_MAX}` : undefined}
-        />
       </BlockPanel.FieldRow>
-
-      <Checkbox label="Warmup set" checked={warmup} onChange={setWarmup} />
 
       <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
         Log set {setNumber}

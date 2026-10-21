@@ -244,6 +244,41 @@ describe('surviving a reload', () => {
     expect(readSetLogQueue(storage)).toEqual(queue)
   })
 
+  it('reads back blank, partial and zero sets without turning one into another', () => {
+    // REQ-015: every measurement is optional. An omitted one stays omitted —
+    // not recorded — and a zero stays a zero.
+    const storage = memoryStorage()
+    const queue = [
+      queued({ performed: { setNumber: 1 } }),
+      queued({ id: 'a0000002-0000-4000-8000-000000000000', performed: { setNumber: 2, weight: 40 } }),
+      queued({
+        id: 'a0000003-0000-4000-8000-000000000000',
+        performed: { setNumber: 3, reps: 0, weight: 0 },
+      }),
+    ]
+
+    writeSetLogQueue(storage, queue)
+
+    expect(readSetLogQueue(storage).map((item) => item.entry.performed)).toEqual([
+      { setNumber: 1 },
+      { setNumber: 2, weight: 40 },
+      { setNumber: 3, reps: 0, weight: 0 },
+    ])
+  })
+
+  it('keeps an entry queued while effort was still collected, rather than dropping the set', () => {
+    // Written before the RPE field and warmup checkbox were removed. The set is
+    // real work the user did; the writer, not the queue, ignores the effort.
+    const good = queued()
+    const legacy = {
+      ...good,
+      entry: { ...good.entry, performed: { setNumber: 1, reps: 5, rpe: 7.5, isWarmup: true } },
+    }
+    const storage = memoryStorage({ [SET_LOG_QUEUE_STORAGE_KEY]: JSON.stringify([legacy]) })
+
+    expect(readSetLogQueue(storage)).toEqual([legacy])
+  })
+
   it('removes the key rather than storing an empty queue', () => {
     const storage = memoryStorage()
 

@@ -32,7 +32,12 @@ import {
   type QueueStorage,
 } from './set-log-queue'
 import { SetLoggingProvider } from './set-logging-provider'
-import { useSetLogging, type PerformedSet, type SetLogEntry } from './set-logging'
+import {
+  setLogInsert,
+  useSetLogging,
+  type PerformedSet,
+  type SetLogEntry,
+} from './set-logging'
 import { sessionProgress, type ExerciseProgress } from './workout-progress'
 
 /** Ids the double mints, so a test can name a set log before it exists. */
@@ -84,6 +89,8 @@ function FakeRenderer({
       <p>{`order ${sets.map((set) => set.setNumber).join(',')}`}</p>
       {/* Where each of them has actually got to. */}
       <p>{`status ${sets.map((set) => `${set.setNumber}:${set.status}`).join(',')}`}</p>
+      {/* What each says it holds: `null` is not recorded, and `0` is a zero. */}
+      <p>{`values ${sets.map((set) => `${set.setNumber}:${set.weight}${set.weightUnit}/${set.reps}`).join(',')}`}</p>
       <p>{`unsynced ${sync.unsyncedCount}`}</p>
       {sync.sustainedFailure ? <p>sustained failure</p> : null}
       {isSaving(exercise.exerciseId) ? <p>saving</p> : null}
@@ -648,5 +655,102 @@ describe('sustained failure surfaces once, with a count', () => {
     await waitFor(() => expect(attempts).toHaveLength(1))
     // One refusal is a hiccup: the set says so on its own row, the shell does not.
     expect(screen.queryByText('sustained failure')).not.toBeInTheDocument()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-015 — optional, compact logging with no effort
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('blank, partial and zero sets save and reload as they were entered', () => {
+  const snapshot = () =>
+    snapshotFixture({
+      sections: [
+        {
+          sectionType: 'primary_lift',
+          blocks: [{ structureType: 'standard', exercises: ['not_started'] }],
+        },
+      ],
+    })
+
+  it.each([
+    ['blank', { setNumber: 1 }, '1:nullkg/null'],
+    ['weight-only', { setNumber: 1, weight: 40 }, '1:40kg/null'],
+    ['reps-only', { setNumber: 1, reps: 6 }, '1:nullkg/6'],
+    ['zero', { setNumber: 1, reps: 0, weight: 0 }, '1:0kg/0'],
+  ] as const)(
+    'keeps a %s set through an offline queue, a retry and a reload',
+    async (_case, performed: PerformedSet, values) => {
+      const { double, attempts } = refusing(createWorkoutDouble({ session: snapshot() }), offline)
+      const first = mount({ double, performed })
+
+      await logSet(1)
+      await waitFor(() => expect(attempts).toHaveLength(1))
+      // On this device, as entered: null is not a zero, and a zero is not null.
+      expect(screen.getByText(`values ${values}`)).toBeInTheDocument()
+      await waitFor(() => expect(screen.getByText('status 1:failed')).toBeInTheDocument())
+
+      cleanup()
+      const second = first.remount({ double: createWorkoutDouble({ session: snapshot() }) })
+      await waitFor(() => expect(second.workout.loggedSets()).toHaveLength(1))
+
+      const [written] = second.workout.loggedSets()
+      // The id the first attempt minted, so the retry cannot duplicate it.
+      expect(written.id).toBe(MINTED[0])
+      expect(written.performed).toEqual(performed)
+      // No effort is written, and none is invented.
+      expect(setLogInsert(written).rpe).toBeNull()
+      await waitFor(() => expect(readSetLogQueue(second.storage)).toEqual([]))
+
+      // A later read of the stored row says what the queue said.
+      cleanup()
+      first.remount({
+        double: createWorkoutDouble({ session: snapshot() }),
+        exercises: [{ setLogs: [setLogInsert(written)] }],
+      })
+      expect(screen.getByText(`values ${values}`)).toBeInTheDocument()
+      expect(screen.getByText('status 1:logged')).toBeInTheDocument()
+    },
+  )
+
+  it('keeps the unit each row was stamped with on a later read', () => {
+    mount({
+      weightUnit: 'kg',
+      exercises: [{ setLogs: [{ set_number: 1, weight: 135, weight_unit: 'lb', actual_reps: 5 }] }],
+    })
+
+    expect(screen.getByText('values 1:135lb/5')).toBeInTheDocument()
+  })
+
+  it('still sends a set queued while effort was collected, without its effort', async () => {
+    // An entry written through the removed RPE field and warmup checkbox: the
+    // set is sent rather than dropped, its warmup classification is kept, and
+    // its effort is not written.
+    const legacy = { setNumber: 1, reps: 5, weight: 20, rpe: 6, isWarmup: true } as PerformedSet
+    const [exercise] = sessionProgress(snapshot()).sections[0].blocks[0].exercises
+    const storage = memoryStorage()
+    writeSetLogQueue(storage, [
+      queuedSetLog(
+        {
+          id: MINTED[0],
+          exerciseId: exercise.exerciseId,
+          blockId: sessionProgress(snapshot()).sections[0].blocks[0].blockId,
+          distanceUnit: null,
+          weightUnit: 'kg',
+          performed: legacy,
+        },
+        FIXTURE_SESSION_ID,
+        '2026-09-24T18:02:00.000Z',
+      ),
+    ])
+
+    const { workout } = mount({ storage })
+
+    await waitFor(() => expect(workout.loggedSets()).toHaveLength(1))
+    const insert = setLogInsert(workout.loggedSets()[0])
+    expect(insert.rpe).toBeNull()
+    expect(insert.is_warmup_set).toBe(true)
+    expect(insert.actual_reps).toBe(5)
+    await waitFor(() => expect(readSetLogQueue(storage)).toEqual([]))
   })
 })
