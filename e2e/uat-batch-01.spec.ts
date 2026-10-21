@@ -148,7 +148,7 @@ test('onboarding holds each step in one card with a pinned footer action', async
   await expectContainedStep('What are you going for?', 'Next')
   await footer().getByRole('button', { name: 'Next' }).click()
 
-  await expectContainedStep('Anything we should work around?', 'Skip')
+  await expectContainedStep('Any ongoing limitations?', 'Skip')
   await expect(card.getByRole('group', { name: 'Work around' })).toHaveCSS(
     'border-top-width',
     '0px',

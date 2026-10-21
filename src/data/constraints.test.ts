@@ -280,6 +280,88 @@ describe('user constraints — free text (DATA-05)', () => {
   })
 })
 
+describe('ongoing limitations — edits, clears and retrieval (U17)', () => {
+  const ongoing = (pattern: 'squat' | 'press', note: string | null = null): NewUserConstraint => ({
+    userId: USER,
+    action: 'exclude',
+    target: { scope: 'movement_pattern', pattern },
+    appliesTo: { persistence: 'persistent' },
+    note,
+  })
+
+  it('puts a persistent pattern exclusion in every session’s in-force set', async () => {
+    const { client } = setup()
+    expectOk(await client.add(ongoing('squat')))
+
+    // `constraints_in_force` is what the candidate query filters on, so the
+    // pattern it answers is the pattern retrieval leaves out — now and later.
+    for (const session of [null, SESSION, LATER_SESSION]) {
+      expect(exclusions(expectOk(await client.listInForce(USER, session))).patterns).toEqual([
+        'squat',
+      ])
+    }
+  })
+
+  it('takes a cleared pattern out of retrieval, and the read after agrees', async () => {
+    const { client } = setup()
+    const squat = expectOk(await client.add(ongoing('squat')))
+    expectOk(await client.add(ongoing('press')))
+
+    expectOk(await client.remove(squat.id))
+
+    expect(exclusions(expectOk(await client.listInForce(USER))).patterns).toEqual(['press'])
+    expect(expectOk(await client.list(USER)).map((row) => row.target)).toEqual([
+      { scope: 'movement_pattern', pattern: 'press' },
+    ])
+  })
+
+  it('rewrites the note across the ongoing set and reads it back after', async () => {
+    const { client, double } = setup()
+    expectOk(await client.add(ongoing('squat', 'Left knee')))
+    expectOk(await client.add(ongoing('press', 'Left knee')))
+    // A session-scoped row is not the ongoing set; the edit must not reach it.
+    expectOk(
+      await client.add({
+        ...ongoing('squat', 'Today only'),
+        appliesTo: { persistence: 'session', sessionId: SESSION },
+      }),
+    )
+
+    const written = expectOk(await client.setPatternNote(USER, 'Left knee, long term'))
+    expect(written.map((row) => row.note)).toEqual(['Left knee, long term', 'Left knee, long term'])
+
+    expect(expectOk(await client.list(USER)).map((row) => row.note)).toEqual([
+      'Left knee, long term',
+      'Left knee, long term',
+      'Today only',
+    ])
+    expect(double.requests().some((request) => request.method === 'PATCH')).toBe(true)
+  })
+
+  it('stores a cleared note as no note at all, and the read after agrees', async () => {
+    const { client } = setup()
+    expectOk(await client.add(ongoing('squat', 'Left knee')))
+
+    expectOk(await client.setPatternNote(USER, '   '))
+
+    expect(expectOk(await client.list(USER))[0]?.note).toBeNull()
+  })
+
+  it('treats the note as context only: prose naming patterns excludes nothing more', async () => {
+    const { client } = setup()
+    expectOk(await client.add(ongoing('squat')))
+
+    expectOk(await client.setPatternNote(USER, 'No pressing, no pulling, no barbell.'))
+
+    // The ticks are the hard set; the note changes none of it.
+    expect(exclusions(expectOk(await client.listInForce(USER)))).toEqual({
+      exerciseIds: [],
+      patterns: ['squat'],
+      equipment: [],
+    })
+  })
+})
+
 describe('user constraints — refusals arrive typed (DATA-05)', () => {
   it('refuses to call the project at all when nobody is signed in', async () => {
     const double = createPostgrestDouble({

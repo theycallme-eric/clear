@@ -758,7 +758,7 @@ backendTest('onboarding: real new user, every step, selection, kept draft, held 
     await next.click()
     const note = page.getByLabel(/Note/)
     await evidence.shot('Onboarding', '/onboarding', 'five-step-draft', at, 'Set up CLEAR', async () => {
-      await step('Anything we should work around?')
+      await step('Any ongoing limitations?')
       await expectStep(4)
       const probe = await expectFramedField(note, 'the limitations note')
       expect(probe).toMatchObject({ resize: 'none', fieldSizing: 'content', clipped: false })
