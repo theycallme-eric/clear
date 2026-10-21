@@ -2,6 +2,9 @@ import { createHash } from 'node:crypto'
 import type { Locator, Page, Route } from '@playwright/test'
 
 import { namespaceId } from '../../scripts/e2e/namespace.mjs'
+import { blockResultRowSchema } from '../../src/state/schemas'
+import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
+import { definitionFixture, fixtureId, reconstructionFixture, snapshotFixture, type SnapshotFixture } from '../../src/test/workout-double'
 import { expect, test as base } from '../fixtures'
 import { backend } from '../support/backend'
 import { installDeterministicCapture } from './fixtures'
@@ -10,7 +13,14 @@ import { installDeterministicCapture } from './fixtures'
  * REQ-014 / TASK-024 / JOURNEY-023 — hands-off EMOM execution on a phone.
  *
  * The real app on its real `/workout` route, behind its real guards, holding a
- * genuine session for a disposable namespaced user. The workout is a fixed
+ * genuine session for a disposable namespaced user in the trusted integration
+ * run. Public CI has no service-role credential: there the same browser journey
+ * uses a fully intercepted, schema-shaped in-memory API fixture. Its report is
+ * explicitly labelled hermetic, never backend/persistence proof. Neither mode
+ * skips this test or relaxes its UI/result assertions. A local required-command
+ * run without the trusted harness still fails closed.
+ *
+ * The workout is a fixed
  * prescription persisted through the real `persist_session` RPC — never a model
  * response — and every model POST is intercepted in the browser and never
  * forwarded. The clock is Playwright's, jumped and paused so minute
@@ -117,6 +127,112 @@ interface World {
   sessionState(): Promise<string>
 }
 
+/**
+ * Public-preview contract coverage, not evidence about the hosted database.
+ * Reuse the existing typed builders; all data requests stay inside this test,
+ * unexpected requests fail, and stored observations come only from actual app
+ * POST bodies. The trusted mode below continues to prove real saved rows.
+ */
+async function publicPreviewWorld(page: Page) {
+  const owner = '00000000-0000-4000-8000-000000000024'
+  const catalog = [
+    { id: 'dumbbell-bench-press', default_equipment: 'dumbbells' },
+    { id: 'v-up', default_equipment: 'bodyweight' },
+  ]
+  const rows: ReturnType<typeof blockResultRowSchema.parse>[] = []
+  const unexpected: string[] = []
+  let completedAt: string | null = null
+  const fixture: SnapshotFixture = {
+    userId: owner, sessionId: fixtureId('5', 24), title: TITLE,
+    startedAt: new Date().toISOString(),
+    sections: [
+      { sectionType: 'conditioning', title: 'EMOM', blocks: [{
+        structureType: 'emom', timerType: 'per_minute', timerSeconds: 360, roundRestSeconds: 15,
+        exercises: [
+          { prescription: { exercise_id: catalog[0].id, equipment: catalog[0].default_equipment, sets: null, target_kind: 'sequence', target_value: null, target_sequence: [6, 8, 10] } },
+          { prescription: { exercise_id: catalog[1].id, equipment: catalog[1].default_equipment, sets: null, target_value: 12 } },
+        ],
+      }] },
+      { sectionType: 'cooldown', title: 'Cooldown', blocks: [{
+        exercises: [{ prescription: { exercise_id: catalog[0].id, equipment: catalog[0].default_equipment, sets: 1, target_value: 8 } }],
+      }] },
+    ],
+  }
+  const currentFixture = (): SnapshotFixture => ({ ...fixture,
+    state: completedAt === null ? 'active' : 'completed',
+    session: { completed_at: completedAt, actual_duration_mins: completedAt === null ? null : 7 },
+  })
+  const snapshot = () => snapshotFixture(currentFixture())
+  const firstBlock = snapshot().sections[0].blocks[0].block.id
+  const reconstruction = () => {
+    const value = reconstructionFixture(currentFixture())
+    return { ...value, sections: value.sections.map((section) => ({ ...section,
+      blocks: section.blocks.map((block) => ({ ...block,
+        block_result: rows.find((row) => row.block_id === block.block.id) ?? null,
+      })),
+    })) }
+  }
+  const handler = async (route: Route) => {
+    const request = route.request()
+    const url = new URL(request.url())
+    const name = url.pathname.split('/').at(-1) ?? ''
+    const reply = (body: unknown, status = 200) => route.fulfill({ status, headers: CORS, json: body })
+    if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS })
+    if (request.method() === 'GET') {
+      if (name === 'profiles') return reply([onboardedProfile({ id: owner })])
+      if (name === 'locations') return reply([fixtureLocation({ user_id: owner })])
+      if (name === 'workout_sessions') return reply([snapshot().session])
+      if (name === 'exercise_definitions') return reply(catalog.map((e) => definitionFixture({ id: e.id })))
+      if (name === 'workout_exercises') return reply(snapshot().sections.flatMap((s) => s.blocks.flatMap((b) => b.exercises.map((e) => e.exercise))))
+      if (['load_anchors', 'location_equipment', 'saved_workout_attempts', 'saved_workouts', 'rest_days'].includes(name)) return reply([])
+    }
+    if (request.method() === 'POST' && url.pathname.includes('/rpc/')) {
+      if (name === 'resume_session' || name === 'session_snapshot') return reply(snapshot())
+      if (name === 'session_as_performed') return reply(reconstruction())
+      if (name === 'complete_session') {
+        completedAt = new Date().toISOString()
+        return reply({ outcome: 'completed', state: 'completed', session: snapshot().session })
+      }
+      if (name === 'streak_sessions') return reply(completedAt === null ? [] : [{
+        session_id: fixture.sessionId, completed_at: completedAt, counts_for_streak: true,
+      }])
+      if (['constraints_in_force', 'conditioning_history', 'anchor_evidence', 'set_load_anchors'].includes(name)) return reply([])
+      if (name === 'record_favorite_completion') return reply({ outcome: 'not_a_favorite' })
+    }
+    if (request.method() === 'POST' && name === 'block_results') {
+      const inserts: unknown = request.postDataJSON()
+      expect(Array.isArray(inserts) && inserts.length === 1).toBe(true)
+      const insert = (inserts as Record<string, unknown>[])[0]
+      const row = blockResultRowSchema.parse({
+        elapsed_seconds: null, completed_under_cap: null, rounds_completed: null,
+        partial_round_reps: null, minutes_completed: null, highest_rung: null,
+        perceived_effort: null, notes: null, ...insert,
+        id: fixtureId('9', rows.length + 1), created_at: new Date().toISOString(),
+      })
+      if (rows.some((old) => old.block_id === row.block_id)) {
+        return reply({ code: '23505', message: 'Duplicate fixture block result' }, 409)
+      }
+      rows.push(row)
+      return reply([row], 201)
+    }
+    unexpected.push(`${request.method()} ${url.pathname}`)
+    return reply({ code: 'PGRST000', message: 'Unexpected public-preview fixture request' }, 503)
+  }
+  await page.route('**/rest/v1/**', handler)
+  await page.route('**/auth/v1/**', handler)
+  await page.addInitScript(({ key, user }) => localStorage.setItem(key, JSON.stringify({
+    accessToken: 'synthetic-preview-session', refreshToken: 'synthetic-preview-refresh',
+    expiresAt: Date.now() + 60 * 60 * 1000, user: { id: user, email: 'synthetic-preview@example.invalid' },
+  })), { key: SESSION_KEY, user: owner })
+  const world: World = {
+    catalog, sessionId: fixtureId('5', 24), emomBlockId: firstBlock,
+    blockResults: async () => rows,
+    emomSetLogs: async () => [],
+    sessionState: async () => completedAt === null ? 'active' : 'completed',
+  }
+  return { world, assertRequests: () => expect(unexpected).toEqual([]) }
+}
+
 const test = base.extend<{ world: World; modelPosts: () => number }>({
   // Provider interception: no model request leaves the browser, and the count
   // is asserted, so nothing here is live generation.
@@ -126,6 +242,13 @@ const test = base.extend<{ world: World; modelPosts: () => number }>({
   },
 
   world: async ({ page }, use, testInfo) => {
+    if (process.env.CI && !backend.available) {
+      testInfo.annotations.push({ type: 'proof-mode', description: 'Hermetic public-preview API contract; no hosted-backend proof or credentials.' })
+      const fixture = await publicPreviewWorld(page)
+      try { await use(fixture.world) } finally { fixture.assertRequests() }
+      return
+    }
+    testInfo.annotations.push({ type: 'proof-mode', description: 'Trusted namespaced disposable-account integration; real backend rows and cleanup.' })
     // A missing integration credential is a failure, never a skipped proof.
     expect(backend.available, backend.reason).toBe(true)
     const client = backend.client()
