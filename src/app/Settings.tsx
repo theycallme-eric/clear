@@ -85,13 +85,18 @@ import { ActionRow, PhoneFooter } from '../ui/composition'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
-import { ANONYMOUS_HOME } from './guards'
+import { ANONYMOUS_HOME, ONBOARDING_ROUTE } from './guards'
 
 /** The longest limitations note `user_constraints.note` is asked to hold. */
 export const NOTE_MAX_LENGTH = 2000
 
+/** U08: with no profile there is one fact and one way on — set up. */
+export const SETTINGS_EMPTY_TITLE = 'No profile yet'
+export const SETTINGS_EMPTY_ACTION = 'Set up your profile'
+
 export function Settings() {
   const query = useProfileQuery()
+  const navigate = useNavigate()
 
   // The fourth state is this view's own judgement. A profile row is what every
   // control here edits, so "there is no row" is not a settings screen — and it
@@ -122,6 +127,14 @@ export function Settings() {
                 </Button>
               </ActionRow>
             </PhoneFooter>
+          ) : state.status === 'empty' ? (
+            <PhoneFooter>
+              <ActionRow>
+                <Button variant="primary" onClick={() => void navigate(ONBOARDING_ROUTE)}>
+                  {SETTINGS_EMPTY_ACTION}
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
           ) : undefined
         }
       >
@@ -130,10 +143,7 @@ export function Settings() {
         ) : state.status === 'error' ? (
           <ErrorView error={state.error} title="Your settings didn’t load" />
         ) : state.status === 'empty' ? (
-          <EmptyState
-            title="No preferences to show"
-            message="This account has no profile yet, so there is nothing to change."
-          />
+          <EmptyState title={SETTINGS_EMPTY_TITLE} />
         ) : (
           <div className="clr-stack">
             <PreferencesSection profile={state.data} />
@@ -431,7 +441,7 @@ function LimitationsEditor({
           void storeNote()
         }}
         placeholder="Left shoulder — nothing overhead for a few weeks."
-        helperText="Context for composition. It never removes an exercise on its own — the ticks above do that."
+        helperText="Context only. The ticks above are what exclude movements."
         errorText={
           tooLong ? `Keep the note to ${NOTE_MAX_LENGTH} characters.` : undefined
         }
@@ -476,10 +486,8 @@ function TrainingPlacesSection() {
   const navigate = useNavigate()
 
   return (
+    // U08: the heading is the statement; the action is the way there.
     <SettingsCard id="settings-places" heading="Places and equipment">
-      <p style={{ margin: 0 }}>
-        Manage where you train and the equipment available at each place.
-      </p>
       <TextAction onClick={() => void navigate('/settings/locations')}>
         Manage places
       </TextAction>

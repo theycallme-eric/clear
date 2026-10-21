@@ -42,6 +42,7 @@ import {
   type HistoryEntry,
   type HistoryFilter,
 } from '../state/history'
+import { GENERATE_PATH } from '../state/generation-form'
 import { useHistoryQuery } from '../state/history-queries'
 import { sessionDetailPath } from '../state/home'
 import {
@@ -68,12 +69,10 @@ export const HISTORY_ERROR_TITLE = 'History didn’t load'
 
 /** What the two empties say. Factual, never apologetic (ATOMIC.md §5). */
 export const HISTORY_EMPTY_TITLE = 'No workouts yet'
-export const HISTORY_EMPTY_MESSAGE =
-  'Workouts you generate appear here, with the rest days between them.'
 export const HISTORY_NO_MATCH_TITLE = 'Nothing matches this filter'
-export const HISTORY_NO_MATCH_MESSAGE =
-  'The history is there — this filter just does not reach it.'
 export const HISTORY_NO_MATCH_ACTION = 'Show all entries'
+/** U08: an empty history's next action is the first workout. */
+export const HISTORY_EMPTY_ACTION = 'Generate workout'
 
 /** IA.md §4's out-edge: History is entered from Home and returns there. */
 export const HISTORY_BACK_LABEL = 'Home'
@@ -108,6 +107,10 @@ export function History() {
     ) : state.status === 'ready' && query.canLoadMore ? (
       <Button variant="primary" onClick={query.loadMore}>
         {HISTORY_LOAD_MORE_LABEL}
+      </Button>
+    ) : state.status === 'empty' ? (
+      <Button variant="primary" onClick={() => void navigate(GENERATE_PATH)}>
+        {HISTORY_EMPTY_ACTION}
       </Button>
     ) : null
 
@@ -155,14 +158,8 @@ export function History() {
             loadingLabel={HISTORY_LOADING_LABEL}
             errorTitle={HISTORY_ERROR_TITLE}
             empty={
-              filtered ? (
-                <ListMessage
-                  title={HISTORY_NO_MATCH_TITLE}
-                  message={HISTORY_NO_MATCH_MESSAGE}
-                />
-              ) : (
-                <ListMessage title={HISTORY_EMPTY_TITLE} message={HISTORY_EMPTY_MESSAGE} />
-              )
+              // One statement each; the pinned action is the way on.
+              <ListMessage title={filtered ? HISTORY_NO_MATCH_TITLE : HISTORY_EMPTY_TITLE} />
             }
           >
             {(data) => (

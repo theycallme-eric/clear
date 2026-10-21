@@ -48,8 +48,11 @@ import {
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { resolveAtmosphere } from './atmosphere'
 import {
+  FAVORITES_EMPTY,
+  FAVORITES_EMPTY_TITLE,
   HISTORY_ROUTE,
   HOME_HEADING,
+  RECENT_EMPTY_TITLE,
   HOME_ROUTE,
   SETTINGS_ROUTE,
   VIEW_HISTORY_LABEL,
@@ -317,6 +320,53 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
     expect(within(rest).getByRole('heading', { level: 3, name: 'Rest day' })).toHaveClass('label')
     expect(rest.querySelector('.clr-card__bar')).toBeNull()
     expect(within(rest).getByRole('button', { name: 'Mark Rest Day' })).toHaveClass('clr-btn')
+  })
+
+  it('U06: keeps the streak count with its unit', async () => {
+    await populatedHome()
+
+    // A non-breaking space binds the count to its unit; the rest may wrap.
+    // (The fixture's session falls outside this week; the browser lane
+    // checks the week's "n of 7 days" on a populated week.)
+    const text = cardOf('This week').textContent ?? ''
+    expect(text).toMatch(/Current streak: \d+\xa0days?/)
+  })
+
+  it('U07: in-card actions share the card width as one compact group', async () => {
+    const user = userEvent.setup()
+    await populatedHome()
+
+    const quick = screen.getByRole('button', { name: 'Quick start' })
+    expect(quick.closest('.clr-action-group')).not.toBeNull()
+
+    const rest = await within(cardOf('This week')).findByRole('region', { name: 'Rest day' })
+    const mark = within(rest).getByRole('button', { name: 'Mark Rest Day' })
+    expect(mark.closest('.clr-action-group')).not.toBeNull()
+    await user.click(mark)
+
+    const save = within(rest).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    const group = save.closest('.clr-action-group')
+    expect(group).not.toBeNull()
+    expect(group).toContainElement(cancel)
+    // The reason and its actions are one label/control group.
+    expect(group!.parentElement).toHaveClass('clr-stack', 'clr-stack--tight')
+    expect(group!.parentElement).toContainElement(within(rest).getByLabelText('Reason'))
+  })
+
+  it('U08: each Home empty state is one statement, with no standing explanation', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ workout: createWorkoutDouble({ session: null }).clients }))
+
+    const recents = await screen.findByText(RECENT_EMPTY_TITLE)
+    expect(recents.parentElement!.children).toHaveLength(1)
+    expect(within(cardOf('Train today')).queryByText(/Compose a session/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+    const favorites = await screen.findByText(FAVORITES_EMPTY_TITLE)
+    // The message says what to do, without restating the title.
+    expect(favorites.parentElement).toHaveTextContent(FAVORITES_EMPTY)
+    expect(FAVORITES_EMPTY).not.toMatch(/no favorites/i)
   })
 
   it('arrives as one staggered set, once, and not again for an inline update', async () => {

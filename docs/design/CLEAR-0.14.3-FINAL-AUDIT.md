@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `faf1f3233ea5b922043ce77e3e12c6949cddcf9645d6210c83b13ad09a3383d5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001 and TASK-037 changes below) |
+| Runtime source hash of this audit's tree | `c38914a73c45d0c937a9d9c72a312cfb2e08bb36670cba7054d57c3f84a200c9` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037 and TASK-002 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -60,6 +60,13 @@ trees and this head, from `git diff`:
   displays the same adjusted target it accepts; no markup/control or timer is added.
   This can change prescribed rep text for eligible historical data. Earlier pictures
   remain bound to their capture trees and are not rebound or claimed as new proof.
+- `faf1f323…` to `c38914a7…`: TASK-002 (REQ-001, JOURNEY-002) applies one spacing rhythm,
+  the enlarged data-label tier, count/unit binding, in-card `ActionGroup`s and concise empty
+  states through `src/styles/shell.css`, `src/ui/composition.tsx`, `src/ui/history-list.tsx`
+  and the Home, History, Settings and Generate routes. This **does** change rendering and
+  copy on those routes. The pictures above predate it and are not rebound (EX-13);
+  `e2e/design-0143/accessibility.spec.ts` and `e2e/app-shell.spec.ts` measure the JOURNEY-002
+  geometry on this head.
 
 The pictures are not rebound to this head. The browser lane re-asserts all three groups'
 behaviour on it (below).

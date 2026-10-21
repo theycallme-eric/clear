@@ -117,6 +117,48 @@ body,
   border-top: 0;
 }
 
+/* U06: on a phone screen the 12px data-label tier reads at the next label
+   step. Every role that draws from it — row meta, counts, streaks, field
+   units, choice hints, text actions — enlarges together, so no route restates
+   a size. Body text keeps the package's own steps and 1.25 line height.
+   Dialogs and toasts sit outside Screen and are unchanged. */
+.clr-screen {
+  --label-xs-size: var(--label-sm-size);
+  --label-xs-line-height: var(--label-sm-line-height);
+}
+
+/* U05: the gap between text blocks is the layout's rhythm — 8 between a
+   label and its control, 16 between groups — never a browser margin left on
+   a paragraph or a definition list. */
+.clr-screen__content :is(p, dl, dd) {
+  margin: 0;
+}
+
+/* U06: a short count and its unit ("45 min", "3 of 7 days") stay on one
+   line; the sentence around them may wrap. */
+.clr-nowrap {
+  white-space: nowrap;
+}
+
+/* U07: a group of in-card actions uses the card's width. Each action takes
+   an equal share of the row while the labels fit and wraps to its own full
+   row when they do not, so a long label never overflows the card. A lone
+   action fills the row. */
+.clr-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-200);
+}
+
+.clr-action-group > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clr-action-group > .clr-bleed {
+  display: flex;
+}
+
 /* Review facts and completed-session results are the same visual object:
    short labelled values, each in its own small frame. Keeping this in the
    shared shell layer prevents route-specific copies of the stat grid. */

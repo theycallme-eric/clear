@@ -151,8 +151,11 @@ function SessionItem({
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>
         <span>{formatFocus(entry.focus)}</span>
-        {entry.durationMins !== null && <span>{entry.durationMins} min</span>}
-        <span>Intensity {entry.intensity}/10</span>
+        {/* A count never wraps away from its unit. */}
+        {entry.durationMins !== null && (
+          <span className="clr-nowrap">{`${entry.durationMins} min`}</span>
+        )}
+        <span className="clr-nowrap">{`Intensity ${entry.intensity}/10`}</span>
       </p>
     </ListRow>
   )

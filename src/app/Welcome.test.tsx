@@ -28,6 +28,8 @@ describe('Welcome', () => {
     expect(cards).toHaveLength(1)
     const card = cards[0] as HTMLElement
     expect(within(card).getByText('Strength training, simplified.')).toBeInTheDocument()
+    // U08: one statement, and the pinned entries are the next action.
+    expect(card.querySelectorAll('p')).toHaveLength(1)
     expect(
       heading.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()

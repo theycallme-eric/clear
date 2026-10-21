@@ -695,8 +695,246 @@ backendTest('public routes: Welcome, sign-in and onboarding keep the same contra
   }
 })
 
+// ── TASK-002 · JOURNEY-002 (U05–U08) ──────────────────────────────────────
+
+/** Enlarged text: every type step a phone user can raise, by a quarter. */
+const ENLARGED_TEXT = `.clr-screen {
+  --label-xs-size: 18px; --label-sm-size: 18px; --label-md-size: 20px;
+  --paragraph-sm-size: 18px; --paragraph-md-size: 20px; --paragraph-md-line-height: 25px;
+}`
+
+/** One in-card action group: its actions inside its box, sharing the card width. */
+function actionGroupGeometry(page: Page, name: string) {
+  return page.getByRole('button', { name, exact: true }).evaluate((button) => {
+    const group = button.closest('.clr-action-group')!
+    const body = group.closest('.clr-card__body')!
+    const style = getComputedStyle(body)
+    const inner = body.getBoundingClientRect().width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+    const box = group.getBoundingClientRect()
+    const cells = [...group.children].map((child) => child.getBoundingClientRect())
+    const rows = new Map<number, number>()
+    const rowHeights = new Map<number, Set<number>>()
+    for (const cell of cells) {
+      const top = Math.round(cell.top)
+      rows.set(top, (rows.get(top) ?? 0) + cell.width)
+      rowHeights.set(top, (rowHeights.get(top) ?? new Set()).add(Math.round(cell.height)))
+    }
+    const gap = parseFloat(getComputedStyle(group).columnGap) || 0
+    return {
+      groupWidth: box.width,
+      cardInnerWidth: inner,
+      outside: cells.filter((cell) => cell.left < box.left - 0.5 || cell.right > box.right + 0.5).length,
+      // Each row of cells (with the gaps between them) fills the group.
+      rowFill: [...rows.entries()].map(([top, width]) => {
+        const count = cells.filter((cell) => Math.round(cell.top) === top).length
+        return Math.abs(width + gap * (count - 1) - box.width)
+      }),
+      // Actions sharing a row share a height; a label too long for a shared
+      // row takes a full row of its own and may wrap there.
+      unevenRows: [...rowHeights.values()].filter((heights) => heights.size > 1).length,
+      minTarget: Math.min(...cells.map((cell) => cell.height)),
+    }
+  })
+}
+
+async function expectCompactGroup(page: Page, name: string, where: string) {
+  const geometry = await actionGroupGeometry(page, name)
+  expect(geometry.groupWidth, `${where}: the action group does not use the card width`)
+    .toBeCloseTo(geometry.cardInnerWidth, 0)
+  expect(geometry.outside, `${where}: an action spills out of its group`).toBe(0)
+  for (const fill of geometry.rowFill) expect(fill, `${where}: a row of actions leaves card width unused`).toBeLessThanOrEqual(1)
+  expect(geometry.unevenRows, `${where}: actions sharing a row differ in height`).toBe(0)
+  expect(geometry.minTarget, `${where}: an action is under the 40px target`).toBeGreaterThanOrEqual(39.5)
+}
+
+/** No horizontal overflow and no clipped text, at enlarged text with the longest labels. */
+async function expectEnlargedFits(page: Page, where: string) {
+  const tag = await page.addStyleTag({ content: ENLARGED_TEXT })
+  try {
+    const probe = await layout(page)
+    expect(probe.documentOverflowX, `${where} (enlarged text): the document overflows sideways`).toBeLessThanOrEqual(0)
+    expect(probe.clippedText, `${where} (enlarged text): text is clipped`).toEqual([])
+    const sideways = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('main .clr-screen__content *')]
+      .filter((element) => element.getBoundingClientRect().right > window.innerWidth + 1 &&
+        !element.closest('.clr-band, [role="tablist"]'))
+      .map((element) => `<${element.tagName.toLowerCase()}>${(element.textContent ?? '').trim().slice(0, 30)}`))
+    expect(sideways, `${where} (enlarged text): content runs past the viewport`).toEqual([])
+  } finally {
+    await tag.evaluate((element) => (element as Element).remove())
+  }
+}
+
+/** Every short count with its unit renders on one line. */
+async function expectCountsTogether(page: Page, pattern: RegExp, where: string) {
+  const spans = await page.locator('main').evaluate((main, source) => {
+    const matcher = new RegExp(source, 'g')
+    const found: { text: string; lines: number }[] = []
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const text = node.textContent ?? ''
+      for (const match of text.matchAll(matcher)) {
+        const range = document.createRange()
+        range.setStart(node, match.index)
+        range.setEnd(node, match.index + match[0].length)
+        const tops = new Set([...range.getClientRects()].filter((rect) => rect.width > 0).map((rect) => Math.round(rect.top)))
+        found.push({ text: match[0], lines: tops.size })
+      }
+    }
+    return found
+  }, pattern.source)
+  expect(spans.length, `${where}: no count was found to check`).toBeGreaterThan(0)
+  for (const span of spans) expect(span.lines, `${where}: "${span.text}" wraps away from its unit`).toBe(1)
+}
+
+backendTest('JOURNEY-002: Home and History keep one rhythm, enlarged readable text, compact actions and one statement', async ({
+  page, visit, world,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-002 is proven at the 390 by 844 phone viewport')
+  test.setTimeout(240_000)
+  void world
+  expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+
+  // Home, empty history: one statement per empty, no standing explanation.
+  await visit('/')
+  await reached(page, '/', 'Today')
+  await expectContainedRoute(page, '/')
+  const recentStatement = page.getByText('No workouts yet', { exact: true })
+  await expect(recentStatement).toBeVisible()
+  expect(await recentStatement.evaluate((node) => node.parentElement!.children.length)).toBe(1)
+  await expect(page.getByText(/Compose a session/)).toHaveCount(0)
+  await expect(page.locator('.clr-footer').getByRole('button', { name: 'Generate workout', exact: true })).toBeVisible()
+
+  // U05: paragraphs carry no browser margin; spacing is the layout's gap.
+  const margins = await page.locator('main .clr-screen__content').evaluate((content) =>
+    [...content.querySelectorAll('p, dl, dd')].filter((element) => {
+      const style = getComputedStyle(element)
+      return parseFloat(style.marginTop) + parseFloat(style.marginBottom) + parseFloat(style.marginLeft) > 0 &&
+        !(element as HTMLElement).style.marginTop
+    }).length)
+  expect(margins, '/: a paragraph adds unexplained blank space').toBe(0)
+
+  // U06: the data-label tier is enlarged on the screen, and counts keep their units.
+  const tier = await page.locator('main.clr-screen').evaluate((main) => {
+    const style = getComputedStyle(main)
+    return { xs: style.getPropertyValue('--label-xs-size').trim(), sm: style.getPropertyValue('--label-sm-size').trim() }
+  })
+  expect(tier.xs).toBe(tier.sm)
+  await expect(page.getByText('No sessions this week yet.', { exact: true })).toBeVisible()
+
+  // U07: the rest-day action uses the card width, alone and as Save/Cancel.
+  await expectCompactGroup(page, 'Mark Rest Day', '/ rest day')
+  await page.getByRole('button', { name: 'Mark Rest Day', exact: true }).click()
+  await expectCompactGroup(page, 'Save rest day', '/ rest day editor')
+  await expectEnlargedFits(page, '/ rest day editor')
+
+  // Long labels and an error state keep the group usable inside the card.
+  await page.route('**/rest/v1/rpc/mark_rest_day*', (route) => route.request().method() === 'OPTIONS'
+    ? route.fulfill({ status: 204, headers: CORS })
+    : route.fulfill({ status: 503, headers: CORS, json: { code: 'PGRST000', message: 'Controlled TASK-002 failure.' } }))
+  await page.getByRole('button', { name: 'Save rest day', exact: true }).click()
+  await expect(page.getByRole('alert').filter({ hasText: 'The rest day wasn’t saved' })).toBeVisible()
+  await page.getByRole('button', { name: 'Cancel', exact: true }).evaluate((button) => {
+    const label = [...button.querySelectorAll('*')].find((node) => node.children.length === 0 && node.textContent?.trim() === 'Cancel') ?? button
+    label.textContent = 'Cancel and keep today as a training day'
+  })
+  await expectCompactGroup(page, 'Save rest day', '/ rest day error, long label')
+  await expectEnlargedFits(page, '/ rest day error, long label')
+  await page.unroute('**/rest/v1/rpc/mark_rest_day*')
+
+  // History, empty: one statement and the first workout as its next action.
+  await visit('/history')
+  await reached(page, '/history', 'History')
+  await expectContainedRoute(page, '/history')
+  const historyStatement = page.getByText('No workouts yet', { exact: true })
+  await expect(historyStatement).toBeVisible()
+  expect(await historyStatement.evaluate((node) => node.parentElement!.children.length)).toBe(1)
+  await expectEnlargedFits(page, '/history empty')
+  await page.locator('.clr-footer').getByRole('button', { name: 'Generate workout', exact: true }).click()
+  await reached(page, '/generate', 'Generate workout')
+
+  // Generate with the on-screen keypad up: a shorter visual viewport, the
+  // numeric field focused, and nothing pushed sideways or out of reach.
+  await page.setViewportSize({ width: 390, height: 500 })
+  try {
+    const minutes = page.getByLabel('Time available')
+    await minutes.focus()
+    await minutes.fill('45')
+    await expect(minutes).toBeInViewport()
+    await expectContainedRoute(page, '/generate (keypad)', { short: true })
+    await expectEnlargedFits(page, '/generate (keypad)')
+  } finally {
+    await page.setViewportSize({ width: 390, height: 844 })
+  }
+})
+
+backendTest('JOURNEY-002: a populated Home and History keep counts with units and fit enlarged text', async ({
+  page, visit, world,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-002 is proven at the 390 by 844 phone viewport')
+  test.setTimeout(240_000)
+  await world.completed()
+
+  await visit('/history')
+  await reached(page, '/history', 'History')
+  await expectContainedRoute(page, '/history populated')
+  await expectCountsTogether(page, /\d+ min|Intensity \d+\/10/, '/history rows')
+  const nowrap = await page.locator('main .clr-nowrap').evaluateAll((spans) => spans.map((span) => getComputedStyle(span).whiteSpace))
+  expect(nowrap.length).toBeGreaterThan(0)
+  expect(new Set(nowrap)).toEqual(new Set(['nowrap']))
+  await expectEnlargedFits(page, '/history populated')
+
+  await visit('/')
+  await reached(page, '/', 'Today')
+  await expectContainedRoute(page, '/ populated')
+  await expectCountsTogether(page, /\d+\xa0days?/, '/ streak')
+  await expectCountsTogether(page, /\d+\xa0of\xa07\xa0days/, '/ week')
+  await expectCompactGroup(page, 'Quick start', '/ quick start')
+  await expectEnlargedFits(page, '/ populated')
+})
+
+backendTest('JOURNEY-002: Settings stays readable with long input and concise navigation', async ({
+  page, visit, world,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-002 is proven at the 390 by 844 phone viewport')
+  void world
+  await visit('/settings')
+  await reached(page, '/settings', 'Settings')
+  await expectContainedRoute(page, '/settings')
+  const places = page.getByRole('region', { name: 'Places and equipment', exact: true })
+  await expect(places.locator('p')).toHaveCount(0)
+  // The shipped TextAction includes its trailing chevron in the browser's
+  // accessible name. Match that actual name while keeping the label anchored.
+  await expect(places.getByRole('button', { name: /^Manage places(?:\s*›)?$/ })).toBeVisible()
+  await page.getByLabel(/note/i).fill('Synthetic long limitations context for readable phone controls. '.repeat(8))
+  await expectEnlargedFits(page, '/settings long input')
+  await page.setViewportSize({ width: 390, height: 500 })
+  try {
+    await page.getByLabel(/note/i).focus()
+    await expectEnlargedFits(page, '/settings keypad')
+  } finally {
+    await page.setViewportSize({ width: 390, height: 844 })
+  }
+})
+
 test.describe('onboarding', () => {
   test.use({ onboarded: false })
+  backendTest('JOURNEY-002: all five onboarding steps keep readable controls and concise grouping', async ({
+    page, visit, world,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-002 is proven at the 390 by 844 phone viewport')
+    void world
+    await visit('/onboarding')
+    await reached(page, '/onboarding', 'Set up CLEAR')
+    for (let step = 0; step < 5; step += 1) {
+      await expect(page.locator('main .clr-card')).toHaveCount(1)
+      await expectContainedRoute(page, `/onboarding step ${step + 1}`)
+      await expectEnlargedFits(page, `/onboarding step ${step + 1}`)
+      if (step < 3) await page.getByRole('radio').first().click()
+      if (step < 4) await page.getByRole('button', { name: /^(Next|Skip)$/ }).click()
+    }
+    // Review the final grouping without submitting onboarding or generating.
+    await expect(page.getByRole('button', { name: 'Finish setup', exact: true })).toBeVisible()
+  })
   backendTest('onboarding: the guard serves a new athlete and the contract holds', async ({
     page, visit, checkA11y, world,
   }, testInfo) => {

@@ -133,7 +133,11 @@ describe('the hub answers every question onboarding asked', () => {
   it('says where locations and equipment are edited instead of pretending to', async () => {
     renderSettings()
 
-    expect(await screen.findByText(/where you train/i)).toBeVisible()
+    // U08: the heading is the statement and the action is the way there; no
+    // paragraph restates either.
+    const card = await sectionCard('Places and equipment')
+    expect(within(card).getByRole('button', { name: 'Manage places' })).toBeVisible()
+    expect(card.querySelectorAll('p')).toHaveLength(0)
   })
 })
 

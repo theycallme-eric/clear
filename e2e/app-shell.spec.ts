@@ -119,6 +119,63 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
   await page.screenshot({ path: testInfo.outputPath('vibe-d-create-account.png') })
 })
 
+test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier and no overflow at enlarged text', async ({
+  page,
+  visit,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-002 is proven at the 390 by 844 phone viewport')
+  expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+  await visit('/welcome')
+
+  // U08: one statement in the one card, and the entries are the next action.
+  const card = page.locator('main .clr-card')
+  await expect(card.locator('p')).toHaveCount(1)
+  await expect(card.locator('p')).toHaveText('Strength training, simplified.')
+  await expect(page.locator('main .clr-footer').getByRole('button')).toHaveCount(2)
+
+  // U06: on a screen the 12px data-label tier reads at the next label step.
+  const tier = await page.locator('main.clr-screen').evaluate((main) => {
+    const style = getComputedStyle(main)
+    return {
+      xs: style.getPropertyValue('--label-xs-size').trim(),
+      sm: style.getPropertyValue('--label-sm-size').trim(),
+      margin: getComputedStyle(main.querySelector('.clr-screen__content p')!).marginBottom,
+    }
+  })
+  expect(tier.xs).toBe(tier.sm)
+  // U05: the gap owns the rhythm, never a browser paragraph margin.
+  expect(tier.margin).toBe('0px')
+
+  // Enlarged text and the longest entry labels: nothing clips or overflows,
+  // and both entries stay inside the viewport at the same height.
+  await page.addStyleTag({
+    content: '.clr-screen { --label-sm-size: 18px; --label-md-size: 20px; --label-lg-size: 24px; --paragraph-md-size: 20px; }',
+  })
+  for (const button of await page.locator('main .clr-footer button').all()) {
+    await button.evaluate((element) => {
+      const label = [...element.querySelectorAll('*')].find((node) => node.children.length === 0 && node.textContent?.trim()) ?? element
+      label.textContent = `${label.textContent} with the longest label`
+    })
+  }
+  const fit = await page.evaluate(() => {
+    const buttons = [...document.querySelectorAll<HTMLElement>('main .clr-footer button')]
+    return {
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      outside: buttons.filter((button) => {
+        const rect = button.getBoundingClientRect()
+        return rect.left < -0.5 || rect.right > window.innerWidth + 0.5 || rect.bottom > window.innerHeight + 0.5
+      }).length,
+      clipped: [...document.querySelectorAll<HTMLElement>('main :is(p, button, h1)')].filter((element) => {
+        const style = getComputedStyle(element)
+        return /(hidden|clip)/.test(style.overflowX) && style.textOverflow !== 'ellipsis' &&
+          element.scrollWidth > element.clientWidth + 1
+      }).length,
+      heights: new Set(buttons.map((button) => Math.round(button.getBoundingClientRect().height))).size,
+    }
+  })
+  expect(fit).toEqual({ overflow: 0, outside: 0, clipped: 0, heights: 1 })
+})
+
 test.describe('with reduced motion', () => {
   // The browser's own media feature, set before the first document loads.
   test.use({ reducedMotion: 'reduce' })
