@@ -58,9 +58,12 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent,
   type MouseEvent,
   type ReactNode,
 } from 'react'
@@ -72,7 +75,9 @@ import {
   Button,
   ClearLogo,
   IconButton,
+  Pencil,
   Play,
+  Rest,
   Sliders,
   Streak as StreakGlyph,
   TabBar,
@@ -194,7 +199,9 @@ export const FAVORITES_EMPTY = 'Save a workout from its summary to start it agai
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
-export const REST_DAY_PROMPT = 'Not training today? Mark why to keep your streak.'
+/** U25: the question only; the chosen reason's effect is the picker's helper. */
+export const REST_DAY_PROMPT = 'Not training today?'
+export const REST_DAY_SAVED = 'Rest day saved.'
 
 export function Home() {
   const history = useHistoryQuery()
@@ -429,36 +436,78 @@ function TrainingWeek({
         </ViewStateSwitch>
         <RestDayControl
           today={week.find((day) => day.isToday)}
-          available={restDays.state.status === 'ready'}
+          read={restDays.state.status}
         />
       </div>
     </Card>
   )
 }
 
-/** HOME-02's one marking affordance, on Home and nowhere else. */
+/**
+ * HOME-02's one marking affordance, on Home and nowhere else.
+ *
+ * U25: a disclosure, not a form standing open. The trigger says whether it is
+ * open; opening moves focus to the native picker (the phone's own wheel or
+ * sheet), and Save, Cancel or Escape hand focus back to the trigger, so a
+ * keyboard or screen-reader user never loses their place. Cancel and Escape
+ * discard the choice — the saved reason stays the strip's.
+ */
 function RestDayControl({
-  today,
-  available,
+  today: current,
+  read,
 }: {
   today: WeekDay | undefined
-  available: boolean
+  read: 'loading' | 'error' | 'ready'
 }) {
+  // A save refetches the marks, and a refetch is `loading` again. Dropping
+  // the control for that moment would take focus and the saved status with
+  // it, so it keeps the last day it read until the new one lands.
+  const [settled, setSettled] = useState<WeekDay | undefined>(
+    read === 'ready' ? current : undefined,
+  )
+  if (read === 'ready' && current !== settled) setSettled(current)
+  const today = read === 'ready' ? current : read === 'loading' ? settled : undefined
+
   const write = useMarkRestDay()
   const [editing, setEditing] = useState(false)
   const [reason, setReason] = useState<RestDayReason>('rest')
   const [failure, setFailure] = useState(false)
   const [saved, setSaved] = useState(false)
+  const editorId = useId()
+  const trigger = useRef<HTMLButtonElement>(null)
+  const picker = useRef<HTMLSelectElement>(null)
+  // Where focus goes once the next render lands: the picker on open, the
+  // trigger on close. Null leaves focus where the user put it.
+  const focusNext = useRef<'picker' | 'trigger' | null>(null)
+
+  useEffect(() => {
+    const target = focusNext.current === 'picker' ? picker.current : trigger.current
+    if (focusNext.current === null) return
+    focusNext.current = null
+    target?.focus()
+  }, [editing])
 
   // A performed workout wins over a mark in the strip and makes marking rest
   // nonsensical, so the affordance is absent rather than disabled.
-  if (today === undefined || today.state === 'workout' || !available) return null
+  if (today === undefined || today.state === 'workout') return null
 
   const begin = () => {
     setReason(today.reason ?? 'rest')
     setFailure(false)
     setSaved(false)
+    focusNext.current = 'picker'
     setEditing(true)
+  }
+
+  const close = () => {
+    focusNext.current = 'trigger'
+    setEditing(false)
+  }
+
+  const cancel = () => {
+    if (write.marking) return
+    setFailure(false)
+    close()
   }
 
   const save = async () => {
@@ -469,8 +518,14 @@ function RestDayControl({
       return
     }
 
-    setEditing(false)
     setSaved(true)
+    close()
+  }
+
+  const onEditorKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape') return
+    event.preventDefault()
+    cancel()
   }
 
   return (
@@ -479,15 +534,13 @@ function RestDayControl({
       <Card heading={REST_DAY_LABEL}>
         {/* U05: the statement, then the control group, one rhythm step apart. */}
         <div className="clr-stack">
-          {today.reason === null ? (
-            <p style={{ margin: 0 }}>{REST_DAY_PROMPT}</p>
-          ) : (
-            <p style={{ margin: 0 }}>
-              Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
-            </p>
-          )}
+          <p style={{ margin: 0 }}>
+            {today.reason === null
+              ? REST_DAY_PROMPT
+              : `Today: ${REST_DAY_REASON_LABELS[today.reason]}.`}
+          </p>
 
-          {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
+          {saved && <p role="status" style={{ margin: 0 }}>{REST_DAY_SAVED}</p>}
           {failure && (
             <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
               The rest day wasn’t saved. Try again.
@@ -496,15 +549,25 @@ function RestDayControl({
 
           {!editing ? (
             <ActionGroup>
-              <Button variant="secondary" onClick={begin}>
+              <Button
+                variant="secondary"
+                icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
+                aria-expanded={false}
+                aria-controls={editorId}
+                buttonRef={trigger}
+                onClick={begin}
+              >
                 {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
               </Button>
             </ActionGroup>
           ) : (
-            <div className="clr-stack clr-stack--tight">
+            // Escape is Cancel from anywhere in the editor; the native picker
+            // keeps its own Escape while its list is open.
+            <div id={editorId} className="clr-stack clr-stack--tight" onKeyDown={onEditorKey}>
               <Select
                 label="Reason"
                 value={reason}
+                selectRef={picker}
                 options={REST_DAY_REASONS.map((value) => ({
                   value,
                   label: REST_DAY_REASON_LABELS[value],
@@ -512,11 +575,12 @@ function RestDayControl({
                 helperText={REST_DAY_REASON_EFFECTS[reason]}
                 onChange={(value) => setReason(value as RestDayReason)}
               />
-              <ActionGroup>
+              {/* Equal framed cells, so Save and Cancel share edges and height. */}
+              <ActionGroup className="clr-action-group--paired">
                 <Button variant="primary" loading={write.marking} onClick={() => void save()}>
                   Save rest day
                 </Button>
-                <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
+                <Button variant="secondary" disabled={write.marking} onClick={cancel}>
                   Cancel
                 </Button>
               </ActionGroup>

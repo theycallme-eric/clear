@@ -35,6 +35,10 @@ const designSystemPackage = JSON.parse(
 export const REQ_011_REVIEW_CASE =
   'REQ-011 Review: type labels, ordered groups, adjacent shared rest and tempo detail into Workout'
 
+/** TASK-011 (REQ-007, U25): the post-import rest-day case, same rules as above. */
+export const REQ_007_REST_DAY_CASE =
+  'REQ-007 Home: rest day reason trigger, Cancel discards, keyboard Save and aligned actions'
+
 /**
  * TASK-027: keep the original browser command, selecting cases for its target.
  * BEFORE assertions belong to 0.9.7; deployed assertions need a deployed origin.
@@ -46,8 +50,8 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
     exclusions.push(
       String.raw`design-0143[\\/](?:baseline|task-040-lifecycle(?:-gaps)?)\.spec\.ts`,
       String.raw`design-0143[\\/]task-040-entry-settings\.spec\.ts(?!.*entry: Welcome and OTP validation, busy, typed failure and cooldown$)`,
-      // TASK-019: the one post-import, non-capture Review→Workout case (REQ-011).
-      String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*${REQ_011_REVIEW_CASE}$)`,
+      // TASK-019 and TASK-011: the post-import, non-capture cases (REQ-011, REQ-007).
+      String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*(?:${REQ_011_REVIEW_CASE}|${REQ_007_REST_DAY_CASE})$)`,
     )
   }
   const hostname = new URL(baseURL).hostname.toLowerCase()
