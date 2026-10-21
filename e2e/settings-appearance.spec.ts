@@ -135,7 +135,7 @@ test.describe('Settings to appearance', () => {
     expect(await storedSkin(page), 'a stored skin leaked in from elsewhere').toBeNull()
 
     // Home → Settings, the way a user gets there.
-    await page.getByRole('link', { name: /^settings$/i }).first().click()
+    await page.locator('header').getByRole('button', { name: 'Settings', exact: true }).click()
     await expect(page).toHaveURL(/\/settings$/)
     await expect(page.locator('main h1')).toHaveText(/settings/i)
     await checkA11y()

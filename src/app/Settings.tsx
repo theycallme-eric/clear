@@ -34,10 +34,11 @@
  *      states where the answer lives and offers only the way there.
  */
 import { useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
   AppHeader,
+  ArrowLeft,
   Button,
   Checkbox,
   ChoiceGroup,
@@ -56,7 +57,9 @@ import { useQueryClient } from '../state/query'
 import type { Profile, ProfilePreferences } from '../state/schemas'
 import {
   goalCorrection,
+  FROM_SETTINGS_STATE,
   goalOptions,
+  hasInAppHistory,
   limitationFor,
   LOCKED_SECTIONS_REASON,
   limitationsFrom,
@@ -64,6 +67,7 @@ import {
   preferencesOf,
   sectionRefusal,
   sectionsLocked,
+  SETTINGS_BACK_LABEL,
   withExperience,
   withGoal,
   withPreferences,
@@ -85,7 +89,7 @@ import { ActionRow, PhoneFooter } from '../ui/composition'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { Screen } from './Screen'
-import { ANONYMOUS_HOME, ONBOARDING_ROUTE } from './guards'
+import { ANONYMOUS_HOME, AUTHENTICATED_HOME, ONBOARDING_ROUTE } from './guards'
 
 /** The longest limitations note `user_constraints.note` is asked to hold. */
 export const NOTE_MAX_LENGTH = 2000
@@ -97,6 +101,15 @@ export const SETTINGS_EMPTY_ACTION = 'Set up your profile'
 export function Settings() {
   const query = useProfileQuery()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // E05: Back is back when an in-app screen is behind this one. Opened by URL
+  // or as the installed PWA's first screen there is none, so Home replaces
+  // Settings rather than Back leaving the app or doing nothing.
+  const goBack = () => {
+    if (hasInAppHistory(location.key, window.history.state)) void navigate(-1)
+    else void navigate(AUTHENTICATED_HOME, { replace: true })
+  }
 
   // The fourth state is this view's own judgement. A profile row is what every
   // control here edits, so "there is no row" is not a settings screen — and it
@@ -113,7 +126,13 @@ export function Settings() {
 
   return (
     <>
-      <AppHeader>
+      <AppHeader
+        actions={
+          <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
+            {SETTINGS_BACK_LABEL}
+          </Button>
+        }
+      >
         <ClearLogo size="md" />
       </AppHeader>
       <Screen
@@ -488,7 +507,7 @@ function TrainingPlacesSection() {
   return (
     // U08: the heading is the statement; the action is the way there.
     <SettingsCard id="settings-places" heading="Places and equipment">
-      <TextAction onClick={() => void navigate('/settings/locations')}>
+      <TextAction onClick={() => void navigate('/settings/locations', { state: FROM_SETTINGS_STATE })}>
         Manage places
       </TextAction>
     </SettingsCard>

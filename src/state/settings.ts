@@ -244,3 +244,42 @@ export function noteValue(note: string): string | null {
   const written = note.trim()
   return written === '' ? null : written
 }
+
+/** E05: the label of Settings' in-app way back. */
+export const SETTINGS_BACK_LABEL = 'Back'
+
+/**
+ * E05 — whether Back can go back without leaving the app.
+ *
+ * React Router's browser history numbers its own entries (`idx`), so the first
+ * entry the app wrote is 0 whether it was a direct visit, an installed PWA
+ * launch, or a guard redirect that replaced it. Only a later entry has an
+ * in-app screen behind it; going back from 0 would hand the athlete to the
+ * browser or, in the PWA, do nothing. The index is only trusted when the
+ * entry's key is the router's own location key — otherwise the window's
+ * history is not the one this router is walking (the memory router) — and a
+ * router without it marks its first entry with the key `'default'` instead.
+ */
+export function hasInAppHistory(locationKey: string, historyState: unknown): boolean {
+  if (typeof historyState === 'object' && historyState !== null) {
+    const { idx, key } = historyState as { idx?: unknown; key?: unknown }
+    if (key === locationKey && typeof idx === 'number') return idx > 0
+  }
+  return locationKey !== 'default'
+}
+
+/**
+ * E05 — the history state Settings sends to Locations, so Locations' way back
+ * returns to that Settings entry rather than stacking a second one (which
+ * would make Settings' Back lead to Locations, forever). History state is
+ * outside the trust boundary, so it is read as `unknown`.
+ */
+export const FROM_SETTINGS_STATE = { fromSettings: true } as const
+
+export function cameFromSettings(state: unknown): boolean {
+  return (
+    typeof state === 'object' &&
+    state !== null &&
+    (state as { fromSettings?: unknown }).fromSettings === true
+  )
+}

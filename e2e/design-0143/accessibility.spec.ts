@@ -666,20 +666,9 @@ backendTest('protected routes: outline, containment, one scroll owner, targets, 
     await reached(page, stop.path, stop.heading)
     await expectContainedRoute(page, stop.label)
     if (stop.path === '/') {
-      // Reproduce the concrete app-layer target defect, then restore exactly
-      // the same DOM before proving the current composition in every skin.
-      const settings = page.locator('header').getByRole('link', { name: 'Settings', exact: true })
-      const originalClass = await settings.getAttribute('class')
-      try {
-        await settings.evaluate((element) => element.classList.remove('clr-hit'))
-        expect((await layout(page)).headers.flatMap((header) => header.small),
-          'the bare Home Settings link must reproduce its undersized target').toContain('<a>Settings')
-      } finally {
-        await settings.evaluate((element, value) => {
-          if (value === null) element.removeAttribute('class')
-          else element.setAttribute('class', value)
-        }, originalClass)
-      }
+      // U18 replaced the bare text link (TASK-026's undersized target) with the
+      // package's framed icon-only control, which brings its own target.
+      await expect(page.locator('header').getByRole('button', { name: 'Settings', exact: true })).toBeVisible()
       expect((await layout(page)).headers.flatMap((header) => header.small)).toEqual([])
     }
     await expectFourSkins(page, checkA11y, stop.label)
@@ -1155,7 +1144,7 @@ backendTest('motion: one breathing atmosphere, interrupted entries cut, one info
 
   // REQ-011: hold the shipped durations open so "mid-entry" is a state, not a race.
   await page.addStyleTag({ content: 'html:root { --dur-fast: 30s; --dur-base: 30s; }' })
-  await page.getByRole('link', { name: 'Settings', exact: true }).click()
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
   await reached(page, '/settings', 'Settings')
   await expect(page.locator('main')).toHaveClass(/\broute-enter-forward\b/)
   await page.goBack()

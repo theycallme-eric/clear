@@ -23,7 +23,11 @@ import { GOALS, EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/
 import { constraintsQueryKey } from '../state/constraint-queries'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import {
+  cameFromSettings,
+  FROM_SETTINGS_STATE,
+  hasInAppHistory,
   LAST_SECTION_REASON,
+  SETTINGS_BACK_LABEL,
   LEGACY_GOAL_REASON,
   LOCKED_SECTIONS_REASON,
   MISSING_GOAL_REASON,
@@ -564,13 +568,25 @@ describe('sign out', () => {
 })
 
 describe('the hub is reachable, and onboarding is not re-entered', () => {
-  it('is linked from Home', async () => {
+  it('opens from Home’s icon-only header control, which is named and focusable', async () => {
     const user = userEvent.setup()
     renderApp(['/'], signedIn())
 
-    await user.click(await screen.findByRole('link', { name: 'Settings' }))
+    // U18: the header holds the wordmark and one framed glyph. The glyph is not
+    // a label, so the control carries its name; its text content is empty.
+    const header = (await screen.findByRole('heading', { level: 1, name: 'Today' }))
+      .ownerDocument.querySelector('header') as HTMLElement
+    const control = within(header).getByRole('button', { name: 'Settings' })
+    expect(within(header).getAllByRole('button')).toEqual([control])
+    expect(within(header).queryAllByRole('link')).toEqual([])
+    expect(control).toHaveTextContent(/^$/)
+    expect(control.querySelector('svg')).not.toBeNull()
 
-    expect(await screen.findByRole('heading', { name: 'Settings' })).toBeVisible()
+    control.focus()
+    expect(control).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
   })
 
   it('never writes onboarding’s own commit', async () => {
@@ -584,6 +600,97 @@ describe('the hub is reachable, and onboarding is not re-entered', () => {
 
     // Re-answering a question is an edit, never a first run (IA.md §6).
     expect(userData.onboardingCalls).toEqual([])
+  })
+})
+
+describe('Back stays in the app (E05)', () => {
+  const back = () => screen.findByRole('button', { name: SETTINGS_BACK_LABEL })
+  const heading = (name: string) => screen.findByRole('heading', { level: 1, name })
+
+  it('returns to the previous in-app screen after normal navigation', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ queryClient: warmCache(onboardedProfile()) }))
+
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await heading('Settings')
+    await user.click(await back())
+
+    expect(await heading('Today')).toBeVisible()
+  })
+
+  it('returns to whichever screen came before, not always Home', async () => {
+    const user = userEvent.setup()
+    renderApp(['/history', '/settings'], signedIn({ queryClient: warmCache(onboardedProfile()) }))
+
+    await heading('Settings')
+    await user.click(await back())
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'History' })).toBeVisible()
+  })
+
+  it('goes Home when Settings is the first screen — a direct visit or a PWA launch', async () => {
+    const user = userEvent.setup()
+    renderSettings()
+
+    await heading('Settings')
+    await user.click(await back())
+
+    expect(await heading('Today')).toBeVisible()
+  })
+
+  it('Locations still returns to Settings, and Settings’ Back still leads where it did', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ queryClient: warmCache(onboardedProfile()) }))
+
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await user.click(await screen.findByRole('button', { name: 'Manage places' }))
+    await heading('Places and equipment')
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+    await heading('Settings')
+
+    // Locations went back to the Settings entry rather than stacking another,
+    // so Back is not trapped between the two.
+    await user.click(await back())
+    expect(await heading('Today')).toBeVisible()
+  })
+
+  // That Settings' Back then goes Home rests on the browser router's entry
+  // index, which the memory router does not keep; e2e/settings-locations.spec.ts
+  // proves it in a real browser.
+  it('Locations opened directly still returns to Settings', async () => {
+    const user = userEvent.setup()
+    renderApp(['/settings/locations'], signedIn({ queryClient: warmCache(onboardedProfile()) }))
+
+    await heading('Places and equipment')
+    await user.click(await screen.findByRole('button', { name: 'Settings' }))
+
+    expect(await heading('Settings')).toBeVisible()
+    expect(await back()).toBeVisible()
+  })
+})
+
+describe('in-app history is read from the router, not assumed', () => {
+  it('trusts the browser router’s entry index when it has one', () => {
+    expect(hasInAppHistory('abc123', { idx: 0, key: 'abc123', usr: null })).toBe(false)
+    expect(hasInAppHistory('abc123', { idx: 2, key: 'abc123', usr: null })).toBe(true)
+  })
+
+  it('falls back to the first entry’s default key without one', () => {
+    expect(hasInAppHistory('default', null)).toBe(false)
+    expect(hasInAppHistory('default', { idx: 0 })).toBe(false)
+    expect(hasInAppHistory('abc123', null)).toBe(true)
+    expect(hasInAppHistory('abc123', { idx: 'x', key: 'abc123' })).toBe(true)
+  })
+
+  it('ignores an index that belongs to another history than the router’s', () => {
+    expect(hasInAppHistory('abc123', { idx: 0 })).toBe(true)
+    expect(hasInAppHistory('abc123', { idx: 0, key: 'other' })).toBe(true)
+  })
+
+  it('reads Settings’ hand-off to Locations defensively', () => {
+    expect(cameFromSettings(FROM_SETTINGS_STATE)).toBe(true)
+    expect(cameFromSettings(null)).toBe(false)
+    expect(cameFromSettings({ fromSettings: 'yes' })).toBe(false)
   })
 })
 

@@ -21,7 +21,7 @@
  * editor open with the draft as it was typed, so nothing recoverable is lost.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -61,6 +61,7 @@ import {
   useLocationsQuery,
   useUserData,
 } from '../state/user-queries'
+import { cameFromSettings } from '../state/settings'
 import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
@@ -84,11 +85,20 @@ const EDITOR_HEADING_ID = 'location-editor-heading'
 
 export function LocationSettings() {
   const navigate = useNavigate()
+  const arrival = useLocation()
   const { user } = useAuth()
   const userData = useUserData()
   const cache = useQueryClient()
   const query = useLocationsQuery()
   const { status, save } = useInlineSave()
+
+  // E05: opened from Settings, the way back returns to that Settings entry, so
+  // Settings' own Back still leads where it did. From anywhere else (Generate,
+  // a URL, a PWA launch) Settings takes this entry's place.
+  const backToSettings = () => {
+    if (cameFromSettings(arrival.state)) void navigate(-1)
+    else void navigate('/settings', { replace: true })
+  }
   const [editor, setEditor] = useState<EditorTarget>(null)
   const [editorVersion, setEditorVersion] = useState(0)
   const [savingEditorVersion, setSavingEditorVersion] = useState<number | null>(null)
@@ -154,7 +164,7 @@ export function LocationSettings() {
           <Button
             variant="quiet"
             icon={<ArrowLeft size={20} />}
-            onClick={() => void navigate('/settings')}
+            onClick={backToSettings}
           >
             Settings
           </Button>

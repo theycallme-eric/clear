@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `16f9d543e6b44bdcb1594d4f2adaba555ff7d028f9cd6051bc6d48a1ef1ea333` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007 and TASK-025 changes below) |
+| Runtime source hash of this audit's tree | `34b94f9619989d50992afdc2ad8934117f9619b3efaed8b369289ed6fca42eed` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025 and TASK-008 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -187,6 +187,17 @@ trees and this head, from `git diff`:
   renderer/state and conditioning tests.
 
 - Current merged Task025 tree: runtime `16f9d543e6b44bdcb1594d4f2adaba555ff7d028f9cd6051bc6d48a1ef1ea333`. The normal current-base reconciliation conflicted only in this audit and the journal; both histories are retained. App changes are the already-approved AMRAP task plus current main. Fresh full native checks and criterion evidence remain required.
+- `16f9d543…` to `34b94f96…`: TASK-008 (REQ-006, JOURNEY-008, U18, E05) replaces Home's
+  text Settings link with the package's framed icon-only `IconButton` (accessible name
+  "Settings", package focus ring and target) and gives Settings a header Back. Back returns
+  to the previous in-app screen, or replaces Settings with Home when Settings is the first
+  entry the app wrote (direct visit, installed-PWA launch). Locations' way back returns to
+  the Settings entry it was opened from, or replaces itself with Settings when opened from
+  elsewhere, so Settings' Back is never trapped between the two. Changed: `src/app/Home.tsx`,
+  `src/app/Settings.tsx`, `src/app/LocationSettings.tsx` and `src/state/settings.ts`. This
+  **does** change rendering on Home and Settings headers. The pictures above predate it and
+  are not rebound (EX-13). Current acceptance evidence is `src/app/Settings.test.tsx`,
+  `e2e/settings-locations.spec.ts` and `e2e/app-shell.spec.ts` on the mobile project.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

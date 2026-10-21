@@ -174,6 +174,122 @@ test.describe('settings locations — live CRUD and generation default', () => {
     )
   })
 
+  test('JOURNEY-008 — the header Settings control and every way back stay in the app', async ({
+    page,
+    visit,
+  }) => {
+    test.setTimeout(120_000)
+
+    const header = page.locator('header')
+    const settingsControl = header.getByRole('button', { name: 'Settings', exact: true })
+    const back = header.getByRole('button', { name: 'Back', exact: true })
+    const at = async (path: string, heading: string) => {
+      await expect(page).toHaveURL((url) => url.pathname === path)
+      await expect(page.locator('main h1')).toHaveAccessibleName(heading)
+    }
+
+    // ENTRY-017, U18: Home's header is the wordmark and one framed glyph that
+    // carries its name, reached from the keyboard with a visible focus.
+    await visit('/')
+    await at('/', 'Today')
+    await expect(settingsControl).toBeVisible()
+    await expect(settingsControl).toHaveText('')
+    await expect(settingsControl.locator('svg')).toHaveCount(1)
+    await expect(header.getByRole('button')).toHaveCount(1)
+    const ringAtRest = await settingsControl.evaluate(
+      (element) => getComputedStyle(element, '::after').backgroundColor,
+    )
+    await page.evaluate(() => {
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+    })
+    for (let step = 0; step < 6; step += 1) {
+      await page.keyboard.press('Tab')
+      if (await settingsControl.evaluate((element) => element === document.activeElement)) break
+    }
+    await expect(settingsControl).toBeFocused()
+    expect(await settingsControl.evaluate((element) => element.matches(':focus-visible'))).toBe(true)
+    expect(
+      await settingsControl.evaluate((element) => getComputedStyle(element, '::after').backgroundColor),
+      'the focused control draws the focus ring',
+    ).not.toBe(ringAtRest)
+
+    // Normal navigation: Back returns to the screen before.
+    await page.keyboard.press('Enter')
+    await at('/settings', 'Settings')
+    await back.click()
+    await at('/', 'Today')
+
+    // Locations returns to that Settings entry, so Back still leads Home.
+    await settingsControl.click()
+    await at('/settings', 'Settings')
+    await page.getByRole('button', { name: 'Manage places' }).click()
+    await at('/settings/locations', 'Places and equipment')
+    await header.getByRole('button', { name: 'Settings', exact: true }).click()
+    await at('/settings', 'Settings')
+    await back.click()
+    await at('/', 'Today')
+
+    // ENTRY-018: opened directly — a typed URL, a shared link, or the
+    // installed PWA's launch — Settings has no in-app screen behind it. The tab
+    // does have one (about:blank); Back must not hand the athlete to it.
+    const origin = new URL(page.url()).origin
+    await visit('/settings')
+    await at('/settings', 'Settings')
+    await back.click()
+    await at('/', 'Today')
+    expect(new URL(page.url()).origin).toBe(origin)
+
+    // ENTRY-019: Locations opened directly still returns to Settings, which
+    // takes its place — so Settings' Back goes Home rather than out.
+    await visit('/settings/locations')
+    await at('/settings/locations', 'Places and equipment')
+    await header.getByRole('button', { name: 'Settings', exact: true }).click()
+    await at('/settings', 'Settings')
+    await back.click()
+    await at('/', 'Today')
+    expect(new URL(page.url()).origin).toBe(origin)
+  })
+
+  test('JOURNEY-008 — a fresh launch straight into Settings, as the installed PWA does', async ({
+    browser,
+  }, testInfo) => {
+    if (actor === null) throw new Error('the locations user was not provisioned')
+    const baseURL = testInfo.project.use.baseURL
+    if (baseURL === undefined) throw new Error('the project has no baseURL')
+
+    // A new context is a new window with nothing in its history but the
+    // launch URL — what a standalone PWA window opens with.
+    const context = await browser.newContext({ ...testInfo.project.use, baseURL })
+    try {
+      await context.addInitScript(
+        ({ key, value }) => {
+          if (window.localStorage.getItem(key) === null) window.localStorage.setItem(key, value)
+        },
+        {
+          key: SESSION_STORAGE_KEY,
+          value: JSON.stringify({
+            accessToken: actor.token,
+            refreshToken: actor.refreshToken,
+            expiresAt: expiryOf(actor.token),
+            user: { id: actor.id, email: actor.email },
+          }),
+        },
+      )
+      const pwa = await context.newPage()
+      await pwa.goto('/settings')
+      await expect(pwa.locator('main h1')).toHaveAccessibleName('Settings')
+      await pwa.locator('header').getByRole('button', { name: 'Back', exact: true }).click()
+      await expect(pwa).toHaveURL((url) => url.pathname === '/')
+      await expect(pwa.locator('main h1')).toHaveAccessibleName('Today')
+
+      // Home replaced Settings rather than stacking on it: the window's own
+      // back has nowhere in the app to go and nothing re-opens Settings.
+      expect(await pwa.evaluate(() => (window.history.state as { idx?: number } | null)?.idx)).toBe(0)
+    } finally {
+      await context.close()
+    }
+  })
+
   test('Home → Settings → create, edit, default, delete → reload', async ({
     page,
     visit,
@@ -182,7 +298,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
     test.setTimeout(120_000)
 
     await visit('/')
-    await page.getByRole('link', { name: 'Settings', exact: true }).click()
+    await page.getByRole('button', { name: 'Settings', exact: true }).click()
     await expect(page).toHaveURL(/\/settings$/)
     await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
 

@@ -265,6 +265,31 @@ test('entry forms use the same Full atmosphere as every production screen', asyn
   }
 })
 
+test('JOURNEY-008: the installed PWA owns every Settings route, so in-app navigation never leaves it', async ({
+  page,
+  visit,
+}) => {
+  // The standalone window's scope is the whole origin, so `/settings` and its
+  // sub-view open inside it, and its launch is Home — Settings' safe fallback.
+  const manifest = (await (await page.request.get('/manifest.webmanifest')).json()) as {
+    display?: string
+    scope?: string
+    start_url?: string
+  }
+  expect(manifest.display).toBe('standalone')
+  expect(manifest.scope).toBe('/')
+  expect(manifest.start_url).toBe('/')
+
+  // A direct link into Settings without a session is answered in-app by the
+  // guard, never by a blank or external page. The signed-in Back and header
+  // control are walked in e2e/settings-locations.spec.ts.
+  for (const path of ['/settings', '/settings/locations']) {
+    await visit(path)
+    await expect(page).toHaveURL((url) => url.pathname === '/welcome')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('CLEAR')
+  }
+})
+
 test('the CLEAR type system loads from the app origin', async ({ page, visit }) => {
   const fontResponses = new Set<string>()
   await page.addInitScript(() => {
