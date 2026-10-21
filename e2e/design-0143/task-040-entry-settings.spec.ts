@@ -887,7 +887,10 @@ backendTest('Places: real list/editor CRUD, equipment held failure and retry, de
     const createdName = 'Disposable capture travel gym'
     const renamedName = 'Disposable capture hotel gym'
     await page.getByRole('textbox', { name: 'Name' }).fill(createdName)
-    await page.getByRole('radio', { name: /^Home gym/ }).click()
+    // No tier preset outside onboarding (U15): the place holds what is ticked.
+    for (const item of ['Bodyweight', 'Resistance bands', 'Foam roller', 'Dumbbells', 'Kettlebells', 'Pull-up bar']) {
+      await page.getByRole('checkbox', { name: item, exact: true }).check()
+    }
     await page.getByRole('button', { name: 'Save place', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Save place', exact: true })).toHaveCount(0)
     await card(createdName).getByRole('button', { name: 'Edit', exact: true }).click()

@@ -8,11 +8,17 @@
  * exactly what this screen last saved.
  *
  * Composition is 0.14.3's contained form: the screen `<h1>` is the only text
- * on the atmosphere. Each place is one `Card` — its name as the heading, its
- * tier beside it, its default marker, refusal and save line inside. The editor
- * is one more card holding the fields, and what is done with them is pinned:
- * Add place for the list, Save place and Cancel for the editor, Retry for a
- * failed read.
+ * on the atmosphere. Each place is one `Card` — its name as the heading and its
+ * only identity, its default marker, refusal and save line inside, Edit leading
+ * the framed actions and Delete quiet beneath them. The editor is one more card
+ * holding the name, the equipment and a sentence saying what saving does; what
+ * is done with them is pinned: Add place for the list, Save place and Cancel
+ * for the editor, Retry for a failed read.
+ *
+ * There is no tier control (U15, U23). A new place starts with nothing ticked,
+ * an edited place keeps its stored tier as metadata, and the ticks are what
+ * generation reads. A refused or failed save puts the list back and leaves the
+ * editor open with the draft as it was typed, so nothing recoverable is lost.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -24,12 +30,11 @@ import {
   Button,
   Check,
   Checkbox,
-  ChoiceGroup,
   ClearLogo,
   EmptyState,
   Input,
+  Pencil,
   Plus,
-  TextAction,
   Trash,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
@@ -40,14 +45,12 @@ import {
   draftRefusal,
   equipmentLabel,
   equipmentOptions,
-  tierLabel,
-  TIERS,
+  SAVE_BEHAVIOR,
   withDefault,
   withEquipment,
   withLocation,
   withName,
   withoutLocation,
-  withTier,
 } from '../state/locations'
 import { useQueryClient, type QueryResult } from '../state/query'
 import type { Location, LocationDraft } from '../state/schemas'
@@ -308,8 +311,10 @@ function LocationCard({
   onDefault: () => void
   onDelete: () => void
 }) {
+  // The name is the card's only identity: a tier is stored metadata, never shown
+  // or chosen here (U15, U23).
   return (
-    <Card heading={location.name} meta={tierLabel(location.tier)}>
+    <Card heading={location.name}>
       <div className="clr-stack">
         {location.is_default && (
           <div className="clr-stack clr-stack--tight">
@@ -323,22 +328,23 @@ function LocationCard({
           </div>
         )}
         {refusal !== null && <RefusalLine>{refusal}</RefusalLine>}
-        {/* Named outright: the drawn chevron would otherwise join the name. */}
-        <TextAction aria-label="Edit" onClick={onEdit}>
-          Edit
-        </TextAction>
-        {/* Framed, but neither is the card's main action: the row would promote
-            a critical button, and the confirmation is what carries severity. */}
+        {/* Edit is what a place is for, so it leads the framed row. */}
         <CardActions>
+          <Button variant="secondary" icon={<Pencil size={20} />} onClick={onEdit}>
+            Edit
+          </Button>
           {!location.is_default && (
             <Button variant="secondary" icon={<Check size={20} />} onClick={onDefault}>
               Make default
             </Button>
           )}
-          <Button variant="secondary" icon={<Trash size={20} />} onClick={onDelete}>
+        </CardActions>
+        {/* Quiet and apart from the row: the confirmation carries the severity. */}
+        <div className="clr-row">
+          <Button variant="quiet" icon={<Trash size={20} />} onClick={onDelete}>
             Delete
           </Button>
-        </CardActions>
+        </div>
         {status !== 'idle' && <SaveStatusLine status={status} />}
       </div>
     </Card>
@@ -501,17 +507,6 @@ function LocationEditorForm({
         errorText={validation === BLANK_NAME_REASON ? validation : undefined}
         inputRef={nameField}
       />
-      <ChoiceGroup
-        legend="Equipment tier"
-        options={TIERS.map((tier) => ({ value: tier.value, label: tier.label }))}
-        value={draft.tier}
-        onChange={(next) => {
-          const value = Array.isArray(next) ? next[0] : next
-          if (value !== undefined) {
-            setDraft((current) => withTier(current, value as LocationDraft['tier']))
-          }
-        }}
-      />
       <CheckboxGroup legend="Equipment">
         {equipmentOptions(draft.equipment).map((item) => (
           <Checkbox
@@ -525,6 +520,7 @@ function LocationEditorForm({
       {validation !== null && validation !== BLANK_NAME_REASON && (
         <RefusalLine>{validation}</RefusalLine>
       )}
+      <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{SAVE_BEHAVIOR}</p>
       <SaveStatusLine status={status} />
     </form>
   )
