@@ -24,6 +24,7 @@ import {
   GENERATION_GOALS,
   INTENSITY_BY_GOAL,
   intentFrom,
+  nextWorkoutPath,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
   RECOVERY_NOTE,
@@ -1566,6 +1567,45 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
     expect(generation.calls).toHaveLength(2)
     expect(generation.calls[0]).toMatchObject(RECOVERY_OVERRIDE)
     expect(generation.calls[1]).toEqual(generation.calls[0])
+  })
+
+  it('U20: opens from Home’s next-workout entry with its minutes and place, sending nothing', async () => {
+    const handoff = nextWorkoutPath({ durationMins: 35, locationId: GYM.id })
+    const { user, generation, url } = renderDraft({ entry: handoff })
+
+    expect(screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))).toHaveValue(35)
+    expect(screen.getByRole('combobox', { name: /Place/ })).toHaveValue(GYM.id)
+    expect(focusLine()).toHaveTextContent('Lower body')
+    expect(generation.calls).toEqual([])
+    expect(url()).toBe(handoff)
+
+    // The Goal, Focus and intensity a direct visit resolves; the carried rest.
+    await user.click(cta())
+    expect(generation.calls).toEqual([
+      expect.objectContaining({
+        goal: 'strength',
+        focus: 'lower_body',
+        requested_intensity: 7,
+        requested_duration_mins: 35,
+        location_id: GYM.id,
+      }),
+    ])
+  })
+
+  it.each([
+    ['a place that is no longer the athlete’s', `${GENERATE_PATH}?minutes=30&place=00000000-0000-4000-8000-0000000000ff`],
+    ['no place at all', `${GENERATE_PATH}?minutes=30`],
+  ])('U20: a carried request with %s opens on the default place', (_, entry) => {
+    renderDraft({ entry })
+
+    expect(screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))).toHaveValue(30)
+    expect(screen.getByRole('combobox', { name: /Place/ })).toHaveValue(fixtureLocation().id)
+  })
+
+  it('U20: an unusable carried time is no time, so the standard one opens', () => {
+    renderDraft({ entry: `${GENERATE_PATH}?minutes=0` })
+
+    expect(screen.getByLabelText(new RegExp(DURATION_LABEL, 'i'))).toHaveValue(45)
   })
 
   it('keeps the handoff’s own parameters in the address through cancel', async () => {

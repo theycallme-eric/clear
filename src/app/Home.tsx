@@ -10,9 +10,10 @@
  * regions use Cards, and collections use the system tab band and list frame.
  *
  * **One read answers three questions.** The week strip, the recent three and
- * Quick Start's plan are all derivations of HIST-01's first page
- * (`src/state/home.ts`), asked for once through the shared `useHistoryQuery`
- * and never re-fetched per region. A region is not a query.
+ * the next-workout entry are all derivations of HIST-01's first page
+ * (`src/state/home.ts`, `src/state/session-suggestion.ts`), asked for once
+ * through the shared `useHistoryQuery` and never re-fetched per region. A
+ * region is not a query.
  *
  * Four behaviours here are the requirement rather than the layout:
  *
@@ -21,30 +22,20 @@
  *      another card. Resuming re-enters the shell at the section the session
  *      actually reached — the position is
  *      `workout-progress.ts`'s, never a number this screen keeps.
- *   2. **Quick Start is absent until there is something to repeat.** Not
- *      disabled, not defaulted: `quickStartPlan` answers `null` and the control
- *      is not rendered (IA.md §6). While the history is loading or failed there
- *      is no plan either, so a first-run Home and a Home that could not read
- *      the history both offer exactly one action, and it is Generate.
- *   3. **Quick Start generates immediately.** It skips `/generate` and sends
- *      the last completed session's own request through GEN-03, watched on
- *      GEN-05's loading screen. A failure is that screen's pattern-3 handoff —
- *      a typed error and one honest recovery action — never a workout.
- *      The Goal it sends is the profile's standing one (REQ-010), not that
- *      session's snapshot: the reused intensity is clamped to it, the label
- *      names it, and a missing or legacy Goal sends nothing and points at
- *      Settings. While the profile is loading or failed there is no plan.
- *   4. **The recents link into the chronology.** A completed compatible row
+ *   2. **There is one next-workout entry, and it never generates (U20).**
+ *      Train Today states the last completed request once and a plain-language
+ *      suggested focus; the pinned primary action opens `/generate` carrying
+ *      that request's minutes and place, and Generate resolves the Goal, the
+ *      Focus and the intensity by the same rule it uses for a direct visit.
+ *      Home sends no generation request at all — the athlete asks for one on
+ *      the form. First-workout, stale and failed history still open Generate
+ *      on its own usable defaults, and a request with no place opens on the
+ *      default place.
+ *   3. **The recents link into the chronology.** A completed compatible row
  *      opens its stored prescription in Review; every other row falls back to
  *      HIST-01's durable detail for that session.
- *   5. **The suggestion is read off the same rows, and it is refusable.**
- *      HOME-03's least-recently-trained focus and history-averaged intensity
- *      (`src/state/session-suggestion.ts`) are a fourth derivation of the one
- *      read, not a fifth request. Taking it opens `/generate` prefilled with the
- *      anchor and intensity; dismissing it leaves Generate on its defaults, and
- *      too little history produces no suggestion rather than a plausible one.
  *
- *   6. **Favorites are a tab here, and starting one is a restore.** FAV-01's
+ *   4. **Favorites are a tab here, and starting one is a restore.** FAV-01's
  *      list sits beside the recents on its own read, and its Start control
  *      parses the saved snapshot and carries the resulting acceptance payload
  *      to `/review` as route state. No generation call is made and no row is
@@ -56,7 +47,6 @@
  * saved snapshot path. Neither entry makes a generation request.
  */
 import {
-  useCallback,
   useEffect,
   useId,
   useMemo,
@@ -94,17 +84,12 @@ import {
   todayLocal,
   type FavoriteEntry,
 } from '../state/favorites'
-import { useGeneration } from '../state/generation'
 import { GENERATE_PATH } from '../state/generation-form'
 import {
   daysTrained,
-  QUICK_START_SETTINGS_LABEL,
-  quickStartPlan,
   recentWorkouts,
   sessionDetailPath,
-  WEEK_STRIP_DAYS,
   weekStrip,
-  type QuickStartPlan,
   type WeekDay,
 } from '../state/home'
 import type { HistorySessionEntry } from '../state/history'
@@ -123,15 +108,11 @@ import {
 import { reviewHandoff } from '../state/review-handoff'
 import type { RestDayReason, SavedWorkoutRow, WorkoutSessionRow } from '../state/schemas'
 import {
-  defaultSuggestionStorage,
-  suggestSession,
-  suggestionDay,
-  suggestionDismissed,
-  writeSuggestionDismissal,
-  type SessionSuggestion,
+  FIRST_WORKOUT_GUIDANCE,
+  nextWorkout,
+  type NextWorkout,
 } from '../state/session-suggestion'
 import { useStreakQuery } from '../state/summary-queries'
-import { useProfileQuery } from '../state/user-queries'
 import type { Streak } from '../state/streak'
 import {
   viewEmpty,
@@ -161,13 +142,12 @@ import { useArrivalStagger } from '../ui/motion'
 import { Select } from '../ui/select'
 import { ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
-import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { ResumableSession } from './ResumableSession'
 import { Screen } from './Screen'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 import { useOpenHistorySession } from './useOpenHistorySession'
 
-/** Home's own path: where cancelling a Quick Start run returns. */
+/** Home's own path. */
 export const HOME_ROUTE = '/'
 
 /** IA.md §4's out-edges from Home. Each lands with the screen behind it. */
@@ -190,7 +170,16 @@ export const TRAIN_TODAY_LABEL = 'Train today'
 export const WEEK_STRIP_LABEL = 'This week'
 export const REST_DAY_LABEL = 'Rest day'
 export const RECENT_WORKOUTS_LABEL = 'Recent workouts'
+
+/** U20: the two lines of the next-workout entry, each said once. */
+export const LAST_REQUEST_LABEL = 'Last time'
 export const SUGGESTION_LABEL = 'Suggested next'
+
+/** The pinned primary: it opens Generate, prefilled, and sends nothing. */
+export const GENERATE_ACTION_LABEL = 'Generate workout'
+
+/** U19: the streak's empty state is the fact; Train Today carries the guidance. */
+export const STREAK_EMPTY = 'No streak yet.'
 
 /** FAV-01's tab, beside the recents, on the one read each of them needs. */
 export const FAVORITES_LABEL = 'Favorites'
@@ -206,9 +195,7 @@ export const REST_DAY_SAVED = 'Rest day saved.'
 export function Home() {
   const history = useHistoryQuery()
   const restDays = useRestDaysQuery()
-  const profile = useProfileQuery()
   const activeSession = useActiveSessionQuery()
-  const generation = useGeneration()
   const navigate = useNavigate()
 
   const resumable =
@@ -235,41 +222,16 @@ export function Home() {
     [marks, sessions],
   )
   const recents = useMemo(() => recentWorkouts(sessions ?? []), [sessions])
-  // The standing Goal is the profile's, read now — never the one the last
-  // session was stored with. `undefined` is "not known": while the profile is
-  // loading or failed there is no plan, so nothing generates on a guess.
-  const standingGoal =
-    profile.state.status === 'ready'
-      ? (profile.state.data?.goal_preset ?? null)
-      : undefined
-  const plan = useMemo(
-    () =>
-      sessions === null || standingGoal === undefined
-        ? null
-        : quickStartPlan(sessions, standingGoal),
-    [sessions, standingGoal],
-  )
-  const suggestion = useMemo(
-    () => (sessions === null ? null : suggestSession(sessions)),
+  // U20: the one next-workout entry. Unread or failed history has no entry,
+  // and the primary action then opens Generate on its own defaults.
+  const next = useMemo(
+    () => (sessions === null ? null : nextWorkout(sessions)),
     [sessions],
   )
+  const generateTo = next?.path ?? GENERATE_ROUTE
 
-  // The hand-off. A generated workout is Review's to render, and Review is the
-  // route the IA sends it to; nothing is dropped here, because the mutation's
-  // success state is the only place the workout exists (GEN-03).
-  const generated = generation.state.status === 'success'
-  useEffect(() => {
-    if (!generated || generation.state.status !== 'success') return
-    void navigate(REVIEW_ROUTE, {
-      state: reviewHandoff(generation.state.acceptance),
-    })
-  }, [generated, generation.state, navigate])
-
-  // GEN-05's screen is transient and has no route of its own: while a
-  // generation Home started is in flight — or has failed and is being answered
-  // — the shared host makes it the screen, and cancelling puts Home back.
   return (
-    <GenerationLoadingHost generation={generation} cancelTo={HOME_ROUTE}>
+    <>
       {/* U18: the header is the wordmark and one framed icon-only control.
           `IconButton` requires the accessible name and brings the package's
           focus ring and 40px target; the route change stays in-app, so the
@@ -296,10 +258,10 @@ export function Home() {
                 size="lg"
                 icon={resumable === null ? <Zap /> : <Play />}
                 onClick={() =>
-                  void navigate(resumable === null ? GENERATE_ROUTE : WORKOUT_ROUTE)
+                  void navigate(resumable === null ? generateTo : WORKOUT_ROUTE)
                 }
               >
-                {resumable === null ? 'Generate workout' : 'Resume workout'}
+                {resumable === null ? GENERATE_ACTION_LABEL : 'Resume workout'}
               </Button>
             </ActionRow>
           </PhoneFooter>
@@ -307,21 +269,10 @@ export function Home() {
       >
         <ArrivingStack>
           {/* One top slot: an active workout replaces Train Today, while an
-              empty active-session read renders the ordinary actions. */}
+              empty active-session read renders the next-workout entry. */}
           <ResumableSession
             query={activeSession}
-            fallback={
-              <QuickActions
-                plan={plan}
-                query={history}
-                suggestion={suggestion}
-                onQuickStart={() => {
-                  if (plan !== null && plan.input !== null) {
-                    generation.generate(plan.input)
-                  }
-                }}
-              />
-            }
+            fallback={<NextWorkoutEntry query={history} next={next} />}
           />
 
           <TrainingWeek query={history} restDays={restDays} week={week} />
@@ -333,7 +284,7 @@ export function Home() {
           <WorkoutTabs query={history} entries={recents} />
         </ArrivingStack>
       </Screen>
-    </GenerationLoadingHost>
+    </>
   )
 }
 
@@ -425,14 +376,9 @@ function TrainingWeek({
             </>
           }
         >
-          {(days) => (
-            <>
-              <WeekStrip days={days} label={WEEK_STRIP_LABEL} />
-              <p style={{ margin: 0 }}>
-                {`${keepTogether(`${trained} of ${WEEK_STRIP_DAYS} days`)} trained.`}
-              </p>
-            </>
-          )}
+          {/* U19: each day already says itself — tick and word — so the week
+              adds no count of its own beside the streak's. */}
+          {(days) => <WeekStrip days={days} label={WEEK_STRIP_LABEL} />}
         </ViewStateSwitch>
         <RestDayControl
           today={week.find((day) => day.isToday)}
@@ -616,7 +562,7 @@ function StreakCount() {
       loadingLabel="Reading your streak"
       errorTitle="Your streak didn’t load"
       onRetry={query.refetch}
-      empty={<p style={{ margin: 0 }}>No streak yet. Sessions on consecutive days build one.</p>}
+      empty={<p style={{ margin: 0 }}>{STREAK_EMPTY}</p>}
     >
       {(streak) => (
         <p style={STREAK_STYLE}>
@@ -632,149 +578,62 @@ function StreakCount() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// What to train next (HOME-03)
+// The next-workout entry (REQ-007, U20)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The suggestion, with the reason it is being made and two ways to answer it,
- * lives inside Train Today. It is a prompt that informs the action, not a
- * peer card competing with the action.
+ * Train Today, with nothing waiting to resume: the last request once and what
+ * to train next, in plain words. The action is the pinned primary below — one
+ * way on, which opens Generate with that request's minutes and place and
+ * sends nothing — so this card holds no button of its own.
  *
- * It uses the same history read as everything else on this screen. Thin history
- * produces no prompt at all: `suggestSession` answers `null`, and a guessed
- * focus would be worse than an absent prompt. A failed read stays recoverable
- * inline without manufacturing another Home card.
- *
- * Dismissal is `localStorage`, keyed to today. It is not a preference — tomorrow
- * has a different suggestion and asks again — and losing it costs the user one
- * card they can dismiss again, which is why an unavailable store is ignored
- * rather than handled. `Use this` is the *only* thing that prefills: the path it
- * navigates to carries the anchor and the intensity, so dismissing and pressing
- * Generate opens the form on its defaults with nothing of the suggestion in it.
+ * A data-driven view with all four states. Loading and a failed read are said
+ * here, with Retry; the pinned action still opens Generate on its defaults
+ * meanwhile, because a history that did not load must never cost the athlete
+ * their workout. Nothing completed is the first-use guidance. Stale history
+ * still states its last request and says to choose a focus, which is what
+ * Generate then asks for.
  */
-function SuggestedSession({
+function NextWorkoutEntry({
   query,
-  suggestion,
+  next,
 }: {
   query: HistoryQuery
-  suggestion: SessionSuggestion | null
+  next: NextWorkout | null
 }) {
-  const navigate = useNavigate()
-  const storage = useMemo(() => defaultSuggestionStorage(), [])
-  const [dismissed, setDismissed] = useState(() => suggestionDismissed(storage))
-
-  const dismiss = useCallback(() => {
-    writeSuggestionDismissal(storage, suggestionDay())
-    setDismissed(true)
-  }, [storage])
-
-  if (dismissed || query.state.status === 'loading') return null
-
-  if (query.state.status === 'error') {
-    return (
-      <div role="alert" className="clr-stack clr-stack--tight">
-        <p style={{ margin: 0 }}>Your suggestion didn’t load.</p>
-        <Button variant="quiet" onClick={query.refetch}>Retry suggestion</Button>
-      </div>
-    )
-  }
-
-  if (suggestion === null) return null
-
-  return (
-    <HeadingSection aria-label={SUGGESTION_LABEL}>
-      <Card heading={SUGGESTION_LABEL}>
-        <p style={{ margin: 0 }}>
-          {suggestion.focusLabel} · {keepTogether(`intensity ${suggestion.intensity}`)}
-        </p>
-        {/* The reason is pattern-level on purpose: "no hinge in 11 days"
-            is a fact about training, "no lower body" is a fact about labels. */}
-        <p style={{ margin: 0 }}>
-          {suggestion.reason} {suggestion.intensityReason}
-        </p>
-        <ActionGroup>
-          <Button variant="secondary" onClick={() => void navigate(suggestion.path)}>
-            Use this
-          </Button>
-          <Button variant="quiet" onClick={dismiss}>
-            Dismiss
-          </Button>
-        </ActionGroup>
-      </Card>
-    </HeadingSection>
-  )
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// The two actions
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * The semantic Train Today context, plus Quick Start when there is a session
- * to repeat. Generate itself is Home's measured primary footer action.
- *
- * Not a data-driven view of its own: Generate is available whatever the history
- * says, including while it is still being read, so this card has no loading
- * state to render. The absence of Quick Start is the requirement, and it is
- * expressed as absence.
- */
-function QuickActions({
-  plan,
-  query,
-  suggestion,
-  onQuickStart,
-}: {
-  plan: QuickStartPlan | null
-  query: HistoryQuery
-  suggestion: SessionSuggestion | null
-  onQuickStart: () => void
-}) {
-  // Set by activating Quick Start on a Goal it cannot use; the refusal is an
-  // answer to that press, not a standing notice on the card.
-  const [refused, setRefused] = useState(false)
-  const refusal = refused ? (plan?.refusal ?? null) : null
+  const state: ViewState<NextWorkout> =
+    query.state.status === 'loading'
+      ? viewLoading()
+      : query.state.status === 'error'
+        ? viewError(query.state.error)
+        : next === null || next.prior === null
+          ? viewEmpty()
+          : viewReady(next)
 
   return (
     <Card heading={TRAIN_TODAY_LABEL}>
-      {/* U08: no standing explanation — the pinned Generate and this card's
-          own actions are the statement of what can happen next. */}
-      <div className="clr-stack">
-        <SuggestedSession query={query} suggestion={suggestion} />
-        {plan !== null && (
-          <>
-            <ActionGroup>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  if (plan.input === null) setRefused(true)
-                  else onQuickStart()
-                }}
-              >
-                Quick start
-              </Button>
-            </ActionGroup>
-            {/* What repeating actually asks for, stated before it is sent: the
-                same focus and minutes that session was requested with, at the
-                same place — under the standing Goal, with the intensity that
-                Goal allows. */}
-            <p style={{ margin: 0 }}>
-              Repeats {plan.title}: {plan.summary}
-              {plan.goalLabel === null ? '' : ` · ${plan.goalLabel} goal`}.
-            </p>
-            {refusal !== null && (
-              <div role="alert" className="clr-stack clr-stack--tight">
-                <p style={QUICK_START_REFUSAL_STYLE}>
-                  <span aria-hidden="true" style={{ display: 'flex' }}>
-                    <AlertCircle size={16} />
-                  </span>
-                  {refusal}
-                </p>
-                <RouteAction to={SETTINGS_ROUTE}>{QUICK_START_SETTINGS_LABEL}</RouteAction>
-              </div>
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your last workout"
+        errorTitle="Your last workout didn’t load"
+        onRetry={query.refetch}
+        empty={<p style={{ margin: 0 }}>{FIRST_WORKOUT_GUIDANCE}</p>}
+      >
+        {(entry) => (
+          <div className="clr-stack clr-stack--tight">
+            {entry.prior !== null && (
+              <p style={{ margin: 0 }}>
+                {`${LAST_REQUEST_LABEL}: ${keepTogetherParts(entry.prior.summary)}.`}
+              </p>
             )}
-          </>
+            <p style={{ margin: 0 }}>
+              {entry.status === 'recommended'
+                ? `${SUGGESTION_LABEL}: ${entry.guidance}`
+                : entry.guidance}
+            </p>
+          </div>
         )}
-      </div>
+      </ViewStateSwitch>
     </Card>
   )
 }
@@ -1014,6 +873,11 @@ function keepTogether(phrase: string): string {
   return phrase.replace(/ /g, NO_BREAK_SPACE)
 }
 
+/** `Upper body · 35 minutes · intensity 6`: each part held together, wrapping only between. */
+function keepTogetherParts(summary: string): string {
+  return summary.split(' · ').map(keepTogether).join(' · ')
+}
+
 const NO_BREAK_SPACE = String.fromCharCode(0xa0)
 
 const FAVORITE_FAILURE_STYLE: CSSProperties = {
@@ -1023,9 +887,6 @@ const FAVORITE_FAILURE_STYLE: CSSProperties = {
   gap: 'var(--spacing-200)',
   color: 'var(--text-negative)',
 }
-
-/** The same glyph-and-sentence refusal, for a Quick Start with no usable Goal. */
-const QUICK_START_REFUSAL_STYLE = FAVORITE_FAILURE_STYLE
 
 const STREAK_STYLE: CSSProperties = {
   margin: 0,

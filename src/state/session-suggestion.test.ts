@@ -11,14 +11,22 @@ import { describe, expect, it } from 'vitest'
 
 import { makeSessionRow } from '../test/factories'
 import { focusPatternMap } from '../test/seed-catalog'
-import { generatePath } from './generation-form'
 import {
+  GENERATE_PATH,
+  generatePath,
+  nextWorkoutPath,
+  requestPrefillFrom,
+} from './generation-form'
+import {
+  FIRST_WORKOUT_GUIDANCE,
   FOCUS_PATTERNS,
   focusStaleness,
   hasEnoughHistory,
   MIN_SUGGESTION_SESSIONS,
   NEVER_TRAINED_STALENESS_DAYS,
+  nextWorkout,
   patternStaleness,
+  STALE_HISTORY_GUIDANCE,
   readSuggestionDismissal,
   SESSION_FOCUSES,
   SUGGESTIBLE_PATTERNS,
@@ -361,6 +369,144 @@ describe('suggestSession', () => {
         OPTIONS,
       )?.reason,
     ).toBe('No press in 1 day.')
+  })
+})
+
+/**
+ * REQ-007 U20: Home's one next-workout entry, for every history it must stay
+ * usable on. Each answer opens Generate — `/generate`, never a generation —
+ * carrying only the last request's minutes and place.
+ */
+describe('nextWorkout (U20)', () => {
+  const PLACE = 'd0000001-0000-4000-8000-000000000000'
+
+  it('first workout: no prior request, first-use guidance, plain Generate', () => {
+    for (const rows of [
+      [],
+      // Generated and never started, and started and given up: not completed.
+      [
+        session('2026-09-24', { started_at: null, completed_at: null }),
+        session('2026-09-23', { completed_at: null, abandoned_at: '2026-09-23T09:30:00.000Z' }),
+      ],
+    ]) {
+      expect(nextWorkout(rows, OPTIONS)).toEqual({
+        status: 'no-completed-history',
+        prior: null,
+        suggestion: null,
+        guidance: FIRST_WORKOUT_GUIDANCE,
+        path: GENERATE_PATH,
+      })
+    }
+  })
+
+  it('sparse: one completed session states its request once and suggests a focus', () => {
+    const rows = [
+      session('2026-09-24', {
+        session_focus: 'upper_body',
+        requested_duration_mins: 35,
+        requested_intensity: 6,
+        location_id: PLACE,
+      }),
+    ]
+    const next = nextWorkout(rows, OPTIONS)
+
+    expect(next.status).toBe('recommended')
+    expect(next.prior).toMatchObject({
+      focus: 'upper_body',
+      durationMins: 35,
+      intensity: 6,
+      recovery: false,
+      locationId: PLACE,
+      summary: 'Upper body · 35 minutes · intensity 6',
+    })
+    // Never trained in the loaded page, so ranked at the ceiling: Lower body.
+    expect(next.suggestion?.focus).toBe('lower_body')
+    expect(next.guidance).toBe('Lower body. Not in your recent workouts.')
+    expect(next.path).toBe(nextWorkoutPath({ durationMins: 35, locationId: PLACE }))
+    expect(requestPrefillFrom(new URL(next.path, 'https://x.invalid').search)).toEqual({
+      durationMins: 35,
+      locationId: PLACE,
+    })
+  })
+
+  it('says how long ago the suggested focus was trained, in plain words', () => {
+    const next = nextWorkout(
+      [
+        session('2026-09-24', { session_focus: 'upper_body' }),
+        session('2026-09-23', { session_focus: 'full_body' }),
+        session('2026-09-22', { session_focus: 'power' }),
+        session('2026-09-14', { session_focus: 'lower_body' }),
+      ],
+      OPTIONS,
+    )
+
+    expect(next.suggestion?.focus).toBe('lower_body')
+    expect(next.guidance).toBe('Lower body. Last trained 11 days ago.')
+    // The prior request is the newest completed one, not the stalest.
+    expect(next.prior?.focus).toBe('upper_body')
+  })
+
+  it('stale: the last request still opens Generate with its minutes and place', () => {
+    const next = nextWorkout(
+      [session('2026-08-01', { requested_duration_mins: 50, location_id: PLACE })],
+      OPTIONS,
+    )
+
+    expect(next).toMatchObject({
+      status: 'stale-history',
+      suggestion: null,
+      guidance: STALE_HISTORY_GUIDANCE,
+      path: nextWorkoutPath({ durationMins: 50, locationId: PLACE }),
+    })
+    expect(next.prior?.summary).toBe('Lower body · 50 minutes · intensity 7')
+  })
+
+  it('recovery: says it was Recovery, and carries no Recovery into the next one', () => {
+    const next = nextWorkout(
+      [
+        session('2026-09-24', {
+          goal_preset: 'active_recovery',
+          session_focus: 'full_body',
+          requested_duration_mins: 20,
+          requested_intensity: 2,
+          location_id: PLACE,
+        }),
+      ],
+      OPTIONS,
+    )
+
+    expect(next.status).toBe('recommended')
+    expect(next.prior).toMatchObject({ recovery: true })
+    expect(next.prior?.summary).toBe('Full body · 20 minutes · intensity 2 · Recovery')
+    const search = new URL(next.path, 'https://x.invalid').searchParams
+    expect([...search.keys()].sort()).toEqual(['minutes', 'place'])
+  })
+
+  it('changed goal: names no stored Goal, so Generate uses the standing one', () => {
+    const next = nextWorkout(
+      [session('2026-09-24', { goal_preset: 'hypertrophy', location_id: PLACE })],
+      OPTIONS,
+    )
+
+    expect(next.prior?.summary).not.toMatch(/hypertrophy|goal/i)
+    expect(new URL(next.path, 'https://x.invalid').searchParams.has('goal')).toBe(false)
+  })
+
+  it('missing location: carries the minutes alone, so Generate opens on the default place', () => {
+    const next = nextWorkout(
+      [session('2026-09-24', { location_id: null, requested_duration_mins: 30 })],
+      OPTIONS,
+    )
+
+    expect(next.prior?.locationId).toBeNull()
+    expect(next.path).toBe(`${GENERATE_PATH}?minutes=30`)
+    expect(requestPrefillFrom('?minutes=30')).toEqual({ durationMins: 30, locationId: null })
+  })
+
+  it('agrees with the shared eligibility rule Generate uses', () => {
+    for (const rows of [[], upperBodyOnly(), [session('2026-08-01')]]) {
+      expect(nextWorkout(rows, OPTIONS).status).toBe(suggestionEligibility(rows, OPTIONS).status)
+    }
   })
 })
 

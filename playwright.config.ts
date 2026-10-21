@@ -39,6 +39,10 @@ export const REQ_011_REVIEW_CASE =
 export const REQ_007_REST_DAY_CASE =
   'REQ-007 Home: rest day reason trigger, Cancel discards, keyboard Save and aligned actions'
 
+/** TASK-012 (REQ-007, U19/U20): the post-import next-workout case, same rules. */
+export const REQ_007_NEXT_WORKOUT_CASE =
+  'REQ-007 Home: first use guidance, one next workout entry and prefilled Generate without generating'
+
 /**
  * TASK-027: keep the original browser command, selecting cases for its target.
  * BEFORE assertions belong to 0.9.7; deployed assertions need a deployed origin.
@@ -50,8 +54,8 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
     exclusions.push(
       String.raw`design-0143[\\/](?:baseline|task-040-lifecycle(?:-gaps)?)\.spec\.ts`,
       String.raw`design-0143[\\/]task-040-entry-settings\.spec\.ts(?!.*entry: Welcome and OTP validation, busy, typed failure and cooldown$)`,
-      // TASK-019 and TASK-011: the post-import, non-capture cases (REQ-011, REQ-007).
-      String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*(?:${REQ_011_REVIEW_CASE}|${REQ_007_REST_DAY_CASE})$)`,
+      // TASK-019, TASK-011 and TASK-012: the post-import, non-capture cases (REQ-011, REQ-007).
+      String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*(?:${REQ_011_REVIEW_CASE}|${REQ_007_REST_DAY_CASE}|${REQ_007_NEXT_WORKOUT_CASE})$)`,
     )
   }
   const hostname = new URL(baseURL).hostname.toLowerCase()
