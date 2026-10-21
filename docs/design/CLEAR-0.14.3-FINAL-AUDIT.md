@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `d19a4abdde8264296f5ffa992eb83ae3596d3a9a27ba58097dd602499c3c7a1b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026 and TASK-004 changes below) |
+| Runtime source hash of this audit's tree | `62161e8d725c44ea8734e679f6274051ddd1c265bdef3968924e4c67d664cc7f` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026 and TASK-004 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -133,7 +133,7 @@ trees and this head, from `git diff`:
   Workout. The pictures above predate it and are not rebound (EX-13). Current acceptance
   evidence is `e2e/design-0143/workout-circuit.spec.ts` on the mobile project and the circuit
   renderer tests.
-- `68f80dcb…` to `d19a4abd…`: TASK-004 (REQ-002, JOURNEY-004, U13, U14) gives Welcome one
+- `68f80dcb…` to `62161e8d…`: TASK-004 (REQ-002, JOURNEY-004, U13, U14) gives Welcome one
   Get started entry for new and returning accounts, inside the one card under the wordmark, with
   the wordmark and card centred as one group (`Screen centered`, `justify-content: safe center`,
   so a short height or enlarged text scrolls instead of clipping). Welcome no longer pins a
