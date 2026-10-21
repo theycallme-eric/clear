@@ -298,16 +298,15 @@ test('entry: Welcome and OTP validation, busy, typed failure and cooldown', asyn
     await visit('/welcome')
     await evidence.route('Welcome', '/welcome', 'anonymous-ready', 'CLEAR', async () => {
       await visibleText(page, 'Strength training, simplified.')
-      await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled()
-      await expect(page.getByRole('button', { name: 'Create account', exact: true })).toBeEnabled()
+      await expect(page.getByRole('button', { name: 'Get started', exact: true })).toBeEnabled()
     })
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await page.getByRole('button', { name: 'Get started', exact: true }).click()
     const email = page.getByLabel('Email')
     const send = page.getByRole('button', { name: 'Send code', exact: true })
-    await evidence.route('OTP Login', '/login', 'email-step', 'Sign in', () => expect(email).toBeVisible())
+    await evidence.route('OTP Login', '/login', 'email-step', 'Get started', () => expect(email).toBeVisible())
     await email.fill('wrong')
     await send.click()
-    await evidence.route('OTP Login', '/login', 'email-invalid', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'email-invalid', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That is not an email address.')
       await expect(email).toHaveAttribute('aria-invalid', 'true')
       await expect(email).toBeFocused()
@@ -315,9 +314,9 @@ test('entry: Welcome and OTP validation, busy, typed failure and cooldown', asyn
     })
     await email.fill('clear-e2e-task040-form@example.com')
     await send.click()
-    await evidence.route('OTP Login', '/login', 'send-busy', 'Sign in', () => expect(send).toHaveAttribute('aria-busy', 'true'))
+    await evidence.route('OTP Login', '/login', 'send-busy', 'Get started', () => expect(send).toHaveAttribute('aria-busy', 'true'))
     otpHold.release()
-    await evidence.route('OTP Login', '/login', 'send-error', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'send-error', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('Sign-in is unavailable right now.')
       // A provider outage does not invalidate the address. CORE-05 focuses
       // controls the form marks invalid; preserve the valid value and retry.
@@ -330,32 +329,32 @@ test('entry: Welcome and OTP validation, busy, typed failure and cooldown', asyn
     otpHold.release()
     await send.click()
     const code = page.getByLabel('Code')
-    await evidence.route('OTP Login', '/login', 'code-step', 'Sign in', () => expect(code).toBeFocused())
+    await evidence.route('OTP Login', '/login', 'code-step', 'Get started', () => expect(code).toBeFocused())
     const resend = page.getByRole('button', { name: /^Resend in \d+s$/ })
     const before = await resend.innerText()
-    await evidence.route('OTP Login', '/login', 'resend-cooldown', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'resend-cooldown', 'Get started', async () => {
       await expect(resend).toBeDisabled()
       await expect.poll(() => page.getByRole('button', { name: /^Resend in \d+s$/ }).innerText()).not.toBe(before)
     })
     await code.fill('12')
     const verify = page.getByRole('button', { name: 'Verify', exact: true })
     await verify.click()
-    await evidence.route('OTP Login', '/login', 'code-invalid', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'code-invalid', 'Get started', async () => {
       await expect(code).toHaveAttribute('aria-invalid', 'true')
       await expect(code).toBeFocused()
       expect(verifyPosts).toBe(0)
     })
     await code.fill('123456')
     await verify.click()
-    await evidence.route('OTP Login', '/login', 'verify-busy', 'Sign in', () => expect(verify).toHaveAttribute('aria-busy', 'true'))
+    await evidence.route('OTP Login', '/login', 'verify-busy', 'Get started', () => expect(verify).toHaveAttribute('aria-busy', 'true'))
     verifyHold.release()
-    await evidence.route('OTP Login', '/login', 'wrong-code', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'wrong-code', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That code is not right.')
       await expect(code).toBeFocused()
     })
     verifyExpired = true
     await verify.click()
-    await evidence.route('OTP Login', '/login', 'expired-code', 'Sign in', async () => {
+    await evidence.route('OTP Login', '/login', 'expired-code', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That code has expired.')
       await expect(code).toBeFocused()
     })
@@ -368,8 +367,8 @@ async function enterNewUser(page: Page, visit: (path: string) => Promise<void>, 
   client: ReturnType<typeof backend.client>) {
   await page.route('**/auth/v1/otp', (route) => answer(route, 200, {}))
   await visit('/welcome')
-  await page.getByRole('button', { name: 'Create account', exact: true }).click()
-  await heading(page, 'Create account')
+  await page.getByRole('button', { name: 'Get started', exact: true }).click()
+  await heading(page, 'Get started')
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send code', exact: true }).click()
   await expect(page.getByLabel('Code')).toBeFocused()
@@ -476,22 +475,26 @@ backendTest('entry: onboarding keeps the actual typed impossible-choice refusal'
   const prior = await client.findUserByEmail(email)
   if (prior) await client.deleteUser(prior.id)
   await client.ensureConfirmedUser(email)
-  evidence.fixture('namespaced real new user; impossible Minimal + Carries proposal refused by genuine onboarding RPC')
+  evidence.fixture('namespaced real new user; impossible Minimal-with-no-equipment proposal refused by genuine onboarding RPC')
   try {
     await enterNewUser(page, visit, email, client)
     const next = page.getByRole('button', { name: 'Next', exact: true })
-    await page.getByRole('radio', { name: /^Minimal/ }).click(); await next.click()
+    await page.getByRole('radio', { name: /^Minimal/ }).click()
+    // REQ-004: sections are a read-only goal preview, so the refused choice is the equipment.
+    for (const name of ['Bodyweight', 'Resistance bands', 'Foam roller']) {
+      await page.getByRole('checkbox', { name, exact: true }).uncheck()
+    }
+    await next.click()
     await page.getByRole('radio', { name: /^Some experience/ }).click(); await next.click()
     await page.getByRole('radio', { name: /^Strength/ }).click()
-    await page.getByRole('checkbox', { name: 'Carries', exact: true }).check()
     await next.click()
     await page.getByRole('checkbox', { name: 'Hard conditioning', exact: true }).check()
     await page.getByLabel(/Note/).fill('Disposable fixture note')
     await next.click()
     await page.getByRole('button', { name: 'Finish setup', exact: true }).click()
     await evidence.route('Onboarding', '/onboarding', 'typed-viability-refusal', 'Set up CLEAR', async () => {
-      await expect(page.getByRole('alert')).toContainText('Nothing in Carries')
-      await expect(page.getByRole('alert')).toContainText('turn off Carries')
+      await expect(page.getByRole('alert')).toContainText('no equipment chosen')
+      await expect(page.getByRole('alert')).toContainText(/add equipment to your setup/i)
       await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
     })
     expect(evidence.modelAttempts()).toBe(0)
@@ -884,7 +887,10 @@ backendTest('Places: real list/editor CRUD, equipment held failure and retry, de
     const createdName = 'Disposable capture travel gym'
     const renamedName = 'Disposable capture hotel gym'
     await page.getByRole('textbox', { name: 'Name' }).fill(createdName)
-    await page.getByRole('radio', { name: /^Home gym/ }).click()
+    // No tier preset outside onboarding (U15): the place holds what is ticked.
+    for (const item of ['Bodyweight', 'Resistance bands', 'Foam roller', 'Dumbbells', 'Kettlebells', 'Pull-up bar']) {
+      await page.getByRole('checkbox', { name: item, exact: true }).check()
+    }
     await page.getByRole('button', { name: 'Save place', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Save place', exact: true })).toHaveCount(0)
     await card(createdName).getByRole('button', { name: 'Edit', exact: true }).click()
@@ -1032,7 +1038,7 @@ backendTest('Entry: authentic public redirects, unmatched route and sign out', a
   await visit('/settings')
   await page.getByRole('button', { name: 'Sign out', exact: true }).click()
   await evidence.transition('Settings', '/settings', 'sign-out', '/settings', '/welcome', 'CLEAR', async () => {
-    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Get started', exact: true })).toBeVisible()
     expect(await page.evaluate((key) => localStorage.getItem(key) === null, SESSION_KEY)).toBe(true)
   })
   // The authenticatedPage init script restores only if absent on fresh documents;

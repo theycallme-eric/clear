@@ -17,25 +17,33 @@ import {
   EMPTY_DRAFT,
   ONBOARDING_STEPS,
   onboardingReducer,
+  SECTIONS_BY_GOAL,
+  sectionTypeLabel,
   STEP_TITLES,
   toAnswers,
   type OnboardingAction,
 } from '../state/onboarding'
+import { constraintsQueryKey } from '../state/constraint-queries'
 import { QueryClient } from '../state/query'
 import type { Location, Profile } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
+import { createFakeConstraintsClient } from '../test/constraints-double'
 import { renderApp, signedIn } from '../test/render'
 import {
   committedFor,
   createFakeUserDataClient,
+  fixtureLocation,
   FIXTURE_USER_ID,
   notOnboardedProfile,
+  onboardedProfile,
   type FakeUserDataOptions,
 } from '../test/user-data-double'
 import {
   COMMIT_FAILED_TITLE,
   COMMITTING_LABEL,
   ONBOARDING_TITLE,
+  SECTION_PREVIEW_CAPTION,
+  SECTION_PREVIEW_NOTE,
 } from './Onboarding'
 
 function setup(options: FakeUserDataOptions = {}) {
@@ -85,13 +93,24 @@ function next() {
   return screen.getByRole('button', { name: /^(Next|Skip)$/ })
 }
 
+/** The goal-derived preview: a list named by its caption. */
+function sectionPreview() {
+  return screen.getByRole('list', { name: SECTION_PREVIEW_CAPTION })
+}
+
+/** The section names the preview shows, in order — the label line of each row. */
+function previewedSections() {
+  return within(sectionPreview())
+    .getAllByRole('listitem')
+    .map((item) => item.firstElementChild?.textContent ?? '')
+}
+
 /** The same answers, as the reducer receives them — so the expected payload is `toAnswers`'s. */
 const ACTIONS: readonly OnboardingAction[] = [
   { type: 'tier', value: 'home' },
   { type: 'equipment', value: 'kettlebells' },
   { type: 'experience', value: 'some' },
   { type: 'goal', value: 'strength' },
-  { type: 'section', value: 'core' },
   { type: 'pattern', value: 'pull' },
   { type: 'note', value: 'Left shoulder' },
 ]
@@ -121,7 +140,6 @@ async function answerEverything(user: UserEvent) {
 
   await onStep('goals')
   await user.click(screen.getByRole('radio', { name: 'Strength' }))
-  await user.click(screen.getByRole('checkbox', { name: 'Core' }))
   await user.click(next())
 
   await onStep('limitations')
@@ -205,9 +223,8 @@ describe('ONB-01 onboarding wizard', () => {
     await user.click(screen.getByRole('button', { name: 'Back' }))
     await onStep('goals')
     expect(screen.getByRole('radio', { name: 'Strength' })).toHaveAttribute('aria-checked', 'true')
-    // Core is in the Strength preset and was unticked; the edit survived.
-    expect(screen.getByRole('checkbox', { name: 'Core' })).not.toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Accessory' })).toBeChecked()
+    // The preview is still the goal's: stepping back changes nothing in it.
+    expect(previewedSections()).toEqual(SECTIONS_BY_GOAL.strength.map(sectionTypeLabel))
 
     await user.click(screen.getByRole('button', { name: 'Back' }))
     await onStep('experience')
@@ -250,7 +267,7 @@ describe('ONB-01 onboarding wizard', () => {
       equipment: ['bodyweight', 'resistance_bands', 'foam_roller', 'dumbbells', 'pullup_bar'],
       experience_level: 'some',
       goal_preset: 'strength',
-      enabled_sections: ['warmup', 'primary_lift', 'accessory', 'cooldown'],
+      enabled_sections: ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown'],
       avoid_patterns: ['pull'],
       note: 'Left shoulder',
     })
@@ -351,5 +368,121 @@ describe('ONB-01 onboarding wizard', () => {
     expect(userData.onboardingCalls).toHaveLength(2)
     expect(userData.onboardingCalls[0]?.avoid_patterns).toEqual(['pull'])
     expect(userData.onboardingCalls[1]?.avoid_patterns).toEqual([])
+  })
+})
+
+describe('REQ-004 goal-derived sections, previewed', () => {
+  async function toGoals(user: UserEvent) {
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    await user.click(next())
+    await onStep('experience')
+    await user.click(screen.getByRole('radio', { name: 'Some experience' }))
+    await user.click(next())
+    await onStep('goals')
+  }
+
+  it('is information, not a control: nothing in it can be focused or toggled', async () => {
+    const { user } = setup()
+    await toGoals(user)
+
+    // Before a goal there is nothing to preview.
+    expect(screen.queryByRole('list', { name: SECTION_PREVIEW_CAPTION })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+
+    const preview = sectionPreview()
+    expect(stepCard()).toContainElement(preview)
+    expect(preview.tagName).toBe('UL')
+    // Not a group of controls, and no control anywhere inside it.
+    expect(screen.queryByRole('group', { name: 'Sections' })).not.toBeInTheDocument()
+    expect(within(stepCard()).queryAllByRole('checkbox')).toHaveLength(0)
+    expect(
+      preview.querySelectorAll('input, button, select, textarea, a[href], [tabindex], [role]'),
+    ).toHaveLength(0)
+    // And its rows carry no selection state to read as one.
+    for (const item of within(preview).getAllByRole('listitem')) {
+      expect(item).not.toHaveAttribute('aria-checked')
+      expect(item).not.toHaveAttribute('aria-pressed')
+      expect(item).not.toHaveAttribute('aria-selected')
+    }
+
+    // Tabbing from the goal goes nowhere inside the preview.
+    const focused: Element[] = []
+    for (let i = 0; i < 8; i += 1) {
+      await user.tab()
+      if (document.activeElement) focused.push(document.activeElement)
+    }
+    expect(focused.some((element) => preview.contains(element))).toBe(false)
+
+    // Clicking a row changes nothing about what will be stored.
+    await user.click(within(preview).getByText('Core'))
+    expect(previewedSections()).toEqual(SECTIONS_BY_GOAL.strength.map(sectionTypeLabel))
+  })
+
+  it('lists the goal’s actual sections, follows a goal change, and says one may be left out', async () => {
+    const { user, userData } = setup()
+    await toGoals(user)
+
+    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+    expect(previewedSections()).toEqual(SECTIONS_BY_GOAL.strength.map(sectionTypeLabel))
+    expect(within(stepCard()).getByText(SECTION_PREVIEW_NOTE)).toBeInTheDocument()
+    expect(SECTION_PREVIEW_NOTE).toMatch(/may leave one out/)
+
+    await user.click(screen.getByRole('radio', { name: 'Conditioning' }))
+    expect(previewedSections()).toEqual(SECTIONS_BY_GOAL.conditioning.map(sectionTypeLabel))
+    expect(previewedSections()).not.toContain('Primary lift')
+
+    await user.click(screen.getByRole('radio', { name: 'Balanced' }))
+    expect(previewedSections()).toEqual(SECTIONS_BY_GOAL.balanced.map(sectionTypeLabel))
+
+    // What the preview showed is exactly the pool committed.
+    await user.click(next())
+    await onStep('limitations')
+    await user.click(next())
+    await onStep('confirm')
+    await user.click(screen.getByRole('button', { name: 'Finish setup' }))
+    expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    expect(userData.onboardingCalls[0]?.enabled_sections).toEqual([...SECTIONS_BY_GOAL.balanced])
+  })
+
+  it('keeps equipment editable beside it', async () => {
+    const { user } = setup()
+
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    const kettlebells = screen.getByRole('checkbox', { name: 'Kettlebells' })
+    const barbell = screen.getByRole('checkbox', { name: 'Barbell' })
+    expect(kettlebells).toBeChecked()
+    expect(barbell).not.toBeChecked()
+    await user.click(kettlebells)
+    await user.click(barbell)
+    expect(kettlebells).not.toBeChecked()
+    expect(barbell).toBeChecked()
+  })
+
+  it('leaves Settings’ section toggles editable', async () => {
+    const user = userEvent.setup()
+    const userData = createFakeUserDataClient()
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
+    cache.setData(constraintsQueryKey(FIXTURE_USER_ID), [])
+    renderApp(
+      ['/settings'],
+      signedIn({
+        queryClient: cache,
+        userData,
+        constraints: createFakeConstraintsClient({ stored: [] }),
+      }),
+    )
+
+    const sections = await screen.findByRole('group', { name: 'Sections' })
+    const core = within(sections).getByRole('checkbox', { name: 'Core' })
+    expect(core).toBeEnabled()
+    await user.click(core)
+
+    await waitFor(() => {
+      expect(userData.preferenceWrites[0]?.enabled_sections).toContain('core')
+    })
   })
 })

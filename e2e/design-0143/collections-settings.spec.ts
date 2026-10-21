@@ -172,7 +172,7 @@ const test = base.extend<{ evidence: Evidence }>({
       await heading(page, title)
       if (isProtectedPath(at)) {
         // A protected route that fell back to Welcome is a failure, not a picture.
-        await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Get started', exact: true })).toHaveCount(0)
       }
       await assertState()
       const size = CAPTURE_VIEWPORTS.find((candidate) => candidate.id === viewport)!
@@ -1331,7 +1331,7 @@ backendTest('settings: sections, held save, refusal, reload, skins and focus', a
     await signOut.click()
     await expect(page).toHaveURL((url) => url.pathname === '/welcome')
     await evidence.shot('Settings', '/settings', 'sign-out', '/welcome', 'CLEAR', () =>
-      expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled(),
+      expect(page.getByRole('button', { name: 'Get started', exact: true })).toBeEnabled(),
     { variant: 'transition-destination' })
     evidence.disposition('Settings', '/settings', 'profile-loading',
       'The profile read is Boot-watched; BootGate withholds the route tree while it is pending, so Boot is the native surface.',
@@ -1402,7 +1402,10 @@ backendTest('places: list, editor, CRUD, refusals, default rules, delete and rel
     const created = 'TASK-035 travel gym'
     const renamed = 'TASK-035 hotel gym'
     await name.fill(created)
-    await page.getByRole('radio', { name: /^Home gym/ }).click()
+    // No tier preset outside onboarding (U15): the place holds what is ticked.
+    for (const item of ['Bodyweight', 'Resistance bands', 'Foam roller', 'Dumbbells', 'Kettlebells', 'Pull-up bar']) {
+      await page.getByRole('checkbox', { name: item, exact: true }).check()
+    }
     await save.click()
     await expect(save).toHaveCount(0)
     await card(created).getByRole('button', { name: 'Edit', exact: true }).click()

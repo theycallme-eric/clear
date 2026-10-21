@@ -208,8 +208,17 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await expectPinnedActions(page, ['Save place', 'Cancel'])
     await checkA11y()
 
+    // U15/U23: no tier selection and no starter preset outside onboarding; the
+    // editor says what saving does before it is pressed.
+    await expect(editor.getByRole('radio')).toHaveCount(0)
+    await expect(editor.getByRole('group', { name: 'Equipment tier' })).toHaveCount(0)
+    await expect(editor.getByRole('checkbox', { checked: true })).toHaveCount(0)
+    await expect(editor.getByText(/^Nothing changes until you save\./)).toBeVisible()
+
     await page.getByRole('textbox', { name: 'Name' }).fill(createdName)
-    await page.getByRole('radio', { name: /^Home gym/ }).click()
+    for (const item of ['Bodyweight', 'Dumbbells', 'Kettlebells']) {
+      await editor.getByRole('checkbox', { name: item, exact: true }).check()
+    }
     await expectPinnedActions(page, ['Save place', 'Cancel'])
     await page.getByRole('button', { name: 'Save place', exact: true }).click()
 
@@ -224,12 +233,28 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await expect(createdCard).toBeVisible()
     await expectCards(page, [originalName, createdName])
     await expectPinnedActions(page, ['Add place'])
+
+    // The name is the identity, Edit leads the framed row, Delete is quiet.
+    await expect(createdCard.getByText(/^(Minimal|Home gym|Building gym|Full gym)$/)).toHaveCount(0)
+    const createdActions = createdCard.locator('.clr-actions')
+    await expect(createdActions.getByRole('button').first()).toHaveAccessibleName('Edit')
+    await expect(createdActions.getByRole('button', { name: 'Edit', exact: true })).not.toHaveClass(
+      /clr-btn--quiet/,
+    )
+    await expect(createdActions.getByRole('button', { name: 'Delete', exact: true })).toHaveCount(0)
+    await expect(createdCard.getByRole('button', { name: 'Delete', exact: true })).toHaveClass(
+      /clr-btn--quiet/,
+    )
     await createdCard.getByRole('button', { name: 'Edit', exact: true }).click()
 
     const name = page.getByRole('textbox', { name: 'Name' })
     await expect(name).toHaveValue(createdName)
     await expectCards(page, [originalName, createdName, `Edit ${createdName}`])
     await expectPinnedActions(page, ['Save place', 'Cancel'])
+    // Exactly what was ticked came back; removing one is a real removal.
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(3)
+    await expect(page.getByRole('radio')).toHaveCount(0)
+    await page.getByRole('checkbox', { name: 'Kettlebells', exact: true }).uncheck()
     await name.fill(renamedName)
     await page.getByRole('button', { name: 'Save place', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Save place', exact: true })).toHaveCount(0)
@@ -296,22 +321,39 @@ test.describe('settings locations — live CRUD and generation default', () => {
       user_id: `eq.${actor?.id ?? ''}`,
     })
     expect(locations.ok, 'reading the committed location').toBe(true)
+    // Tier stays as the internal metadata a created place is stored with.
     expect(locations.body).toEqual([
-      expect.objectContaining({ name: renamedName, tier: 'home', is_default: true }),
+      expect.objectContaining({ name: renamedName, tier: 'minimal', is_default: true }),
     ])
 
     const location = (locations.body as Array<{ id: string }>)[0]
     const equipment = await client.selectAsService('location_equipment', {
       select: 'equipment_id',
       location_id: `eq.${location?.id ?? ''}`,
+      order: 'equipment_id',
     })
     expect(equipment.ok, 'reading the committed equipment').toBe(true)
-    expect(equipment.body).toEqual(
-      expect.arrayContaining([
-        { equipment_id: 'bodyweight' },
-        { equipment_id: 'dumbbells' },
-      ]),
+    expect(equipment.body).toEqual([
+      { equipment_id: 'bodyweight' },
+      { equipment_id: 'dumbbells' },
+    ])
+
+    // Candidate retrieval resolves its available equipment from these rows —
+    // the addition and the removal both — and not from the tier or the name.
+    const available = await client.rpcAs(
+      'generation_equipment',
+      { p_user_id: actor?.id ?? '', p_location_id: null },
+      actor?.token ?? '',
     )
+    expect(available.ok, `resolving retrieval equipment (status ${available.status})`).toBe(true)
+    expect(available.body).toEqual(['bodyweight', 'dumbbells'])
+
+    // And the editor reads the same set back after the reload.
+    await reloaded.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(page.getByRole('checkbox', { name: 'Dumbbells', exact: true })).toBeChecked()
+    await expect(page.getByRole('checkbox', { name: 'Kettlebells', exact: true })).not.toBeChecked()
+    await expect(page.getByRole('checkbox', { checked: true })).toHaveCount(2)
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
   })
 
   /**

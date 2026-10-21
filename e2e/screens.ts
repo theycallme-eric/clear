@@ -38,7 +38,7 @@ const NOT_FOUND = { title: 'Page not found · CLEAR', heading: 'Page not found' 
 /** The two screens a signed-out visitor is allowed to see as themselves. */
 const PUBLIC_SCREENS: Readonly<Record<string, { title: string; heading: string }>> = {
   Welcome: WELCOME,
-  'OTP Login': { title: 'Sign in · CLEAR', heading: 'Sign in' },
+  'OTP Login': { title: 'Get started · CLEAR', heading: 'Get started' },
 }
 
 function signedOutView(entry: RequiredScreen): { title: string; heading: string } {

@@ -81,6 +81,11 @@ export const COMMIT_FAILED_TITLE = 'Your setup didn’t save'
 /** Plain language for the one fact a failed commit guarantees. */
 export const COMMIT_FAILED_MESSAGE =
   'Nothing was stored, and your answers are still here. Try again when you’re ready.'
+/** The goal-derived section preview's caption and its one explanatory line. */
+export const SECTION_PREVIEW_CAPTION = 'Sections this goal enables'
+export const SECTION_PREVIEW_NOTE =
+  'A workout draws from these and may leave one out when it doesn’t suit the session. Change them later in Settings.'
+const SECTION_PREVIEW_ID = 'onboarding-section-preview'
 
 type Commit =
   | { readonly status: 'idle' }
@@ -308,20 +313,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
               if (goal) dispatch({ type: 'goal', value: goal.value })
             }}
           />
-          {draft.goal !== null && (
-            <CheckboxGroup legend="Sections">
-              {SECTIONS.map((section) => (
-                <Checkbox
-                  key={section.value}
-                  label={section.label}
-                  checked={draft.sections.includes(section.value)}
-                  onChange={() => {
-                    dispatch({ type: 'section', value: section.value })
-                  }}
-                />
-              ))}
-            </CheckboxGroup>
-          )}
+          {draft.goal !== null && <SectionPreview sections={draft.sections} />}
         </>
       )
     case 'limitations':
@@ -355,6 +347,42 @@ function StepView({ step, draft, dispatch }: StepProps) {
     case 'confirm':
       return <Summary draft={draft} />
   }
+}
+
+/**
+ * U10 / U16: the sections the chosen goal enables, as information. A list of
+ * plain rows under a caption — no checkbox, no tick, nothing focusable — so it
+ * cannot be read as a control, and it is the draft's own `sections`, so what
+ * it shows is exactly what the commit stores. Settings is where they change.
+ */
+function SectionPreview({ sections }: { sections: OnboardingDraft['sections'] }) {
+  return (
+    <div className="clr-stack clr-stack--tight">
+      <p id={SECTION_PREVIEW_ID} className="label" style={{ margin: 0 }}>
+        {SECTION_PREVIEW_CAPTION}
+      </p>
+      <ListFrame
+        as="ul"
+        aria-labelledby={SECTION_PREVIEW_ID}
+        style={{ listStyle: 'none', margin: 0, padding: 0 }}
+      >
+        {sections.map((section) => {
+          const option = SECTIONS.find((candidate) => candidate.value === section)
+          return (
+            <ListRow as="li" key={section}>
+              <span>{option?.label ?? section}</span>
+              {option?.description !== undefined && (
+                <span style={{ display: 'block', color: 'var(--text-secondary)' }}>
+                  {option.description}
+                </span>
+              )}
+            </ListRow>
+          )
+        })}
+      </ListFrame>
+      <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{SECTION_PREVIEW_NOTE}</p>
+    </div>
+  )
 }
 
 /** What will be stored, read back once before it is. */

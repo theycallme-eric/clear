@@ -24,6 +24,11 @@ export interface ScreenProps {
   pinnedFoot?: ReactNode
   /** Omit the head rule when pinnedHead already draws its own closing rule. */
   pinnedHeadRule?: boolean
+  /**
+   * Centre the title and content as one group in the visible height. The group
+   * still starts at the top and scrolls when it is taller than the viewport.
+   */
+  centered?: boolean
   children?: ReactNode
 }
 
@@ -33,6 +38,7 @@ export function Screen({
   pinnedHead,
   pinnedFoot,
   pinnedHeadRule = true,
+  centered = false,
   children,
 }: ScreenProps) {
   const registry = useScreenRegistry()
@@ -54,7 +60,11 @@ export function Screen({
           tabIndex: 0,
         }}
       >
-        <div className="clr-screen__content">
+        <div
+          className={
+            centered ? 'clr-screen__content clr-screen__content--centered' : 'clr-screen__content'
+          }
+        >
           <HeadingLevelProvider level={1}>
             <Heading tabIndex={-1}>{heading ?? title}</Heading>
           </HeadingLevelProvider>

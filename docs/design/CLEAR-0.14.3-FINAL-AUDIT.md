@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `483047f842eb280cfedf813d03bd1d9b590a20e884fb10ce7e3ce8a12197c7f1` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024 and TASK-025 changes below) |
+| Runtime source hash of this audit's tree | `16f9d543e6b44bdcb1594d4f2adaba555ff7d028f9cd6051bc6d48a1ef1ea333` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007 and TASK-025 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -122,6 +122,56 @@ trees and this head, from `git diff`:
   rendering on Workout. The pictures above predate it and are not rebound (EX-13). Current
   acceptance evidence is `e2e/design-0143/workout-emom.spec.ts` on the mobile project and the
   EMOM renderer/state tests.
+- `4a035b0a…` to `68f80dcb…`: TASK-026 (REQ-014, JOURNEY-025, U40) makes circuit execution
+  hands-off. The circuit renderer shows every movement in prescribed order with its per-round
+  target, the total rounds and the shared rest, and no longer walks a `Next movement` position
+  or marks a movement `Now`. Recording a round is one optional secondary tap that starts the
+  shared rest and can be taken back; time, rest expiry and the prescription never add a round,
+  so an untouched circuit's `block_results.rounds_completed` stays `null`. Load entry is one
+  quiet action per movement that opens the shared set logger for that movement only, with no
+  per-movement rest. Changed: `src/ui/circuit-block.tsx`. This **does** change rendering on
+  Workout. The pictures above predate it and are not rebound (EX-13). Current acceptance
+  evidence is `e2e/design-0143/workout-circuit.spec.ts` on the mobile project and the circuit
+  renderer tests.
+- `68f80dcb…` to `62161e8d…`: TASK-004 (REQ-002, JOURNEY-004, U13, U14) gives Welcome one
+  Get started entry for new and returning accounts, inside the one card under the wordmark, with
+  the wordmark and card centred as one group (`Screen centered`, `justify-content: safe center`,
+  so a short height or enlarged text scrolls instead of clipping). Welcome no longer pins a
+  footer. `/login` is titled `Get started` with no create-account mode (an old `?mode=create`
+  link renders the same screen); the code step names the address and puts an inline
+  `Change email` action beside it in the card, which returns focus to the kept address; the
+  footer `Use a different email` action is gone. The wrong- and expired-code sentences now name
+  Resend as the recovery. Changed: `src/app/Welcome.tsx`, `src/app/Login.tsx`,
+  `src/app/Screen.tsx`, `src/data/otp.ts`, `src/styles/shell.css`. This **does** change
+  rendering on Welcome and OTP Login. The pictures above predate it and are not rebound (EX-13).
+  Current acceptance evidence is `e2e/auth-otp.spec.ts` on the mobile project and
+  `src/app/Welcome.test.tsx` / `src/app/Login.test.tsx`.
+- `62161e8d…` to `2abda6c0…`: TASK-004 protected preview found two of five Welcome
+  action-frame sample points unclickable on phone/tablet. Its new in-card entry was inside
+  the retained `clr-boot` transform. The card/action are now stationary; only the decorative
+  line uses the same shipped boot vocabulary. The single-card/single-entry composition is
+  unchanged. A new structural regression fails on the prior tree; the existing U04 hit
+  samples and three-row stagger assertions are retained. Local phone checks pass; fresh
+  exact-head protected CI remains required to confirm the platform-specific correction.
+- `2abda6c0…` to `79423cfd…`: TASK-006 (REQ-004, JOURNEY-006, U10, U16) replaces onboarding's
+  goal-step section checkboxes with a read-only preview: a captioned plain list of the chosen
+  goal's sections (no control, nothing focusable) that follows a goal change, with one line
+  saying a workout may leave an enabled section out and that Settings edits them. Onboarding
+  commits the goal's sections unchanged; equipment and Settings' section toggles stay
+  editable. Changed: `src/app/Onboarding.tsx`, `src/state/onboarding.ts`. This **does** change
+  rendering on Onboarding's goal step. The pictures above predate it and are not rebound
+  (EX-13). Current acceptance evidence is `src/app/Onboarding.test.tsx` and
+  `src/test/generation-reliability/legal-state-matrix.test.ts`.
+- `79423cfd…` to `ac446d93…`: TASK-007 (REQ-005, JOURNEY-007, U15, U23) removes the tier
+  selection and tier label from Locations: a new place opens with nothing ticked (starter
+  presets stay in onboarding), an edited place keeps its stored tier as metadata, and the saved
+  ticks remain what candidate retrieval reads. Each place card shows its name as the only
+  identity, leads its framed action row with Edit and puts a quiet Delete beneath it; the editor
+  says what saving does. Writes and rollback are unchanged. Changed:
+  `src/app/LocationSettings.tsx`, `src/state/locations.ts`. This **does** change rendering on
+  `/settings/locations`. The pictures above predate it and are not rebound (EX-13). Current
+  acceptance evidence is `src/app/LocationSettings.test.tsx`, `src/state/locations.test.ts`
+  and `e2e/settings-locations.spec.ts`.
 - `4a035b0a…` to `483047f8…`: TASK-025 (REQ-014, JOURNEY-024, E02) makes the AMRAP window
   hands-off. The round counter is no longer drawn while the clock runs; once the window
   closes the athlete may record rounds and a partial round or leave both blank. Blank rounds
@@ -135,6 +185,8 @@ trees and this head, from `git diff`:
   predate it and are not rebound (EX-13). Current acceptance evidence is
   `e2e/design-0143/workout-amrap.spec.ts` on the mobile project and the AMRAP
   renderer/state and conditioning tests.
+
+- Current merged Task025 tree: runtime `16f9d543e6b44bdcb1594d4f2adaba555ff7d028f9cd6051bc6d48a1ef1ea333`. The normal current-base reconciliation conflicted only in this audit and the journal; both histories are retained. App changes are the already-approved AMRAP task plus current main. Fresh full native checks and criterion evidence remain required.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
@@ -307,3 +359,5 @@ On clean `8ef59aab28225687302ce625ca134febe8abebf2`, the original seven phone ba
 The same original recovery passed Typecheck, Lint and design-system Lint, then stopped at the full unit suite: 4624 passed and 1 failed. The failing owned audit-label assertion requires the phrase “one genuine generation per viewport”; the phone-only wording above had dropped it. The correction clarifies that this bound applies to the owner-selected proof viewport, currently phone only. No test assertion, runtime source, model policy, helper, backend or generation behaviour changed. Seed, generated-types and Build were not reached. All nine original commands remain required on the new committed documentation head. Any retained same-source phone validation must preserve the genuine proof’s original commit and counts; it is not a new generation or fresh deployed result.
 
 Actual receipts: `TASK027_POLLING_REPAIR_PHONE_VERIFICATION_COMPLETE_ACTUAL_ACK_2026-10-16.json`, `TASK027_POLLING_REPAIR_ORIGINAL_PUBLIC_RECOVERY_COMMAND_2_2026-10-16.json`, and `TASK027_POLLING_REPAIR_ORIGINAL_PUBLIC_RECOVERY_COMMAND_6_RAW_OUTCOME_2026-10-16.json` in the existing recovery evidence directory.
+
+- TASK-004 later CI39588516964 retained the same U04 misses despite the motion experiment. CI screenshot shows the Vercel feedback overlay overlapping the centered action. The unproven motion correction and its structural/motion-test changes were withdrawn; current runtime is restored62161e8d, with vendor unchanged. Test-only documented x-vercel-skip-toolbar header excludes preview tooling without changing any hit samples/assertions or authentication/protections. Prior failed proof is retained; new exact-head protected CI remains required.

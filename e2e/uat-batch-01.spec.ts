@@ -142,7 +142,9 @@ test('onboarding holds each step in one card with a pinned footer action', async
 
   await expectContainedStep('What are you going for?', 'Next')
   await page.getByRole('radio', { name: 'Balanced' }).click()
-  await expect(card.getByRole('group', { name: 'Sections' })).toHaveCSS('border-top-width', '0px')
+  // REQ-004: the goal's sections are a read-only list inside the card, not a control group.
+  await expect(card.getByRole('list', { name: 'Sections this goal enables' })).toBeVisible()
+  await expect(card.getByRole('group', { name: 'Sections' })).toHaveCount(0)
   await expectContainedStep('What are you going for?', 'Next')
   await footer().getByRole('button', { name: 'Next' }).click()
 

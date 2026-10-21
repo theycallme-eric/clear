@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
 import { createGenerationDatabase } from '../supabase/functions/_shared/generate.ts'
 import { GENERATION_SINGLE_ATTEMPT_ACCEPT, generationRequestSchema, generationSuccessSchema, type GenerationOutput } from '../src/state/schemas'
-import { EQUIPMENT, GOALS, SECTIONS, TIERS } from '../src/state/onboarding'
+import { EQUIPMENT, GOALS, SECTIONS_BY_GOAL, TIERS } from '../src/state/onboarding'
 import {
   assertReleaseGate,
   buildReleaseEvidence,
@@ -66,6 +66,8 @@ const MIRROR = JSON.parse(readFileSync(resolve(process.cwd(),
   'src/test/generation-reliability/owner-mirror.json'), 'utf8')) as {
   goal: string; tier: string; equipment: string[]; enabledSections: string[]
 }
+/** Onboarding commits the goal's own sections; this is the pool generation draws from. */
+const ENABLED_POOL: readonly string[] = SECTIONS_BY_GOAL[MIRROR.goal as keyof typeof SECTIONS_BY_GOAL]
 function labelOf(options: readonly { value: string; label: string }[], value: string) {
   const option = options.find((candidate) => candidate.value === value)
   if (!option) throw new Error('The acceptance fixture contains an unknown configuration value.')
@@ -228,10 +230,10 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Welcome ────────────────────────────────────────────────────────────
     await visit(routeOf('Welcome'))
     await expectScreen('Welcome', routeOf('Welcome'), 'CLEAR')
-    await page.getByRole('button', { name: 'Create account', exact: true }).click()
+    await page.getByRole('button', { name: 'Get started', exact: true }).click()
 
-    // ── OTP Login (the create-account entry to the same door) ──────────────
-    await expectScreen('OTP Login', routeOf('OTP Login'), 'Create account')
+    // ── OTP Login (the one entry, for new and returning accounts) ──────────
+    await expectScreen('OTP Login', routeOf('OTP Login'), 'Get started')
 
     // Delivery only: see the header. The request still has to be made.
     let deliveryRequested = false
@@ -290,11 +292,10 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     await page.getByRole('radio', { name: /^Some experience/ }).click()
     await next.click()
     await page.getByRole('radio', { name: new RegExp(`^${labelOf(GOALS, MIRROR.goal)}`) }).click()
-    const sections = page.getByRole('group', { name: 'Sections', exact: true })
-    for (const option of SECTIONS) {
-      await sections.getByRole('checkbox', { name: option.label, exact: true })
-        .setChecked(MIRROR.enabledSections.includes(option.value))
-    }
+    // REQ-004: the goal's sections are a read-only preview, committed unchanged.
+    const preview = page.getByRole('list', { name: 'Sections this goal enables', exact: true })
+    await expect(preview.getByRole('listitem')).toHaveCount(ENABLED_POOL.length)
+    await expect(preview.getByRole('checkbox')).toHaveCount(0)
     await next.click()
     await page.getByRole('button', { name: 'Skip', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
@@ -317,7 +318,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Generate ───────────────────────────────────────────────────────────
     await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
 
-    // Onboarding persisted the fixture's standing Goal and customized sections.
+    // Onboarding persisted the fixture's standing Goal and that goal's sections.
     // Generate shows that Goal as context instead of asking for it again; a first-time
     // athlete only supplies the unresolved Focus (labelled Anchor in the UI).
     await expect(page.getByText(new RegExp(`^Goal: ${labelOf(GOALS, MIRROR.goal)}`))).toBeVisible({ timeout: 30_000 })
@@ -378,7 +379,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // Enabled parts are available choices, not a requirement to pad every
     // heading into this session. Domain validation still owns IDs/equipment.
     for (const section of workout.sections) {
-      expect(MIRROR.enabledSections).toContain(section.section_type)
+      expect(ENABLED_POOL).toContain(section.section_type)
     }
     observed.accepted = true
 

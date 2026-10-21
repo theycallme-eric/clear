@@ -51,7 +51,7 @@ test('the skip link is the first thing a keyboard reaches', async ({
   await expect(focused).toHaveAttribute('href', '#main')
 })
 
-test('welcome groups one card under the wordmark, pins its entries, and auth uses a direct form', async ({ page, visit }, testInfo) => {
+test('welcome groups one card under the wordmark, holds its one entry, and auth uses a direct form', async ({ page, visit }, testInfo) => {
   await visit('/welcome')
   await expect(
     page.getByRole('heading', { level: 1, name: 'CLEAR' }).getByRole('img', {
@@ -59,47 +59,41 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
     }),
   ).toBeVisible()
 
-  // REQ-015: the line under the wordmark is the card's, not a floating label,
-  // and the card holds no action — both entries are the pinned footer.
+  // REQ-015 / U13: the line under the wordmark is the card's, not a floating
+  // label, and the card holds the one Get started entry (U14).
   const card = page.locator('main .clr-card')
   await expect(card).toHaveCount(1)
   await expect(card).toContainText('Strength training, simplified.')
-  await expect(card.getByRole('button')).toHaveCount(0)
+  await expect(card.getByRole('button')).toHaveText(['Get started'])
   await expect(page.locator('main').getByRole('status')).toHaveCount(0)
-
-  const foot = page.locator('main .clr-scroll-region__foot > .clr-footer')
-  await expect(foot).toHaveCount(1)
-  await expect(foot.getByRole('button')).toHaveText(['Sign in', 'Create account'])
+  await expect(page.locator('main .clr-footer')).toHaveCount(0)
   await expect(page.getByRole('button', { name: /begin session/i })).toHaveCount(0)
 
-  // Grouping, rendered: wordmark, then the card, then the footer, with the
-  // footer's last action inside the viewport rather than below the fold.
+  // Grouping, rendered: wordmark, then the card holding the entry, with the
+  // entry inside the viewport rather than below the fold.
   const boxes = await page.evaluate(() => {
     const top = (selector: string) =>
       document.querySelector(selector)?.getBoundingClientRect().top ?? -1
-    const actions = document.querySelectorAll('main .clr-footer button')
-    const lastAction = actions.item(actions.length - 1)
+    const action = document.querySelector('main .clr-card button')
     return {
       heading: top('main h1'),
       card: top('main .clr-card'),
-      foot: top('main .clr-footer'),
-      lastActionBottom: lastAction?.getBoundingClientRect().bottom ?? -1,
+      actionBottom: action?.getBoundingClientRect().bottom ?? -1,
       viewport: window.innerHeight,
       overflow: document.documentElement.scrollWidth - window.innerWidth,
     }
   })
   expect(boxes.heading).toBeGreaterThanOrEqual(0)
   expect(boxes.card).toBeGreaterThan(boxes.heading)
-  expect(boxes.foot).toBeGreaterThan(boxes.card)
-  expect(boxes.lastActionBottom).toBeGreaterThan(0)
-  expect(boxes.lastActionBottom).toBeLessThanOrEqual(boxes.viewport)
+  expect(boxes.actionBottom).toBeGreaterThan(0)
+  expect(boxes.actionBottom).toBeLessThanOrEqual(boxes.viewport)
   expect(boxes.overflow).toBeLessThanOrEqual(0)
   await page.screenshot({ path: testInfo.outputPath('vibe-d-welcome.png') })
 
-  await foot.getByRole('button', { name: 'Create account' }).click()
-  await expect(page).toHaveURL(/\/login\?mode=create$/)
+  await card.getByRole('button', { name: 'Get started' }).click()
+  await expect(page).toHaveURL(/\/login$/)
   await expect(
-    page.getByRole('heading', { level: 1, name: 'Create account' }),
+    page.getByRole('heading', { level: 1, name: 'Get started' }),
   ).toBeVisible()
   // 0.14.3 groups the native form in one card; the submit stays pinned.
   const formCard = page.locator('main .clr-card')
@@ -116,7 +110,7 @@ test('welcome groups one card under the wordmark, pins its entries, and auth use
   const formId = await formCard.locator('form').getAttribute('id')
   expect(formId).toBeTruthy()
   await expect(submit).toHaveAttribute('form', formId!)
-  await page.screenshot({ path: testInfo.outputPath('vibe-d-create-account.png') })
+  await page.screenshot({ path: testInfo.outputPath('vibe-d-get-started.png') })
 })
 
 test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier and no overflow at enlarged text', async ({
@@ -127,11 +121,11 @@ test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier a
   expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
   await visit('/welcome')
 
-  // U08: one statement in the one card, and the entries are the next action.
+  // U08: one statement in the one card, and the entry is the next action.
   const card = page.locator('main .clr-card')
   await expect(card.locator('p')).toHaveCount(1)
   await expect(card.locator('p')).toHaveText('Strength training, simplified.')
-  await expect(page.locator('main .clr-footer').getByRole('button')).toHaveCount(2)
+  await expect(card.getByRole('button')).toHaveCount(1)
 
   // U06: on a screen the 12px data-label tier reads at the next label step.
   const tier = await page.locator('main.clr-screen').evaluate((main) => {
@@ -146,19 +140,19 @@ test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier a
   // U05: the gap owns the rhythm, never a browser paragraph margin.
   expect(tier.margin).toBe('0px')
 
-  // Enlarged text and the longest entry labels: nothing clips or overflows,
-  // and both entries stay inside the viewport at the same height.
+  // Enlarged text and the longest entry label: nothing clips or overflows,
+  // and the entry stays inside the viewport.
   await page.addStyleTag({
     content: '.clr-screen { --label-sm-size: 18px; --label-md-size: 20px; --label-lg-size: 24px; --paragraph-md-size: 20px; }',
   })
-  for (const button of await page.locator('main .clr-footer button').all()) {
+  for (const button of await page.locator('main .clr-card button').all()) {
     await button.evaluate((element) => {
       const label = [...element.querySelectorAll('*')].find((node) => node.children.length === 0 && node.textContent?.trim()) ?? element
       label.textContent = `${label.textContent} with the longest label`
     })
   }
   const fit = await page.evaluate(() => {
-    const buttons = [...document.querySelectorAll<HTMLElement>('main .clr-footer button')]
+    const buttons = [...document.querySelectorAll<HTMLElement>('main .clr-card button')]
     return {
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       outside: buttons.filter((button) => {
@@ -180,7 +174,7 @@ test.describe('with reduced motion', () => {
   // The browser's own media feature, set before the first document loads.
   test.use({ reducedMotion: 'reduce' })
 
-  test('welcome entries work from the keyboard', async ({ page, visit }) => {
+  test('the welcome entry works from the keyboard', async ({ page, visit }) => {
     await visit('/welcome')
 
     // Reduced motion reaches the final state at once: the card is fully shown
@@ -189,18 +183,14 @@ test.describe('with reduced motion', () => {
     await expect(card).toBeVisible()
     await expect(card).toHaveCSS('opacity', '1')
 
-    const signIn = page.getByRole('button', { name: 'Sign in' })
-    const create = page.getByRole('button', { name: 'Create account' })
-    await signIn.focus()
-    await page.keyboard.press('Tab')
-    await expect(create).toBeFocused()
-    await page.keyboard.press('Shift+Tab')
-    await expect(signIn).toBeFocused()
+    const entry = card.getByRole('button', { name: 'Get started' })
+    await entry.focus()
+    await expect(entry).toBeFocused()
 
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/\/login$/)
     await expect(
-      page.getByRole('heading', { level: 1, name: 'Sign in' }),
+      page.getByRole('heading', { level: 1, name: 'Get started' }),
     ).toBeVisible()
   })
 })

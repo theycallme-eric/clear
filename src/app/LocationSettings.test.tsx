@@ -3,7 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { createError, err, ErrorCode, ok, type Result } from '../state/errors'
-import { BLANK_NAME_REASON, DUPLICATE_NAME_REASON } from '../state/locations'
+import {
+  BLANK_NAME_REASON,
+  DUPLICATE_NAME_REASON,
+  NEW_LOCATION_TIER,
+  SAVE_BEHAVIOR,
+} from '../state/locations'
 import { QueryClient } from '../state/query'
 import type { Location, LocationSetup } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
@@ -153,23 +158,33 @@ describe('the list is headed cards with measured actions', () => {
       ),
     ).toBeVisible()
     expect(within(card('Office')).queryByText(/Default for generation/)).toBeNull()
-    expect(within(card('Home')).getByText('Minimal')).toBeVisible()
   })
 
-  it('offers Edit as the quiet action and frames the rest in one action row', () => {
-    renderLocations([home(), office()])
+  it('makes the place name the only identity: no tier is shown', () => {
+    renderLocations([home(), fixtureLocation({ ...office(), tier: 'full' })])
 
-    const edit = within(card('Office')).getByRole('button', { name: 'Edit' })
-    expect(edit).toHaveClass('clr-text-action')
+    for (const name of ['Home', 'Office']) {
+      for (const tier of ['Minimal', 'Home gym', 'Building gym', 'Full gym']) {
+        expect(within(card(name)).queryByText(tier)).toBeNull()
+      }
+    }
+  })
+
+  it('leads with a framed Edit and keeps Delete quiet, apart from the row', () => {
+    renderLocations([home(), office()])
 
     const actions = card('Office').querySelector('.clr-actions')
     if (!(actions instanceof HTMLElement)) throw new Error('No action row for Office')
-    expect(buttonNames(actions)).toEqual(['Make default', 'Delete'])
-    // The row promotes a critical button to its main action. Deleting is not
-    // what a place is for; the confirmation carries the severity.
-    expect(within(actions).getByRole('button', { name: 'Delete' })).not.toHaveClass(
-      'clr-btn--critical',
-    )
+    expect(buttonNames(actions)).toEqual(['Edit', 'Make default'])
+    const edit = within(actions).getByRole('button', { name: 'Edit' })
+    expect(edit).toHaveClass('clr-btn')
+    expect(edit).not.toHaveClass('clr-btn--quiet')
+    expect(edit).not.toHaveClass('clr-text-action')
+
+    const remove = within(card('Office')).getByRole('button', { name: 'Delete' })
+    expect(actions.contains(remove)).toBe(false)
+    expect(remove).toHaveClass('clr-btn--quiet')
+    expect(remove).not.toHaveClass('clr-btn--critical')
 
     expect(buttonNames(card('Home'))).toEqual(['Edit', 'Delete'])
     expect(buttonNames(footer())).toEqual(['Add place'])
@@ -269,8 +284,15 @@ describe('the editor is one form card with its actions pinned', () => {
     expect(editor.querySelector('.clr-card')).toBeNull()
     const name = within(editor).getByRole('textbox', { name: 'Name' })
     expect(name).toHaveFocus()
-    expect(within(editor).getByRole('group', { name: 'Equipment tier' })).toBeVisible()
+    // No tier selection, and no starter preset: nothing is ticked until the
+    // person ticks what this place has.
+    expect(within(editor).queryByRole('group', { name: 'Equipment tier' })).toBeNull()
+    expect(within(editor).queryAllByRole('radio')).toEqual([])
     expect(within(editor).getByRole('group', { name: 'Equipment' })).toBeVisible()
+    expect(
+      within(editor).queryAllByRole('checkbox').filter((box) => (box as HTMLInputElement).checked),
+    ).toEqual([])
+    expect(within(editor).getByText(SAVE_BEHAVIOR)).toBeVisible()
     // The card holds the fields; what is done with them is pinned.
     expect(within(editor).queryAllByRole('button')).toEqual([])
     expect(buttonNames(footer())).toEqual(['Save place', 'Cancel'])
@@ -457,6 +479,114 @@ describe('the editor is one form card with its actions pinned', () => {
     expect(
       within(footer()).getByRole('button', { name: 'Save place' }),
     ).not.toHaveAttribute('aria-busy', 'true')
+    expect(userData.locationWrites).toHaveLength(1)
+  })
+})
+
+describe('a place holds its real equipment (U15) and saves obviously and atomically (U23)', () => {
+  const GYM_ID = '00000000-0000-4000-8000-000000000012'
+  // Named and tiered like a full gym; what it holds is a bar, a band and a sled.
+  const gym = () => fixtureLocation({ id: GYM_ID, name: 'Full gym', tier: 'full', is_default: false })
+
+  function checked(): HTMLElement[] {
+    return screen
+      .getAllByRole('checkbox')
+      .filter((box) => (box as HTMLInputElement).checked)
+  }
+
+  it('saves additions and removals, keeps the stored tier, and reads them back after a reload', async () => {
+    const user = userEvent.setup()
+    const options = {
+      equipment: { [HOME_ID]: ['bodyweight'], [GYM_ID]: ['pullup_bar', 'resistance_bands', 'custom_sled'] },
+    }
+    const { userData, unmount } = renderLocations([home(), gym()], options)
+
+    await user.click(within(card('Full gym')).getByRole('button', { name: 'Edit' }))
+    // Exactly what was saved — not the full-gym preset the name and tier suggest.
+    expect(await screen.findByRole('checkbox', { name: 'Pull-up bar' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'custom_sled' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Barbell' })).not.toBeChecked()
+    expect(screen.queryAllByRole('radio')).toEqual([])
+
+    await user.click(screen.getByRole('checkbox', { name: 'Dumbbells' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Resistance bands' }))
+    await user.click(screen.getByRole('button', { name: 'Save place' }))
+    await waitFor(() => expect(userData.locationWrites).toHaveLength(1))
+    expect(userData.locationWrites[0]).toEqual({
+      id: GYM_ID,
+      name: 'Full gym',
+      tier: 'full',
+      equipment: ['dumbbells', 'pullup_bar', 'custom_sled'],
+    })
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Save place' })).toBeNull())
+    unmount()
+
+    // A fresh cache: what the editor shows is what the store answers.
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+    renderApp(['/settings/locations'], signedIn({ queryClient: cache, userData }))
+    await screen.findByRole('heading', { name: 'Full gym' })
+    await user.click(within(card('Full gym')).getByRole('button', { name: 'Edit' }))
+    expect(await screen.findByRole('checkbox', { name: 'Dumbbells' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Resistance bands' })).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'custom_sled' })).toBeChecked()
+    expect(checked()).toHaveLength(3)
+
+    const stored = await userData.locationEquipment(GYM_ID)
+    expect(stored.ok && stored.value).toEqual(['custom_sled', 'dumbbells', 'pullup_bar'])
+  })
+
+  it('creates a place from only the equipment ticked, with tier kept as metadata', async () => {
+    const user = userEvent.setup()
+    const { userData } = renderLocations([home()])
+
+    await user.click(screen.getByRole('button', { name: 'Add place' }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Full gym downtown')
+    await user.click(screen.getByRole('checkbox', { name: 'Kettlebells' }))
+    await user.click(screen.getByRole('button', { name: 'Save place' }))
+
+    await waitFor(() => expect(userData.locationWrites).toHaveLength(1))
+    expect(userData.locationWrites[0]).toEqual({
+      id: null,
+      name: 'Full gym downtown',
+      tier: NEW_LOCATION_TIER,
+      equipment: ['kettlebells'],
+    })
+  })
+
+  it('keeps a refused new place in the editor, name and ticks intact, and the list as it was', async () => {
+    const user = userEvent.setup()
+    const pending: { resolve?: (result: Result<LocationSetup>) => void } = {}
+    const { userData } = renderLocations([home()], {
+      saveLocation: () =>
+        new Promise<Result<LocationSetup>>((resolve) => {
+          pending.resolve = resolve
+        }),
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Add place' }))
+    await user.type(screen.getByRole('textbox', { name: 'Name' }), 'Garage')
+    await user.click(screen.getByRole('checkbox', { name: 'Dumbbells' }))
+    await user.click(screen.getByRole('checkbox', { name: 'Plyo box' }))
+    await user.click(screen.getByRole('button', { name: 'Save place' }))
+    expect(await screen.findByRole('heading', { name: 'Garage' })).toBeVisible()
+
+    const resolve = pending.resolve
+    if (resolve === undefined) throw new Error('save did not start')
+    await act(async () => {
+      resolve(err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)))
+    })
+
+    expect(screen.queryByRole('heading', { name: 'Garage' })).toBeNull()
+    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
+      'Home',
+      'Add place',
+    ])
+    expect(screen.getByRole('textbox', { name: 'Name' })).toHaveValue('Garage')
+    expect(screen.getByRole('checkbox', { name: 'Dumbbells' })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: 'Plyo box' })).toBeChecked()
+    expect(within(card('Add place')).getByRole('status')).not.toHaveTextContent('Saved')
+    expect(buttonNames(footer())).toEqual(['Save place', 'Cancel'])
     expect(userData.locationWrites).toHaveLength(1)
   })
 })

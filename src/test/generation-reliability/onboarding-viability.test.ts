@@ -456,15 +456,21 @@ describe('the onboarding screen', () => {
   it('announces the named choice, stays in onboarding, and keeps every answer', async () => {
     const { user, userData, queryClient, double } = setup()
 
+    // Onboarding's sections are a read-only preview of the goal (REQ-004), so
+    // the choice a refusal names here is the equipment: none at all.
+    const MINIMAL_LABELS = ['Bodyweight', 'Resistance bands', 'Foam roller']
+
     await onStep('location')
     await user.click(screen.getByRole('radio', { name: 'Minimal' }))
+    for (const name of MINIMAL_LABELS) {
+      await user.click(screen.getByRole('checkbox', { name }))
+    }
     await user.click(next())
     await onStep('experience')
     await user.click(screen.getByRole('radio', { name: 'Some experience' }))
     await user.click(next())
     await onStep('goals')
     await user.click(screen.getByRole('radio', { name: 'Strength' }))
-    await user.click(screen.getByRole('checkbox', { name: 'Carries' }))
     await user.click(next())
     await onStep('limitations')
     await user.click(screen.getByRole('checkbox', { name: 'Hard conditioning' }))
@@ -479,10 +485,10 @@ describe('the onboarding screen', () => {
     const alert = await screen.findByRole('alert')
     expect(alert.tagName).toBe('P')
     expect(alert).toHaveTextContent(
-      'Nothing in Carries can be done with the equipment you chose ' +
-        '(Bodyweight, Resistance bands, Foam roller). ' +
-        'Add equipment to your setup, or turn off Carries.',
+      'Nothing in Warm-up, Mobility, Primary lift, Accessory, Core and Cooldown can be done ' +
+        'with no equipment chosen.',
     )
+    expect(alert).toHaveTextContent(/add equipment to your setup/i)
     expect(screen.getAllByRole('alert')).toHaveLength(1)
     expect(screen.queryByText('Your setup didn’t save')).not.toBeInTheDocument()
 
@@ -503,14 +509,15 @@ describe('the onboarding screen', () => {
     await user.click(back())
     await onStep('goals')
     expect(screen.getByRole('radio', { name: 'Strength' })).toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Carries' })).toBeChecked()
     await user.click(back())
     await onStep('experience')
     expect(screen.getByRole('radio', { name: 'Some experience' })).toBeChecked()
     await user.click(back())
     await onStep('location')
     expect(screen.getByRole('radio', { name: 'Minimal' })).toBeChecked()
-    expect(screen.getByRole('checkbox', { name: 'Resistance bands' })).toBeChecked()
+    for (const name of MINIMAL_LABELS) {
+      expect(screen.getByRole('checkbox', { name })).not.toBeChecked()
+    }
 
     // Unchanged answers are still refused answers: the line is there on return.
     await user.click(next())
@@ -518,13 +525,19 @@ describe('the onboarding screen', () => {
     await user.click(next())
     await user.click(next())
     await onStep('confirm')
-    expect(screen.getByRole('alert')).toHaveTextContent('turn off Carries')
+    expect(screen.getByRole('alert')).toHaveTextContent('no equipment chosen')
 
     // Correct the named choice, and the same draft commits.
     await user.click(back())
     await user.click(back())
-    await onStep('goals')
-    await user.click(screen.getByRole('checkbox', { name: 'Carries' }))
+    await user.click(back())
+    await user.click(back())
+    await onStep('location')
+    for (const name of MINIMAL_LABELS) {
+      await user.click(screen.getByRole('checkbox', { name }))
+    }
+    await user.click(next())
+    await user.click(next())
     await user.click(next())
     await user.click(next())
     await onStep('confirm')
@@ -533,11 +546,10 @@ describe('the onboarding screen', () => {
 
     expect(await screen.findByRole('heading', { name: 'Today' })).toBeInTheDocument()
     expect(userData.onboardingCalls).toHaveLength(2)
+    expect(userData.onboardingCalls[0]?.equipment).toEqual([])
     expect(userData.onboardingCalls[1]).toEqual({
       ...userData.onboardingCalls[0],
-      enabled_sections: userData.onboardingCalls[0]?.enabled_sections.filter(
-        (section) => section !== 'carries',
-      ),
+      equipment: [...EQUIPMENT_BY_TIER.minimal],
     })
     expect(double.store().profile.onboarded_at).not.toBeNull()
     expect(double.store().constraints).toHaveLength(1)

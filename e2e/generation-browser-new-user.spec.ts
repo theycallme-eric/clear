@@ -299,10 +299,10 @@ test.describe('critical browser lane: a new user, sign-up to Review (REQ-023)', 
     // ── Welcome ────────────────────────────────────────────────────────────
     await visit(routeOf('Welcome'))
     await screen('Welcome', 'CLEAR')
-    await page.getByRole('button', { name: 'Create account', exact: true }).click()
+    await page.getByRole('button', { name: 'Get started', exact: true }).click()
 
-    // ── OTP Login (the create-account entry to the same door) ──────────────
-    await screen('OTP Login', 'Create account')
+    // ── OTP Login (the one entry, for new and returning accounts) ──────────
+    await screen('OTP Login', 'Get started')
 
     // Delivery only, as in `core-loop.spec.ts`: `/auth/v1/otp` would mail an
     // undeliverable address. The request still has to be made.

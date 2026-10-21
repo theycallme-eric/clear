@@ -87,11 +87,11 @@ test('a screen is usable on arrival, with nothing waiting on an entrance', async
 
   // No settling, no timeout: the first thing the person does is the thing the
   // screen is for, and it works.
-  await page.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByRole('button', { name: 'Get started' }).click()
 
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
-    'Sign in',
+    'Get started',
   )
 
   // REQ-011: the arrival is complete the moment it happens. The chrome adds no
@@ -166,29 +166,30 @@ test.describe('with motion allowed', () => {
     // The first load is the browser's: nothing arrived.
     await expect(page.locator('main')).not.toHaveClass(/route-enter-/)
 
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    await expectEntry(page, 'Sign in', FORWARD)
+    await page.getByRole('button', { name: 'Get started' }).click()
+    await expectEntry(page, 'Get started', FORWARD)
 
     await page.goBack()
     await expectEntry(page, 'CLEAR', BACK)
 
     await page.goForward()
-    await expectEntry(page, 'Sign in', FORWARD)
+    await expectEntry(page, 'Get started', FORWARD)
   })
 
   test('a set arrives 40ms apart', async ({ page, visit }) => {
     await visit('/welcome')
 
-    // Welcome is one arriving card, not a multirow set. Its pinned actions
-    // must stay outside the arrival and remain usable without animation.
+    // Welcome is one arriving card, not a multirow set (U13). Its one entry
+    // is part of that card and adds no entrance of its own; it stays usable
+    // without animation.
     const arrival = page.locator('main .clr-boot > *')
     await expect(arrival).toHaveCount(1)
     await expect(arrival.locator('.clr-card')).toHaveCount(1)
     await expect(arrival).toHaveCSS('animation-name', 'clr-boot-in')
     await expect(arrival).toHaveCSS('animation-delay', '0s')
-    await expect(page.locator('main .clr-boot button')).toHaveCount(0)
-    const actions = page.locator('main .clr-scroll-region__foot button')
-    await expect(actions).toHaveText(['Sign in', 'Create account'])
+    const actions = page.locator('main button')
+    await expect(actions).toHaveText(['Get started'])
+    await expect(arrival).toContainText('Get started')
     for (const action of await actions.all()) {
       await expect(action).toHaveCSS('animation-name', 'none')
       await expect(action).toBeVisible()
@@ -238,8 +239,8 @@ test.describe('with motion allowed', () => {
     // than a race it hopes to win; the entry and its class are untouched.
     await page.addStyleTag({ content: 'html:root { --dur-fast: 30s; }' })
 
-    await page.getByRole('button', { name: 'Sign in' }).click()
-    await expectEntry(page, 'Sign in', FORWARD)
+    await page.getByRole('button', { name: 'Get started' }).click()
+    await expectEntry(page, 'Get started', FORWARD)
     expect(await runningEntrances(page)).toContain('clr-shift-in-right')
 
     // Back while it is still playing: the new state does not queue behind the
@@ -252,7 +253,7 @@ test.describe('with motion allowed', () => {
     expect(await runningEntrances(page)).not.toContain('clr-shift-in-right')
 
     // And nothing blocks on what is left: the screen works straight away.
-    await page.getByRole('button', { name: 'Sign in' }).click()
+    await page.getByRole('button', { name: 'Get started' }).click()
     await expect(page).toHaveURL(/\/login$/)
   })
 })

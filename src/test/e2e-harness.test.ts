@@ -133,6 +133,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(vercelProtectionHeaders('test-only-value')).toEqual({
       'x-vercel-protection-bypass': 'test-only-value',
       'x-vercel-set-bypass-cookie': 'true',
+      'x-vercel-skip-toolbar': '1',
     })
   })
 

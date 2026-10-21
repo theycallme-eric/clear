@@ -168,7 +168,7 @@ describe('verifyCode', () => {
     if (result.ok) return
     expect(result.error.failure).toBe('expired-code')
     expect(result.error.code).toBe(ErrorCode.AUTH_INVALID_CREDENTIALS)
-    expect(result.error.message).toBe('That code has expired. Request a new one.')
+    expect(result.error.message).toBe('That code has expired. Resend a new code to continue.')
     expect(result.error.message).not.toContain(GOTRUE_PROSE)
     // The wire's own words survive only where a log can read them.
     expect(result.error.details).toEqual({ status: 403, errorCode: 'otp_expired' })
@@ -184,7 +184,7 @@ describe('verifyCode', () => {
     if (result.ok) return
     expect(result.error.failure).toBe('invalid-code')
     expect(result.error.message).toBe(
-      'That code is not right. Check the digits and try again.',
+      'That code is not right. Check the digits, or resend a new code.',
     )
   })
 
