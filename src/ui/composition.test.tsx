@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs'
+
 import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { ScanLoader, TimerDisplay } from '../design-system/index'
+import { Button, ScanLoader, TimerDisplay } from '../design-system/index'
 import { renderWithProviders } from '../test/render'
 import { Card } from './card'
 import {
@@ -160,6 +162,51 @@ describe('containment inside a card', () => {
     expect(document.querySelectorAll('.clr-card')).toHaveLength(1)
     expect(document.querySelectorAll('.clr-card__bar')).toHaveLength(1)
     expect(document.querySelectorAll('.clr-chamfer')).toHaveLength(1)
+  })
+})
+
+describe('REQ-001 shared rules and action frames', () => {
+  const shell = readFileSync('src/styles/shell.css', 'utf8')
+
+  it('marks a list inside a card so its row rules can reach the card border', () => {
+    renderWithProviders(
+      <>
+        <ListFrame aria-label="Standalone" role="list" />
+        <Card heading="Week">
+          <ListFrame aria-label="Carded" role="list" />
+        </Card>
+      </>,
+    )
+
+    expect(screen.getByRole('list', { name: 'Carded' })).toHaveClass('clr-list', 'clr-list--in-card')
+    expect(screen.getByRole('list', { name: 'Standalone' })).not.toHaveClass('clr-list--in-card')
+  })
+
+  it('runs row rules border to border inside the frame and out through a card padding', () => {
+    expect(shell).toMatch(
+      /\.clr-list__row \+ \.clr-list__row::before \{\s*right: var\(--border-width\);\s*left: var\(--border-width\);/,
+    )
+    expect(shell).toMatch(
+      /\.clr-list--in-card > \.clr-list__row \+ \.clr-list__row::before \{\s*right: calc\(var\(--border-width\) - var\(--spacing-300\)\);\s*left: calc\(var\(--border-width\) - var\(--spacing-300\)\);/,
+    )
+  })
+
+  it('lets a button surface fill whatever frame its layout stretches (U04)', () => {
+    expect(shell).toMatch(/\.clr-bleed > \.clr-btn \{\s*flex-grow: 1;\s*\}/)
+  })
+
+  it('renders a public Button as a bleed frame around its chamfered surface', () => {
+    renderWithProviders(
+      <ActionRow>
+        <Button variant="primary" size="lg">
+          Start workout
+        </Button>
+      </ActionRow>,
+    )
+
+    const surface = screen.getByRole('button', { name: 'Start workout' })
+    expect(surface).toHaveClass('clr-btn', 'clr-chamfer')
+    expect(surface.parentElement).toHaveClass('clr-bleed')
   })
 })
 
