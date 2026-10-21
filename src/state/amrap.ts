@@ -23,10 +23,12 @@
  *   · **Finishing early and the buzzer arrive at the same place.** `finishAmrap`
  *     records the seconds that had actually elapsed, so the score is logged the
  *     same way whichever ended the window (`amrap-logging.md` §3).
- *   · **A partial round is typed absence.** `partialRoundReps` is `null` for "no
- *     partial round recorded" and `0` for "the buzzer landed on the boundary" —
- *     different observations, kept different all the way to the column
- *     (DATA-01d, DATA_MODEL §8).
+ *   · **The result is typed absence.** `roundsCompleted` is `null` until the
+ *     athlete records a count, and `partialRoundReps` is `null` for "no partial
+ *     round recorded" and `0` for "the buzzer landed on the boundary" — different
+ *     observations, kept different all the way to the column (DATA-01d,
+ *     DATA_MODEL §8). REQ-014 makes both optional and post-window: the window
+ *     runs hands-off, and a result nobody entered is never a zero.
  *
  * Nothing here imports React, touches storage, or knows what a card looks like.
  * `amrap-block.tsx` draws it and `workout-persistence.ts` remembers it.
@@ -58,19 +60,22 @@ export interface AmrapState {
    * did not — the cap ended it, or it is still open.
    */
   readonly endedAtSeconds: number | null
-  /** Rounds banked. Zero is a real score: the user managed none. */
-  readonly roundsCompleted: number
+  /**
+   * Rounds the athlete recorded once the window closed. Null: none recorded.
+   * Zero is a real score — the user managed none — and is not the same fact.
+   */
+  readonly roundsCompleted: number | null
   /** Reps into the unfinished round, or null for no partial round recorded. */
   readonly partialRoundReps: number | null
 }
 
 export type AmrapPhase = 'ready' | 'running' | 'complete'
 
-/** Nothing started, nothing counted, no partial round claimed. */
+/** Nothing started, nothing recorded, no partial round claimed. */
 export const AMRAP_START: AmrapState = {
   startedAt: null,
   endedAtSeconds: null,
-  roundsCompleted: 0,
+  roundsCompleted: null,
   partialRoundReps: null,
 }
 
@@ -117,14 +122,27 @@ export function finishAmrap(
 }
 
 /**
- * One round, banked or taken back. This is the highest-frequency interaction in
- * the app (EXE-04c), which is the whole reason it is a `+1` on a number and not
- * a form: there is nothing to submit, nothing to open, and nothing to lose by
- * having tapped it once too often — `-1` undoes it.
+ * One round, added or taken back, after the window. A `+1` on a number rather
+ * than a form: there is nothing to submit, and `-1` undoes a tap too many.
+ * Counting from no recorded result starts at zero.
  */
 export function countRound(state: AmrapState, delta: number): AmrapState {
-  const rounds = Math.max(0, state.roundsCompleted + Math.trunc(delta))
+  const rounds = Math.max(0, (state.roundsCompleted ?? 0) + Math.trunc(delta))
   return rounds === state.roundsCompleted ? state : { ...state, roundsCompleted: rounds }
+}
+
+/**
+ * Records a round count, or clears it back to "not recorded". As with the
+ * partial round, `null` and `0` are different answers and stay different.
+ */
+export function setRoundsCompleted(
+  state: AmrapState,
+  rounds: number | null,
+): AmrapState {
+  return {
+    ...state,
+    roundsCompleted: rounds === null ? null : Math.max(0, Math.trunc(rounds)),
+  }
 }
 
 /**
@@ -165,7 +183,10 @@ export function clampAmrapState(state: AmrapState, shape: AmrapShape): AmrapStat
       ended === null || shape.capSeconds === null
         ? ended
         : Math.min(ended, shape.capSeconds),
-    roundsCompleted: Math.max(0, Math.trunc(state.roundsCompleted)),
+    roundsCompleted:
+      state.roundsCompleted === null
+        ? null
+        : Math.max(0, Math.trunc(state.roundsCompleted)),
     partialRoundReps:
       state.partialRoundReps === null
         ? null
@@ -187,8 +208,8 @@ export interface AmrapView {
   readonly remainingSeconds: number
   /** Seconds the window has been open — the time the score belongs to. */
   readonly elapsedSeconds: number
-  /** Rounds banked so far. */
-  readonly roundsCompleted: number
+  /** Rounds recorded, or null for none recorded. */
+  readonly roundsCompleted: number | null
   /** The partial round recorded, or null for none. */
   readonly partialRoundReps: number | null
   /** True when the cap ended the window rather than the user. */
@@ -205,7 +226,8 @@ export function amrapView(
   shape: AmrapShape,
   clockElapsedSeconds: number,
 ): AmrapView {
-  const banked = Math.max(0, Math.trunc(state.roundsCompleted))
+  const banked =
+    state.roundsCompleted === null ? null : Math.max(0, Math.trunc(state.roundsCompleted))
   const common = {
     capSeconds: shape.capSeconds,
     size: shape.size,
@@ -262,17 +284,20 @@ export function amrapView(
  * Three fields, and each one is present only if it was observed. An AMRAP that
  * was never started measured nothing at all — no rounds, no time — and supplies
  * an empty outcome rather than a row of zeroes nobody performed (DATA_MODEL §8).
- * `partial_round_reps` is omitted when no partial round was recorded, which is
- * exactly how `null` gets into the column instead of a zero that would read as
- * "stopped on the boundary".
+ * `rounds_completed` and `partial_round_reps` are omitted when the athlete
+ * recorded none, which is exactly how `null` gets into the column instead of a
+ * zero that would read as an observed result. Neither is offered while the
+ * window is open, so a result reaches the shell only once it has closed.
  */
 export function amrapOutcome(view: AmrapView): BlockOutcome {
   if (view.phase === 'ready') return {}
 
   return {
     elapsedSeconds: view.elapsedSeconds,
-    roundsCompleted: view.roundsCompleted,
-    ...(view.partialRoundReps === null
+    ...(view.phase === 'complete' && view.roundsCompleted !== null
+      ? { roundsCompleted: view.roundsCompleted }
+      : {}),
+    ...(view.phase !== 'complete' || view.partialRoundReps === null
       ? {}
       : { partialRoundReps: view.partialRoundReps }),
   }

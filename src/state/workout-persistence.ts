@@ -486,8 +486,9 @@ function isAmrapState(value: unknown): value is AmrapState {
     (record.endedAtSeconds === null ||
       (typeof record.endedAtSeconds === 'number' &&
         Number.isFinite(record.endedAtSeconds) && record.endedAtSeconds >= 0)) &&
-    typeof record.roundsCompleted === 'number' &&
-    Number.isInteger(record.roundsCompleted) && record.roundsCompleted >= 0 &&
+    (record.roundsCompleted === null ||
+      (typeof record.roundsCompleted === 'number' &&
+        Number.isInteger(record.roundsCompleted) && record.roundsCompleted >= 0)) &&
     (record.partialRoundReps === null ||
       (typeof record.partialRoundReps === 'number' &&
         Number.isInteger(record.partialRoundReps) && record.partialRoundReps >= 0))

@@ -1193,3 +1193,46 @@ describe('absent effort in new and mixed history (REQ-016)', () => {
     expect(rows).toEqual(before)
   })
 })
+
+describe('an AMRAP result recorded after the window, or left blank (REQ-014)', () => {
+  it('reads blank rounds as no score, never as a zero', () => {
+    expect(outcomeOf({ elapsedSeconds: 600 }, null).roundsCompleted).toBeNull()
+    expect(conditioningScore(block(), outcomeOf({ elapsedSeconds: 600 }, null))).toBeNull()
+    expect(section({ rounds_completed: null, partial_round_reps: null }).score).toBeNull()
+  })
+
+  it('scores an observed zero as a real zero', () => {
+    expect(
+      conditioningScore(block(), outcomeOf({ elapsedSeconds: 600, roundsCompleted: 0 }, null)),
+    ).toMatchObject({ value: 0, label: '0 reps/min' })
+    expect(section({ rounds_completed: 0 }).score).toMatchObject({ value: 0 })
+  })
+
+  it('keeps a partial round with no rounds from becoming a score', () => {
+    expect(
+      conditioningScore(block(), outcomeOf({ elapsedSeconds: 600, partialRoundReps: 4 }, null)),
+    ).toBeNull()
+  })
+
+  it('compares only against identical attempts that recorded a result', () => {
+    const current = {
+      blockId: 'b0000009-0000-4000-8000-000000000000',
+      fingerprint: conditioningFingerprint(block()),
+      score: conditioningScore(block(), outcome({ roundsCompleted: 6 })),
+    }
+
+    // Identical, but blank: there is nothing to compare against.
+    expect(previousBest(current, [section({ rounds_completed: null })])).toBeNull()
+
+    // Identical with an observed zero: comparable, and a real result.
+    expect(previousBest(current, [section({ rounds_completed: 0 })])).toMatchObject({
+      direction: 'ahead',
+      attempts: 1,
+    })
+
+    // A blank current result compares with nothing at all.
+    expect(
+      previousBest({ ...current, score: null }, [section({ rounds_completed: 8 })]),
+    ).toBeNull()
+  })
+})

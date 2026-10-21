@@ -267,3 +267,54 @@ describe('ConditioningScoreLine', () => {
     expect(container).toBeEmptyDOMElement()
   })
 })
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-014 — an AMRAP's optional, post-window result
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('an AMRAP result the athlete may leave blank (REQ-014)', () => {
+  const BLANK: BlockOutcome = { elapsedSeconds: 480 }
+  const ZERO: BlockOutcome = { elapsedSeconds: 480, roundsCompleted: 0 }
+
+  it('scores nothing and compares nothing for blank rounds, even beside a comparable attempt', () => {
+    const earlier = attemptAt(AMRAP, { rounds_completed: 2 })
+    expect(likeForLike(AMRAP, BLANK, history(earlier))).toEqual({
+      score: null,
+      comparison: null,
+      absence: null,
+    })
+
+    const { container } = render(<ConditioningScoreLine {...likeForLike(AMRAP, BLANK, history(earlier))} />)
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it('scores an observed zero as a zero, and compares it like-for-like', () => {
+    const earlier = attemptAt(AMRAP, { rounds_completed: 2 })
+    const read = likeForLike(AMRAP, ZERO, history(earlier))
+    expect(read.score).toMatchObject({ value: 0, label: '0 reps/min' })
+    expect(read.comparison).toMatchObject({ direction: 'behind', label: 'Previous best 6 reps/min' })
+
+    render(<ConditioningScoreLine {...read} />)
+    expect(screen.getByText('Score: 0 reps/min')).toBeInTheDocument()
+    expect(
+      screen.getByText('Previous best 6 reps/min · Behind your previous best'),
+    ).toBeInTheDocument()
+  })
+
+  it('never compares against an earlier attempt whose rounds were left blank', () => {
+    const blankEarlier = attemptAt(AMRAP, { rounds_completed: null })
+    const read = likeForLike(AMRAP, TWO_ROUNDS, history(blankEarlier))
+    expect(read.comparison).toBeNull()
+    expect(read.absence).toBe('first_attempt')
+  })
+
+  it('shows no comparison against a different AMRAP, and predicts no expected rounds', () => {
+    const longer = attemptAt(AMRAP, { timer_seconds: 720, rounds_completed: 3 })
+    const read = likeForLike(AMRAP, TWO_ROUNDS, history(longer))
+    expect(read.comparison).toBeNull()
+
+    render(<ConditioningScoreLine {...read} />)
+    expect(screen.getByText(ABSENCE_WORDS.different_composition)).toBeInTheDocument()
+    expect(screen.queryByText(/previous best|expected|predicted|target/i)).not.toBeInTheDocument()
+  })
+})

@@ -18,6 +18,7 @@ import {
   countRound,
   finishAmrap,
   setPartialRoundReps,
+  setRoundsCompleted,
   startAmrap,
   type AmrapState,
 } from './amrap'
@@ -150,11 +151,23 @@ describe('counting rounds', () => {
   })
 
   it('never counts below zero: there is no round before the first', () => {
-    const open = running()
+    const zero = countRound(running(), -1)
 
-    expect(countRound(open, -1).roundsCompleted).toBe(0)
+    expect(zero.roundsCompleted).toBe(0)
     // Unchanged, and the same object: a tap that changes nothing writes nothing.
-    expect(countRound(open, -5)).toBe(open)
+    expect(countRound(zero, -5)).toBe(zero)
+  })
+
+  it('starts blank — no rounds recorded is not zero rounds (REQ-014)', () => {
+    expect(AMRAP_START.roundsCompleted).toBeNull()
+    expect(amrapView(running(), shape, 600).roundsCompleted).toBeNull()
+
+    const zero = setRoundsCompleted(running(), 0)
+    expect(zero.roundsCompleted).toBe(0)
+
+    // Cleared again, which puts the blank back rather than a zero.
+    expect(setRoundsCompleted(zero, null).roundsCompleted).toBeNull()
+    expect(setRoundsCompleted(running(), -3).roundsCompleted).toBe(0)
   })
 })
 
@@ -207,11 +220,21 @@ describe('what it supplies to the shell', () => {
     ).toEqual({ elapsedSeconds: 480, roundsCompleted: 1, partialRoundReps: 0 })
   })
 
-  it('supplies zero rounds rather than nothing for an AMRAP that managed none', () => {
-    expect(amrapOutcome(amrapView(running(), shape, 480))).toEqual({
+  it('supplies no rounds for a result left blank, so the column holds null', () => {
+    expect(amrapOutcome(amrapView(running(), shape, 480))).toEqual({ elapsedSeconds: 480 })
+  })
+
+  it('supplies an entered zero as a zero once the window has closed', () => {
+    const zero = setRoundsCompleted(running(), 0)
+    expect(amrapOutcome(amrapView(zero, shape, 480))).toEqual({
       elapsedSeconds: 480,
       roundsCompleted: 0,
     })
+  })
+
+  it('supplies no result while the window is still open', () => {
+    const early = setPartialRoundReps(setRoundsCompleted(running(), 4), 3)
+    expect(amrapOutcome(amrapView(early, shape, 200))).toEqual({ elapsedSeconds: 200 })
   })
 })
 

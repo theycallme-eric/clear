@@ -1,14 +1,17 @@
 /**
- * EXE-04c acceptance, as the user meets it:
+ * EXE-04c and REQ-014 (E02) acceptance, as the user meets it:
  *
- *   · the window comes from `workout_blocks.timer_seconds`, and it counts down;
- *   · a completed round is one tap on the card — no dialog, no other screen, and
- *     it is available while the clock is still running;
- *   · at the cap the card asks for the partial round, and a partial round of zero
- *     reps is a different state from no partial round at all;
+ *   · the window comes from `workout_blocks.timer_seconds`, and it counts down
+ *     with nothing to enter and no round goal while it runs;
+ *   · once the window closes the athlete may record rounds and a partial round,
+ *     or leave both blank — blank is not a zero, and an entered zero is a zero;
  *   · `rounds_completed`, `partial_round_reps` and the elapsed time reach the
- *     shell's completion write, including when the clock is what ended the block;
- *   · the score survives a refresh and a walk to another section and back.
+ *     shell's completion write only when entered, including after the clock
+ *     ended the block, and a blank result still completes;
+ *   · a recorded result is compared like-for-like only where history is
+ *     comparable;
+ *   · the window and the result survive a refresh and a walk to another
+ *     section and back.
  */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -19,6 +22,8 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from '../state/block-completion'
+import { conditioningSections, type ConditioningSectionRead } from '../state/conditioning'
+import type { ConditioningHistoryRow } from '../state/schemas'
 import type { BlockProgress } from '../state/workout-progress'
 import { sessionProgress } from '../state/workout-progress'
 import {
@@ -26,7 +31,7 @@ import {
   WORKOUT_AMRAP_STORAGE_KEY,
   type ShellStorage,
 } from '../state/workout-persistence'
-import { snapshotFixture, type BlockFixture } from '../test/workout-double'
+import { fixtureId, snapshotFixture, type BlockFixture } from '../test/workout-double'
 import { AmrapBlock } from './amrap-block'
 
 /** A moment the window can be measured from, and a clock the test moves. */
@@ -73,10 +78,16 @@ function renderAmrap(
   block: BlockProgress,
   storage: ShellStorage,
   api: BlockCompletionApi,
+  conditioningHistory?: readonly ConditioningSectionRead[] | null,
 ) {
   return render(
     <BlockCompletionContext value={api}>
-      <AmrapBlock block={block} storage={storage} now={now} />
+      <AmrapBlock
+        block={block}
+        storage={storage}
+        now={now}
+        conditioningHistory={conditioningHistory}
+      />
     </BlockCompletionContext>,
   )
 }
@@ -92,8 +103,26 @@ async function start(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
 }
 
-async function addRound(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+async function finish(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: 'Finish early' }))
+}
+
+/** Opens the optional rounds entry and adds `count` rounds to it. */
+async function recordRounds(user: ReturnType<typeof userEvent.setup>, count: number) {
+  await user.click(screen.getByRole('button', { name: 'Record rounds' }))
+  for (let round = 0; round < count; round += 1) {
+    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+  }
+}
+
+/** Nothing on the card asks for a score or names a round goal. */
+function expectNoScoreEntry() {
+  expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Record rounds' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Add a completed round' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Partial round' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+  expect(screen.queryByText(/goal|target rounds|expected|predicted/i)).not.toBeInTheDocument()
 }
 
 beforeEach(() => {
@@ -105,7 +134,7 @@ afterEach(() => {
 })
 
 describe('what the AMRAP reads from the block', () => {
-  it('states the window it prescribes, before it is opened', () => {
+  it('states the window it prescribes, before it is opened, with no round goal', () => {
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
 
     expect(screen.getByText('AMRAP · 8 MIN')).toBeInTheDocument()
@@ -114,7 +143,15 @@ describe('what the AMRAP reads from the block', () => {
     ).toBeInTheDocument()
     // Nothing is counting yet, and nothing is being scored yet either.
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
+    expectNoScoreEntry()
+  })
+
+  it('shows no round goal even when the block carries a round count', () => {
+    renderAmrap(amrapBlock({ rounds: 5 }), fakeStorage(), completionDouble().api)
+
+    expect(screen.getByText('As many rounds as possible in 08:00.')).toBeInTheDocument()
+    expect(screen.queryByText(/\b5 rounds\b/i)).not.toBeInTheDocument()
+    expectNoScoreEntry()
   })
 
   it('names the round when two or more movements make one, per the quickfix', () => {
@@ -148,61 +185,65 @@ describe('what the AMRAP reads from the block', () => {
   })
 })
 
-describe('counting rounds', () => {
-  it('increments on the card, with no dialog and no other screen', async () => {
+describe('the window, hands-off', () => {
+  it('runs with nothing to enter and no round goal — only the countdown and a way to stop', async () => {
     const user = userEvent.setup()
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
     await start(user)
 
-    // The countdown is running: the round counter is live *during* the window,
-    // which is what makes it the highest-frequency interaction in the app.
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('08:00')
-    expect(rounds()).toBe('0')
-
-    await addRound(user)
-    await addRound(user)
-    await addRound(user)
-
-    expect(rounds()).toBe('3')
+    expect(screen.getByRole('button', { name: 'Finish early' })).toBeInTheDocument()
+    expect(
+      screen.getByText('Nothing to enter now. Record your rounds afterwards if you like.'),
+    ).toBeInTheDocument()
+    expectNoScoreEntry()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
-  it('takes a round back, and never counts below the first', async () => {
-    const user = userEvent.setup()
+  it('stays hands-off through the low-time cue', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
     await start(user)
 
-    const fewer = screen.getByRole('button', { name: 'Take back a round' })
-    expect(fewer).toBeDisabled()
+    clock = START + 472_000
+    await vi.advanceTimersByTimeAsync(1000)
 
-    await addRound(user)
-    expect(rounds()).toBe('1')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:08')
+    expectNoScoreEntry()
+  })
 
-    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
-    expect(rounds()).toBe('0')
-    expect(screen.getByRole('button', { name: 'Take back a round' })).toBeDisabled()
+  it('reports the running window with no rounds, so nothing is claimed in-window', async () => {
+    const user = userEvent.setup()
+    const { api, reportOutcome } = completionDouble()
+    const block = amrapBlock()
+    renderAmrap(block, fakeStorage(), api)
+    await start(user)
+
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 0 })
   })
 })
 
 describe('the window closing', () => {
-  it('ends on its own when the block’s seconds have passed', async () => {
+  it('ends on its own when the block’s seconds have passed, and only then offers the result', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
 
     await start(user)
-    await addRound(user)
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('08:00')
 
-    // No tap ended it: the clock did, and the card is asking for the score.
+    // No tap ended it: the clock did, and the card now offers the optional result.
     clock = START + 480_000
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
     expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
     expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
-    // And the count is still there, still one tap, to be corrected at the buzzer.
-    expect(rounds()).toBe('1')
+    expect(
+      screen.getByText('No rounds recorded. Optional — leave it blank if you like.'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
   })
 
   it('shows the elapsed time when the user finishes early, not the cap', async () => {
@@ -211,11 +252,11 @@ describe('the window closing', () => {
 
     await start(user)
     clock = START + 323_000
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
     expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
     expect(screen.getByText('05:23 on the clock')).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Rounds completed' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
   })
 
   it('never expires on its own when the block prescribes no window', async () => {
@@ -232,11 +273,54 @@ describe('the window closing', () => {
     // No countdown to show and no cap to be early of; the user ends it.
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Finish' })).toBeInTheDocument()
+    expectNoScoreEntry()
+  })
+})
+
+describe('recording rounds afterwards', () => {
+  it('counts rounds on the card, with no dialog and no other screen', async () => {
+    const user = userEvent.setup()
+    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    await start(user)
+    await finish(user)
+
+    await recordRounds(user, 3)
+
+    expect(rounds()).toBe('3')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('takes a round back, and never counts below zero', async () => {
+    const user = userEvent.setup()
+    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    await start(user)
+    await finish(user)
+    await recordRounds(user, 1)
+
+    expect(rounds()).toBe('1')
+    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
+    expect(rounds()).toBe('0')
+    expect(screen.getByRole('button', { name: 'Take back a round' })).toBeDisabled()
+  })
+
+  it('holds an entered zero as a zero, and clearing it goes back to blank', async () => {
+    const user = userEvent.setup()
+    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    await start(user)
+    await finish(user)
+
+    await recordRounds(user, 0)
+    expect(rounds()).toBe('0')
+    expect(screen.queryByText(/No rounds recorded/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Clear rounds' }))
+    expect(screen.getByText(/No rounds recorded/)).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Rounds completed' })).not.toBeInTheDocument()
   })
 })
 
 describe('the partial round', () => {
-  it('is asked for at the cap and nowhere before it', async () => {
+  it('is asked for after the window and nowhere before it', async () => {
     const user = userEvent.setup()
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
     await start(user)
@@ -244,7 +328,7 @@ describe('the partial round', () => {
     expect(screen.queryByRole('button', { name: 'Partial round' })).not.toBeInTheDocument()
 
     clock = START + 480_000
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
     expect(screen.getByText('No partial round recorded.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Partial round' })).toBeInTheDocument()
@@ -254,7 +338,7 @@ describe('the partial round', () => {
     const user = userEvent.setup()
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
     await start(user)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
@@ -273,7 +357,7 @@ describe('the partial round', () => {
     const user = userEvent.setup()
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
     await start(user)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
     await user.click(screen.getByRole('button', { name: 'One more rep in the partial round' }))
@@ -286,7 +370,7 @@ describe('the partial round', () => {
 })
 
 describe('what it supplies to the shell', () => {
-  it('sends the score, partial round included, when the clock ended the block', async () => {
+  it('sends the result, partial round included, entered after the clock ended the block', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     const { api, reportOutcome } = completionDouble()
@@ -294,15 +378,10 @@ describe('what it supplies to the shell', () => {
     renderAmrap(block, fakeStorage(), api)
 
     await start(user)
-    await addRound(user)
-    await addRound(user)
-    await addRound(user)
-    await addRound(user)
-    await addRound(user)
-
     clock = START + 480_000
     await vi.advanceTimersByTimeAsync(1000)
 
+    await recordRounds(user, 5)
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
     for (let rep = 0; rep < 8; rep += 1) {
       await user.click(
@@ -310,9 +389,6 @@ describe('what it supplies to the shell', () => {
       )
     }
 
-
-    // The acceptance criterion, in one assertion: the score including the
-    // partial round, persisted at expiry.
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 480,
       roundsCompleted: 5,
@@ -320,57 +396,53 @@ describe('what it supplies to the shell', () => {
     })
   })
 
-  it('omits the partial round when none was recorded', async () => {
+  it('supplies blank rounds and partial round as absent, so the row holds null', async () => {
     const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
     await start(user)
-    await addRound(user)
     clock = START + 300_000
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
-    // No `partialRoundReps` key at all: the column holds null, not a zero that
-    // would read as "stopped on the boundary".
-    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
-      elapsedSeconds: 300,
-      roundsCompleted: 1,
-    })
+    // No `roundsCompleted` and no `partialRoundReps`: the columns hold null,
+    // never a zero nobody entered — and completion is not blocked by it.
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 300 })
   })
 
-  it('sends a recorded zero as a zero', async () => {
+  it('supplies an entered zero as a zero', async () => {
     const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
     await start(user)
-    await addRound(user)
     clock = START + 300_000
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
+    await recordRounds(user, 0)
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 300,
-      roundsCompleted: 1,
+      roundsCompleted: 0,
       partialRoundReps: 0,
     })
   })
 
-  it('supplies zero rounds rather than nothing for an AMRAP that managed none', async () => {
+  it('reports a cleared result as blank again', async () => {
     const user = userEvent.setup()
     const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
     await start(user)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    clock = START + 300_000
+    await finish(user)
+    await recordRounds(user, 2)
+    await user.click(screen.getByRole('button', { name: 'Clear rounds' }))
 
-    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
-      elapsedSeconds: 0,
-      roundsCompleted: 0,
-    })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 300 })
   })
 
   it('supplies nothing at all for an AMRAP that was never started', () => {
@@ -391,6 +463,101 @@ describe('what it supplies to the shell', () => {
   })
 })
 
+describe('the like-for-like comparison after the window', () => {
+  /** An earlier attempt at the same block, as `conditioning_history` answers it. */
+  function earlier(
+    block: BlockProgress,
+    overrides: Partial<ConditioningHistoryRow> = {},
+  ): ConditioningHistoryRow {
+    return {
+      session_id: fixtureId('9', 1),
+      session_date: '2026-09-20',
+      effective_intensity: 7,
+      goal_preset: null,
+      section_id: fixtureId('9', 2),
+      section_order: 0,
+      block_id: fixtureId('9', 3),
+      block_order: 0,
+      structure_type: block.structureType,
+      rep_scheme: block.repScheme,
+      timer_type: block.timerType,
+      timer_seconds: block.timerSeconds,
+      rounds: block.rounds,
+      round_rest_seconds: block.roundRestSeconds,
+      elapsed_seconds: 480,
+      completed_under_cap: null,
+      rounds_completed: 2,
+      partial_round_reps: null,
+      minutes_completed: null,
+      highest_rung: null,
+      perceived_effort: null,
+      scored_at: '2026-09-20T10:30:00.000Z',
+      prescriptions: block.exercises.map((exercise) => exercise.prescription),
+      ...overrides,
+    }
+  }
+
+  async function closedWith(
+    history: readonly ConditioningSectionRead[] | null,
+    entered: number | null,
+  ) {
+    const user = userEvent.setup()
+    const block = amrapBlock()
+    renderAmrap(block, fakeStorage(), completionDouble().api, history)
+    await start(user)
+    clock = START + 480_000
+    await finish(user)
+    if (entered !== null) await recordRounds(user, entered)
+    return block
+  }
+
+  it('compares an entered result against an identical earlier attempt', async () => {
+    const block = amrapBlock()
+    // 48 reps a round: 3 rounds in 8 minutes is 18 reps/min; 2 rounds was 12.
+    await closedWith(conditioningSections([earlier(block)]), 3)
+
+    expect(screen.getByText('Score: 18 reps/min')).toBeInTheDocument()
+    expect(
+      screen.getByText('Previous best 12 reps/min · Ahead of your previous best'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows no score and no comparison while the result is blank', async () => {
+    const block = amrapBlock()
+    await closedWith(conditioningSections([earlier(block)]), null)
+
+    expect(screen.queryByText(/^Score:/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/previous best/i)).not.toBeInTheDocument()
+  })
+
+  it('never compares against a different piece, and says so', async () => {
+    const block = amrapBlock()
+    await closedWith(conditioningSections([earlier(block, { timer_seconds: 720 })]), 3)
+
+    expect(screen.getByText('Score: 18 reps/min')).toBeInTheDocument()
+    expect(screen.queryByText(/previous best/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/Nothing like-for-like to compare/)).toBeInTheDocument()
+  })
+
+  it('claims nothing about history it does not have', async () => {
+    await closedWith(null, 3)
+
+    expect(screen.getByText('Score: 18 reps/min')).toBeInTheDocument()
+    expect(screen.queryByText(/previous best|first attempt|like-for-like/i)).not.toBeInTheDocument()
+  })
+
+  it('renders the score alone outside a signed-in shell', async () => {
+    const user = userEvent.setup()
+    renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
+    await start(user)
+    await finish(user)
+    await recordRounds(user, 3)
+
+    expect(screen.getByText(/^Score:/)).toBeInTheDocument()
+    expect(screen.queryByText(/previous best|first attempt|like-for-like/i)).not.toBeInTheDocument()
+  })
+})
+
 describe('the 0.14.3 card, timer and group grammar', () => {
   /** An AMRAP already `elapsedMs` into its window, as a refresh would find it. */
   async function resumeAt(elapsedMs: number, api = completionDouble().api) {
@@ -400,7 +567,6 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     clock = START
     const first = renderAmrap(block, storage, api)
     await start(user)
-    await addRound(user)
     first.unmount()
 
     clock = START + elapsedMs
@@ -420,8 +586,8 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(container.querySelector('.clr-card .clr-card')).toBeNull()
 
     // The controls stay with the block, in its card rather than the timer's.
-    const finish = screen.getByRole('button', { name: 'Finish early' })
-    expect(finish.closest('.clr-card')).not.toBe(timerCard)
+    const finishButton = screen.getByRole('button', { name: 'Finish early' })
+    expect(finishButton.closest('.clr-card')).not.toBe(timerCard)
   })
 
   it('keeps the countdown a labelled timer that is not a live region', async () => {
@@ -453,13 +619,14 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(bleed?.parentElement).toBe(container.firstElementChild)
     expect(container.querySelectorAll('.clr-pulse-micro')).toHaveLength(1)
 
-    // Urgent, and still one tap to bank a round.
-    expect(rounds()).toBe('1')
+    // Urgent, and still nothing to enter.
+    expectNoScoreEntry()
   })
 
   it('labels each group inside the card it belongs to', async () => {
     const { user } = await resumeAt(60_000)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
+    await recordRounds(user, 1)
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
     const card = screen.getByRole('button', { name: 'Take back a round' }).closest('.clr-card')
@@ -491,34 +658,36 @@ describe('the 0.14.3 card, timer and group grammar', () => {
 
   it('does not call an early finish a cap', async () => {
     const { user } = await resumeAt(323_000)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
     expect(screen.getByText('05:23 on the clock')).toBeInTheDocument()
     expect(screen.queryByText('Cap reached')).not.toBeInTheDocument()
   })
 
-  it('makes the partial-round toggles frameless text actions', async () => {
+  it('makes the optional result toggles frameless text actions', async () => {
     const { user } = await resumeAt(60_000)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
 
-    const open = screen.getByRole('button', { name: 'Partial round' })
-    expect(open).toHaveClass('clr-text-action')
-    expect(open).not.toHaveClass('clr-btn')
-
-    await user.click(open)
-    const close = screen.getByRole('button', { name: 'No partial round' })
-    expect(close).toHaveClass('clr-text-action')
+    for (const name of ['Record rounds', 'Partial round']) {
+      const open = screen.getByRole('button', { name })
+      expect(open).toHaveClass('clr-text-action')
+      expect(open).not.toHaveClass('clr-btn')
+      await user.click(open)
+    }
+    expect(screen.getByRole('button', { name: 'Clear rounds' })).toHaveClass('clr-text-action')
+    expect(screen.getByRole('button', { name: 'No partial round' })).toHaveClass('clr-text-action')
   })
 
-  it('says a saved block is saved, and still shows the score', async () => {
+  it('says a saved block is saved, and still shows the result for editing', async () => {
     const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
-    await resumeAt(600_000, { reportOutcome, isBlockRecorded: () => true })
+    const { user } = await resumeAt(600_000, { reportOutcome, isBlockRecorded: () => true })
 
     expect(screen.getByText('Block saved')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
-
-    expect(rounds()).toBe('1')
     expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
+
+    await recordRounds(user, 1)
+    expect(rounds()).toBe('1')
   })
 
   it('says a block with nothing to perform in plain copy inside the one card', () => {
@@ -546,20 +715,18 @@ describe('the 0.14.3 card, timer and group grammar', () => {
 })
 
 describe('surviving a refresh', () => {
-  it('comes back to the rounds that were banked, and to the window that is left', async () => {
+  it('comes back to the window that is left, with nothing recorded in it', async () => {
     const user = userEvent.setup()
     const storage = fakeStorage()
     const block = amrapBlock()
     const first = renderAmrap(block, storage, completionDouble().api)
 
     await start(user)
-    await addRound(user)
-    await addRound(user)
 
     expect(readAmrapState(storage, block.blockId)).toEqual({
       startedAt: '2026-09-24T10:00:00.000Z',
       endedAtSeconds: null,
-      roundsCompleted: 2,
+      roundsCompleted: null,
       partialRoundReps: null,
     })
 
@@ -568,10 +735,10 @@ describe('surviving a refresh', () => {
     clock = START + 180_000
     renderAmrap(block, storage, completionDouble().api)
 
-    expect(rounds()).toBe('2')
     // Five of the eight minutes are left: the window was measured from when it
     // opened, not from when the page came back.
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('05:00')
+    expectNoScoreEntry()
   })
 
   it('comes back into the completion state when the buzzer went while it was away', async () => {
@@ -581,7 +748,6 @@ describe('surviving a refresh', () => {
     const first = renderAmrap(block, storage, completionDouble().api)
 
     await start(user)
-    await addRound(user)
     first.unmount()
 
     clock = START + 600_000
@@ -590,24 +756,69 @@ describe('surviving a refresh', () => {
     // Expiry is derived from the clock, so nothing had to be running for it.
     expect(screen.getByText('AMRAP complete')).toBeInTheDocument()
     expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
-    expect(rounds()).toBe('1')
+    expect(screen.getByRole('button', { name: 'Record rounds' })).toBeInTheDocument()
   })
 
-  it('keeps the partial round it was holding, zero included', async () => {
+  it('keeps the post-window result it was holding, zero included', async () => {
     const user = userEvent.setup()
     const storage = fakeStorage()
     const block = amrapBlock()
     const first = renderAmrap(block, storage, completionDouble().api)
 
     await start(user)
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
+    await recordRounds(user, 0)
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
     first.unmount()
 
-    renderAmrap(block, storage, completionDouble().api)
+    const { api, reportOutcome } = completionDouble()
+    renderAmrap(block, storage, api)
 
+    expect(rounds()).toBe('0')
     const reps = screen.getByRole('group', { name: 'Reps into the next round' })
     expect(within(reps).getByRole('status')).toHaveTextContent('0')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
+      elapsedSeconds: 0,
+      roundsCompleted: 0,
+      partialRoundReps: 0,
+    })
+  })
+
+  it('restores an edit made after the window as the edit, not the first entry', async () => {
+    const user = userEvent.setup()
+    const storage = fakeStorage()
+    const block = amrapBlock()
+    const first = renderAmrap(block, storage, completionDouble().api)
+
+    await start(user)
+    clock = START + 480_000
+    await finish(user)
+    await recordRounds(user, 4)
+    await user.click(screen.getByRole('button', { name: 'Take back a round' }))
+    first.unmount()
+
+    renderAmrap(block, storage, completionDouble().api)
+    expect(rounds()).toBe('3')
+    expect(readAmrapState(storage, block.blockId)?.roundsCompleted).toBe(3)
+  })
+
+  it('restores a stored record from before rounds became optional', () => {
+    const storage = fakeStorage()
+    const block = amrapBlock()
+    storage.setItem(
+      WORKOUT_AMRAP_STORAGE_KEY,
+      JSON.stringify({
+        [block.blockId]: {
+          startedAt: '2026-09-24T10:00:00.000Z',
+          endedAtSeconds: 300,
+          roundsCompleted: 2,
+          partialRoundReps: null,
+        },
+      }),
+    )
+
+    renderAmrap(block, storage, completionDouble().api)
+    expect(rounds()).toBe('2')
   })
 
   it('starts from the top when the stored record cannot be used', () => {
@@ -627,7 +838,7 @@ describe('surviving a refresh', () => {
 
     await start(user)
     clock = START + 400_000
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await finish(user)
     first.unmount()
 
     const { api, reportOutcome } = completionDouble()
@@ -635,9 +846,6 @@ describe('surviving a refresh', () => {
     renderAmrap(shortened, storage, api)
 
     expect(screen.getByText('04:00 on the clock')).toBeInTheDocument()
-    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
-      elapsedSeconds: 240,
-      roundsCompleted: 0,
-    })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { elapsedSeconds: 240 })
   })
 })
