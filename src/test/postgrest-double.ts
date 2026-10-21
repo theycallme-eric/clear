@@ -85,6 +85,9 @@ export function createPostgrestDouble(
     if (path === '/user_constraints' && method === 'DELETE') {
       return remove(url, caller)
     }
+    if (path === '/user_constraints' && method === 'PATCH') {
+      return update(url, body, caller)
+    }
     if (path === '/rpc/constraints_in_force' && method === 'POST') {
       return inForce(body, caller)
     }
@@ -204,6 +207,36 @@ export function createPostgrestDouble(
     // No Prefer: return=representation, so PostgREST answers 204 whether or not
     // a row matched — a delete of something already gone is not an error.
     return new Response(null, { status: 204 })
+  }
+
+  /**
+   * The note edit (SET-01): the caller's rows matching every `eq.` filter, with
+   * `note` replaced. Only `note` is accepted — nothing else in this table is
+   * edited in place, so a patch naming another column is a client bug.
+   */
+  function update(url: URL, payload: unknown, caller: string): Response {
+    const patch = payload as Partial<UserConstraintRow>
+    if (Object.keys(patch).some((column) => column !== 'note')) {
+      return problem(400, 'PGRST204', 'this double patches note only')
+    }
+
+    const filters = [...url.searchParams.entries()].map(
+      ([column, filter]) => [column, eq(filter)] as const,
+    )
+    const changed: UserConstraintRow[] = []
+    for (const [index, row] of table.entries()) {
+      if (row.user_id !== caller) continue
+      const matches = filters.every(
+        ([column, value]) => row[column as keyof UserConstraintRow] === value,
+      )
+      if (!matches) continue
+
+      const next = { ...row, note: patch.note ?? null }
+      table[index] = next
+      changed.push(next)
+    }
+
+    return json(200, changed)
   }
 
   function inForce(payload: unknown, caller: string): Response {

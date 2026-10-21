@@ -19,7 +19,16 @@ import { SKINS } from '../design-system/skin'
 import { appearanceLabel, appearanceOptions } from '../state/appearance'
 import { startFaviconSync } from './favicon'
 import { QueryClient } from '../state/query'
-import { GOALS, EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboarding'
+import {
+  GOALS,
+  EXPERIENCE_LEVELS,
+  LIMITATIONS_INTRO,
+  LIMITATIONS_NOTE_HELP,
+  LIMITATIONS_NOTE_NEEDS_PATTERN,
+  LIMITATIONS_NOTE_PLACEHOLDER,
+  MOVEMENT_PATTERNS,
+  SECTIONS,
+} from '../state/onboarding'
 import { constraintsQueryKey } from '../state/constraint-queries'
 import { createError, ErrorCode, err, ok, type Result } from '../state/errors'
 import {
@@ -33,7 +42,11 @@ import {
   MISSING_GOAL_REASON,
 } from '../state/settings'
 import { createFakeAuthClient, signedInEvent } from '../test/auth-double'
-import { createFakeConstraintsClient } from '../test/constraints-double'
+import {
+  constraintWriteError,
+  createFakeConstraintsClient,
+  type FakeConstraintsClient,
+} from '../test/constraints-double'
 import { renderApp, signedIn, type ProviderOptions } from '../test/render'
 import {
   createFakeUserDataClient,
@@ -80,6 +93,20 @@ function renderSettings({
   )
 
   return { ...rendered, cache, userData, constraintsClient }
+}
+
+/**
+ * A reload: a cold constraints cache over the same stored rows, so what shows
+ * is what the next visit reads rather than what this one remembered.
+ */
+function reloadSettings(constraintsClient: FakeConstraintsClient) {
+  const cache = new QueryClient()
+  cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile())
+  cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
+  return renderApp(
+    ['/settings'],
+    signedIn({ queryClient: cache, constraints: constraintsClient }),
+  )
 }
 
 function patternConstraint(overrides: Partial<UserConstraint> = {}): UserConstraint {
@@ -413,6 +440,144 @@ describe('a limitation persists', () => {
     await waitFor(() => {
       expect(constraintsClient.rows()[0]?.note).toBe('Right knee')
     })
+  })
+
+  it('uses durable ongoing-limitation wording, and calls the note context only', async () => {
+    renderSettings({ constraints: [patternConstraint()] })
+
+    const card = within(await sectionCard('Limitations'))
+    expect(card.getByText(LIMITATIONS_INTRO)).toBeVisible()
+    const note = card.getByLabelText(/note/i)
+    expect(note).toHaveAttribute('placeholder', LIMITATIONS_NOTE_PLACEHOLDER)
+    expect(note).toHaveAccessibleDescription(LIMITATIONS_NOTE_HELP)
+    // U17: nothing in the card frames a limitation as temporary.
+    expect(card.getByRole('group', { name: 'Work around' }).closest('.clr-stack')).not.toHaveTextContent(
+      /few weeks|for now|temporar/i,
+    )
+  })
+
+  it('keeps an edit across a reload: the ticks and the note come back as saved', async () => {
+    const user = userEvent.setup()
+    const { constraintsClient, unmount } = renderSettings()
+
+    await user.click(await screen.findByRole('checkbox', { name: /Squatting/ }))
+    await waitFor(() => {
+      expect(constraintsClient.rows()).toHaveLength(1)
+    })
+    const note = screen.getByLabelText(/note/i)
+    await user.type(note, 'Left knee, long term')
+    await user.tab()
+    await waitFor(() => {
+      expect(constraintsClient.rows()[0]?.note).toBe('Left knee, long term')
+    })
+
+    unmount()
+    reloadSettings(constraintsClient)
+
+    expect(await screen.findByRole('checkbox', { name: /Squatting/ })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /Pressing/ })).not.toBeChecked()
+    expect(screen.getByLabelText(/note/i)).toHaveValue('Left knee, long term')
+  })
+
+  it('keeps a clear across a reload: an emptied note and unticked patterns stay cleared', async () => {
+    const user = userEvent.setup()
+    const { constraintsClient, unmount } = renderSettings({
+      constraints: [
+        patternConstraint({ note: 'Right shoulder' }),
+        patternConstraint({
+          id: 'constraint-2',
+          target: { scope: 'movement_pattern', pattern: 'pull' },
+          note: 'Right shoulder',
+        }),
+      ],
+    })
+
+    const note = await screen.findByLabelText(/note/i)
+    expect(note).toHaveValue('Right shoulder')
+    await user.clear(note)
+    await user.tab()
+    await waitFor(() => {
+      expect(constraintsClient.rows().map((row) => row.note)).toEqual([null, null])
+    })
+
+    unmount()
+    const reloaded = reloadSettings(constraintsClient)
+    expect(await screen.findByRole('checkbox', { name: /Pressing/ })).toBeChecked()
+    expect(screen.getByLabelText(/note/i)).toHaveValue('')
+
+    await user.click(screen.getByRole('checkbox', { name: /Pressing/ }))
+    await waitFor(() => {
+      expect(constraintsClient.rows()).toHaveLength(1)
+    })
+    await user.click(screen.getByRole('checkbox', { name: /Pulling/ }))
+    await waitFor(() => {
+      expect(constraintsClient.rows()).toEqual([])
+    })
+
+    reloaded.unmount()
+    reloadSettings(constraintsClient)
+    expect(await screen.findByText(/nothing recorded/i)).toBeVisible()
+    const boxes = within(screen.getByRole('group', { name: 'Work around' })).getAllByRole('checkbox')
+    expect(boxes).toHaveLength(MOVEMENT_PATTERNS.length)
+    for (const box of boxes) expect(box).not.toBeChecked()
+  })
+
+  it('clears the note with the last pattern, since the note is stored on those rows', async () => {
+    const user = userEvent.setup()
+    const { constraintsClient } = renderSettings({
+      constraints: [patternConstraint({ note: 'Right shoulder' })],
+    })
+
+    await user.click(await screen.findByRole('checkbox', { name: /Pressing/ }))
+
+    await waitFor(() => {
+      expect(constraintsClient.rows()).toEqual([])
+    })
+    expect(screen.getByLabelText(/note/i)).toHaveValue('')
+    expect(screen.getByLabelText(/note/i)).toHaveAccessibleDescription(
+      LIMITATIONS_NOTE_NEEDS_PATTERN,
+    )
+  })
+
+  it('does not claim a note saved with nothing ticked, and writes it with the first tick', async () => {
+    const user = userEvent.setup()
+    const { constraintsClient } = renderSettings()
+
+    const note = await screen.findByLabelText(/note/i)
+    expect(note).toHaveAccessibleDescription(LIMITATIONS_NOTE_NEEDS_PATTERN)
+    await user.type(note, 'Old ankle injury')
+    await user.tab()
+
+    // Nothing to carry it, so nothing written and nothing said to be saved.
+    expect(constraintsClient.rows()).toEqual([])
+    expect(screen.queryByText('Saved')).not.toBeInTheDocument()
+    expect(note).toHaveValue('Old ankle injury')
+
+    await user.click(screen.getByRole('checkbox', { name: /Squatting/ }))
+    await waitFor(() => {
+      expect(constraintsClient.rows()).toHaveLength(1)
+    })
+    expect(constraintsClient.rows()[0]?.note).toBe('Old ankle injury')
+  })
+
+  it('keeps a note edit recoverable when its save fails', async () => {
+    const user = userEvent.setup()
+    const cache = warmCache(onboardedProfile(), [patternConstraint({ note: 'Right knee' })])
+    const constraintsClient = createFakeConstraintsClient({
+      stored: [patternConstraint({ note: 'Right knee' })],
+      writeError: constraintWriteError,
+    })
+    renderApp(['/settings'], signedIn({ queryClient: cache, constraints: constraintsClient }))
+
+    const note = await screen.findByLabelText(/note/i)
+    await user.clear(note)
+    await user.type(note, 'Right knee, both sides now')
+    await user.tab()
+
+    expect(await screen.findByText('Could not save. Try again.')).toBeVisible()
+    // The stored note is unchanged, and the user's text is still in the field.
+    expect(constraintsClient.rows()[0]?.note).toBe('Right knee')
+    expect(note).toHaveValue('Right knee, both sides now')
   })
 
   it('reads its own four states — a failed constraints read costs no preference', async () => {

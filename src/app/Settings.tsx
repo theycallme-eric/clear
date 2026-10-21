@@ -52,7 +52,15 @@ import { useAuth } from '../state/auth-context'
 import { constraintsQueryKey, useConstraintsQuery, useUserConstraints } from '../state/constraint-queries'
 import type { UserConstraint } from '../data/constraints'
 import type { Enums } from '../data/database.types'
-import { EXPERIENCE_LEVELS, MOVEMENT_PATTERNS, SECTIONS } from '../state/onboarding'
+import {
+  EXPERIENCE_LEVELS,
+  LIMITATIONS_INTRO,
+  LIMITATIONS_NOTE_HELP,
+  LIMITATIONS_NOTE_NEEDS_PATTERN,
+  LIMITATIONS_NOTE_PLACEHOLDER,
+  MOVEMENT_PATTERNS,
+  SECTIONS,
+} from '../state/onboarding'
 import { useQueryClient } from '../state/query'
 import type { Profile, ProfilePreferences } from '../state/schemas'
 import {
@@ -375,11 +383,18 @@ function LimitationsEditor({
     const existing = limitationFor(constraints, pattern)
 
     if (existing !== null) {
+      // The note lives on the pattern rows, so clearing the last one clears
+      // the note with it — the field says so now rather than after a reload.
+      const last = limitations.patterns.length === 1
       cache.setData(
         key,
         constraints.filter((constraint) => constraint.id !== existing.id),
       )
-      await save(() => client.remove(existing.id), rollback)
+      await save(async () => {
+        const removed = await client.remove(existing.id)
+        if (removed.ok && last) setNote('')
+        return removed
+      }, rollback)
       return
     }
 
@@ -406,6 +421,10 @@ function LimitationsEditor({
   async function storeNote() {
     if (user === null || key === null) return
     if (note.trim() === limitations.note.trim()) return
+    // With no pattern row there is nowhere for the note to persist:
+    // `setPatternNote` would answer "Saved" for text a reload then loses. The
+    // field's guidance says to tick a movement first, and the draft stays.
+    if (limitations.patterns.length === 0) return
 
     if (note.length > NOTE_MAX_LENGTH) {
       setTooLong(true)
@@ -428,6 +447,8 @@ function LimitationsEditor({
 
   return (
     <div className="clr-stack">
+      <p style={{ margin: 0 }}>{LIMITATIONS_INTRO}</p>
+
       {constraints.length === 0 && (
         <p style={{ margin: 0 }}>
           Nothing recorded. Tick anything a workout should work around.
@@ -459,8 +480,12 @@ function LimitationsEditor({
         onBlur={() => {
           void storeNote()
         }}
-        placeholder="Left shoulder — nothing overhead for a few weeks."
-        helperText="Context only. The ticks above are what exclude movements."
+        placeholder={LIMITATIONS_NOTE_PLACEHOLDER}
+        helperText={
+          limitations.patterns.length === 0
+            ? LIMITATIONS_NOTE_NEEDS_PATTERN
+            : LIMITATIONS_NOTE_HELP
+        }
         errorText={
           tooLong ? `Keep the note to ${NOTE_MAX_LENGTH} characters.` : undefined
         }

@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `34b94f9619989d50992afdc2ad8934117f9619b3efaed8b369289ed6fca42eed` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025 and TASK-008 changes below) |
+| Runtime source hash of this audit's tree | `cb8988b2f5c03571d33e90ac16e5860be3c40279e62efda938f628be718ef166` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008 and TASK-009 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -198,6 +198,18 @@ trees and this head, from `git diff`:
   **does** change rendering on Home and Settings headers. The pictures above predate it and
   are not rebound (EX-13). Current acceptance evidence is `src/app/Settings.test.tsx`,
   `e2e/settings-locations.spec.ts` and `e2e/app-shell.spec.ts` on the mobile project.
+- `34b94f96…` to `cb8988b2…`: TASK-009 (REQ-005, JOURNEY-009, U17) gives limitations durable
+  wording: Onboarding's step asks "Any ongoing limitations?", both Onboarding and Settings say
+  limitations apply to every workout until changed, and the note's placeholder no longer
+  implies a few weeks. The note's guidance says it is context only once a movement is ticked,
+  and to tick a movement first while none is — the note is stored on the pattern rows, so
+  Settings no longer reports "Saved" for a note with nowhere to persist, and unticking the last
+  movement clears the note with it. Pattern ticks remain the hard exclusions candidate
+  retrieval reads through `constraints_in_force`. Changed: `src/app/Onboarding.tsx`,
+  `src/app/Settings.tsx` and `src/state/onboarding.ts`. This **does** change rendering on
+  Onboarding's limitations step and Settings' Limitations card. The pictures above predate it
+  and are not rebound (EX-13). Current acceptance evidence is `src/app/Settings.test.tsx`,
+  `src/app/Onboarding.test.tsx` and `src/data/constraints.test.ts`.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

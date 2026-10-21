@@ -51,6 +51,10 @@ import {
   EXPERIENCE_LEVELS,
   GOALS,
   labelOf,
+  LIMITATIONS_INTRO,
+  LIMITATIONS_NOTE_HELP,
+  LIMITATIONS_NOTE_NEEDS_PATTERN,
+  LIMITATIONS_NOTE_PLACEHOLDER,
   locationName,
   MOVEMENT_PATTERNS,
   ONBOARDING_STEPS,
@@ -319,6 +323,7 @@ function StepView({ step, draft, dispatch }: StepProps) {
     case 'limitations':
       return (
         <>
+          <p style={{ margin: 0 }}>{LIMITATIONS_INTRO}</p>
           <CheckboxGroup legend="Work around">
             {MOVEMENT_PATTERNS.map((pattern) => (
               <Checkbox
@@ -340,7 +345,14 @@ function StepView({ step, draft, dispatch }: StepProps) {
             onChange={(value) => {
               dispatch({ type: 'note', value })
             }}
-            placeholder="Left shoulder — nothing overhead for a few weeks."
+            placeholder={LIMITATIONS_NOTE_PLACEHOLDER}
+            // The note is stored with the ticked patterns, and `toAnswers`
+            // drops it when there are none — so the guidance says so first.
+            helperText={
+              draft.avoidPatterns.length === 0
+                ? LIMITATIONS_NOTE_NEEDS_PATTERN
+                : LIMITATIONS_NOTE_HELP
+            }
           />
         </>
       )

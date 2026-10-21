@@ -65,9 +65,35 @@ export const STEP_TITLES: Record<OnboardingStep, string> = {
   location: 'What’s your gym setup?',
   experience: 'How familiar are you with the gym?',
   goals: 'What are you going for?',
-  limitations: 'Anything we should work around?',
+  limitations: 'Any ongoing limitations?',
   confirm: 'Here’s your setup',
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Limitations copy
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// U17: one wording for onboarding's step and Settings' card, and durable
+// wording — a limitation stays until it is changed, so nothing here suggests a
+// few weeks. The ticks are the hard exclusions; the note is context only.
+
+/** What a limitation is, said once above the ticks. */
+export const LIMITATIONS_INTRO =
+  'Ongoing limitations apply to every workout until you change them.'
+
+export const LIMITATIONS_NOTE_PLACEHOLDER = 'Left shoulder — no heavy overhead work.'
+
+/** The note's guidance while it can be written. */
+export const LIMITATIONS_NOTE_HELP =
+  'Context only. The ticks above are what leave movements out.'
+
+/**
+ * The note's guidance while nothing is ticked. The note is stored on the
+ * pattern rows, so with none there is nowhere for it to persist — the text is
+ * kept as a draft and written with the first movement ticked.
+ */
+export const LIMITATIONS_NOTE_NEEDS_PATTERN =
+  'Tick a movement first. The note is kept with what you tick.'
 
 export function stepNumber(step: OnboardingStep): number {
   return ONBOARDING_STEPS.indexOf(step) + 1

@@ -428,7 +428,7 @@ backendTest('entry: real new user, all onboarding steps, retained draft and actu
     await page.getByRole('radio', { name: /^Balanced/ }).click()
     await next.click()
     await evidence.surface('Onboarding', '/onboarding', 'five-step-draft', 'Set up CLEAR', () =>
-      expect(page.getByRole('heading', { name: 'Anything we should work around?' })).toBeVisible(), 'limitations')
+      expect(page.getByRole('heading', { name: 'Any ongoing limitations?' })).toBeVisible(), 'limitations')
     await page.getByLabel(/Note/).fill('Disposable fixture note')
     await page.getByRole('button', { name: /^(Next|Skip)$/ }).click()
     await evidence.surface('Onboarding', '/onboarding', 'five-step-draft', 'Set up CLEAR', () =>

@@ -15,6 +15,10 @@ import { notViableError, type ViabilityFailure } from '../data/viability'
 import { createError, ErrorCode, err, ok } from '../state/errors'
 import {
   EMPTY_DRAFT,
+  LIMITATIONS_INTRO,
+  LIMITATIONS_NOTE_HELP,
+  LIMITATIONS_NOTE_NEEDS_PATTERN,
+  LIMITATIONS_NOTE_PLACEHOLDER,
   ONBOARDING_STEPS,
   onboardingReducer,
   SECTIONS_BY_GOAL,
@@ -483,6 +487,67 @@ describe('REQ-004 goal-derived sections, previewed', () => {
 
     await waitFor(() => {
       expect(userData.preferenceWrites[0]?.enabled_sections).toContain('core')
+    })
+  })
+})
+
+describe('U17 ongoing limitations', () => {
+  async function toLimitations(user: UserEvent) {
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    await user.click(next())
+    await onStep('experience')
+    await user.click(screen.getByRole('radio', { name: 'Some experience' }))
+    await user.click(next())
+    await onStep('goals')
+    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+    await user.click(next())
+    return onStep('limitations')
+  }
+
+  it('asks about ongoing limitations, in wording that does not expire', async () => {
+    const { user } = setup()
+
+    const heading = await toLimitations(user)
+    expect(heading).toHaveTextContent('Any ongoing limitations?')
+    const card = within(stepCard())
+    expect(card.getByText(LIMITATIONS_INTRO)).toBeVisible()
+    expect(card.getByLabelText(/Note/)).toHaveAttribute('placeholder', LIMITATIONS_NOTE_PLACEHOLDER)
+    expect(stepCard()).not.toHaveTextContent(/few weeks|for now|temporar/i)
+  })
+
+  it('says the note travels with a ticked movement, and is context once one is', async () => {
+    const { user } = setup()
+
+    await toLimitations(user)
+    const note = screen.getByLabelText(/Note/)
+    expect(note).toBeEnabled()
+    expect(note).toHaveAccessibleDescription(LIMITATIONS_NOTE_NEEDS_PATTERN)
+
+    await user.click(screen.getByRole('checkbox', { name: 'Squatting' }))
+    expect(note).toHaveAccessibleDescription(LIMITATIONS_NOTE_HELP)
+
+    await user.click(screen.getByRole('checkbox', { name: 'Squatting' }))
+    expect(note).toHaveAccessibleDescription(LIMITATIONS_NOTE_NEEDS_PATTERN)
+  })
+
+  it('commits ticks as hard exclusions and infers none from the prose', async () => {
+    const { user, userData } = setup()
+
+    await toLimitations(user)
+    // The prose names movements that are not ticked; it stays prose.
+    await user.click(screen.getByRole('checkbox', { name: 'Squatting' }))
+    await user.type(screen.getByLabelText(/Note/), 'No pulling or pressing, ever.')
+    await user.click(next())
+    await onStep('confirm')
+    await user.click(screen.getByRole('button', { name: 'Finish setup' }))
+
+    await waitFor(() => {
+      expect(userData.onboardingCalls).toHaveLength(1)
+    })
+    expect(userData.onboardingCalls[0]).toMatchObject({
+      avoid_patterns: ['squat'],
+      note: 'No pulling or pressing, ever.',
     })
   })
 })
