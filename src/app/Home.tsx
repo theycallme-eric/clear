@@ -64,14 +64,16 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react'
-import { Link, useHref, useLinkClickHandler, useNavigate, type To } from 'react-router-dom'
+import { useHref, useLinkClickHandler, useNavigate, type To } from 'react-router-dom'
 
 import {
   AlertCircle,
   AppHeader,
   Button,
   ClearLogo,
+  IconButton,
   Play,
+  Sliders,
   Streak as StreakGlyph,
   TabBar,
   TabPanel,
@@ -169,6 +171,9 @@ export const REVIEW_ROUTE = '/review'
 export const HISTORY_ROUTE = '/history'
 export const SETTINGS_ROUTE = '/settings'
 
+/** U18: the header's Settings control is a glyph, so its name is stated. */
+export const SETTINGS_CONTROL_LABEL = 'Settings'
+
 /** The Recent panel's way into the whole chronology. */
 export const VIEW_HISTORY_LABEL = 'View history'
 
@@ -258,9 +263,19 @@ export function Home() {
   // — the shared host makes it the screen, and cancelling puts Home back.
   return (
     <GenerationLoadingHost generation={generation} cancelTo={HOME_ROUTE}>
-      {/* TASK-026: the bare text link measured under the package's 40px touch
-          target; `.clr-hit` grows the hit area without moving the layout. */}
-      <AppHeader actions={<Link to={SETTINGS_ROUTE} className="clr-hit">Settings</Link>}>
+      {/* U18: the header is the wordmark and one framed icon-only control.
+          `IconButton` requires the accessible name and brings the package's
+          focus ring and 40px target; the route change stays in-app, so the
+          installed PWA never hands Settings to the browser. */}
+      <AppHeader
+        actions={
+          <IconButton
+            label={SETTINGS_CONTROL_LABEL}
+            icon={<Sliders size={20} />}
+            onClick={() => void navigate(SETTINGS_ROUTE)}
+          />
+        }
+      >
         <ClearLogo size="md" />
       </AppHeader>
       <Screen
