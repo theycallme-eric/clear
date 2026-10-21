@@ -40,7 +40,9 @@
  *      parses the saved snapshot and carries the resulting acceptance payload
  *      to `/review` as route state. No generation call is made and no row is
  *      written on the way — Review's own Start is where the session begins to
- *      exist, exactly as it is for a generated workout.
+ *      exist, exactly as it is for a generated workout. Past
+ *      `FAVORITES_PREVIEW_LIMIT` the tab previews and links to its full list;
+ *      the tab and that view are search params, so neither is lost (U21).
  *
  * Recent workouts retain `/history/:id` as their durable fallback and use the
  * same direct-Review resolver as History. Favorites restore through their own
@@ -57,7 +59,13 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react'
-import { useHref, useLinkClickHandler, useNavigate, type To } from 'react-router-dom'
+import {
+  useHref,
+  useLinkClickHandler,
+  useNavigate,
+  useSearchParams,
+  type To,
+} from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -185,6 +193,23 @@ export const STREAK_EMPTY = 'No streak yet.'
 export const FAVORITES_LABEL = 'Favorites'
 export const FAVORITES_EMPTY_TITLE = 'No favorites yet'
 export const FAVORITES_EMPTY = 'Save a workout from its summary to start it again here.'
+
+/**
+ * U21: Home previews the newest favorites; past this many, the full list is
+ * one quiet link away. The tab and the full-list view are both in the URL, so
+ * Back, a refresh or a return from Review lands on the same tab and view.
+ */
+export const FAVORITES_PREVIEW_LIMIT = 3
+export const HOME_TAB_PARAM = 'tab'
+export const FAVORITES_TAB_VALUE = 'favorites'
+export const FAVORITES_VIEW_PARAM = 'favorites'
+export const FAVORITES_VIEW_ALL = 'all'
+export const FAVORITES_SHOW_FEWER_LABEL = 'Show fewer'
+
+/** `Show all 5 favorites`: the count says what the link adds. */
+function showAllFavoritesLabel(count: number): string {
+  return `Show all ${count} favorites`
+}
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
@@ -663,8 +688,23 @@ function WorkoutTabs({
   query: HistoryQuery
   entries: readonly HistorySessionEntry[]
 }) {
-  const [active, setActive] = useState(0)
+  // U21: the selected tab is the URL's, so leaving Home and coming back — or
+  // opening the full favorites list — never drops the user onto Recent.
+  const [params, setParams] = useSearchParams()
+  const active = params.get(HOME_TAB_PARAM) === FAVORITES_TAB_VALUE ? 1 : 0
   const idBase = 'home-workout-tabs'
+
+  const select = (index: number) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        if (index === 1) next.set(HOME_TAB_PARAM, FAVORITES_TAB_VALUE)
+        else next.delete(HOME_TAB_PARAM)
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   return (
     <div className="clr-stack clr-stack--tight">
@@ -672,7 +712,7 @@ function WorkoutTabs({
         <TabBar
           tabs={[RECENT_WORKOUTS_LABEL, FAVORITES_LABEL]}
           active={active}
-          onChange={setActive}
+          onChange={select}
           idBase={idBase}
         />
       </TabBand>
@@ -772,6 +812,13 @@ function FavoriteWorkouts() {
     query.state.status === 'ready' ? query.state.data : []
   const listed = useMemo(() => favoriteEntries(rows), [rows])
 
+  // U21: a preview while it would be long, the whole list once asked for. The
+  // view is a URL fact beside the tab, so Back returns to the preview.
+  const [params] = useSearchParams()
+  const showingAll = params.get(FAVORITES_VIEW_PARAM) === FAVORITES_VIEW_ALL
+  const limited = listed.length > FAVORITES_PREVIEW_LIMIT
+  const shown = limited && !showingAll ? listed.slice(0, FAVORITES_PREVIEW_LIMIT) : listed
+
   const state: ViewState<readonly FavoriteEntry[]> =
     query.state.status === 'loading'
       ? viewLoading()
@@ -779,7 +826,19 @@ function FavoriteWorkouts() {
         ? viewError(query.state.error)
         : listed.length === 0
           ? viewEmpty()
-          : viewReady(listed)
+          : viewReady(shown)
+
+  const fullList = limited && state.status === 'ready' && (
+    <RouteAction
+      to={{
+        search: showingAll
+          ? `?${HOME_TAB_PARAM}=${FAVORITES_TAB_VALUE}`
+          : `?${HOME_TAB_PARAM}=${FAVORITES_TAB_VALUE}&${FAVORITES_VIEW_PARAM}=${FAVORITES_VIEW_ALL}`,
+      }}
+    >
+      {showingAll ? FAVORITES_SHOW_FEWER_LABEL : showAllFavoritesLabel(listed.length)}
+    </RouteAction>
+  )
 
   const start = (entry: FavoriteEntry) => {
     const row = rows.find((candidate) => candidate.id === entry.id)
@@ -816,7 +875,7 @@ function FavoriteWorkouts() {
 
   return (
     <>
-      <Card heading={FAVORITES_LABEL}>
+      <Card heading={FAVORITES_LABEL} meta={fullList || undefined}>
         {failure !== null && (
           <p role="alert" style={FAVORITE_FAILURE_STYLE}>
             <span aria-hidden="true" style={{ display: 'flex' }}>

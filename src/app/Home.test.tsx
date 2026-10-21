@@ -28,6 +28,8 @@ import {
 import {
   FAVORITES_EMPTY,
   FAVORITES_EMPTY_TITLE,
+  FAVORITES_PREVIEW_LIMIT,
+  FAVORITES_SHOW_FEWER_LABEL,
   GENERATE_ACTION_LABEL,
   HISTORY_ROUTE,
   LAST_REQUEST_LABEL,
@@ -143,6 +145,131 @@ describe('Home', () => {
 
     expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: 'Today' })).toBeNull()
+  })
+
+  describe('U21: the favorites preview and its full list', () => {
+    function favoriteRows(count: number) {
+      return Array.from({ length: count }, (_, index) =>
+        savedWorkoutFixture({
+          id: `70000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+          title: `Favorite ${index + 1}`,
+          created_at: `2026-09-${String(10 + index).padStart(2, '0')}T10:00:00+00:00`,
+        }),
+      )
+    }
+
+    function renderFavorites(count: number, path = '/') {
+      const workout = createWorkoutDouble({ session: null, favorites: favoriteRows(count) })
+      return renderApp([path], signedIn({ workout: workout.clients }))
+    }
+
+    function favoritesTab() {
+      return screen.getByRole('tab', { name: 'Favorites' })
+    }
+
+    async function favoriteRowCount() {
+      const list = await screen.findByRole('list', { name: 'Favorites' })
+      return list.querySelectorAll(':scope > .clr-list__row').length
+    }
+
+    it('zero favorites: the concise empty state, and no full-list link', async () => {
+      const user = userEvent.setup()
+      renderFavorites(0)
+
+      await user.click(favoritesTab())
+      expect(await screen.findByText(FAVORITES_EMPTY_TITLE)).toBeInTheDocument()
+      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+    })
+
+    it('one favorite: listed whole, with no full-list link', async () => {
+      const user = userEvent.setup()
+      renderFavorites(1)
+
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(1)
+      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
+    })
+
+    it('exactly the limit: every favorite is already shown, so nothing links on', async () => {
+      const user = userEvent.setup()
+      renderFavorites(FAVORITES_PREVIEW_LIMIT)
+
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
+      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
+    })
+
+    it('more than the limit: a preview, then the full list, on the same tab', async () => {
+      const user = userEvent.setup()
+      const total = FAVORITES_PREVIEW_LIMIT + 2
+      renderFavorites(total)
+
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
+
+      const all = screen.getByRole('link', { name: `Show all ${total} favorites` })
+      expect(all).toHaveClass('clr-text-action')
+      await user.click(all)
+
+      await waitFor(async () => expect(await favoriteRowCount()).toBe(total))
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      for (let index = 1; index <= total; index += 1) {
+        expect(screen.getByRole('heading', { name: `Favorite ${index}` })).toBeInTheDocument()
+      }
+
+      await user.click(screen.getByRole('link', { name: FAVORITES_SHOW_FEWER_LABEL }))
+      await waitFor(async () => expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT))
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+    })
+
+    it('a return to Home keeps the Favorites tab and the full list it was on', async () => {
+      const total = FAVORITES_PREVIEW_LIMIT + 1
+      renderFavorites(total, '/?tab=favorites&favorites=all')
+
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(await favoriteRowCount()).toBe(total)
+    })
+
+    it('switching back to Recent forgets nothing the user did not change', async () => {
+      const user = userEvent.setup()
+      renderFavorites(FAVORITES_PREVIEW_LIMIT + 1, '/?tab=favorites')
+
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      await user.click(screen.getByRole('tab', { name: 'Recent workouts' }))
+      expect(screen.getByRole('tab', { name: 'Recent workouts' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      )
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
+    })
+  })
+
+  it('U44: a recent workout groups title and status, then context, then both durations', async () => {
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: 'b0000021-0000-4000-8000-000000000000',
+          location_id: LOCATION_ID,
+          date: '2026-09-24',
+          title: 'A deliberately long recent workout name that has to wrap on a phone',
+          requested_duration_mins: 40,
+          actual_duration_mins: 33,
+        }),
+      ],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients }))
+
+    const list = await screen.findByRole('list', { name: 'Recent workouts' })
+    const row = list.querySelector(':scope > li') as HTMLElement
+    expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
+      .toEqual(['head', 'status', 'context', 'metrics'])
+    expect(row.querySelector('[data-part="status"]')).toHaveTextContent('Completed')
+    expect(row.querySelector('[data-part="metrics"]')).toHaveTextContent(
+      /Requested 40 min.*Actual 33 min.*Intensity 7\/10/,
+    )
   })
 
   it('opens a recent workout into its Session Detail rather than Not Found', async () => {
