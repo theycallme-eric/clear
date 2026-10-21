@@ -921,6 +921,11 @@ export const workoutBlockRowSchema = z.object({
   round_rest_seconds: nonNegativeInt.nullable(),
   rep_scheme: repSchemeSchema,
   block_notes: z.string().nullable(),
+  // REQ-018 (TASK-039, migration 20261021000025). Read as stored and never
+  // defaulted: NULL is a block with no explicit timing. Optional because a
+  // snapshot from a database without the column yet has no key at all, and
+  // that is still a legacy block rather than a malformed read.
+  ladder_timing: ladderTimingSchema.nullable().optional(),
 })
 
 /**

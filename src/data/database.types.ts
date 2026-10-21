@@ -32,6 +32,7 @@
  *   supabase/migrations/20261002000022_settings_viability_guard.sql
  *   supabase/migrations/20261002000023_onboarding_viability.sql
  *   supabase/migrations/20261002000024_location_viability.sql
+ *   supabase/migrations/20261021000025_ladder_timing_persistence.sql
  */
 
 export type Json =
@@ -511,6 +512,7 @@ export type Database = {
           round_rest_seconds: number | null
           rep_scheme: Database['public']['Enums']['rep_scheme']
           block_notes: string | null
+          ladder_timing: Json | null
         }
         Insert: {
           id?: string
@@ -524,6 +526,7 @@ export type Database = {
           round_rest_seconds?: number | null
           rep_scheme?: Database['public']['Enums']['rep_scheme']
           block_notes?: string | null
+          ladder_timing?: Json | null
         }
         Update: {
           id?: string
@@ -537,6 +540,7 @@ export type Database = {
           round_rest_seconds?: number | null
           rep_scheme?: Database['public']['Enums']['rep_scheme']
           block_notes?: string | null
+          ladder_timing?: Json | null
         }
       }
       workout_exercises: {
