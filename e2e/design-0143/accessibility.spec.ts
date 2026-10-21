@@ -100,7 +100,9 @@ function workout(catalog: Catalogued[], locationId: string | null, offset: numbe
 interface World {
   readonly userId: string
   /** A completed session: History, its detail, Summary and a Review restart. */
-  completed(): Promise<Persisted>
+  completed(offset?: number): Promise<Persisted>
+  /** A rest-day mark the user made, `offset` days before today. */
+  rest(offset: number): Promise<void>
 }
 
 interface Options {
@@ -156,11 +158,16 @@ const test = base.extend<Options & { world: World; blocked: () => number }>({
       })
       await use({
         userId: owner,
-        async completed() {
+        async rest(offset) {
+          must(await client.insertAs('rest_days', {
+            user_id: owner, day: dayAgo(offset), reason: 'rest', note: null,
+          }, token), 'Fixture rest-day mark')
+        },
+        async completed(offset = 1) {
           const stored = must<Persisted & {
             sections: { blocks: { exercises: { exercise: { id: string } }[] }[] }[]
           }>(await client.rpcAs('persist_session', {
-            p_user_id: owner, p_session: workout(catalog, locationId, 1),
+            p_user_id: owner, p_session: workout(catalog, locationId, offset),
           }, token), 'Fixture persistence')
           const started = must<{ outcome: string }>(await client.rpcAs('start_session', {
             p_session_id: stored.session.id }, token), 'Fixture start')
@@ -914,6 +921,132 @@ backendTest('JOURNEY-002: Settings stays readable with long input and concise na
   } finally {
     await page.setViewportSize({ width: 390, height: 844 })
   }
+})
+
+// ── TASK-003 · JOURNEY-003 (U12) ──────────────────────────────────────────
+
+interface DayRoles {
+  readonly rest: number
+  readonly trained: number
+  /** The drawn border of the first rest / trained day, as sRGB over the ground. */
+  readonly restBorder: readonly number[] | null
+  readonly trainedBorder: readonly number[] | null
+  /** The skin's info and completed roles, resolved the same way. */
+  readonly infoRole: readonly number[]
+  readonly completedRole: readonly number[]
+  readonly ground: readonly number[]
+  readonly restGlyph: string | null
+  readonly trainedGlyph: string | null
+}
+
+/** The rest and trained days of the one week/streak list on the current route. */
+function dayRoles(page: Page): Promise<DayRoles> {
+  return page.evaluate(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 1
+    const context = canvas.getContext('2d', { willReadFrequently: true })!
+    const probe = document.createElement('div')
+    document.body.append(probe)
+    const resolve = (value: string) => {
+      probe.style.backgroundColor = value
+      return getComputedStyle(probe).backgroundColor
+    }
+    const ground = resolve('var(--base)')
+    // Any CSS colour form, flattened onto the ground the frame sits on.
+    const rgb = (colour: string) => {
+      context.fillStyle = ground
+      context.fillRect(0, 0, 1, 1)
+      context.fillStyle = colour
+      context.fillRect(0, 0, 1, 1)
+      return [...context.getImageData(0, 0, 1, 1).data.slice(0, 3)]
+    }
+    const days = [...document.querySelectorAll<HTMLElement>('main li[data-day-state]')]
+    const rest = days.filter((day) => day.dataset.dayState === 'rest')
+    const trained = days.filter((day) => day.dataset.dayState === 'workout')
+    const border = (day: HTMLElement | undefined) =>
+      day ? rgb(getComputedStyle(day, '::after').backgroundColor) : null
+    const glyph = (day: HTMLElement | undefined) => day?.querySelector('[aria-hidden="true"] svg')?.innerHTML ?? null
+    const result = {
+      rest: rest.length,
+      trained: trained.length,
+      restBorder: border(rest[0]),
+      trainedBorder: border(trained[0]),
+      infoRole: rgb(resolve('var(--border-toast-info)')),
+      completedRole: rgb(resolve('var(--border-selected)')),
+      ground: rgb(ground),
+      restGlyph: glyph(rest[0]),
+      trainedGlyph: glyph(trained[0]),
+    }
+    probe.remove()
+    return result
+  })
+}
+
+/** WCAG contrast between two sRGB colours. */
+function contrast(a: readonly number[], b: readonly number[]) {
+  const luminance = (rgb: readonly number[]) => {
+    const [r, g, b] = rgb.map((channel) => {
+      const c = channel / 255
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
+    })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x)
+  return (hi + 0.05) / (lo + 0.05)
+}
+
+const close = (a: readonly number[] | null, b: readonly number[]) =>
+  a !== null && a.every((channel, index) => Math.abs(channel - b[index]) <= 2)
+
+/** In every skin: rest in the info role, trained in the completed role, two glyphs. */
+async function expectRestTrainingDistinct(page: Page, where: string) {
+  // The week is data: wait for its reads, not only for the arrival animation.
+  for (const state of ['rest', 'workout']) {
+    await expect(page.locator(`main li[data-day-state="${state}"]`).first(),
+      `${where}: no ${state} day rendered`).toBeVisible({ timeout: 30_000 })
+  }
+  try {
+    for (const skin of CAPTURE_SKINS) {
+      await useSkin(page, skin)
+      await settled(page)
+      const roles = await dayRoles(page)
+      const at = `${where} in ${skin}`
+      expect(roles.rest, `${at}: no rest day to compare`).toBeGreaterThan(0)
+      expect(roles.trained, `${at}: no trained day to compare`).toBeGreaterThan(0)
+      expect(close(roles.restBorder, roles.infoRole), `${at}: a rest day is not in the info role`).toBe(true)
+      expect(close(roles.trainedBorder, roles.completedRole), `${at}: a trained day is not in the completed role`).toBe(true)
+      expect(close(roles.restBorder, roles.trainedBorder ?? []), `${at}: rest and trained share a border colour`).toBe(false)
+      // Visible: the rest frame's edge holds the 3:1 non-text contrast against the ground.
+      expect(contrast(roles.restBorder!, roles.ground), `${at}: the rest frame vanishes into the ground`)
+        .toBeGreaterThanOrEqual(3)
+      // The non-colour cue: each state draws its own glyph.
+      expect(roles.restGlyph, `${at}: a rest day has no glyph`).not.toBeNull()
+      expect(roles.trainedGlyph, `${at}: a trained day has no glyph`).not.toBeNull()
+      expect(roles.restGlyph, `${at}: rest and trained share a glyph`).not.toBe(roles.trainedGlyph)
+    }
+  } finally {
+    await useSkin(page, 'clear')
+  }
+}
+
+backendTest('JOURNEY-003: Home and Summary keep rest and training days distinct in every skin', async ({
+  page, visit, world,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-003 is proven at the 390 by 844 phone viewport')
+  test.setTimeout(240_000)
+  expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+  // Trained today; a marked rest day elsewhere in this (Monday-first) week.
+  await world.completed(0)
+  await world.rest(new Date().getUTCDay() === 0 ? 1 : -1)
+
+  await visit('/summary')
+  await reached(page, '/summary', 'Nice work')
+  await expectRestTrainingDistinct(page, '/summary streak')
+
+  await visit('/')
+  await reached(page, '/', 'Today')
+  await expectContainedRoute(page, '/ week')
+  await expectRestTrainingDistinct(page, '/ week')
 })
 
 test.describe('onboarding', () => {
