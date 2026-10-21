@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `62161e8d725c44ea8734e679f6274051ddd1c265bdef3968924e4c67d664cc7f` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026 and TASK-004 changes below) |
+| Runtime source hash of this audit's tree | `2abda6c004f28481464a91b91098fde5cb1f129a00e9fc2da978844e6ae6bf83` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026 and TASK-004 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -146,6 +146,13 @@ trees and this head, from `git diff`:
   rendering on Welcome and OTP Login. The pictures above predate it and are not rebound (EX-13).
   Current acceptance evidence is `e2e/auth-otp.spec.ts` on the mobile project and
   `src/app/Welcome.test.tsx` / `src/app/Login.test.tsx`.
+- `62161e8d…` to `2abda6c0…`: TASK-004 protected preview found two of five Welcome
+  action-frame sample points unclickable on phone/tablet. Its new in-card entry was inside
+  the retained `clr-boot` transform. The card/action are now stationary; only the decorative
+  line uses the same shipped boot vocabulary. The single-card/single-entry composition is
+  unchanged. A new structural regression fails on the prior tree; the existing U04 hit
+  samples and three-row stagger assertions are retained. Local phone checks pass; fresh
+  exact-head protected CI remains required to confirm the platform-specific correction.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

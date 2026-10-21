@@ -18,7 +18,9 @@
  * States: populated only — there is nothing to fetch. The one wait it can have
  * is the session restore, and the route's `PublicOnly` guard owns that.
  *
- * Motion: the wordmark boots once and the card arrives with `.clr-boot`.
+ * Motion: the wordmark boots once and the decorative line uses `.clr-boot`.
+ * The card and its entry stay outside that transform so hit geometry is stable
+ * on arrival and after the animation's retained final frame.
  * Nothing manufactures a delay — the screen is interactive on its first paint
  * and the animation is decoration over the top of it.
  */
@@ -45,24 +47,24 @@ export function Welcome() {
         </span>
       }
     >
-      <div className="clr-boot">
-        <Card>
-          <div className="clr-stack">
+      <Card>
+        <div className="clr-stack">
+          <div className="clr-boot">
             <p className="label">Strength training, simplified.</p>
-            <ActionGroup>
-              <Button
-                variant="primary"
-                size="lg"
-                onClick={() => {
-                  void navigate(GET_STARTED_ROUTE)
-                }}
-              >
-                Get started
-              </Button>
-            </ActionGroup>
           </div>
-        </Card>
-      </div>
+          <ActionGroup>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => {
+                void navigate(GET_STARTED_ROUTE)
+              }}
+            >
+              Get started
+            </Button>
+          </ActionGroup>
+        </div>
+      </Card>
     </Screen>
   )
 }

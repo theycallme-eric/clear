@@ -179,17 +179,18 @@ test.describe('with motion allowed', () => {
   test('a set arrives 40ms apart', async ({ page, visit }) => {
     await visit('/welcome')
 
-    // Welcome is one arriving card, not a multirow set (U13). Its one entry
-    // is part of that card and adds no entrance of its own; it stays usable
-    // without animation.
+    // Only the decorative line enters. The same one card holds it and the
+    // entry, but no retained transform may enclose the interactive hit area.
     const arrival = page.locator('main .clr-boot > *')
     await expect(arrival).toHaveCount(1)
-    await expect(arrival.locator('.clr-card')).toHaveCount(1)
+    await expect(arrival).toHaveText('Strength training, simplified.')
+    await expect(page.locator('main .clr-card')).toHaveCount(1)
     await expect(arrival).toHaveCSS('animation-name', 'clr-boot-in')
     await expect(arrival).toHaveCSS('animation-delay', '0s')
     const actions = page.locator('main button')
     await expect(actions).toHaveText(['Get started'])
-    await expect(arrival).toContainText('Get started')
+    await expect(arrival.getByRole('button')).toHaveCount(0)
+    expect(await actions.evaluate((action) => action.closest('.clr-boot') === null)).toBe(true)
     for (const action of await actions.all()) {
       await expect(action).toHaveCSS('animation-name', 'none')
       await expect(action).toBeVisible()
@@ -199,7 +200,7 @@ test.describe('with motion allowed', () => {
     // off-screen fixture, not invented extra content in the real Welcome.
     const delays = await page.evaluate(() => {
       const arrival = document.querySelector<HTMLElement>('main .clr-boot > *')
-      if (!arrival?.querySelector('.clr-card')) throw new Error('the Welcome card is missing')
+      if (arrival?.tagName !== 'P') throw new Error('the decorative Welcome line is missing')
       const fixture = document.createElement('div')
       fixture.className = 'clr-boot'
       fixture.inert = true
