@@ -1176,6 +1176,8 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   }, { variant: 'recorded' })
 
   const section = async (name: string) => {
+    // The full jump list is collapsed behind the active section's header (U34).
+    await page.getByRole('button', { name: 'All sections', exact: true }).click()
     await page.getByRole('button', { name: new RegExp(`^${name}, `) }).click()
     await expect(page.getByRole('button', { name: new RegExp(`^${name}, `) })).toHaveAttribute('aria-current', 'step')
   }

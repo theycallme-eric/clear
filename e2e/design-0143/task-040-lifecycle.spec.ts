@@ -583,6 +583,8 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
       } },
     ]
     for (const variant of variants) {
+      // The full jump list is collapsed behind the active section's header (U34).
+      await page.getByRole('button', { name: 'All sections', exact: true }).click()
       await page.getByRole('button', { name: new RegExp(`^${variant.section}, `) }).click()
       await checkA11y()
       await save.take({ screen: 'Workout', route: '/workout', state: variant.state }, '/workout', 'Workout', `Actual ${variant.section} dispatch, source-specific controls and movement list.`, variant.oracle, safe(variant.section))

@@ -89,7 +89,6 @@ import { ErrorView, LoadingView } from '../ui/view-state'
 import {
   AbandonConfirmDialog,
   GlobalTimer,
-  ProgressTracker,
   RestTimerBar,
   SectionHeader,
   WorkoutNavigation,
@@ -235,6 +234,36 @@ function WorkoutShell({
   )
   const index = clampSectionIndex(section.index, progress)
   const current: SectionProgress | undefined = progress.sections[index]
+
+  // Focus follows a move the athlete made — Previous, Next or a jump — to the
+  // heading of the section it opened. A restored section on mount is left to
+  // the route's own focus, which the shell does not second-guess. Neither path
+  // touches the session clock, which reads `started_at` and nothing else.
+  const header = useRef<HTMLDivElement>(null)
+  const moved = useRef(false)
+  const focusSectionHeader = useCallback(() => {
+    const heading = header.current?.querySelector('h2, h3, h4, h5, h6')
+    if (heading instanceof HTMLElement) {
+      if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
+      heading.focus()
+    }
+  }, [])
+  const { setIndex } = section
+  const goTo = useCallback(
+    (next: number) => {
+      moved.current = next !== index
+      setIndex(next)
+      // Reselecting the open section closes its jump list too, but does not
+      // change `index`: restore focus before its selected chip becomes inert.
+      if (next === index) focusSectionHeader()
+    },
+    [index, setIndex, focusSectionHeader],
+  )
+  useEffect(() => {
+    if (!moved.current) return
+    moved.current = false
+    focusSectionHeader()
+  }, [index, focusSectionHeader])
 
   const seconds = useElapsedSeconds(snapshot.session.started_at)
 
@@ -426,8 +455,8 @@ function WorkoutShell({
                       section={current}
                       canGoBack={canGoBack}
                       canGoForward={canGoForward}
-                      onPrevious={() => section.setIndex(index - 1)}
-                      onContinue={() => section.setIndex(index + 1)}
+                      onPrevious={() => goTo(index - 1)}
+                      onContinue={() => goTo(index + 1)}
                       onFinish={() => void finish()}
                       ending={ending}
                       advancing={advancing}
@@ -446,19 +475,22 @@ function WorkoutShell({
                 */}
                 <SetSyncNotice />
 
-                <ProgressTracker
-                  progress={progress}
-                  currentIndex={index}
-                  onSelect={advancing || ending ? undefined : section.setIndex}
-                />
-
                 {current === undefined ? null : (
                   <>
-                    <SectionHeader
-                      section={current}
-                      position={index + 1}
-                      total={progress.total}
-                    />
+                    {/*
+                      The one frame for the active section (U35): its name,
+                      position, status and structures, with the session's
+                      progress and the collapsible jump list (U34) inside it.
+                    */}
+                    <div ref={header}>
+                      <SectionHeader
+                        section={current}
+                        position={index + 1}
+                        total={progress.total}
+                        progress={progress}
+                        onSelect={advancing || ending ? undefined : goTo}
+                      />
+                    </div>
                     {current.blocks.map((block) => (
                       <BlockSlot key={block.blockId} block={block} />
                     ))}
