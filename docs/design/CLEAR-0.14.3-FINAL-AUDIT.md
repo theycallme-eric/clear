@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `0c1ffb631d9f3af11fc912e504d43b3a8003071943cf4693db18e9cce4cd40cf` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017 and TASK-012 changes below) |
+| Runtime source hash of this audit's tree | `6b8661ac66ac6d44b592dca3f3d9ff933caed238421b5ea1520cd9f49d6a6e73` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038 and TASK-012 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -298,6 +298,27 @@ trees and this head, from `git diff`:
   Home, session-suggestion and Generate suites. The mobile Home-to-Generate case is explicitly
   selected alongside the existing Review and rest-day cases. This changes Home and Generate;
   the historical pictures remain bound to their original trees (EX-13), not to this runtime.
+
+- `9e1b78b4…` to `ed68fef0…`: TASK-038 (REQ-018, E03) adds the optional block-level
+  `ladder_timing` boundary — `scheduled_starts`, free-paced `for_time` and `capped_window`, with
+  variable round count and interval length — to `src/state/schemas.ts`, and an edge gate in
+  `supabase/functions/_shared/validate.ts` that refuses it in generated output until TASK-039 and
+  TASK-032. Legacy payloads parse unchanged. No prompt, persistence, duration, dispatch or renderer
+  change; this does **not** change rendering of any route. Current acceptance evidence is
+  `src/state/schemas.test.ts` and `src/test/generation-validation.test.ts`.
+
+- `ed68fef0…` to `8ff175a2…`: TASK-038 independent review correction. The inactive generation gate
+  also rejects an explicit null timing key, keeping generated blocks inside old strict 4.1.0 readers'
+  closed key space. The owner's clarification makes `capped_window` one whole-ladder/block cap equal
+  to the block clock, separate from the unchanged global session timer, not a per-round cap. Added
+  null-key, closed-wire-key, cap consistency and multi-sequence/fixed-companion regressions; the
+  focused schema/backend command passes 193 tests. No renderer, persistence, prompt or clock module
+  is changed, and no historical picture is rebound to this head.
+
+- Combined TASK-012/current-main tree: `6b8661ac…` adds the preserved Home/Generate-prefill
+  changes to protected-merged TASK-038 main `5d392c0`. Both candidate histories above remain
+  intact, not represented as one linear sequence. Historical pictures remain historical;
+  combined-tree task/project verification and independent exact-head acceptance are required.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
