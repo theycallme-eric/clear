@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `dc715f66247cfc74fd770315f7e01df4ece2a1dc92bb81e5f50c237916899c9f` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001 and TASK-037 changes below) |
+| Runtime source hash of this audit's tree | `faf1f3233ea5b922043ce77e3e12c6949cddcf9645d6210c83b13ad09a3383d5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001 and TASK-037 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -55,7 +55,7 @@ trees and this head, from `git diff`:
   rules, a header rule, full-width button surfaces, and equal footer action heights. The pictures
   above predate it and are not rebound (EX-13); `e2e/contained-shell.spec.ts` measures the
   repaired geometry on this head.
-- `bc2c65d7…` to `dc715f66…`: TASK-037 carries an existing rule's supported rep
+- `bc2c65d7…` to `faf1f323…`: TASK-037 carries an existing rule's supported rep
   increase through `src/state/load-suggestions.ts` and Review's data handoff. Review
   displays the same adjusted target it accepts; no markup/control or timer is added.
   This can change prescribed rep text for eligible historical data. Earlier pictures

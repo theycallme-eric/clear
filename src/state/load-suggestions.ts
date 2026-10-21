@@ -378,7 +378,7 @@ function suggestionFor(args: SuggestionArgs): LoadSuggestionView {
   })
   // A discarded anchor supplies no supported progression. Deload already
   // prescribes held rep targets; do not undo that instruction at acceptance.
-  const repDelta = suggestion.confidence === 'none' || acceptance.deload ? 0 : suggestion.repDelta
+  const repDelta = suggestion.confidence === 'none' || acceptance.is_deload ? 0 : suggestion.repDelta
 
   return {
     key,

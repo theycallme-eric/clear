@@ -364,7 +364,7 @@ describe('existing rep progression reaches the next prescription', () => {
   })
 
   it('holds the rep targets already prescribed for deload and active recovery', () => {
-    for (const acceptance of [{ ...source(), deload: true }, { ...source(), goal_preset: 'active_recovery' as const }]) {
+    for (const acceptance of [{ ...source(), is_deload: true }, { ...source(), goal_preset: 'active_recovery' as const }]) {
       const suggestions = reviewLoadSuggestions({ acceptance, anchors: [anchorRow()], evidence: evidenceRows() })
       expect(suggestions.get(key)?.repDelta).toBe(0)
       expect(applyLoadOverrides(acceptance, new Map(), suggestions)).toEqual(acceptance)
