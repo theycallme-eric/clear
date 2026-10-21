@@ -295,6 +295,64 @@ describe('strict and relaxed counts', () => {
   })
 })
 
+describe('the onboarding preview’s pool (REQ-004)', () => {
+  // Onboarding shows `SECTIONS_BY_GOAL[goal]` as a read-only preview and
+  // commits it unchanged, so the preview is the enabled pool. Composition may
+  // leave a section out; nothing outside the pool is ever a candidate.
+  const ONBOARDING_GOALS = ['strength', 'hypertrophy', 'conditioning', 'balanced'] as const
+
+  it.each(ONBOARDING_GOALS)('evaluates only the previewed sections for %s', (goal) => {
+    const rows = matrix.states.filter(
+      (state) => state.goal === goal && state.profile === 'preset' && state.constraint === null,
+    )
+    expect(rows.length).toBeGreaterThan(0)
+
+    for (const row of rows) {
+      const sections = row.sections.map((section) => section.section)
+      expect(sections, row.id).toEqual(
+        ENUMS.section_type.filter((section) => SECTIONS_BY_GOAL[goal].includes(section)),
+      )
+    }
+  })
+
+  it.each(ONBOARDING_GOALS)('retrieves candidates for no section outside the %s pool', async (goal) => {
+    const double = createCandidatesDouble({
+      url: 'https://clear.test',
+      anonKey: 'anon',
+      users: { token: 'user' },
+      profiles: {
+        user: {
+          goalPreset: goal,
+          enabledSections: [...SECTIONS_BY_GOAL[goal]],
+          locations: [{ id: 'location', isDefault: true, equipment: EQUIPMENT_BY_TIER.full }],
+        },
+      },
+    })
+
+    for (const focus of ENUMS.session_focus) {
+      const response = await double.fetch(
+        'https://clear.test/rest/v1/rpc/generation_candidate_sets',
+        {
+          method: 'POST',
+          headers: { apikey: 'anon', Authorization: 'Bearer token' },
+          body: JSON.stringify({
+            p_user_id: 'user',
+            p_focus: focus,
+            p_location_id: null,
+            p_session_id: null,
+            p_floor: matrix.floor,
+          }),
+        },
+      )
+      const sets = (await response.json()) as { section: string }[]
+
+      expect(sets.map((set) => set.section).sort(), `${goal}/${focus}`).toEqual(
+        [...SECTIONS_BY_GOAL[goal]].sort(),
+      )
+    }
+  })
+})
+
 describe('the repaired catalog', () => {
   it.each(['skill_power', 'carries', 'stability_balance'])(
     'has %s candidates at every tier that has the equipment',

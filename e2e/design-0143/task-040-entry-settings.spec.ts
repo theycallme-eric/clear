@@ -475,22 +475,26 @@ backendTest('entry: onboarding keeps the actual typed impossible-choice refusal'
   const prior = await client.findUserByEmail(email)
   if (prior) await client.deleteUser(prior.id)
   await client.ensureConfirmedUser(email)
-  evidence.fixture('namespaced real new user; impossible Minimal + Carries proposal refused by genuine onboarding RPC')
+  evidence.fixture('namespaced real new user; impossible Minimal-with-no-equipment proposal refused by genuine onboarding RPC')
   try {
     await enterNewUser(page, visit, email, client)
     const next = page.getByRole('button', { name: 'Next', exact: true })
-    await page.getByRole('radio', { name: /^Minimal/ }).click(); await next.click()
+    await page.getByRole('radio', { name: /^Minimal/ }).click()
+    // REQ-004: sections are a read-only goal preview, so the refused choice is the equipment.
+    for (const name of ['Bodyweight', 'Resistance bands', 'Foam roller']) {
+      await page.getByRole('checkbox', { name, exact: true }).uncheck()
+    }
+    await next.click()
     await page.getByRole('radio', { name: /^Some experience/ }).click(); await next.click()
     await page.getByRole('radio', { name: /^Strength/ }).click()
-    await page.getByRole('checkbox', { name: 'Carries', exact: true }).check()
     await next.click()
     await page.getByRole('checkbox', { name: 'Hard conditioning', exact: true }).check()
     await page.getByLabel(/Note/).fill('Disposable fixture note')
     await next.click()
     await page.getByRole('button', { name: 'Finish setup', exact: true }).click()
     await evidence.route('Onboarding', '/onboarding', 'typed-viability-refusal', 'Set up CLEAR', async () => {
-      await expect(page.getByRole('alert')).toContainText('Nothing in Carries')
-      await expect(page.getByRole('alert')).toContainText('turn off Carries')
+      await expect(page.getByRole('alert')).toContainText('no equipment chosen')
+      await expect(page.getByRole('alert')).toContainText(/add equipment to your setup/i)
       await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
     })
     expect(evidence.modelAttempts()).toBe(0)
