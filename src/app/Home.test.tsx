@@ -1,42 +1,22 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
-import {
-  QUICK_START_LEGACY_GOAL,
-  QUICK_START_MISSING_GOAL,
-  QUICK_START_SETTINGS_LABEL,
-} from '../state/home'
 import { QueryClient } from '../state/query'
-import type { Profile } from '../state/schemas'
+import type { Profile, WorkoutSessionRow } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
 import {
-  createFakeUserDataClient,
   fixtureLocation,
   FIXTURE_USER_ID,
   onboardedProfile,
 } from '../test/user-data-double'
 import {
-  GENERATION_CANCEL_LABEL,
-  GENERATION_FAILED_LABEL,
-  GENERATION_LOADING_TITLE,
-  GENERATION_RETRY_LABEL,
-} from '../state/generation-loading'
-import {
-  SUGGESTION_DISMISSAL_STORAGE_KEY,
+  FIRST_WORKOUT_GUIDANCE,
+  STALE_HISTORY_GUIDANCE,
   suggestionDay,
 } from '../state/session-suggestion'
-import { toastQueue, type ToastMessage } from '../state/toasts'
-import { SLOW_THRESHOLD_MS } from '../state/view-state'
-import {
-  makeGenerationError,
-  makeSessionAcceptance,
-  makeSessionRow,
-} from '../test/factories'
+import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
@@ -45,17 +25,16 @@ import {
   reconstructionFixture,
   savedWorkoutFixture,
 } from '../test/workout-double'
-import { SLOW_LOADING_LABEL } from '../ui/view-state'
-import { resolveAtmosphere } from './atmosphere'
 import {
   FAVORITES_EMPTY,
   FAVORITES_EMPTY_TITLE,
+  GENERATE_ACTION_LABEL,
   HISTORY_ROUTE,
-  HOME_HEADING,
+  LAST_REQUEST_LABEL,
   RECENT_EMPTY_TITLE,
   REST_DAY_PROMPT,
-  HOME_ROUTE,
-  SETTINGS_ROUTE,
+  STREAK_EMPTY,
+  SUGGESTION_LABEL,
   VIEW_HISTORY_LABEL,
 } from './Home'
 
@@ -82,7 +61,7 @@ describe('Home', () => {
     expect(document.querySelectorAll('.clr-card__bar--lg')).toHaveLength(0)
   })
 
-  it('renders recent history and Quick Start immediately repeats the last request', async () => {
+  it('renders recent history, and the primary action opens Generate without generating', async () => {
     const user = userEvent.setup()
     const generation = createFakeGenerationClient()
     const latest = makeSessionRow({
@@ -107,28 +86,20 @@ describe('Home', () => {
 
     renderApp(['/'], signedIn({ workout: workout.clients, generation }))
 
-    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
-    expect(screen.getByRole('link', { name: /Upper-body strength/i })).toHaveAttribute(
-      'href',
-      `/history/${latest.id}`,
-    )
+    expect(
+      await screen.findByRole('link', { name: /Upper-body strength/i }),
+    ).toHaveAttribute('href', `/history/${latest.id}`)
+    expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
+    // Notes were context for that composition; they are not restated here.
+    expect(screen.queryByText(/Do not repeat this note/)).not.toBeInTheDocument()
 
-    await user.click(quickStart)
+    await user.click(screen.getByRole('button', { name: GENERATE_ACTION_LABEL }))
 
-    await waitFor(() => {
-      expect(generation.calls).toEqual([
-        {
-          goal: 'balanced',
-          focus: 'upper_body',
-          requested_duration_mins: 35,
-          requested_intensity: 6,
-          location_id: LOCATION_ID,
-          notes: null,
-          deload: false,
-        },
-      ])
-    })
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText(/Time available/i)).toHaveValue(35)
+    expect(generation.calls).toEqual([])
   })
 
   it('opens History from the Recent panel as a client-side navigation', async () => {
@@ -400,7 +371,7 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
         restDays: createFakeRestDayClient(),
       }),
     )
-    return screen.findByRole('button', { name: 'Quick start' })
+    return screen.findByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))
   }
 
   function cardOf(heading: string): HTMLElement {
@@ -460,12 +431,44 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
     expect(text).toMatch(/Current streak: \d+\xa0days?/)
   })
 
+  it('U19: first use is one clear piece of guidance, and the week repeats no count', async () => {
+    renderApp(['/'], signedIn({ workout: createWorkoutDouble({ session: null }).clients }))
+
+    // First use: Train Today says what to do; the week and streak state facts.
+    expect(
+      await within(cardOf('Train today')).findByText(FIRST_WORKOUT_GUIDANCE),
+    ).toBeInTheDocument()
+    const week = cardOf('This week')
+    expect(await within(week).findByText('No sessions this week yet.')).toBeInTheDocument()
+    expect(week.textContent).not.toMatch(/consecutive days build/)
+    expect(STREAK_EMPTY).toBe('No streak yet.')
+    expect(screen.getAllByText(FIRST_WORKOUT_GUIDANCE)).toHaveLength(1)
+  })
+
+  it('U19: a populated week keeps the streak and the strip, with no second count', async () => {
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: 'b0000009-0000-4000-8000-000000000000',
+          location_id: LOCATION_ID,
+          date: suggestionDay(),
+        }),
+      ],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients, restDays: createFakeRestDayClient() }))
+
+    const week = cardOf('This week')
+    expect(await within(week).findByText(/^Current streak: \d+ days?/)).toBeInTheDocument()
+    await waitFor(() =>
+      expect(within(week).getByRole('list', { name: 'This week' }).children).toHaveLength(7),
+    )
+    expect(week.textContent).not.toMatch(/of\s7\sdays|days trained/)
+  })
+
   it('U07: in-card actions share the card width as one compact group', async () => {
     const user = userEvent.setup()
     await populatedHome()
-
-    const quick = screen.getByRole('button', { name: 'Quick start' })
-    expect(quick.closest('.clr-action-group')).not.toBeNull()
 
     const rest = await within(cardOf('This week')).findByRole('region', { name: 'Rest day' })
     const mark = within(rest).getByRole('button', { name: 'Mark Rest Day' })
@@ -547,10 +550,8 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
     expect(generate).toHaveClass('clr-btn')
     expect(generate).not.toHaveClass('clr-text-action')
     expect(generate.closest('.clr-footer')).not.toBeNull()
-    expect(screen.getByRole('button', { name: 'Quick start' })).toHaveClass('clr-btn')
-    expect(cardOf('Train today')).toContainElement(
-      screen.getByRole('button', { name: 'Quick start' }),
-    )
+    // U20: one next-workout entry, so Train Today holds no competing action.
+    expect(within(cardOf('Train today')).queryAllByRole('button')).toHaveLength(0)
   })
 
   it('keeps the tabs, and adds nothing from the package’s worked example', async () => {
@@ -577,402 +578,18 @@ describe('Home on the 0.14.3 hierarchy (REQ-018, REQ-009)', () => {
 })
 
 /**
- * REQ-004 through Home's own entry: Quick Start hands its run to the shared
- * generation host, so the Loading screen is the whole screen for the run, cancel
- * puts Home back, a failure is pattern 3, and success lands on Review.
- *
- * Everything is driven on the real route tree over GEN-03's real mutation, with
- * a client double that answers only when a test says so.
- */
-describe('Home’s Quick Start (REQ-004)', () => {
-  const REPEATED = makeSessionRow({
-    id: 'b0000003-0000-4000-8000-000000000000',
-    location_id: LOCATION_ID,
-    date: '2026-09-24',
-    title: 'Upper-body strength',
-    session_focus: 'upper_body',
-  })
-
-  beforeEach(() => toastQueue.clear())
-
-  // One test drives the slow budget on a fake clock; a clock that leaked would
-  // hang every test after it.
-  afterEach(() => vi.useRealTimers())
-
-  function renderHome(
-    historyRows = [REPEATED],
-    user = userEvent.setup(),
-  ) {
-    const generation = createFakeGenerationClient()
-    const workout = createWorkoutDouble({ session: null, historyRows })
-    const view = renderApp(['/'], signedIn({ workout: workout.clients, generation }))
-
-    return { user, generation, view }
-  }
-
-  async function quickStart(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(await screen.findByRole('button', { name: 'Quick start' }))
-  }
-
-  /** The ScanLoader region — not the router's own hidden announcer. */
-  const loader = () =>
-    screen.queryAllByRole('status').find((region) => region.classList.contains('clr-scan')) ??
-    null
-  function scan(): HTMLElement {
-    const region = loader()
-    if (region === null) throw new Error('the Loading screen is not up')
-    return region
-  }
-  const homeHeading = () => screen.queryByRole('heading', { level: 1, name: HOME_HEADING })
-  const atmosphere = () => document.documentElement.dataset.atmosphere
-
-  /** Toasts still showing or waiting to show — a `leaving` one is on its way out. */
-  function liveToasts(): ToastMessage[] {
-    const { current, phase, queue } = toastQueue.getState()
-    return [...(current !== null && phase === 'visible' ? [current] : []), ...queue]
-  }
-
-  function acceptance(title: string) {
-    const base = makeSessionAcceptance()
-    return makeSessionAcceptance({ workout: { ...base.workout, title } })
-  }
-
-  it('renders through the shared host rather than an inline pending branch', () => {
-    const source = readFileSync(resolve(import.meta.dirname, 'Home.tsx'), 'utf-8')
-
-    expect(source).toMatch(/<GenerationLoadingHost[\s\S]*cancelTo=\{HOME_ROUTE\}/)
-    expect(source).not.toMatch(/<GenerationLoading[\s/>]/)
-    expect(source).not.toMatch(/status === 'pending'/)
-    expect(HOME_ROUTE).toBe('/')
-  })
-
-  it('makes the Loading screen the whole screen for the run and lands on Review', async () => {
-    const { user, generation } = renderHome()
-    expect(atmosphere()).toBe(resolveAtmosphere(HOME_ROUTE))
-
-    await quickStart(user)
-
-    const region = scan()
-    expect(region).toHaveTextContent(GENERATION_LOADING_TITLE)
-    expect(region).toHaveAttribute('aria-busy', 'true')
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
-    expect(homeHeading()).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
-    expect(atmosphere()).toBe('full')
-    expect(document.querySelector('[data-atmosphere="full"]')).toBeInTheDocument()
-
-    // A real stage is what it says — and still no invented progress.
-    await act(async () => {
-      generation.reachStage('composing')
-    })
-    expect(scan()).toHaveTextContent('Composing session')
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    expect(scan()).not.toHaveAttribute('aria-valuenow')
-    expect(screen.getByRole('button', { name: GENERATION_CANCEL_LABEL })).toBeInTheDocument()
-    expect(generation.calls).toHaveLength(1)
-
-    await act(async () => {
-      generation.succeed({ acceptance: acceptance('Press-led session') })
-    })
-
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Press-led session' }),
-    ).toBeInTheDocument()
-    expect(loader()).not.toBeInTheDocument()
-    expect(homeHeading()).not.toBeInTheDocument()
-    expect(atmosphere()).toBe(resolveAtmosphere('/review'))
-  })
-
-  it('says a run is slow at the documented threshold, and only then, without apology', async () => {
-    // `shouldAdvanceTime` keeps the library's zero-delay waits working while
-    // leaving the budget under the test's control.
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    const { user } = renderHome(
-      [REPEATED],
-      userEvent.setup({ advanceTimers: vi.advanceTimersByTime }),
-    )
-
-    await quickStart(user)
-
-    await act(async () => {
-      vi.advanceTimersByTime(SLOW_THRESHOLD_MS - 500)
-    })
-    expect(scan()).not.toHaveTextContent(SLOW_LOADING_LABEL)
-
-    await act(async () => {
-      vi.advanceTimersByTime(500)
-    })
-    const region = scan()
-    expect(region).toHaveTextContent(SLOW_LOADING_LABEL)
-    expect(region).not.toHaveTextContent(GENERATION_FAILED_LABEL)
-    expect(region).toHaveAttribute('aria-busy', 'true')
-    expect(region.textContent).not.toMatch(/sorry|apolog|oops|hang tight|!/i)
-  })
-
-  it('fails into pattern 3: one negative toast with one retry, cancel still there', async () => {
-    const { user, generation } = renderHome()
-    await quickStart(user)
-
-    await act(async () => {
-      generation.fail(makeGenerationError({ requestId: 'req_home_quick_start' }))
-    })
-
-    const region = scan()
-    expect(region).toHaveTextContent(GENERATION_FAILED_LABEL)
-    expect(region).not.toHaveAttribute('aria-busy', 'true')
-    expect(homeHeading()).not.toBeInTheDocument()
-
-    const toasts = liveToasts()
-    expect(toasts).toHaveLength(1)
-    expect(toasts[0]?.variant).toBe('negative')
-    const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('req_home_quick_start')
-    // One action, and the dismiss control that every toast carries.
-    expect(within(alert).getAllByRole('button').map((button) => button.textContent)).toEqual([
-      GENERATION_RETRY_LABEL,
-      '',
-    ])
-    expect(screen.getByRole('button', { name: GENERATION_CANCEL_LABEL })).toBeInTheDocument()
-
-    await user.click(within(alert).getByRole('button', { name: GENERATION_RETRY_LABEL }))
-
-    expect(generation.calls).toHaveLength(2)
-    expect(generation.calls[1]).toEqual(generation.calls[0])
-    expect(liveToasts()).toEqual([])
-    expect(scan()).toHaveTextContent(GENERATION_LOADING_TITLE)
-  })
-
-  it('puts Home back on cancel, and the abandoned result never replaces it', async () => {
-    const { user, generation } = renderHome()
-    await quickStart(user)
-    expect(atmosphere()).toBe('full')
-
-    await user.click(screen.getByRole('button', { name: GENERATION_CANCEL_LABEL }))
-
-    expect(loader()).not.toBeInTheDocument()
-    expect(homeHeading()).toBeInTheDocument()
-    expect(atmosphere()).toBe(resolveAtmosphere(HOME_ROUTE))
-    expect(
-      document.querySelector('.clr-shell')?.getAttribute('data-atmosphere'),
-    ).toBe(resolveAtmosphere(HOME_ROUTE))
-
-    await act(async () => {
-      generation.succeed({ acceptance: acceptance('Too late') })
-    })
-
-    expect(screen.queryByRole('heading', { name: 'Too late' })).not.toBeInTheDocument()
-    expect(screen.queryByText('Too late')).not.toBeInTheDocument()
-    expect(loader()).not.toBeInTheDocument()
-    expect(homeHeading()).toBeInTheDocument()
-  })
-
-  it('drops a failure that arrives after cancel without raising a toast', async () => {
-    const { user, generation } = renderHome()
-    await quickStart(user)
-    await user.click(screen.getByRole('button', { name: GENERATION_CANCEL_LABEL }))
-
-    await act(async () => {
-      generation.fail(makeGenerationError())
-    })
-
-    expect(loader()).not.toBeInTheDocument()
-    expect(liveToasts()).toEqual([])
-    expect(homeHeading()).toBeInTheDocument()
-  })
-
-  it('discards a result that arrives after Home unmounted', async () => {
-    const { user, generation, view } = renderHome()
-    await quickStart(user)
-
-    view.unmount()
-    await act(async () => {
-      generation.succeed({ acceptance: acceptance('Too late') })
-    })
-
-    expect(view.container).toBeEmptyDOMElement()
-    expect(liveToasts()).toEqual([])
-  })
-
-  it('stays absent until at least one workout has been completed', async () => {
-    const prescribed = makeSessionRow({
-      id: 'b0000004-0000-4000-8000-000000000000',
-      location_id: LOCATION_ID,
-      title: 'Prescribed only',
-      started_at: null,
-      completed_at: null,
-    })
-    const abandoned = makeSessionRow({
-      id: 'b0000005-0000-4000-8000-000000000000',
-      location_id: LOCATION_ID,
-      title: 'Abandoned only',
-      completed_at: null,
-      abandoned_at: '2026-09-22T18:00:00.000Z',
-    })
-    renderHome([prescribed, abandoned])
-
-    // The history has answered — both sessions are listed — and there is still
-    // nothing completed to repeat.
-    expect(await screen.findByRole('link', { name: /Prescribed only/i })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Abandoned only/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Generate workout' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
-  })
-})
-
-/**
- * REQ-010: the Goal Quick Start sends is the profile's standing one, read now.
- * The last session's snapshot — an older preference, or a one-workout Recovery
- * — supplies the focus, minutes, intensity and place, and never the Goal.
- */
-describe('Home’s Quick Start uses the standing Goal (REQ-010)', () => {
-  const SESSION_ID = 'b0000006-0000-4000-8000-000000000000'
-
-  function renderHome(
-    goal: Profile['goal_preset'],
-    last: Parameters<typeof makeSessionRow>[0],
-  ) {
-    const cache = new QueryClient()
-    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile({ goal_preset: goal }))
-    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [fixtureLocation()])
-
-    const generation = createFakeGenerationClient()
-    const workout = createWorkoutDouble({
-      session: null,
-      historyRows: [
-        makeSessionRow({
-          id: SESSION_ID,
-          location_id: LOCATION_ID,
-          date: '2026-09-24',
-          title: 'Last session',
-          session_focus: 'upper_body',
-          requested_duration_mins: 35,
-          ...last,
-        }),
-      ],
-    })
-    renderApp(['/'], signedIn({ workout: workout.clients, generation, queryClient: cache }))
-
-    return { user: userEvent.setup(), generation }
-  }
-
-  it('sends the standing Goal, not the one the last session was stored with', async () => {
-    const { user, generation } = renderHome('strength', {
-      goal_preset: 'hypertrophy',
-      requested_intensity: 7,
-    })
-
-    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
-    // The label names the Goal that will be used before anything is sent.
-    expect(
-      screen.getByText('Repeats Last session: Upper body · 35 min · intensity 7 · Strength goal.'),
-    ).toBeInTheDocument()
-    expect(screen.queryByText(/Hypertrophy goal/)).not.toBeInTheDocument()
-
-    await user.click(quickStart)
-
-    await waitFor(() => {
-      expect(generation.calls).toEqual([
-        {
-          goal: 'strength',
-          focus: 'upper_body',
-          requested_duration_mins: 35,
-          requested_intensity: 7,
-          location_id: LOCATION_ID,
-          notes: null,
-          deload: false,
-        },
-      ])
-    })
-  })
-
-  it('clamps a Recovery session’s intensity into the standing Goal’s range', async () => {
-    const { user, generation } = renderHome('strength', {
-      goal_preset: 'active_recovery',
-      requested_intensity: 2,
-      effective_intensity: 2,
-    })
-
-    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
-    expect(
-      screen.getByText('Repeats Last session: Upper body · 35 min · intensity 3 · Strength goal.'),
-    ).toBeInTheDocument()
-
-    await user.click(quickStart)
-
-    await waitFor(() => expect(generation.calls).toHaveLength(1))
-    expect(generation.calls[0]).toMatchObject({ goal: 'strength', requested_intensity: 3 })
-  })
-
-  it.each([
-    ['a missing Goal', null, QUICK_START_MISSING_GOAL],
-    ['the legacy active_recovery Goal', 'active_recovery', QUICK_START_LEGACY_GOAL],
-  ] as const)('sends nothing for %s and offers a route to Settings', async (_, goal, reason) => {
-    const { user, generation } = renderHome(goal, { goal_preset: 'hypertrophy' })
-
-    const quickStart = await screen.findByRole('button', { name: 'Quick start' })
-    // No Goal is named, because none will be used.
-    expect(screen.queryByText(/ goal\.$/)).not.toBeInTheDocument()
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-
-    await user.click(quickStart)
-
-    const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent(reason)
-    const link = within(alert).getByRole('link', { name: QUICK_START_SETTINGS_LABEL })
-    expect(link).toHaveAttribute('href', SETTINGS_ROUTE)
-    expect(link).toHaveClass('clr-text-action')
-    expect(generation.calls).toEqual([])
-    expect(screen.getByRole('heading', { level: 1, name: HOME_HEADING })).toBeInTheDocument()
-
-    await user.click(link)
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Settings' }),
-    ).toBeInTheDocument()
-    expect(generation.calls).toEqual([])
-  })
-
-  it.each([
-    ['still loading', () => new Promise<never>(() => {})],
-    ['failed', async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED))],
-  ] as const)('offers no Quick Start while the profile read is %s', async (_, profile) => {
-    const generation = createFakeGenerationClient()
-    const workout = createWorkoutDouble({
-      session: null,
-      historyRows: [
-        makeSessionRow({ id: SESSION_ID, location_id: LOCATION_ID, goal_preset: 'hypertrophy' }),
-      ],
-    })
-    // A cold cache: the profile is whatever this read answers, and it never
-    // answers with a Goal.
-    const cache = new QueryClient()
-    const userData = createFakeUserDataClient({ profile })
-    renderApp(
-      ['/'],
-      signedIn({ workout: workout.clients, generation, queryClient: cache, userData }),
-    )
-
-    await waitFor(() => expect(userData.profileCalls.length).toBeGreaterThan(0))
-    await act(async () => {
-      await Promise.resolve()
-    })
-
-    expect(screen.queryByRole('button', { name: 'Quick start' })).not.toBeInTheDocument()
-    expect(generation.calls).toEqual([])
-  })
-})
-
-/**
- * HOME-03 on the real route tree: the suggestion is read off the same history,
- * taking it opens Generate prefilled, dismissing it leaves Generate on its
- * defaults, and history with nothing completed or nothing recent produces no
- * prompt instead of a focus.
+ * REQ-007 U20 on the real route tree: one next-workout entry. Train Today
+ * states the last request once and a plain suggested focus; the one primary
+ * action opens Generate with useful values filled in and never generates —
+ * for first-workout, sparse, stale, recovery, changed-goal and missing-place
+ * history alike, and while the history read is loading or failed.
  *
  * Days are counted back from today rather than pinned to a date, because the
  * suggestion is only made for recent history — a fixture dated in 2026 would
  * stop being recent while the suite kept passing.
  */
-describe('Home’s suggestion (HOME-03)', () => {
-  beforeEach(() => localStorage.clear())
+describe('Home’s one next-workout entry (REQ-007, U20)', () => {
+  const GYM_ID = '00000000-0000-4000-8000-000000000011'
 
   function daysAgo(days: number): string {
     const [year, month, date] = suggestionDay().split('-').map(Number)
@@ -995,102 +612,98 @@ describe('Home’s suggestion (HOME-03)', () => {
     })
   }
 
-  /** Three lower-body sessions and one upper-body session nearly three weeks old. */
-  function lowerBodyBlock() {
-    return [
-      completed(1, 1, { session_focus: 'lower_body' }),
+  /** A returning athlete standing on Strength, with a default place and the gym. */
+  function renderHome(
+    historyRows: readonly WorkoutSessionRow[],
+    { goal = 'strength' as Profile['goal_preset'] } = {},
+  ) {
+    const cache = new QueryClient()
+    cache.setData(profileQueryKey(FIXTURE_USER_ID), onboardedProfile({ goal_preset: goal }))
+    cache.setData(locationsQueryKey(FIXTURE_USER_ID), [
+      fixtureLocation(),
+      fixtureLocation({ id: GYM_ID, name: 'The gym', is_default: false }),
+    ])
+    const generation = createFakeGenerationClient()
+    const workout = createWorkoutDouble({ session: null, historyRows })
+    renderApp(['/'], signedIn({ workout: workout.clients, generation, queryClient: cache }))
+
+    return { user: userEvent.setup(), generation }
+  }
+
+  const trainToday = () => cardOf('Train today')
+  const primary = () => screen.getByRole('button', { name: GENERATE_ACTION_LABEL })
+  const place = () => screen.getByRole('combobox', { name: /Place/ })
+  const minutes = () => screen.getByLabelText(/Time available/i)
+
+  async function openGenerate(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(primary())
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+    ).toBeInTheDocument()
+  }
+
+  function cardOf(heading: string): HTMLElement {
+    return screen.getByRole('heading', { level: 2, name: heading }).closest<HTMLElement>('.clr-card')!
+  }
+
+  it('states the last request once, a plain suggested focus, and one primary action', async () => {
+    const { user, generation } = renderHome([
+      completed(1, 1, {
+        session_focus: 'lower_body',
+        requested_duration_mins: 35,
+        requested_intensity: 6,
+        location_id: GYM_ID,
+      }),
       completed(2, 5, { session_focus: 'lower_body' }),
       completed(3, 9, { session_focus: 'lower_body' }),
       completed(4, 20, { session_focus: 'upper_body' }),
-    ]
-  }
+    ])
 
-  function renderHome(historyRows: ReturnType<typeof lowerBodyBlock>) {
-    const workout = createWorkoutDouble({ session: null, historyRows })
-    renderApp(['/'], signedIn({ workout: workout.clients }))
-
-    return userEvent.setup()
-  }
-
-  async function suggestionPrompt(): Promise<HTMLElement> {
-    return screen.findByLabelText('Suggested next')
-  }
-
-  it('names the least-recently-trained focus, says which pattern is stale, and prefills generation', async () => {
-    const user = renderHome(lowerBodyBlock())
-    const prompt = await suggestionPrompt()
-    const card = within(prompt)
-    expect(prompt.closest('.clr-card')).toBe(
-      screen.getByRole('heading', { name: 'Train today' }).closest('.clr-card'),
-    )
-
-    expect(card.getByText('Upper body · intensity 7')).toBeInTheDocument()
-    // Pattern-level, not "no upper body": the sentence names a movement pattern.
+    const card = within(trainToday())
     expect(
-      card.getByText('No press in 20 days. Your last 3 sessions averaged intensity 7.'),
+      await card.findByText(`${LAST_REQUEST_LABEL}: Lower body · 35 minutes · intensity 6.`),
+    ).toBeInTheDocument()
+    expect(
+      card.getByText(`${SUGGESTION_LABEL}: Upper body. Last trained 20 days ago.`),
     ).toBeInTheDocument()
 
-    await user.click(card.getByRole('button', { name: 'Use this' }))
+    // Once: the request's details appear nowhere else on Home.
+    expect(screen.getAllByText(/35 minutes/)).toHaveLength(1)
+    // U06: each part keeps its number with its unit.
+    expect(trainToday().textContent).toContain('35\xa0minutes · intensity\xa06')
+    // One entry: the card holds no action of its own, and nothing else offers one.
+    expect(card.queryAllByRole('button')).toHaveLength(0)
+    for (const retired of ['Quick start', 'Use this', 'Dismiss']) {
+      expect(screen.queryByRole('button', { name: retired })).not.toBeInTheDocument()
+    }
+    expect(primary()).toHaveClass('clr-btn')
+    expect(primary().closest('.clr-footer')).not.toBeNull()
 
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
-    ).toBeInTheDocument()
-    // Generate recommends from the same history rather than claiming a prefill:
-    // the Focus and its reason are stated, and no Focus is asked for.
-    expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
+    await openGenerate(user)
+
+    // Prefilled: the request's minutes and place, the recommended focus and
+    // history's intensity — and nothing has been sent.
+    expect(minutes()).toHaveValue(35)
+    expect(place()).toHaveValue(GYM_ID)
     expect(screen.getByText('Upper body')).toBeInTheDocument()
-    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.getByRole('slider')).toHaveValue('7')
+    expect(generation.calls).toEqual([])
 
-    // The Goal is the profile's standing one, so the form can generate as it opens.
-    expect(screen.getByRole('button', { name: /generate workout/i })).toBeEnabled()
+    // The athlete's own press is what sends, with the carried values.
+    await user.click(screen.getByRole('button', { name: /generate workout/i }))
+    await waitFor(() => expect(generation.calls).toHaveLength(1))
+    expect(generation.calls[0]).toMatchObject({
+      goal: 'strength',
+      focus: 'upper_body',
+      requested_duration_mins: 35,
+      requested_intensity: 7,
+      location_id: GYM_ID,
+    })
   })
 
-  it('dismisses for the day and leaves Generate on its defaults', async () => {
-    const user = renderHome(lowerBodyBlock())
-    const card = within(await suggestionPrompt())
-
-    await user.click(card.getByRole('button', { name: 'Dismiss' }))
-
-    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
-    expect(localStorage.getItem(SUGGESTION_DISMISSAL_STORAGE_KEY)).toBe(suggestionDay())
-
-    await user.click(screen.getByRole('button', { name: 'Generate workout' }))
-
-    expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
-    ).toBeInTheDocument()
-    // Dismissing is Home's prompt only. Generate derives today's recommendation
-    // from history itself, whichever way it was opened.
-    expect(screen.queryByText(/prefilled/i)).not.toBeInTheDocument()
-    expect(screen.getByText('No press in 20 days.')).toBeInTheDocument()
-    expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
-  })
-
-  it('stays dismissed when Home is opened again the same day', async () => {
-    localStorage.setItem(SUGGESTION_DISMISSAL_STORAGE_KEY, suggestionDay())
-    renderHome(lowerBodyBlock())
-
-    expect(await screen.findByRole('button', { name: 'Quick start' })).toBeInTheDocument()
-    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
-  })
-
-  it('suggests from a single completed session dated today', async () => {
-    renderHome([completed(1, 0, { session_focus: 'lower_body' })])
-    const card = within(await suggestionPrompt())
-
-    expect(card.getByText('Upper body · intensity 7')).toBeInTheDocument()
-    expect(
-      card.getByText(
-        'No press in the sessions you’ve logged. Your last 1 session averaged intensity 7.',
-      ),
-    ).toBeInTheDocument()
-    expect(card.getByRole('button', { name: 'Use this' })).toBeInTheDocument()
-  })
-
-  it('omits the smart prompt when nothing has been completed', async () => {
-    renderHome([
+  it('first workout: clear guidance, and Generate opens on its own defaults', async () => {
+    const { user, generation } = renderHome([
       completed(1, 0, { title: 'Prescribed only', started_at: null, completed_at: null }),
       completed(2, 1, {
         title: 'Abandoned only',
@@ -1100,18 +713,115 @@ describe('Home’s suggestion (HOME-03)', () => {
     ])
 
     await screen.findByRole('link', { name: /Abandoned only/i })
-    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument()
+    const card = within(trainToday())
+    expect(card.getByText(FIRST_WORKOUT_GUIDANCE)).toBeInTheDocument()
+    expect(card.queryByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))).not.toBeInTheDocument()
+
+    await openGenerate(user)
+    expect(minutes()).toHaveValue(45)
+    expect(place()).toHaveValue(fixtureLocation().id)
+    expect(screen.getByRole('group', { name: 'Anchor' })).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
   })
 
-  it('omits the smart prompt rather than guessing when the completed history is stale', async () => {
-    renderHome([
-      completed(1, 22, { session_focus: 'lower_body' }),
+  it('sparse: one completed session today is enough to suggest from', async () => {
+    renderHome([completed(1, 0, { session_focus: 'lower_body' })])
+
+    const card = within(trainToday())
+    expect(
+      await card.findByText(`${SUGGESTION_LABEL}: Upper body. Not in your recent workouts.`),
+    ).toBeInTheDocument()
+    expect(card.getByText(new RegExp(`^${LAST_REQUEST_LABEL}: Lower body`))).toBeInTheDocument()
+  })
+
+  it('stale: keeps the last request, asks for a focus, and carries its minutes', async () => {
+    const { user, generation } = renderHome([
+      completed(1, 22, { session_focus: 'lower_body', requested_duration_mins: 50 }),
       completed(2, 30, { session_focus: 'upper_body' }),
     ])
 
-    await screen.findByRole('button', { name: 'Quick start' })
-    expect(screen.queryByLabelText('Suggested next')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Use this' })).not.toBeInTheDocument()
+    const card = within(trainToday())
+    expect(await card.findByText(STALE_HISTORY_GUIDANCE)).toBeInTheDocument()
+    expect(card.queryByText(new RegExp(`^${SUGGESTION_LABEL}:`))).not.toBeInTheDocument()
+
+    await openGenerate(user)
+    expect(minutes()).toHaveValue(50)
+    expect(screen.getByRole('group', { name: 'Anchor' })).toBeInTheDocument()
+    expect(generation.calls).toEqual([])
+  })
+
+  it('recovery: says the last one was Recovery, and the next opens as an ordinary day', async () => {
+    const { user, generation } = renderHome([
+      completed(1, 1, {
+        goal_preset: 'active_recovery',
+        session_focus: 'full_body',
+        requested_duration_mins: 20,
+        requested_intensity: 2,
+        effective_intensity: 2,
+      }),
+    ])
+
+    expect(
+      await within(trainToday()).findByText(
+        `${LAST_REQUEST_LABEL}: Full body · 20 minutes · intensity 2 · Recovery.`,
+      ),
+    ).toBeInTheDocument()
+
+    await openGenerate(user)
+    expect(minutes()).toHaveValue(20)
+    expect(screen.getByRole('button', { name: 'Recovery session' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    expect(generation.calls).toEqual([])
+  })
+
+  it('changed goal: names no stored Goal, and Generate uses the standing one', async () => {
+    const { user, generation } = renderHome(
+      [completed(1, 1, { goal_preset: 'hypertrophy', session_focus: 'lower_body' })],
+      { goal: 'conditioning' },
+    )
+
+    const card = within(trainToday())
+    await card.findByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))
+    expect(trainToday().textContent).not.toMatch(/hypertrophy|goal/i)
+
+    await openGenerate(user)
+    await user.click(screen.getByRole('button', { name: /generate workout/i }))
+    await waitFor(() => expect(generation.calls).toHaveLength(1))
+    expect(generation.calls[0]).toMatchObject({ goal: 'conditioning' })
+  })
+
+  it('missing place: the request opens Generate on the default place', async () => {
+    const { user } = renderHome([
+      completed(1, 1, { location_id: null, requested_duration_mins: 30 }),
+    ])
+
+    await within(trainToday()).findByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))
+    await openGenerate(user)
+    expect(minutes()).toHaveValue(30)
+    expect(place()).toHaveValue(fixtureLocation().id)
+  })
+
+  it.each([
+    ['still loading', () => new Promise<never>(() => {})],
+    ['failed', async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED))],
+  ] as const)('opens Generate on its defaults while the history read is %s', async (state, read) => {
+    const user = userEvent.setup()
+    const generation = createFakeGenerationClient()
+    const workout = createWorkoutDouble({ session: null, history: { page: read } })
+    renderApp(['/'], signedIn({ workout: workout.clients, generation }))
+
+    const card = within(trainToday())
+    if (state === 'failed') {
+      expect(await card.findByText('Your last workout didn’t load')).toBeInTheDocument()
+      expect(card.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+    } else {
+      expect(await card.findByText('Reading your last workout')).toBeInTheDocument()
+    }
+
+    await openGenerate(user)
+    expect(minutes()).toHaveValue(45)
+    expect(generation.calls).toEqual([])
   })
 })

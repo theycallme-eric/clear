@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `9e1b78b4c958c93c3dba27cb2f48a69289b0eccf16ae42cbbb9e0fd80fc3cd57` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027 and TASK-017 changes below) |
+| Runtime source hash of this audit's tree | `0c1ffb631d9f3af11fc912e504d43b3a8003071943cf4693db18e9cce4cd40cf` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017 and TASK-012 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -288,6 +288,16 @@ trees and this head, from `git diff`:
   Current acceptance evidence is `src/app/Generate.test.tsx`, `src/state/generation-form.test.ts`,
   `src/test/generation-prompt.test.ts`, `src/test/generation-validation.test.ts` and the two
   generation-reliability matrix suites.
+
+- `9e1b78b4…` to `0c1ffb63…`: TASK-012 (REQ-007, U19/U20, JOURNEY-012) keeps the weekly strip,
+  streak and history, removes the repeated weekly count, and replaces immediate Quick Start plus
+  Use this/Dismiss with one next-workout entry. Its pinned action opens Generate with prior
+  request minutes and a still-owned place; the current standing Goal, recommendation, requested
+  intensity and explicit Recovery choice remain Generate's. Opening the form makes no generation
+  call. First-use, sparse, stale, recovery, changed-goal and missing-place checks are owned by the
+  Home, session-suggestion and Generate suites. The mobile Home-to-Generate case is explicitly
+  selected alongside the existing Review and rest-day cases. This changes Home and Generate;
+  the historical pictures remain bound to their original trees (EX-13), not to this runtime.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

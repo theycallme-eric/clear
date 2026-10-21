@@ -177,7 +177,16 @@ const REQ_011_REVIEW_CASE =
  */
 const REQ_007_REST_DAY_CASE =
   'REQ-007 Home: rest day reason trigger, Cancel discards, keyboard Save and aligned actions'
-const POST_IMPORT_CASES: readonly string[] = [REQ_011_REVIEW_CASE, REQ_007_REST_DAY_CASE]
+
+/**
+ * TASK-012 (REQ-007, U19/U20): first-use guidance, then one next-workout entry
+ * into a prefilled Generate with no generation request, on a real actor.
+ */
+const REQ_007_NEXT_WORKOUT_CASE =
+  'REQ-007 Home: first use guidance, one next workout entry and prefilled Generate without generating'
+const POST_IMPORT_CASES: readonly string[] = [
+  REQ_011_REVIEW_CASE, REQ_007_REST_DAY_CASE, REQ_007_NEXT_WORKOUT_CASE,
+]
 
 function postImportRecorder(testInfo: TestInfo,
   generation: () => { requests: number; forwarded: 0; blockedUnexpected: number }): ReturnType<typeof recorder> {
@@ -909,5 +918,58 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       expect(cell.left).toBeGreaterThanOrEqual(-0.5)
       expect(cell.right).toBeGreaterThanOrEqual(-0.5)
     }
+  })
+
+  test(REQ_007_NEXT_WORKOUT_CASE, async ({ page, visit }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'U19/U20 are proven at the 390 by 844 phone viewport')
+    expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+    save.fixture('REQ-007 U19/U20: a real actor seen first with no history, then with one completed RPC-written session')
+    const main = page.locator('main')
+    const card = (name: string) => page.locator('.clr-card')
+      .filter({ has: page.getByRole('heading', { level: 2, name, exact: true }) })
+    const train = card('Train today')
+    const generate = page.locator('.clr-footer').getByRole('button', { name: 'Generate workout', exact: true })
+
+    // U19 first use: one piece of guidance; the week and the recents state facts.
+    await visit('/')
+    await heading(page, 'Today')
+    await expect(train.getByText('Start your first workout. Choose a focus and the rest is filled in.', { exact: true })).toBeVisible()
+    await expect(train.getByRole('button')).toHaveCount(0)
+    await expect(card('This week').getByText('No sessions this week yet.', { exact: true })).toBeVisible()
+    await expect(main.getByText(/consecutive days build/)).toHaveCount(0)
+    await text(page, 'No workouts yet')
+    await generate.click()
+    await heading(page, 'Generate workout')
+    await expect(page).toHaveURL((url) => url.pathname === '/generate' && url.search === '')
+    await expect(page.getByLabel(/Time available/i)).toHaveValue('45')
+    await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible()
+
+    // U20 populated: the last request once, a plain focus, one primary action.
+    await complete('TASK-012 last request', 1, 'upper_body')
+    await visit('/')
+    await heading(page, 'Today')
+    await expect(train.getByText('Last time: Upper body · 30 minutes · intensity 5.', { exact: true })).toBeVisible()
+    await expect(train.getByText(/^Suggested next: (Lower body|Full body|Power)\. /)).toBeVisible()
+    await expect(main.getByText(/30\s+minutes/)).toHaveCount(1)
+    await expect(train.getByRole('button')).toHaveCount(0)
+    for (const retired of ['Quick start', 'Use this', 'Dismiss']) {
+      await expect(page.getByRole('button', { name: retired, exact: true })).toHaveCount(0)
+    }
+    // U19 populated: the streak and the strip, no second count of the week.
+    await expect(card('This week').getByRole('list', { name: 'This week', exact: true }).getByRole('listitem')).toHaveCount(7)
+    await expect(card('This week').getByText(/of\s7\sdays|days trained/)).toHaveCount(0)
+    await expect(card('Recent workouts').getByText('TASK-012 last request')).toBeVisible()
+
+    await generate.click()
+    await heading(page, 'Generate workout')
+    await expect(page).toHaveURL((url) => url.pathname === '/generate' &&
+      url.searchParams.get('minutes') === '30' && url.searchParams.get('place') === locationId)
+    await expect(page.getByLabel(/Time available/i)).toHaveValue('30')
+    await expect(page.getByRole('combobox', { name: /Place/ })).toHaveValue(locationId)
+    await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: /generate workout/i })).toBeEnabled()
+    // Opening the prefilled form is not a request; afterEach also holds the
+    // observed model POST count to zero for this case.
+    expect(observed, 'opening Generate makes no generation call').toBe(0)
   })
 })

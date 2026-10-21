@@ -191,6 +191,65 @@ export function prefillFrom(search: string | URLSearchParams): GenerationPrefill
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// The prior request, carried from Home (REQ-007, U20)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The two parts of the last completed request that history cannot re-derive
+ * and today usually repeats: how long it was, and where. Goal, Focus and
+ * intensity are deliberately absent — those are `resolveGeneration`'s from the
+ * standing Goal and current history, so a carried request can never send a
+ * different Goal or Focus than a direct visit would.
+ *
+ * Either may be `null`: a session with no `location_id` carries no place, and
+ * the screen opens on its own default instead (the missing-location case).
+ */
+export interface RequestPrefill {
+  readonly durationMins: number | null
+  readonly locationId: string | null
+}
+
+export const PREFILL_MINUTES_PARAM = 'minutes'
+export const PREFILL_PLACE_PARAM = 'place'
+
+export const NO_REQUEST_PREFILL: RequestPrefill = { durationMins: null, locationId: null }
+
+/**
+ * Where Home's one next-workout entry opens Generate. Only what is known is
+ * written, so a first workout and a request with no place open plain
+ * `/generate` or the minutes alone. Opening it sends nothing: generation is
+ * still the form's own primary action.
+ */
+export function nextWorkoutPath(request: RequestPrefill = NO_REQUEST_PREFILL): string {
+  const params = new URLSearchParams()
+  if (request.durationMins !== null) {
+    params.set(PREFILL_MINUTES_PARAM, String(request.durationMins))
+  }
+  if (request.locationId !== null) params.set(PREFILL_PLACE_PARAM, request.locationId)
+
+  const query = params.toString()
+  return query === '' ? GENERATE_PATH : `${GENERATE_PATH}?${query}`
+}
+
+/**
+ * The carried request a URL holds, each part parsed on its own: a minutes
+ * value that is not a positive whole number is no minutes, and an empty place
+ * is no place. Whether the place is still one of the athlete's is the screen's
+ * to check, because only the screen has read the places.
+ */
+export function requestPrefillFrom(search: string | URLSearchParams): RequestPrefill {
+  const params = typeof search === 'string' ? new URLSearchParams(search) : search
+
+  const minutes = minutesFrom(params.get(PREFILL_MINUTES_PARAM) ?? '')
+  const place = params.get(PREFILL_PLACE_PARAM)?.trim() ?? ''
+
+  return {
+    durationMins: minutes !== null && minutes > 0 ? minutes : null,
+    locationId: place === '' ? null : place,
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // One-workout intent in the URL (REQ-007, REQ-008)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -294,8 +353,9 @@ export interface GenerationDraft {
 }
 
 /**
- * The screen's opening state: the profile's default place, the intensity
- * HOME-03's suggestion prefilled, and whatever one-workout intent the URL
+ * The screen's opening state: the place and minutes the last request carried
+ * (U20), else the profile's default place and the standard time; the intensity
+ * HOME-03's suggestion prefilled; and whatever one-workout intent the URL
  * carried.
  *
  * It carries no Goal and no recommended Focus — those are `resolveGeneration`'s
@@ -308,6 +368,7 @@ export function initialDraft(
   defaultLocationId: string | null,
   prefill: GenerationPrefill | null = null,
   intent: GenerationIntent = NO_INTENT,
+  request: RequestPrefill = NO_REQUEST_PREFILL,
 ): GenerationDraft {
   return {
     recovery: intent.recovery,
@@ -318,8 +379,8 @@ export function initialDraft(
         ? intent.override
         : null,
     intensity: prefill?.intensity ?? null,
-    locationId: defaultLocationId,
-    durationMins: String(DEFAULT_DURATION_MINS),
+    locationId: request.locationId ?? defaultLocationId,
+    durationMins: String(request.durationMins ?? DEFAULT_DURATION_MINS),
     notes: '',
   }
 }

@@ -57,6 +57,7 @@
 import { Constants, type Enums } from '../data/database.types'
 import {
   generatePath,
+  nextWorkoutPath,
   type GenerationPrefill,
 } from './generation-form'
 import { FOCUS_PATTERNS } from './focus-patterns'
@@ -347,6 +348,132 @@ export function suggestSession(
 ): SessionSuggestion | null {
   const outcome = recommend(rows, options)
   return typeof outcome === 'string' ? null : outcome
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The next-workout entry (REQ-007, U20)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The last completed request, as Home states it once. What was *asked for* —
+ * the requested minutes and intensity — rather than what was performed, because
+ * this is the request the next one starts from.
+ */
+export interface PriorRequest {
+  readonly sessionId: string
+  readonly focus: SessionFocus
+  readonly durationMins: number
+  readonly intensity: number
+  /** A one-workout Recovery session. Said, never carried: Recovery is today only. */
+  readonly recovery: boolean
+  /** `null` for a session stored without a place; Generate then uses the default. */
+  readonly locationId: string | null
+  /** `Upper body · 35 minutes · intensity 6`, with `· Recovery` when it was one. */
+  readonly summary: string
+}
+
+/**
+ * Home's one next-workout entry: the prior request once, one plain sentence
+ * about what to train next, and the one place it opens.
+ *
+ * `status` is `suggestionEligibility`'s, so Home and Generate can never
+ * disagree about whether there is a recommended focus. `path` always opens the
+ * form and never generates; it carries the prior request's minutes and place
+ * whatever the status, because a stale or recovery history still says how long
+ * and where the athlete trains.
+ */
+export interface NextWorkout {
+  readonly status: SuggestionEligibility['status']
+  readonly prior: PriorRequest | null
+  /** The recommendation, when there is one. */
+  readonly suggestion: SessionSuggestion | null
+  /** The suggested focus in plain words, or what to do without one. */
+  readonly guidance: string
+  readonly path: string
+}
+
+/** First use: nothing completed yet, so Generate will ask for a starting focus. */
+export const FIRST_WORKOUT_GUIDANCE =
+  'Start your first workout. Choose a focus and the rest is filled in.'
+
+/** Completed history, all of it too old to recommend from. */
+export const STALE_HISTORY_GUIDANCE = 'It’s been a while. Choose a focus to restart.'
+
+export function nextWorkout(
+  rows: readonly WorkoutSessionRow[],
+  options: SuggestionOptions = {},
+): NextWorkout {
+  const prior = priorRequest(rows, options)
+  const outcome = recommend(rows, options)
+  const path = nextWorkoutPath(
+    prior === null
+      ? undefined
+      : { durationMins: prior.durationMins, locationId: prior.locationId },
+  )
+
+  if (typeof outcome !== 'string') {
+    return {
+      status: 'recommended',
+      prior,
+      suggestion: outcome,
+      guidance: suggestedFocusSentence(outcome),
+      path,
+    }
+  }
+
+  return {
+    status: outcome,
+    prior,
+    suggestion: null,
+    guidance: outcome === 'stale-history' ? STALE_HISTORY_GUIDANCE : FIRST_WORKOUT_GUIDANCE,
+    path,
+  }
+}
+
+/** The newest completed session's own request, or `null` before the first. */
+export function priorRequest(
+  rows: readonly WorkoutSessionRow[],
+  options: SuggestionOptions = {},
+): PriorRequest | null {
+  const newest = completedSessions(rows, options)[0]
+  const row = newest === undefined ? undefined : rows.find((r) => r.id === newest.id)
+  if (row === undefined) return null
+
+  const recovery = row.goal_preset === 'active_recovery'
+
+  return {
+    sessionId: row.id,
+    focus: row.session_focus,
+    durationMins: row.requested_duration_mins,
+    intensity: row.requested_intensity,
+    recovery,
+    locationId: row.location_id,
+    summary: [
+      formatFocus(row.session_focus),
+      countWord(row.requested_duration_mins, 'minute'),
+      `intensity ${row.requested_intensity}`,
+      ...(recovery ? ['Recovery'] : []),
+    ].join(' · '),
+  }
+}
+
+/**
+ * `Lower body. Last trained 11 days ago.` — the focus, and the plainest true
+ * thing about why. Focus-level on purpose: the pattern-level reason is
+ * Generate's to give beside the choice it explains.
+ */
+export function suggestedFocusSentence(suggestion: SessionSuggestion): string {
+  const days = suggestion.focusStaleness.daysSince
+  const since =
+    days === null
+      ? 'Not in your recent workouts.'
+      : days === 0
+        ? 'Last trained today.'
+        : days === 1
+          ? 'Last trained yesterday.'
+          : `Last trained ${days} days ago.`
+
+  return `${suggestion.focusLabel}. ${since}`
 }
 
 /** The stalest pattern a focus would train, which is why it is being suggested. */
