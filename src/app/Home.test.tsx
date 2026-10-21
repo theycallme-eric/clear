@@ -225,6 +225,53 @@ describe('Home', () => {
     expect(await screen.findByText('Today is marked: Unwell.')).toBeInTheDocument()
     expect(screen.getByText('Rest day saved.')).toBeInTheDocument()
   })
+
+  /** Today's square in the week strip — the one named "(today)". */
+  function todayCell(): HTMLElement {
+    const strip = screen.getByRole('list', { name: 'This week' })
+    return within(strip).getByText(/\(today\)/).closest('li')!
+  }
+
+  /** The aria-hidden glyph wrapper, by the colour token it is drawn in. */
+  function glyphIn(day: HTMLElement, token: string): SVGElement | null {
+    return day.querySelector(`[aria-hidden="true"][style*="${token}"] svg`)
+  }
+
+  it('U12: a rest day takes the info role with its Rest mark, distinct from a trained day', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ restDays: createFakeRestDayClient() }))
+
+    await user.click(await screen.findByRole('button', { name: 'Mark Rest Day' }))
+    await user.click(screen.getByRole('button', { name: 'Save rest day' }))
+    await screen.findByText('Rest day saved.')
+
+    const rest = todayCell()
+    expect(rest).toHaveAttribute('data-day-state', 'rest')
+    expect(rest.style.getPropertyValue('--surface')).toBe('var(--surface-toast-info)')
+    expect(rest.style.getPropertyValue('--brd')).toBe('var(--border-toast-info)')
+    expect(glyphIn(rest, '--icon-toast-info')).not.toBeNull()
+    expect(glyphIn(rest, '--icon-selected')).toBeNull()
+  })
+
+  it('U12: a trained day keeps the completed role with its tick', async () => {
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: 'b0000009-0000-4000-8000-000000000000',
+          location_id: LOCATION_ID,
+          date: suggestionDay(),
+        }),
+      ],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients }))
+
+    await waitFor(() => expect(todayCell()).toHaveAttribute('data-day-state', 'workout'))
+    const trained = todayCell()
+    expect(trained.style.getPropertyValue('--surface')).toBe('var(--surface-selected)')
+    expect(glyphIn(trained, '--icon-selected')).not.toBeNull()
+    expect(glyphIn(trained, '--icon-toast-info')).toBeNull()
+  })
 })
 
 /**

@@ -331,10 +331,37 @@ describe('Summary — the streak', () => {
     await debrief()
 
     expect(await screen.findByText('3 days')).toBeInTheDocument()
-    for (const day of fixtureStreak().trainingDays) {
-      expect(screen.getByText(`${day}: trained`)).toBeInTheDocument()
-    }
-    expect(screen.getByText('2026-09-21: no session')).toBeInTheDocument()
+    // 18–24 September, oldest first; the fixture trained the last three.
+    const days = Array.from(screen.getByRole('list', { name: 'Last seven days' }).children)
+    expect(days.map((day) => day.getAttribute('data-day-state'))).toEqual([
+      'rest', 'rest', 'rest', 'rest', 'workout', 'workout', 'workout',
+    ])
+    expect(days[3]).toHaveTextContent(/: Rest$/)
+    expect(days[6]).toHaveTextContent(/\(today\): Workout$/)
+  })
+
+  it('U12: rest days take the info role and trained days the completed role, each with its own glyph', async () => {
+    await debrief()
+
+    await screen.findByText('3 days')
+    const days = Array.from(
+      screen.getByRole('list', { name: 'Last seven days' }).children,
+    ) as HTMLElement[]
+    const trained = days[6]
+    const rest = days[3]
+
+    expect(trained).toHaveAttribute('data-day-state', 'workout')
+    expect(trained.style.getPropertyValue('--surface')).toBe('var(--surface-selected)')
+    expect(trained.querySelector('[aria-hidden="true"][style*="--icon-selected"] svg')).not.toBeNull()
+
+    expect(rest).toHaveAttribute('data-day-state', 'rest')
+    expect(rest.style.getPropertyValue('--surface')).toBe('var(--surface-toast-info)')
+    expect(rest.style.getPropertyValue('--brd')).toBe('var(--border-toast-info)')
+    expect(rest.querySelector('[aria-hidden="true"][style*="--icon-toast-info"] svg')).not.toBeNull()
+
+    // The non-colour cue: the two glyphs are different drawings.
+    const glyph = (day: HTMLElement) => day.querySelector('svg')!.innerHTML
+    expect(glyph(rest)).not.toBe(glyph(trained))
   })
 
   it('says a streak that has not reached today runs through yesterday', async () => {

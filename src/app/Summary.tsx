@@ -47,6 +47,7 @@ import {
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import type { AppError } from '../state/errors'
+import type { WeekDay } from '../state/home'
 import { MOOD_SCALE } from '../state/mood'
 import { useQueryClient } from '../state/query'
 import { previousDay, type LocalDay, type Streak } from '../state/streak'
@@ -68,6 +69,7 @@ import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/compositi
 import { useInvalidFocus } from '../ui/formFocus'
 import { MOOD_ICONS } from '../ui/mood'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
+import { WeekStrip } from '../ui/week-strip'
 import { FavoriteToggle } from './FavoriteToggle'
 import { AUTHENTICATED_HOME } from './guards'
 import { Screen } from './Screen'
@@ -338,9 +340,25 @@ function StreakPanel() {
   )
 }
 
-/** The last seven days, oldest first, with the trained ones marked. */
+/** Names the streak's seven days for assistive technology. */
+const STREAK_WEEK_LABEL = 'Last seven days'
+
+/**
+ * The last seven days, oldest first, drawn by Home's own week strip (U12): a
+ * trained day in the completed role with its tick, a finished day without one
+ * in the skin's information role with its `Rest` mark, and today — until it is
+ * trained — as the dash still to come.
+ */
 function WeekStreak({ streak }: { streak: Streak }) {
   const trained = new Set(streak.trainingDays)
+  const days: WeekDay[] = weekEnding(streak.today).map((day) => ({
+    day,
+    reason: null,
+    initial: weekdayName(day, 'narrow'),
+    weekday: weekdayName(day, 'long'),
+    state: trained.has(day) ? 'workout' : day < streak.today ? 'rest' : 'upcoming',
+    isToday: day === streak.today,
+  }))
 
   return (
     <div className="clr-stack clr-stack--tight">
@@ -348,41 +366,7 @@ function WeekStreak({ streak }: { streak: Streak }) {
         {streak.days} {streak.days === 1 ? 'day' : 'days'}
         {streak.includesToday ? '' : ', through yesterday'}
       </p>
-      <ul
-        className="clr-row"
-        style={{ listStyle: 'none', margin: 0, padding: 0 }}
-      >
-        {weekEnding(streak.today).map((day) => {
-          const done = trained.has(day)
-
-          return (
-            <li
-              key={day}
-              className="clr-stack clr-stack--tight"
-              style={{ alignItems: 'center' }}
-            >
-              <span className="label" aria-hidden="true">
-                {weekdayInitial(day)}
-              </span>
-              {/* The glyph is the cue; the colour is only agreement with it. */}
-              <span
-                style={{
-                  color: done
-                    ? 'var(--icon-selected)'
-                    : 'var(--text-unselected)',
-                  display: 'flex',
-                }}
-              >
-                {done ? <Check size={16} /> : <span aria-hidden="true">–</span>}
-              </span>
-              <span className="a11y-hidden">
-                {day}
-                {done ? ': trained' : ': no session'}
-              </span>
-            </li>
-          )
-        })}
-      </ul>
+      <WeekStrip days={days} label={STREAK_WEEK_LABEL} />
     </div>
   )
 }
@@ -398,13 +382,13 @@ export function weekEnding(today: LocalDay): LocalDay[] {
 }
 
 /**
- * The first letter of a day's name. A `LocalDay` is a calendar date with no
- * zone of its own, so it is read as UTC — which is what makes the weekday a
- * property of the date rather than of the machine rendering it.
+ * A day's name, as its first letter or in full. A `LocalDay` is a calendar
+ * date with no zone of its own, so it is read as UTC — which is what makes the
+ * weekday a property of the date rather than of the machine rendering it.
  */
-function weekdayInitial(day: LocalDay): string {
+function weekdayName(day: LocalDay, weekday: 'narrow' | 'long'): string {
   return new Intl.DateTimeFormat('en-US', {
-    weekday: 'narrow',
+    weekday,
     timeZone: 'UTC',
   }).format(new Date(`${day}T00:00:00Z`))
 }

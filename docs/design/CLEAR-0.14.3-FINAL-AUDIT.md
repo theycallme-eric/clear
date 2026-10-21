@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `c38914a73c45d0c937a9d9c72a312cfb2e08bb36670cba7054d57c3f84a200c9` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037 and TASK-002 changes below) |
+| Runtime source hash of this audit's tree | `3a1c044ed44ca4c612ac6dea3a47f354b4b1b33ba0cfd65e87a326ab4879a8d6` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002 and TASK-003 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -67,6 +67,14 @@ trees and this head, from `git diff`:
   copy on those routes. The pictures above predate it and are not rebound (EX-13);
   `e2e/design-0143/accessibility.spec.ts` and `e2e/app-shell.spec.ts` measure the JOURNEY-002
   geometry on this head.
+- `c38914a7…` to `3a1c044e…`: TASK-003 (REQ-001, JOURNEY-003, U12) draws rest days in the
+  skin's information role (the per-skin `--*-toast-info` tokens, which Mono re-points to its
+  structure rung) and trained days in the existing completed (selection) role, each with its
+  own glyph, through `src/ui/week-strip.tsx`; Summary's streak now renders through the same
+  strip. Today's doubled border no longer recolours a finished today. This **does** change
+  rendering on Home and Summary. The pictures above predate it and are not rebound (EX-13);
+  `e2e/design-0143/accessibility.spec.ts` measures the JOURNEY-003 roles in every skin on
+  this head.
 
 The pictures are not rebound to this head. The browser lane re-asserts all three groups'
 behaviour on it (below).
