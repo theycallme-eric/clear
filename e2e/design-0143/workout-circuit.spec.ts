@@ -180,6 +180,18 @@ async function publicPreviewWorld(page: Page) {
     const name = url.pathname.split('/').at(-1) ?? ''
     const reply = (body: unknown, status = 200) => route.fulfill({ status, headers: CORS, json: body })
     if (request.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS })
+    // The hour-long rest-expiry probe also expires the synthetic access token.
+    // Model the existing refresh exchange instead of extending its lifetime or
+    // confusing an authentication failure with the controlled block-save 503.
+    if (request.method() === 'POST' && url.pathname === '/auth/v1/token' &&
+        url.searchParams.get('grant_type') === 'refresh_token') {
+      expect(request.postDataJSON()).toEqual({ refresh_token: 'synthetic-preview-refresh' })
+      return reply({
+        access_token: 'synthetic-preview-session', refresh_token: 'synthetic-preview-refresh',
+        expires_in: 3600, token_type: 'bearer',
+        user: { id: owner, email: 'synthetic-preview@example.invalid' },
+      })
+    }
     if (request.method() === 'GET') {
       if (name === 'profiles') return reply([onboardedProfile({ id: owner })])
       if (name === 'locations') return reply([fixtureLocation({ user_id: owner })])
