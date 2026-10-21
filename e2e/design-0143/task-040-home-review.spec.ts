@@ -773,6 +773,8 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     await page.getByRole('button', { name: 'Start workout', exact: true }).click()
     await expect(page).toHaveURL((url) => url.pathname === '/workout')
     await heading(page, 'Workout')
+    // The full jump list is collapsed behind the active section's header (U34).
+    await main.getByRole('button', { name: 'All sections', exact: true }).click()
     const tracker = main.getByRole('list', { name: 'Sections', exact: true })
     for (const label of ['Warm-up', 'Primary lift', 'Conditioning']) {
       await expect(tracker.getByRole('button', { name: new RegExp(`^${label}, `) })).toBeVisible()

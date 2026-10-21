@@ -129,6 +129,16 @@ async function shell(options: WorkoutDoubleOptions = {}): Promise<Mounted> {
   return mounted
 }
 
+/**
+ * Jumps the way an athlete does: the full list is collapsed (and inert) until
+ * its disclosure is opened, and it collapses again once a section is chosen.
+ */
+async function jumpTo(user: ReturnType<typeof userEvent.setup>, name: string) {
+  const toggle = screen.getByRole('button', { name: 'All sections' })
+  if (toggle.getAttribute('aria-expanded') !== 'true') await user.click(toggle)
+  await user.click(screen.getByRole('button', { name }))
+}
+
 interface Completing extends Mounted {
   summary: FakeSummaryClient
 }
@@ -302,7 +312,7 @@ describe('Workout — navigation and progress', () => {
     await shell()
 
     // The third section's generated title is `Finisher`; its type is conditioning.
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     expect(screen.getByRole('heading', { level: 2, name: 'Conditioning' })).toBeInTheDocument()
     expect(screen.queryByText('Finisher')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Finisher/ })).not.toBeInTheDocument()
@@ -337,7 +347,7 @@ describe('Workout — navigation and progress', () => {
     const user = userEvent.setup()
     await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
 
     expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
     expect(screen.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
@@ -353,6 +363,130 @@ describe('Workout — navigation and progress', () => {
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(structures().getByText('AMRAP · 8 MIN')).toBeInTheDocument()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The active section's header (U34, U35)
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('Workout — the active section header', () => {
+  /** The one frame the active section is drawn in. */
+  function activeHeader(name: string): HTMLElement {
+    const frame = screen.getByRole('heading', { level: 2, name }).closest('.clr-card')
+    if (!(frame instanceof HTMLElement)) throw new Error(`No card frames ${name}`)
+    return frame
+  }
+
+  const jumpToggle = () => screen.getByRole('button', { name: 'All sections' })
+
+  it('consolidates status, section count, progress and structure identity into one header', async () => {
+    await shell()
+
+    const header = within(activeHeader('Primary lift'))
+    expect(header.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    expect(header.getByRole('progressbar', { name: 'Section 2 of 3' })).toHaveAttribute(
+      'aria-valuenow',
+      '1',
+    )
+    expect(
+      within(header.getByRole('list', { name: 'Structures in this section' })).getByText(
+        'EMOM · 10 MIN',
+      ),
+    ).toBeInTheDocument()
+    expect(header.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
+
+    // No second frame restating the position: one count, one bar, one list.
+    expect(screen.queryByRole('heading', { name: 'Sections' })).not.toBeInTheDocument()
+    expect(screen.getAllByText(/Section 2 \/ 3/)).toHaveLength(1)
+    expect(screen.getAllByRole('progressbar', { name: /^Section / })).toHaveLength(1)
+    expect(screen.getAllByRole('list', { name: 'Sections' })).toHaveLength(1)
+  })
+
+  it('keeps progress visible while the full jump list starts collapsed and out of the tab order', async () => {
+    await shell()
+
+    expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeInTheDocument()
+    expect(screen.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'Sections' })).toHaveAttribute('inert')
+  })
+
+  it('expands to jump, then collapses and focuses the chosen section without saving or touching the clock', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+
+    await user.click(jumpToggle())
+    expect(jumpToggle()).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('list', { name: 'Sections' })).not.toHaveAttribute('inert')
+
+    await jumpTo(user, 'Conditioning, not started')
+
+    const heading = screen.getByRole('heading', { level: 2, name: 'Conditioning' })
+    expect(heading).toHaveFocus()
+    expect(within(activeHeader('Conditioning')).getByText('Section 3 / 3 · Not started'))
+      .toBeInTheDocument()
+    expect(jumpToggle()).toHaveAttribute('aria-expanded', 'false')
+
+    // The section passed over is still unfinished, and nothing was written.
+    expect(double.recorded()).toEqual([])
+    expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
+      'aria-valuenow',
+      '1',
+    )
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
+  })
+
+  it('moves focus to the section Previous opens, marking nothing complete', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+
+    expect(screen.getByRole('heading', { level: 2, name: 'Warm-up' })).toHaveFocus()
+    expect(double.recorded()).toEqual([])
+    expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
+  })
+
+  it('moves focus to the section Next opens once the current one is saved', async () => {
+    const user = userEvent.setup()
+    await shell()
+
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+
+    expect(await screen.findByRole('heading', { level: 2, name: 'Conditioning' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toHaveAttribute(
+      'aria-current',
+      'step',
+    )
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
+  })
+
+  it('restores the open section after a refresh, leaving focus to the route and the clock to the session', async () => {
+    window.localStorage.setItem(
+      WORKOUT_SHELL_STORAGE_KEY,
+      JSON.stringify({
+        sessionId: FIXTURE_SESSION_ID,
+        sectionIndex: 2,
+        updatedAt: '2026-09-24T09:05:00.000Z',
+      }),
+    )
+
+    await shell()
+
+    const header = within(activeHeader('Conditioning'))
+    expect(header.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
+    expect(header.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
+      'aria-valuenow',
+      '1',
+    )
+    // Restoring is not a move the athlete made: the heading is not grabbed,
+    // and the section left behind is not marked complete by being skipped.
+    expect(screen.getByRole('heading', { level: 2, name: 'Conditioning' })).not.toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })
 })
 
@@ -442,7 +576,7 @@ describe('Workout — the focus mode', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
@@ -457,7 +591,7 @@ describe('Workout — the focus mode', () => {
     expect(COMPLETION_ROUTE).toBe('/summary')
     expect(COMPLETION_ROUTE).not.toBe(AUTHENTICATED_HOME)
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('Full body, done.')).toBeInTheDocument()
@@ -477,7 +611,7 @@ describe('Workout — the focus mode', () => {
     const { summary, router } = await completing()
     const before = summary.streakCalls.length
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('4 days')).toBeInTheDocument()
@@ -489,7 +623,7 @@ describe('Workout — the focus mode', () => {
     const user = userEvent.setup()
     const { summary, router } = await completing()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
     await user.click(await screen.findByRole('button', { name: 'Save and close' }))
 
@@ -504,7 +638,7 @@ describe('Workout — the focus mode', () => {
       sessions: { complete: async () => err(createError(ErrorCode.NETWORK_TIMEOUT)) },
     })
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('Request timed out. Try again.')).toBeInTheDocument()
@@ -521,7 +655,7 @@ describe('Workout — closing and backgrounding', () => {
     const user = userEvent.setup()
     await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
 
     const stored: unknown = JSON.parse(
       window.localStorage.getItem(WORKOUT_SHELL_STORAGE_KEY) ?? 'null',
@@ -778,7 +912,7 @@ describe('Workout — one forward action saves, then continues', () => {
     const { double } = await shell()
 
     // Jumped to, never performed: the tap is not an observation.
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
@@ -792,7 +926,7 @@ describe('Workout — one forward action saves, then continues', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await performTwoRounds(user)
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
@@ -807,7 +941,7 @@ describe('Workout — one forward action saves, then continues', () => {
     const writer = uniqueWriter(1)
     const { double } = await shell({ blockResults: { record: writer.record } })
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await performTwoRounds(user)
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
@@ -831,7 +965,7 @@ describe('Workout — one forward action saves, then continues', () => {
     const writer = uniqueWriter(1)
     await shell({ blockResults: { record: writer.record } })
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await performTwoRounds(user)
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
     const failed = await waitFor(() => dialogTitled('That didn’t save'))
@@ -908,9 +1042,9 @@ describe('Workout — one forward action saves, then continues', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await jumpTo(user, 'Conditioning, not started')
     await user.click(screen.getByRole('button', { name: 'Previous' }))
-    await user.click(screen.getByRole('button', { name: 'Warm-up, complete' }))
+    await jumpTo(user, 'Warm-up, complete')
 
     expect(double.recorded()).toEqual([])
     const sections = within(screen.getByRole('list', { name: 'Sections' }))
