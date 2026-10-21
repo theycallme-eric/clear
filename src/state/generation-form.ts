@@ -114,8 +114,14 @@ export const NOTES_MAX_LENGTH = 2000
  * Stated as a refusal with a reason rather than a hidden button — a control
  * that vanishes has not explained anything.
  */
-export const POWER_REFUSAL =
-  'Recovery sessions are gentle movement, so Power isn’t one of their anchors.'
+export const POWER_REFUSAL = 'Power isn’t offered for recovery.'
+
+/**
+ * U29: what a Recovery draft says about itself, briefly. The copy is display
+ * only — the Goal, the 1–3 range and the refused Power are `resolveGeneration`'s
+ * and `withRecovery`'s, unchanged by how they are described.
+ */
+export const RECOVERY_NOTE = 'A lighter workout, for today only.'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Prefilling (HOME-03)
@@ -463,6 +469,19 @@ export function resolveGeneration(
     reason: chosen ? null : (recommended?.reason ?? null),
     intensity,
   }
+}
+
+/**
+ * U26: whether the first-workout anchor guidance is needed. Only when nothing
+ * has been completed — stale history and a failed read are not a first
+ * workout — and only until an anchor is chosen, after which it has said
+ * everything it had to say.
+ */
+export function needsFirstWorkoutGuidance(
+  draft: GenerationDraft,
+  history: FocusHistory | null,
+): boolean {
+  return history?.status === 'no-completed-history' && draft.anchor === null
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

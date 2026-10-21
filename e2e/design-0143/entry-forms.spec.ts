@@ -891,7 +891,7 @@ backendTest('generate: the full real form, selection, disabled, validation and r
   const notes = page.getByLabel(/Notes/)
   const slider = page.getByRole('slider')
   await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate workout', async () => {
-    await visibleText(page, 'CLEAR needs a starting workout. Choose the focus for this one.')
+    await visibleText(page, 'First workout: choose a starting focus.')
     await expect(cta).toBeDisabled()
     expect(await page.locator('main .clr-card .clr-card').count()).toBe(0)
     expect(await page.locator('main .clr-card').count()).toBeGreaterThan(0)
@@ -902,9 +902,9 @@ backendTest('generate: the full real form, selection, disabled, validation and r
   })
 
   const unit = await expectFramedField(duration, 'Time available')
-  expect(unit.unit, 'Time available has no in-field unit').toEqual({ text: 'min', insideFrame: true,
+  expect(unit.unit, 'Time available has no in-field unit').toEqual({ text: 'minutes', insideFrame: true,
     selectable: false, editable: false, describes: true })
-  evidence.note('contract', 'Time available carries a non-editable, non-selectable "min" unit inside its frame, tied to the input by aria-describedby.', unit)
+  evidence.note('contract', 'Time available carries a non-editable, non-selectable "minutes" unit (spelled out since TASK-015, U28) inside its frame, tied to the input by aria-describedby.', unit)
   evidence.note('discrepancy', 'Before this task Time available stated its unit as helper text ("Minutes.") below the field; the route now passes the package unit prop instead, so the unit sits in the frame as the 0.14.3 Input specimen shows.',
     { source: 'src/app/Generate.tsx', specimen: 'src/design-system/components/Input/Input.jsx' })
 

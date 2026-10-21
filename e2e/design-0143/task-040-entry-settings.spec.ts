@@ -509,7 +509,7 @@ backendTest('Generate: genuine first-workout, validation and workout-only recove
   const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
   const cta = page.getByRole('button', { name: 'Generate workout', exact: true })
   await evidence.route('Generate', '/generate', 'first-or-stale-history-manual-focus', 'Generate workout', async () => {
-    await visibleText(page, 'CLEAR needs a starting workout. Choose the focus for this one.')
+    await visibleText(page, 'First workout: choose a starting focus.')
     await expect(cta).toBeDisabled()
   })
   await evidence.route('Generate', '/generate', 'request-validation-disabled', 'Generate workout', async () => {
