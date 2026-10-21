@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `4a035b0a332fb6fcb71123c27119041bb902dc9d8d4336065db3d3b46224565a` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022 and TASK-024 changes below) |
+| Runtime source hash of this audit's tree | `68f80dcb9576590f7eecc0b46c9bc816c0e1d396bf067e3c4f3361f45fc2ae60` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024 and TASK-026 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -122,6 +122,17 @@ trees and this head, from `git diff`:
   rendering on Workout. The pictures above predate it and are not rebound (EX-13). Current
   acceptance evidence is `e2e/design-0143/workout-emom.spec.ts` on the mobile project and the
   EMOM renderer/state tests.
+- `4a035b0a…` to `68f80dcb…`: TASK-026 (REQ-014, JOURNEY-025, U40) makes circuit execution
+  hands-off. The circuit renderer shows every movement in prescribed order with its per-round
+  target, the total rounds and the shared rest, and no longer walks a `Next movement` position
+  or marks a movement `Now`. Recording a round is one optional secondary tap that starts the
+  shared rest and can be taken back; time, rest expiry and the prescription never add a round,
+  so an untouched circuit's `block_results.rounds_completed` stays `null`. Load entry is one
+  quiet action per movement that opens the shared set logger for that movement only, with no
+  per-movement rest. Changed: `src/ui/circuit-block.tsx`. This **does** change rendering on
+  Workout. The pictures above predate it and are not rebound (EX-13). Current acceptance
+  evidence is `e2e/design-0143/workout-circuit.spec.ts` on the mobile project and the circuit
+  renderer tests.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
