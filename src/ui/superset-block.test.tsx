@@ -85,6 +85,7 @@ interface Mounted {
   /** Every write the transport was asked for, refused or not, in order. */
   attempts: SetLogEntry[]
   onFailure: Mock<(error: AppError) => void>
+  completion: { reportOutcome: Mock<BlockCompletionApi['reportOutcome']> }
 }
 
 function mount(
@@ -134,10 +135,10 @@ function mount(
   const onFailure = vi.fn<(error: AppError) => void>()
   let minted = 0
 
-  const completion: BlockCompletionApi = {
-    completeBlock: vi.fn(),
+  const completion = {
+    reportOutcome: vi.fn<BlockCompletionApi['reportOutcome']>(),
     isBlockRecorded: () => false,
-  }
+  } satisfies BlockCompletionApi
 
   render(
     <AppProviders workout={workout.clients}>
@@ -158,7 +159,7 @@ function mount(
     </AppProviders>,
   )
 
-  return { workout, block, attempts, onFailure }
+  return { workout, block, attempts, onFailure, completion }
 }
 
 /** Every card frame in the document, and the ones that sit inside another. */
@@ -459,7 +460,7 @@ describe('the superset draws with the shared block frame', () => {
     ])
   })
 
-  it('carries the identity row, the pairing, the rest and exactly one completion inside the card', () => {
+  it('carries the identity row, the pairing and the rest inside the card, and no completion of its own', () => {
     mount()
 
     const inside = within(cards()[0])
@@ -468,7 +469,8 @@ describe('the superset draws with the shared block frame', () => {
       inside.getByText('Alternate A1 → A2 — no rest between movements'),
     ).toBeInTheDocument()
     expect(inside.getByText('Rest 90s after both movements')).toBeInTheDocument()
-    expect(inside.getAllByRole('button', { name: 'Complete block' })).toHaveLength(1)
+    // REQ-013: the section's forward action completes the block.
+    expect(inside.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 
   it('links the pair with one rule drawn from tokens, not one per row', () => {
@@ -502,18 +504,16 @@ describe('the superset draws with the shared block frame', () => {
     }
   })
 
-  it('gives each movement its own log action and the block one completion below the pair', () => {
-    mount()
+  it('gives each movement its own log action, and reports the block as a whole', () => {
+    const { completion } = mount()
 
     expect(
       rowFor('A1 romanian deadlift').getAllByRole('button', { name: 'Log set 1' }),
     ).toHaveLength(1)
     expect(rowFor('A2 back squat').getAllByRole('button', { name: 'Log set 1' })).toHaveLength(1)
 
-    // The completion is the block's — in neither movement's row.
-    const complete = screen.getByRole('button', { name: 'Complete block' })
-    expect(complete.closest('li')).toBeNull()
-    expect(complete).toBeEnabled()
+    // The report is the block's, with nothing a superset did not observe.
+    expect(completion.reportOutcome).toHaveBeenLastCalledWith(expect.any(String), {})
   })
 })
 

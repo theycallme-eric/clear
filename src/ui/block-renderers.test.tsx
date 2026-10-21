@@ -52,26 +52,14 @@ function blockFixture(
   }
 }
 
-/**
- * The verb a structure completes with, where it is not "Complete block".
- * Circuit, EMOM, AMRAP, and For Time name what they finish or record; each
- * concrete outcome is covered by its dedicated renderer test.
- */
-const COMPLETION_LABELS: Partial<Record<Enums<'structure_type'>, string>> = {
-  circuit: 'Complete circuit',
-  emom: 'Complete EMOM',
-  amrap: 'Complete AMRAP',
-  for_time: 'Record For Time',
-}
-
 /** The shell's half of the seam, as a spy. */
 function completionDouble(recorded: readonly string[] = []) {
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
   const api: BlockCompletionApi = {
-    completeBlock,
+    reportOutcome,
     isBlockRecorded: (blockId) => recorded.includes(blockId),
   }
-  return { api, completeBlock }
+  return { api, reportOutcome }
 }
 
 function renderSlot(block: BlockProgress, api: BlockCompletionApi) {
@@ -130,28 +118,28 @@ describe('the renderer registry', () => {
   })
 
   it.each([...Constants.public.Enums.structure_type])(
-    'completes a %s block through the shell, with no outcome it did not observe',
-    async (structureType) => {
-      const user = userEvent.setup()
+    'reports a %s block to the shell, with no outcome it did not observe',
+    (structureType) => {
       const block = blockFixture(structureType)
-      const { api, completeBlock } = completionDouble()
+      const { api, reportOutcome } = completionDouble()
       renderSlot(block, api)
 
-      const label = COMPLETION_LABELS[structureType] ?? 'Complete block'
-      await user.click(screen.getByRole('button', { name: label }))
-
-      // The shell's seam, with the empty outcome of a panel that runs no clock
-      // — an unobserved zero would be a measurement (DATA_MODEL §8).
-      expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+      // The shell's seam, with the empty outcome of a block nothing has been
+      // performed in — an unobserved zero would be a measurement (DATA_MODEL §8).
+      expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+      // REQ-013: no per-block completion; the section's forward action saves it.
+      expect(
+        screen.queryByRole('button', { name: /^(Complete|Record For Time)/ }),
+      ).not.toBeInTheDocument()
     },
   )
 
-  it('says a recorded block is recorded, and offers no second completion', () => {
+  it('says a saved block is saved', () => {
     const block = blockFixture('emom')
     const { api } = completionDouble([block.blockId])
     renderSlot(block, api)
 
-    expect(screen.getByRole('button', { name: 'Block recorded' })).toBeDisabled()
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
   })
 
   it('states the structure identity and the size of the block', () => {
@@ -162,16 +150,16 @@ describe('the renderer registry', () => {
   })
 
   it.each([...Constants.public.Enums.structure_type])(
-    'draws a %s block as one card, with one completion inside it',
+    'draws a saved %s block as one card, saying so once inside it',
     (structureType) => {
-      const { container } = renderSlot(blockFixture(structureType), completionDouble().api)
+      const block = blockFixture(structureType)
+      const { container } = renderSlot(block, completionDouble([block.blockId]).api)
 
       const cards = container.querySelectorAll('.clr-card')
       expect(cards).toHaveLength(1)
       expect(container.querySelector('.clr-card .clr-card')).toBeNull()
 
-      const label = COMPLETION_LABELS[structureType] ?? 'Complete block'
-      expect(within(cards[0] as HTMLElement).getAllByRole('button', { name: label })).toHaveLength(1)
+      expect(within(cards[0] as HTMLElement).getAllByText('Block saved')).toHaveLength(1)
     },
   )
 })
@@ -194,37 +182,31 @@ describe('the shared block frame', () => {
     expect(container.querySelectorAll('.clr-card')).toHaveLength(1)
     expect(screen.getByText('STANDARD')).toBeInTheDocument()
     expect(screen.getByText('2 movements')).toBeInTheDocument()
-    expect(screen.getAllByRole('button')).toHaveLength(1)
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
   })
 
-  it('hands the structure’s outcome and verb to the one completion control', async () => {
-    const user = userEvent.setup()
+  it('hands the structure’s outcome to the one completion control', () => {
     const block = blockFixture('circuit')
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderFrame(
-      <BlockPanel
-        block={block}
-        completion={{ outcome: { roundsCompleted: 2 }, label: 'Complete circuit' }}
-      >
+      <BlockPanel block={block} completion={{ outcome: { roundsCompleted: 2 } }}>
         <BlockPanel.Note>Every prescribed round is done.</BlockPanel.Note>
       </BlockPanel>,
       api,
     )
 
-    expect(screen.getAllByRole('button')).toHaveLength(1)
-    await user.click(screen.getByRole('button', { name: 'Complete circuit' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, { roundsCompleted: 2 })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 2 })
+    expect(screen.queryAllByRole('button')).toHaveLength(0)
   })
 
-  it('disables that control once the block is recorded', () => {
+  it('says so once the block is saved', () => {
     const block = blockFixture('standard')
     renderFrame(
       <BlockPanel block={block} completion={{ outcome: {} }} />,
       completionDouble([block.blockId]).api,
     )
 
-    expect(screen.getByRole('button', { name: 'Block recorded' })).toBeDisabled()
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
   })
 
   it('draws a countdown beside the card, never inside it', () => {

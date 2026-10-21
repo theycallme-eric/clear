@@ -1,13 +1,14 @@
 /**
  * EXE-01 — what the shell knows about where the user is, derived from the
- * session snapshot and from nothing else.
+ * session snapshot and confirmed saved block ids.
  *
- * Every function here is total and pure over `SessionSnapshot`. That is the
+ * Every function here is total and pure over its inputs. That is the
  * same posture `session-machine.ts` takes for the lifecycle, and for the same
  * reason: a progress bar that remembered its own state would disagree with the
  * rows after a refresh, a second tab, or a set logged on another device. A
- * section is complete because every prescription in it has been completed or
- * skipped, not because the user pressed Next.
+ * section is complete because its prescriptions are resolved or its explicit
+ * completion was confirmed by the server. A navigation tap alone, without a
+ * successful completion write, supplies no completion and no measured work.
  *
  * The structure identity is the other half. The master clarity spec's premise
  * is that a timed structure has to say what it is before it says what to do —
@@ -149,8 +150,13 @@ function statusOf(statuses: readonly Enums<'execution_status'>[]): SectionStatus
   return 'complete'
 }
 
-/** Every section, in order, with the status its rows currently derive to. */
-export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
+const NO_RECORDED_BLOCKS: ReadonlySet<string> = new Set()
+
+/** Every section, in order, using only stored or confirmed completion. */
+export function sessionProgress(
+  snapshot: SessionSnapshot,
+  recordedBlockIds: ReadonlySet<string> = NO_RECORDED_BLOCKS,
+): SessionProgress {
   const sections = snapshot.sections.map((entry, index): SectionProgress => {
     const blocks = entry.blocks.map((blockEntry): BlockProgress => {
       const exercises = activeExercises(blockEntry)
@@ -161,7 +167,11 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
         structureType: blockEntry.block.structure_type,
         repScheme: blockEntry.block.rep_scheme,
         identity: structureIdentity(blockEntry.block),
-        status: statusOf(exercises.map(({ exercise }) => exercise.execution_status)),
+        // An explicit saved block completion says the section was finished;
+        // it does not supply measured reps, rounds, load or exercise statuses.
+        status: recordedBlockIds.has(blockId)
+          ? 'complete'
+          : statusOf(exercises.map(({ exercise }) => exercise.execution_status)),
         exerciseCount: exercises.length,
         // Ordered here rather than trusted from the read: the order is the
         // prescription — a superset's A1 and A2, a circuit's 1…n — and a
@@ -192,11 +202,13 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
       title: sectionTypeLabel(entry.section.section_type),
       sectionType: entry.section.section_type,
       index,
-      status: statusOf(
-        entry.blocks.flatMap((blockEntry) =>
-          activeExercises(blockEntry).map(({ exercise }) => exercise.execution_status),
-        ),
-      ),
+      status: blocks.some((block) => recordedBlockIds.has(block.blockId))
+        ? (blocks.every((block) => block.status === 'complete') ? 'complete' : 'in_progress')
+        : statusOf(
+            entry.blocks.flatMap((blockEntry) =>
+              activeExercises(blockEntry).map(({ exercise }) => exercise.execution_status),
+            ),
+          ),
       blocks,
     }
   })

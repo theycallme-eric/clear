@@ -68,8 +68,6 @@ const FIELD_ROW_STYLE: CSSProperties = {
 export interface BlockPanelCompletion {
   /** What this structure observed. `{}` when it observed nothing. */
   outcome: BlockOutcome
-  /** The verb for this structure, when "Complete block" is not the words. */
-  label?: string
 }
 
 /**
@@ -102,7 +100,8 @@ export interface BlockPanelProps {
  *
  * The *contents* are the renderer's — the movements, the clock and the
  * per-structure controls. What this carries is the contract they inherit:
- * `completeBlock` with what was observed, and nothing else.
+ * `reportOutcome` with what was observed, and nothing else. The section's
+ * forward action is what saves it (REQ-013).
  */
 export function BlockPanel({
   block,
@@ -121,11 +120,7 @@ export function BlockPanel({
           </span>
         </div>
         {children}
-        <BlockCompletionControl
-          blockId={block.blockId}
-          outcome={completion.outcome}
-          label={completion.label}
-        />
+        <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
       </div>
     </Card>
   )

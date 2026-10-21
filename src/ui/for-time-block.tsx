@@ -98,10 +98,7 @@ export function ForTimeBlock({ block, storage, now = Date.now }: ForTimeBlockPro
       // What this structure observed: the seconds it took and whether they
       // beat the cap. A block nobody started observed neither, and says so by
       // supplying nothing rather than a zero (DATA_MODEL §8).
-      completion={{
-        outcome: shape.size === 0 ? {} : forTimeOutcome(view),
-        label: 'Record For Time',
-      }}
+      completion={{ outcome: shape.size === 0 ? {} : forTimeOutcome(view) }}
     >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />

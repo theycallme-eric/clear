@@ -15,9 +15,11 @@
  * the session just completed, whose Done returns Home; abandoning lands Home,
  * where the session's remains stay resumable.
  *
- * And the sixth thing the shell owns: **block completion**. Every structure
- * type writes its `block_results` row through this one path, with perceived
- * effort captured once, by the shell's dialog.
+ * And the sixth thing the shell owns: **block completion** (REQ-013). The
+ * footer's one forward action saves the open section's blocks — what each
+ * observed, no effort, no invented count — then continues, or finishes the
+ * workout on the last section. A failed save keeps the athlete where they are
+ * with their input, and the retry writes each block once.
  *
  * And, from 0.14.3, what the composed route must still be once every renderer
  * and the shared chrome are in it: the timers are self-framed cards never put
@@ -25,15 +27,17 @@
  * own, a coaching wait beside it yields the view's one loop, and reduced motion
  * keeps every word, digit and colour.
  */
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import type { BlockCompletion } from '../state/block-completion'
+import type { SetLogEntry } from '../state/set-logging'
 import { createError, err, ErrorCode, ok } from '../state/errors'
-import type { ConditioningHistoryRow } from '../state/schemas'
+import type { BlockResultRow } from '../state/schemas'
 import { WORKOUT_SHELL_STORAGE_KEY } from '../state/workout-persistence'
-import { sessionProgress, type BlockProgress } from '../state/workout-progress'
+import { sessionProgress } from '../state/workout-progress'
 import { AppProviders, signedIn } from '../test/render'
 import {
   completedSession,
@@ -51,13 +55,11 @@ import {
   createWorkoutDouble,
   definitionFixture,
   FIXTURE_SESSION_ID,
-  fixtureId,
   snapshotFixture,
   type SectionFixture,
   type WorkoutDouble,
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
-import { FIXTURE_USER_ID } from '../test/user-data-double'
 import { AUTHENTICATED_HOME } from './guards'
 import { routes } from './router'
 import { SAVE_FAVORITE_LABEL } from './Summary'
@@ -571,94 +573,344 @@ describe('Workout — closing and backgrounding', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Block completion — the shell's write
+// The forward action — save and continue (REQ-013)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Workout — block completion', () => {
-  it('captures perceived effort once, and writes the row itself', async () => {
+describe('Workout — one forward action saves, then continues', () => {
+  it('does not turn an untouched circuit counter into an observed zero-round result', async () => {
     const user = userEvent.setup()
-    const { double } = await shell()
-
-    // EXE-03's EMOM renderer says what it is completing; the shell's write is
-    // the same one every structure goes through.
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-
-    // The dialog names what was finished, per the master clarity spec.
-    const dialog = dialogTitled('EMOM complete')
-    await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
-
-    await waitFor(() =>
-      expect(double.recorded()).toEqual([
-        { blockId: expect.any(String), outcome: {}, perceivedEffort: 5 },
-      ]),
-    )
-    // Recorded once: the same block cannot be written twice.
-    expect(await screen.findByRole('button', { name: 'Block recorded' })).toBeDisabled()
+    const { double } = await shell({ session: activeSession([
+      { sectionType: 'primary_lift', blocks: [{ structureType: 'circuit', rounds: 3,
+        exercises: ['not_started', 'not_started'] }] },
+      { sectionType: 'cooldown', blocks: [{}] },
+    ]) })
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: 'Cooldown' })
+    expect(double.recorded()).toHaveLength(1)
+    expect(double.recorded()[0]?.outcome).toEqual({})
   })
 
-  it('records every structure type through the same path', async () => {
+  it('shows the section just saved as complete without inventing any measured work', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: 'Conditioning' })
+    expect(screen.getByRole('button', { name: 'Primary lift, complete' })).toBeInTheDocument()
+    expect(double.recorded()[0]?.outcome).toEqual({})
+  })
+
+  it('keeps the section and entered set when that set has not reached the server', async () => {
+    const user = userEvent.setup()
+    const log = vi.fn(async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)))
+    const { double } = await shell({
+      session: activeSession([
+        { sectionType: 'primary_lift', blocks: [{ structureType: 'standard' }] },
+        { sectionType: 'cooldown', blocks: [{}] },
+      ]),
+      setLogs: { log },
+    })
+    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    await user.type(form.getByLabelText(/^Reps/), '8')
+    await user.click(form.getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(log).toHaveBeenCalled())
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await waitFor(() => expect(isDialogOpen('That didn’t save')).toBe(true))
+    expect(screen.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
+    expect(double.recorded()).toEqual([])
+    expect(double.completed()).toEqual([])
+  })
+
+  it('joins the in-flight set save, prevents navigation, and advances only after confirmation', async () => {
+    const user = userEvent.setup()
+    const persisted = createWorkoutDouble()
+    let release: () => void = () => undefined
+    const held = new Promise<void>((resolve) => { release = resolve })
+    const log = vi.fn(async (entry: SetLogEntry) => {
+      await held
+      return persisted.clients.setLogs.log(entry)
+    })
+    const { double } = await shell({
+      session: activeSession([
+        { sectionType: 'primary_lift', blocks: [{ structureType: 'standard' }] },
+        { sectionType: 'cooldown', blocks: [{}] },
+      ]),
+      setLogs: { log },
+    })
+    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    await user.type(form.getByLabelText(/^Reps/), '8')
+    await user.click(form.getByRole('button', { name: 'Log set 1' }))
+    const forward = screen.getByRole('button', { name: 'Next section' })
+    act(() => { forward.click(); forward.click() })
+    expect(screen.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
+    expect(forward).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Cooldown, not started' })).toBeDisabled()
+    expect(double.recorded()).toEqual([])
+    await act(async () => { release(); await held })
+    await screen.findByRole('heading', { name: 'Cooldown' })
+    expect(log).toHaveBeenCalledTimes(1)
+    expect(persisted.loggedSets()).toHaveLength(1)
+    expect(persisted.loggedSets()[0]?.performed.reps).toBe(8)
+    expect(double.recorded()).toHaveLength(1)
+  })
+
+  it('retries a failed entered set with its original identity and saves once before continuing', async () => {
+    const user = userEvent.setup()
+    const persisted = createWorkoutDouble()
+    let refusing = true
+    const log = vi.fn(async (entry: SetLogEntry) => refusing
+      ? err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+      : persisted.clients.setLogs.log(entry))
+    const { double } = await shell({
+      session: activeSession([
+        { sectionType: 'primary_lift', blocks: [{ structureType: 'standard' }] },
+        { sectionType: 'cooldown', blocks: [{}] },
+      ]),
+      setLogs: { log },
+    })
+    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    await user.type(form.getByLabelText(/^Reps/), '8')
+    await user.click(form.getByRole('button', { name: 'Log set 1' }))
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    const failed = await waitFor(() => dialogTitled('That didn’t save'))
+    expect(double.recorded()).toEqual([])
+    refusing = false
+    await user.click(within(failed).getByRole('button', { name: 'Try again' }))
+    await screen.findByRole('heading', { name: 'Cooldown' })
+    expect(openDialogs()).toEqual([])
+    expect(persisted.loggedSets()).toHaveLength(1)
+    expect(new Set(log.mock.calls.map(([entry]) => entry.id)).size).toBe(1)
+    expect(double.recorded()).toHaveLength(1)
+  })
+
+  /** The block ids of a section, in order, as the shell derives them. */
+  function blockIdsOf(sections: SectionFixture[], index: number): string[] {
+    const section = sessionProgress(activeSession(sections)).sections[index]
+    if (section === undefined) throw new Error(`the fixture has no section ${index}`)
+    return section.blocks.map((block) => block.blockId)
+  }
+
+  /** The AMRAP's live round count, as the athlete reads it. */
+  function roundsShown(): string | null {
+    return within(screen.getByRole('group', { name: 'Rounds completed' })).getByRole('status')
+      .textContent
+  }
+
+  /** Starts the Finisher's AMRAP and banks two rounds — entered input to keep. */
+  async function performTwoRounds(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
+    expect(roundsShown()).toBe('2')
+  }
+
+  /**
+   * A `block_results` writer with the table's unique `block_id`: a second row
+   * for a block is refused as PostgREST refuses it. The first `failures`
+   * writes fail outright, storing nothing.
+   */
+  function uniqueWriter(failures = 0) {
+    const rows: BlockCompletion[] = []
+    let remaining = failures
+    const record = vi.fn(async (completion: BlockCompletion) => {
+      if (remaining > 0) {
+        remaining -= 1
+        return err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED))
+      }
+      if (rows.some((row) => row.blockId === completion.blockId)) {
+        return err(
+          createError(ErrorCode.PERSISTENCE_CONFLICT, { details: { pgCode: '23505' } }),
+        )
+      }
+      rows.push(completion)
+      return ok({} as BlockResultRow)
+    })
+    return { rows, record }
+  }
+
+  it('saves the open section’s explicit completion with no effort, then shows the next section', async () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-    await user.click(
-      within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Record effort' }),
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+
+    expect(await screen.findByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    expect(double.recorded()).toEqual([
+      { blockId: blockIdsOf(SECTIONS, 1)[0], outcome: {}, perceivedEffort: null },
+    ])
+    // No effort question and no per-block completion: the one action is the footer's.
+    expect(openDialogs()).toEqual([])
+    expect(screen.queryByRole('button', { name: /^Complete / })).not.toBeInTheDocument()
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+  })
+
+  it('saves every block of a multi-block section in that one action', async () => {
+    const MULTI: SectionFixture[] = [
+      {
+        title: 'Conditioning',
+        sectionType: 'conditioning',
+        blocks: [
+          { structureType: 'emom', timerSeconds: 600 },
+          { structureType: 'for_time', timerSeconds: 600 },
+        ],
+      },
+      { title: 'Cooldown', sectionType: 'cooldown', blocks: [{ exercises: ['not_started'] }] },
+    ]
+    const user = userEvent.setup()
+    const { double } = await shell({ session: activeSession(MULTI) })
+
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+
+    expect(await screen.findByRole('heading', { name: 'Cooldown' })).toBeInTheDocument()
+    expect(double.recorded().map((completion) => completion.blockId)).toEqual(
+      blockIdsOf(MULTI, 0),
     )
-    await screen.findByRole('button', { name: 'Block recorded' })
+    // Missing counts did not block it, and none was made up.
+    expect(double.recorded().map((completion) => completion.outcome)).toEqual([{}, {}])
+  })
+
+  it('finishes the workout on the last section with the same save, and never fabricates a count', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
+
+    // Jumped to, never performed: the tap is not an observation.
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(double.recorded()).toEqual([
+      { blockId: blockIdsOf(SECTIONS, 2)[0], outcome: {}, perceivedEffort: null },
+    ])
+    expect(double.completed()).toEqual([{ sessionId: FIXTURE_SESSION_ID, minutes: 12 }])
+  })
+
+  it('saves the rounds the athlete entered, as entered', async () => {
+    const user = userEvent.setup()
+    const { double } = await shell()
 
     await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
-    // EXE-04c's renderer names what it is completing; the shell's path is the
-    // same one the EMOM above went through, which is this test's whole subject.
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
-    const amrap = dialogTitled('AMRAP complete')
-    // A real `<input type="range">`; jsdom does not implement its key
-    // behaviour, so the change event the platform would fire is fired here.
-    fireEvent.change(within(amrap).getByRole('slider'), { target: { value: '8' } })
-    await user.click(within(amrap).getByRole('button', { name: 'Record effort' }))
+    await performTwoRounds(user)
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
-    await waitFor(() => expect(double.recorded()).toHaveLength(2))
-    expect(double.recorded().map((completion) => completion.perceivedEffort)).toEqual([5, 8])
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(double.recorded()).toHaveLength(1)
+    expect(double.recorded()[0]?.outcome).toMatchObject({ roundsCompleted: 2 })
+    expect(double.recorded()[0]?.perceivedEffort).toBeNull()
   })
 
-  it('asks the question fresh for every block', async () => {
+  it('keeps the athlete on the section with input preserved when the save fails, and retries once', async () => {
     const user = userEvent.setup()
-    await shell()
+    const writer = uniqueWriter(1)
+    const { double } = await shell({ blockResults: { record: writer.record } })
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-    const effort = within(dialogTitled('EMOM complete')).getByRole('slider')
-    expect(effort).toHaveValue('5')
-    expect(effort).toHaveAttribute('aria-valuetext', '5 of 10, moderate')
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await performTwoRounds(user)
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    const failed = await waitFor(() => dialogTitled('That didn’t save'))
+    expect(within(failed).getByText('Could not save. Try again.')).toBeInTheDocument()
+    // Still here, still holding what was entered, and not finished.
+    expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    expect(roundsShown()).toBe('2')
+    expect(double.completed()).toEqual([])
+
+    await user.click(within(failed).getByRole('button', { name: 'Try again' }))
+
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(writer.rows).toHaveLength(1)
+    expect(writer.rows[0]?.outcome).toMatchObject({ roundsCompleted: 2 })
+    expect(double.completed()).toHaveLength(1)
   })
 
-  it('leaves the block completable when the write fails', async () => {
+  it('keeps entries through backward navigation after a failed save, and saves each block once', async () => {
     const user = userEvent.setup()
-    const { double } = await shell({
-      blockResults: { record: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)) },
+    const writer = uniqueWriter(1)
+    await shell({ blockResults: { record: writer.record } })
+
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await performTwoRounds(user)
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+    const failed = await waitFor(() => dialogTitled('That didn’t save'))
+    await user.click(within(failed).getByRole('button', { name: 'Close' }))
+    await waitFor(() => expect(isDialogOpen('That didn’t save')).toBe(false))
+
+    // Back a section, then forward through it: that section is saved on the
+    // way, and the AMRAP comes back holding what was entered.
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    expect(screen.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    expect(roundsShown()).toBe('2')
+
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(writer.rows.map((row) => row.blockId)).toEqual([
+      blockIdsOf(SECTIONS, 1)[0],
+      blockIdsOf(SECTIONS, 2)[0],
+    ])
+    expect(writer.rows[1]?.outcome).toMatchObject({ roundsCompleted: 2 })
+  })
+
+  it('keeps entries across leaving and returning, and a resaved section writes no duplicate', async () => {
+    const user = userEvent.setup()
+    const writer = uniqueWriter()
+    const double = createWorkoutDouble({
+      session: activeSession(),
+      blockResults: { record: writer.record },
     })
+    const mountWith = () =>
+      render(
+        <AppProviders {...signedIn({ workout: double.clients })}>
+          <RouterProvider
+            router={createMemoryRouter(routes, {
+              initialEntries: ['/', '/workout'],
+              initialIndex: 1,
+            })}
+          />
+        </AppProviders>,
+      )
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-    await user.click(
-      within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Record effort' }),
-    )
+    const first = mountWith()
+    await screen.findByRole('navigation', { name: 'Workout sections' })
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    await screen.findByRole('heading', { name: 'Conditioning' })
+    await performTwoRounds(user)
 
-    expect(await screen.findByText('Could not save. Try again.')).toBeInTheDocument()
-    // A performed block must never be lost because one write failed.
-    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
-    expect(double.recorded()).toEqual([])
+    // The tab is closed and reopened: nothing held in memory survives.
+    first.unmount()
+    mountWith()
+    await screen.findByRole('navigation', { name: 'Workout sections' })
+
+    expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    expect(roundsShown()).toBe('2')
+
+    // Revisiting a saved section and pressing forward again: its row already
+    // exists, so the save holds rather than failing or writing a second one.
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
+    expect(openDialogs()).toEqual([])
+
+    await user.click(screen.getByRole('button', { name: 'Finish workout' }))
+    await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
+    expect(writer.rows.map((row) => row.blockId)).toEqual([
+      blockIdsOf(SECTIONS, 1)[0],
+      blockIdsOf(SECTIONS, 2)[0],
+    ])
   })
 
-  it('writes nothing when the effort question is dismissed', async () => {
+  it('saves nothing on Previous or a jump, marks no skipped section complete, and leaves the clock alone', async () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-    await user.click(
-      within(dialogTitled('EMOM complete')).getByRole('button', { name: 'Not now' }),
-    )
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Previous' }))
+    await user.click(screen.getByRole('button', { name: 'Warm-up, complete' }))
 
-    await waitFor(() => expect(isDialogOpen('EMOM complete')).toBe(false))
     expect(double.recorded()).toEqual([])
-    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
+    const sections = within(screen.getByRole('list', { name: 'Sections' }))
+    expect(sections.getByRole('button', { name: 'Conditioning, not started' })).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
   })
 })
 
@@ -810,173 +1062,6 @@ function firstExerciseId(double: WorkoutDouble): string {
   if (stored === null) throw new Error('The double holds no session')
   return stored.sections[0].blocks[0].exercises[0].exercise.id
 }
-// ─────────────────────────────────────────────────────────────────────────────
-// The like-for-like comparison (OVR-03)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** A session before this one, whose block the Finisher may or may not repeat. */
-const EARLIER_SESSION = fixtureId('9', 1)
-const EARLIER_SECTION = fixtureId('9', 2)
-const EARLIER_BLOCK = fixtureId('9', 3)
-
-describe('Workout — the like-for-like comparison', () => {
-  /** The Finisher AMRAP as the shell derives it, which is what a repeat matches. */
-  function finisher(): BlockProgress {
-    const block = sessionProgress(activeSession()).sections[2]?.blocks[0]
-    if (block === undefined) throw new Error('the fixture has no Finisher block')
-    return block
-  }
-
-  /** An earlier scored attempt at the Finisher, as `conditioning_history` answers it. */
-  function earlierAttempt(
-    overrides: Partial<ConditioningHistoryRow> = {},
-  ): ConditioningHistoryRow {
-    const block = finisher()
-    return {
-      session_id: EARLIER_SESSION,
-      session_date: '2026-09-20',
-      effective_intensity: 7,
-      goal_preset: null,
-      section_id: EARLIER_SECTION,
-      section_order: 2,
-      block_id: EARLIER_BLOCK,
-      block_order: 0,
-      structure_type: block.structureType,
-      rep_scheme: block.repScheme,
-      timer_type: block.timerType,
-      timer_seconds: block.timerSeconds,
-      rounds: block.rounds,
-      round_rest_seconds: block.roundRestSeconds,
-      elapsed_seconds: block.timerSeconds,
-      completed_under_cap: null,
-      rounds_completed: 1,
-      partial_round_reps: null,
-      minutes_completed: null,
-      highest_rung: null,
-      perceived_effort: 6,
-      scored_at: '2026-09-20T10:30:00.000Z',
-      prescriptions: block.exercises.map((exercise) => exercise.prescription),
-      ...overrides,
-    }
-  }
-
-  /** Performs two rounds of the Finisher and opens its effort question. */
-  async function completeFinisher(
-    user: ReturnType<typeof userEvent.setup>,
-  ): Promise<HTMLElement> {
-    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
-    await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
-    await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
-    await user.click(screen.getByRole('button', { name: 'Finish early' }))
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
-    return dialogTitled('AMRAP complete')
-  }
-
-  const COMPARED = /Previous best/
-  const FIRST = /First attempt at this piece/
-  const DIFFERENT = /Nothing like-for-like to compare/
-
-  it('reads the conditioning history for the signed-in user', async () => {
-    const history = vi.fn(async () => ok([]))
-    await shell({ conditioning: { history } })
-
-    await waitFor(() => expect(history).toHaveBeenCalledWith(FIXTURE_USER_ID))
-  })
-
-  it('shows the normalized score of the piece, computed from the outcome it writes', async () => {
-    const user = userEvent.setup()
-    const { double } = await shell()
-
-    const dialog = await completeFinisher(user)
-    // Two rounds of 3 × 8 over the 8-minute window: 48 reps ÷ 8 min.
-    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
-
-    await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
-    await waitFor(() => expect(double.recorded()).toHaveLength(1))
-    expect(double.recorded()[0]?.outcome).toMatchObject({ roundsCompleted: 2 })
-  })
-
-  it('compares an identical repeat against its previous best', async () => {
-    const user = userEvent.setup()
-    await shell({ conditioningHistory: [earlierAttempt()] })
-
-    const dialog = await completeFinisher(user)
-    expect(
-      await within(dialog).findByText('Previous best 3 reps/min · Ahead of your previous best'),
-    ).toBeInTheDocument()
-    expect(within(dialog).queryByText(DIFFERENT)).not.toBeInTheDocument()
-    expect(within(dialog).queryByText(FIRST)).not.toBeInTheDocument()
-  })
-
-  it('refuses to compare a piece whose composition differs, and says so', async () => {
-    const user = userEvent.setup()
-    // Same format, a different clock: a different test, however alike it looks.
-    await shell({ conditioningHistory: [earlierAttempt({ timer_seconds: 600 })] })
-
-    const dialog = await completeFinisher(user)
-    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
-    expect(await within(dialog).findByText(DIFFERENT)).toBeInTheDocument()
-    expect(within(dialog).queryByText(COMPARED)).not.toBeInTheDocument()
-  })
-
-  it('says a first attempt is one rather than comparing it against nothing', async () => {
-    const user = userEvent.setup()
-    await shell({ conditioningHistory: [] })
-
-    const dialog = await completeFinisher(user)
-    expect(await within(dialog).findByText(FIRST)).toBeInTheDocument()
-    expect(within(dialog).queryByText(COMPARED)).not.toBeInTheDocument()
-    expect(within(dialog).queryByText(DIFFERENT)).not.toBeInTheDocument()
-  })
-
-  it('claims nothing about history while it is still loading', async () => {
-    const user = userEvent.setup()
-    await shell({
-      conditioningHistory: [earlierAttempt()],
-      conditioning: { history: () => new Promise(() => {}) },
-    })
-
-    const dialog = await completeFinisher(user)
-    expect(within(dialog).getByText('Score: 6 reps/min')).toBeInTheDocument()
-    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
-      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
-    }
-  })
-
-  it('claims nothing when the history read fails, and still records the block', async () => {
-    const user = userEvent.setup()
-    const { double } = await shell({
-      conditioning: {
-        history: async () => err(createError(ErrorCode.PERSISTENCE_READ_FAILED)),
-      },
-    })
-
-    const dialog = await completeFinisher(user)
-    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
-      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
-    }
-
-    await user.click(within(dialog).getByRole('button', { name: 'Record effort' }))
-    await waitFor(() => expect(double.recorded()).toHaveLength(1))
-    expect(await screen.findByRole('button', { name: 'Block recorded' })).toBeDisabled()
-  })
-
-  it('claims nothing when the read is refused as signed out', async () => {
-    const user = userEvent.setup()
-    await shell({
-      conditioning: {
-        history: async () => err(createError(ErrorCode.AUTH_UNAUTHENTICATED)),
-      },
-    })
-
-    const dialog = await completeFinisher(user)
-    for (const claim of [COMPARED, FIRST, DIFFERENT]) {
-      expect(within(dialog).queryByText(claim)).not.toBeInTheDocument()
-    }
-  })
-})
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Rest (EXE-05)
 // ─────────────────────────────────────────────────────────────────────────────

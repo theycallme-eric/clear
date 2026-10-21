@@ -64,9 +64,9 @@ function amrapBlock(fixture: BlockFixture = {}): BlockProgress {
 }
 
 function completionDouble() {
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
-  const api: BlockCompletionApi = { completeBlock, isBlockRecorded: () => false }
-  return { api, completeBlock }
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const api: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false }
+  return { api, reportOutcome }
 }
 
 function renderAmrap(
@@ -289,7 +289,7 @@ describe('what it supplies to the shell', () => {
   it('sends the score, partial round included, when the clock ended the block', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
@@ -310,11 +310,10 @@ describe('what it supplies to the shell', () => {
       )
     }
 
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
 
     // The acceptance criterion, in one assertion: the score including the
     // partial round, persisted at expiry.
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 480,
       roundsCompleted: 5,
       partialRoundReps: 8,
@@ -323,7 +322,7 @@ describe('what it supplies to the shell', () => {
 
   it('omits the partial round when none was recorded', async () => {
     const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
@@ -331,11 +330,10 @@ describe('what it supplies to the shell', () => {
     await addRound(user)
     clock = START + 300_000
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
 
     // No `partialRoundReps` key at all: the column holds null, not a zero that
     // would read as "stopped on the boundary".
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 300,
       roundsCompleted: 1,
     })
@@ -343,7 +341,7 @@ describe('what it supplies to the shell', () => {
 
   it('sends a recorded zero as a zero', async () => {
     const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
@@ -352,9 +350,8 @@ describe('what it supplies to the shell', () => {
     clock = START + 300_000
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 300,
       roundsCompleted: 1,
       partialRoundReps: 0,
@@ -363,41 +360,34 @@ describe('what it supplies to the shell', () => {
 
   it('supplies zero rounds rather than nothing for an AMRAP that managed none', async () => {
     const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
     await start(user)
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 0,
       roundsCompleted: 0,
     })
   })
 
-  it('supplies nothing at all for an AMRAP that was never started', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+  it('supplies nothing at all for an AMRAP that was never started', () => {
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock()
     renderAmrap(block, fakeStorage(), api)
 
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
-
     // Nothing ran, so nothing was observed — not even a zero (DATA_MODEL §8).
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 
-  it('supplies no score at all for an AMRAP with nothing to perform', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+  it('supplies no score at all for an AMRAP with nothing to perform', () => {
+    const { api, reportOutcome } = completionDouble()
     const block = amrapBlock({ exercises: [] })
     renderAmrap(block, fakeStorage(), api)
 
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 })
 
@@ -472,7 +462,7 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
     await user.click(screen.getByRole('button', { name: 'Partial round' }))
 
-    const card = screen.getByRole('button', { name: 'Complete AMRAP' }).closest('.clr-card')
+    const card = screen.getByRole('button', { name: 'Take back a round' }).closest('.clr-card')
     expect(card).not.toBeNull()
 
     for (const label of ['Rounds completed', 'Reps into the next round', 'Each round:']) {
@@ -520,14 +510,12 @@ describe('the 0.14.3 card, timer and group grammar', () => {
     expect(close).toHaveClass('clr-text-action')
   })
 
-  it('disables the completion once the block is recorded, and still shows the score', async () => {
-    const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
-    const { user } = await resumeAt(600_000, { completeBlock, isBlockRecorded: () => true })
+  it('says a saved block is saved, and still shows the score', async () => {
+    const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+    await resumeAt(600_000, { reportOutcome, isBlockRecorded: () => true })
 
-    const recorded = screen.getByRole('button', { name: 'Block recorded' })
-    expect(recorded).toBeDisabled()
-    await user.click(recorded)
-    expect(completeBlock).not.toHaveBeenCalled()
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
 
     expect(rounds()).toBe('1')
     expect(screen.getByText('08:00 on the clock')).toBeInTheDocument()
@@ -642,13 +630,12 @@ describe('surviving a refresh', () => {
     await user.click(screen.getByRole('button', { name: 'Finish early' }))
     first.unmount()
 
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const shortened: BlockProgress = { ...block, timerSeconds: 240 }
     renderAmrap(shortened, storage, api)
 
     expect(screen.getByText('04:00 on the clock')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 240,
       roundsCompleted: 0,
     })

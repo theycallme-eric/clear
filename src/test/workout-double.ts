@@ -626,7 +626,24 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     start: () => unsupported('start'),
     asGenerated: () => unsupported('asGenerated'),
     asIntendedAtStart: () => unsupported('asIntendedAtStart'),
-    asPerformed: () => unsupported('asPerformed'),
+    async asPerformed(sessionId) {
+      if (stored === null || stored.session.id !== sessionId) {
+        return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+      }
+      return ok({
+        reconstruction: 'performed' as const,
+        as_of: stored.session.started_at,
+        session: stored.session,
+        state: stored.state,
+        sections: stored.sections.map((section) => ({
+          ...section,
+          blocks: section.blocks.map((block) => {
+            const result = recorded.find((row) => row.blockId === block.block.id)
+            return { ...block, block_result: result === undefined ? null : blockResultRow(result) }
+          }),
+        })),
+      })
+    },
     async swap(workoutExerciseId, prescription) {
       swaps.push({ workoutExerciseId, prescription })
       return revise(workoutExerciseId, prescription)

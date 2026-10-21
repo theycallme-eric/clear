@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `8042672f0561b6631070dbad80d37fdfc382a52d2e90a452f811c9d559145c6b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018 and TASK-019 changes below) |
+| Runtime source hash of this audit's tree | `480fcdc68927b57fa8155386955b08b948519076a196c8f243cb852de588a2f9` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019 and TASK-022 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -89,9 +89,32 @@ trees and this head, from `git diff`:
   and moves tempo into a collapsed per-section `Tempo` detail. This **does** change
   rendering on Review and Workout. The pictures above predate it and are not rebound
   (EX-13).
+- `8042672f…` to `480fcdc6…`: TASK-022 (REQ-013, JOURNEY-021, U39) makes the Workout
+  footer's Next section / Finish workout the one forward action: it saves every block in the
+  open section as an explicit `block_results` completion with its observed outcome and a
+  `null` effort, then continues or finishes, and a failed save stays on the section with a
+  retry. The per-block Complete / Record buttons and the effort dialog (with its
+  like-for-like comparison) are gone from Workout; renderers report outcomes through
+  `src/ui/block-completion-control.tsx`, which says `Block saved` once saved. Changed:
+  `src/app/Workout.tsx`, `src/state/block-completion.ts`,
+  `src/state/block-completion-provider.tsx`, `src/ui/block-completion-control.tsx`,
+  `src/ui/block-renderers-frame.tsx` and the AMRAP, circuit, EMOM and For Time renderers'
+  completion labels. This **does** change rendering on Workout. The pictures above predate it
+  and are not rebound (EX-13).
 
-The pictures are not rebound to this head. The browser lane re-asserts all three groups'
-behaviour on it (below).
+  The TASK-022 recovery also makes forward progression wait for the existing durable
+  set-log queue, joining an in-flight save and retaining the same ids on retry. Confirmed
+  block rows drive section progress without changing measured work or exercise statuses;
+  restoration reads them through the existing active-session `asPerformed` reader. The
+  initial circuit counter is not saved as a measured zero. Additional runtime changes are
+  `src/state/set-logging.ts`, `src/state/set-logging-provider.tsx` and
+  `src/state/workout-progress.ts`. Current acceptance evidence is the REQ-013 component
+  journey, not a rerun or rebinding of the historical effort-dialog capture cases. Individual
+  format browser proof remains with those format tasks.
+
+The pictures are not rebound to this head. The original browser lane supplied the three groups'
+evidence below. Later behavior changes listed above require their current acceptance evidence;
+the historical captures alone do not certify those later heads.
 
 ## Aggregated AFTER evidence
 
