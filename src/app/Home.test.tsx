@@ -53,6 +53,7 @@ import {
   HISTORY_ROUTE,
   HOME_HEADING,
   RECENT_EMPTY_TITLE,
+  REST_DAY_PROMPT,
   HOME_ROUTE,
   SETTINGS_ROUTE,
   VIEW_HISTORY_LABEL,
@@ -222,8 +223,88 @@ describe('Home', () => {
         { day: suggestionDay(), reason: 'sick', note: null },
       ])
     })
-    expect(await screen.findByText('Today is marked: Unwell.')).toBeInTheDocument()
+    expect(await screen.findByText('Today: Unwell.')).toBeInTheDocument()
     expect(screen.getByText('Rest day saved.')).toBeInTheDocument()
+  })
+
+  it('U25: the trigger is a disclosure with short copy, and the picker gets focus', async () => {
+    const user = userEvent.setup()
+    renderApp(['/'], signedIn({ restDays: createFakeRestDayClient() }))
+
+    const rest = await screen.findByRole('region', { name: 'Rest day' })
+    expect(within(rest).getByText(REST_DAY_PROMPT)).toBeInTheDocument()
+    expect(rest).not.toHaveTextContent(/keep your streak\..*keep your streak/i)
+    expect(REST_DAY_PROMPT).toBe('Not training today?')
+
+    const trigger = within(rest).getByRole('button', { name: 'Mark Rest Day' })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    // The trigger carries a glyph, but its name is still its words.
+    expect(trigger.querySelector('svg')).not.toBeNull()
+
+    await user.click(trigger)
+    const picker = within(rest).getByRole('combobox', { name: 'Reason' })
+    expect(picker).toHaveFocus()
+    expect(document.getElementById(trigger.getAttribute('aria-controls')!)).toContainElement(picker)
+    // The chosen reason's effect is the helper, wired to the picker.
+    expect(picker).toHaveAccessibleDescription(/Keeps your streak/)
+    await user.selectOptions(picker, 'vacation')
+    expect(picker).toHaveAccessibleDescription('Pauses your streak for as long as it lasts.')
+
+    // Save and Cancel are equal framed cells in one responsive group.
+    const save = within(rest).getByRole('button', { name: 'Save rest day' })
+    const cancel = within(rest).getByRole('button', { name: 'Cancel' })
+    expect(save.closest('.clr-action-group')).toHaveClass('clr-action-group--paired')
+    // Cancel is framed like Save, not a bare quiet label beside a framed button.
+    expect(cancel).not.toHaveClass('clr-btn--quiet')
+    expect(cancel.closest<HTMLElement>('.clr-bleed')!.style.getPropertyValue('--bleed')).not.toBe(
+      'transparent',
+    )
+  })
+
+  it('U25: Cancel and Escape discard the choice and hand focus back to the trigger', async () => {
+    const user = userEvent.setup()
+    const restDays = createFakeRestDayClient()
+    renderApp(['/'], signedIn({ restDays }))
+
+    await user.click(await screen.findByRole('button', { name: 'Mark Rest Day' }))
+    await user.selectOptions(screen.getByLabelText('Reason'), 'sick')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(screen.queryByLabelText('Reason')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Mark Rest Day' })).toHaveFocus()
+    expect(screen.getByText(REST_DAY_PROMPT)).toBeInTheDocument()
+
+    // Keyboard only: open, Escape, and the reason reopens at its saved value.
+    await user.keyboard('{Enter}')
+    expect(screen.getByLabelText('Reason')).toHaveFocus()
+    await user.selectOptions(screen.getByLabelText('Reason'), 'injury')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByLabelText('Reason')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Mark Rest Day' })).toHaveFocus()
+    expect(restDays.markCalls).toEqual([])
+
+    await user.keyboard('{Enter}')
+    expect(screen.getByLabelText('Reason')).toHaveValue('rest')
+  })
+
+  it('U25: a keyboard save announces itself and returns focus to Change reason', async () => {
+    const user = userEvent.setup()
+    const restDays = createFakeRestDayClient()
+    renderApp(['/'], signedIn({ restDays }))
+
+    await user.click(await screen.findByRole('button', { name: 'Mark Rest Day' }))
+    await user.selectOptions(screen.getByLabelText('Reason'), 'injury')
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Save rest day' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    const rest = screen.getByRole('region', { name: 'Rest day' })
+    expect(await within(rest).findByRole('status')).toHaveTextContent('Rest day saved.')
+    expect(await screen.findByText('Today: Injured.')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Change reason' })).toHaveFocus(),
+    )
+    expect(restDays.markCalls).toEqual([{ day: suggestionDay(), reason: 'injury', note: null }])
   })
 
   /** Today's square in the week strip — the one named "(today)". */

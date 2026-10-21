@@ -167,6 +167,16 @@ body,
   display: flex;
 }
 
+/* U25: a paired confirm/cancel is two equal halves or two full rows, never
+   two ragged cells. Each starts at half the row and refuses to shrink below
+   its label, so a label that does not fit its half wraps the pair onto full
+   rows. `fit-content` is clamped to the card, so a label longer than the
+   card wraps inside its own row instead of overflowing. */
+.clr-action-group--paired > * {
+  flex: 1 1 calc((100% - var(--spacing-200)) / 2);
+  min-width: fit-content;
+}
+
 /* Review facts and completed-session results are the same visual object:
    short labelled values, each in its own small frame. Keeping this in the
    shared shell layer prevents route-specific copies of the stat grid. */

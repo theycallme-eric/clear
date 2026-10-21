@@ -170,6 +170,15 @@ function recorder(page: Page, testInfo: TestInfo, skin: CaptureSkin,
 const REQ_011_REVIEW_CASE =
   'REQ-011 Review: type labels, ordered groups, adjacent shared rest and tempo detail into Workout'
 
+/**
+ * TASK-011 (REQ-007, U25): the rest-day control after the package import,
+ * kept by `playwright.config.ts` under this exact title. Desktop-engine
+ * emulation of a phone viewport, not a real phone's native picker.
+ */
+const REQ_007_REST_DAY_CASE =
+  'REQ-007 Home: rest day reason trigger, Cancel discards, keyboard Save and aligned actions'
+const POST_IMPORT_CASES: readonly string[] = [REQ_011_REVIEW_CASE, REQ_007_REST_DAY_CASE]
+
 function postImportRecorder(testInfo: TestInfo,
   generation: () => { requests: number; forwarded: 0; blockedUnexpected: number }): ReturnType<typeof recorder> {
   const fixtures: string[] = []
@@ -289,7 +298,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       if (request.method() === 'POST' && /\/functions\/v1\/generate-/.test(new URL(request.url()).pathname)) observed += 1
     })
     const generation = () => ({ requests: observed, forwarded: 0 as const, blockedUnexpected: blocked() })
-    save = testInfo.title === REQ_011_REVIEW_CASE
+    save = POST_IMPORT_CASES.includes(testInfo.title)
       ? postImportRecorder(testInfo, generation)
       : recorder(page, testInfo, skin, generation)
     save.fixture('Real per-case namespaced actor, catalog-backed prescriptions, authenticated onboarding and cascading exact-user cleanup')
@@ -770,5 +779,133 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     }
     await expect(main.getByRole('heading', { level: 2, name: 'Warm-up', exact: true })).toBeVisible()
     for (const prose of custom) await expect(main.getByText(prose)).toHaveCount(0)
+  })
+
+  test(REQ_007_REST_DAY_CASE, async ({ page, visit }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'U25 is proven at the 390 by 844 phone viewport')
+    expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+    testInfo.annotations.push({ type: 'real-phone-native-picker',
+      description: 'Not proven here: this is desktop-engine emulation. The native picker on a real phone is a separate, recorded manual check.' })
+    save.fixture('REQ-007 U25: a real actor with no history marks, cancels and saves today’s rest reason on Home')
+    const marks = async () => must<Array<{ day: string; reason: string }>>(await client.selectAs('rest_days', {
+      select: 'day,reason', user_id: `eq.${actor.id}`,
+    }, actor.token), 'Owned rest-day read')
+
+    await visit('/')
+    await heading(page, 'Today')
+    const week = page.locator('.clr-card').filter({ has: page.getByRole('heading', { level: 2, name: 'This week', exact: true }) })
+    const rest = week.getByRole('region', { name: 'Rest day', exact: true })
+    const trigger = rest.getByRole('button', { name: 'Mark Rest Day', exact: true })
+    const picker = rest.getByRole('combobox', { name: 'Reason', exact: true })
+    const saveButton = rest.getByRole('button', { name: 'Save rest day', exact: true })
+    const cancel = rest.getByRole('button', { name: 'Cancel', exact: true })
+    const today = page.getByRole('list', { name: 'This week', exact: true }).getByRole('listitem')
+      .filter({ hasText: /\(today\)/ })
+
+    // Shorter copy and an improved trigger, inside the week card.
+    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    await expect(rest.getByText(/Mark why to keep your streak/)).toHaveCount(0)
+    await expect(trigger).toBeVisible()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(trigger.locator('svg')).toHaveCount(1)
+
+    // Keyboard open lands in the native picker, which the trigger controls.
+    const controlled = await trigger.getAttribute('aria-controls')
+    expect(controlled).toBeTruthy()
+    await trigger.focus()
+    await page.keyboard.press('Enter')
+    await expect(picker).toBeFocused()
+    expect(await picker.evaluate((node) => node.tagName)).toBe('SELECT')
+    await expect(page.locator(`[id="${controlled}"]`).getByRole('combobox', { name: 'Reason' })).toHaveCount(1)
+    await expect(picker).toHaveAccessibleDescription(/Keeps your streak/)
+
+    // Save and Cancel are aligned, equal, framed cells: two halves of one row
+    // when both labels fit, otherwise two full rows — never ragged.
+    const cells = await rest.locator('.clr-action-group--paired').evaluate((group) => {
+      const box = group.getBoundingClientRect()
+      return { group: { left: box.left, right: box.right, width: box.width },
+        cells: [...group.children].map((child) => {
+          const r = child.getBoundingClientRect()
+          return { left: r.left, right: r.right, top: r.top, width: r.width, height: r.height }
+        }) }
+    })
+    expect(cells.cells).toHaveLength(2)
+    const [first, second] = cells.cells
+    const oneRow = Math.abs(first.top - second.top) <= 1
+    testInfo.annotations.push({ type: 'rest-day-actions-layout',
+      description: `${oneRow ? 'one row' : 'two rows'} at 390px; cells ${first.width.toFixed(1)} and ${second.width.toFixed(1)} of ${cells.group.width.toFixed(1)}` })
+    expect(Math.abs(first.width - second.width), 'Save and Cancel are equal cells').toBeLessThanOrEqual(1)
+    expect(Math.abs(first.height - second.height), 'Save and Cancel share a height').toBeLessThanOrEqual(1)
+    expect(first.left, 'Save starts at the group edge').toBeCloseTo(cells.group.left, 0)
+    expect((oneRow ? second : first).right, 'the pair ends at the group edge').toBeCloseTo(cells.group.right, 0)
+    if (!oneRow) expect(second.left, 'a wrapped Cancel aligns under Save').toBeCloseTo(first.left, 0)
+    expect(Math.min(first.height, second.height), 'each action keeps the 40px target').toBeGreaterThanOrEqual(39.5)
+
+    // Cancel discards: nothing is written and the week is unchanged.
+    await picker.selectOption('sick')
+    await cancel.click()
+    await expect(picker).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    await expect(today).not.toHaveAttribute('data-day-state', 'rest')
+    expect(await marks()).toEqual([])
+
+    // Escape is Cancel too, and the picker reopens at the saved reason.
+    await page.keyboard.press('Enter')
+    await expect(picker).toBeFocused()
+    await expect(picker).toHaveValue('rest')
+    await picker.selectOption('injury')
+    await page.keyboard.press('Escape')
+    await expect(picker).toHaveCount(0)
+    await expect(trigger).toBeFocused()
+    expect(await marks()).toEqual([])
+
+    // Keyboard Save: announced, shown on the card and the strip, focus returned.
+    await page.keyboard.press('Enter')
+    await expect(picker).toBeFocused()
+    await picker.selectOption('sick')
+    await page.keyboard.press('Tab')
+    await expect(saveButton).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(rest.getByRole('status')).toHaveText('Rest day saved.')
+    await expect(rest.getByText('Today: Unwell.', { exact: true })).toBeVisible()
+    const change = rest.getByRole('button', { name: 'Change reason', exact: true })
+    await expect(change).toBeFocused()
+    await expect(today).toHaveAttribute('data-day-state', 'rest')
+    expect(await marks()).toEqual([{ day: day(0), reason: 'sick' }])
+
+    // Cancel on a saved reason leaves it as saved, after a reload too.
+    await change.click()
+    await expect(picker).toHaveValue('sick')
+    await picker.selectOption('vacation')
+    await cancel.click()
+    await expect(rest.getByText('Today: Unwell.', { exact: true })).toBeVisible()
+    await visit('/')
+    await heading(page, 'Today')
+    await expect(rest.getByText('Today: Unwell.', { exact: true })).toBeVisible()
+    expect(await marks()).toEqual([{ day: day(0), reason: 'sick' }])
+
+    // Responsive: a label too long for half the card wraps the pair onto two
+    // full rows inside the card instead of overflowing it.
+    await change.click()
+    await cancel.evaluate((button) => {
+      const leaf = [...button.querySelectorAll('*')].find((node) =>
+        node.children.length === 0 && node.textContent?.trim() === 'Cancel') ?? button
+      leaf.textContent = 'Cancel and keep today as a training day'
+    })
+    const stacked = await rest.locator('.clr-action-group--paired').evaluate((group) => {
+      const box = group.getBoundingClientRect()
+      return { width: box.width, cells: [...group.children].map((child) => {
+        const r = child.getBoundingClientRect()
+        return { left: r.left - box.left, right: box.right - r.right, top: r.top, width: r.width }
+      }), overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth }
+    })
+    expect(stacked.overflow, 'the page does not scroll sideways').toBeLessThanOrEqual(0)
+    expect(stacked.cells[1].top, 'the long action wraps to its own row').toBeGreaterThan(stacked.cells[0].top)
+    for (const cell of stacked.cells) {
+      expect(cell.width, 'a wrapped action fills the card width').toBeCloseTo(stacked.width, 0)
+      expect(cell.left).toBeGreaterThanOrEqual(-0.5)
+      expect(cell.right).toBeGreaterThanOrEqual(-0.5)
+    }
   })
 })
