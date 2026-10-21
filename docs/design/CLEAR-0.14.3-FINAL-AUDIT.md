@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `8b6b62842a1426c46da7f650afdb823a3acf57ecdb5da136902f7fb1787e1e8b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015 and TASK-027 changes below) |
+| Runtime source hash of this audit's tree | `b6fbe7c56580a560a85bc390dacc1353dc154cedacd482da383be494d16700a2` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023 and TASK-027 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -245,6 +245,19 @@ trees and this head, from `git diff`:
   `src/state/generation-form.ts`. This **does** change rendering of Generate's form card; the
   Generate pictures above predate it and are not rebound (EX-13). Current acceptance evidence
   is `src/app/Generate.test.tsx` and `src/state/generation-form.test.ts`.
+- `3e197ecd…` to `8c3c0b5c…`: TASK-023 (REQ-013, JOURNEY-022, U34/U35) removes Workout's
+  separate "Sections" card. The active section's header card now carries its name, the
+  "Section n / N · status" line, the session progress bar, its structure badges and an "All
+  sections" disclosure. The jump list behind it starts collapsed, is `inert` while collapsed,
+  and collapses again after a jump. Previous, Next and a jump move focus to the opened
+  section's heading; a restored section leaves focus to the route. None of these saves anything
+  or reads the session clock. Primary source review additionally proved and fixed reselecting
+  the already-open section: focus leaves the now-inert list for that same heading without
+  changing section position or recording work. Changed: `src/app/Workout.tsx` and `src/ui/workout-chrome.tsx`.
+  This **does** change rendering on Workout; the Workout pictures above predate it and are not
+  rebound (EX-13). Current acceptance evidence is `src/app/Workout.test.tsx`,
+  `src/ui/workout-chrome.test.tsx` and `src/state/workout-progress.test.ts`.
+
 - `3e197ecd…` to `5d0fb72b…`: TASK-027 (REQ-015, JOURNEY-026, U36) removes the set logger's
   RPE field and `Warmup set` checkbox. Strength and superset sets take only weight and the
   prescribed measure, both optional. The set writer sends `rpe: null`; warm-up classification,
@@ -261,6 +274,8 @@ trees and this head, from `git diff`:
   Logger/provider/queue tests include the actual next write, zero/null references and unchanged
   numbers on explicit relabel. This changes the workout form; existing pictures remain historical
   (EX-13). Fresh native exact-head verification and independent review are still required.
+
+- Combined current-main tree: `8c3c0b5c…` to `b6fbe7c5…` adds the corrected TASK-027 logging flow to protected-merged TASK-023 main `730190c`. The two candidate histories above are preserved, not represented as a single linear sequence. Existing pictures remain historical (EX-13); fresh combined-head native task/project verification, criterion evidence and independent delivery review are required.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

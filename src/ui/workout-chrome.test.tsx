@@ -268,6 +268,35 @@ describe('SectionHeader', () => {
     expect(body.getByRole('list', { name: 'Structures in this section' })).toBeInTheDocument()
     expect(body.getByText('Section body')).toBeInTheDocument()
   })
+
+  it('carries the session’s bar and a collapsible jump list in that one card (U34, U35)', async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+    const progress = mixedProgress()
+    renderWithProviders(
+      <SectionHeader
+        section={progress.sections[1]}
+        position={2}
+        total={3}
+        progress={progress}
+        onSelect={onSelect}
+      />,
+    )
+
+    expect(cards()).toHaveLength(1)
+    const body = within(cards()[0].querySelector('.clr-card__body') as HTMLElement)
+    expect(body.getByRole('progressbar', { name: 'Section 2 of 3' })).toBeInTheDocument()
+    const toggle = body.getByRole('button', { name: 'All sections' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(body.getByRole('list', { name: 'Sections' })).toHaveAttribute('inert')
+
+    await user.click(toggle)
+    expect(body.getByRole('list', { name: 'Sections' })).not.toHaveAttribute('inert')
+    await user.click(body.getByRole('button', { name: 'Conditioning, not started' }))
+
+    expect(onSelect).toHaveBeenCalledWith(2)
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  })
 })
 
 describe('StructureBadge', () => {

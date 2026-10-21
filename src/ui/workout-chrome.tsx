@@ -31,7 +31,7 @@
  *   · the destructive action does not sit beside the frequently-pressed one,
  *     which is why Abandon belongs to the header and Next to the footer.
  */
-import type { CSSProperties, ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 
 import {
   Check,
@@ -61,6 +61,7 @@ import type {
 import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { useInsideCard } from './card-context'
+import { CollapsibleSection } from './collapsible-section'
 import { ActionRow } from './composition'
 import { useInterfaceLoop } from './motion'
 import './rest-timer-bar.css'
@@ -200,38 +201,60 @@ export function ProgressTracker({
   currentIndex,
   onSelect,
 }: ProgressTrackerProps) {
+  return (
+    <Card heading="Sections">
+      <SectionProgressBar progress={progress} currentIndex={currentIndex} />
+      <SectionJumpList progress={progress} currentIndex={currentIndex} onSelect={onSelect} />
+    </Card>
+  )
+}
+
+/** Sections resolved out of sections prescribed, named by where the user is. */
+function SectionProgressBar({
+  progress,
+  currentIndex,
+}: Pick<ProgressTrackerProps, 'progress' | 'currentIndex'>) {
   const position = Math.min(currentIndex + 1, Math.max(progress.total, 1))
 
   return (
-    <Card heading="Sections">
-      <Progress
-        value={progress.completed}
-        max={progress.total}
-        segments={progress.total}
-        label={`Section ${position} of ${progress.total}`}
-      />
-      <ol
-        aria-label="Sections"
-        style={{
-          listStyle: 'none',
-          margin: 0,
-          padding: 0,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 'var(--spacing-200)',
-        }}
-      >
-        {progress.sections.map((section) => (
-          <li key={section.sectionId}>
-            <SectionChip
-              section={section}
-              current={section.index === currentIndex}
-              onSelect={onSelect}
-            />
-          </li>
-        ))}
-      </ol>
-    </Card>
+    <Progress
+      value={progress.completed}
+      max={progress.total}
+      segments={progress.total}
+      label={`Section ${position} of ${progress.total}`}
+    />
+  )
+}
+
+function SectionJumpList({
+  progress,
+  currentIndex,
+  onSelect,
+  inert,
+}: ProgressTrackerProps & { inert?: boolean }) {
+  return (
+    <ol
+      aria-label="Sections"
+      inert={inert}
+      style={{
+        listStyle: 'none',
+        margin: 0,
+        padding: 0,
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 'var(--spacing-200)',
+      }}
+    >
+      {progress.sections.map((section) => (
+        <li key={section.sectionId}>
+          <SectionChip
+            section={section}
+            current={section.index === currentIndex}
+            onSelect={onSelect}
+          />
+        </li>
+      ))}
+    </ol>
   )
 }
 
@@ -283,6 +306,14 @@ export interface SectionHeaderProps {
   /** Position in the session, one-based, for the terse `3 / 6` readout. */
   position: number
   total: number
+  /**
+   * The whole session's progress. When given, the header is the one frame for
+   * the active section (U35): the bar and the jump list live here rather than
+   * in a second card restating the same position.
+   */
+  progress?: SessionProgress
+  /** Jump straight to a section. Omit to render the jump list read-only. */
+  onSelect?: (index: number) => void
   children?: ReactNode
 }
 
@@ -291,13 +322,31 @@ export interface SectionHeaderProps {
  * clarity spec's requirement — what *kind* of structure each of its blocks is.
  * An EMOM and an AMRAP over the same three movements are different workouts,
  * and this is the line that says which one the user is about to do.
+ *
+ * Given the session's progress it also carries the bar, always visible, and
+ * the full jump list behind a disclosure (U34). The list starts collapsed and
+ * collapses again after a jump, so it is a way to move rather than a second
+ * readout of the position the meta line already states. While collapsed it is
+ * `inert`: the disclosure is CSS-only, and a chip nobody can see must not take
+ * keyboard focus.
  */
 export function SectionHeader({
   section,
   position,
   total,
+  progress,
+  onSelect,
   children,
 }: SectionHeaderProps) {
+  const [jumping, setJumping] = useState(false)
+  const select =
+    onSelect === undefined
+      ? undefined
+      : (index: number) => {
+          setJumping(false)
+          onSelect(index)
+        }
+
   return (
     // `Screen` already establishes level two for its top-level content. This
     // section title is that level-two heading; the block/exercise sections
@@ -309,6 +358,9 @@ export function SectionHeader({
       heading={section.title}
       meta={`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}
     >
+      {progress === undefined ? null : (
+        <SectionProgressBar progress={progress} currentIndex={section.index} />
+      )}
       <ul
         aria-label="Structures in this section"
         style={{
@@ -326,6 +378,16 @@ export function SectionHeader({
           </li>
         ))}
       </ul>
+      {progress === undefined ? null : (
+        <CollapsibleSection label="All sections" expanded={jumping} onExpandedChange={setJumping}>
+          <SectionJumpList
+            progress={progress}
+            currentIndex={section.index}
+            onSelect={select}
+            inert={!jumping}
+          />
+        </CollapsibleSection>
+      )}
       {children}
     </Card>
   )

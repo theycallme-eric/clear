@@ -216,6 +216,29 @@ describe('clampSectionIndex', () => {
     expect(clampSectionIndex(1, progress)).toBe(1)
     expect(clampSectionIndex(9, progress)).toBe(1)
   })
+
+  it('moves the open section without changing any section’s status (U34)', () => {
+    // A jump, Previous/Next or a restored index is only a position: the
+    // header's count and bar read the same rows wherever the shell is open.
+    const progress = sessionProgress(
+      snapshotFixture({
+        sections: [
+          { blocks: [{ exercises: ['completed'] }] },
+          { blocks: [{ exercises: ['not_started'] }] },
+          { blocks: [{ exercises: ['not_started'] }] },
+        ],
+      }),
+    )
+    const statuses = progress.sections.map((section) => section.status)
+
+    for (const index of [2, 0, 1, 7]) {
+      const open = progress.sections[clampSectionIndex(index, progress)]
+      expect(open.status).toBe(statuses[open.index])
+    }
+    expect(statuses).toEqual(['complete', 'not_started', 'not_started'])
+    expect(progress.completed).toBe(1)
+    expect(startingSectionIndex(progress)).toBe(1)
+  })
 })
 
 describe('structureIdentity', () => {
