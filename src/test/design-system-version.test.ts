@@ -55,18 +55,20 @@ describe('design system integration', () => {
     expect(VERSION).toBe(packageJson.version)
   })
 
-  it('sets the skin before the app module and initializes skin.js from head', () => {
+  it('sets the skin in head before the app module, without consulting OS contrast', () => {
     const htmlPath = resolve(import.meta.dirname, '../../index.html')
     const html = readFileSync(htmlPath, 'utf-8')
     const blockingBootstrap = html.indexOf("document.documentElement.setAttribute('data-skin', skin)")
-    const skinModule = html.indexOf("import { initSkin } from '/src/design-system/skin.js'")
     const headEnd = html.indexOf('</head>')
     const appModule = html.indexOf('<script type="module" src="/src/main.tsx"></script>')
 
     expect(blockingBootstrap).toBeGreaterThan(-1)
-    expect(skinModule).toBeGreaterThan(blockingBootstrap)
-    expect(skinModule).toBeLessThan(headEnd)
+    expect(blockingBootstrap).toBeLessThan(headEnd)
     expect(appModule).toBeGreaterThan(headEnd)
+    // U24: the stored explicit choice, else the product default — never the OS.
+    expect(html).toContain("var skin = storedSkin() || 'clear';")
+    expect(html).not.toContain("matchMedia('(prefers-contrast")
+    expect(html).not.toMatch(/initSkin\(/)
   })
 })
 

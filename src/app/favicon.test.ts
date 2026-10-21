@@ -85,7 +85,7 @@ describe('the sync', () => {
     stopped.push(startFaviconSync())
 
     // The picker's own call. Any other writer of the attribute — a restored
-    // preference, `initSkin` tracking the OS — arrives here the same way.
+    // preference at boot — arrives here the same way.
     setSkin('signal')
 
     await Promise.resolve()

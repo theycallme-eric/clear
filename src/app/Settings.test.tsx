@@ -16,7 +16,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 
 import type { UserConstraint } from '../data/constraints'
 import { SKINS } from '../design-system/skin'
-import { appearanceLabel, appearanceOptions } from '../state/appearance'
+import { appearanceLabel, appearanceOptions, DEFAULT_SKIN } from '../state/appearance'
 import { startFaviconSync } from './favicon'
 import { QueryClient } from '../state/query'
 import {
@@ -239,7 +239,7 @@ describe('each section is one card with its heading inside', () => {
     const appearance = within(await sectionCard('Appearance'))
     expect(
       within(appearance.getByRole('group', { name: 'Skin' })).getAllByRole('radio'),
-    ).toHaveLength(SKINS.length + 1)
+    ).toHaveLength(SKINS.length)
   })
 
   it('says a save happened in the card that made it, and nowhere else', async () => {
@@ -924,14 +924,16 @@ describe('appearance is chosen here, from the registry', () => {
   const skinGroup = async () =>
     within(await screen.findByRole('group', { name: 'Skin' }))
 
-  it('offers the system option and every skin in SKINS, nothing more', async () => {
+  it('offers every skin in SKINS and no System option, nothing more', async () => {
     renderSettings()
     const group = await skinGroup()
 
-    expect(group.getAllByRole('radio')).toHaveLength(SKINS.length + 1)
+    expect(group.getAllByRole('radio')).toHaveLength(SKINS.length)
     for (const option of appearanceOptions()) {
       expect(group.getByRole('radio', { name: option.label })).toBeVisible()
     }
+    expect(group.queryByRole('radio', { name: /system/i })).toBeNull()
+    expect(document.body.textContent).not.toMatch(/follows your contrast/i)
   })
 
   it('names Mono enhanced contrast, and nothing accessible', async () => {
@@ -942,11 +944,42 @@ describe('appearance is chosen here, from the registry', () => {
     expect(document.body.textContent?.toLowerCase()).not.toContain('accessible')
   })
 
-  it('arrives on the system option while nothing is stored', async () => {
+  it('arrives on the product default while nothing is stored', async () => {
     renderSettings()
     const group = await skinGroup()
 
-    expect(group.getByRole('radio', { name: /^System/ })).toBeChecked()
+    expect(group.getByRole('radio', { name: appearanceLabel(DEFAULT_SKIN) })).toBeChecked()
+    expect(group.getAllByRole('radio', { checked: true })).toHaveLength(1)
+  })
+
+  it('arrives on the product default from a legacy System preference', async () => {
+    localStorage.setItem(STORAGE_KEY, 'system')
+    renderSettings()
+    const group = await skinGroup()
+
+    expect(group.getByRole('radio', { name: appearanceLabel(DEFAULT_SKIN) })).toBeChecked()
+    expect(group.getAllByRole('radio', { checked: true })).toHaveLength(1)
+  })
+
+  it('never lets the OS contrast setting pick the skin', async () => {
+    const original = window.matchMedia
+    window.matchMedia = ((query: string) =>
+      ({
+        matches: query.includes('prefers-contrast'),
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }) as unknown as MediaQueryList) as typeof window.matchMedia
+
+    try {
+      renderSettings()
+      const group = await skinGroup()
+
+      expect(group.getByRole('radio', { name: appearanceLabel(DEFAULT_SKIN) })).toBeChecked()
+      expect(group.getByRole('radio', { name: appearanceLabel('mono') })).not.toBeChecked()
+    } finally {
+      window.matchMedia = original
+    }
   })
 
   it('arrives on the stored skin', async () => {
@@ -955,7 +988,7 @@ describe('appearance is chosen here, from the registry', () => {
     const group = await skinGroup()
 
     expect(group.getByRole('radio', { name: appearanceLabel('vapour') })).toBeChecked()
-    expect(group.getByRole('radio', { name: /^System/ })).not.toBeChecked()
+    expect(group.getAllByRole('radio', { checked: true })).toHaveLength(1)
   })
 
   it('applies a choice live, stores it, and moves the favicon', async () => {
@@ -988,20 +1021,6 @@ describe('appearance is chosen here, from the registry', () => {
 
     expect(group.getByRole('radio', { name: appearanceLabel('mono') })).toBeChecked()
     expect(document.documentElement.getAttribute('data-skin')).toBe('mono')
-  })
-
-  it('clears the stored choice for the system option, so the OS contrast is followed again', async () => {
-    const user = userEvent.setup()
-    localStorage.setItem(STORAGE_KEY, 'vapour')
-    renderSettings()
-    const group = await skinGroup()
-
-    await user.click(group.getByRole('radio', { name: /^System/ }))
-
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
-    expect(group.getByRole('radio', { name: /^System/ })).toBeChecked()
-    // Following the system again resolves from the OS, not the last choice.
-    expect(document.documentElement.getAttribute('data-skin')).not.toBe('vapour')
   })
 
   it('writes out no skin id or label — every option comes from the derived list', () => {

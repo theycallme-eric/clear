@@ -55,8 +55,9 @@
     />
     <script>
       // Inline skin initialization — must run before first paint.
-      // This is the synchronous selection step from skin.js; the module below
-      // runs initSkin() in <head> to attach the preference-change listener.
+      // The stored explicit choice, else the product default. The OS contrast
+      // preference never selects a skin (U24), so skin.js's initSkin, which
+      // resolves and then follows prefers-contrast, is deliberately not called.
       (function() {
         var SKINS = ['clear', 'vapour', 'signal', 'mono'];
         var KEY = 'clear.skin';
@@ -66,16 +67,9 @@
             return SKINS.indexOf(v) !== -1 ? v : null;
           } catch (e) { return null; }
         }
-        function prefersMoreContrast() {
-          return typeof matchMedia === 'function' && matchMedia('(prefers-contrast: more)').matches;
-        }
-        var skin = storedSkin() || (prefersMoreContrast() ? 'mono' : 'clear');
+        var skin = storedSkin() || 'clear';
         document.documentElement.setAttribute('data-skin', skin);
       })();
-    </script>
-    <script type="module">
-      import { initSkin } from '/src/design-system/skin.js'
-      initSkin()
     </script>
   </head>
   <body>

@@ -1290,19 +1290,19 @@ backendTest('settings: sections, held save, refusal, reload, skins and focus', a
       }, { variant: `chosen-${skin}` })
     }
     evidence.note('contract', 'Choosing a skin writes clear.skin and data-skin through the picker; the stored key is what boot applies on reload (the same path every capture here uses to pin its skin).')
-    const system = page.getByRole('radio', { name: /^System\b/i })
-    await page.emulateMedia({ contrast: 'more' })
-    await system.click()
-    await expect(page.locator('html')).toHaveAttribute('data-skin', 'mono')
-    await evidence.adoptSkin('mono')
-    await evidence.shot('Settings', '/settings', 'appearance-system-or-skin', '/settings', 'Settings', async () => {
-      await expect(system).toHaveAttribute('aria-checked', 'true')
-      expect(await page.evaluate((key) => localStorage.getItem(key), SKIN_KEY)).toBeNull()
-    }, { variant: 'system-contrast' })
-    await page.emulateMedia({ contrast: 'no-preference' })
-    await page.getByRole('radio', { name: /^clear\b/i }).click()
+    // U24: there is no System option, and OS enhanced contrast never switches the skin.
+    const clear = page.getByRole('radio', { name: /^clear\b/i })
+    await clear.click()
     await expect(page.locator('html')).toHaveAttribute('data-skin', 'clear')
     await evidence.adoptSkin('clear')
+    await page.emulateMedia({ contrast: 'more' })
+    await evidence.shot('Settings', '/settings', 'appearance-system-or-skin', '/settings', 'Settings', async () => {
+      await expect(page.getByRole('radio', { name: /^System\b/i })).toHaveCount(0)
+      await expect(clear).toHaveAttribute('aria-checked', 'true')
+      await expect(page.locator('html')).toHaveAttribute('data-skin', 'clear')
+      expect(await page.evaluate((key) => localStorage.getItem(key), SKIN_KEY)).toBe('clear')
+    }, { variant: 'system-contrast' })
+    await page.emulateMedia({ contrast: 'no-preference' })
 
     const goal = page.getByRole('radio', { name: /^Balanced/ })
     await goal.focus()

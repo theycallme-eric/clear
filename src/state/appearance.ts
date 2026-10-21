@@ -1,12 +1,15 @@
 /**
- * SET-01 — the appearance choice, which is a wrapper and not an implementation.
+ * SET-01 / U24 — the appearance choice, which is a wrapper and not an
+ * implementation.
  *
- * `skin.js` ships the whole persistence contract — `localStorage['clear.skin']`
- * → `prefers-contrast: more` → the app default, an explicit choice always
- * winning — so nothing here stores anything, reads a media query, or writes the
- * attribute. What this module adds is the one thing the export cannot know: the
- * *choice*, which has an option the skin list does not, because "follow the
- * system" is the absence of a stored skin rather than a skin.
+ * `skin.js` ships the storage half of the contract — `localStorage['clear.skin']`,
+ * unknown values ignored — and this module uses that and nothing else of its
+ * precedence. What it deliberately does *not* use is the export's second rung,
+ * `prefers-contrast: more` → `mono`: the product offers explicit skins only, so
+ * an OS setting never picks one. With nothing stored — never chosen, or the
+ * retired System option, which was the absence of a stored skin — the active
+ * skin is the product default. Enhanced contrast is still one choice away:
+ * Mono is an explicit option and says what it is.
  *
  * The option list is derived from `SKINS`. Adding a skin to the export adds an
  * option here with no code change, which is why there is no list in this file
@@ -18,12 +21,12 @@ import { useState } from 'react'
 import { setSkin, SKINS, storedSkin } from '../design-system/skin'
 
 /**
- * The option that is not a skin. It is `setSkin(null)` — no stored choice, so
- * the OS contrast preference is followed live again.
+ * The skin a device shows while nothing explicit is stored. `index.html`'s
+ * head bootstrap writes the same value before first paint.
  */
-export const SYSTEM_APPEARANCE = 'system'
+export const DEFAULT_SKIN = 'clear'
 
-/** A skin id from `SKINS`, or `SYSTEM_APPEARANCE`. */
+/** A skin id from `SKINS`. */
 export type AppearanceChoice = string
 
 /** One option in the picker. */
@@ -48,7 +51,6 @@ const DISPLAY_NAMES: Readonly<Record<string, string>> = {
  * accessible one would say the other three are less so (ATOMIC.md §7.1).
  */
 const NOTES: Readonly<Record<string, string>> = {
-  [SYSTEM_APPEARANCE]: 'follows your contrast setting',
   mono: 'enhanced contrast',
 }
 
@@ -57,35 +59,27 @@ const titleCase = (value: string) =>
 
 /** The label for one choice: its display name, plus its note when it has one. */
 export function appearanceLabel(choice: AppearanceChoice): string {
-  const name =
-    choice === SYSTEM_APPEARANCE
-      ? 'System'
-      : (DISPLAY_NAMES[choice] ?? titleCase(choice))
+  const name = DISPLAY_NAMES[choice] ?? titleCase(choice)
   const note = NOTES[choice]
 
   return note === undefined ? name : `${name} — ${note}`
 }
 
-/**
- * Every option the picker offers: the system option, then every skin the export
- * ships, in the order it ships them.
- */
+/** Every option the picker offers: every skin the export ships, in its order. */
 export function appearanceOptions(): AppearanceOption[] {
-  return [SYSTEM_APPEARANCE, ...SKINS].map((choice) => ({
+  return SKINS.map((choice) => ({
     value: choice,
     label: appearanceLabel(choice),
   }))
 }
 
 /**
- * The choice as stored — which is the stored skin, or the system option when
- * nothing is stored. Deliberately not `currentSkin()`: while no choice is
- * stored the active skin is `mono` for a user who asked the OS for more
- * contrast, and showing Mono as *their* choice would be wrong the moment they
- * changed that setting.
+ * The skin this device uses: the stored explicit choice, else the product
+ * default. Never the OS contrast preference — and a stored value the export
+ * does not know, such as a legacy `system`, is no choice at all.
  */
 export function currentAppearance(): AppearanceChoice {
-  return storedSkin() ?? SYSTEM_APPEARANCE
+  return storedSkin() ?? DEFAULT_SKIN
 }
 
 /**
@@ -99,14 +93,13 @@ export function applyAppearance(
   choice: AppearanceChoice,
   { persist = true }: { persist?: boolean } = {},
 ): void {
-  setSkin(choice === SYSTEM_APPEARANCE ? null : choice, { persist })
+  setSkin(choice, { persist })
 }
 
 /**
- * The picker's state: the stored choice to start with, and a setter that
- * applies before it re-renders. Nothing subscribes to the OS preference —
- * `initSkin` already follows it while no choice is stored, and the answer to
- * "what did you choose" does not change when it flips.
+ * The picker's state: the device's skin to start with, and a setter that
+ * applies before it re-renders. Nothing subscribes to the OS preference,
+ * because nothing about the skin follows it.
  */
 export function useAppearance(options: { persist?: boolean } = {}): [
   AppearanceChoice,

@@ -91,6 +91,5 @@ createRoot(rootElement).render(
 registerServiceWorker()
 
 // SET-01: the tab icon follows `data-skin` from here on — the stored skin the
-// head script already applied, and every later change, whether it came from the
-// Settings picker or from `initSkin` tracking the OS contrast preference.
+// head script already applied, and every later change from the Settings picker.
 startFaviconSync()

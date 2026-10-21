@@ -46,9 +46,10 @@ If the export added new tokens or changed values:
 - **Never copy the @import line** — font delivery is handled by DS-02
 
 Also compare `skin.js` selection behavior with the synchronous bootstrap in `index.html`. The
-bootstrap sets the initial attribute before paint; the following head module calls `initSkin()` to
-attach the preference-change listener. If the export changes its resolution contract, update the
-bootstrap and its integration test together.
+bootstrap sets the initial attribute before paint from the stored explicit choice or the product
+default. It deliberately omits the export's `prefers-contrast` rung and does not call `initSkin()`,
+because the OS contrast setting never selects a skin (U24). If the export changes its storage
+contract, update the bootstrap, `src/state/appearance.ts` and their tests together.
 
 ### 4. Update the version pin in ATOMIC.md
 

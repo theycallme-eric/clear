@@ -4,8 +4,10 @@
  * A wrapper over two things that already exist: `ChoiceGroup`, which is the
  * shipped radiogroup (one tab stop, arrow keys, and a tick on the selection so
  * colour is never the only cue), and `src/state/appearance.ts`, which is itself
- * a wrapper over the export's `skin.js`. Nothing about persistence, the OS
- * contrast preference, or the `data-skin` attribute is decided here.
+ * a wrapper over the export's `skin.js`. Nothing about persistence, the
+ * default skin, or the `data-skin` attribute is decided here. Explicit skins
+ * only (U24): there is no System option. The chips wrap, so the row reflows
+ * to the width it is given.
  *
  * Controlled on purpose. The choice is state a screen owns — Settings holds it
  * through `useAppearance`, the gallery holds a fixed one so a reviewer can look
@@ -17,7 +19,7 @@ import { ChoiceGroup } from '../design-system/index'
 import { appearanceOptions, type AppearanceChoice } from '../state/appearance'
 
 export interface AppearancePickerProps {
-  /** The current choice: a skin id, or `SYSTEM_APPEARANCE`. */
+  /** The current choice: a skin id from `SKINS`. */
   value: AppearanceChoice
   onChange: (choice: AppearanceChoice) => void
   /** Overrides the legend when a screen has already named the section. */

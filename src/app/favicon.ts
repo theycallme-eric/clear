@@ -10,9 +10,8 @@
  * tokens, so a skin whose hues change and a skin added with no mark both fail.
  *
  * What is followed here is the attribute rather than the picker: `data-skin` on
- * `<html>` is where the skin actually is, whoever moved it — SET-01's picker, a
- * restored preference at boot, or `initSkin` tracking the OS contrast setting
- * for a user who has chosen nothing. One observer, one path, and no way for a
+ * `<html>` is where the skin actually is, whoever moved it — SET-01's picker or
+ * a restored preference at boot. One observer, one path, and no way for a
  * caller to change the skin and forget the icon.
  */
 import { SKINS } from '../design-system/skin'
