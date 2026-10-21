@@ -5,8 +5,13 @@
  *     boundary visibly changes which movement is active work;
  *   · an alternating EMOM labels `ODD MIN` / `EVEN MIN` per
  *     `emom-clarity.md` §3;
- *   · the timed state survives a refresh, and completion supplies
- *     `minutes_completed` to the shell.
+ *   · the timed state survives a refresh, and completion supplies no
+ *     outcome the clock alone produced.
+ *
+ * And REQ-014's hands-off contract: no set-entry form, no `Minute done`, no
+ * exertion prompt; fixed, rising and rotating targets read off the scheduled
+ * minute across boundaries, rotations, expiry, a background and a refresh;
+ * and a scheduled minute is never reported as work the athlete performed.
  *
  * The clock is injected and time is moved by hand rather than waited for, which
  * is the same property `emom.test.ts` asserts on the arithmetic: the tab is
@@ -269,8 +274,7 @@ describe('the EMOM runs the clock the block prescribes', () => {
     expectSingleTimerFrame('01:00')
 
     mounted.advance(20)
-    await user.click(screen.getByRole('button', { name: 'Minute done' }))
-    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(screen.getByText('WORK')).toBeInTheDocument()
     expectSingleTimerFrame('00:40')
 
     mounted.advance(580)
@@ -340,25 +344,34 @@ describe('the minute boundary flips the active work', () => {
     expect(screen.getByText('WORK')).toBeInTheDocument()
   })
 
-  it('reads the remainder of the minute as rest once the work is done', async () => {
+  it('offers nothing to press once the clock runs: the minute is never marked done', async () => {
     const user = setup()
     const mounted = mount()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(20)
-    await user.click(screen.getByRole('button', { name: 'Minute done' }))
 
-    expect(screen.getByText('REST')).toBeInTheDocument()
-    // Resting, so the card names what is coming rather than telling the user to
-    // start: colour is never the only cue, and neither is the word.
-    expect(marked('Next')).toEqual(['2. v up'])
-    expect(screen.queryByRole('button', { name: 'Minute done' })).not.toBeInTheDocument()
+    // Still work, and nothing on the screen claims the minute is finished.
+    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/minute done/i)).not.toBeInTheDocument()
 
-    // And the next boundary puts the work back without anything being pressed.
+    // And the next boundary moves the work on without anything being pressed.
     mounted.advance(40)
 
-    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(screen.getByText('MIN 2 OF 10')).toBeInTheDocument()
     expect(marked('Now')).toEqual(['2. v up'])
+  })
+
+  it('names what is coming during the rest window rather than telling the user to start', async () => {
+    const user = setup()
+    const mounted = mount({ block: { roundRestSeconds: 15 } })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(50)
+
+    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(marked('Next')).toEqual(['2. v up'])
   })
 
   it('rests for the window the block prescribes at the end of every minute', async () => {
@@ -388,9 +401,10 @@ describe('the minute boundary flips the active work', () => {
     mounted.advance(120)
 
     expect(screen.getByText('COMPLETE')).toBeInTheDocument()
-    expect(screen.getByText(/Every prescribed minute is done/)).toBeInTheDocument()
+    // The schedule is over; nothing says the work was performed.
+    expect(screen.getByText(/The clock has run every prescribed minute/)).toBeInTheDocument()
+    expect(screen.queryByText(/minutes? (is |are )?done/i)).not.toBeInTheDocument()
     expect(marked('Now')).toEqual([])
-    expect(screen.queryByRole('button', { name: 'Minute done' })).not.toBeInTheDocument()
   })
 
   it('marks the live movement for a screen reader, not only in colour', async () => {
@@ -444,8 +458,9 @@ describe('an alternating EMOM says which minutes each movement covers', () => {
     mount({ block: { exercises: [PAIR[0]] } })
 
     // Looked for inside the movement's own row: the structure badge above says
-    // `EMOM · 10 MIN`, which is the window rather than an assignment.
-    expect(movement('1. hollow body hold').queryByText(/MIN/)).not.toBeInTheDocument()
+    // `EMOM · 10 MIN`, which is the window rather than an assignment, and the
+    // target line names the scheduled minute rather than a pattern.
+    expect(movement('1. hollow body hold').queryByText(/^(ODD|EVEN) MIN$|^MIN \d+, /)).not.toBeInTheDocument()
     expect(screen.queryByText('ODD MIN')).not.toBeInTheDocument()
   })
 
@@ -485,17 +500,50 @@ describe('the timed state survives a refresh', () => {
     expect(screen.queryByRole('button', { name: 'Start EMOM' })).not.toBeInTheDocument()
   })
 
-  it('remembers that this minute’s work was already done', async () => {
+  it('drops a minute marked done by an earlier build: the restored minute is the clock’s', () => {
+    mount({
+      stored: {
+        startedAt: new Date(NOW - 190_000).toISOString(),
+        workDoneMinute: 4,
+      },
+    })
+
+    expect(screen.getByText('MIN 4 OF 10')).toBeInTheDocument()
+    expect(screen.getByText('WORK')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:50')
+  })
+
+  it('restores the countdown and its end-of-minute cue after a background and a refresh', async () => {
+    reduceMotion(false)
     const user = setup()
     const mounted = mount()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    mounted.advance(10)
-    await user.click(screen.getByRole('button', { name: 'Minute done' }))
+    // Backgrounded across two boundaries, into the last ten seconds of minute 3.
+    mounted.advance(172)
+    expect(screen.getByText('MIN 3 OF 10')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:08')
+    expect(countdown()).toHaveAttribute('data-urgent', 'true')
 
     mounted.refresh()
 
-    expect(screen.getByText('REST')).toBeInTheDocument()
+    expect(screen.getByText('MIN 3 OF 10')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:08')
+    expect(timer()).toHaveClass('clr-chamfer--timer-low')
+    expect(countdown()).toHaveAttribute('data-urgent', 'true')
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+  })
+
+  it('comes back finished when the window expired while the tab was away', () => {
+    const mounted = mount({
+      block: { timerSeconds: 240 },
+      stored: { startedAt: new Date(NOW - 600_000).toISOString(), workDoneMinute: null },
+    })
+
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(timer()).toHaveTextContent('00:00')
+    // Expiry is the schedule ending, not four minutes of reported work.
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
   it('ignores a record no clock can be read against', () => {
@@ -517,8 +565,8 @@ describe('the timed state survives a refresh', () => {
   })
 })
 
-describe('completion supplies the minutes the EMOM observed', () => {
-  it('reports minutes_completed and nothing it did not watch', async () => {
+describe('completion never records a scheduled minute as performed work', () => {
+  it('reports no minutes while the clock runs', async () => {
     const user = setup()
     const mounted = mount()
 
@@ -526,24 +574,22 @@ describe('completion supplies the minutes the EMOM observed', () => {
     mounted.advance(185)
 
     await waitFor(() =>
-      expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {
-        minutesCompleted: 3,
-      }),
+      expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {}),
     )
   })
 
-  it('counts a minute the user finished early', async () => {
+  it('reports no minutes once every prescribed minute has elapsed', async () => {
     const user = setup()
-    const mounted = mount()
+    const mounted = mount({ block: { timerSeconds: 120 } })
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
-    mounted.advance(70)
-    await user.click(screen.getByRole('button', { name: 'Minute done' }))
+    mounted.advance(500)
 
-    // Minute one elapsed and minute two's work is done: two, not one.
-    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {
-      minutesCompleted: 2,
-    })
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    for (const [, outcome] of mounted.reportOutcome.mock.calls) {
+      expect(outcome).not.toHaveProperty('minutesCompleted')
+    }
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
   it('reports nothing at all when the clock never ran', () => {
@@ -590,7 +636,7 @@ describe('the EMOM draws with the shared block frame', () => {
     const inside = within(blockCard)
     expect(inside.getByText('MIN 1 OF 10')).toBeInTheDocument()
     expect(inside.getByText('WORK')).toBeInTheDocument()
-    expect(inside.getByRole('button', { name: 'Minute done' })).toBeInTheDocument()
+    expect(inside.queryByRole('button', { name: /minute done/i })).not.toBeInTheDocument()
   })
 
   it('carries the identity row and the movement rows', () => {
@@ -612,18 +658,156 @@ describe('the EMOM draws with the shared block frame', () => {
     }
   })
 
-  it('keeps every movement loggable whichever one the minute is on', async () => {
+  it('reads every movement whichever one the minute is on, with nothing to enter', async () => {
     const user = setup()
     mount()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
 
-    // The movement the minute is not on is neither disabled nor hidden.
+    // The movement the minute is not on is neither hidden nor a form.
     for (const name of ['1. hollow body hold', '2. v up']) {
-      const controls = movement(name).getAllByRole('button')
-      expect(controls.length).toBeGreaterThan(0)
-      for (const control of controls) expect(control).toBeEnabled()
+      expect(movement(name).getByText(/^MIN \d+ · 8 reps$/)).toBeInTheDocument()
     }
+  })
+})
+
+/**
+ * Entry fields outside the on-demand coaching panel, whose collapsed notes are
+ * the athlete's own words about the movement rather than an entry the minute
+ * asks for (EXE-05).
+ */
+function entryFields(): HTMLElement[] {
+  return screen
+    .queryAllByRole('textbox')
+    .filter((field) => field.closest('.clr-collapsible__region') === null)
+}
+
+describe('execution is hands-off (REQ-014)', () => {
+  it('draws no set-entry form, no Minute done and no exertion prompt, in any phase', async () => {
+    const user = setup()
+    const mounted = mount({ block: { roundRestSeconds: 15 } })
+
+    const expectHandsOff = () => {
+      expect(entryFields()).toEqual([])
+      expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+      expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /log set|minute done/i })).not.toBeInTheDocument()
+      expect(screen.queryByText(/RPE|exertion|effort/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/No sets logged/)).not.toBeInTheDocument()
+    }
+
+    expectHandsOff()
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    expectHandsOff()
+    mounted.advance(50)
+    expect(screen.getByText('REST')).toBeInTheDocument()
+    expectHandsOff()
+    mounted.advance(600)
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expectHandsOff()
+  })
+
+  it('draws no entry form for a block that prescribes no clock either', () => {
+    mount({ block: { timerType: 'none' } })
+
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+    expect(entryFields()).toEqual([])
+    expect(movement('1. hollow body hold').getByText('3 × 8 reps')).toBeInTheDocument()
+  })
+})
+
+describe('targets follow the scheduled minute', () => {
+  /** A rising EMOM: hollow holds climb 6-8-10 on odd minutes, V-ups hold 12. */
+  const RISING: ExerciseFixture[] = [
+    {
+      prescription: {
+        exercise_id: 'hollow-body-hold',
+        order_index: 0,
+        sets: null,
+        target_kind: 'sequence',
+        target_value: null,
+        target_sequence: [6, 8, 10],
+      },
+    },
+    { prescription: { exercise_id: 'v-up', order_index: 1, target_value: 12 } },
+  ]
+
+  it('states a fixed target for the minute each movement is scheduled', async () => {
+    const user = setup()
+    const mounted = mount()
+
+    expect(movement('1. hollow body hold').getByText('MIN 1 · 8 reps')).toBeInTheDocument()
+    expect(movement('2. v up').getByText('MIN 2 · 8 reps')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(60)
+
+    // Minute 2 is V-ups' now; hollow holds' next turn is minute 3.
+    expect(movement('2. v up').getByText('MIN 2 · 8 reps')).toBeInTheDocument()
+    expect(movement('1. hollow body hold').getByText('MIN 3 · 8 reps')).toBeInTheDocument()
+  })
+
+  it('raises a rising target on each of its own turns, with no tap', async () => {
+    const user = setup()
+    const mounted = mount({ block: { timerSeconds: 360, exercises: RISING } })
+
+    expect(movement('1. hollow body hold').getByText('Each turn: 6-8-10')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    expect(movement('1. hollow body hold').getByText('MIN 1 · 6 reps')).toBeInTheDocument()
+    expect(movement('2. v up').getByText('MIN 2 · 12 reps')).toBeInTheDocument()
+
+    mounted.advance(120)
+    expect(screen.getByText('MIN 3 OF 6')).toBeInTheDocument()
+    expect(movement('1. hollow body hold').getByText('MIN 3 · 8 reps')).toBeInTheDocument()
+    expect(movement('2. v up').getByText('MIN 4 · 12 reps')).toBeInTheDocument()
+
+    // Refreshed inside minute 5: the rung is the clock's, not where it was left.
+    mounted.advance(130)
+    mounted.refresh()
+    expect(screen.getByText('MIN 5 OF 6')).toBeInTheDocument()
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expect(movement('1. hollow body hold').getByText('MIN 5 · 10 reps')).toBeInTheDocument()
+
+    // Expired: no minute is scheduled, so the row states the prescription.
+    mounted.advance(120)
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    expect(movement('1. hollow body hold').getByText('6-8-10 reps')).toBeInTheDocument()
+    expect(movement('2. v up').getByText('12 reps')).toBeInTheDocument()
+  })
+
+  it('rotates three movements and their targets across the boundaries', async () => {
+    const user = setup()
+    const mounted = mount({
+      block: {
+        timerSeconds: 360,
+        exercises: [
+          ...PAIR,
+          { prescription: { exercise_id: 'plank', order_index: 2, modality: 'time', target_value: 30 } },
+        ],
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(120)
+    expect(marked('Now')).toEqual(['3. plank'])
+    expect(movement('3. plank').getByText('MIN 3 · 30 sec')).toBeInTheDocument()
+    expect(movement('1. hollow body hold').getByText('MIN 4 · 8 reps')).toBeInTheDocument()
+    expect(movement('2. v up').getByText('MIN 5 · 8 reps')).toBeInTheDocument()
+
+    mounted.advance(60)
+    expect(marked('Now')).toEqual(['1. hollow body hold'])
+    expect(movement('3. plank').getByText('MIN 6 · 30 sec')).toBeInTheDocument()
+  })
+
+  it('says a sequence is spent rather than inventing a rung past its end', async () => {
+    const user = setup()
+    const mounted = mount({ block: { timerSeconds: 600, exercises: RISING } })
+
+    await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
+    mounted.advance(360)
+
+    expect(screen.getByText('MIN 7 OF 10')).toBeInTheDocument()
+    expect(movement('1. hollow body hold').getByText('MIN 7 · No target')).toBeInTheDocument()
   })
 })
 
@@ -707,11 +891,10 @@ describe('the countdown takes the shipped low state and nothing more', () => {
   it('stays low through the rest remainder, with the phase still in words', async () => {
     reduceMotion(false)
     const user = setup()
-    const mounted = mount()
+    const mounted = mount({ block: { roundRestSeconds: 15 } })
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(52)
-    await user.click(screen.getByRole('button', { name: 'Minute done' }))
 
     expect(screen.getByText('REST')).toBeInTheDocument()
     expect(timer()).toHaveTextContent('00:08')
@@ -804,7 +987,7 @@ describe('the countdown takes the shipped low state and nothing more', () => {
     expect(screen.getByText('MIN 1 OF 10')).toBeInTheDocument()
     expect(screen.getByText('WORK')).toBeInTheDocument()
     expect(marked('Now')).toEqual(['1. hollow body hold'])
-    expect(screen.getByRole('button', { name: 'Minute done' })).toBeEnabled()
+    expect(movement('1. hollow body hold').getByText('MIN 1 · 8 reps')).toBeInTheDocument()
 
     // The shipped rule that makes a reduced pulse static.
     expect(MOTION_CSS).toMatch(

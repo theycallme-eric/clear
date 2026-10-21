@@ -1,8 +1,9 @@
 /**
  * EXE-03's EMOM arithmetic — "timer type and seconds read from
  * `workout_blocks`", "the minute boundary visibly flips active work, remainder
- * reads as rest", and "`minutes_completed` for EMOM", asserted where they are
- * decided rather than through the card.
+ * reads as rest", and REQ-014's hands-off contract — targets that follow the
+ * scheduled minute, and a schedule that is never counted as performed work —
+ * asserted where they are decided rather than through the card.
  *
  * Every reading below is taken at an *elapsed second*, never after a tick,
  * because that is the property the module exists to have: a phone that was
@@ -18,13 +19,16 @@ import {
   emomView,
   EMOM_START,
   isEmomTimed,
-  markMinuteDone,
   minuteAssignment,
   positionForMinute,
+  scheduledMinuteFor,
   startEmom,
+  targetForMinute,
+  turnForMinute,
   type EmomShape,
   type EmomState,
 } from './emom'
+import type { PrescribedColumns } from './prescription'
 import { sessionProgress, type BlockProgress } from './workout-progress'
 import { snapshotFixture, type BlockFixture } from '../test/workout-double'
 
@@ -173,32 +177,12 @@ describe('the remainder of the minute reads as rest', () => {
     expect(emomView(RUNNING, shape, 105).phase).toBe('rest')
   })
 
-  it('rests for what is left of the minute once the user says the work is done', () => {
-    const shape = shapeOf()
-    const working = emomView(RUNNING, shape, 20)
-    const state = markMinuteDone(RUNNING, working)
+  it('is never put into rest by a mark: the schedule alone decides the phase (REQ-014)', () => {
+    // A record an earlier build wrote with "Minute done" pressed in minute one.
+    const marked: EmomState = { startedAt: STARTED_AT, workDoneMinute: 1 }
 
-    expect(state.workDoneMinute).toBe(1)
-    expect(emomView(state, shape, 20).phase).toBe('rest')
-    expect(emomView(state, shape, 59).phase).toBe('rest')
-    // The next minute is work again without anything being pressed.
-    expect(emomView(state, shape, 60).phase).toBe('work')
-  })
-
-  it('marks the minute the user is actually in, not the first one', () => {
-    const shape = shapeOf()
-    const state = markMinuteDone(RUNNING, emomView(RUNNING, shape, 200))
-
-    expect(state.workDoneMinute).toBe(4)
-    expect(emomView(state, shape, 200).phase).toBe('rest')
-  })
-
-  it('does not mark a minute from a phase that has no work in it', () => {
-    const shape = shapeOf()
-    const resting = emomView(RUNNING, shapeOf({ restSeconds: 20 }), 50)
-
-    expect(markMinuteDone(RUNNING, resting)).toEqual(RUNNING)
-    expect(markMinuteDone(EMOM_START, emomView(EMOM_START, shape, 0))).toEqual(EMOM_START)
+    expect(emomView(marked, shapeOf(), 20).phase).toBe('work')
+    expect(emomView(marked, shapeOf(), 59).phase).toBe('work')
   })
 })
 
@@ -208,7 +192,6 @@ describe('the phases either side of the grid', () => {
 
     expect(view.phase).toBe('untimed')
     expect(view.activePosition).toBeNull()
-    expect(view.minutesCompleted).toBe(0)
   })
 
   it('is ready before the user starts the clock', () => {
@@ -218,7 +201,6 @@ describe('the phases either side of the grid', () => {
     expect(view.minute).toBe(1)
     // Minute one's movement, so the card can say what the block opens with.
     expect(view.activePosition).toBe(1)
-    expect(view.minutesCompleted).toBe(0)
   })
 
   it('starts the clock once, at the moment it is pressed', () => {
@@ -248,86 +230,132 @@ describe('the phases either side of the grid', () => {
   })
 })
 
-describe('the minutes the EMOM observed', () => {
-  it('counts a minute once its work is behind the user', () => {
-    const shape = shapeOf()
+describe('the schedule is never a result (E01)', () => {
+  it('carries no count of completed minutes in any phase', () => {
+    const shape = shapeOf({ minutes: 4, restSeconds: 15 })
 
-    // Mid-work in minute one: no minute is complete yet.
-    expect(emomView(RUNNING, shape, 30).minutesCompleted).toBe(0)
-    // Minute one elapsed.
-    expect(emomView(RUNNING, shape, 60).minutesCompleted).toBe(1)
-    expect(emomView(RUNNING, shape, 185).minutesCompleted).toBe(3)
-  })
-
-  it('counts the minute the user finished early, before it has elapsed', () => {
-    const shape = shapeOf()
-    const state = markMinuteDone(RUNNING, emomView(RUNNING, shape, 30))
-
-    expect(emomView(state, shape, 30).minutesCompleted).toBe(1)
-    // And it does not count twice once that same minute elapses.
-    expect(emomView(state, shape, 60).minutesCompleted).toBe(1)
-  })
-
-  it('counts the minute whose prescribed rest window is running', () => {
-    const shape = shapeOf({ restSeconds: 15 })
-
-    expect(emomView(RUNNING, shape, 44).minutesCompleted).toBe(0)
-    expect(emomView(RUNNING, shape, 50).minutesCompleted).toBe(1)
-  })
-
-  it('never reports more minutes than the block prescribed', () => {
-    const shape = shapeOf({ minutes: 4 })
-
-    expect(emomView(RUNNING, shape, 240).minutesCompleted).toBe(4)
-    expect(emomView(RUNNING, shape, 9000).minutesCompleted).toBe(4)
-  })
-
-  it('keeps counting for a block that prescribes no window', () => {
-    expect(emomView(RUNNING, shapeOf({ minutes: null }), 900).minutesCompleted).toBe(15)
+    for (const view of [
+      emomView(RUNNING, shapeOf({ timerType: 'none' }), 120),
+      emomView(EMOM_START, shape, 0),
+      emomView(RUNNING, shape, 30),
+      emomView(RUNNING, shape, 50),
+      emomView(RUNNING, shape, 9000),
+    ]) {
+      expect(view).not.toHaveProperty('minutesCompleted')
+    }
   })
 })
 
-describe('a restored record is repaired against the block', () => {
-  const shape = shapeOf({ minutes: 10 })
-
-  it('keeps a clock the block can still be read against', () => {
-    expect(clampEmomState({ startedAt: STARTED_AT, workDoneMinute: 3 }, shape)).toEqual({
-      startedAt: STARTED_AT,
-      workDoneMinute: 3,
-    })
+describe('a restored record is repaired', () => {
+  it('keeps a clock that can still be read', () => {
+    expect(clampEmomState({ startedAt: STARTED_AT, workDoneMinute: null })).toEqual(RUNNING)
   })
 
   it('drops a timestamp no clock can read, rather than freezing at minute one', () => {
-    expect(
-      clampEmomState({ startedAt: 'yesterday', workDoneMinute: 2 }, shape),
-    ).toEqual(EMOM_START)
+    expect(clampEmomState({ startedAt: 'yesterday', workDoneMinute: 2 })).toEqual(EMOM_START)
   })
 
-  it('drops a marked minute the window cannot contain', () => {
-    expect(
-      clampEmomState({ startedAt: STARTED_AT, workDoneMinute: 11 }, shape).workDoneMinute,
-    ).toBeNull()
-    expect(
-      clampEmomState({ startedAt: STARTED_AT, workDoneMinute: 0 }, shape).workDoneMinute,
-    ).toBeNull()
-    expect(
-      clampEmomState({ startedAt: STARTED_AT, workDoneMinute: 2.5 }, shape).workDoneMinute,
-    ).toBeNull()
+  it('drops any minute an earlier build marked done', () => {
+    for (const workDoneMinute of [3, 11, 0, 40]) {
+      expect(clampEmomState({ startedAt: STARTED_AT, workDoneMinute })).toEqual(RUNNING)
+    }
+    expect(clampEmomState({ startedAt: null, workDoneMinute: 3 })).toEqual(EMOM_START)
+  })
+})
+
+describe('targets follow the scheduled minute (REQ-014)', () => {
+  /** Columns a target reads; everything else about the row is irrelevant here. */
+  function columns(overrides: Partial<PrescribedColumns> = {}): PrescribedColumns {
+    return {
+      exercise_id: 'hollow-body-hold',
+      modality: 'reps',
+      sets: 3,
+      target_kind: 'fixed',
+      target_value: 8,
+      target_min: null,
+      target_max: null,
+      target_sequence: null,
+      per_side: false,
+      distance_unit: null,
+      ...overrides,
+    }
+  }
+  const rising = columns({
+    sets: null,
+    target_kind: 'sequence',
+    target_value: null,
+    target_sequence: [6, 8, 10],
   })
 
-  it('keeps a marked minute for a block whose window is open-ended', () => {
-    expect(
-      clampEmomState(
-        { startedAt: STARTED_AT, workDoneMinute: 40 },
-        shapeOf({ minutes: null }),
-      ).workDoneMinute,
-    ).toBe(40)
+  it('counts a movement’s own turns across a rotation', () => {
+    // Two movements: minute 5 is the first movement's third turn.
+    expect(turnForMinute(1, 2)).toBe(1)
+    expect(turnForMinute(3, 2)).toBe(2)
+    expect(turnForMinute(5, 2)).toBe(3)
+    // Three movements: minute 6 is the third movement's second turn.
+    expect(turnForMinute(6, 3)).toBe(2)
+    expect(turnForMinute(1, 0)).toBeNull()
   })
 
-  it('cannot mark a minute of a clock that was never started', () => {
-    expect(clampEmomState({ startedAt: null, workDoneMinute: 3 }, shape)).toEqual(
-      EMOM_START,
-    )
+  it('holds a fixed or ranged target on every turn', () => {
+    expect(targetForMinute(columns(), 1, 2)).toEqual({ kind: 'fixed', value: 8 })
+    expect(targetForMinute(columns(), 9, 2)).toEqual({ kind: 'fixed', value: 8 })
+    const range = columns({ target_kind: 'range', target_value: null, target_min: 8, target_max: 10 })
+    expect(targetForMinute(range, 7, 3)).toEqual({ kind: 'range', min: 8, max: 10 })
+  })
+
+  it('takes one rung of a rising sequence per turn, read off the minute', () => {
+    expect(targetForMinute(rising, 1, 2)).toEqual({ kind: 'fixed', value: 6 })
+    expect(targetForMinute(rising, 3, 2)).toEqual({ kind: 'fixed', value: 8 })
+    expect(targetForMinute(rising, 5, 2)).toEqual({ kind: 'fixed', value: 10 })
+    // Single-movement EMOM: every minute is the next rung.
+    expect(targetForMinute(rising, 2, 1)).toEqual({ kind: 'fixed', value: 8 })
+  })
+
+  it('invents no rung past the end of the sequence', () => {
+    expect(targetForMinute(rising, 7, 2)).toBeNull()
+  })
+
+  it('reads the same target at the same elapsed second after a background or refresh', () => {
+    // The view is a function of elapsed seconds, so a reading taken after four
+    // locked minutes is the reading taken after four watched ones.
+    const shape = shapeOf({ size: 2, minutes: 6 })
+    const watched = emomView(RUNNING, shape, 250)
+    const restored = emomView(clampEmomState(RUNNING), shape, 250)
+
+    expect(restored).toEqual(watched)
+    const minute = scheduledMinuteFor(1, restored, shape)
+    expect(minute).toBe(5)
+    expect(targetForMinute(rising, minute ?? 0, shape.size)).toEqual({ kind: 'fixed', value: 10 })
+  })
+
+  it('schedules each movement at its current or next turn', () => {
+    const shape = shapeOf({ size: 3, minutes: 6, restSeconds: 15 })
+
+    // Ready: the opening minutes.
+    const ready = emomView(EMOM_START, shape, 0)
+    expect([1, 2, 3].map((p) => scheduledMinuteFor(p, ready, shape))).toEqual([1, 2, 3])
+
+    // Working minute 3: the third movement is now; the others come next.
+    const working = emomView(RUNNING, shape, 130)
+    expect([1, 2, 3].map((p) => scheduledMinuteFor(p, working, shape))).toEqual([4, 5, 3])
+
+    // Resting at the end of minute 3: its work is behind the schedule.
+    const resting = emomView(RUNNING, shape, 170)
+    expect(resting.phase).toBe('rest')
+    expect([1, 2, 3].map((p) => scheduledMinuteFor(p, resting, shape))).toEqual([4, 5, 6])
+
+    // Minute 5: the third movement's next turn is 6, the first has none left.
+    const late = emomView(RUNNING, shape, 250)
+    expect([1, 2, 3].map((p) => scheduledMinuteFor(p, late, shape))).toEqual([null, 5, 6])
+  })
+
+  it('schedules nothing once the clock has expired or when there is no clock', () => {
+    const shape = shapeOf({ size: 2, minutes: 4 })
+
+    expect(scheduledMinuteFor(1, emomView(RUNNING, shape, 240), shape)).toBeNull()
+    const untimed = shapeOf({ timerType: 'none' })
+    expect(scheduledMinuteFor(1, emomView(RUNNING, untimed, 30), untimed)).toBeNull()
   })
 })
 
