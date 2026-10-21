@@ -11,6 +11,7 @@ import { createWorkoutDouble, reconstructionFixture } from '../test/workout-doub
 import { screenAtmosphere } from './atmosphere'
 import {
   HISTORY_BACK_LABEL,
+  HISTORY_EMPTY_ACTION,
   HISTORY_EMPTY_TITLE,
   HISTORY_ERROR_TITLE,
   HISTORY_FILTER_LABEL,
@@ -156,6 +157,43 @@ describe('History route', () => {
     expect(await screen.findByText(HISTORY_EMPTY_TITLE)).toBeInTheDocument()
     expect(screen.queryByText(HISTORY_NO_MATCH_TITLE)).not.toBeInTheDocument()
     expect(screen.queryByLabelText(HISTORY_FILTER_LABEL)).not.toBeInTheDocument()
+  })
+
+  it('U08: an empty history is one statement with the first workout as its pinned next action', async () => {
+    const user = userEvent.setup()
+    renderHistory({}, [])
+
+    const statement = await screen.findByText(HISTORY_EMPTY_TITLE)
+    // One statement: the empty message carries no second explanatory line.
+    expect(statement.parentElement!.children).toHaveLength(1)
+    const action = screen.getByRole('button', { name: HISTORY_EMPTY_ACTION })
+    expect(action.closest('.clr-footer')).not.toBeNull()
+
+    await user.click(action)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+    ).toBeInTheDocument()
+  })
+
+  it('U08: a filter that matches nothing says so once, and its action restores the list', async () => {
+    const user = userEvent.setup()
+    renderHistory({}, sessionRows(2))
+
+    await historyList()
+    await user.selectOptions(screen.getByLabelText(HISTORY_FILTER_LABEL), 'unstarted')
+    const statement = await screen.findByText(HISTORY_NO_MATCH_TITLE)
+    expect(statement.parentElement!.children).toHaveLength(1)
+    expect(screen.queryByRole('button', { name: HISTORY_EMPTY_ACTION })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: HISTORY_NO_MATCH_ACTION }).closest('.clr-footer')).not.toBeNull()
+  })
+
+  it('U06: keeps each row count with its unit', async () => {
+    renderHistory({}, sessionRows(1))
+
+    const list = await historyList()
+    const kept = [...list.querySelectorAll('.clr-nowrap')].map((node) => node.textContent)
+    expect(kept).toContainEqual(expect.stringMatching(/^\d+ min$/))
+    expect(kept).toContainEqual(expect.stringMatching(/^Intensity \d+\/10$/))
   })
 
   it('tells a filter that matches nothing apart from having no workouts', async () => {

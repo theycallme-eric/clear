@@ -58,6 +58,7 @@ import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import {
+  ActionGroup,
   ActionRow,
   ListFrame,
   ListMessage,
@@ -176,6 +177,24 @@ function CardActionsBackAndForward() {
       <Button variant="secondary">Back</Button>
       <Button>Continue</Button>
     </CardActions>
+  )
+}
+
+function ActionGroupPaired() {
+  return (
+    <ActionGroup>
+      <Button variant="primary">Save rest day</Button>
+      <Button variant="quiet">Cancel</Button>
+    </ActionGroup>
+  )
+}
+
+function ActionGroupLongLabels() {
+  return (
+    <ActionGroup>
+      <Button variant="secondary">Use this suggestion for today</Button>
+      <Button variant="quiet">Dismiss until tomorrow</Button>
+    </ActionGroup>
   )
 }
 
@@ -1912,6 +1931,17 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'forward action', Render: CardActionsForwardOnly },
       { state: 'back and forward actions', Render: CardActionsBackAndForward },
+    ],
+  },
+  {
+    component: 'ActionGroup',
+    requirement: 'DS-097-B',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'In-card actions sharing the card width: equal cells while the labels fit, a full-width row each when they do not (U07).',
+    specimens: [
+      { state: 'two short actions', Render: ActionGroupPaired },
+      { state: 'long labels wrap to rows', Render: ActionGroupLongLabels },
     ],
   },
   {

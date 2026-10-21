@@ -141,6 +141,7 @@ import {
 import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import {
+  ActionGroup,
   ActionRow,
   ListMessage,
   PhoneFooter,
@@ -183,8 +184,12 @@ export const SUGGESTION_LABEL = 'Suggested next'
 
 /** FAV-01's tab, beside the recents, on the one read each of them needs. */
 export const FAVORITES_LABEL = 'Favorites'
-export const FAVORITES_EMPTY =
-  'No favorites yet. Save a workout from its summary and it appears here, ready to start again.'
+export const FAVORITES_EMPTY_TITLE = 'No favorites yet'
+export const FAVORITES_EMPTY = 'Save a workout from its summary to start it again here.'
+
+/** U08: the empty recents state the fact; the pinned Generate is the next action. */
+export const RECENT_EMPTY_TITLE = 'No workouts yet'
+export const REST_DAY_PROMPT = 'Not training today? Mark why to keep your streak.'
 
 export function Home() {
   const history = useHistoryQuery()
@@ -402,7 +407,7 @@ function TrainingWeek({
             <>
               <WeekStrip days={days} label={WEEK_STRIP_LABEL} />
               <p style={{ margin: 0 }}>
-                {trained} of {WEEK_STRIP_DAYS} days trained.
+                {`${keepTogether(`${trained} of ${WEEK_STRIP_DAYS} days`)} trained.`}
               </p>
             </>
           )}
@@ -457,49 +462,52 @@ function RestDayControl({
     // Inside the week's card this is a ruled sub-group, one level under it.
     <HeadingSection aria-label={REST_DAY_LABEL}>
       <Card heading={REST_DAY_LABEL}>
-        {today.reason === null ? (
-          <p style={{ margin: 0 }}>
-            Not training today? Mark why so your streak follows the right rule.
-          </p>
-        ) : (
-          <p style={{ margin: 0 }}>
-            Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
-          </p>
-        )}
+        {/* U05: the statement, then the control group, one rhythm step apart. */}
+        <div className="clr-stack">
+          {today.reason === null ? (
+            <p style={{ margin: 0 }}>{REST_DAY_PROMPT}</p>
+          ) : (
+            <p style={{ margin: 0 }}>
+              Today is marked: {REST_DAY_REASON_LABELS[today.reason]}.
+            </p>
+          )}
 
-        {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
-        {failure && (
-          <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
-            The rest day wasn’t saved. Try again.
-          </p>
-        )}
+          {saved && <p role="status" style={{ margin: 0 }}>Rest day saved.</p>}
+          {failure && (
+            <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
+              The rest day wasn’t saved. Try again.
+            </p>
+          )}
 
-        {!editing ? (
-          <Button variant="secondary" onClick={begin}>
-            {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-          </Button>
-        ) : (
-          <>
-            <Select
-              label="Reason"
-              value={reason}
-              options={REST_DAY_REASONS.map((value) => ({
-                value,
-                label: REST_DAY_REASON_LABELS[value],
-              }))}
-              helperText={REST_DAY_REASON_EFFECTS[reason]}
-              onChange={(value) => setReason(value as RestDayReason)}
-            />
-            <div className="clr-row">
-              <Button variant="primary" loading={write.marking} onClick={() => void save()}>
-                Save rest day
+          {!editing ? (
+            <ActionGroup>
+              <Button variant="secondary" onClick={begin}>
+                {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
               </Button>
-              <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
-                Cancel
-              </Button>
+            </ActionGroup>
+          ) : (
+            <div className="clr-stack clr-stack--tight">
+              <Select
+                label="Reason"
+                value={reason}
+                options={REST_DAY_REASONS.map((value) => ({
+                  value,
+                  label: REST_DAY_REASON_LABELS[value],
+                }))}
+                helperText={REST_DAY_REASON_EFFECTS[reason]}
+                onChange={(value) => setReason(value as RestDayReason)}
+              />
+              <ActionGroup>
+                <Button variant="primary" loading={write.marking} onClick={() => void save()}>
+                  Save rest day
+                </Button>
+                <Button variant="quiet" disabled={write.marking} onClick={() => setEditing(false)}>
+                  Cancel
+                </Button>
+              </ActionGroup>
             </div>
-          </>
-        )}
+          )}
+        </div>
       </Card>
     </HeadingSection>
   )
@@ -536,7 +544,7 @@ function StreakCount() {
           <span aria-hidden="true" style={{ display: 'flex' }}>
             <StreakGlyph size={16} />
           </span>
-          Current streak: {streak.days} {streak.days === 1 ? 'day' : 'days'}
+          Current streak: {keepTogether(`${streak.days} ${streak.days === 1 ? 'day' : 'days'}`)}
           {streak.includesToday ? '' : ', through yesterday'}
         </p>
       )}
@@ -598,21 +606,21 @@ function SuggestedSession({
     <HeadingSection aria-label={SUGGESTION_LABEL}>
       <Card heading={SUGGESTION_LABEL}>
         <p style={{ margin: 0 }}>
-          {suggestion.focusLabel} · intensity {suggestion.intensity}
+          {suggestion.focusLabel} · {keepTogether(`intensity ${suggestion.intensity}`)}
         </p>
         {/* The reason is pattern-level on purpose: "no hinge in 11 days"
             is a fact about training, "no lower body" is a fact about labels. */}
         <p style={{ margin: 0 }}>
           {suggestion.reason} {suggestion.intensityReason}
         </p>
-        <div className="clr-row" style={SUGGESTION_ACTIONS}>
+        <ActionGroup>
           <Button variant="secondary" onClick={() => void navigate(suggestion.path)}>
             Use this
           </Button>
           <Button variant="quiet" onClick={dismiss}>
             Dismiss
           </Button>
-        </div>
+        </ActionGroup>
       </Card>
     </HeadingSection>
   )
@@ -649,22 +657,23 @@ function QuickActions({
 
   return (
     <Card heading={TRAIN_TODAY_LABEL}>
+      {/* U08: no standing explanation — the pinned Generate and this card's
+          own actions are the statement of what can happen next. */}
       <div className="clr-stack">
-        <p style={{ margin: 0 }}>
-          Compose a session from how you feel today, or repeat the last one.
-        </p>
         <SuggestedSession query={query} suggestion={suggestion} />
         {plan !== null && (
           <>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                if (plan.input === null) setRefused(true)
-                else onQuickStart()
-              }}
-            >
-              Quick start
-            </Button>
+            <ActionGroup>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  if (plan.input === null) setRefused(true)
+                  else onQuickStart()
+                }}
+              >
+                Quick start
+              </Button>
+            </ActionGroup>
             {/* What repeating actually asks for, stated before it is sent: the
                 same focus and minutes that session was requested with, at the
                 same place — under the standing Goal, with the intensity that
@@ -770,10 +779,7 @@ function RecentWorkouts({
         errorTitle="Your recent workouts didn’t load"
         onRetry={query.refetch}
         empty={
-          <ListMessage
-            title="No workouts yet"
-            message="The workouts you finish appear here, newest first."
-          />
+          <ListMessage title={RECENT_EMPTY_TITLE} />
         }
       >
         {(recents) => (
@@ -887,7 +893,7 @@ function FavoriteWorkouts() {
           loadingLabel="Reading your favorites"
           errorTitle="Your favorites didn’t load"
           onRetry={query.refetch}
-          empty={<ListMessage title="No favorites yet" message={FAVORITES_EMPTY} />}
+          empty={<ListMessage title={FAVORITES_EMPTY_TITLE} message={FAVORITES_EMPTY} />}
         >
           {(favorited) => (
             <FavoriteList
@@ -920,6 +926,17 @@ function FavoriteWorkouts() {
   )
 }
 
+/**
+ * U06: a short count and its unit never wrap apart. Non-breaking spaces keep
+ * the sentence one text run, so it still reads (and matches) as one line of
+ * copy while the surrounding words remain free to wrap.
+ */
+function keepTogether(phrase: string): string {
+  return phrase.replace(/ /g, NO_BREAK_SPACE)
+}
+
+const NO_BREAK_SPACE = String.fromCharCode(0xa0)
+
 const FAVORITE_FAILURE_STYLE: CSSProperties = {
   margin: 0,
   display: 'flex',
@@ -930,12 +947,6 @@ const FAVORITE_FAILURE_STYLE: CSSProperties = {
 
 /** The same glyph-and-sentence refusal, for a Quick Start with no usable Goal. */
 const QUICK_START_REFUSAL_STYLE = FAVORITE_FAILURE_STYLE
-
-/** The two answers side by side, wrapping on a narrow phone. */
-const SUGGESTION_ACTIONS: CSSProperties = {
-  flexWrap: 'wrap',
-  gap: 'var(--spacing-100)',
-}
 
 const STREAK_STYLE: CSSProperties = {
   margin: 0,

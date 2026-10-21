@@ -1002,6 +1002,8 @@ describe('the four states', () => {
     expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
     expect(formCard()).toContainElement(screen.getByText(/no places yet/i))
     expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(add)
+    // U08: one statement — the empty card explains nothing the action does not.
+    expect(formCard().textContent?.trim()).toMatch(/^no places yet$/i)
   })
 })
 

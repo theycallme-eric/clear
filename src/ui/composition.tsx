@@ -36,6 +36,14 @@ export function ActionRow(props: CompositionProps) {
 }
 
 /**
+ * In-card actions sharing the card's width: equal cells while the labels fit,
+ * one full-width row each when they do not.
+ */
+export function ActionGroup(props: CompositionProps) {
+  return composition('div', 'clr-action-group', props)
+}
+
+/**
  * A related collection of rows: one closed frame, or the card's when inside
  * one. Either way the rules between rows span the frame's full inner width.
  */

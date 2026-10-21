@@ -122,7 +122,7 @@ import {
 } from '../state/view-state'
 import { AppDialog } from '../ui/app-dialog'
 import { Card } from '../ui/card'
-import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ActionGroup, ActionRow, PhoneFooter } from '../ui/composition'
 import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
 import { ErrorView, LoadingView } from '../ui/view-state'
@@ -358,10 +358,8 @@ export function Generate() {
             </PhoneFooter>
           }
         >
-          <EmptyState
-            title="No places yet"
-            message="Generation composes from the equipment at a place you train, so add one first."
-          />
+          {/* U08: the fact, with Add a place pinned as the way on. */}
+          <EmptyState title="No places yet" />
         </Screen>
       ) : (
         <GenerateForm
@@ -607,7 +605,7 @@ function GenerateForm({
               {override !== null && ` — ${OVERRIDE_SCOPE}`}
             </p>
             {recommended !== null && <p style={{ margin: 0 }}>{recommended.reason}</p>}
-            <div className="clr-row" style={CHIP_ROW}>
+            <ActionGroup>
               <Button
                 variant="quiet"
                 aria-expanded={expanded}
@@ -621,7 +619,7 @@ function GenerateForm({
                   {OVERRIDE_CANCEL_LABEL}
                 </Button>
               )}
-            </div>
+            </ActionGroup>
             {/* The override's choices. Power stays visible under Recovery,
                 disabled, with the refusal said beside the Recovery action. */}
             {expanded && (
@@ -652,11 +650,11 @@ function GenerateForm({
                 <p role="alert" style={{ margin: 0, color: 'var(--text-negative)' }}>
                   {HISTORY_ERROR_MESSAGE}
                 </p>
-                <div className="clr-row">
+                <ActionGroup>
                   <Button variant="quiet" onClick={history.refetch}>
                     {HISTORY_RETRY_LABEL}
                   </Button>
-                </div>
+                </ActionGroup>
               </div>
             )}
 
@@ -726,7 +724,7 @@ function GenerateForm({
             value: location.id,
             label: location.name,
           }))}
-          helperText="Generation composes from the equipment saved with this place."
+          helperText="Uses the equipment saved at this place."
           errorText={refusal?.fields.location_id}
           onChange={(value) => setDraft(withLocation(draft, value))}
         />
@@ -748,7 +746,7 @@ function GenerateForm({
             rows={3}
             value={draft.notes}
             placeholder="Bad left shoulder from years ago. Overhead press feels sketchy sometimes."
-            helperText="Optional. Context for today — something to work around every session belongs in Settings."
+            helperText="Optional, for today only. Lasting limits belong in Settings."
             errorText={refusal?.fields.notes}
             maxLength={NOTES_MAX_LENGTH}
             onChange={(value) => setDraft(withNotes(draft, value))}
@@ -797,8 +795,11 @@ function GenerateForm({
   )
 }
 
-/** The chip row wraps on a phone rather than overflowing it. */
-const CHIP_ROW = { flexWrap: 'wrap', gap: 'var(--spacing-100)' } as const
+/**
+ * The chip row wraps on a phone rather than overflowing it, on the same 8px
+ * label/control step as every other in-card group (U05).
+ */
+const CHIP_ROW = { flexWrap: 'wrap', gap: 'var(--spacing-200)' } as const
 
 /** The profile's default place, or the first one — never nothing when one exists. */
 function defaultLocationId(locations: readonly Location[]): string | null {
