@@ -476,11 +476,12 @@ arrangement `workout.ts` uses, because a constraints read at boot can land eithe
 exchange.
 
 SET-01's appearance choice is the one preference that is deliberately not a row, and the reason is
-that the design system already owns it. `src/design-system/skin.js` is the whole persistence
-contract — `localStorage['clear.skin']` → `prefers-contrast: more` → the app default — so
-`src/state/appearance.ts` adds exactly two things it cannot know: the option that is *not* a skin
-(`system` is `setSkin(null)`, which is what hands the decision back to the OS), and the copy. Its
-option list is derived from `SKINS`, so a skin added to the export becomes an option with no change
+that the design system already owns its storage: `src/design-system/skin.js` persists the explicit
+choice under `localStorage['clear.skin']`. The product uses only that rung of the export's
+precedence (U24): there is no System option, and the OS contrast preference never selects a skin.
+`index.html`'s head bootstrap applies the stored choice or the product default (`clear`) and does
+not call `initSkin`, and `src/state/appearance.ts` resolves an unset or legacy `system` value to the
+same `DEFAULT_SKIN` and adds the copy. Its option list is derived from `SKINS`, so a skin added to the export becomes an option with no change
 to any file in `src/`, and `src/ui/appearance-picker.tsx` is a controlled `ChoiceGroup` over it —
 the screen owns the choice, which is what makes both of its states reviewable in the gallery
 without writing a reviewer's own preference.
@@ -537,6 +538,6 @@ reads no stylesheet. The mark is therefore committed once per skin under `public
 source, and `src/test/skin-favicons.test.ts` reads each one back against the skin's own `--base`
 and `--structure` so a restated colour cannot drift and a skin added without a mark fails. What the
 runtime follows is the attribute rather than the picker — `startFaviconSync` observes `data-skin`
-on `<html>` from `main.tsx` — so a restored preference at boot, the picker, and `initSkin` tracking
-the OS contrast setting all reach the icon by one path, and no caller can change the skin and
+on `<html>` from `main.tsx` — so a restored preference at boot and the picker both reach the icon by
+one path, and no caller can change the skin and
 forget it.

@@ -1,13 +1,14 @@
 /**
- * SET-01 — the appearance choice.
+ * SET-01 / U24 — the appearance choice.
  *
  * The assertions that matter are about what this module does *not* do: it keeps
- * no skin list, and it stores nothing of its own. So the derivation is proved
- * against a mocked export carrying a fifth skin — the requirement's "adding a
- * skin to the export adds an option with no code change", which no test against
- * the four real ones could tell apart from a hardcoded list — and persistence
- * is read back from `localStorage['clear.skin']`, which is `skin.js`'s key and
- * not one invented here.
+ * no skin list, it stores nothing of its own, it offers no System option, and
+ * it never lets the OS contrast preference pick a skin. So the derivation is
+ * proved against a mocked export carrying a fifth skin — the requirement's
+ * "adding a skin to the export adds an option with no code change", which no
+ * test against the four real ones could tell apart from a hardcoded list — and
+ * persistence is read back from `localStorage['clear.skin']`, which is
+ * `skin.js`'s key and not one invented here.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -16,10 +17,28 @@ import {
   appearanceOptions,
   applyAppearance,
   currentAppearance,
-  SYSTEM_APPEARANCE,
+  DEFAULT_SKIN,
 } from './appearance'
 
 const STORAGE_KEY = 'clear.skin'
+
+/** Pretend the OS asks for more contrast, for the length of `run`. */
+function withMoreContrast(run: () => void) {
+  const original = window.matchMedia
+  window.matchMedia = ((query: string) =>
+    ({
+      matches: query.includes('prefers-contrast'),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }) as unknown as MediaQueryList) as typeof window.matchMedia
+
+  try {
+    run()
+  } finally {
+    window.matchMedia = original
+  }
+}
 
 afterEach(() => {
   localStorage.clear()
@@ -29,13 +48,14 @@ afterEach(() => {
 })
 
 describe('the option list', () => {
-  it('offers the system option first, then every skin the export ships', async () => {
+  it('offers exactly the skins the export ships, in order, and no System option', async () => {
     const { SKINS } = await import('../design-system/skin')
 
-    expect(appearanceOptions().map((option) => option.value)).toEqual([
-      SYSTEM_APPEARANCE,
-      ...SKINS,
-    ])
+    expect(appearanceOptions().map((option) => option.value)).toEqual([...SKINS])
+    for (const option of appearanceOptions()) {
+      expect(option.value).not.toBe('system')
+      expect(option.label).not.toMatch(/system/i)
+    }
   })
 
   it('grows with the export rather than with this file', async () => {
@@ -69,11 +89,6 @@ describe('the labels', () => {
   it('writes CLEAR the way the product writes it', () => {
     expect(appearanceLabel('clear')).toBe('CLEAR')
   })
-
-  it('says what the system option follows', () => {
-    expect(appearanceLabel(SYSTEM_APPEARANCE)).toMatch(/^System/)
-    expect(appearanceLabel(SYSTEM_APPEARANCE)).toContain('contrast')
-  })
 })
 
 describe('applying a choice', () => {
@@ -84,39 +99,20 @@ describe('applying a choice', () => {
     expect(localStorage.getItem(STORAGE_KEY)).toBe('vapour')
   })
 
-  it('clears the stored choice for the system option', () => {
-    applyAppearance('mono')
-    applyAppearance(SYSTEM_APPEARANCE)
+  it('keeps a colour skin chosen while the OS asks for more contrast', () => {
+    withMoreContrast(() => {
+      applyAppearance('signal')
 
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
-    // Nothing stored and no OS contrast request: the app default is active.
-    expect(document.documentElement.getAttribute('data-skin')).toBe('clear')
+      expect(document.documentElement.getAttribute('data-skin')).toBe('signal')
+      expect(currentAppearance()).toBe('signal')
+    })
   })
 
-  it('keeps a colour skin chosen while the OS asks for more contrast', async () => {
-    const { resolveSkin } = await import('../design-system/skin')
-    const original = window.matchMedia
-    window.matchMedia = ((query: string) =>
-      ({
-        matches: query.includes('prefers-contrast'),
-        media: query,
-        addEventListener: () => {},
-        removeEventListener: () => {},
-      }) as unknown as MediaQueryList) as typeof window.matchMedia
+  it('keeps enhanced contrast one explicit choice away', () => {
+    applyAppearance('mono')
 
-    try {
-      applyAppearance('signal')
-      // What the next load resolves to. An explicit choice wins over the OS,
-      // including this one — overriding it would be deciding on someone's
-      // behalf about their own eyes.
-      expect(resolveSkin()).toBe('signal')
-
-      applyAppearance(SYSTEM_APPEARANCE)
-      // And the system option hands the decision back to the preference.
-      expect(resolveSkin()).toBe('mono')
-    } finally {
-      window.matchMedia = original
-    }
+    expect(document.documentElement.getAttribute('data-skin')).toBe('mono')
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('mono')
   })
 
   it('leaves the stored choice alone when asked not to persist', () => {
@@ -129,8 +125,15 @@ describe('applying a choice', () => {
 })
 
 describe('the stored choice', () => {
-  it('is the system option while nothing is stored', () => {
-    expect(currentAppearance()).toBe(SYSTEM_APPEARANCE)
+  it('is the product default while nothing is stored', () => {
+    expect(DEFAULT_SKIN).toBe('clear')
+    expect(currentAppearance()).toBe(DEFAULT_SKIN)
+  })
+
+  it('is the product default for a legacy System preference', () => {
+    localStorage.setItem(STORAGE_KEY, 'system')
+
+    expect(currentAppearance()).toBe(DEFAULT_SKIN)
   })
 
   it('survives a reload, because it is read from storage and not from state', () => {
@@ -139,17 +142,18 @@ describe('the stored choice', () => {
     expect(currentAppearance()).toBe('signal')
   })
 
-  it('stays the system option when the OS preference picks the skin', () => {
-    // No stored choice, `prefers-contrast: more` — `initSkin` resolves mono,
-    // but the user chose nothing, and the picker must not claim they did.
-    document.documentElement.setAttribute('data-skin', 'mono')
+  it('is never picked by the OS contrast preference', () => {
+    withMoreContrast(() => {
+      expect(currentAppearance()).toBe(DEFAULT_SKIN)
 
-    expect(currentAppearance()).toBe(SYSTEM_APPEARANCE)
+      localStorage.setItem(STORAGE_KEY, 'system')
+      expect(currentAppearance()).toBe(DEFAULT_SKIN)
+    })
   })
 
   it('ignores a stored value the export does not know', () => {
     localStorage.setItem(STORAGE_KEY, 'ember')
 
-    expect(currentAppearance()).toBe(SYSTEM_APPEARANCE)
+    expect(currentAppearance()).toBe(DEFAULT_SKIN)
   })
 })

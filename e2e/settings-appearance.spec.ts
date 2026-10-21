@@ -9,23 +9,27 @@ import { REQUIRED_JOURNEYS } from './required-routes'
 import { backend } from './support/backend'
 
 /**
- * REQ-010 — the Settings to appearance journey, walked in a browser.
+ * REQ-010 / U24 — the Settings to appearance journey, walked in a browser.
  *
- * A seeded, onboarded user lands Home, opens Settings, picks every skin the
- * approved registry ships, reloads, and then picks the system option. Three
- * things are asserted that a component test cannot:
+ * A seeded, onboarded user lands Home with the OS asking for more contrast,
+ * opens Settings, finds only explicit skins, picks every one the approved
+ * registry ships, and reloads. Four things are asserted that a component test
+ * cannot:
  *
  *   * **The document, not the control.** Every choice is read back from
  *     `<html data-skin>` — the attribute the ramps derive from — and from the
  *     stored `clear.skin`, so a picker that ticks an option and applies nothing
  *     fails here.
- *   * **One option per registry entry.** The expected list is `SKINS` from the
- *     export's `skin.js`, plus the system option, compared as the whole list
- *     of radios. A skin missing from the picker fails; so does an extra one.
- *   * **Persistence and its undoing.** The reload leg proves the choice
- *     survives a fresh document. The system leg proves the stored choice is
- *     removed, and that the skin then follows the OS contrast preference again
- *     — `mono` under `prefers-contrast: more`, the app default without it.
+ *   * **Exactly the registry, no System.** The expected list is `SKINS` from
+ *     the export's `skin.js`, compared as the whole list of radios. A missing
+ *     skin fails; so does an extra one, the retired System option included.
+ *     The chips wrap inside the card at phone width rather than overflowing.
+ *   * **The default, and the OS never deciding.** With nothing stored — and
+ *     with a legacy stored `system` — the product default is applied and
+ *     selected even under `prefers-contrast: more`; flipping that preference
+ *     never moves the skin, before or after an explicit choice.
+ *   * **Persistence.** The reload leg proves an explicit choice survives a
+ *     fresh document, and enhanced contrast is still one explicit choice away.
  *
  * REQ-026 adds the composition and the profile's half of persistence: every
  * section is one 0.14.3 card with its heading inside, and a preference saved
@@ -43,7 +47,10 @@ const SKIN_KEY = 'clear.skin'
 /** `src/data/auth.ts`'s `SESSION_STORAGE_KEY`. */
 const SESSION_KEY = 'clear.auth.session'
 
-/** The system option's accessible name starts with this; the skins' with their id. */
+/** `src/state/appearance.ts`'s `DEFAULT_SKIN` — the existing product default. */
+const DEFAULT_SKIN = 'clear'
+
+/** The retired option's accessible name started with this. */
 const SYSTEM_LABEL = /^System\b/i
 
 const skinLabel = (skin: string) => new RegExp(`^${skin}\\b`, 'i')
@@ -76,6 +83,8 @@ test('the journey walks Home to Settings, and the registry is not empty', () => 
   expect(new Set(SKINS).size).toBe(SKINS.length)
   // 0.14.3 ships four, and the walk below visits each one of them.
   expect(SKINS).toHaveLength(4)
+  expect(SKINS).toContain(DEFAULT_SKIN)
+  expect(SKINS).toContain('mono')
 })
 
 test.describe('Settings to appearance', () => {
@@ -123,16 +132,18 @@ test.describe('Settings to appearance', () => {
     )
   })
 
-  test('each choice applies to the document, survives a reload, and system clears it', async ({
+  test('only explicit skins, the default when unset, persistence, and the OS never deciding', async ({
     page,
     visit,
     checkA11y,
   }, testInfo) => {
-    // Home, the journey's entry.
-    await page.emulateMedia({ contrast: 'no-preference' })
+    // Home, the journey's entry — with the OS asking for more contrast, which
+    // used to select Mono on its own and now must not.
+    await page.emulateMedia({ contrast: 'more' })
     await visit('/')
     await expect(page).toHaveURL(/\/$/)
     expect(await storedSkin(page), 'a stored skin leaked in from elsewhere').toBeNull()
+    expect(await appliedSkin(page), 'the OS contrast setting picked the skin').toBe(DEFAULT_SKIN)
 
     // Home → Settings, the way a user gets there.
     await page.locator('header').getByRole('button', { name: 'Settings', exact: true }).click()
@@ -156,34 +167,71 @@ test.describe('Settings to appearance', () => {
       sectionCard(page, 'Places and equipment').getByRole('button', { name: 'Manage places' }),
     ).toHaveClass(/clr-text-action/)
 
-    const picker = page
-      .getByRole('radiogroup')
-      .filter({ has: page.getByRole('radio', { name: SYSTEM_LABEL }) })
+    const appearance = sectionCard(page, 'Appearance')
+    const picker = appearance.getByRole('radiogroup')
     await expect(picker).toHaveCount(1)
-    await expect(sectionCard(page, 'Appearance').getByRole('radiogroup')).toHaveCount(1)
-    await expect(
-      sectionCard(page, 'Appearance').getByRole('radio', { name: SYSTEM_LABEL }),
-    ).toBeVisible()
+    await expect(page.getByRole('radio', { name: SYSTEM_LABEL })).toHaveCount(0)
+    await expect(page.getByText(/follows your contrast/i)).toHaveCount(0)
     const radios = picker.getByRole('radio')
 
-    // One option per registry entry, plus System — as a whole list, in order,
-    // so a missing or an extra option fails rather than passing.
+    // Exactly one option per registry entry — as a whole list, in order, so a
+    // missing option or an extra one (System included) fails.
     const names = await radios.evaluateAll((nodes) =>
       nodes.map((node) => node.textContent?.trim() ?? ''),
     )
     expect(names, 'the picker does not offer exactly the approved skins').toHaveLength(
-      SKINS.length + 1,
+      SKINS.length,
     )
-    expect(names[0]).toMatch(SYSTEM_LABEL)
     SKINS.forEach((skin, index) => {
-      expect(names[index + 1], `no option for the "${skin}" skin`).toMatch(skinLabel(skin))
+      expect(names[index], `no option for the "${skin}" skin`).toMatch(skinLabel(skin))
     })
+    // Enhanced contrast stays an explicit, named choice.
+    await expect(picker.getByRole('radio', { name: /^mono\b.*enhanced contrast/i })).toBeVisible()
 
-    // Nothing stored yet, so System is the choice.
-    await expect(picker.getByRole('radio', { name: SYSTEM_LABEL })).toHaveAttribute(
+    // Responsive: the chips wrap inside the card instead of running off it.
+    const cardBox = await appearance.boundingBox()
+    expect(cardBox, 'the Appearance card has no box').not.toBeNull()
+    for (const radio of await radios.all()) {
+      const box = await radio.boundingBox()
+      expect(box, 'a skin option has no box').not.toBeNull()
+      if (!cardBox || !box) continue
+      expect(box.x, 'a skin option starts outside its card').toBeGreaterThanOrEqual(cardBox.x - 1)
+      expect(box.x + box.width, 'a skin option overflows its card').toBeLessThanOrEqual(
+        cardBox.x + cardBox.width + 1,
+      )
+    }
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
+      'the skin picker made the page scroll sideways',
+    ).toBe(true)
+    await appearance.screenshot({ path: testInfo.outputPath('appearance-explicit-skins.png') })
+
+    // Unset: the existing product default is the selection, under more contrast.
+    await expect(picker.getByRole('radio', { name: skinLabel(DEFAULT_SKIN) })).toHaveAttribute(
       'aria-checked',
       'true',
     )
+    await expect(picker.locator('[aria-checked="true"]')).toHaveCount(1)
+
+    // Legacy System: the old option stored nothing, but a literal `system` is
+    // no skin either — a reload resolves both to the default, not to the OS.
+    await page.evaluate((key) => window.localStorage.setItem(key, 'system'), SKIN_KEY)
+    await page.reload()
+    await expect(page.locator('main h1')).toHaveText(/settings/i)
+    expect(await appliedSkin(page), 'a legacy System preference followed the OS').toBe(
+      DEFAULT_SKIN,
+    )
+    await expect(
+      page.getByRole('radio', { name: skinLabel(DEFAULT_SKIN) }),
+      'a legacy System preference did not resolve to the default',
+    ).toHaveAttribute('aria-checked', 'true')
+    await expect(page.getByRole('radio', { name: SYSTEM_LABEL })).toHaveCount(0)
+
+    // Flipping the OS preference live moves nothing.
+    await page.emulateMedia({ contrast: 'no-preference' })
+    await expect(page.locator('html')).toHaveAttribute('data-skin', DEFAULT_SKIN)
+    await page.emulateMedia({ contrast: 'more' })
+    await expect(page.locator('html')).toHaveAttribute('data-skin', DEFAULT_SKIN)
 
     // Every skin, read back from the document rather than from the control.
     for (const skin of SKINS) {
@@ -194,10 +242,10 @@ test.describe('Settings to appearance', () => {
       expect(await storedSkin(page)).toBe(skin)
     }
 
-    // Reload: a choice that is not the default proves persistence, because a
-    // fresh document with nothing stored would resolve to something else.
+    // Reload: a choice that is neither the default nor the one the OS used to
+    // pick proves persistence, and that more contrast does not override it.
     const chosen =
-      SKINS.find((skin) => skin !== 'clear' && skin !== 'mono') ?? SKINS[SKINS.length - 1]
+      SKINS.find((skin) => skin !== DEFAULT_SKIN && skin !== 'mono') ?? SKINS[SKINS.length - 1]
     await picker.getByRole('radio', { name: skinLabel(chosen) }).click()
     await expect(page.locator('html')).toHaveAttribute('data-skin', chosen)
 
@@ -229,28 +277,21 @@ test.describe('Settings to appearance', () => {
     ).toHaveAttribute('aria-checked', 'true')
     await checkA11y()
 
-    // System: the stored choice is removed, and the skin follows the OS again.
-    await page.emulateMedia({ contrast: 'more' })
-    await page.getByRole('radio', { name: SYSTEM_LABEL }).click()
-    await expect(page.getByRole('radio', { name: SYSTEM_LABEL })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
-    expect(await storedSkin(page), 'System left a stored skin behind').toBeNull()
+    // Enhanced contrast, chosen explicitly, and kept when the OS stops asking.
+    const mono = page.getByRole('radio', { name: skinLabel('mono') })
+    await mono.click()
+    await expect(page.locator('html')).toHaveAttribute('data-skin', 'mono')
+    expect(await storedSkin(page)).toBe('mono')
+    await page.emulateMedia({ contrast: 'no-preference' })
     await expect(page.locator('html')).toHaveAttribute('data-skin', 'mono')
 
-    // Following live, not a one-off resolution: the preference flips back.
-    await page.emulateMedia({ contrast: 'no-preference' })
-    await expect(page.locator('html')).toHaveAttribute('data-skin', 'clear')
-
-    // And a reload with nothing stored stays on System.
     await page.reload()
     await expect(page.locator('main h1')).toHaveText(/settings/i)
-    expect(await storedSkin(page)).toBeNull()
-    expect(await appliedSkin(page)).toBe('clear')
-    await expect(page.getByRole('radio', { name: SYSTEM_LABEL })).toHaveAttribute(
+    expect(await appliedSkin(page)).toBe('mono')
+    await expect(page.getByRole('radio', { name: skinLabel('mono') })).toHaveAttribute(
       'aria-checked',
       'true',
     )
+    await checkA11y()
   })
 })

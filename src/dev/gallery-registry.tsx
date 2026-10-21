@@ -19,7 +19,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button, Checkbox, Chip, Input } from '../design-system/index'
 import {
   applyAppearance,
-  SYSTEM_APPEARANCE,
+  DEFAULT_SKIN,
   type AppearanceChoice,
 } from '../state/appearance'
 import type { ConditioningScore, ScoreComparison } from '../state/conditioning'
@@ -1649,8 +1649,8 @@ function ReviewablePicker({ initial }: { initial: AppearanceChoice }) {
   )
 }
 
-function AppearancePickerFollowingSystem() {
-  return <ReviewablePicker initial={SYSTEM_APPEARANCE} />
+function AppearancePickerDefault() {
+  return <ReviewablePicker initial={DEFAULT_SKIN} />
 }
 
 function AppearancePickerChosenSkin() {
@@ -2217,12 +2217,12 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'SET-01',
     module: 'src/ui/appearance-picker.tsx',
     summary:
-      'Skin selection, derived from the export’s own SKINS list and persisted by its own skin.js. Mono is named enhanced contrast, never accessible; the system option is the absence of a choice, which is what restores OS contrast following.',
+      'Skin selection, derived from the export’s own SKINS list and persisted by its own skin.js. Explicit skins only: there is no System option and the OS contrast setting never picks one. Mono is named enhanced contrast, never accessible.',
     specimens: [
       {
-        state: 'following the system',
-        note: 'No stored choice. Selecting any skin here is an explicit choice that outranks the OS preference.',
-        Render: AppearancePickerFollowingSystem,
+        state: 'the product default',
+        note: 'No stored choice, or a legacy System one: the default skin is selected, whatever the OS contrast setting.',
+        Render: AppearancePickerDefault,
       },
       {
         state: 'a skin chosen',

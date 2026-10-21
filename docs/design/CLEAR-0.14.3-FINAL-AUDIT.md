@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `cb8988b2f5c03571d33e90ac16e5860be3c40279e62efda938f628be718ef166` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008 and TASK-009 changes below) |
+| Runtime source hash of this audit's tree | `1e68491de0f2da3b71c1af45cf01f2ee0975b176ad78b218653f77654062cdf9` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009 and TASK-010 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -210,6 +210,18 @@ trees and this head, from `git diff`:
   Onboarding's limitations step and Settings' Limitations card. The pictures above predate it
   and are not rebound (EX-13). Current acceptance evidence is `src/app/Settings.test.tsx`,
   `src/app/Onboarding.test.tsx` and `src/data/constraints.test.ts`.
+- `cb8988b2…` to `1e68491d…`: TASK-010 (REQ-006, JOURNEY-010, U24) offers explicit skins only.
+  The System option is gone from the Settings skin picker, and the OS contrast preference no
+  longer selects a skin: the `index.html` head bootstrap applies the stored explicit choice or
+  the product default (`clear`), and no longer calls `skin.js`'s `initSkin`, which resolved and
+  followed `prefers-contrast`. An unset or legacy `system` preference resolves to the default;
+  Mono stays an explicit "enhanced contrast" choice. Changed: `index.html`,
+  `src/state/appearance.ts`, and comments in `src/ui/appearance-picker.tsx`,
+  `src/app/Settings.tsx`, `src/app/favicon.ts` and `src/main.tsx`. This **does** change rendering on Settings' Appearance card and, for a user whose
+  OS asks for more contrast with no stored choice, on every route (CLEAR instead of Mono). The
+  `appearance-system-or-skin` pictures above predate it and are not rebound (EX-13). Current
+  acceptance evidence is `src/state/appearance.test.ts`, `src/app/Settings.test.tsx` and
+  `e2e/settings-appearance.spec.ts` on the mobile project.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

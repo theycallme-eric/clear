@@ -503,7 +503,7 @@ function LimitationsEditor({
 /**
  * The skin, which is this device's rather than the profile's: `skin.js` stores
  * it and `useAppearance` wraps that, so this row owns no save and no rollback.
- * Every option — the system one and each skin in `SKINS` — comes from the
+ * Every option — each skin in `SKINS`, and no System one — comes from the
  * picker's derived list; none is named here. The favicon follows `data-skin`
  * through `startFaviconSync`, so choosing here moves it with nothing to call.
  */

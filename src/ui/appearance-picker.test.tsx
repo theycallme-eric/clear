@@ -4,7 +4,7 @@
  * Two halves. The first is the control: one radio per option, derived from the
  * export's list, with Mono named as enhanced contrast. The second is what the
  * requirement actually asks for — that choosing flips the live skin and stores
- * it, and that the system option clears the store again — so it is asserted
+ * it, with no System option to clear it again — so it is asserted
  * through the same `useAppearance` + `AppearancePicker` pair Settings composes,
  * by clicking, rather than by calling the state module directly.
  */
@@ -31,11 +31,11 @@ function AppearanceSetting() {
 }
 
 describe('the control', () => {
-  it('offers the system option and every skin the export ships', () => {
+  it('offers every skin the export ships, and no System option', () => {
     render(<AppearanceSetting />)
 
-    expect(screen.getAllByRole('radio')).toHaveLength(SKINS.length + 1)
-    expect(screen.getByRole('radio', { name: /^System/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('radio')).toHaveLength(SKINS.length)
+    expect(screen.queryByRole('radio', { name: /system/i })).toBeNull()
     for (const skin of SKINS) {
       expect(
         screen.getByRole('radio', { name: new RegExp(skin, 'i') }),
@@ -62,10 +62,10 @@ describe('the control', () => {
     expect(screen.getByRole('radiogroup')).toBeInTheDocument()
   })
 
-  it('starts on the system option while nothing is stored', () => {
+  it('starts on the product default while nothing is stored', () => {
     render(<AppearanceSetting />)
 
-    expect(screen.getByRole('radio', { name: /^System/ })).toBeChecked()
+    expect(screen.getByRole('radio', { name: 'CLEAR' })).toBeChecked()
   })
 
   it('is content for a card, never a card of its own', () => {
@@ -118,7 +118,7 @@ describe('choosing', () => {
     expect(screen.getByRole('radio', { name: 'Vapour' })).toBeChecked()
   })
 
-  it('clears the stored choice for the system option', async () => {
+  it('stores the default as an explicit choice when it is picked back', async () => {
     const user = userEvent.setup()
     render(<AppearanceSetting />)
 
@@ -127,9 +127,10 @@ describe('choosing', () => {
     )
     expect(localStorage.getItem(STORAGE_KEY)).toBe('mono')
 
-    await user.click(screen.getByRole('radio', { name: /^System/ }))
+    await user.click(screen.getByRole('radio', { name: 'CLEAR' }))
 
-    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
-    expect(screen.getByRole('radio', { name: /^System/ })).toBeChecked()
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('clear')
+    expect(document.documentElement.getAttribute('data-skin')).toBe('clear')
+    expect(screen.getByRole('radio', { name: 'CLEAR' })).toBeChecked()
   })
 })
