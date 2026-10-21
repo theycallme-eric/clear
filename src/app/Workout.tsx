@@ -58,7 +58,6 @@ import { historyQueryPrefix } from '../state/history-queries'
 import { useQueryClient } from '../state/query'
 import { completedSessionQueryKey, streakQueryKey } from '../state/summary-queries'
 import { SetLoggingProvider } from '../state/set-logging-provider'
-import { SwapProvider } from '../state/swap-provider'
 import { useProfileQuery } from '../state/user-queries'
 import type { AppError } from '../state/errors'
 import { isErr } from '../state/errors'
@@ -180,7 +179,6 @@ export function Workout({ storage }: { storage?: ShellStorage | null }) {
           key={snapshot.session.id}
           snapshot={snapshot}
           onSessionEnded={endSession}
-          onSessionRevised={query.publish}
           storage={storage}
         />
       )
@@ -195,19 +193,12 @@ interface WorkoutShellProps {
   snapshot: SessionSnapshot
   /** Publishes the session's end so every other screen agrees immediately. */
   onSessionEnded: (snapshot: SessionSnapshot | null) => void
-  /**
-   * Publishes the session a swap produced (EXE-06). The same channel as the
-   * one above, named apart because they mean opposite things: one says the
-   * session is over, this one says it has been revised and is still running.
-   */
-  onSessionRevised: (snapshot: SessionSnapshot) => void
   storage?: ShellStorage | null
 }
 
 function WorkoutShell({
   snapshot,
   onSessionEnded,
-  onSessionRevised,
   storage,
 }: WorkoutShellProps) {
   const { sessions } = useWorkoutClients()
@@ -394,130 +385,122 @@ function WorkoutShell({
   const canGoForward = index < progress.total - 1
 
   return (
-    // EXE-06's revision path, outermost because it is the only one that
-    // changes what the other two are looking at: a swap republishes the
-    // session, and the completion and set-logging providers below are handed
-    // the revised structure on the next render rather than reconciling to it.
-    <SwapProvider
-      snapshot={snapshot}
-      onSwapped={onSessionRevised}
-      onFailure={setFailure}
-    >
+    // No swap path is mounted here (U37): a session in progress is not revised
+    // from this screen, so no renderer below can offer or invoke one. Swapping
+    // is Review's, before the session is written.
+    //
+    // The one completion path, mounted around every renderer and the footer's
+    // forward action: the `block_results` write belongs to it, for every
+    // structure type, and to no renderer inside it.
+    <BlockCompletionProvider sessionId={sessionId} blocks={blocks} onRecorded={rememberBlock}>
       {/*
-        The one completion path, mounted around every renderer and the
-        footer's forward action: the `block_results` write belongs to it, for
-        every structure type, and to no renderer inside it.
+        The other write execution produces, on the same terms: one path, one
+        row per set, written at log time, and the same error surface. A
+        renderer reaches it through `useSetLogging` and never sees the client.
       */}
-      <BlockCompletionProvider sessionId={sessionId} blocks={blocks} onRecorded={rememberBlock}>
+      <SetLoggingProvider
+        sessionId={sessionId}
+        exercises={exercises}
+        weightUnit={weightUnit}
+        onFailure={setFailure}
+        storage={storage}
+      >
         {/*
-          The other write execution produces, on the same terms: one path, one
-          row per set, written at log time, and the same error surface. A
-          renderer reaches it through `useSetLogging` and never sees the client.
+          EXE-05: the session's one rest. Inside the set path because a
+          logged set is what starts it, and at the shell rather than in a
+          renderer so a second set — or a set in another section — replaces
+          the rest instead of drawing a second bar beside it. Nothing here
+          persists: a reload loses the countdown and nothing the session
+          recorded.
         */}
-        <SetLoggingProvider
-          sessionId={sessionId}
-          exercises={exercises}
-          weightUnit={weightUnit}
-          onFailure={setFailure}
-          storage={storage}
-        >
-          {/*
-            EXE-05: the session's one rest. Inside the set path because a
-            logged set is what starts it, and at the shell rather than in a
-            renderer so a second set — or a set in another section — replaces
-            the rest instead of drawing a second bar beside it. Nothing here
-            persists: a reload loses the countdown and nothing the session
-            recorded.
-          */}
-          <RestTimerProvider>
-            <AppHeader
-              meta={<GlobalTimer seconds={seconds} />}
-              actions={
-                <Button
-                  variant="quiet"
-                  icon={<LogOut />}
-                  onClick={() => setAskedToExit(true)}
-                >
-                  Abandon
-                </Button>
-              }
-            >
-              <ClearLogo size="sm" />
-            </AppHeader>
+        <RestTimerProvider>
+          <AppHeader
+            meta={<GlobalTimer seconds={seconds} />}
+            actions={
+              <Button
+                variant="quiet"
+                icon={<LogOut />}
+                onClick={() => setAskedToExit(true)}
+              >
+                Abandon
+              </Button>
+            }
+          >
+            <ClearLogo size="sm" />
+          </AppHeader>
 
-            <Screen
-              title={SCREEN_TITLE}
-              pinnedFoot={
-                <PhoneFooter>
-                  <div className="clr-stack clr-stack--tight">
-                    <RestTimerBar />
-                    <SectionNavigation
+          <Screen
+            title={SCREEN_TITLE}
+            pinnedFoot={
+              <PhoneFooter>
+                <div className="clr-stack clr-stack--tight">
+                  <RestTimerBar />
+                  <SectionNavigation
+                    section={current}
+                    canGoBack={canGoBack}
+                    canGoForward={canGoForward}
+                    onPrevious={() => goTo(index - 1)}
+                    onContinue={() => goTo(index + 1)}
+                    onFinish={() => void finish()}
+                    ending={ending}
+                    advancing={advancing}
+                    onSavingChange={setAdvancing}
+                  />
+                </div>
+              </PhoneFooter>
+            }
+          >
+            <div className="clr-stack">
+              {/*
+                EXE-07's one statement about unsynced work. It is here rather
+                than in the error dialog because a queue that is retrying is
+                not a failed action: it must not interrupt a set, and it must
+                say the count once rather than once per set.
+              */}
+              <SetSyncNotice />
+
+              {current === undefined ? null : (
+                <>
+                  {/*
+                    The one frame for the active section (U35): its name,
+                    position, status and structures, with the session's
+                    progress and the collapsible jump list (U34) inside it.
+                  */}
+                  <div ref={header}>
+                    <SectionHeader
                       section={current}
-                      canGoBack={canGoBack}
-                      canGoForward={canGoForward}
-                      onPrevious={() => goTo(index - 1)}
-                      onContinue={() => goTo(index + 1)}
-                      onFinish={() => void finish()}
-                      ending={ending}
-                      advancing={advancing}
-                      onSavingChange={setAdvancing}
+                      position={index + 1}
+                      total={progress.total}
+                      progress={progress}
+                      onSelect={advancing || ending ? undefined : goTo}
                     />
                   </div>
-                </PhoneFooter>
-              }
-            >
-              <div className="clr-stack">
-                {/*
-                  EXE-07's one statement about unsynced work. It is here rather
-                  than in the error dialog because a queue that is retrying is
-                  not a failed action: it must not interrupt a set, and it must
-                  say the count once rather than once per set.
-                */}
-                <SetSyncNotice />
+                  {current.blocks.map((block) => (
+                    <BlockSlot key={block.blockId} block={block} />
+                  ))}
+                </>
+              )}
 
-                {current === undefined ? null : (
-                  <>
-                    {/*
-                      The one frame for the active section (U35): its name,
-                      position, status and structures, with the session's
-                      progress and the collapsible jump list (U34) inside it.
-                    */}
-                    <div ref={header}>
-                      <SectionHeader
-                        section={current}
-                        position={index + 1}
-                        total={progress.total}
-                        progress={progress}
-                        onSelect={advancing || ending ? undefined : goTo}
-                      />
-                    </div>
-                    {current.blocks.map((block) => (
-                      <BlockSlot key={block.blockId} block={block} />
-                    ))}
-                  </>
-                )}
+            </div>
+          </Screen>
 
-              </div>
-            </Screen>
+          <AbandonConfirmDialog
+            open={exiting}
+            onConfirm={() => void confirmAbandon()}
+            onCancel={cancelExit}
+          />
 
-            <AbandonConfirmDialog
-              open={exiting}
-              onConfirm={() => void confirmAbandon()}
-              onCancel={cancelExit}
+          {failure !== null && (
+            <ErrorDialog
+              open
+              error={failure}
+              title="That didn’t save"
+              onDismiss={() => setFailure(null)}
             />
-
-            {failure !== null && (
-              <ErrorDialog
-                open
-                error={failure}
-                title="That didn’t save"
-                onDismiss={() => setFailure(null)}
-              />
-            )}
-          </RestTimerProvider>
-        </SetLoggingProvider>
-      </BlockCompletionProvider>
-    </SwapProvider>
+          )}
+        </RestTimerProvider>
+      </SetLoggingProvider>
+    </BlockCompletionProvider>
   )
 }
 

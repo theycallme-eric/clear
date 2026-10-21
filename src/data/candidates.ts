@@ -130,6 +130,8 @@ export interface SectionCandidates {
 export interface CandidateRequest {
   readonly userId: string
   readonly focus: SessionFocus
+  /** Today's chosen workout goal; omitted/null retains the legacy profile-scoped read. */
+  readonly goal?: Enums<'goal_preset'> | null
   /** Omitted means the user's default location (DATA-01b §4). */
   readonly locationId?: string | null
   /** The session a session-scoped constraint may belong to, if there is one. */
@@ -438,13 +440,16 @@ export function createCandidatesClient(config: CandidatesClientConfig): Candidat
 
   return {
     async retrieve(request) {
-      const result = await db.rpc(CANDIDATE_SETS_RPC, {
+      const args = {
         p_user_id: request.userId,
         p_focus: request.focus,
         p_location_id: request.locationId ?? null,
         p_session_id: request.sessionId ?? null,
         p_floor: request.floor ?? CANDIDATE_FLOOR,
-      })
+      }
+      const result = request.goal == null
+        ? await db.rpc(CANDIDATE_SETS_RPC, args)
+        : await db.rpc('generation_candidate_sets_for_goal', { ...args, p_goal: request.goal })
 
       if (!result.ok) return result
 

@@ -1,53 +1,46 @@
 /**
- * EXE-06 — the one path a mid-workout swap is written through.
+ * U37 — the one place an exercise is swapped: Review, before the session exists.
  *
- * `swap.ts` is the arithmetic: what may replace a slot, what the replacement
- * prescribes, what the session looks like afterwards, what an undo goes back
- * to. This file is where that arithmetic meets a database, and it is the
- * mirror of `set-logging-provider.tsx` and `block-completion-provider.tsx` —
- * the same split, for the same reason. One writer, so "a swap appends a
- * revision and supersedes its predecessor" is a property of one module rather
- * than a habit every renderer has to keep.
+ * A swap used to be offered mid-workout (EXE-06), written through
+ * `swap_session_exercise` as a revision row. It is not any more: an active
+ * workout mounts no swap seam, so no card in it can draw or invoke one
+ * (`Workout.tsx`). What remains is the swap the athlete makes while reading
+ * the briefing, and there nothing has been written — the workout is the
+ * acceptance payload in memory, and Start persists whatever they settled on.
+ * So this provider changes that payload and calls no database write at all.
  *
  * What it owns:
  *
- *   · **The candidate read.** `generation_candidate_sets`, the same retrieval
- *     generation uses, asked *now* and against the location this session is
- *     being performed at — so a piece of equipment the user has since removed
- *     from that location is not offered, and a limitation they have since
- *     recorded is not either. One read serves every slot in the session, keyed
- *     in the query cache, because the sets are per session and not per slot.
- *   · **The write, and the snapshot after it.** `swap_session_exercise`
- *     answers both rows; `applySwap` turns them into the session the shell now
- *     holds. Nothing is re-read: a swap that succeeded and a re-read that
- *     failed would leave the screen prescribing a superseded movement, and the
- *     next set would be logged against it.
- *   · **Publishing that snapshot.** The shell hands it to the active-session
- *     query, which is what makes the replacement the prescription
- *     `SetLoggingProvider` resolves an id against. Later sets attach to the
- *     replacement because the session says so, not because a renderer
- *     remembered to re-key.
- *   · **Undo.** The same write, reading the predecessor's row — the prior
- *     exercise is prescribed again in the same slot. The sets logged against
- *     it stay where they are: nothing in this file touches `exercise_set_logs`,
- *     and there is no path here that could.
+ *   · **The candidate read.** Generation's goal-scoped retrieval for this
+ *     composition's chosen goal, user, focus and location — so
+ *     the alternatives respect the original constraints: equipment at that
+ *     location, the user's exclusions and every limitation are predicates in
+ *     SQL (GEN-02a), and `swapOptions` narrows only to the slot's own section
+ *     and away from movements already in the workout. A filter written here
+ *     would be a second opinion the database never gave. Each disclosure reads
+ *     again: saved limitations/equipment may have changed since another workout
+ *     was reviewed, and an app-wide cached list is not current eligibility.
+ *   · **The revised composition.** `swapInComposition` changes the movement and
+ *     its equipment and nothing about how much of it; the screen holds the
+ *     result and is told which slot changed, because anything it keyed to that
+ *     slot (a load override) was about the movement that is no longer there.
+ *   · **Undo.** Back to the movement generation composed for the slot, offered
+ *     only while that movement is not already elsewhere in the workout.
  *
- * What it deliberately does not do is decide eligibility. Equipment, the
- * user's exclusions and every limitation are predicates in SQL (GEN-02a); a
- * filter written here would be a second opinion the database never gave.
+ * Slots are named by `prescriptionSiteKey`, the same position Review's load
+ * suggestions use, so there is one definition of "which prescription".
  */
 import { useCallback, useMemo, useState, type ReactNode } from 'react'
 
-import { createError, ErrorCode, isErr, type AppError } from './errors'
-import { useQuery } from './query'
-import type { SessionSnapshot } from './schemas'
+import type { SectionCandidates } from '../data/candidates'
+import { isErr } from './errors'
+import type { QueryState } from './query'
+import type { SessionAcceptance } from './schemas'
 import {
-  applySwap,
-  exercisesInUse,
-  locateSlot,
-  prescriptionFor,
-  swapOptions,
-  undoTarget as undoTargetIn,
+  compositionSlot,
+  compositionSwapOptions,
+  exercisesInComposition,
+  swapInComposition,
 } from './swap'
 import {
   ExerciseSwapContext,
@@ -57,156 +50,138 @@ import {
 import { useWorkoutClients } from './workout-queries'
 import { SwapDialog } from '../ui/exercise-swap'
 
-/** The candidate sets for one session, cached for every slot in it. */
-export function swapCandidatesQueryKey(sessionId: string): string {
-  return `swap-candidates:${sessionId}`
+interface CandidateRead {
+  readonly source: SessionAcceptance
+  readonly site: string
+  readonly state: QueryState<SectionCandidates[]>
 }
 
-export interface SwapProviderProps {
-  /** The session being performed, as the shell currently holds it. */
-  snapshot: SessionSnapshot
-  /**
-   * Publishes the session a swap produced, so every reader — the renderers,
-   * and the set-logging attribution behind them — agrees immediately.
-   */
-  onSwapped: (snapshot: SessionSnapshot) => void
-  /** Where a refused swap is shown: the shell's one error surface. */
-  onFailure: (error: AppError) => void
+export interface ReviewSwapProviderProps {
+  /** The signed-in user; with none there is nothing to read, and no swap. */
+  userId: string | null
+  /** What generation composed: the movement an undo goes back to. */
+  original: SessionAcceptance
+  /** The composition as the screen currently holds it. */
+  composition: SessionAcceptance
+  /** Hands the revised composition back, with the slot that changed. */
+  onSwapped: (next: SessionAcceptance, site: string) => void
+  /** True while Start persists the composition: nothing may change it then. */
+  locked?: boolean
   children: ReactNode
 }
 
-export function SwapProvider({
-  snapshot,
+export function ReviewSwapProvider({
+  userId,
+  original,
+  composition,
   onSwapped,
-  onFailure,
+  locked = false,
   children,
-}: SwapProviderProps) {
-  const { sessions, candidates } = useWorkoutClients()
+}: ReviewSwapProviderProps) {
+  const { candidates } = useWorkoutClients()
+  const [read, setRead] = useState<CandidateRead | null>(null)
+  // A new composition cannot display a previous composition's open dialog.
+  const current = read?.source === original ? read : null
+  const openFor = current?.site ?? null
 
-  const [openFor, setOpenFor] = useState<string | null>(null)
-  const [busy, setBusy] = useState<string | null>(null)
+  const focus = composition.session_focus
+  const locationId = composition.location_id
+  const goal = composition.goal_preset
 
-  const session = snapshot.session
+  // This read belongs to the tap, not to the shared query cache. Closing,
+  // retrying or opening another slot replaces the pending identity, so a late
+  // answer cannot overwrite the current dialog. No model or database write.
+  const load = useCallback((site: string) => {
+    if (userId === null) return
+    const pending: CandidateRead = { source: original, site, state: { status: 'loading' } }
+    setRead(pending)
+    void candidates.retrieve({ userId, focus, locationId, goal }).then((result) => {
+      setRead((latest) => latest !== pending ? latest : {
+        ...pending,
+        state: isErr(result)
+          ? { status: 'error', error: result.error }
+          : { status: 'ready', data: result.value },
+      })
+    })
+  }, [candidates, focus, goal, locationId, original, userId])
 
-  // Asked only once something is open: a session nobody is revising has no
-  // business running generation's retrieval.
-  const query = useQuery(
-    openFor === null ? null : swapCandidatesQueryKey(session.id),
-    useCallback(
-      () =>
-        candidates.retrieve({
-          userId: session.user_id,
-          focus: session.session_focus,
-          // The location this session is being performed at, resolved by the
-          // query now rather than by the candidate set generation captured.
-          locationId: session.location_id,
-          sessionId: session.id,
-        }),
-      [candidates, session.id, session.location_id, session.session_focus, session.user_id],
-    ),
-  )
+  const retry = useCallback(() => {
+    if (!locked && openFor !== null) load(openFor)
+  }, [load, locked, openFor])
 
-  const slot = openFor === null ? null : locateSlot(snapshot, openFor)
+  const slot = openFor === null ? null : compositionSlot(composition, openFor)
 
   const options = useMemo<SwapOptionsState>(() => {
-    if (slot === null) return { status: 'loading' }
+    if (current === null || openFor === null || slot === null) return { status: 'loading' }
 
-    switch (query.state.status) {
+    switch (current.state.status) {
       case 'loading':
         return { status: 'loading' }
       case 'error':
-        return { status: 'error', error: query.state.error }
+        return { status: 'error', error: current.state.error }
       case 'ready': {
-        const available = swapOptions(
-          query.state.data,
-          slot.sectionType,
-          slot.exercise,
-          exercisesInUse(snapshot),
-        )
+        const available = compositionSwapOptions(current.state.data, composition, openFor)
         return available.length === 0 ? { status: 'empty' } : { status: 'ready', options: available }
       }
     }
-  }, [query.state, slot, snapshot])
+  }, [composition, current, openFor, slot])
 
-  /**
-   * One write, whichever direction it goes in. A swap and an undo differ only
-   * in which row the prescription is read from — the replacement's slot is the
-   * outgoing row either way — so they share a path rather than a shape.
-   */
-  const revise = useCallback(
-    async (
-      outgoingId: string,
-      prescribed: { readonly exerciseId: string; readonly equipment: string },
-      source: 'active' | 'predecessor',
-    ) => {
-      const located = locateSlot(snapshot, outgoingId)
-      if (located === null) return
-
-      const row =
-        source === 'active'
-          ? located.exercise
-          : (undoTargetIn(snapshot, outgoingId) ?? located.exercise)
-
-      const prescription = prescriptionFor(row, prescribed, located.sectionType)
-      if (prescription === null) {
-        onFailure(
-          createError(ErrorCode.VALIDATION_INVALID_FORMAT, {
-            details: { field: 'target_kind', workoutExerciseId: outgoingId },
-          }),
-        )
-        return
-      }
-
-      setBusy(outgoingId)
-      const result = await sessions.swap(outgoingId, prescription)
-      setBusy(null)
-
-      if (isErr(result)) {
-        // Nothing was written, so nothing is republished: the slot still
-        // prescribes what it prescribed, and the control stays available.
-        onFailure(result.error)
-        return
-      }
-
-      setOpenFor(null)
-      onSwapped(applySwap(snapshot, result.value))
+  const undoTarget = useCallback(
+    (site: string) => {
+      const before = compositionSlot(original, site)
+      const now = compositionSlot(composition, site)
+      if (before === null || now === null) return null
+      if (before.prescription.exercise_id === now.prescription.exercise_id) return null
+      // An undo that would put the same movement in the workout twice is not
+      // offered: it would undo one constraint by breaking another.
+      if (exercisesInComposition(composition).has(before.prescription.exercise_id)) return null
+      return before.prescription
     },
-    [onFailure, onSwapped, sessions, snapshot],
+    [composition, original],
   )
 
   const api = useMemo<ExerciseSwapApi>(
     () => ({
       openFor,
-      open(workoutExerciseId) {
-        if (locateSlot(snapshot, workoutExerciseId) === null) return
-        setOpenFor(workoutExerciseId)
+      open(site) {
+        if (locked || userId === null || compositionSlot(composition, site) === null) return
+        load(site)
       },
       close() {
-        setOpenFor(null)
+        setRead(null)
       },
       options,
-      retry: query.refetch,
+      retry,
       choose(option) {
-        if (openFor === null) return
-        void revise(openFor, option, 'active')
+        if (locked || openFor === null || options.status !== 'ready') return
+        if (!options.options.some((available) => available.exerciseId === option.exerciseId && available.equipment === option.equipment)) return
+        const site = openFor
+        setRead(null)
+        onSwapped(swapInComposition(composition, site, option), site)
       },
-      undoTarget(workoutExerciseId) {
-        return undoTargetIn(snapshot, workoutExerciseId)?.exercise_id ?? null
+      undoTarget(site) {
+        return undoTarget(site)?.exercise_id ?? null
       },
-      undo(workoutExerciseId) {
-        const previous = undoTargetIn(snapshot, workoutExerciseId)
+      undo(site) {
+        if (locked) return
+        const previous = undoTarget(site)
         if (previous === null) return
-        void revise(
-          workoutExerciseId,
-          { exerciseId: previous.exercise_id, equipment: previous.equipment_used },
-          'predecessor',
+        onSwapped(
+          swapInComposition(composition, site, {
+            exerciseId: previous.exercise_id,
+            equipment: previous.equipment,
+          }),
+          site,
         )
       },
-      isBusy(workoutExerciseId) {
-        return busy === workoutExerciseId
+      // Nothing is written here; what can be in flight is Start persisting
+      // the composition, and a swap then would change a screen that no
+      // longer matches what is being saved.
+      isBusy() {
+        return locked
       },
     }),
-    [busy, openFor, options, query.refetch, revise, snapshot],
+    [composition, load, locked, onSwapped, openFor, options, retry, undoTarget, userId],
   )
 
   return (
@@ -214,10 +189,10 @@ export function SwapProvider({
       {children}
       <SwapDialog
         open={slot !== null}
-        exerciseId={slot?.exercise.exercise_id ?? null}
+        exerciseId={slot?.prescription.exercise_id ?? null}
         options={options}
-        busy={busy !== null}
-        onRetry={query.refetch}
+        busy={locked}
+        onRetry={retry}
         onChoose={api.choose}
         onClose={api.close}
       />

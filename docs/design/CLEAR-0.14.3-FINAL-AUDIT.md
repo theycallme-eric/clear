@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `9e1b78b4c958c93c3dba27cb2f48a69289b0eccf16ae42cbbb9e0fd80fc3cd57` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027 and TASK-017 changes below) |
+| Runtime source hash of this audit's tree | `ea109c629efbdb29631cf7ed2e1d98e85500a10f056506e46f2b5706b07e6ae5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017 and TASK-028 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -288,6 +288,27 @@ trees and this head, from `git diff`:
   Current acceptance evidence is `src/app/Generate.test.tsx`, `src/state/generation-form.test.ts`,
   `src/test/generation-prompt.test.ts`, `src/test/generation-validation.test.ts` and the two
   generation-reliability matrix suites.
+
+- `9e1b78b4…` to `91995231…`: TASK-028 (REQ-015, JOURNEY-027, U37/U38) moves exercise swaps to
+  Review. The active workout mounts no swap provider and its set-logger and EMOM rows draw no swap
+  or undo control; Review's rows offer one, reading `generation_candidate_sets` for the
+  composition's user, focus and location and narrowing to the slot's section and away from
+  movements already in the workout. A swap changes only the movement and equipment of the
+  in-memory composition (and clears that row's load override); Start persists it, and undo
+  returns to the composed movement. The catalog coaching panel attributes its cues and regression
+  to the exercise library and states blank cues/regressions as answers. Changed:
+  `src/app/Review.tsx`, `src/app/Workout.tsx`, `src/state/swap.ts`, `src/state/swap-provider.tsx`,
+  `src/state/swap-context.ts`, `src/state/review.ts`, `src/ui/exercise-swap.tsx`,
+  `src/ui/exercise-coaching.tsx`, `src/ui/set-logger.tsx`, `src/ui/emom-block.tsx`. This **does**
+  change rendering of Review rows and workout movement rows; the pictures above predate it and are
+  not rebound (EX-13). Current acceptance evidence is `src/app/Review.test.tsx`,
+  `src/app/Workout.test.tsx` and `src/ui/exercise-coaching.test.tsx`.
+
+- `91995231…` to `ea109c62…`: Task028's review-authored eligibility correction replaces the
+  app-wide swap-alternatives cache with fresh disclosure-owned reads and selects the existing
+  goal-scoped retrieval using the workout's goal, retaining legacy null-goal behavior. Exact-head
+  author unit evidence is in `src/data/candidates.test.ts` and `src/app/Review.test.tsx`; no rendered
+  evidence is rebound. Independent review and full native verification remain separate gates.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

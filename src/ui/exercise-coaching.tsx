@@ -19,8 +19,12 @@
  *     saying so; a failed write says it failed and leaves the typed text in the
  *     field, because retyping a thought mid-workout is the cost this prevents.
  *
- * Like the swap controls, it draws nothing when the workout clients are absent
- * — a block renderer previewed on its own has no row to read or write.
+ * It draws nothing when the workout clients are absent — a block renderer
+ * previewed on its own has no row to read or write.
+ *
+ * Optional and per movement (U38): closed until asked for, named for the one
+ * movement it belongs to, and drawn inside that movement's row, so in a
+ * superset or circuit each panel's cues sit with their own exercise.
  *
  * Containment, from 0.14.3: the panel is one group and every label is inside
  * it. On an exercise's card it is that card's content; on its own it is one
@@ -53,6 +57,8 @@ export const NO_CUES_TEXT = 'No coaching cues are written for this movement.'
 export const NO_REGRESSION_TEXT = 'No regression is written for this movement.'
 export const NO_DEFINITION_TEXT =
   'The library has no entry for this movement, so there are no cues or regression.'
+/** Whose words the cues and regression are: the library's, never generated. */
+export const CATALOG_SOURCE_TEXT = 'From the exercise library'
 export const NOTE_SAVED_TEXT = 'Note saved'
 export const NOTE_FAILED_TEXT =
   'Your note didn’t save. It is still in the field — try again.'
@@ -134,15 +140,29 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
   }
 }
 
+/**
+ * The catalog's own words, attributed to it (U38). This is library content
+ * the user opened, not generated prose: REQ-010's removal of overviews and
+ * section introductions does not reach it, and it is never mixed into them.
+ * A blank cue or regression is the library saying nothing, and is stated as
+ * an answer rather than drawn as an empty bullet or box.
+ */
 function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
+  const cues = definition.coaching_cues.filter((cue) => cue.trim() !== '')
+  const regression = definition.regression?.trim() ? definition.regression : null
+
   return (
     <>
+      <p className="label" style={{ margin: 0 }}>
+        {CATALOG_SOURCE_TEXT}
+      </p>
+
       <Card heading="Cues">
-        {definition.coaching_cues.length === 0 ? (
+        {cues.length === 0 ? (
           <p style={{ margin: 0 }}>{NO_CUES_TEXT}</p>
         ) : (
           <ul aria-label="Coaching cues" style={{ margin: 0 }}>
-            {definition.coaching_cues.map((cue, index) => (
+            {cues.map((cue, index) => (
               <li key={index}>{cue}</li>
             ))}
           </ul>
@@ -150,9 +170,7 @@ function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
       </Card>
 
       <Card heading="Regression">
-        <p style={{ margin: 0 }}>
-          {definition.regression === null ? NO_REGRESSION_TEXT : definition.regression}
-        </p>
+        <p style={{ margin: 0 }}>{regression ?? NO_REGRESSION_TEXT}</p>
       </Card>
     </>
   )
