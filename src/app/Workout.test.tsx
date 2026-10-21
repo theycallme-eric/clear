@@ -669,6 +669,42 @@ describe('Workout — coaching and notes', () => {
     expect(within(panel).getByText('Goblet squat')).toBeInTheDocument()
   })
 
+  it('shows no legacy overview or section introduction, and keeps cues, labels and work (REQ-010)', async () => {
+    const OVERVIEW = 'Squat-led session with unilateral accessory work.'
+    const SECTION_NOTE = 'Build to a heavy set of five.'
+    const plain = snapshotFixture({
+      sections: COACHED,
+      session: { overview: OVERVIEW },
+      startedAt: new Date(Date.now() - ELAPSED_SECONDS * 1000).toISOString(),
+    })
+    const legacy = {
+      ...plain,
+      sections: plain.sections.map((entry) => ({
+        ...entry,
+        section: { ...entry.section, section_notes: SECTION_NOTE },
+      })),
+    }
+    const user = userEvent.setup()
+    await shell({ session: legacy, definitions: { 'back-squat': definitionFixture() } })
+
+    // The section label, the clock and the library's coaching still render;
+    // the prose never does.
+    expect(screen.getByRole('heading', { name: 'Primary lift' })).toBeInTheDocument()
+    expect(screen.getByRole('timer', { name: 'Session time' })).toHaveTextContent('12:30')
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+    expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
+    expect(within(panel).getByText('Goblet squat')).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(OVERVIEW)
+    expect(document.body).not.toHaveTextContent(SECTION_NOTE)
+
+    // The next section opens with its own label and work, and still no prose.
+    await user.click(screen.getByRole('button', { name: 'Next section' }))
+    expect(await screen.findByRole('heading', { name: 'Finisher' })).toBeInTheDocument()
+    expect(document.body).not.toHaveTextContent(SECTION_NOTE)
+  })
+
   it('says a movement with no cues and no regression has none', async () => {
     const user = userEvent.setup()
     await coached({

@@ -281,17 +281,49 @@ describe('the workout, as the briefing reads it', () => {
     expect(equipmentName('dumbbell-pair')).toBe('dumbbell pair')
   })
 
-  it('carries block and section notes, and tempo, exactly as written', () => {
-    expect(briefing.sections[0].notes).toBe('Move before you load.')
+  it('carries block notes and tempo exactly as written', () => {
     expect(briefing.sections[2].blocks[0].notes).toBe('Build then come back down.')
     expect(briefing.sections[1].blocks[0].exercises[0].tempo).toBe('3-1-1-0')
   })
+})
 
-  it('reads the overview, and treats whitespace as no overview at all', () => {
-    expect(briefing.overview).toBe('Every structure this app can prescribe, in one session.')
-    expect(
-      briefingOf({ workout: makeStructureSpectrumWorkout({ overview: '  ' }) }).overview,
-    ).toBeNull()
+describe('no generated overview or section introduction (REQ-010)', () => {
+  const LEGACY_OVERVIEW = 'Every structure this app can prescribe, in one session.'
+  const LEGACY_SECTION_NOTE = 'Move before you load.'
+  const nullProse = {
+    ...SPECTRUM,
+    overview: null,
+    sections: SPECTRUM.sections.map((section) => ({ ...section, section_notes: null })),
+  }
+
+  it('carries neither string from a legacy workout, at any depth', () => {
+    expect(SPECTRUM.overview).toBe(LEGACY_OVERVIEW)
+    expect(SPECTRUM.sections[0].section_notes).toBe(LEGACY_SECTION_NOTE)
+
+    const briefing = briefingOf()
+    expect(briefing).not.toHaveProperty('overview')
+    briefing.sections.forEach((section) => expect(section).not.toHaveProperty('notes'))
+    expect(allText(briefing)).not.toContain(LEGACY_OVERVIEW)
+    expect(allText(briefing)).not.toContain(LEGACY_SECTION_NOTE)
+  })
+
+  it('briefs a null-prose workout exactly as the legacy one', () => {
+    expect(briefingOf({ workout: nullProse })).toEqual(briefingOf())
+  })
+
+  it('keeps every section, block, label and prescription of a legacy workout', () => {
+    const briefing = briefingOf()
+    expect(briefing.sections.map((section) => section.title)).toEqual(
+      SPECTRUM.sections.map((section) => section.section_title),
+    )
+    expect(briefing.sections.map((section) => section.blocks.length)).toEqual(
+      SPECTRUM.sections.map((section) => section.blocks.length),
+    )
+    expect(briefing.movementCount).toBe(
+      SPECTRUM.sections
+        .flatMap((section) => section.blocks)
+        .reduce((total, block) => total + block.exercises.length, 0),
+    )
   })
 })
 

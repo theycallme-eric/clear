@@ -196,6 +196,17 @@ describe('History route', () => {
     expect(kept).toContainEqual(expect.stringMatching(/^Intensity \d+\/10$/))
   })
 
+  it('REQ-010: lists a legacy session by its label and facts, never its generated overview', async () => {
+    const OVERVIEW = 'Squat-led session with unilateral accessory work.'
+    const legacy = { ...sessionRow(1, '2026-09-24'), overview: OVERVIEW }
+    renderHistory({}, [legacy])
+
+    const list = await historyList()
+    expect(within(list).getByRole('heading', { level: 2, name: 'Session 1' })).toBeInTheDocument()
+    expect(within(list).getByText(/^Intensity \d+\/10$/)).toBeInTheDocument()
+    expect(screen.getByRole('main')).not.toHaveTextContent(OVERVIEW)
+  })
+
   it('tells a filter that matches nothing apart from having no workouts', async () => {
     const user = userEvent.setup()
     renderHistory({}, sessionRows(2))

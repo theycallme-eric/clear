@@ -32,6 +32,12 @@
  *     goal says so; a block with no clock shows no clock; an `absolute` load
  *     whose unit is not known is stated without one rather than in a unit
  *     guessed from a default.
+ *   · **No generated overview or section introduction is carried (REQ-010).**
+ *     `workout.overview` and each `section_notes` stay on the payload —
+ *     required, nullable, and still strings on legacy sessions — but the
+ *     briefing has no field for either, so nothing built from it can show one.
+ *     Block notes, labels and every prescription are kept. Restoration:
+ *     `GENERATION_CONTRACT.md` §13.
  *
  * Pure and React-free, like `session-detail.ts` beside it — which is the same
  * shape of module for HIST-01, one session later.
@@ -87,7 +93,6 @@ export interface ReviewSectionView {
   readonly key: string
   readonly title: string
   readonly type: Enums<'section_type'>
-  readonly notes: string | null
   readonly blocks: readonly ReviewBlockView[]
   /** How many movements are under this heading, across its blocks. */
   readonly movementCount: number
@@ -102,7 +107,6 @@ export interface ReviewFact {
 export interface ReviewBriefing {
   /** The workout's own title, which is the screen's heading. */
   readonly title: string
-  readonly overview: string | null
   /**
    * Intensity, anchor, goal and duration, in that order and as one list — the
    * header renders four readings of the same kind, so it is given four of the
@@ -254,7 +258,6 @@ export function reviewBriefing(
 
   return {
     title: acceptance.workout.title,
-    overview: blankToNull(acceptance.workout.overview),
     facts: [
       { label: INTENSITY_LABEL, value: briefingIntensity(acceptance.effective_intensity) },
       { label: ANCHOR_LABEL, value: formatFocus(acceptance.session_focus) },
@@ -290,7 +293,6 @@ function reviewSection(
     key,
     title: section.section_title,
     type: section.section_type,
-    notes: blankToNull(section.section_notes),
     blocks,
     movementCount: blocks.reduce((total, block) => total + block.exercises.length, 0),
   }
