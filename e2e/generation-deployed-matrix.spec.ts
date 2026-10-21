@@ -358,7 +358,8 @@ test.describe('deployed UAT matrix: nine entries to Review, model-free (REQ-028)
         step = 'welcome'
         await visit(routeOf('Welcome'))
         await expectScreen(page, 'Welcome', 'CLEAR')
-        const door = entry.door === 'sign_up' ? 'Create account' : 'Sign in'
+        // U14: one Get started entry serves both doors.
+        const door = 'Get started'
         await page.getByRole('button', { name: door, exact: true }).click()
 
         // ── OTP Login ────────────────────────────────────────────────────────

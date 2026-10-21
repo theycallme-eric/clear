@@ -7,9 +7,13 @@
  * from `RootLayout`, `PageHeader` is `AppHeader`, and only the screen title
  * sits on the atmosphere. The step's heading, its guidance, the failure and the
  * current field are one form `Card`; the actions use the measured pinned
- * footer, with the quiet way back as a `TextAction` under the primary.
- * `?mode=create` keeps first-run intent explicit through refresh and history
- * while using the same OTP backend.
+ * footer. The way back to email entry is an inline `TextAction` beside the
+ * address the code went to, inside the card (U14).
+ *
+ * One Get started entry serves new and returning accounts (U14): the code
+ * signs a returning athlete in and creates a new athlete's account, and the
+ * route guard sends each on (`/onboarding` or `/`). A legacy `?mode=create`
+ * link renders the same screen.
  *
  * Two things here are the requirement rather than decoration:
  *
@@ -41,8 +45,7 @@
  * arrival for an inline update and a failure appears with no entrance
  * animation, per IA.md §4.
  */
-import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import type { OtpError } from '../data/otp'
 import { isCodeLike, isEmailLike, otpError } from '../data/otp'
@@ -68,8 +71,14 @@ import { Screen } from './Screen'
  */
 export const RESEND_COOLDOWN_SECONDS = 60
 
+/** The screen's title: the same words as Welcome's one entry. */
+const LOGIN_TITLE = 'Get started'
+
 const REQUEST_FORM_ID = 'clear-auth-request'
 const VERIFY_FORM_ID = 'clear-auth-verify'
+
+/** The address and its change action wrap onto two lines rather than squeeze. */
+const WRAP_ROW_STYLE: CSSProperties = { flexWrap: 'wrap', rowGap: 0 }
 
 type Step = 'request' | 'verify'
 
@@ -80,11 +89,8 @@ export function Login() {
 }
 
 function LoginScreen() {
-  const [searchParams] = useSearchParams()
   const { otp, auth } = useSignInClients()
   const cooldown = useCountdown()
-  const isCreatingAccount = searchParams.get('mode') === 'create'
-  const screenTitle = isCreatingAccount ? 'Create account' : 'Sign in'
 
   const [step, setStep] = useState<Step>('request')
   const [email, setEmail] = useState('')
@@ -94,6 +100,8 @@ function LoginScreen() {
   const [notice, setNotice] = useState<string | null>(null)
 
   const codeRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
+  const emailRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null)
+  const changingEmail = useRef(false)
 
   // CORE-05: both steps submit through the shared helper, so a rejected
   // address or code puts the caret back on the field that was rejected —
@@ -103,8 +111,12 @@ function LoginScreen() {
 
   // The code has arrived somewhere else entirely; the least this screen can do
   // is have the caret waiting in the right field when the user comes back.
+  // Changing the email is a return to that field, so the caret goes back to
+  // it; the screen's first paint leaves focus where the route put it.
   useEffect(() => {
     if (step === 'verify') codeRef.current?.focus()
+    else if (changingEmail.current) emailRef.current?.focus()
+    changingEmail.current = false
   }, [step])
 
   async function sendCode(address: string): Promise<boolean> {
@@ -170,7 +182,8 @@ function LoginScreen() {
     })()
   }
 
-  function onUseAnotherEmail() {
+  function onChangeEmail() {
+    changingEmail.current = true
     setStep('request')
     setCode('')
     setError(null)
@@ -193,7 +206,7 @@ function LoginScreen() {
         <ClearLogo size="md" />
       </AppHeader>
       <Screen
-        title={screenTitle}
+        title={LOGIN_TITLE}
         pinnedFoot={
           <PhoneFooter>
             <ActionRow>
@@ -228,9 +241,6 @@ function LoginScreen() {
                   >
                     {resendLabel}
                   </Button>
-                  <TextAction block onClick={onUseAnotherEmail} disabled={busy !== null}>
-                    Use a different email
-                  </TextAction>
                 </>
               )}
             </ActionRow>
@@ -241,11 +251,22 @@ function LoginScreen() {
             stays put while the field inside it swaps. */}
         <Card heading={step === 'request' ? 'Your email' : 'Your code'}>
           <div className="clr-stack">
-            <p style={{ margin: 0 }}>
-              {isCreatingAccount
-                ? 'Enter your email to create your account. We’ll send a one-time code.'
-                : 'We email a one-time code. No password to forget.'}
-            </p>
+            {step === 'request' ? (
+              <p style={{ margin: 0 }}>
+                New or returning, enter your email and we’ll send a one-time code.
+              </p>
+            ) : (
+              // The address the code went to, with the way to change it beside
+              // it — in the card, where the mistake would be noticed.
+              <div className="clr-row" style={WRAP_ROW_STYLE}>
+                <p style={{ margin: 0 }}>
+                  Enter the code sent to <strong>{email.trim()}</strong>.
+                </p>
+                <TextAction onClick={onChangeEmail} disabled={busy !== null}>
+                  Change email
+                </TextAction>
+              </div>
+            )}
 
             {/* Outside the keyed subtree: a failure must not animate in. */}
             {error !== null && (
@@ -277,6 +298,7 @@ function LoginScreen() {
                     onChange={setEmail}
                     placeholder="you@example.com"
                     invalid={error?.failure === 'invalid-email'}
+                    inputRef={emailRef}
                     required
                   />
                 </form>
@@ -296,7 +318,6 @@ function LoginScreen() {
                     value={code}
                     onChange={setCode}
                     placeholder="6–10 digits"
-                    helperText={`Sent to ${email.trim()}`}
                     invalid={
                       error?.failure === 'invalid-code' ||
                       error?.failure === 'expired-code'

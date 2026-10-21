@@ -11,8 +11,9 @@ import { backend } from './support/backend'
  *
  * `auth-otp.spec.ts` proves the code against the public endpoint with no screen
  * in the way. This file proves the screen: Welcome, then the one door at
- * `/login` in both of its modes, driven the way a person drives it — request a
- * code, type the project-issued digits, press Verify — with no paid model call
+ * `/login`, driven the way a person drives it — request a
+ * code, type the project-issued digits, press Verify — through the one Get
+ * started entry that serves new and returning accounts, with no paid model call
  * anywhere near it, so it can run wherever there is a project to run against.
  *
  * Three properties are asserted rather than assumed:
@@ -42,9 +43,12 @@ function routeOf(screen: string): string {
 
 /** `src/data/otp.ts` — GoTrue will not say whether a code is wrong or stale. */
 const TYPED_CODE_ERRORS = [
-  'That code is not right. Check the digits and try again.',
-  'That code has expired. Request a new one.',
+  'That code is not right. Check the digits, or resend a new code.',
+  'That code has expired. Resend a new code to continue.',
 ]
+
+/** U14: the one passwordless entry, Welcome's action and the screen's title. */
+const ENTRY = 'Get started'
 
 /** A code of the same shape as the issued one that is certainly not it. */
 function wrongCodeFor(issued: string): string {
@@ -127,24 +131,20 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
   }
 
   /**
-   * From Welcome through the chosen entry to the code field: the delivery
+   * From Welcome through the one entry to the code field: the delivery
    * request is observed and answered here, and nothing else is replaced.
    */
   async function requestCode(
     page: Page,
     visit: (path: string) => Promise<void>,
     checkA11y: () => Promise<void>,
-    entry: 'Create account' | 'Sign in',
     email: string,
   ) {
     await visit(routeOf('Welcome'))
     await expectScreen(page, checkA11y, 'Welcome', 'CLEAR')
-    await page.getByRole('button', { name: entry, exact: true }).click()
+    await page.getByRole('button', { name: ENTRY, exact: true }).click()
 
-    await expectScreen(page, checkA11y, 'OTP Login', entry)
-    expect(new URL(page.url()).searchParams.get('mode')).toBe(
-      entry === 'Create account' ? 'create' : null,
-    )
+    await expectScreen(page, checkA11y, 'OTP Login', ENTRY)
 
     // Delivery only: see the header.
     let deliveryRequested = false
@@ -164,7 +164,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
     await expect(code).toBeFocused()
     expect(deliveryRequested, 'the Login screen never asked for a code').toBe(true)
     // The verify step is the same screen with a different field: scan it too.
-    await expectScreen(page, checkA11y, 'OTP Login', entry)
+    await expectScreen(page, checkA11y, 'OTP Login', ENTRY)
     return code
   }
 
@@ -190,7 +190,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
     visit,
     checkA11y,
   }) => {
-    await requestCode(page, visit, checkA11y, 'Create account', emails.new)
+    await requestCode(page, visit, checkA11y, emails.new)
 
     const response = await submitCode(page, await issueCode(emails.new))
     expect(response.status(), 'the public verify endpoint refused the code').toBe(200)
@@ -209,7 +209,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
       if (frame === page.mainFrame()) paths.push(new URL(frame.url()).pathname)
     })
 
-    await requestCode(page, visit, checkA11y, 'Sign in', emails.returning)
+    await requestCode(page, visit, checkA11y, emails.returning)
 
     const response = await submitCode(page, await issueCode(emails.returning))
     expect(response.status(), 'the public verify endpoint refused the code').toBe(200)
@@ -226,7 +226,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
     checkA11y,
   }) => {
     const email = emails['wrong-code']
-    const code = await requestCode(page, visit, checkA11y, 'Sign in', email)
+    const code = await requestCode(page, visit, checkA11y, email)
 
     const refused = await submitCode(page, wrongCodeFor(await issueCode(email)))
     expect(refused.status(), 'the public verify endpoint accepted a wrong code').toBeGreaterThanOrEqual(400)
@@ -244,7 +244,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
     await expect(alert.locator('svg')).toBeVisible()
     await expect(code).toHaveAttribute('aria-invalid', 'true')
     await expect(code).toBeFocused()
-    await expectScreen(page, checkA11y, 'OTP Login', 'Sign in')
+    await expectScreen(page, checkA11y, 'OTP Login', ENTRY)
 
     // The refusal did not strand the user: a fresh code goes through.
     const accepted = await submitCode(page, await issueCode(email))

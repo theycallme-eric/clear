@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Locator, Page, Response } from '@playwright/test'
 
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
 
@@ -29,13 +29,20 @@ import { backend } from './support/backend'
  * never share an account — or its single live code — with the seeded slots
  * the RLS and Settings specs sign in as.
  *
- * The second block is the screen (REQ-016): the same project-issued code, typed
- * into `/login` in both of its modes. It asserts the 0.14.3 form contract on
- * the rendered page — one form card holding the step heading, the field and
- * the typed failure; the actions in the pinned footer — while a new user still
- * lands Onboarding, a returning one lands Home, and a wrong code is recovered
- * from in place. The one request replaced is delivery (`/auth/v1/otp`), which
- * would mail an undeliverable address; verification is the public endpoint.
+ * The second block is the screen (REQ-016, U14): the same project-issued code,
+ * typed into `/login` after Welcome's one Get started entry, for a new and a
+ * returning account alike. It asserts the 0.14.3 form contract on the rendered
+ * page — one form card holding the step heading, the concise guidance, the
+ * field, the inline change-email action and the typed failure; Verify and
+ * Resend in the pinned footer — while a new user still lands Onboarding, a
+ * returning one lands Home, a wrong or expired code is recovered from in
+ * place, Resend waits out its cooldown, and Change email returns to email
+ * entry. The one request replaced is delivery (`/auth/v1/otp`), which would
+ * mail an undeliverable address; verification is the public endpoint.
+ *
+ * The third block is Welcome's composition (U13), which needs no backend: the
+ * wordmark and one card holding the entry, centred, and still usable at a
+ * short height and with enlarged text.
  */
 
 /** GoTrue's typed refusal for a code that is spent, superseded or stale. */
@@ -115,9 +122,15 @@ test.describe('one-time code', () => {
 
 /** `src/data/otp.ts` — GoTrue will not say whether a code is wrong or stale. */
 const TYPED_CODE_ERRORS = [
-  'That code is not right. Check the digits and try again.',
-  'That code has expired. Request a new one.',
+  'That code is not right. Check the digits, or resend a new code.',
+  'That code has expired. Resend a new code to continue.',
 ]
+
+/** `src/app/Login.tsx` — the cooldown Resend waits out after every send. */
+const RESEND_COOLDOWN_SECONDS = 60
+
+/** U14: the one passwordless entry, Welcome's action and the screen's title. */
+const ENTRY = 'Get started'
 
 /** A code of the same shape as the issued one that is certainly not it. */
 function wrongCodeFor(issued: string): string {
@@ -125,15 +138,8 @@ function wrongCodeFor(issued: string): string {
   return `${issued.slice(0, -1)}${(last + 1) % 10}`
 }
 
-const SCREEN_SLOTS = ['new', 'returning', 'wrong-code'] as const
+const SCREEN_SLOTS = ['new', 'returning', 'wrong-code', 'expired-code', 'change-email'] as const
 type ScreenSlot = (typeof SCREEN_SLOTS)[number]
-
-type Entry = 'create' | 'sign-in'
-
-const ENTRIES: Record<Entry, { path: string; heading: string }> = {
-  create: { path: '/login?mode=create', heading: 'Create account' },
-  'sign-in': { path: '/login', heading: 'Sign in' },
-}
 
 test.describe('one-time code screen (REQ-016)', () => {
   test.skip(!backend.available, backend.reason)
@@ -191,23 +197,31 @@ test.describe('one-time code screen (REQ-016)', () => {
 
   /**
    * The form contract as it renders: one card, with its accent bar, holding the
-   * step heading and the field in its element frame; the named actions in the
-   * pinned footer below it; nothing wider than the viewport.
+   * step heading, its concise guidance and the field in its element frame, plus
+   * only the named in-card actions; the named actions in the pinned footer
+   * below it; nothing wider than the viewport.
    */
   async function expectFormCard(
     page: Page,
-    step: { heading: string; field: Locator; actions: (string | RegExp)[] },
+    step: {
+      heading: string
+      guidance: RegExp
+      field: Locator
+      cardActions: RegExp[]
+      actions: (string | RegExp)[]
+    },
   ) {
     const main = page.locator('main')
     const card = main.locator('.clr-card')
     await expect(card).toHaveCount(1)
     await expect(card.locator('.clr-card__bar')).toBeVisible()
     await expect(card.getByRole('heading', { level: 2, name: step.heading })).toBeVisible()
+    await expect(card.getByText(step.guidance)).toBeVisible()
     await expect(card.locator('.clr-field.clr-chamfer--sm').filter({ has: step.field })).toBeVisible()
     await expect(card.locator('h1')).toHaveCount(0)
 
     const footer = main.locator('.clr-footer')
-    await expect(card.getByRole('button')).toHaveCount(0)
+    await expect(card.getByRole('button')).toHaveText(step.cardActions)
     for (const name of step.actions) {
       await expect(footer.getByRole('button', { name })).toBeVisible()
     }
@@ -233,44 +247,97 @@ test.describe('one-time code screen (REQ-016)', () => {
     ).toBe(true)
   }
 
-  /** Open the door in one mode and ask for a code; delivery alone is replaced. */
+  /** Delivery alone is replaced; returns how many sends the screen asked for. */
+  async function replaceDelivery(page: Page) {
+    const sent: string[] = []
+    await page.route('**/auth/v1/otp', async (route) => {
+      const body = route.request().postDataJSON() as { email?: unknown } | null
+      sent.push(typeof body?.email === 'string' ? body.email : '')
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+    })
+    return sent
+  }
+
+  const EMAIL_STEP = { heading: 'Your email', guidance: /^New or returning, enter your email/ }
+  const CODE_STEP = { heading: 'Your code', guidance: /^Enter the code sent to / }
+  const CODE_ACTIONS = ['Verify', /^Resend/]
+
+  /** The form card at the code step, for the address the code went to. */
+  async function expectCodeStep(page: Page, address: string) {
+    const code = page.getByLabel('Code')
+    await expectFormCard(page, {
+      ...CODE_STEP,
+      field: code,
+      cardActions: [/^Change email/],
+      actions: CODE_ACTIONS,
+    })
+    await expect(page.locator('main .clr-card').getByText(address, { exact: true })).toBeVisible()
+    return code
+  }
+
+  /**
+   * Welcome's one Get started entry, then a code for `address`. The same entry
+   * serves new and returning accounts; there is no mode to choose.
+   */
   async function requestCode(
     page: Page,
     visit: (path: string) => Promise<void>,
     checkA11y: () => Promise<void>,
-    entry: Entry,
     address: string,
   ) {
-    const { path, heading } = ENTRIES[entry]
-    await visit(path)
-    await expect(page.locator('main h1')).toHaveAccessibleName(heading)
+    await visit('/welcome')
+    const entries = page.locator('main').getByRole('button')
+    await expect(entries).toHaveText([ENTRY])
+    await entries.click()
+    await expect(page).toHaveURL((url) => url.pathname === '/login' && url.search === '')
+    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
 
-    let deliveryRequested = false
-    await page.route('**/auth/v1/otp', async (route) => {
-      deliveryRequested = true
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
-    })
+    const sent = await replaceDelivery(page)
 
     const emailField = page.getByLabel('Email')
     await expectFormCard(page, {
-      heading: 'Your email',
+      ...EMAIL_STEP,
       field: emailField,
+      cardActions: [],
       actions: ['Send code'],
     })
+    await checkA11y()
     await emailField.fill(address)
     await page.getByRole('button', { name: 'Send code', exact: true }).click()
 
-    const code = page.getByLabel('Code')
-    await expect(code).toBeFocused()
-    expect(deliveryRequested, 'the Login screen never asked for a code').toBe(true)
-    await expect(page.locator('main h1')).toHaveAccessibleName(heading)
-    await expectFormCard(page, {
-      heading: 'Your code',
-      field: code,
-      actions: ['Verify', /^Resend/, /^Use a different email/],
-    })
+    await expect(page.getByLabel('Code')).toBeFocused()
+    expect(sent, 'the Login screen never asked for a code').toEqual([address])
+    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
+    const code = await expectCodeStep(page, address)
     await checkA11y()
-    return code
+    return { code, sent }
+  }
+
+  /** A code refused in place: the typed sentence and glyph, in the card. */
+  async function expectRefusedInPlace(page: Page, refused: Response, code: Locator) {
+    expect(refused.status(), 'the public verify endpoint accepted the code').toBeGreaterThanOrEqual(
+      400,
+    )
+    const raw = (await refused.json().catch(() => null)) as { msg?: unknown } | null
+
+    // The typed sentence, with its glyph, inside the card — not on the atmosphere.
+    const alert = page.locator('main .clr-card').getByRole('alert')
+    await expect(alert).toBeVisible()
+    const shown = (await alert.innerText()).trim()
+    expect(TYPED_CODE_ERRORS, 'the error is not one of the typed sentences').toContain(shown)
+    if (typeof raw?.msg === 'string') {
+      expect(shown, 'the backend message reached the screen').not.toContain(raw.msg)
+    }
+    await expect(alert.locator('svg')).toBeVisible()
+
+    // The refused field is the invalid element frame, and the caret is back on it.
+    await expect(code).toHaveAttribute('aria-invalid', 'true')
+    await expect(code).toBeFocused()
+    await expect(
+      page.locator('main .clr-card .clr-field').filter({ has: code }).locator('.clr-field__glyph'),
+    ).toBeVisible()
+    // Still /login, with the recovery paths on screen.
+    await expect(page).toHaveURL((url) => url.pathname === '/login')
   }
 
   /** Type a code, press Verify, and return the public endpoint's answer. */
@@ -295,12 +362,12 @@ test.describe('one-time code screen (REQ-016)', () => {
     await expect(page.locator('main h1')).toHaveAccessibleName(heading, { timeout: 30_000 })
   }
 
-  test('a new user creates an account in the form card and lands Onboarding', async ({
+  test('a new user gets started in the form card and lands Onboarding', async ({
     page,
     visit,
     checkA11y,
   }) => {
-    await requestCode(page, visit, checkA11y, 'create', emails.new)
+    await requestCode(page, visit, checkA11y, emails.new)
 
     const response = await submitCode(page, await issueCode(emails.new))
     expect(response.status(), 'the public verify endpoint refused the code').toBe(200)
@@ -308,7 +375,7 @@ test.describe('one-time code screen (REQ-016)', () => {
     await expectLanded(page, '/onboarding', 'Set up CLEAR')
   })
 
-  test('a returning user signs in through the form card and lands Home', async ({
+  test('a returning user gets started through the same entry and lands Home', async ({
     page,
     visit,
     checkA11y,
@@ -319,7 +386,7 @@ test.describe('one-time code screen (REQ-016)', () => {
       if (frame === page.mainFrame()) paths.push(new URL(frame.url()).pathname)
     })
 
-    await requestCode(page, visit, checkA11y, 'sign-in', emails.returning)
+    await requestCode(page, visit, checkA11y, emails.returning)
 
     const response = await submitCode(page, await issueCode(emails.returning))
     expect(response.status(), 'the public verify endpoint refused the code').toBe(200)
@@ -334,36 +401,11 @@ test.describe('one-time code screen (REQ-016)', () => {
     checkA11y,
   }) => {
     const address = emails['wrong-code']
-    const code = await requestCode(page, visit, checkA11y, 'sign-in', address)
+    const { code } = await requestCode(page, visit, checkA11y, address)
 
     const refused = await submitCode(page, wrongCodeFor(await issueCode(address)))
-    expect(
-      refused.status(),
-      'the public verify endpoint accepted a wrong code',
-    ).toBeGreaterThanOrEqual(400)
-    const raw = (await refused.json().catch(() => null)) as { msg?: unknown } | null
-
-    // The typed sentence, with its glyph, inside the card — not on the atmosphere.
-    const alert = page.locator('main .clr-card').getByRole('alert')
-    await expect(alert).toBeVisible()
-    const shown = (await alert.innerText()).trim()
-    expect(TYPED_CODE_ERRORS, 'the error is not one of the typed sentences').toContain(shown)
-    if (typeof raw?.msg === 'string') {
-      expect(shown, 'the backend message reached the screen').not.toContain(raw.msg)
-    }
-    await expect(alert.locator('svg')).toBeVisible()
-
-    // The refused field is the invalid element frame, and the caret is back on it.
-    await expect(code).toHaveAttribute('aria-invalid', 'true')
-    await expect(code).toBeFocused()
-    await expect(
-      page.locator('main .clr-card .clr-field').filter({ has: code }).locator('.clr-field__glyph'),
-    ).toBeVisible()
-    await expectFormCard(page, {
-      heading: 'Your code',
-      field: code,
-      actions: ['Verify', /^Resend/, /^Use a different email/],
-    })
+    await expectRefusedInPlace(page, refused, code)
+    await expectCodeStep(page, address)
     await checkA11y()
 
     // The refusal did not strand the user: a fresh code goes through.
@@ -371,5 +413,175 @@ test.describe('one-time code screen (REQ-016)', () => {
     expect(accepted.status(), 'the public verify endpoint refused the code').toBe(200)
     await expect(page.getByRole('alert')).toHaveCount(0)
     await expectLanded(page, '/onboarding', 'Set up CLEAR')
+  })
+
+  test('an expired code is refused in place and Resend recovers after its cooldown', async ({
+    page,
+    visit,
+    checkA11y,
+  }) => {
+    // The cooldown is a minute of wall time; the page's clock is moved instead.
+    await page.clock.install()
+    const address = emails['expired-code']
+    const { code, sent } = await requestCode(page, visit, checkA11y, address)
+
+    // Expired the way a person expires one: a newer code supersedes it.
+    const expired = await issueCode(address)
+    await issueCode(address)
+    const refused = await submitCode(page, expired)
+    await expectRefusedInPlace(page, refused, code)
+
+    // Resend is the recovery, and it says how long it is holding.
+    const resend = page.locator('main .clr-footer').getByRole('button', { name: /^Resend/ })
+    await expect(resend).toBeDisabled()
+    await expect(resend).toHaveText(/^Resend in \d+s$/)
+    await checkA11y()
+
+    await page.clock.fastForward((RESEND_COOLDOWN_SECONDS + 1) * 1_000)
+    await expect(resend).toHaveText('Resend code')
+    await expect(resend).toBeEnabled()
+    await resend.click()
+    await expect(page.locator('main [role="status"]')).toContainText(`Code sent to ${address}`)
+    expect(sent, 'Resend did not ask for a new code').toEqual([address, address])
+    await expect(resend).toBeDisabled()
+
+    const accepted = await submitCode(page, await issueCode(address))
+    expect(accepted.status(), 'the public verify endpoint refused the new code').toBe(200)
+    await expectLanded(page, '/onboarding', 'Set up CLEAR')
+  })
+
+  test('Change email returns to email entry and the corrected address verifies', async ({
+    page,
+    visit,
+    checkA11y,
+  }) => {
+    const address = emails['change-email']
+    const typo = address.replace('@example.com', '@exmaple.com')
+    const { sent } = await requestCode(page, visit, checkA11y, typo)
+
+    await page.locator('main .clr-card').getByRole('button', { name: /^Change email/ }).click()
+
+    // Back at email entry, caret in the field, the address kept to correct.
+    const emailField = page.getByLabel('Email')
+    await expect(emailField).toBeFocused()
+    await expect(emailField).toHaveValue(typo)
+    await expectFormCard(page, {
+      ...EMAIL_STEP,
+      field: emailField,
+      cardActions: [],
+      actions: ['Send code'],
+    })
+    await expect(page.getByRole('button', { name: 'Send code', exact: true })).toBeEnabled()
+    await checkA11y()
+
+    await emailField.fill(address)
+    await page.getByRole('button', { name: 'Send code', exact: true }).click()
+    await expect(page.getByLabel('Code')).toBeFocused()
+    expect(sent, 'the corrected address was not sent a code').toEqual([typo, address])
+    await expectCodeStep(page, address)
+
+    const accepted = await submitCode(page, await issueCode(address))
+    expect(accepted.status(), 'the public verify endpoint refused the code').toBe(200)
+    await expectLanded(page, '/onboarding', 'Set up CLEAR')
+  })
+})
+
+test.describe('Welcome composition (U13)', () => {
+  /**
+   * The wordmark and one card holding the line, its guidance and the single
+   * entry; the group centred in the scroller when it fits, and every part
+   * reachable, with nothing sideways, when it does not.
+   */
+  async function expectWelcomeCard(page: Page, { centred }: { centred: boolean }) {
+    const main = page.locator('main')
+    const card = main.locator('.clr-card')
+    await expect(card).toHaveCount(1)
+    await expect(card.locator('p')).toHaveText(['Strength training, simplified.'])
+    await expect(main.getByRole('button')).toHaveText([ENTRY])
+    const entry = card.getByRole('button', { name: ENTRY, exact: true })
+    await expect(main.locator('h1')).toHaveAccessibleName('CLEAR')
+
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      ),
+      'the document scrolls sideways',
+    ).toBe(true)
+
+    const scroller = main.locator('.clr-scroll-region__scroller')
+    const heading = main.locator('h1')
+    const [scrollerBox, headingBox, cardBox] = await Promise.all([
+      scroller.boundingBox(),
+      heading.boundingBox(),
+      card.boundingBox(),
+    ])
+    if (scrollerBox === null || headingBox === null || cardBox === null) {
+      throw new Error('the Welcome group has no box')
+    }
+    expect(cardBox.x, 'the card starts inside the scroller').toBeGreaterThanOrEqual(scrollerBox.x)
+    expect(cardBox.x + cardBox.width, 'the card ends inside the scroller').toBeLessThanOrEqual(
+      scrollerBox.x + scrollerBox.width + 1,
+    )
+    // Never clipped above: the wordmark is reachable at the top.
+    expect(headingBox.y, 'the wordmark is cut off above').toBeGreaterThanOrEqual(scrollerBox.y - 1)
+
+    if (centred) {
+      const above = headingBox.y - scrollerBox.y
+      const below = scrollerBox.y + scrollerBox.height - (cardBox.y + cardBox.height)
+      expect(Math.abs(above - below), 'the group is not centred').toBeLessThanOrEqual(
+        Math.max(48, scrollerBox.height * 0.1),
+      )
+    }
+
+    // The entry is reachable and works at any size.
+    await entry.scrollIntoViewIfNeeded()
+    await expect(entry).toBeInViewport()
+  }
+
+  test('settled: one centred card holds the line and the one entry', async ({
+    page,
+    visit,
+    checkA11y,
+  }) => {
+    await visit('/welcome')
+    await expectWelcomeCard(page, { centred: true })
+    await checkA11y()
+
+    await page.getByRole('button', { name: ENTRY, exact: true }).click()
+    await expect(page).toHaveURL((url) => url.pathname === '/login')
+    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
+  })
+
+  test('short height: the card scrolls instead of clipping', async ({ page, visit, checkA11y }) => {
+    const viewport = page.viewportSize()
+    await page.setViewportSize({ width: viewport?.width ?? 375, height: 320 })
+    await visit('/welcome')
+    await expectWelcomeCard(page, { centred: false })
+    await checkA11y()
+  })
+
+  test('enlarged text: the card stays one usable column', async ({ page, visit, checkA11y }) => {
+    await visit('/welcome')
+    // The same enlargement `app-shell.spec.ts` proves the label tier against.
+    await page.addStyleTag({
+      content:
+        '.clr-screen { --label-sm-size: 18px; --label-md-size: 20px; --label-lg-size: 24px; --paragraph-md-size: 20px; }',
+    })
+    await expectWelcomeCard(page, { centred: false })
+    expect(
+      await page.locator('main :is(p, button, h1)').evaluateAll(
+        (elements) =>
+          elements.filter((element) => {
+            const style = getComputedStyle(element)
+            return (
+              /(hidden|clip)/.test(style.overflowX) &&
+              style.textOverflow !== 'ellipsis' &&
+              element.scrollWidth > element.clientWidth + 1
+            )
+          }).length,
+      ),
+      'text is clipped',
+    ).toBe(0)
+    await checkA11y()
   })
 })

@@ -161,7 +161,7 @@ const test = authenticatedTest.extend<{ evidence: Evidence }>({
       await heading(page, title)
       if (isProtectedPath(at)) {
         // A protected route that fell back to Welcome is a failure, not a picture.
-        await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Get started', exact: true })).toHaveCount(0)
       }
       await assertState()
       const size = CAPTURE_VIEWPORTS.find((candidate) => candidate.id === viewport)!
@@ -505,13 +505,12 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
   })
   try {
     await visit('/welcome')
-    const signIn = page.getByRole('button', { name: 'Sign in', exact: true })
-    const create = page.getByRole('button', { name: 'Create account', exact: true })
+    // U14: one Get started entry serves new and returning accounts.
+    const getStarted = page.getByRole('button', { name: 'Get started', exact: true })
     await evidence.shot('Welcome', '/welcome', 'anonymous-ready', '/welcome', 'CLEAR', async () => {
       const tagline = page.getByText('Strength training, simplified.', { exact: true })
       await expect(tagline).toBeVisible()
-      await expect(signIn).toBeEnabled()
-      await expect(create).toBeEnabled()
+      await expect(getStarted).toBeEnabled()
       // The line sits in the current card, below the logo that names the screen.
       const placed = await tagline.evaluate((el) => ({
         carded: el.closest('.clr-card') !== null,
@@ -522,7 +521,7 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
       // No kit placeholder health checks, and no progress for a ready anonymous boot.
       await expect(page.getByRole('progressbar')).toHaveCount(0)
       await expect(page.getByText(/System check/)).toHaveCount(0)
-    }, { skins: true, short: create })
+    }, { skins: true, short: getStarted })
     expect(authenticatedReads, 'an anonymous boot made an authenticated initialization read').toBe(0)
     evidence.note('contract', 'Anonymous boot reached Welcome with zero /rest/v1 initialization reads.',
       { restRequests: authenticatedReads })
@@ -530,27 +529,28 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
     if (evidence.phone) {
       await page.emulateMedia({ reducedMotion: 'reduce' })
       await visit('/welcome')
-      await expect(signIn).toBeEnabled()
+      await expect(getStarted).toBeEnabled()
       const running = await page.evaluate(() =>
         document.getAnimations().filter((animation) => animation.playState === 'running').length)
       expect(running, 'reduced motion left Welcome animating').toBe(0)
       await evidence.shot('Welcome', '/welcome', 'anonymous-ready', '/welcome', 'CLEAR',
-        () => expect(create).toBeEnabled(), { variant: 'reduced-motion' })
+        () => expect(getStarted).toBeEnabled(), { variant: 'reduced-motion' })
       evidence.note('motion', 'Under prefers-reduced-motion the anonymous boot hands off to Welcome with no running animation or transition.',
         { running })
       await page.emulateMedia({ reducedMotion: 'no-preference' })
     }
 
-    await signIn.focus()
+    await page.locator('main .clr-scroll-region__scroller').focus()
     await page.keyboard.press('Tab')
+    await expect(getStarted).toBeFocused()
     const welcomeFocus = await focusProbe(page)
     expect(welcomeFocus.layers, 'one bracket layer').toBe(1)
-    evidence.note('keyboard', 'Tab from Sign in on Welcome moves to the next action; the root bracket layer follows it.', welcomeFocus)
+    evidence.note('keyboard', 'Tab from the Welcome content region moves to Get started; the root bracket layer follows it.', welcomeFocus)
 
-    await signIn.click()
+    await getStarted.click()
     const email = page.getByLabel('Email')
     const send = page.getByRole('button', { name: 'Send code', exact: true })
-    await evidence.shot('OTP Login', '/login', 'email-step', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'email-step', '/login', 'Get started', async () => {
       await expect(email).toBeVisible()
       const probe = await expectFramedField(email, 'the Email field')
       expect(probe.glyph, 'a valid field shows no warning glyph').toBe(false)
@@ -562,7 +562,7 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
 
     await email.fill('wrong')
     await send.click()
-    await evidence.shot('OTP Login', '/login', 'email-invalid', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'email-invalid', '/login', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That is not an email address.')
       await expect(email).toHaveAttribute('aria-invalid', 'true')
       await expect(email).toBeFocused()
@@ -573,10 +573,10 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
 
     await email.fill('clear-e2e-entry-forms@example.com')
     await send.click()
-    await evidence.shot('OTP Login', '/login', 'send-busy', '/login', 'Sign in', () =>
+    await evidence.shot('OTP Login', '/login', 'send-busy', '/login', 'Get started', () =>
       expect(send).toHaveAttribute('aria-busy', 'true'))
     otpHold.release()
-    await evidence.shot('OTP Login', '/login', 'send-error', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'send-error', '/login', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('Sign-in is unavailable right now.')
       await expect(email).toHaveValue('clear-e2e-entry-forms@example.com')
       await expect(email).not.toHaveAttribute('aria-invalid', 'true')
@@ -587,17 +587,17 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
     otpHold.release()
     await send.click()
     const code = page.getByLabel('Code')
-    await evidence.shot('OTP Login', '/login', 'code-step', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'code-step', '/login', 'Get started', async () => {
       await expect(code).toBeFocused()
       await expectFramedField(code, 'the Code field')
     })
     const resend = page.getByRole('button', { name: /^Resend in \d+s$/ })
-    await evidence.shot('OTP Login', '/login', 'resend-cooldown', '/login', 'Sign in', () =>
+    await evidence.shot('OTP Login', '/login', 'resend-cooldown', '/login', 'Get started', () =>
       expect(resend).toBeDisabled(), { skins: true })
     await code.fill('12')
     const verify = page.getByRole('button', { name: 'Verify', exact: true })
     await verify.click()
-    await evidence.shot('OTP Login', '/login', 'code-invalid', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'code-invalid', '/login', 'Get started', async () => {
       await expect(code).toHaveAttribute('aria-invalid', 'true')
       await expect(code).toBeFocused()
       expect(verifyPosts).toBe(0)
@@ -605,10 +605,10 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
     })
     await code.fill('123456')
     await verify.click()
-    await evidence.shot('OTP Login', '/login', 'verify-busy', '/login', 'Sign in', () =>
+    await evidence.shot('OTP Login', '/login', 'verify-busy', '/login', 'Get started', () =>
       expect(verify).toHaveAttribute('aria-busy', 'true'))
     verifyHold.release()
-    await evidence.shot('OTP Login', '/login', 'wrong-code', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'wrong-code', '/login', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That code is not right.')
       await expect(code).toBeFocused()
       // The failed attempt keeps its context and its way out.
@@ -617,7 +617,7 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
     }, { short: verify })
     verifyExpired = true
     await verify.click()
-    await evidence.shot('OTP Login', '/login', 'expired-code', '/login', 'Sign in', async () => {
+    await evidence.shot('OTP Login', '/login', 'expired-code', '/login', 'Get started', async () => {
       await expect(page.getByRole('alert')).toContainText('That code has expired.')
       await expect(code).toBeFocused()
     })
@@ -632,8 +632,8 @@ async function enterNewUser(page: Page, visit: (path: string) => Promise<void>, 
   client: ReturnType<typeof backend.client>) {
   await page.route('**/auth/v1/otp', (route) => answer(route, 200, {}))
   await visit('/welcome')
-  await page.getByRole('button', { name: 'Create account', exact: true }).click()
-  await heading(page, 'Create account')
+  await page.getByRole('button', { name: 'Get started', exact: true }).click()
+  await heading(page, 'Get started')
   await page.getByLabel('Email').fill(email)
   await page.getByRole('button', { name: 'Send code', exact: true }).click()
   await expect(page.getByLabel('Code')).toBeFocused()

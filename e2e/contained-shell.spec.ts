@@ -70,23 +70,25 @@ test('a short phone keeps the last action reachable at a hard edge', async ({
   visit,
 }) => {
   await page.setViewportSize({ width: 390, height: 320 })
-  await visit('/welcome')
+  // Welcome holds its one entry in its card (U13), so the pinned-footer
+  // subject is the email step of the code flow.
+  await visit('/login')
 
   const region = page.locator('.clr-scroll-region')
   const scroller = region.locator('.clr-scroll-region__scroller')
   const streak = region.locator('.clr-scroll-region__streak--bottom')
   const bar = region.locator('.clr-scroll-region__bar')
   const foot = region.locator('.clr-scroll-region__foot')
-  const lastAction = page.getByRole('button', { name: 'Create account' })
+  const lastAction = page.getByRole('button', { name: 'Send code' })
 
   await expect(region).toHaveAttribute('data-measured', '')
   await expect(lastAction).toBeVisible()
   await expect(scroller.getByRole('button')).toHaveCount(0)
-  await expect(foot.getByRole('button')).toHaveText(['Sign in', 'Create account'])
+  await expect(foot.getByRole('button')).toHaveText(['Send code'])
   const initialHeight = await scroller.evaluate((element) => element.clientHeight)
 
-  // The approved singleton card fits at 320px; a real reduced viewport must
-  // still overflow in the one owner without putting the actions below it.
+  // A real reduced viewport must still overflow in the one owner without
+  // putting the actions below it.
   await page.setViewportSize({ width: 390, height: 280 })
   await expect.poll(() => scroller.evaluate((element) => element.clientHeight))
     .toBeLessThan(initialHeight)
@@ -110,7 +112,7 @@ test('a short phone keeps the last action reachable at a hard edge', async ({
 
   // A very short footer can clip its own contents. Native keyboard traversal
   // must reveal the last action inside that clip as well as inside the window.
-  await page.getByRole('button', { name: 'Sign in' }).focus()
+  await page.getByLabel('Email').focus()
   await page.keyboard.press('Tab')
   await expect(lastAction).toBeFocused()
   const geometry = await lastAction.evaluate((element) => {
@@ -350,7 +352,7 @@ test('one atmosphere fills a portrait phone from its longer side and survives na
     expect(blob.animations[1].properties).toEqual(['rotate', 'scale'])
   }
 
-  await page.getByRole('button', { name: 'Create account' }).click()
+  await page.getByRole('button', { name: 'Get started' }).click()
   await expect(page).toHaveURL(/\/login/)
   await expect(page.locator('.clr-atmosphere')).toHaveCount(1)
   await expect(page.locator('.clr-atmosphere')).toHaveAttribute(
@@ -874,7 +876,8 @@ test.describe('REQ-001 phone shell — entry screens', () => {
       }
       await page.setViewportSize(PHONE)
       const measuredRules = await ruleMismatches(page, where)
-      expect(measuredRules.counted.foot, `${where} pins its actions`).toBe(1)
+      // U13: Welcome's one entry is inside its centred card, not pinned.
+      expect(measuredRules.counted.foot, `${where} pins its actions`).toBe(where === 'Welcome' ? 0 : 1)
       rules.push(...measuredRules.failures)
       chrome.push(...(await chromeMismatches(page, where)))
     }

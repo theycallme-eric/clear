@@ -373,7 +373,7 @@ const test = base.extend<{ world: World; evidence: Evidence }>({
       await heading(page, title)
       if (isProtectedPath(at)) {
         // A protected route that fell back to Welcome is a failure, not a picture.
-        await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Get started', exact: true })).toHaveCount(0)
       }
       await assertState()
       const size = CAPTURE_VIEWPORTS.find((candidate) => candidate.id === viewport)!

@@ -209,7 +209,7 @@ describe('AUTH-03 guards, rendered', () => {
     renderApp(['/'])
 
     expect(
-      await screen.findByRole('button', { name: 'Sign in' }),
+      await screen.findByRole('button', { name: 'Get started' }),
     ).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Today' })).toBeNull()
   })
@@ -285,7 +285,7 @@ describe('AUTH-03 guards, rendered', () => {
   it('sends a signed-out visitor to /onboarding to Welcome', async () => {
     renderApp(['/onboarding'])
 
-    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Get started' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: ONBOARDING_TITLE })).toBeNull()
   })
 
@@ -317,7 +317,7 @@ describe('AUTH-03 guards, rendered', () => {
     const userData = createFakeUserDataClient()
     renderApp(['/welcome'], { userData, queryClient: new QueryClient() })
 
-    expect(await screen.findByRole('button', { name: 'Sign in' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Get started' })).toBeInTheDocument()
     expect(userData.profileCalls).toEqual([])
     expect(userData.locationCalls).toEqual([])
   })

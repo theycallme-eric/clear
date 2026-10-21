@@ -69,6 +69,14 @@ body,
   padding: var(--spacing-100) var(--page-gutter-right) var(--spacing-300) var(--page-gutter-left);
 }
 
+/* U13: a screen composed as one group sits in the middle of the visible
+   height. `safe` keeps the top reachable when short heights or enlarged text
+   make the group taller than the scroller; it then starts at the top and
+   scrolls like any other screen. */
+.clr-screen__content--centered {
+  justify-content: safe center;
+}
+
 /* A page-level tab band reaches both viewport edges; its tabs keep the page
    inset. */
 .clr-screen__content .clr-band {

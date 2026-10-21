@@ -207,7 +207,7 @@ async function reached(page: Page, path: string | RegExp, heading?: string | Reg
   else await expect(h1(page)).toBeVisible({ timeout: 30_000 })
   const pathname = new URL(page.url()).pathname
   if (isProtectedPath(pathname) || /^\/history\//.test(pathname)) {
-    await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Get started', exact: true })).toHaveCount(0)
   }
 }
 
@@ -693,7 +693,7 @@ backendTest('public routes: Welcome, sign-in and onboarding keep the same contra
 }, testInfo) => {
   test.setTimeout(240_000)
   const phone = testInfo.project.name === 'mobile'
-  for (const [path, heading] of [['/welcome', 'CLEAR'], ['/login', 'Sign in']] as const) {
+  for (const [path, heading] of [['/welcome', 'CLEAR'], ['/login', 'Get started']] as const) {
     await visit(path)
     await reached(page, path, heading)
     await expectContainedRoute(page, path)

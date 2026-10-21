@@ -348,10 +348,10 @@ test.describe('critical browser lane: a returning user with the owner’s saved 
     // ── Welcome ────────────────────────────────────────────────────────────
     await visit(routeOf('Welcome'))
     await expectScreen('Welcome', routeOf('Welcome'), 'CLEAR')
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await page.getByRole('button', { name: 'Get started', exact: true }).click()
 
     // ── OTP Login ──────────────────────────────────────────────────────────
-    await expectScreen('OTP Login', routeOf('OTP Login'), 'Sign in')
+    await expectScreen('OTP Login', routeOf('OTP Login'), 'Get started')
 
     // Delivery only, as in `core-loop.spec.ts`: `/auth/v1/otp` would mail an
     // undeliverable address. The request still has to be made.

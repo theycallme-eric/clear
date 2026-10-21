@@ -57,8 +57,11 @@ export interface OtpError extends AppError {
  */
 const FAILURE_MESSAGES: Record<OtpFailure, string> = {
   'invalid-email': 'That is not an email address. Check it and try again.',
-  'invalid-code': 'That code is not right. Check the digits and try again.',
-  'expired-code': 'That code has expired. Request a new one.',
+  // U14: a refused code names the way out — the screen's Resend control —
+  // because GoTrue answers a mistyped code as "expired" often enough that
+  // retyping alone is not always a recovery.
+  'invalid-code': 'That code is not right. Check the digits, or resend a new code.',
+  'expired-code': 'That code has expired. Resend a new code to continue.',
   'rate-limited': 'Too many attempts. Wait a moment, then try again.',
   offline: 'No connection. Check your network and try again.',
   server: 'Sign-in is unavailable right now. Try again in a moment.',
