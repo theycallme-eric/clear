@@ -743,28 +743,15 @@ backendTest('onboarding: real new user, every step, selection, kept draft, held 
     await page.getByRole('radio', { name: /^Some experience/ }).click()
     await next.click()
     await page.getByRole('radio', { name: /^Balanced/ }).click()
-    const section = page.getByRole('checkbox').first()
     await evidence.shot('Onboarding', '/onboarding', 'five-step-draft', at, 'Set up CLEAR', async () => {
       await step('What are you going for?')
       await expectStep(3)
       await expect(page.getByRole('radio', { name: /^Balanced/ })).toHaveAttribute('aria-checked', 'true')
-      const checked = page.getByRole('checkbox', { checked: true }).first()
-      await expect(checked).toBeVisible()
-      const mark = await checkProbe(checked)
-      expect(mark).toMatchObject({ width: '10px', height: '10px', markRadius: '0px', boxRadius: '0px', solid: true })
-      expect(mark.content).not.toBe('none')
-      expect(mark.target, 'the checkbox target is under 40px').toBeGreaterThanOrEqual(40)
+      // REQ-004: the goal's sections are a read-only preview, never a control.
+      const preview = page.getByRole('list', { name: 'Sections this goal enables', exact: true })
+      await expect(preview).toBeVisible()
+      await expect(page.getByRole('checkbox')).toHaveCount(0)
     }, { variant: 'goal', skins: true, short: next })
-    const wasChecked = await section.isChecked()
-    await section.focus()
-    await page.keyboard.press('Space')
-    await expect(section).toBeChecked({ checked: !wasChecked })
-    const unchecked = await checkProbe(page.getByRole('checkbox', { checked: false }).first())
-    expect(unchecked.content, 'an unchecked box shows a mark').toBe('none')
-    evidence.note('keyboard', 'Space toggles a focused section checkbox; the checked state is a solid 10px square, the unchecked state has no mark.',
-      { focus: await focusProbe(page), unchecked })
-    await page.keyboard.press('Space')
-    await expect(section).toBeChecked({ checked: wasChecked })
     evidence.note('discrepancy', 'The owned routes render no native RadioButton: every single choice is a ChoiceGroup of Chips with radio semantics. The solid-square mark is therefore proved on the real Checkbox, whose .clr-check__box rule the package RadioButton shares.',
       { source: 'src/design-system/components/Selection/RadioButton.jsx' })
 
@@ -776,6 +763,20 @@ backendTest('onboarding: real new user, every step, selection, kept draft, held 
       const probe = await expectFramedField(note, 'the limitations note')
       expect(probe).toMatchObject({ resize: 'none', fieldSizing: 'content', clipped: false })
     }, { variant: 'limitations' })
+    const pattern = page.getByRole('checkbox').first()
+    await pattern.focus()
+    await page.keyboard.press('Space')
+    await expect(pattern).toBeChecked()
+    const mark = await checkProbe(pattern)
+    expect(mark).toMatchObject({ width: '10px', height: '10px', markRadius: '0px', boxRadius: '0px', solid: true })
+    expect(mark.content).not.toBe('none')
+    expect(mark.target, 'the checkbox target is under 40px').toBeGreaterThanOrEqual(40)
+    const unchecked = await checkProbe(page.getByRole('checkbox', { checked: false }).first())
+    expect(unchecked.content, 'an unchecked box shows a mark').toBe('none')
+    evidence.note('keyboard', 'Space toggles a focused limitation checkbox; the checked state is a solid 10px square, the unchecked state has no mark.',
+      { focus: await focusProbe(page), unchecked })
+    await page.keyboard.press('Space')
+    await expect(pattern).not.toBeChecked()
     const emptyHeight = (await fieldProbe(note)).height
     await note.fill(Array.from({ length: 9 }, (_, line) => `Disposable fixture note line ${line + 1}`).join('\n'))
     await evidence.shot('Onboarding', '/onboarding', 'five-step-draft', at, 'Set up CLEAR', async () => {
@@ -831,15 +832,19 @@ backendTest('onboarding: real new user, every step, selection, kept draft, held 
 backendTest('onboarding-refusal: an impossible saved preference is refused and the draft is kept', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(180_000)
   const user = await newUser(testInfo.project.name, 'refusal')
-  evidence.note('fixture', 'A namespaced real new user; the impossible Minimal + Carries proposal is refused by the genuine onboarding RPC.')
+  evidence.note('fixture', 'A namespaced real new user; the impossible Minimal-with-no-equipment proposal is refused by the genuine onboarding RPC.')
   try {
     await enterNewUser(page, visit, user.email, user.client)
     const next = page.getByRole('button', { name: 'Next', exact: true })
     const back = page.getByRole('button', { name: 'Back', exact: true })
-    await page.getByRole('radio', { name: /^Minimal/ }).click(); await next.click()
+    await page.getByRole('radio', { name: /^Minimal/ }).click()
+    // REQ-004: sections are a read-only goal preview, so the refused choice is the equipment.
+    for (const name of ['Bodyweight', 'Resistance bands', 'Foam roller']) {
+      await page.getByRole('checkbox', { name, exact: true }).uncheck()
+    }
+    await next.click()
     await page.getByRole('radio', { name: /^Some experience/ }).click(); await next.click()
     await page.getByRole('radio', { name: /^Strength/ }).click()
-    await page.getByRole('checkbox', { name: 'Carries', exact: true }).check()
     await next.click()
     await page.getByRole('checkbox', { name: 'Hard conditioning', exact: true }).check()
     await page.getByLabel(/Note/).fill('Disposable fixture note')
@@ -847,8 +852,8 @@ backendTest('onboarding-refusal: an impossible saved preference is refused and t
     const finish = page.getByRole('button', { name: 'Finish setup', exact: true })
     await finish.click()
     await evidence.shot('Onboarding', '/onboarding', 'typed-viability-refusal', '/onboarding', 'Set up CLEAR', async () => {
-      await expect(page.getByRole('alert')).toContainText('Nothing in Carries')
-      await expect(page.getByRole('alert')).toContainText('turn off Carries')
+      await expect(page.getByRole('alert')).toContainText('no equipment chosen')
+      await expect(page.getByRole('alert')).toContainText(/add equipment to your setup/i)
       await expect(page.getByRole('heading', { name: 'Here’s your setup' })).toBeVisible()
       expect(await page.locator('main .clr-card .clr-card').count()).toBe(0)
     }, { skins: true, short: finish })
@@ -862,8 +867,9 @@ backendTest('onboarding-refusal: an impossible saved preference is refused and t
     await expect(page.getByRole('checkbox', { name: 'Hard conditioning', exact: true })).toBeChecked()
     await back.click()
     await expect(page.getByRole('radio', { name: /^Strength/ })).toHaveAttribute('aria-checked', 'true')
-    await expect(page.getByRole('checkbox', { name: 'Carries', exact: true })).toBeChecked()
-    evidence.note('contract', 'After the typed refusal no profile was onboarded, and Back shows the note, limitation, goal and section exactly as chosen.')
+    await back.click(); await back.click()
+    await expect(page.getByRole('checkbox', { name: 'Bodyweight', exact: true })).not.toBeChecked()
+    evidence.note('contract', 'After the typed refusal no profile was onboarded, and Back shows the note, limitation, goal and equipment exactly as chosen.')
     expect(evidence.modelAttempts()).toBe(0)
   } finally { await user.remove() }
 })

@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `62161e8d725c44ea8734e679f6274051ddd1c265bdef3968924e4c67d664cc7f` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026 and TASK-004 changes below) |
+| Runtime source hash of this audit's tree | `79423cfd1353d4467cbe5bf9660ae4af2eeffb5a23285a407f949b4f4397a9a3` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004 and TASK-006 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -153,6 +153,15 @@ trees and this head, from `git diff`:
   unchanged. A new structural regression fails on the prior tree; the existing U04 hit
   samples and three-row stagger assertions are retained. Local phone checks pass; fresh
   exact-head protected CI remains required to confirm the platform-specific correction.
+- `2abda6c0…` to `79423cfd…`: TASK-006 (REQ-004, JOURNEY-006, U10, U16) replaces onboarding's
+  goal-step section checkboxes with a read-only preview: a captioned plain list of the chosen
+  goal's sections (no control, nothing focusable) that follows a goal change, with one line
+  saying a workout may leave an enabled section out and that Settings edits them. Onboarding
+  commits the goal's sections unchanged; equipment and Settings' section toggles stay
+  editable. Changed: `src/app/Onboarding.tsx`, `src/state/onboarding.ts`. This **does** change
+  rendering on Onboarding's goal step. The pictures above predate it and are not rebound
+  (EX-13). Current acceptance evidence is `src/app/Onboarding.test.tsx` and
+  `src/test/generation-reliability/legal-state-matrix.test.ts`.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

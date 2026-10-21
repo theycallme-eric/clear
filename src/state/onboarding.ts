@@ -160,7 +160,10 @@ export const GOALS: readonly Option<GoalPreset>[] = [
   { value: 'balanced', label: 'Balanced', description: 'A little of everything' },
 ] as const
 
-/** Which sections a preset turns on. The accordion edits the result. */
+/**
+ * Which sections a preset turns on. Onboarding shows the result as a read-only
+ * preview (U10 / U16) and commits it unchanged; Settings is where it is edited.
+ */
 export const SECTIONS_BY_GOAL: Record<GoalPreset, readonly SectionType[]> = {
   strength: ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown'],
   hypertrophy: ['warmup', 'primary_lift', 'accessory', 'core', 'cooldown'],
@@ -355,7 +358,14 @@ export function onboardingReducer(
       return { ...draft, experience: action.value }
     case 'goal':
       if (draft.goal === action.value) return draft
-      return { ...draft, goal: action.value, sections: SECTIONS_BY_GOAL[action.value] }
+      return {
+        ...draft,
+        goal: action.value,
+        // The preview shows these, so they are only sections a person can be offered.
+        sections: SECTIONS_BY_GOAL[action.value].filter(
+          (section) => !NON_SELECTABLE_SECTIONS.includes(section),
+        ),
+      }
     case 'section':
       return {
         ...draft,

@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { screen } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
@@ -331,11 +331,17 @@ describe('a non-selectable section is not offered', () => {
     await user.click(screen.getByRole('radio', { name: 'Some experience' }))
     await user.click(next())
     await screen.findByRole('heading', { level: 2, name: onboarding.STEP_TITLES.goals })
-    await user.click(screen.getByRole('radio', { name: 'Strength' }))
+    // The broadest goal; onboarding shows its sections as a read-only preview.
+    await user.click(screen.getByRole('radio', { name: 'Balanced' }))
 
-    for (const section of onboarding.SECTIONS) {
-      expect(screen.getByRole('checkbox', { name: section.label })).toBeVisible()
-    }
+    const preview = screen.getByRole('list', { name: 'Sections this goal enables' })
+    const previewed = within(preview)
+      .getAllByRole('listitem')
+      .map((item) => item.firstElementChild?.textContent ?? '')
+    const offeredLabels = onboarding.SECTIONS.map((section) => section.label)
+    expect(previewed.length).toBeGreaterThan(0)
+    for (const label of previewed) expect(offeredLabels).toContain(label)
+    expect(previewed).not.toContain(hiddenLabel)
     expect(screen.queryByRole('checkbox', { name: hiddenLabel })).toBeNull()
   })
 
