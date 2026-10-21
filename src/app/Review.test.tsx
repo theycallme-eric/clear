@@ -347,14 +347,11 @@ describe('all generated content renders', () => {
     expect(text).toContain('3-1-1-0')
   })
 
-  it('renders the notes the composition carries', async () => {
+  it('renders the block notes the composition carries', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    const text = briefingText()
-    expect(text).toContain('Move before you load.')
-    expect(text).toContain('Build then come back down.')
-    expect(text).toContain('Every structure this app can prescribe, in one session.')
+    expect(briefingText()).toContain('Build then come back down.')
   })
 
   it('keeps a collapsed section in the document, so nothing is removed by closing it', async () => {
@@ -369,6 +366,82 @@ describe('all generated content renders', () => {
       'false',
     )
     expect(briefingText()).toContain('air squat')
+  })
+})
+
+describe('no generated overview or section introduction (REQ-010)', () => {
+  // The spectrum sample is a legacy-shaped workout: it still carries an
+  // overview and a section note, as sessions composed before prompt 5.2.0 do.
+  const LEGACY_OVERVIEW = 'Every structure this app can prescribe, in one session.'
+  const LEGACY_SECTION_NOTE = 'Move before you load.'
+  const SPECTRUM = ACCEPTANCE.workout
+  const NULL_PROSE = makeSessionAcceptance({
+    ...ACCEPTANCE,
+    workout: {
+      ...SPECTRUM,
+      overview: null,
+      sections: SPECTRUM.sections.map((section) => ({ ...section, section_notes: null })),
+    },
+  })
+
+  it('shows neither for a legacy workout that still carries both strings', async () => {
+    expect(SPECTRUM.overview).toBe(LEGACY_OVERVIEW)
+    expect(SPECTRUM.sections[0].section_notes).toBe(LEGACY_SECTION_NOTE)
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const text = briefingText()
+    expect(text).not.toContain(LEGACY_OVERVIEW)
+    expect(text).not.toContain(LEGACY_SECTION_NOTE)
+  })
+
+  it('keeps every label and all structured work, timers and prescriptions', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    for (const title of ['Prepare', 'Primary']) {
+      expect(screen.getByRole('button', { name: new RegExp(title) })).toBeInTheDocument()
+    }
+    const text = briefingText()
+    expect(text).toContain('air squat')
+    expect(text).toContain('75% 1RM')
+    expect(text).toContain('Rest 180s')
+    expect(text).toContain('90s between rounds')
+    expect(text).toContain('Build then come back down.')
+  })
+
+  it('renders a null-prose workout exactly as the legacy one, with nothing in their place', async () => {
+    const legacy = renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+    const legacyText = briefingText()
+    legacy.unmount()
+
+    renderReview({ acceptance: NULL_PROSE })
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    // Identical text is the proof that no replacement narrative stands in for
+    // the prose: it had no surface, so its absence changes nothing.
+    expect(briefingText()).toBe(legacyText)
+  })
+
+  it('opens the overview card on its facts, with no paragraph above them', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const card = screen
+      .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
+      .closest<HTMLElement>('.clr-card')!
+    expect(card.querySelector('p')).toBeNull()
+  })
+
+  it('starts a legacy workout with its prose and structured work intact', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderReview()
+    await user.click(await screen.findByRole('button', { name: START_LABEL }))
+
+    await screen.findByText(WORKOUT_MARKER)
+    // Display removal discards nothing: the payload persisted is the composed one.
+    expect(recorder.accepted[0].acceptance.workout).toEqual(SPECTRUM)
   })
 })
 

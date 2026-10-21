@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `3a1c044ed44ca4c612ac6dea3a47f354b4b1b33ba0cfd65e87a326ab4879a8d6` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002 and TASK-003 changes below) |
+| Runtime source hash of this audit's tree | `43f30eb39ea947c779608ce46903b6e26230fed44f38a204eb16f603f7973123` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003 and TASK-018 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -75,6 +75,12 @@ trees and this head, from `git diff`:
   rendering on Home and Summary. The pictures above predate it and are not rebound (EX-13);
   `e2e/design-0143/accessibility.spec.ts` measures the JOURNEY-003 roles in every skin on
   this head.
+- `3a1c044e…` to `43f30eb3…`: TASK-018 (REQ-010, JOURNEY-017, U31) removes the generated
+  workout overview and section introductions from Review through `src/state/review.ts` and
+  `src/app/Review.tsx`; Workout, History and Session Detail already rendered neither. Labels,
+  block notes, coaching cues and all structured work are unchanged, and legacy prose stays in
+  the data. This **does** change rendering on Review for workouts that carried prose. The
+  pictures above predate it and are not rebound (EX-13).
 
 The pictures are not rebound to this head. The browser lane re-asserts all three groups'
 behaviour on it (below).

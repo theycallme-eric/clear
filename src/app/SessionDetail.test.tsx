@@ -223,6 +223,38 @@ describe('Session Detail populated state', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' })
   }
 
+  it('opens a legacy saved workout with no overview or section introduction, all work kept (REQ-010)', async () => {
+    const OVERVIEW = 'Squat-led session with unilateral accessory work.'
+    const SECTION_NOTE = 'Build to a heavy set of five.'
+    const plain = fullRecord()
+    const legacy: SessionReconstruction = {
+      ...plain,
+      session: { ...plain.session, overview: OVERVIEW },
+      sections: plain.sections.map((entry) => ({
+        ...entry,
+        section: { ...entry.section, section_notes: SECTION_NOTE },
+      })),
+    }
+    renderDetail(recordingSessions(async () => ok(legacy)).sessions)
+    await screen.findByRole('heading', { level: 1, name: 'Full-body conditioning' })
+
+    const text = screen.getByRole('main').textContent ?? ''
+    expect(text).not.toContain(OVERVIEW)
+    expect(text).not.toContain(SECTION_NOTE)
+
+    // Every label, every structure and every logged outcome is still there,
+    // and the debrief's own notes are the user's, not generated prose.
+    expect(screen.getByRole('button', { name: /Strength/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Conditioning/ })).toBeInTheDocument()
+    for (const label of ['STANDARD', 'SUPERSET', 'CIRCUIT', 'EMOM', 'AMRAP', 'FOR TIME']) {
+      expect(screen.getAllByText(new RegExp(`^${label}`)).length, label).toBeGreaterThan(0)
+    }
+    expect(screen.getByText('Legs heavy, moved well after set two.')).toBeInTheDocument()
+    expect(screen.getByText('Second pair was the hard one.')).toBeInTheDocument()
+    expect(screen.getByText('07:12')).toBeInTheDocument()
+    expect(screen.getByText('Finished under the cap')).toBeInTheDocument()
+  })
+
   it('discloses each section, and collapsing one keeps its blocks readable', async () => {
     const user = userEvent.setup()
     await renderFull()

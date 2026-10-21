@@ -390,11 +390,15 @@ unchanged, as are the deload banner and session tag.
   `overview`/`section_notes`, and `directive_compliance` no longer looks for a stated RPE cap in
   `section_notes` (its `capStated` metric is gone). Set-count compliance is unchanged. Restore both
   halves alongside the prompt clauses.
-- Display surfaces: Review's overview card paragraph and per-section notes (`src/app/Review.tsx`
-  via `src/state/review.ts` `overview`/`notes`), and saved-workout snapshots copied by
-  `src/state/favorites.ts`. Removing these from Review, Workout and History for new, null and
-  legacy saved workouts is owned by the display tasks that follow this one; restoring means
-  rendering those briefing fields again.
+- Display surfaces (TASK-018): `ReviewBriefing.overview` and `ReviewSectionView.notes` are gone
+  from `src/state/review.ts`, and `src/app/Review.tsx` no longer renders the paragraph at the top
+  of `BriefingOverview` or the one at the top of `ReviewSectionCard`. Workout
+  (`src/app/Workout.tsx`), History (`src/app/History.tsx`) and the saved-workout detail
+  (`src/app/SessionDetail.tsx` via `src/state/session-detail.ts`) never read either field, and
+  legacy strings on old sessions are ignored rather than discarded. Saved-workout snapshots copied
+  by `src/state/favorites.ts` and sent by `src/data/favorites.ts` keep the historical prose
+  verbatim. Restore by adding the two fields back to the briefing (`blankToNull` of
+  `workout.overview` / `section.section_notes`) and rendering each as a `<p>` in those two places.
 - Database: `workout_sessions.overview` and `workout_sections.section_notes` stay nullable `text`;
   `persist_session` still writes whatever the payload carries.
 
@@ -402,5 +406,10 @@ unchanged, as are the deload banner and session tag.
 removed clauses), `src/test/generation-training-history.test.ts` (directive rules without
 narrative), `src/test/generation-validation.test.ts` and `generation-hydration.test.ts` (prose
 accepted, no retry, suppressed), `generation-persistence.test.ts` (null stored), and
-`src/state/schemas.test.ts` (null and legacy strings both parse). Restoring introductions means
+`src/state/schemas.test.ts` (null and legacy strings both parse). Display: the
+`REQ-010` cases in `src/state/review.test.ts`, `src/app/Review.test.tsx`,
+`src/app/Workout.test.tsx`, `src/app/History.test.tsx` and `src/app/SessionDetail.test.tsx` (no
+prose for legacy or null workouts; labels, cues, structured work and timers kept), and
+`src/data/favorites.test.ts` (a legacy favorite copies and restores its prose and work intact).
+Restoring introductions means
 inverting the U31 assertions in those files, not deleting them.

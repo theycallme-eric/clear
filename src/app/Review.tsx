@@ -284,7 +284,6 @@ export function Review({
         style={{ display: 'flex', flexDirection: 'column' }}
       >
         <BriefingOverview
-          overview={briefing.overview}
           facts={briefing.facts}
           adjustment={briefing.adjustment}
           movementCount={briefing.movementCount}
@@ -411,27 +410,24 @@ const DATA_STYLE: CSSProperties = {
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
 /**
- * The composer's sentence and the facts, in one card under its own heading.
- * The facts are a description list, because that is what they are: terms and
+ * The facts, in one card under its own heading. No generated overview sits
+ * above them (REQ-010): the card states what the workout was composed under,
+ * not a narrative about it. The facts are a description list, because that is what they are: terms and
  * their values. A grid of divs would render the same and say nothing about
  * which value belongs to which label. Inside the card `MetricFrame` is a bare
  * readout, so the card is the only frame here.
  */
 function BriefingOverview({
-  overview,
   facts,
   adjustment,
   movementCount,
 }: {
-  overview: string | null
   facts: readonly ReviewFact[]
   adjustment: string | null
   movementCount: number
 }) {
   return (
     <Card heading={OVERVIEW_LABEL}>
-      {overview !== null && <p style={{ margin: 0 }}>{overview}</p>}
-
       <MetricGrid as="dl" aria-label={FACTS_LABEL} style={{ margin: 0 }}>
         {facts.map((fact) => (
           <MetricFrame key={fact.label}>
@@ -501,7 +497,6 @@ function ReviewSectionCard({
         defaultExpanded
       >
         <div className="clr-stack--tight" style={STACK_STYLE}>
-          {section.notes !== null && <p style={{ margin: 0 }}>{section.notes}</p>}
           {section.blocks.map((block) => (
             <ReviewBlockRows key={block.key} block={block} {...suggestion} />
           ))}
