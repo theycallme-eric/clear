@@ -235,6 +235,16 @@ describe('reconciling against what the server already has', () => {
 })
 
 describe('surviving a reload', () => {
+  it('rejects a duplicated UI unit inside performed instead of trusting mismatched units', () => {
+    for (const unit of ['kg', 'lb', 'oz']) {
+      const good = queued({ weightUnit: 'kg' })
+      const duplicated = { ...good, entry: { ...good.entry,
+        performed: { ...good.entry.performed, weightUnit: unit } } }
+      const storage = memoryStorage({ [SET_LOG_QUEUE_STORAGE_KEY]: JSON.stringify([duplicated]) })
+      expect(readSetLogQueue(storage)).toEqual([])
+    }
+  })
+
   it('reads back exactly what it wrote', () => {
     const storage = memoryStorage()
     const queue = [queued(), queued({ id: 'a0000002-0000-4000-8000-000000000000' })]

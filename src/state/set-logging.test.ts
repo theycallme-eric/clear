@@ -293,6 +293,7 @@ describe('what the next set starts from', () => {
 
     expect(prefillFrom(sets)).toEqual({
       weight: 80,
+      weightUnit: 'kg',
       reps: 6,
       durationSeconds: null,
       distance: null,
@@ -319,6 +320,7 @@ describe('what the next set starts from', () => {
 
     expect(prefillFrom(sets)).toEqual({
       weight: null,
+      weightUnit: 'kg',
       reps: null,
       durationSeconds: 45,
       distance: 400,

@@ -31,6 +31,8 @@
  */
 import { useState, type ReactNode } from 'react'
 
+import type { Enums } from '../data/database.types'
+
 import {
   AlertTriangle,
   Button,
@@ -62,6 +64,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
+import { Select } from './select'
 
 export interface ExerciseSetLoggerProps {
   exercise: ExerciseProgress
@@ -274,7 +277,7 @@ interface SetEntryFormProps {
   /** `8 reps`, `8–10 reps`, `400 m` — null when the row carries no target. */
   targetLabel: string | null
   measureLabel: string
-  weightUnit: string | null
+  weightUnit: Enums<'weight_unit'> | null
   prefill: SetPrefill | null
   modality: PrescribedModality
   exerciseName: string
@@ -311,6 +314,13 @@ function SetEntryForm({
 }: SetEntryFormProps) {
   const [weight, setWeight] = useState(() => numberField(prefill?.weight))
   const [measure, setMeasure] = useState(() => numberField(measurePrefill(prefill, modality)))
+  const [chosenUnit, setChosenUnit] = useState<Enums<'weight_unit'> | undefined>()
+  // Zero is an observation too. A row with no observed weight supplies no
+  // reference unit; an untouched empty form can follow the profile as it loads.
+  const referenceUnit = prefill !== null && prefill.weight !== null
+    ? prefill.weightUnit
+    : undefined
+  const selectedUnit = chosenUnit ?? referenceUnit ?? weightUnit
   const weightValue = parsed(weight)
   const measureValue = parsed(measure)
 
@@ -327,6 +337,8 @@ function SetEntryForm({
 
     onLog({
       setNumber,
+      ...(selectedUnit !== null && selectedUnit !== weightUnit
+        ? { weightUnit: selectedUnit } : {}),
       ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
       ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
     })
@@ -353,13 +365,18 @@ function SetEntryForm({
 
       <BlockPanel.FieldRow>
         <Input
-          label={weightUnit === null ? 'Weight' : `Weight (${weightUnit})`}
+          label={selectedUnit === null ? 'Weight' : `Weight (${selectedUnit})`}
           type="number"
           inputMode="decimal"
           min={0}
           step="any"
           value={weight}
-          onChange={setWeight}
+          onChange={(value) => {
+            // Once the athlete types, a later profile refresh must not relabel
+            // their number. Explicit Unit changes below never convert the text.
+            if (selectedUnit !== null) setChosenUnit(selectedUnit)
+            setWeight(value)
+          }}
           invalid={weightInvalid}
           errorText={weightInvalid ? 'Enter a weight of zero or more' : undefined}
         />
@@ -374,6 +391,18 @@ function SetEntryForm({
           invalid={measureInvalid}
           errorText={measureInvalid ? 'Enter zero or more' : undefined}
         />
+        <Select
+          label="Unit"
+          value={selectedUnit ?? ''}
+          onChange={(value) => {
+            if (value === 'kg' || value === 'lb') setChosenUnit(value)
+          }}
+          helperText="Changing units keeps the number. Enter the weight in the selected unit."
+        >
+          {selectedUnit === null ? <option value="" disabled>Choose unit</option> : null}
+          <option value="kg">kg</option>
+          <option value="lb">lb</option>
+        </Select>
       </BlockPanel.FieldRow>
 
       <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>

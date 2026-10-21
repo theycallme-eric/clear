@@ -54,6 +54,8 @@ export interface PerformedSet {
   readonly distance?: number
   /** What was on the bar, in the unit stamped on the row. */
   readonly weight?: number
+  /** Optional per-set UI choice, resolved once by the provider before queuing. */
+  readonly weightUnit?: Enums<'weight_unit'>
   /**
    * A warmup set is performed work that is not a working set. No control sets
    * it any more (REQ-015); it is kept so a set already classified — a queued
@@ -74,7 +76,7 @@ export interface SetLogEntry {
   readonly distanceUnit: Enums<'distance_unit'> | null
   /** Stamped per row at write time, never read back from the profile later. */
   readonly weightUnit: Enums<'weight_unit'>
-  readonly performed: PerformedSet
+  readonly performed: Omit<PerformedSet, 'weightUnit'>
 }
 
 /**
@@ -236,6 +238,8 @@ export function loggedSetFromEntry(
 /** What the next set's fields start at, when there is something to start from. */
 export interface SetPrefill {
   readonly weight: number | null
+  /** The observed number's own unit, never the current profile preference. */
+  readonly weightUnit: Enums<'weight_unit'>
   readonly reps: number | null
   readonly durationSeconds: number | null
   readonly distance: number | null
@@ -268,6 +272,7 @@ export function prefillFrom(sets: readonly LoggedSet[]): SetPrefill | null {
 
   return {
     weight: source.weight,
+    weightUnit: source.weightUnit,
     reps: source.reps,
     durationSeconds: source.durationSeconds,
     distance: source.distance,

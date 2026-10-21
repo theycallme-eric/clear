@@ -39,6 +39,7 @@ import {
   type SetLogEntry,
 } from './set-logging'
 import { sessionProgress, type ExerciseProgress } from './workout-progress'
+import { ExerciseSetLogger } from '../ui/set-logger'
 
 /** Ids the double mints, so a test can name a set log before it exists. */
 const MINTED = [
@@ -102,6 +103,7 @@ function FakeRenderer({
 }
 
 interface MountOptions {
+  realLogger?: boolean
   exercises?: (Enums<'execution_status'> | ExerciseFixture)[]
   weightUnit?: Enums<'weight_unit'> | null
   performed?: PerformedSet
@@ -150,7 +152,7 @@ function mount(options: MountOptions = {}): Mounted {
         retryDelay={options.retryDelay ?? NO_AUTOMATIC_RETRY}
       >
         {exercises.map((exercise, index) => (
-          <FakeRenderer
+          options.realLogger ? <ExerciseSetLogger key={exercise.exerciseId} exercise={exercise} /> : <FakeRenderer
             key={exercise.exerciseId}
             exercise={exercise}
             performed={options.performed ?? { setNumber: index + 1, reps: 8, weight: 60 }}
@@ -308,6 +310,83 @@ describe('a set is attributed to the prescription and block it was performed in'
 })
 
 describe('the unit is the profile’s, stamped per row at write time', () => {
+  it.each([135, 0, null])('uses the real resumed logger for the next write, not just historical display: %s', async (priorWeight) => {
+    const user = userEvent.setup()
+    const { double, attempts } = refusing(createWorkoutDouble(), offline)
+    const first = mount({ realLogger: true, double, weightUnit: 'kg',
+      exercises: [{ setLogs: [{ id: 'b0000001-0000-4000-8000-000000000000',
+        set_number: 1, weight: priorWeight, weight_unit: 'lb', actual_reps: 5 }] }],
+    })
+    const unit = priorWeight === null ? 'kg' : 'lb'
+    expect(screen.getByLabelText(`Weight (${unit})`)).toHaveValue(priorWeight)
+    await user.click(screen.getByRole('button', { name: 'Log set 2' }))
+    await waitFor(() => expect(attempts).toHaveLength(1))
+    const [queued] = readSetLogQueue(first.storage)
+    expect(queued.entry).toMatchObject({ weightUnit: unit, performed: { setNumber: 2, reps: 5 } })
+    expect(queued.entry.performed).not.toHaveProperty('weightUnit')
+    expect(setLogInsert(queued.entry).weight).toBe(priorWeight)
+
+    cleanup()
+    const second = first.remount({ double: createWorkoutDouble(), weightUnit: 'kg' })
+    await waitFor(() => expect(second.workout.loggedSets()).toHaveLength(1))
+    const [written] = second.workout.loggedSets()
+    expect(written.id).toBe(queued.entry.id)
+    expect(setLogInsert(written)).toMatchObject({ weight_unit: unit, weight: priorWeight, actual_reps: 5 })
+    await waitFor(() => expect(readSetLogQueue(second.storage)).toEqual([]))
+  })
+
+  it('writes the real logger’s explicitly selected unit without converting its number', async () => {
+    const user = userEvent.setup()
+    const { workout } = mount({ realLogger: true, weightUnit: 'kg' })
+    await user.type(screen.getByLabelText('Weight (kg)'), '135')
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Unit' }), 'lb')
+    await user.click(screen.getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(workout.loggedSets()).toHaveLength(1))
+    expect(setLogInsert(workout.loggedSets()[0])).toMatchObject({ weight: 135, weight_unit: 'lb', actual_reps: null })
+  })
+
+  it.each([
+    { setNumber: 1, weight: 135, reps: 5, weightUnit: 'lb' },
+    { setNumber: 1, weight: 0, reps: 0, weightUnit: 'lb' },
+    { setNumber: 1, weightUnit: 'lb' },
+  ] as const)('keeps the chosen unit through queue/reload/retry, with one canonical unit: %j', async (performed) => {
+    const { double, attempts } = refusing(createWorkoutDouble(), offline)
+    // The profile changes between acceptance and retry; queued units do not.
+    const first = mount({ double, performed, weightUnit: 'lb' })
+    await logSet(1)
+    await waitFor(() => expect(attempts).toHaveLength(1))
+    const [queued] = readSetLogQueue(first.storage)
+    const { weightUnit: chosen, ...measurements } = performed
+    expect(queued.entry.weightUnit).toBe(chosen)
+    expect(queued.entry.performed).toEqual(measurements)
+    expect(queued.entry.performed).not.toHaveProperty('weightUnit')
+
+    cleanup()
+    const second = first.remount({ double: createWorkoutDouble(), weightUnit: 'kg' })
+    await waitFor(() => expect(second.workout.loggedSets()).toHaveLength(1))
+    const [written] = second.workout.loggedSets()
+    expect(written.id).toBe(queued.entry.id)
+    expect(written.weightUnit).toBe(chosen)
+    expect(written.performed).toEqual(measurements)
+    expect(setLogInsert(written)).toMatchObject({
+      weight_unit: 'lb',
+      weight: 'weight' in performed ? performed.weight : null,
+      actual_reps: 'reps' in performed ? performed.reps : null,
+      rpe: null,
+    })
+    await waitFor(() => expect(readSetLogQueue(second.storage)).toEqual([]))
+  })
+
+  it('refuses an invalid unit override before queuing', async () => {
+    const { workout, failures, storage } = mount({
+      performed: { setNumber: 1, weightUnit: 'oz' } as unknown as PerformedSet,
+    })
+    await logSet(1)
+    expect(failures).toEqual([ErrorCode.VALIDATION_OUT_OF_RANGE])
+    expect(workout.loggedSets()).toEqual([])
+    expect(readSetLogQueue(storage)).toEqual([])
+  })
+
   it.each(['kg', 'lb'] as Enums<'weight_unit'>[])('stamps %s on the row', async (unit) => {
     const { workout } = mount({ weightUnit: unit })
 

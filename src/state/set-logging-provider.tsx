@@ -17,8 +17,8 @@
  *     renderer hands over is resolved against the session's own prescriptions
  *     rather than trusted, which is the client-side half of the composite
  *     foreign key that refuses a superseded row (DATA-01d §3).
- *   · **The unit.** `weight_unit` is NOT NULL and is stamped from the profile
- *     in force at write time. With no profile loaded there is no unit to
+ *   · **The unit.** `weight_unit` is NOT NULL: the athlete's explicit per-set
+ *     choice, otherwise the profile in force at write time. With no profile loaded there is no unit to
  *     stamp, and the set is refused rather than written in a guessed one —
  *     a kilogram recorded as a pound is an injury path, not a display bug.
  *   · **The id.** Minted before the entry is queued, so a retried flush
@@ -84,7 +84,7 @@ export interface SetLoggingProviderProps {
    */
   exercises: readonly ExerciseProgress[]
   /**
-   * The unit every row this session writes is stamped with, from the profile.
+   * The default unit, from the profile, unless the athlete chooses a per-set unit.
    * `null` while the profile is unread: no unit, no write.
    */
   weightUnit: Enums<'weight_unit'> | null
@@ -337,13 +337,23 @@ export function SetLoggingProvider({
           return
         }
 
+        // The UI choice is an override, not another measurement. Resolve it
+        // exactly once; the durable entry has only its outer canonical unit.
+        const { weightUnit: override, ...measurements } = performed
+        if (override !== undefined && override !== 'kg' && override !== 'lb') {
+          onFailure(createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+            details: { field: 'weight_unit' },
+          }))
+          return
+        }
+
         const entry: SetLogEntry = {
           id: newId === undefined ? crypto.randomUUID() : newId(),
           exerciseId,
           blockId: exercise.blockId,
           distanceUnit: exercise.prescription.distance_unit,
-          weightUnit,
-          performed,
+          weightUnit: override ?? weightUnit,
+          performed: measurements,
         }
 
         // Durable before anything is sent. Everything after this line can fail

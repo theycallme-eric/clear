@@ -31,7 +31,8 @@ reviewed like any other.
 
 **Surface removed.** `src/ui/set-logger.tsx`, `SetEntryForm`: the `RPE` `Input` (1–10, decimal,
 error copy `RPE runs 1 to 10`) and the `Checkbox` labelled `Warmup set`. The form now has weight
-and the prescription's measure (reps, seconds or distance), both optional. A blank set still logs.
+and the prescription's measure (reps, seconds or distance), both optional, plus a compact native
+kg/lb Unit choice. A blank set still logs.
 `loggedSetText` no longer prints `RPE n`.
 
 **Writer changed.** `src/state/set-logging.ts`:
@@ -51,9 +52,9 @@ just leaves its effort out. Its `isWarmup` is still written.
 
 - `src/ui/set-logger.test.tsx`: removed "carries RPE and the warmup flag when they are given" and
   "refuses an RPE outside the scale". The prefill test no longer asserts an empty RPE field. The
-  field-row test now asserts exactly two fields. A new test asserts that no RPE, exertion, slider
+  field-row test now asserts two numeric fields plus the Unit select. A new test asserts no RPE, exertion, slider
   or checkbox control exists.
-- `src/ui/superset-block.test.tsx`: the field-row test asserts weight and reps only. The
+- `src/ui/superset-block.test.tsx`: the field-row test asserts weight, reps and Unit. The
   refused-entry test uses a negative weight instead of RPE 11.
 - `src/state/set-logging.test.ts`: removed the `refuses an RPE of %s` and `accepts an RPE of %s`
   cases. Added cases that check the writer sends no RPE, even from a legacy entry, and that a
@@ -64,6 +65,27 @@ just leaves its effort out. Its `isWarmup` is still written.
 and the range check, and write `rpe: recorded(performed.rpe)` again. The queue guard needs no
 change. The previous implementation is `src/ui/set-logger.tsx` and `src/state/set-logging.ts` as
 of commit `f0b48b9`.
+
+## Per-set units and the existing edit boundary
+
+`SetEntryForm` offers weight, measure and an explicit kg/lb choice through the existing app-owned
+native `Select`. Changing Unit keeps the typed number unchanged; the helper says to enter the
+weight in the selected unit. No conversion is implied or performed. Editing/clearing the current
+entry remains supported; this does not add an editor for already-saved sets or change profile settings.
+
+`SetPrefill` carries the reference row's observed weight and unit together. An observed zero keeps
+its own unit; a null weight supplies no weight reference and uses the current profile unit. Once
+the athlete types weight, the displayed unit is frozen against later profile refreshes.
+`PerformedSet.weightUnit` is an optional UI override only. `SetLoggingProvider` validates it,
+resolves it against the existing profile default and strips it from `performed` before enqueuing.
+`SetLogEntry.weightUnit` is the single canonical unit used for writes and retries. The unread-profile
+refusal stays in place. A stored queue with a duplicated nested unit is refused; legacy entries
+with no override, including tolerated old effort and warm-up classification, remain readable.
+
+The logger/provider/queue tests trace mixed-unit resume into the actual next write, explicit unit
+selection, zero/null references, unchanged numbers on relabel, and offline reload/retry under the
+same UUID. This correction is review-authored and requires fresh native exact-head verification
+and independent final-head review; the earlier receipt for `0aaaecd` does not prove this tree.
 
 ## Block level — the perceived-effort dialog
 

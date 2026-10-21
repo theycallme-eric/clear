@@ -504,6 +504,10 @@ describe('the superset draws with the shared block frame', () => {
       }
       expect(form.queryByLabelText(/RPE/i)).not.toBeInTheDocument()
       expect(form.queryByRole('checkbox')).not.toBeInTheDocument()
+      const unit = form.getByRole('combobox', { name: 'Unit' })
+      expect(unit).toHaveClass('clr-input')
+      expect(unit.closest('.clr-row')).toBe(row)
+      expect(unit.closest('.clr-field')).not.toBeNull()
     }
   })
 

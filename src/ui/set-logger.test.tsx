@@ -80,15 +80,17 @@ function mount(options: MountOptions = {}) {
   }
 
   const logger = <ExerciseSetLogger exercise={exercise} {...options.props} />
-  const view = render(
+  const tree = (unit = api.weightUnit) => (
     <AppProviders workout={workout.clients}>
-      <SetLoggingContext value={api}>
+      <SetLoggingContext value={{ ...api, weightUnit: unit }}>
         {options.inCard ? <Card>{logger}</Card> : logger}
       </SetLoggingContext>
-    </AppProviders>,
+    </AppProviders>
   )
+  const view = render(tree())
 
-  return { ...view, exercise, logSet }
+  return { ...view, exercise, logSet,
+    rerenderUnit: (unit: Enums<'weight_unit'> | null) => view.rerender(tree(unit)) }
 }
 
 function form(setNumber: number) {
@@ -128,14 +130,14 @@ describe('the logger is drawn with the shared frame, and frames nothing itself',
     expect(screen.getByRole('heading', { name: 'A1 back squat' })).toBeInTheDocument()
   })
 
-  it('sets its two fields in one wrapping row, each a current element frame', () => {
+  it('sets its two numeric fields and unit choice in one wrapping row, each a current element frame', () => {
     mount()
 
     const weight = form(1).getByLabelText('Weight (kg)')
     const row = weight.closest('.clr-row')
     expect(row).not.toBeNull()
 
-    // Weight and the measure, and nothing else: compact (REQ-015, U36).
+    // Two optional numbers plus their unit; no effort (REQ-015, U36).
     expect(form(1).getAllByRole('spinbutton')).toHaveLength(2)
     for (const label of ['Weight (kg)', 'Reps']) {
       const field = form(1).getByLabelText(label)
@@ -143,6 +145,10 @@ describe('the logger is drawn with the shared frame, and frames nothing itself',
       expect(field.closest('.clr-row')).toBe(row)
       expect(field.closest('.clr-field')).not.toBeNull()
     }
+    const unit = form(1).getByRole('combobox', { name: 'Unit' })
+    expect(unit).toHaveClass('clr-input')
+    expect(unit.closest('.clr-row')).toBe(row)
+    expect(unit.closest('.clr-field')).not.toBeNull()
     // The row adds no frame: the fields are the only chamfers in it.
     expect(row).not.toHaveClass('clr-chamfer')
   })
@@ -278,6 +284,65 @@ describe('set progression', () => {
 })
 
 describe('what the logger hands the shell', () => {
+  it('freezes the displayed unit after typing when the profile refreshes', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet, rerenderUnit } = mount()
+    await user.type(form(1).getByLabelText('Weight (kg)'), '60')
+    rerenderUnit('lb')
+    expect(form(1).getByLabelText('Weight (kg)')).toHaveValue(60)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 1, weight: 60, weightUnit: 'kg',
+    })
+  })
+
+  it('can follow a loaded profile unit while the form is still untouched', () => {
+    const { rerenderUnit } = mount({ weightUnit: null })
+    rerenderUnit('lb')
+    expect(form(1).getByLabelText('Weight (lb)')).toHaveValue(null)
+    expect(form(1).getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+  })
+
+  it.each([
+    ['kg', 'lb', 135],
+    ['lb', 'kg', 60],
+    ['kg', 'lb', 0],
+  ] as const)('keeps a %s profile from relabelling an observed %s weight', async (profile, unit, weight) => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount({
+      weightUnit: profile,
+      logged: [loggedSet({ setNumber: 1, weight, weightUnit: unit, reps: 5 })],
+    })
+
+    expect(form(2).getByLabelText(`Weight (${unit})`)).toHaveValue(weight)
+    expect(form(2).getByRole('combobox', { name: 'Unit' })).toHaveValue(unit)
+    await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 2, weight, reps: 5, weightUnit: unit,
+    })
+  })
+
+  it('uses the profile unit for a reference with no observed weight', () => {
+    mount({ logged: [loggedSet({ setNumber: 1, weight: null, weightUnit: 'lb' })] })
+    expect(form(2).getByLabelText('Weight (kg)')).toHaveValue(null)
+    expect(form(2).getByRole('combobox', { name: 'Unit' })).toHaveValue('kg')
+  })
+
+  it('explicitly relabels rather than converting entered weight, including clears', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount()
+    await user.type(form(1).getByLabelText('Weight (kg)'), '135.5')
+    await user.selectOptions(form(1).getByRole('combobox', { name: 'Unit' }), 'lb')
+    expect(form(1).getByLabelText('Weight (lb)')).toHaveValue(135.5)
+    expect(form(1).getByText('Changing units keeps the number. Enter the weight in the selected unit.')).toBeInTheDocument()
+    await user.clear(form(1).getByLabelText('Weight (lb)'))
+    await user.type(form(1).getByLabelText('Reps'), '0')
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 1, reps: 0, weightUnit: 'lb',
+    })
+  })
+
   it('logs the set against this prescription, with only what was entered', async () => {
     const user = userEvent.setup()
     const { exercise, logSet } = mount()

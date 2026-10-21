@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `5d0fb72bb811c81e7fec00b0d6cf2e7d9957dc29cb037f07536146f97095bfc5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015 and TASK-027 changes below) |
+| Runtime source hash of this audit's tree | `8b6b62842a1426c46da7f650afdb823a3acf57ecdb5da136902f7fb1787e1e8b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015 and TASK-027 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -254,6 +254,13 @@ trees and this head, from `git diff`:
   the workout's set-entry form; the Workout pictures above predate it and are not rebound
   (EX-13). Current acceptance evidence is the logger, superset, set-logging, provider and queue
   tests together with `src/app/Workout.test.tsx`.
+
+- `5d0fb72b…` to `8b6b6284…`: the TASK-027 Codex review-authored correction adds a compact native
+  per-set Unit choice and preserves an observed weight's own unit on resume. The provider strips
+  the typed UI override before queuing one canonical unit; retries never rederive it from profile.
+  Logger/provider/queue tests include the actual next write, zero/null references and unchanged
+  numbers on explicit relabel. This changes the workout form; existing pictures remain historical
+  (EX-13). Fresh native exact-head verification and independent review are still required.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
