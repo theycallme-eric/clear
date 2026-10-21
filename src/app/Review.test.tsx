@@ -54,7 +54,14 @@ import {
 } from '../ui/load-suggestion'
 import { renderWithProviders, signedIn } from '../test/render'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
-import { FACTS_LABEL, OVERVIEW_LABEL, REGENERATE_LABEL, Review, START_LABEL } from './Review'
+import {
+  FACTS_LABEL,
+  OVERVIEW_LABEL,
+  REGENERATE_LABEL,
+  Review,
+  START_LABEL,
+  TEMPO_DETAIL_LABEL,
+} from './Review'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -198,9 +205,14 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const cards = [...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card')]
-    const sections = screen.getAllByRole('region').filter((region) =>
-      region.classList.contains('clr-collapsible__region'),
-    )
+    // A section's own disclosure, not the tempo detail nested inside one.
+    const sections = screen
+      .getAllByRole('region')
+      .filter(
+        (region) =>
+          region.classList.contains('clr-collapsible__region') &&
+          region.parentElement?.parentElement?.closest('.clr-collapsible__region') === null,
+      )
 
     // One overview card and one card per section, each with its single bar.
     expect(sections.length).toBeGreaterThan(0)
@@ -242,13 +254,86 @@ describe('all generated content renders', () => {
     expect(start.closest('.clr-actions')).toBe(regenerate.closest('.clr-actions'))
   })
 
-  it('renders every section, in the order it will be performed', async () => {
+  it('renders every section, in the order it will be performed, under its type’s label', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    for (const title of ['Prepare', 'Primary', 'Accessory', 'Conditioning', 'Cool down']) {
-      expect(screen.getByRole('button', { name: new RegExp(title) })).toBeInTheDocument()
+    const triggers = screen
+      .getAllByRole('button', { expanded: true })
+      .map((button) => button.textContent ?? '')
+    expect(triggers).toEqual([
+      expect.stringMatching(/^Warm-up\d+ movement/),
+      expect.stringMatching(/^Primary lift\d+ movements/),
+      expect.stringMatching(/^Accessory\d+ movements/),
+      expect.stringMatching(/^Conditioning\d+ movements/),
+      expect.stringMatching(/^Cooldown\d+ movement/),
+    ])
+  })
+
+  it('never shows or follows a generated section title (REQ-011)', async () => {
+    const custom = makeSessionAcceptance({
+      ...ACCEPTANCE,
+      workout: {
+        ...ACCEPTANCE.workout,
+        sections: ACCEPTANCE.workout.sections.map((section) => ({
+          ...section,
+          section_title: 'Leg Day Destroyer',
+        })),
+      },
+    })
+    const first = renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+    const original = briefingText()
+    first.unmount()
+
+    const user = userEvent.setup()
+    const { recorder } = renderReview({ acceptance: custom })
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    expect(briefingText()).toBe(original)
+    expect(briefingText()).not.toContain('Leg Day Destroyer')
+    // Start still goes where it always goes, and persists the payload as given.
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    expect(await screen.findByText(WORKOUT_MARKER)).toBeInTheDocument()
+    expect(recorder.accepted[0].acceptance.workout.sections[0].section_title).toBe(
+      'Leg Day Destroyer',
+    )
+  })
+
+  it('frames each superset and circuit as one numbered group, in prescribed order', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const superset = screen.getByRole('list', { name: 'superset, 4 rounds' })
+    const members = within(superset).getAllByRole('listitem')
+    expect(members.map((item) => item.textContent)).toEqual([
+      expect.stringMatching(/^1\. bench press/),
+      expect.stringMatching(/^2\. bent over row/),
+    ])
+    expect(screen.getByRole('list', { name: 'circuit, 3 rounds' })).toBeInTheDocument()
+    for (const timed of ['emom', 'amrap', 'for time']) {
+      expect(screen.getAllByRole('list', { name: timed }).length).toBeGreaterThan(0)
     }
+  })
+
+  it('states the round count in the badge and the shared rest directly beside it', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const group = screen.getByRole('list', { name: 'superset, 4 rounds' }).parentElement!
+    const [badge, rest] = [...group.children]
+    expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
+    expect(rest).toHaveTextContent('Rest 90s between rounds')
+    expect(group.textContent?.match(/between rounds/g)).toHaveLength(1)
+  })
+
+  it('drops the STANDARD badge that says nothing, and keeps one that names a scheme', async () => {
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    const text = briefingText()
+    expect(text).not.toMatch(/STANDARD(?! · )/)
+    expect(text).toContain('STANDARD · LADDER UP')
   })
 
   it('renders every structure type the database admits', async () => {
@@ -333,7 +418,7 @@ describe('all generated content renders', () => {
     expect(text).toContain('4 × 400 m')
   })
 
-  it('renders the load guidance, the rest and the tempo', async () => {
+  it('renders the load guidance and the rest', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
@@ -344,7 +429,24 @@ describe('all generated content renders', () => {
     expect(text).toContain('Match last session')
     expect(text).toContain('Rest 180s')
     expect(text).toContain('90s between rounds')
-    expect(text).toContain('3-1-1-0')
+  })
+
+  it('moves tempo off the rows into an optional, collapsed detail that keeps it', async () => {
+    const user = userEvent.setup()
+    renderReview()
+    await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
+
+    expect(briefingText()).not.toContain('Tempo 3-1-1-0')
+    const trigger = screen.getByRole('button', { name: TEMPO_DETAIL_LABEL })
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    const detail = screen.getByRole('region', { name: TEMPO_DETAIL_LABEL })
+    expect(detail.closest('.clr-card')).toHaveTextContent(/^.*Primary lift/)
+    expect(within(detail).getByRole('listitem')).toHaveTextContent('back squat3-1-1-0')
+
+    await user.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    // A timed prescription is the work, so it stays on its own row.
+    expect(briefingText()).toContain('2 × 45 sec each side')
   })
 
   it('renders the block notes the composition carries', async () => {
@@ -359,9 +461,9 @@ describe('all generated content renders', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    await user.click(screen.getByRole('button', { name: /Prepare/ }))
+    await user.click(screen.getByRole('button', { name: /Warm-up/ }))
 
-    expect(screen.getByRole('button', { name: /Prepare/ })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: /Warm-up/ })).toHaveAttribute(
       'aria-expanded',
       'false',
     )
@@ -399,7 +501,7 @@ describe('no generated overview or section introduction (REQ-010)', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    for (const title of ['Prepare', 'Primary']) {
+    for (const title of ['Warm-up', 'Primary lift']) {
       expect(screen.getByRole('button', { name: new RegExp(title) })).toBeInTheDocument()
     }
     const text = briefingText()

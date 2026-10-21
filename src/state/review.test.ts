@@ -21,6 +21,7 @@ import {
   briefingDuration,
   briefingIntensity,
   equipmentName,
+  groupRounds,
   loadText,
   reviewBriefing,
   roundRestText,
@@ -181,14 +182,34 @@ describe('the duration is the effective target and only that', () => {
 describe('the workout, as the briefing reads it', () => {
   const briefing = briefingOf()
 
-  it('keeps every section, in the order it will be performed', () => {
+  it('keeps every section, in the order it will be performed, under its type’s label', () => {
+    // The fixture's generated titles are `Prepare`, `Primary`, `Accessory`,
+    // `Conditioning` and `Cool down`; the labels come from the types (REQ-011).
     expect(briefing.sections.map((section) => section.title)).toEqual([
-      'Prepare',
-      'Primary',
+      'Warm-up',
+      'Primary lift',
       'Accessory',
       'Conditioning',
-      'Cool down',
+      'Cooldown',
     ])
+  })
+
+  it('never lets a custom section title name, or change, a section (REQ-011)', () => {
+    const custom = briefingOf({
+      workout: {
+        ...SPECTRUM,
+        sections: SPECTRUM.sections.map((section) => ({
+          ...section,
+          section_title: 'Leg Day Destroyer',
+        })),
+      },
+    })
+
+    expect(custom.sections.map((section) => section.title)).toEqual(
+      briefing.sections.map((section) => section.title),
+    )
+    expect(custom).toEqual(briefing)
+    expect(allText(custom)).not.toContain('Leg Day Destroyer')
   })
 
   it('counts the movements it holds, per section and in total', () => {
@@ -220,10 +241,12 @@ describe('the workout, as the briefing reads it', () => {
       section.blocks.map((block) => block.identity.detail),
     )
 
+    // The superset leaves `rounds` null; its members share four sets, which is
+    // its round count, said once in the badge like a circuit's.
     expect(details).toEqual([
       null,
       null,
-      null,
+      '4 ROUNDS',
       '3 ROUNDS',
       null,
       '10 MIN',
@@ -287,6 +310,114 @@ describe('the workout, as the briefing reads it', () => {
   })
 })
 
+describe('grouping, order and shared rest (REQ-011)', () => {
+  const briefing = briefingOf()
+  const blocks = briefing.sections.flatMap((section) => section.blocks)
+
+  it('groups every structure but a standard one', () => {
+    expect(blocks.map((block) => block.grouped)).toEqual([
+      false,
+      false,
+      true,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+    ])
+  })
+
+  it('keeps each group’s movements in their prescribed order', () => {
+    expect(briefing.sections[1].blocks[1].exercises.map((exercise) => exercise.name)).toEqual([
+      'bench press',
+      'bent over row',
+    ])
+    briefing.sections.forEach((section, sectionIndex) =>
+      section.blocks.forEach((block, blockIndex) =>
+        expect(block.exercises.map((exercise) => exercise.name)).toEqual(
+          SPECTRUM.sections[sectionIndex].blocks[blockIndex].exercises.map((exercise) =>
+            exercise.exercise_id.replaceAll('-', ' '),
+          ),
+        ),
+      ),
+    )
+  })
+
+  it('counts the rounds of a superset and a circuit, and of nothing timed', () => {
+    expect(blocks.map((block) => block.rounds)).toEqual([
+      null,
+      null,
+      4,
+      3,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ])
+  })
+
+  it('states no superset round count its members disagree about', () => {
+    const superset = makeWorkoutBlock({
+      structure_type: 'superset',
+      exercises: [makePrescription({ sets: 4 }), makePrescription({ sets: 3 })],
+    })
+    expect(groupRounds(superset)).toBeNull()
+    expect(groupRounds({ ...superset, rounds: 5 })).toBe(5)
+    expect(groupRounds(makeWorkoutBlock({ structure_type: 'standard' }))).toBeNull()
+  })
+
+  it('states the shared rest on the group rather than on a movement', () => {
+    expect(briefing.sections[1].blocks[1].roundRest).toBe('Rest 90s between rounds')
+    expect(briefing.sections[2].blocks[0].roundRest).toBe('Rest 60s between rounds')
+    expect(allText(briefing).filter((text) => text.includes('between rounds'))).toHaveLength(
+      blocks.filter((block) => block.roundRest !== null).length,
+    )
+  })
+})
+
+describe('tempo (REQ-011)', () => {
+  it('collects every prescribed tempo into the section’s optional detail, in order', () => {
+    const briefing = briefingOf()
+
+    expect(briefing.sections[1].cadence).toEqual([
+      { key: briefing.sections[1].blocks[0].exercises[0].key, name: 'back squat', tempo: '3-1-1-0' },
+    ])
+    expect(briefing.sections[0].cadence).toEqual([])
+  })
+
+  it('discards no tempo, however many movements repeat it', () => {
+    const repeated = makeStructureSpectrumWorkout({
+      sections: [
+        {
+          section_type: 'accessory',
+          section_title: 'Twice',
+          section_notes: null,
+          blocks: [
+            makeWorkoutBlock({
+              structure_type: 'superset',
+              exercises: [
+                makePrescription({ exercise_id: 'split-squat', tempo: '3-0-1-0' }),
+                makePrescription({ exercise_id: 'hip-thrust', tempo: '3-0-1-0' }),
+                makePrescription({ exercise_id: 'plank', tempo: null }),
+              ],
+            }),
+          ],
+        },
+      ],
+    })
+    const cadence = briefingOf({ workout: repeated }).sections[0].cadence
+
+    expect(cadence.map((entry) => [entry.name, entry.tempo])).toEqual([
+      ['split squat', '3-0-1-0'],
+      ['hip thrust', '3-0-1-0'],
+    ])
+  })
+})
+
 describe('no generated overview or section introduction (REQ-010)', () => {
   const LEGACY_OVERVIEW = 'Every structure this app can prescribe, in one session.'
   const LEGACY_SECTION_NOTE = 'Move before you load.'
@@ -313,8 +444,8 @@ describe('no generated overview or section introduction (REQ-010)', () => {
 
   it('keeps every section, block, label and prescription of a legacy workout', () => {
     const briefing = briefingOf()
-    expect(briefing.sections.map((section) => section.title)).toEqual(
-      SPECTRUM.sections.map((section) => section.section_title),
+    expect(briefing.sections.map((section) => section.type)).toEqual(
+      SPECTRUM.sections.map((section) => section.section_type),
     )
     expect(briefing.sections.map((section) => section.blocks.length)).toEqual(
       SPECTRUM.sections.map((section) => section.blocks.length),
@@ -340,7 +471,7 @@ describe('rest', () => {
   })
 
   it('states the rest between rounds separately, because it is a different rest', () => {
-    expect(briefing.sections[1].blocks[1].roundRest).toBe('90s between rounds')
+    expect(briefing.sections[1].blocks[1].roundRest).toBe('Rest 90s between rounds')
     expect(briefing.sections[1].blocks[0].roundRest).toBeNull()
     expect(roundRestText(0)).toBeNull()
     expect(roundRestText(null)).toBeNull()

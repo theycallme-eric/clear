@@ -241,6 +241,18 @@ export const SECTIONS: readonly Option<SectionType>[] =
     .filter((section) => !NON_SELECTABLE_SECTIONS.includes(section))
     .map((section) => SECTION_COPY[section])
 
+/**
+ * The stable label a section is shown under in Review and in the workout,
+ * derived from its type and from nothing else (REQ-011). A generated
+ * `section_title` stays on the payload for compatibility, but it is prose: it
+ * neither names a section on screen nor decides anything about one. The words
+ * are the ones onboarding and Settings offer the section in, so the label a
+ * person turned on is the label they train under.
+ */
+export function sectionTypeLabel(type: SectionType): string {
+  return SECTION_COPY[type].label
+}
+
 const PATTERN_LABELS: Record<MovementPattern, string> = {
   squat: 'Squatting',
   hinge: 'Hinging — deadlifts, swings',

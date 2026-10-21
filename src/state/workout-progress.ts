@@ -20,6 +20,7 @@
  * nothing invents a number the block does not carry.
  */
 import type { Enums } from '../data/database.types.ts'
+import { sectionTypeLabel } from './onboarding'
 import type {
   ExerciseSetLogRow,
   SessionSnapshot,
@@ -106,6 +107,7 @@ export interface BlockProgress {
 
 export interface SectionProgress {
   readonly sectionId: string
+  /** The stable label of `sectionType` (`sectionTypeLabel`), not `section_title`. */
   readonly title: string
   readonly sectionType: Enums<'section_type'>
   /** Position in the session, which is also this section's `order_index`. */
@@ -186,7 +188,8 @@ export function sessionProgress(snapshot: SessionSnapshot): SessionProgress {
 
     return {
       sectionId: entry.section.id,
-      title: entry.section.section_title,
+      // The type's stable label, never the generated `section_title` (REQ-011).
+      title: sectionTypeLabel(entry.section.section_type),
       sectionType: entry.section.section_type,
       index,
       status: statusOf(

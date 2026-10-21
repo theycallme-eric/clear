@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `43f30eb39ea947c779608ce46903b6e26230fed44f38a204eb16f603f7973123` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003 and TASK-018 changes below) |
+| Runtime source hash of this audit's tree | `8042672f0561b6631070dbad80d37fdfc382a52d2e90a452f811c9d559145c6b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018 and TASK-019 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -81,6 +81,14 @@ trees and this head, from `git diff`:
   block notes, coaching cues and all structured work are unchanged, and legacy prose stays in
   the data. This **does** change rendering on Review for workouts that carried prose. The
   pictures above predate it and are not rebound (EX-13).
+- `43f30eb3…` to `8042672f…`: TASK-019 (REQ-011, JOURNEY-018, U11/U32/U33) labels sections
+  by type (`sectionTypeLabel` in `src/state/onboarding.ts`) in Review, Workout and the
+  favorite progression measures instead of the generated `section_title`, which stays in the
+  data; Review frames supersets, circuits and timed structures as numbered groups with the
+  round count in the badge and the shared rest beside it, drops the bare `STANDARD` badge,
+  and moves tempo into a collapsed per-section `Tempo` detail. This **does** change
+  rendering on Review and Workout. The pictures above predate it and are not rebound
+  (EX-13).
 
 The pictures are not rebound to this head. The browser lane re-asserts all three groups'
 behaviour on it (below).

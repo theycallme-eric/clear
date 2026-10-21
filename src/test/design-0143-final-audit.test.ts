@@ -4,7 +4,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
-import { browserTestsForTarget } from '../../playwright.config'
+import { browserTestsForTarget, REQ_011_REVIEW_CASE } from '../../playwright.config'
 
 describe('TASK-027 browser selection follows the tested package and target', () => {
   const publicOtp = 'mobile design-0143/task-040-entry-settings.spec.ts entry: Welcome and OTP validation, busy, typed failure and cooldown'
@@ -20,6 +20,18 @@ describe('TASK-027 browser selection follows the tested package and target', () 
   it('keeps the public OTP case on current local and deployed targets', () => {
     expect(browserTestsForTarget('0.14.3', 'http://127.0.0.1:4173').test(publicOtp)).toBe(true)
     expect(browserTestsForTarget('0.14.3', 'https://clear.example.com').test(publicOtp)).toBe(true)
+  })
+
+  it('keeps the REQ-011 Review→Workout case on current targets, and only that case', () => {
+    const file = 'design-0143/task-040-home-review.spec.ts TASK-040 — Home and Review additive before-state artifacts'
+    const kept = `mobile ${file} ${REQ_011_REVIEW_CASE}`
+    expect(readFileSync(resolve(import.meta.dirname, '../../e2e/design-0143/task-040-home-review.spec.ts'), 'utf8'))
+      .toContain(`'${REQ_011_REVIEW_CASE}'`)
+    expect(browserTestsForTarget('0.14.3', 'http://127.0.0.1:4173').test(kept)).toBe(true)
+    expect(browserTestsForTarget('0.14.3', 'https://clear.example.com').test(kept)).toBe(true)
+    expect(browserTestsForTarget('0.14.3', 'http://127.0.0.1:4173').test(
+      `mobile ${file} Home: real active session Resume handoff`,
+    )).toBe(false)
   })
 
   it.each(historical)('keeps historical BEFORE evidence in its original package lane: %s', (title) => {

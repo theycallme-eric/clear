@@ -77,9 +77,14 @@ function mixedProgress(): SessionProgress {
         { title: 'Warm-up', blocks: [{ exercises: ['completed'] }] },
         {
           title: 'Primary lift',
+          sectionType: 'primary_lift',
           blocks: [{ structureType: 'emom', timerSeconds: 600, exercises: ['completed', 'not_started'] }],
         },
-        { title: 'Finisher', blocks: [{ structureType: 'amrap', timerSeconds: 480 }] },
+        {
+          title: 'Finisher',
+          sectionType: 'conditioning',
+          blocks: [{ structureType: 'amrap', timerSeconds: 480 }],
+        },
       ],
     }),
   )
@@ -158,7 +163,7 @@ describe('ProgressTracker', () => {
     const sections = within(screen.getByRole('list', { name: 'Sections' }))
     expect(sections.getByRole('button', { name: 'Warm-up, complete' })).toBeInTheDocument()
     expect(sections.getByRole('button', { name: 'Primary lift, in progress' })).toBeInTheDocument()
-    expect(sections.getByRole('button', { name: 'Finisher, not started' })).toBeInTheDocument()
+    expect(sections.getByRole('button', { name: 'Conditioning, not started' })).toBeInTheDocument()
   })
 
   it('marks where the user is with aria-current, not with a tint', () => {
@@ -180,11 +185,11 @@ describe('ProgressTracker', () => {
       <ProgressTracker progress={mixedProgress()} currentIndex={0} onSelect={onSelect} />,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     expect(onSelect).toHaveBeenCalledWith(2)
 
     rerender(<ProgressTracker progress={mixedProgress()} currentIndex={0} />)
-    expect(screen.getByRole('button', { name: 'Finisher, not started' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Conditioning, not started' })).toBeDisabled()
   })
 
   it('is one card with its heading, bar and section list inside', () => {

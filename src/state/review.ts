@@ -32,6 +32,13 @@
  *     goal says so; a block with no clock shows no clock; an `absolute` load
  *     whose unit is not known is stated without one rather than in a unit
  *     guessed from a default.
+ *   · **A section is named by its type, never by its generated title (REQ-011).**
+ *     `sectionTypeLabel` is the one vocabulary Review and the workout share;
+ *     `section_title` stays on the payload for compatibility and is read by
+ *     nothing here. A block that groups movements — a superset, a circuit, a
+ *     timed structure — states its round count once and its shared rest beside
+ *     the group, and tempo leaves the prescription line for an optional
+ *     per-section detail, where any prescribed cadence is still kept whole.
  *   · **No generated overview or section introduction is carried (REQ-010).**
  *     `workout.overview` and each `section_notes` stay on the payload —
  *     required, nullable, and still strings on legacy sessions — but the
@@ -45,6 +52,7 @@
 import type { Enums } from '../data/database.types'
 import { formatFocus } from './history'
 import { prescriptionSiteKey } from './load-suggestions'
+import { sectionTypeLabel } from './onboarding'
 import { exerciseName, prescriptionText, restText } from './prescription'
 import type {
   Prescription,
@@ -74,28 +82,58 @@ export interface ReviewExerciseView {
   readonly load: string | null
   /** `Rest 90s`, or null. A zero rest is never rendered as one. */
   readonly rest: string | null
-  /** `3-1-1-0`, display only — never parsed, here or anywhere. */
+  /**
+   * `3-1-1-0`, display only — never parsed, here or anywhere. Not rendered on
+   * the prescription line: the section's `cadence` detail carries it.
+   */
   readonly tempo: string | null
 }
 
 /** One block: what structure it is, and what is in it. */
 export interface ReviewBlockView {
   readonly key: string
+  /**
+   * The shell's reading of the structure. A superset whose rounds are its
+   * members' shared set count carries that count as its `detail`, the same
+   * `N ROUNDS` a circuit already does, so the round count is said once.
+   */
   readonly identity: StructureIdentity
+  /**
+   * True for every structure but `standard`: its movements are performed as
+   * one group, in order, and the briefing frames and numbers them as one.
+   */
+  readonly grouped: boolean
+  /** The rounds the group is performed for, when the block says how many. */
+  readonly rounds: number | null
   readonly notes: string | null
-  /** `90s between rounds`, for the structures that rest between them. */
+  /** `Rest 90s between rounds` — the group's shared rest, stated beside it. */
   readonly roundRest: string | null
+  /** In prescribed order: the order the array holds is the order performed. */
   readonly exercises: readonly ReviewExerciseView[]
+}
+
+/** One movement's prescribed cadence, for the optional tempo detail. */
+export interface ReviewCadence {
+  readonly key: string
+  readonly name: string
+  readonly tempo: string
 }
 
 /** One section of the workout, in the order it will be performed. */
 export interface ReviewSectionView {
   readonly key: string
+  /** The stable label of `type` (`sectionTypeLabel`), never `section_title`. */
   readonly title: string
   readonly type: Enums<'section_type'>
   readonly blocks: readonly ReviewBlockView[]
   /** How many movements are under this heading, across its blocks. */
   readonly movementCount: number
+  /**
+   * Every prescribed tempo in the section, in movement order — the optional
+   * detail surface that replaces a `Tempo …` repeated on each row. Empty when
+   * nothing in the section prescribes one.
+   */
+  readonly cadence: readonly ReviewCadence[]
 }
 
 /** The header IA.md §4 asks for: intensity, anchor, goal — and the duration. */
@@ -206,10 +244,28 @@ export function loadText(
   }
 }
 
-/** `90s between rounds`, for a block that rests between them. Zero is not rest. */
+/** `Rest 90s between rounds`, for a block that rests between them. Zero is not rest. */
 export function roundRestText(seconds: number | null): string | null {
   if (seconds === null || seconds <= 0) return null
-  return `${seconds}s between rounds`
+  return `Rest ${seconds}s between rounds`
+}
+
+/**
+ * How many rounds a superset or circuit is performed for, when it says.
+ *
+ * The block's own `rounds` when it carries one. A superset may leave it null
+ * (only a circuit is required to carry it), and then its rounds are the set
+ * count its members share — stated only when they all agree, because a guess
+ * between two different counts would be a number the workout does not hold.
+ * Timed structures are counted by their clock, not by rounds.
+ */
+export function groupRounds(block: WorkoutBlock): number | null {
+  if (block.structure_type !== 'superset' && block.structure_type !== 'circuit') return null
+  if (block.rounds !== null) return block.rounds
+  if (block.structure_type !== 'superset') return null
+  const counts = new Set(block.exercises.map((exercise) => exercise.sets))
+  const [only] = counts
+  return counts.size === 1 && only !== undefined ? only : null
 }
 
 /**
@@ -291,10 +347,17 @@ function reviewSection(
 
   return {
     key,
-    title: section.section_title,
+    title: sectionTypeLabel(section.section_type),
     type: section.section_type,
     blocks,
     movementCount: blocks.reduce((total, block) => total + block.exercises.length, 0),
+    cadence: blocks.flatMap((block) =>
+      block.exercises.flatMap((exercise) =>
+        exercise.tempo === null
+          ? []
+          : [{ key: exercise.key, name: exercise.name, tempo: exercise.tempo }],
+      ),
+    ),
   }
 }
 
@@ -304,10 +367,18 @@ function reviewBlock(
   blockIndex: number,
   weightUnit: BriefingWeightUnit | null,
 ): ReviewBlockView {
+  const identity = structureIdentity(block)
+  const rounds = groupRounds(block)
+
   return {
     key: `section-${sectionIndex}-block-${blockIndex}`,
     // The shell's own reading of the structure — see the header comment.
-    identity: structureIdentity(block),
+    identity:
+      rounds !== null && identity.detail === null
+        ? { ...identity, detail: `${rounds} ROUNDS` }
+        : identity,
+    grouped: block.structure_type !== 'standard',
+    rounds,
     notes: blankToNull(block.block_notes),
     roundRest: roundRestText(block.round_rest_seconds),
     // The key is `prescriptionSiteKey`'s and not this file's: OVR-01c keys a

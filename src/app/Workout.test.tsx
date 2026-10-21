@@ -76,7 +76,13 @@ const SECTIONS: SectionFixture[] = [
       { structureType: 'emom', timerSeconds: 600, exercises: ['completed', 'not_started'] },
     ],
   },
-  { title: 'Finisher', blocks: [{ structureType: 'amrap', timerSeconds: 480 }] },
+  // A generated title that is not the type's label: the screen must show
+  // `Conditioning` and never `Finisher` (REQ-011).
+  {
+    title: 'Finisher',
+    sectionType: 'conditioning',
+    blocks: [{ structureType: 'amrap', timerSeconds: 480 }],
+  },
 ]
 
 function activeSession(sections: SectionFixture[] = SECTIONS) {
@@ -286,7 +292,18 @@ describe('Workout — navigation and progress', () => {
       'aria-current',
       'step',
     )
-    expect(sections.getByRole('button', { name: 'Finisher, not started' })).toBeInTheDocument()
+    expect(sections.getByRole('button', { name: 'Conditioning, not started' })).toBeInTheDocument()
+  })
+
+  it('labels every section by its type, never by its generated title (REQ-011)', async () => {
+    const user = userEvent.setup()
+    await shell()
+
+    // The third section's generated title is `Finisher`; its type is conditioning.
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
+    expect(screen.getByRole('heading', { level: 2, name: 'Conditioning' })).toBeInTheDocument()
+    expect(screen.queryByText('Finisher')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Finisher/ })).not.toBeInTheDocument()
   })
 
   it('walks forward and back across every section', async () => {
@@ -294,7 +311,7 @@ describe('Workout — navigation and progress', () => {
     await shell()
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    expect(screen.getByRole('heading', { name: 'Finisher' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
     // The last section: the forward action becomes completion.
     expect(screen.queryByRole('button', { name: 'Next section' })).not.toBeInTheDocument()
 
@@ -318,9 +335,9 @@ describe('Workout — navigation and progress', () => {
     const user = userEvent.setup()
     await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
 
-    expect(screen.getByRole('heading', { name: 'Finisher' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
     expect(screen.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
   })
 
@@ -423,7 +440,7 @@ describe('Workout — the focus mode', () => {
     const user = userEvent.setup()
     const { double } = await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     await screen.findByRole('heading', { level: 1, name: SUMMARY_HEADING })
@@ -438,7 +455,7 @@ describe('Workout — the focus mode', () => {
     expect(COMPLETION_ROUTE).toBe('/summary')
     expect(COMPLETION_ROUTE).not.toBe(AUTHENTICATED_HOME)
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('Full body, done.')).toBeInTheDocument()
@@ -458,7 +475,7 @@ describe('Workout — the focus mode', () => {
     const { summary, router } = await completing()
     const before = summary.streakCalls.length
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('4 days')).toBeInTheDocument()
@@ -470,7 +487,7 @@ describe('Workout — the focus mode', () => {
     const user = userEvent.setup()
     const { summary, router } = await completing()
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
     await user.click(await screen.findByRole('button', { name: 'Save and close' }))
 
@@ -485,11 +502,11 @@ describe('Workout — the focus mode', () => {
       sessions: { complete: async () => err(createError(ErrorCode.NETWORK_TIMEOUT)) },
     })
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Finish workout' }))
 
     expect(await screen.findByText('Request timed out. Try again.')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Finisher' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
   })
 })
 
@@ -502,7 +519,7 @@ describe('Workout — closing and backgrounding', () => {
     const user = userEvent.setup()
     await shell()
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
 
     const stored: unknown = JSON.parse(
       window.localStorage.getItem(WORKOUT_SHELL_STORAGE_KEY) ?? 'null',
@@ -589,7 +606,7 @@ describe('Workout — block completion', () => {
     )
     await screen.findByRole('button', { name: 'Block recorded' })
 
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     // EXE-04c's renderer names what it is completing; the shell's path is the
     // same one the EMOM above went through, which is this test's whole subject.
     await user.click(screen.getByRole('button', { name: 'Complete AMRAP' }))
@@ -649,7 +666,7 @@ describe('Workout — coaching and notes', () => {
   /** One movement per section, so each panel on screen names one card. */
   const COACHED: SectionFixture[] = [
     { title: 'Primary lift', sectionType: 'primary_lift', blocks: [{ exercises: ['not_started'] }] },
-    { title: 'Finisher', blocks: [{ exercises: ['not_started'] }] },
+    { title: 'Finisher', sectionType: 'conditioning', blocks: [{ exercises: ['not_started'] }] },
   ]
   const PANEL = 'Coaching and notes — back squat'
 
@@ -701,7 +718,7 @@ describe('Workout — coaching and notes', () => {
 
     // The next section opens with its own label and work, and still no prose.
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    expect(await screen.findByRole('heading', { name: 'Finisher' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
     expect(document.body).not.toHaveTextContent(SECTION_NOTE)
   })
 
@@ -760,7 +777,7 @@ describe('Workout — coaching and notes', () => {
     expect(double.savedNotes()).toEqual([{ exerciseId, notes: 'Left knee felt tight' }])
 
     // The card is remounted on the way back; the note it shows is the stored one.
-    await user.click(screen.getByRole('button', { name: /^Finisher/ }))
+    await user.click(screen.getByRole('button', { name: /^Conditioning/ }))
     await user.click(screen.getByRole('button', { name: /^Primary lift/ }))
     expect(screen.getByRole('textbox', { name: /Notes — back squat/ })).toHaveValue(
       'Left knee felt tight',
@@ -847,7 +864,7 @@ describe('Workout — the like-for-like comparison', () => {
   async function completeFinisher(
     user: ReturnType<typeof userEvent.setup>,
   ): Promise<HTMLElement> {
-    await user.click(screen.getByRole('button', { name: 'Finisher, not started' }))
+    await user.click(screen.getByRole('button', { name: 'Conditioning, not started' }))
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
     await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
     await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
@@ -1132,7 +1149,7 @@ describe('Workout — the session’s one rest', () => {
   it('keeps the rest when the user moves between sections, because the session owns it', async () => {
     const user = userEvent.setup()
     await shell({
-      session: activeSession([...REST_SECTIONS, { title: 'Finisher', blocks: [{}] }]),
+      session: activeSession([...REST_SECTIONS, { title: 'Finisher', sectionType: 'conditioning', blocks: [{}] }]),
     })
 
     await logSet('back squat', 1)
@@ -1289,16 +1306,16 @@ describe('Workout — the session’s one rest', () => {
         },
       ]),
     })
-    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
     advance(420)
     returnToForeground()
-    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logSet('bench press', 1)
     await logSet('barbell row', 1)
     advance(52)
     returnToForeground()
-    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
     const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
     expect(lowOwners).toHaveLength(2)
@@ -1331,16 +1348,16 @@ describe('Workout — the session’s one rest', () => {
         },
       ]),
     })
-    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
     await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
     advance(30)
     returnToForeground()
-    await user.click(screen.getByRole('button', { name: /^Strength,/ }))
+    await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
     await logSet('bench press', 1)
     await logSet('barbell row', 1)
     advance(52)
     returnToForeground()
-    await user.click(screen.getByRole('button', { name: /^Finisher,/ }))
+    await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
 
     const lowOwners = Array.from(document.querySelectorAll('[data-urgent="true"]'))
     expect(lowOwners).toHaveLength(2)
@@ -1416,7 +1433,7 @@ describe('Workout — the session’s one rest', () => {
   it('leaves global time and the finish untouched by a running rest', async () => {
     const user = userEvent.setup()
     const { double } = await shell({
-      session: activeSession([...REST_SECTIONS, { title: 'Finisher', blocks: [{}] }]),
+      session: activeSession([...REST_SECTIONS, { title: 'Finisher', sectionType: 'conditioning', blocks: [{}] }]),
     })
 
     await logSet('back squat', 1)
