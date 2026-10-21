@@ -149,6 +149,21 @@ describe('sessionProgress', () => {
 })
 
 describe('startingSectionIndex', () => {
+  it('uses confirmed block completion without inventing measurements or completing skipped sections', () => {
+    const snapshot = snapshotFixture({ sections: [
+      { blocks: [{ exercises: ['not_started'] }, { exercises: ['not_started'] }] },
+      { blocks: [{ exercises: ['not_started'] }] },
+    ] })
+    const ids = snapshot.sections[0].blocks.map((entry) => entry.block.id)
+    const partial = sessionProgress(snapshot, new Set([ids[0]]))
+    expect(partial.sections[0].status).toBe('in_progress')
+    const done = sessionProgress(snapshot, new Set(ids))
+    expect(done.sections.map((section) => section.status)).toEqual(['complete', 'not_started'])
+    expect(startingSectionIndex(done)).toBe(1)
+    expect(snapshot.sections[0].blocks[0].exercises[0].exercise.execution_status).toBe('not_started')
+    expect(snapshot.sections[0].blocks[0].exercises[0].set_logs).toEqual([])
+  })
+
   it('lands on the first section that is not finished', () => {
     const progress = sessionProgress(
       snapshotFixture({
@@ -161,6 +176,26 @@ describe('startingSectionIndex', () => {
     )
 
     expect(startingSectionIndex(progress)).toBe(2)
+  })
+
+  it('never reads a passed-over section as finished because a later one is (REQ-013)', () => {
+    // Jumping past a section saves nothing, so its rows still say untouched:
+    // it stays outstanding, and a restored shell lands back on it.
+    const progress = sessionProgress(
+      snapshotFixture({
+        sections: [
+          { blocks: [{ exercises: ['not_started'] }] },
+          { blocks: [{ exercises: ['completed'] }] },
+        ],
+      }),
+    )
+
+    expect(progress.sections.map((section) => section.status)).toEqual([
+      'not_started',
+      'complete',
+    ])
+    expect(startingSectionIndex(progress)).toBe(0)
+    expect(isSessionFinished(progress)).toBe(false)
   })
 
   it('lands on the first section when everything is resolved', () => {

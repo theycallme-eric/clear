@@ -41,7 +41,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import type { Enums } from '../data/database.types'
-import { createError, ErrorCode, isErr, type AppError } from './errors'
+import { createError, ErrorCode, isErr, err, ok, type AppError } from './errors'
 import {
   attempted,
   defaultQueueStorage,
@@ -62,6 +62,7 @@ import {
   loggedSetFromEntry,
   loggedSetFromRow,
   SetLoggingContext,
+  SetLogFlushContext,
   type LoggedSet,
   type SetLoggingApi,
   type SetLogEntry,
@@ -170,7 +171,7 @@ export function SetLoggingProvider({
     })
   }, [])
 
-  const flushing = useRef(false)
+  const flushing = useRef<Promise<void> | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scheduleRef = useRef<() => void>(() => {})
 
@@ -182,51 +183,71 @@ export function SetLoggingProvider({
    * logged while the pass is running goes out in the same pass instead of
    * waiting for a backoff it did nothing to earn.
    */
-  const flush = useCallback(async () => {
-    if (flushing.current) return
-    flushing.current = true
-    setSyncing(true)
+  const flush = useCallback((): Promise<void> => {
+    if (flushing.current !== null) return flushing.current
+    const pass = async () => {
+      setSyncing(true)
 
-    const sent = new Set<string>()
-    try {
-      for (;;) {
-        const next = retryable(queueRef.current).find((item) => !sent.has(item.entry.id))
-        if (next === undefined) break
-        sent.add(next.entry.id)
+      const sent = new Set<string>()
+      try {
+        for (;;) {
+          const next = retryable(queueRef.current).find((item) => !sent.has(item.entry.id))
+          if (next === undefined) break
+          sent.add(next.entry.id)
 
-        setInFlight(next.entry.id)
-        const result = await setLogs.log(next.entry)
-        setInFlight(null)
+          setInFlight(next.entry.id)
+          const result = await setLogs.log(next.entry)
+          setInFlight(null)
 
-        if (isErr(result)) {
-          if (isAlreadyStored(result.error)) {
-            // The id is this queue's own, so a collision can only be the write
-            // this entry already made. The set is stored; the retry was the
-            // idempotent one the client-generated id exists to make possible.
-            // What is stored is what this entry sent, so there is nothing to
-            // read back.
-            applyQueue((current) => settled(current, next.entry.id))
-            confirm(next.entry.exerciseId, loggedSetFromEntry(next.entry, 'logged'))
+          if (isErr(result)) {
+            if (isAlreadyStored(result.error)) {
+              // The id is this queue's own, so a collision can only be the write
+              // this entry already made. The set is stored; the retry was the
+              // idempotent one the client-generated id exists to make possible.
+              // What is stored is what this entry sent, so there is nothing to
+              // read back.
+              applyQueue((current) => settled(current, next.entry.id))
+              confirm(next.entry.exerciseId, loggedSetFromEntry(next.entry, 'logged'))
+              continue
+            }
+
+            // It stays queued either way: a refusal a retry cannot fix stops
+            // being sent (`isStalled`) but is never discarded, because a set
+            // that silently disappeared is the defect this module closes.
+            applyQueue((current) => attempted(current, next.entry.id, result.error))
             continue
           }
 
-          // It stays queued either way: a refusal a retry cannot fix stops
-          // being sent (`isStalled`) but is never discarded, because a set
-          // that silently disappeared is the defect this module closes.
-          applyQueue((current) => attempted(current, next.entry.id, result.error))
-          continue
+          applyQueue((current) => settled(current, next.entry.id))
+          confirm(next.entry.exerciseId, loggedSetFromRow(result.value))
         }
-
-        applyQueue((current) => settled(current, next.entry.id))
-        confirm(next.entry.exerciseId, loggedSetFromRow(result.value))
+      } finally {
+        setInFlight(null)
+        setSyncing(false)
+        scheduleRef.current()
       }
-    } finally {
-      flushing.current = false
-      setInFlight(null)
-      setSyncing(false)
-      scheduleRef.current()
     }
+    const pending = pass()
+    flushing.current = pending
+    const settlePass = () => {
+      if (flushing.current === pending) flushing.current = null
+    }
+    void pending.then(settlePass, settlePass)
+    return pending
   }, [applyQueue, confirm, setLogs])
+
+  const flushBeforeContinue = useCallback(async () => {
+    // Join an existing pass rather than starting a duplicate write. A failed
+    // observation stays in the same durable queue with the same client id.
+    await flush()
+    const remaining = queueRef.current.filter((item) => item.sessionId === sessionId)
+    if (remaining.length > 0) {
+      return err(createError(remaining[0].lastErrorCode ?? ErrorCode.PERSISTENCE_WRITE_FAILED, {
+        details: { unsyncedSets: remaining.length },
+      }))
+    }
+    return ok(undefined)
+  }, [flush, sessionId])
 
   /** The next pass, on a doubling backoff. Nothing owed, nothing scheduled. */
   const schedule = useCallback(() => {
@@ -363,7 +384,11 @@ export function SetLoggingProvider({
     weightUnit,
   ])
 
-  return <SetLoggingContext value={api}>{children}</SetLoggingContext>
+  return (
+    <SetLoggingContext value={api}>
+      <SetLogFlushContext value={flushBeforeContinue}>{children}</SetLogFlushContext>
+    </SetLoggingContext>
+  )
 }
 
 /** The snapshot's own logs, lowest set first, keyed by prescription. */

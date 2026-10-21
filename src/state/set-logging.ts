@@ -32,6 +32,7 @@
 import { createContext, use } from 'react'
 
 import type { Enums, TablesInsert } from '../data/database.types'
+import type { Result } from './errors'
 import type { ExerciseSetLogRow } from './schemas'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -332,6 +333,15 @@ export interface SetLoggingApi {
 }
 
 export const SetLoggingContext = createContext<SetLoggingApi | null>(null)
+
+/** The section action waits for actual queued observations before continuing. */
+export const SetLogFlushContext = createContext<(() => Promise<Result<undefined>>) | null>(null)
+
+export function useFlushSetLogs(): () => Promise<Result<undefined>> {
+  const flush = use(SetLogFlushContext)
+  if (flush === null) throw new Error('useFlushSetLogs was called outside the workout shell')
+  return flush
+}
 
 /**
  * The renderers' half of the contract. Throwing outside the shell is the point:

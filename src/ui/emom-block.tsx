@@ -108,7 +108,7 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
       // observed, and the only field it supplies. An EMOM whose clock never
       // ran observed nothing, and says so by supplying nothing rather than a
       // zero (DATA_MODEL §8).
-      completion={{ outcome: observedOutcome(view), label: 'Complete EMOM' }}
+      completion={{ outcome: observedOutcome(view) }}
     >
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />

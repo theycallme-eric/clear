@@ -111,7 +111,7 @@ const PAIR: ExerciseFixture[] = [
 interface Mounted {
   readonly block: BlockProgress
   readonly storage: ShellStorage
-  readonly completeBlock: Mock<(blockId: string, outcome: BlockOutcome) => void>
+  readonly reportOutcome: Mock<(blockId: string, outcome: BlockOutcome) => void>
   /** Time passes without the tab being watched, then one repaint happens. */
   advance(seconds: number): void
   /** A refresh: the same storage, a new mount, the clock where it now is. */
@@ -152,9 +152,9 @@ function mount(
     writeEmomState(storage, block.blockId, options.stored)
   }
 
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
   const completion: BlockCompletionApi = {
-    completeBlock,
+    reportOutcome,
     isBlockRecorded: () => false,
   }
 
@@ -182,7 +182,7 @@ function mount(
   return {
     block,
     storage,
-    completeBlock,
+    reportOutcome,
     advance: (seconds) => {
       current += seconds * 1000
       // The tab comes back to the foreground, which is one of the three events
@@ -518,16 +518,15 @@ describe('the timed state survives a refresh', () => {
 })
 
 describe('completion supplies the minutes the EMOM observed', () => {
-  it('hands the shell minutes_completed and nothing it did not watch', async () => {
+  it('reports minutes_completed and nothing it did not watch', async () => {
     const user = setup()
     const mounted = mount()
 
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(185)
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
 
     await waitFor(() =>
-      expect(mounted.completeBlock).toHaveBeenCalledExactlyOnceWith(mounted.block.blockId, {
+      expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {
         minutesCompleted: 3,
       }),
     )
@@ -540,31 +539,30 @@ describe('completion supplies the minutes the EMOM observed', () => {
     await user.click(screen.getByRole('button', { name: 'Start EMOM' }))
     mounted.advance(70)
     await user.click(screen.getByRole('button', { name: 'Minute done' }))
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
 
     // Minute one elapsed and minute two's work is done: two, not one.
-    expect(mounted.completeBlock).toHaveBeenCalledExactlyOnceWith(mounted.block.blockId, {
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {
       minutesCompleted: 2,
     })
   })
 
-  it('supplies nothing at all when the clock never ran', async () => {
-    const user = setup()
+  it('reports nothing at all when the clock never ran', () => {
     const mounted = mount()
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
-
     // An unobserved zero would be a measurement (DATA_MODEL §8).
-    expect(mounted.completeBlock).toHaveBeenCalledExactlyOnceWith(mounted.block.blockId, {})
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 
-  it('supplies nothing for a block that prescribes no clock', async () => {
-    const user = setup()
+  it('reports nothing for a block that prescribes no clock', () => {
     const mounted = mount({ block: { timerType: 'none' } })
 
-    await user.click(screen.getByRole('button', { name: 'Complete EMOM' }))
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
+  })
 
-    expect(mounted.completeBlock).toHaveBeenCalledExactlyOnceWith(mounted.block.blockId, {})
+  it('offers no completion of its own: the section’s forward action saves it (REQ-013)', () => {
+    mount()
+
+    expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 })
 
@@ -595,14 +593,13 @@ describe('the EMOM draws with the shared block frame', () => {
     expect(inside.getByRole('button', { name: 'Minute done' })).toBeInTheDocument()
   })
 
-  it('carries the identity row, the movement rows and exactly one completion', () => {
+  it('carries the identity row and the movement rows', () => {
     mount()
 
     const blockCard = cards()[0]
     const inside = within(blockCard)
     expect(inside.getByText('EMOM · 10 MIN')).toBeInTheDocument()
     expect(inside.getByText('2 movements')).toBeInTheDocument()
-    expect(inside.getAllByRole('button', { name: 'Complete EMOM' })).toHaveLength(1)
 
     // Rows of one list, each headed by its movement — never cards of their own.
     const rows = within(
@@ -808,7 +805,6 @@ describe('the countdown takes the shipped low state and nothing more', () => {
     expect(screen.getByText('WORK')).toBeInTheDocument()
     expect(marked('Now')).toEqual(['1. hollow body hold'])
     expect(screen.getByRole('button', { name: 'Minute done' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Complete EMOM' })).toBeEnabled()
 
     // The shipped rule that makes a reduced pulse static.
     expect(MOTION_CSS).toMatch(

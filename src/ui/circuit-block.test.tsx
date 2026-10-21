@@ -82,9 +82,9 @@ function circuitBlock(fixture: BlockFixture = {}): BlockProgress {
 }
 
 function completionDouble() {
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
-  const api: BlockCompletionApi = { completeBlock, isBlockRecorded: () => false }
-  return { api, completeBlock }
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const api: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false }
+  return { api, reportOutcome }
 }
 
 /** EXE-02's seam, stubbed: this test is about rounds, not about sets. */
@@ -510,9 +510,9 @@ describe('surviving a refresh', () => {
 })
 
 describe('what it supplies to the shell', () => {
-  it('completes with the rounds it actually got through', async () => {
+  it('reports the rounds it actually got through', async () => {
     const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     const block = circuitBlock()
     renderCircuit(block, fakeStorage(), api)
 
@@ -521,38 +521,32 @@ describe('what it supplies to the shell', () => {
     await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
     await user.click(screen.getByRole('button', { name: 'Start round 2' }))
 
-    await user.click(screen.getByRole('button', { name: 'Complete circuit' }))
-
     // One round is behind them and one is in progress: a round in progress is
     // not a round completed.
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
-      roundsCompleted: 1,
-    })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
   })
 
-  it('supplies zero rounds rather than nothing when none were finished', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+  it('reports no count when no round boundary was recorded', () => {
+    const { api, reportOutcome } = completionDouble()
     const block = circuitBlock()
     renderCircuit(block, fakeStorage(), api)
 
-    await user.click(screen.getByRole('button', { name: 'Complete circuit' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
-      roundsCompleted: 0,
-    })
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 
-  it('supplies no count at all for a circuit with nothing to perform', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+  it('reports no count at all for a circuit with nothing to perform', () => {
+    const { api, reportOutcome } = completionDouble()
     const block = circuitBlock({ exercises: [] })
     renderCircuit(block, fakeStorage(), api)
 
-    await user.click(screen.getByRole('button', { name: 'Complete circuit' }))
-
     // Zero rounds of nothing is not an observation (DATA_MODEL §8).
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+  })
+
+  it('offers no completion of its own: the section’s forward action saves it (REQ-013)', () => {
+    renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
+
+    expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 })
 
@@ -572,7 +566,7 @@ describe('the circuit draws with the shared block frame', () => {
     }
   })
 
-  it('carries the identity row, the position, the rest line and one completion inside the card', () => {
+  it('carries the identity row, the position and the rest line inside the card', () => {
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
     const inside = within(blockCard())
@@ -581,7 +575,6 @@ describe('the circuit draws with the shared block frame', () => {
     expect(inside.getByText('Round 1 of 3 · Movement 1 of 3')).toBeInTheDocument()
     expect(inside.getByText('Each round:')).toBeInTheDocument()
     expect(inside.getByText('60s rest between rounds')).toBeInTheDocument()
-    expect(inside.getAllByRole('button', { name: 'Complete circuit' })).toHaveLength(1)
   })
 
   it('marks the live movement with a word and aria-current, and no other row', async () => {
@@ -650,16 +643,19 @@ describe('the circuit draws with the shared block frame', () => {
     expect(row).not.toHaveAttribute('aria-current')
     expect(within(row!).queryByText(/^(Now|Next)$/)).toBeNull()
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
-    expect(within(blockCard()).getByRole('button', { name: 'Complete circuit' })).toBeEnabled()
+    expect(
+      within(blockCard()).queryByRole('button', {
+        name: /next movement|finish round|start round|^complete/i,
+      }),
+    ).toBeNull()
   })
 
-  it('is still one card with one completion when nothing is left to perform', () => {
+  it('is still one card when nothing is left to perform', () => {
     renderCircuit(circuitBlock({ exercises: [] }), fakeStorage(), completionDouble().api)
 
     expect(cards()).toHaveLength(1)
     expect(screen.queryByRole('list', { name: 'Movements in this circuit' })).toBeNull()
     expect(screen.queryByText('Each round:')).not.toBeInTheDocument()
-    expect(screen.getAllByRole('button', { name: 'Complete circuit' })).toHaveLength(1)
   })
 
   it('sets each movement’s fields in one wrapping row of current element frames', () => {
@@ -681,18 +677,16 @@ describe('the circuit draws with the shared block frame', () => {
     }
   })
 
-  it('gives each movement its own log action, apart from the round and block actions', () => {
+  it('gives each movement its own log action, apart from the round action', () => {
     renderLoggingCircuit()
 
     for (const row of movementRows()) {
       expect(within(row).getAllByRole('button', { name: 'Log set 1' })).toHaveLength(1)
     }
-    for (const name of ['Next movement', 'Complete circuit']) {
-      const action = screen.getByRole('button', { name })
-      expect(action.closest('li')).toBeNull()
-      expect(action.closest('.clr-card')).toBe(blockCard())
-      expect(action).toBeEnabled()
-    }
+    const action = screen.getByRole('button', { name: 'Next movement' })
+    expect(action.closest('li')).toBeNull()
+    expect(action.closest('.clr-card')).toBe(blockCard())
+    expect(action).toBeEnabled()
   })
 })
 

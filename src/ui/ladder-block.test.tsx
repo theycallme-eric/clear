@@ -61,7 +61,7 @@ function sequence(
 
 interface Mounted {
   block: BlockProgress
-  completeBlock: ReturnType<typeof vi.fn<(id: string, outcome: BlockOutcome) => void>>
+  reportOutcome: ReturnType<typeof vi.fn<(id: string, outcome: BlockOutcome) => void>>
   container: HTMLElement
 }
 
@@ -91,9 +91,9 @@ function mount(
   const progress = sessionProgress(snapshot)
   const blockProgress = progress.sections[0].blocks[0]
 
-  const completeBlock = vi.fn<(id: string, outcome: BlockOutcome) => void>()
+  const reportOutcome = vi.fn<(id: string, outcome: BlockOutcome) => void>()
   const completion: BlockCompletionApi = {
-    completeBlock,
+    reportOutcome,
     isBlockRecorded: () => options.recorded === true,
   }
 
@@ -104,7 +104,7 @@ function mount(
     </BlockCompletionContext>,
   )
 
-  return { block: blockProgress, completeBlock, container }
+  return { block: blockProgress, reportOutcome, container }
 }
 
 /** The rungs, as the row presents them to someone who cannot see it. */
@@ -300,27 +300,25 @@ describe('read-only and interactive rungs are different things', () => {
 describe('the rung reached is what the block’s row records', () => {
   it('supplies the chosen rung as highest_rung when the cap was hit', async () => {
     const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+    const { block, reportOutcome } = mount()
 
     await declare(user, 'Hit the time cap')
     await user.click(screen.getByRole('radio', { name: '9 reps' }))
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
 
     // The rung *number*, which is what `block_results.highest_rung` means —
     // rung 3 of the ladder, whose target happens to be 9.
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 3,
     })
   })
 
   it('records the top rung when the ladder was finished', async () => {
     const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+    const { block, reportOutcome } = mount()
 
     await declare(user, 'Finished the ladder')
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
     })
     // Finishing fills the pattern without turning it into a control.
@@ -328,52 +326,47 @@ describe('the rung reached is what the block’s row records', () => {
     expect(screen.getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
   })
 
-  it('records no rung at all when the user says nothing', async () => {
-    const user = userEvent.setup()
-    const { block, completeBlock } = mount()
-
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
+  it('records no rung at all when the user says nothing', () => {
+    const { block, reportOutcome } = mount()
 
     // Advancing without answering is allowed, and a rung nobody stated would
     // be a guess (DATA_MODEL §8).
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 
   it('records no rung when the cap was hit and no rung was chosen', async () => {
     const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+    const { block, reportOutcome } = mount()
 
     await declare(user, 'Hit the time cap')
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 
   it('forgets the rung when the user changes the ending to finished', async () => {
     const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+    const { block, reportOutcome } = mount()
 
     await declare(user, 'Hit the time cap')
     await user.click(screen.getByRole('radio', { name: '6 reps' }))
     await declare(user, 'Finished the ladder')
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 5,
     })
   })
 
-  it('offers no second completion for a block already recorded', () => {
+  it('says a saved block is saved, and offers no completion of its own (REQ-013)', () => {
     mount({}, { recorded: true })
 
-    expect(screen.getByRole('button', { name: 'Block recorded' })).toBeDisabled()
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 })
 
 describe('a ladder block the rows do not describe as one', () => {
-  it('says so rather than drawing an empty rail, and still completes', async () => {
-    const user = userEvent.setup()
-    const { block, completeBlock } = mount({
+  it('says so rather than drawing an empty rail, and still completes', () => {
+    const { block, reportOutcome } = mount({
       structureType: 'for_time',
       repScheme: 'ladder_down',
       exercises: [{ prescription: { exercise_id: 'burpee' } }],
@@ -390,8 +383,7 @@ describe('a ladder block the rows do not describe as one', () => {
     expect(screen.getByRole('heading', { name: 'burpee' })).toBeInTheDocument()
     expect(screen.queryByText('How did this block end?')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 
   it('says the block has nothing left when every movement was swapped out', () => {
@@ -465,38 +457,36 @@ describe('a ladder block is one card of the shared frame', () => {
     expect(legend).toContain('font-family: var(--font-data)')
   })
 
-  it('draws its one completion inside the card, below the ending it asks for', () => {
-    const { container } = mount()
+  it('says it is saved inside the card, below the ending it asks for', () => {
+    const { container } = mount({}, { recorded: true })
 
     const card = container.querySelector('.clr-card') as HTMLElement
-    const completions = within(card).getAllByRole('button', { name: 'Complete block' })
-    expect(completions).toHaveLength(1)
+    const saved = within(card).getAllByText('Block saved')
+    expect(saved).toHaveLength(1)
 
     const ending = screen.getByRole('group', { name: 'How did this block end?' })
     expect(card).toContainElement(ending)
     expect(
-      ending.compareDocumentPosition(completions[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ending.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })
 
-  it('keeps the rung choice and the completion live after the cap is declared', async () => {
+  it('keeps the rung choice live after the cap is declared, and reports it', async () => {
     const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+    const { block, reportOutcome } = mount()
 
     await declare(user, 'Hit the time cap')
     await user.click(screen.getByRole('radio', { name: '9 reps' }))
 
     expect(screen.getByText('Reached rung 3 of 5 — 9 reps')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       highestRung: 3,
     })
   })
 
-  it('says an emptied block is empty, and still offers its completion', () => {
-    mount({
+  it('says an emptied block is empty, and still reports to the shell', () => {
+    const { block, reportOutcome } = mount({
       exercises: [
         sequence('kettlebell-swing', [15, 12, 9], { revision_status: 'superseded' }),
       ],
@@ -506,7 +496,7 @@ describe('a ladder block is one card of the shared frame', () => {
     expect(
       screen.queryByRole('list', { name: 'Movements in this ladder' }),
     ).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 })
 

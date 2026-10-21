@@ -99,9 +99,9 @@ function forTimeBlock(fixture: BlockFixture = {}): BlockProgress {
 }
 
 function completionDouble() {
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
-  const api: BlockCompletionApi = { completeBlock, isBlockRecorded: () => false }
-  return { api, completeBlock }
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const api: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false }
+  return { api, reportOutcome }
 }
 
 function renderForTime(
@@ -188,16 +188,15 @@ describe('before the clock starts', () => {
     ).toBeInTheDocument()
   })
 
-  it('records nothing it did not observe', async () => {
-    const user = userWithTimers()
+  it('records nothing it did not observe', () => {
     const block = forTimeBlock()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, fakeStorage(), api)
 
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
-
     // Not a zero: an unobserved elapsed time is an absence (DATA_MODEL §8).
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    // REQ-013: no per-block completion; the section's forward action saves it.
+    expect(screen.queryByRole('button', { name: 'Record For Time' })).not.toBeInTheDocument()
   })
 })
 
@@ -275,15 +274,14 @@ describe('the first completion path: finished under the cap', () => {
   it('supplies the elapsed seconds and the under-cap finish to the shell', async () => {
     const user = userWithTimers()
     const block = forTimeBlock()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, fakeStorage(), api)
 
     await user.click(screen.getByRole('button', { name: 'Start For Time' }))
     clock = START + 383_000
     await user.click(screen.getByRole('button', { name: 'Finish' }))
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 383,
       completedUnderCap: true,
     })
@@ -334,14 +332,13 @@ describe('the second completion path: the cap is reached', () => {
   it('supplies the cap and the cap-expiry outcome to the shell', async () => {
     const user = userWithTimers()
     const block = forTimeBlock()
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, fakeStorage(), api)
 
     await user.click(screen.getByRole('button', { name: 'Start For Time' }))
     await wallClockReaches(START + 600_000)
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: CAP_SECONDS,
       completedUnderCap: false,
     })
@@ -382,14 +379,13 @@ describe('across a refresh', () => {
     first.unmount()
 
     clock = START + 900_000
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, storage, api)
 
     expect(screen.getByText('Finished under cap')).toBeInTheDocument()
     expect(readout()).toHaveTextContent('04:10')
 
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 250,
       completedUnderCap: true,
     })
@@ -411,10 +407,9 @@ describe('across a refresh', () => {
 })
 
 describe('a block with no movements left', () => {
-  it('says so, runs no clock, and records nothing it did not observe', async () => {
-    const user = userWithTimers()
+  it('says so, runs no clock, and records nothing it did not observe', () => {
     const block = forTimeBlock({ exercises: [] })
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, fakeStorage(), api)
 
     expect(
@@ -422,8 +417,7 @@ describe('a block with no movements left', () => {
     ).toBeInTheDocument()
     expect(screen.queryByRole('timer')).not.toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
   })
 })
 
@@ -431,7 +425,7 @@ describe('a block with no cap', () => {
   it('counts up, states no deadline, and claims nothing about one', async () => {
     const user = userWithTimers()
     const block = forTimeBlock({ timerSeconds: null })
-    const { api, completeBlock } = completionDouble()
+    const { api, reportOutcome } = completionDouble()
     renderForTime(block, fakeStorage(), api)
 
     await user.click(screen.getByRole('button', { name: 'Start For Time' }))
@@ -442,9 +436,8 @@ describe('a block with no cap', () => {
     expect(timerFrame()).not.toHaveClass('clr-chamfer--timer-low')
 
     await user.click(screen.getByRole('button', { name: 'Finish' }))
-    await user.click(screen.getByRole('button', { name: 'Record For Time' }))
 
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {
       elapsedSeconds: 1_000,
     })
   })
@@ -510,7 +503,7 @@ describe('For Time draws with the shared block frame', () => {
       expect(row.querySelector('input')).toBeNull()
     }
 
-    expect(within(blockCard).getAllByRole('button', { name: 'Record For Time' })).toHaveLength(1)
+    expect(within(blockCard).queryByRole('button', { name: 'Record For Time' })).toBeNull()
     expect(within(blockCard).getByRole('button', { name: 'Start For Time' })).toBeInTheDocument()
   })
 
@@ -700,7 +693,6 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(screen.getByText('Racing the clock')).toBeInTheDocument()
     expect(screen.getByText('Cap in 00:07 — finish now')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Finish' })).toBeEnabled()
-    expect(screen.getByRole('button', { name: 'Record For Time' })).toBeEnabled()
 
     // The shipped rule that makes a reduced pulse static.
     expect(MOTION_CSS).toMatch(

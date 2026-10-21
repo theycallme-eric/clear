@@ -226,7 +226,6 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
           <BlockCompletionControl
             blockId={block.blockId}
             outcome={shape.size === 0 ? {} : amrapOutcome(view)}
-            label="Complete AMRAP"
           />
         </div>
       </Card>

@@ -60,7 +60,7 @@ interface Mounted {
   workout: WorkoutDouble
   block: BlockProgress
   attempts: SetLogEntry[]
-  completeBlock: ReturnType<typeof vi.fn<(blockId: string, outcome: BlockOutcome) => void>>
+  reportOutcome: ReturnType<typeof vi.fn<(blockId: string, outcome: BlockOutcome) => void>>
 }
 
 /** The shell's one recovery action, reachable without the shell's notice. */
@@ -101,9 +101,9 @@ function mount(options: MountOptions = {}): Mounted {
   }
   const block = sessionProgress(snapshot).sections[0].blocks[0]
 
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
   const completion: BlockCompletionApi = {
-    completeBlock,
+    reportOutcome,
     isBlockRecorded: () => options.recorded ?? false,
   }
 
@@ -127,7 +127,7 @@ function mount(options: MountOptions = {}): Mounted {
     </AppProviders>,
   )
 
-  return { container, workout, block, attempts, completeBlock }
+  return { container, workout, block, attempts, reportOutcome }
 }
 
 function formFor(name: string, setNumber = 1) {
@@ -181,21 +181,21 @@ describe('a standard block is one card of the shared frame', () => {
     expect(screen.queryByText(/after/)).not.toBeInTheDocument()
   })
 
-  it('draws its one completion inside the card, below the movements', () => {
-    const { container } = mount()
+  it('says it is saved inside the card, below the movements', () => {
+    const { container } = mount({ recorded: true })
 
     const card = container.querySelector('.clr-card') as HTMLElement
-    const completions = within(card).getAllByRole('button', { name: 'Complete block' })
-    expect(completions).toHaveLength(1)
+    const saved = within(card).getAllByText('Block saved')
+    expect(saved).toHaveLength(1)
 
     const list = screen.getByRole('list', { name: 'Movements in this block' })
     expect(
-      list.compareDocumentPosition(completions[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+      list.compareDocumentPosition(saved[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })
 
-  it('says an emptied block is empty, and still offers its completion', () => {
-    mount({
+  it('says an emptied block is empty, and still reports to the shell', () => {
+    const mounted = mount({
       block: {
         structureType: 'standard',
         exercises: [
@@ -207,30 +207,22 @@ describe('a standard block is one card of the shared frame', () => {
     expect(screen.getByText(/every movement in it was swapped\s+out/)).toBeInTheDocument()
     expect(screen.queryByRole('form')).not.toBeInTheDocument()
     expect(screen.queryByRole('list', { name: 'Movements in this block' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
   })
 })
 
 describe('completion is the shell’s, with nothing a standard block did not observe', () => {
-  it('completes with the empty outcome', async () => {
-    const user = userEvent.setup()
-    const { block, completeBlock } = mount()
+  it('reports the empty outcome, and offers no completion of its own (REQ-013)', () => {
+    const { block, reportOutcome } = mount()
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(block.blockId, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    expect(screen.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 
-  it('does not require any set to be logged first', () => {
-    mount()
-
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
-  })
-
-  it('says a recorded block is recorded, and still lets a set be logged', () => {
+  it('says a saved block is saved, and still lets a set be logged', () => {
     mount({ recorded: true })
 
-    expect(screen.getByRole('button', { name: 'Block recorded' })).toBeDisabled()
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
     expect(formFor('back squat').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
   })
 })

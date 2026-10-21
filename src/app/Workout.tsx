@@ -22,12 +22,21 @@
  *     modal `AppChrome` mounts for everywhere else.
  *
  * The other thing the shell owns is **block completion**, and it owns it by
- * mounting `BlockCompletionProvider` around every renderer: one effort
- * question, one `block_results` write, for EMOM, AMRAP, For Time and the
- * ladders alike (EXE-01, read by OVR-03). The renderers (EXE-02…EXE-04c) reach
- * it through `useBlockCompletion` and supply only the fields their structure
- * observed; which renderer performs which structure is `BLOCK_RENDERERS`, and
- * none of them touches the write.
+ * mounting `BlockCompletionProvider` around every renderer: one
+ * `block_results` write, for EMOM, AMRAP, For Time and the ladders alike
+ * (EXE-01, read by OVR-03). The renderers (EXE-02…EXE-04c) reach it through
+ * `useBlockCompletion` and report only the fields their structure observed;
+ * which renderer performs which structure is `BLOCK_RENDERERS`, and none of
+ * them touches the write.
+ *
+ * And it owns **when** a block is complete (REQ-013): the footer's one forward
+ * action — Next section, or Finish workout on the last — saves every block in
+ * the open section with what it observed, then continues. Missing counts are
+ * saved as nothing rather than refused; no effort is asked. A failed save keeps
+ * the athlete on the section with everything they entered and offers the
+ * retry, which writes only what is still unsaved. Previous and the jump list
+ * save nothing, so a section passed over is never marked complete, and none of
+ * it touches the session clock.
  *
  * The four states (CORE-04): loading is the session hydrating, error is a
  * lifecycle or persistence failure — shown as a blocking dialog, because a
@@ -40,12 +49,10 @@ import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
+import { useSectionCompletion } from '../state/block-completion'
+import { useFlushSetLogs } from '../state/set-logging'
 import { BlockCompletionProvider } from '../state/block-completion-provider'
-import { conditioningSections } from '../state/conditioning'
-import {
-  conditioningHistoryQueryKey,
-  useConditioningHistoryQuery,
-} from '../state/conditioning-queries'
+import { conditioningHistoryQueryKey } from '../state/conditioning-queries'
 import { RestTimerProvider } from '../state/rest-provider'
 import { historyQueryPrefix } from '../state/history-queries'
 import { useQueryClient } from '../state/query'
@@ -209,7 +216,11 @@ function WorkoutShell({
   const cache = useQueryClient()
   const navigate = useNavigate()
 
-  const progress = useMemo(() => sessionProgress(snapshot), [snapshot])
+  const [recordedBlocks, setRecordedBlocks] = useState<ReadonlySet<string>>(() => new Set())
+  const rememberBlock = useCallback((blockId: string) => {
+    setRecordedBlocks((current) => current.has(blockId) ? current : new Set([...current, blockId]))
+  }, [])
+  const progress = useMemo(() => sessionProgress(snapshot, recordedBlocks), [snapshot, recordedBlocks])
   const sessionId = snapshot.session.id
 
   // Where to start: the section the shell had open when the tab was closed,
@@ -230,6 +241,7 @@ function WorkoutShell({
   const [askedToExit, setAskedToExit] = useState(false)
   const [failure, setFailure] = useState<AppError | null>(null)
   const [ending, setEnding] = useState(false)
+  const [advancing, setAdvancing] = useState(false)
 
   /** Every block in the session, which is what a completion names. */
   const blocks = useMemo(
@@ -251,19 +263,6 @@ function WorkoutShell({
   const profile = useProfileQuery()
   const weightUnit =
     profile.state.status === 'ready' ? (profile.state.data?.weight_unit ?? null) : null
-
-  // OVR-03: the scored conditioning history a completed timed block is
-  // compared against. Anything but `ready` — loading, a failed read, no user —
-  // is null, which the completion path reads as "no comparison and no claim
-  // about history", and which never holds up the effort question or its write.
-  const conditioning = useConditioningHistoryQuery()
-  const conditioningHistory = useMemo(
-    () =>
-      conditioning.state.status === 'ready'
-        ? conditioningSections(conditioning.state.data)
-        : null,
-    [conditioning.state],
-  )
 
   // Set synchronously, because the blocker is consulted during the navigation
   // this handler starts — a state flag would still be false when it is read.
@@ -376,15 +375,11 @@ function WorkoutShell({
       onFailure={setFailure}
     >
       {/*
-        The one completion path, mounted around every renderer: the effort
-        question and the `block_results` write belong to it, for every
-        structure type, and to no renderer inside it.
+        The one completion path, mounted around every renderer and the
+        footer's forward action: the `block_results` write belongs to it, for
+        every structure type, and to no renderer inside it.
       */}
-      <BlockCompletionProvider
-        blocks={blocks}
-        onFailure={setFailure}
-        conditioningHistory={conditioningHistory}
-      >
+      <BlockCompletionProvider sessionId={sessionId} blocks={blocks} onRecorded={rememberBlock}>
         {/*
           The other write execution produces, on the same terms: one path, one
           row per set, written at log time, and the same error surface. A
@@ -427,13 +422,16 @@ function WorkoutShell({
                 <PhoneFooter>
                   <div className="clr-stack clr-stack--tight">
                     <RestTimerBar />
-                    <WorkoutNavigation
+                    <SectionNavigation
+                      section={current}
                       canGoBack={canGoBack}
                       canGoForward={canGoForward}
                       onPrevious={() => section.setIndex(index - 1)}
-                      onNext={() => section.setIndex(index + 1)}
+                      onContinue={() => section.setIndex(index + 1)}
                       onFinish={() => void finish()}
-                      busy={ending}
+                      ending={ending}
+                      advancing={advancing}
+                      onSavingChange={setAdvancing}
                     />
                   </div>
                 </PhoneFooter>
@@ -451,7 +449,7 @@ function WorkoutShell({
                 <ProgressTracker
                   progress={progress}
                   currentIndex={index}
-                  onSelect={section.setIndex}
+                  onSelect={advancing || ending ? undefined : section.setIndex}
                 />
 
                 {current === undefined ? null : (
@@ -488,5 +486,95 @@ function WorkoutShell({
         </SetLoggingProvider>
       </BlockCompletionProvider>
     </SwapProvider>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The forward action (REQ-013)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SectionNavigationProps {
+  /** The open section, whose blocks the forward action completes. */
+  section: SectionProgress | undefined
+  canGoBack: boolean
+  canGoForward: boolean
+  onPrevious: () => void
+  /** Moves on once the section is saved. */
+  onContinue: () => void
+  /** Ends the session once the last section is saved. */
+  onFinish: () => void
+  /** The session is being completed or abandoned. */
+  ending: boolean
+  advancing: boolean
+  onSavingChange: (saving: boolean) => void
+}
+
+/**
+ * The footer's navigation, with the one forward action wired to the section
+ * save. Next section and Finish workout are the same action — save the open
+ * section's explicit completion and observations, then continue — differing
+ * only in where they continue to. A component of its own because the seam it
+ * reads is provided inside the shell, not above it.
+ */
+function SectionNavigation({
+  section,
+  canGoBack,
+  canGoForward,
+  onPrevious,
+  onContinue,
+  onFinish,
+  ending,
+  advancing,
+  onSavingChange,
+}: SectionNavigationProps) {
+  const { completeSection, saving } = useSectionCompletion()
+  const flushSetLogs = useFlushSetLogs()
+  const inFlight = useRef(false)
+  const [failure, setFailure] = useState<AppError | null>(null)
+
+  const forward = useCallback(async () => {
+    if (section === undefined || inFlight.current) return
+    inFlight.current = true
+    onSavingChange(true)
+    try {
+      let result = await flushSetLogs()
+      if (!isErr(result)) result = await completeSection(section.blocks.map((block) => block.blockId))
+      // Include a set logged while a block write was in flight as well.
+      if (!isErr(result)) result = await flushSetLogs()
+      if (isErr(result)) {
+        // Nowhere to go: the athlete stays on this section, its renderers keep
+        // what was entered, and the retry below is the same action again.
+        setFailure(result.error)
+        return
+      }
+      if (canGoForward) onContinue()
+      else onFinish()
+    } finally {
+      inFlight.current = false
+      onSavingChange(false)
+    }
+  }, [canGoForward, completeSection, flushSetLogs, onContinue, onFinish, onSavingChange, section])
+
+  return (
+    <>
+      <WorkoutNavigation
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        onPrevious={onPrevious}
+        onNext={() => void forward()}
+        onFinish={() => void forward()}
+        busy={ending || saving || advancing}
+      />
+      {failure !== null && (
+        <ErrorDialog
+          open
+          error={failure}
+          title="That didn’t save"
+          actionLabel="Try again"
+          onRetry={() => void forward()}
+          onDismiss={() => setFailure(null)}
+        />
+      )}
+    </>
   )
 }

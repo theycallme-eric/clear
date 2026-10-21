@@ -103,12 +103,13 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
         ) : null
       }
       // The rounds the user actually got through — the outcome this structure
-      // observed, and the only field it supplies. A circuit with nothing left
-      // to perform observed no rounds at all, and says so by supplying
-      // nothing rather than a zero (DATA_MODEL §8).
+      // observed, and the only field it supplies. The initial zero is a UI
+      // counter, not an athlete-entered measurement. Until a round boundary
+      // was explicitly recorded, forward progression carries no round count.
       completion={{
-        outcome: shape.size === 0 ? {} : { roundsCompleted: view.roundsCompleted },
-        label: 'Complete circuit',
+        outcome: shape.size === 0 || view.roundsCompleted === 0
+          ? {}
+          : { roundsCompleted: view.roundsCompleted },
       }}
     >
       {shape.size === 0 ? (

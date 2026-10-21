@@ -1,15 +1,14 @@
 /**
- * EXE-01's completion control — the one button every structure completes
- * through, asserted on its own rather than through a renderer.
+ * EXE-01's completion control — the one place every structure reports what it
+ * observed, asserted on its own rather than through a renderer.
  *
  * What is pinned is the contract a renderer inherits by composing it: the
- * shell's seam is called with the block and exactly the outcome handed in, a
- * recorded block says so and offers no second completion, and the control is a
- * current button with no frame of its own — so the card it sits in stays the
- * only card.
+ * shell's seam is told the block and exactly the outcome handed in, every time
+ * it changes; the control is no action of its own (REQ-013 — the section's
+ * forward action completes the block); and a saved block says so in words,
+ * with no frame of its own, so the card it sits in stays the only card.
  */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -25,83 +24,69 @@ const BLOCK_ID = '70000001-0000-4000-8000-000000000000'
 
 /** The shell's half of the seam, as a spy. */
 function completionDouble(recorded: readonly string[] = []) {
-  const completeBlock = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
+  const reportOutcome = vi.fn<(blockId: string, outcome: BlockOutcome) => void>()
   const api: BlockCompletionApi = {
-    completeBlock,
+    reportOutcome,
     isBlockRecorded: (blockId) => recorded.includes(blockId),
   }
-  return { api, completeBlock }
+  return { api, reportOutcome }
 }
 
 function mount(ui: ReactElement, api: BlockCompletionApi) {
   return render(<BlockCompletionContext value={api}>{ui}</BlockCompletionContext>)
 }
 
-describe('completing a block through the shell', () => {
-  it('hands the shell the block and the empty outcome of a structure that observed nothing', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
+describe('reporting a block to the shell', () => {
+  it('reports the empty outcome of a structure that observed nothing', () => {
+    const { api, reportOutcome } = completionDouble()
     mount(<BlockCompletionControl blockId={BLOCK_ID} outcome={{}} />, api)
 
-    await user.click(screen.getByRole('button', { name: 'Complete block' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(BLOCK_ID, {})
+    expect(reportOutcome).toHaveBeenLastCalledWith(BLOCK_ID, {})
   })
 
-  it('hands on the outcome a structure did observe, under that structure’s verb', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble()
-    const outcome: BlockOutcome = { roundsCompleted: 3 }
-    mount(
-      <BlockCompletionControl blockId={BLOCK_ID} outcome={outcome} label="Complete circuit" />,
+  it('reports each new observation, so the latest is what gets saved', () => {
+    const { api, reportOutcome } = completionDouble()
+    const { rerender } = mount(
+      <BlockCompletionControl blockId={BLOCK_ID} outcome={{ roundsCompleted: 1 }} />,
       api,
     )
 
-    expect(screen.queryByRole('button', { name: 'Complete block' })).not.toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: 'Complete circuit' }))
-
-    expect(completeBlock).toHaveBeenCalledExactlyOnceWith(BLOCK_ID, outcome)
-  })
-
-  it('says a recorded block is recorded, and offers no second completion', async () => {
-    const user = userEvent.setup()
-    const { api, completeBlock } = completionDouble([BLOCK_ID])
-    mount(
-      <BlockCompletionControl blockId={BLOCK_ID} outcome={{}} label="Complete circuit" />,
-      api,
+    rerender(
+      <BlockCompletionContext value={api}>
+        <BlockCompletionControl blockId={BLOCK_ID} outcome={{ roundsCompleted: 3 }} />
+      </BlockCompletionContext>,
     )
 
-    // The words change with the state: disabled is never the only cue.
-    const recorded = screen.getByRole('button', { name: 'Block recorded' })
-    expect(recorded).toBeDisabled()
-    await user.click(recorded)
-
-    expect(completeBlock).not.toHaveBeenCalled()
+    expect(reportOutcome).toHaveBeenLastCalledWith(BLOCK_ID, { roundsCompleted: 3 })
   })
 
-  it('reads the recorded state for its own block only', () => {
+  it('offers no action of its own: completion is the section’s forward action', () => {
+    const { api } = completionDouble()
+    mount(<BlockCompletionControl blockId={BLOCK_ID} outcome={{ roundsCompleted: 3 }} />, api)
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    expect(screen.queryByText('Block saved')).not.toBeInTheDocument()
+  })
+
+  it('says a saved block is saved, in words and not by colour', () => {
+    const { api } = completionDouble([BLOCK_ID])
+    mount(<BlockCompletionControl blockId={BLOCK_ID} outcome={{}} />, api)
+
+    expect(screen.getByText('Block saved')).toBeInTheDocument()
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('reads the saved state for its own block only', () => {
     const { api } = completionDouble(['70000002-0000-4000-8000-000000000000'])
     mount(<BlockCompletionControl blockId={BLOCK_ID} outcome={{}} />, api)
 
-    expect(screen.getByRole('button', { name: 'Complete block' })).toBeEnabled()
+    expect(screen.queryByText('Block saved')).not.toBeInTheDocument()
   })
 })
 
 describe('the control’s frame', () => {
-  it('is one current secondary button and no card of its own', () => {
-    const { api } = completionDouble()
-    const { container } = mount(<BlockCompletionControl blockId={BLOCK_ID} outcome={{}} />, api)
-
-    const buttons = screen.getAllByRole('button')
-    expect(buttons).toHaveLength(1)
-    expect(buttons[0]).toHaveClass('clr-btn', 'clr-chamfer--lg')
-    // Secondary: the block's primary action is logging the next set, not this.
-    expect(buttons[0]).not.toHaveClass('clr-btn--primary')
-    expect(container.querySelector('.clr-card')).toBeNull()
-  })
-
   it('leaves the block’s card the only card it is drawn in', () => {
-    const { api } = completionDouble()
+    const { api } = completionDouble([BLOCK_ID])
     const { container } = mount(
       <Card>
         <BlockCompletionControl blockId={BLOCK_ID} outcome={{}} />

@@ -129,6 +129,26 @@ describe('reading and writing the shell record', () => {
     expect(restoredSectionIndex(storage, OTHER_SESSION)).toBeNull()
   })
 
+  it('remembers where the user was looking and nothing about completion (REQ-013)', () => {
+    // Completion is the forward action's `block_results` write. A local flag
+    // could claim a section saved that never was, so the record has no room
+    // for one: a reload re-asks the rows, and a resave is idempotent there.
+    const storage = fakeStorage()
+    const { result } = renderHook(() =>
+      usePersistedSection(SESSION, 0, storage, () => Date.parse('2026-09-24T09:10:00.000Z')),
+    )
+
+    act(() => {
+      result.current.setIndex(1)
+    })
+
+    expect(Object.keys(JSON.parse(storage.raw() ?? '{}') as object).sort()).toEqual([
+      'sectionIndex',
+      'sessionId',
+      'updatedAt',
+    ])
+  })
+
   it('forgets the record, which is what completing and abandoning do', () => {
     const storage = fakeStorage()
     writeWorkoutShellState(storage, {

@@ -89,11 +89,18 @@ describe('one writer for block_results (EXE-01)', () => {
   })
 })
 
-describe('one perceived-effort capture (EXE-01)', () => {
-  it('asks the question in one component, mounted by the one path', () => {
-    expect(filesMatching(/<BlockEffortDialog/)).toEqual([
-      'src/state/block-completion-provider.tsx',
-    ])
+describe('no perceived-effort capture on the completion path (E04, REQ-013)', () => {
+  it('mounts the effort question nowhere', () => {
+    // The dialog's component is kept so collection could be restored through
+    // the same seam; nothing that ships opens it.
+    expect(filesMatching(/<BlockEffortDialog/)).toEqual([])
+  })
+
+  it('writes every block result with no effort', () => {
+    const provider = read('src/state/block-completion-provider.tsx')
+
+    expect(provider).toMatch(/blockResults\.record\(\{[\s\S]*?perceivedEffort: null,\s*\}\)/)
+    expect(provider.match(/perceivedEffort:/g)).toHaveLength(1)
   })
 
   it('provides the renderers’ seam from that same path', () => {
@@ -102,6 +109,18 @@ describe('one perceived-effort capture (EXE-01)', () => {
     expect(filesMatching(/<BlockCompletionContext/)).toEqual([
       'src/state/block-completion-provider.tsx',
     ])
+  })
+
+  it('provides the forward action’s seam from that same path', () => {
+    expect(filesMatching(/<SectionCompletionContext/)).toEqual([
+      'src/state/block-completion-provider.tsx',
+    ])
+  })
+
+  it('completes a section from one forward action, in the shell', () => {
+    // Next section and Finish workout are one action; no renderer completes.
+    // A call, not the seam's own declaration of its parameter.
+    expect(filesMatching(/\bcompleteSection\((?!blockIds\b)/)).toEqual(['src/app/Workout.tsx'])
   })
 })
 
@@ -117,16 +136,22 @@ describe('a renderer supplies an outcome and nothing else (EXE-01)', () => {
     expect(reaching).toEqual([])
   })
 
-  it('leaves every renderer taking completion from the seam', () => {
+  it('leaves every renderer reporting through the seam', () => {
     // One control, composed by every renderer: EXE-02's standard block and the
     // default panel already share it, and EXE-03 and EXE-04a…c inherit it by
     // composing the same component rather than by remembering this rule.
-    const completing = renderers.filter((file) => /completeBlock\(/.test(read(file)))
+    const reporting = renderers.filter((file) => /reportOutcome\(/.test(read(file)))
 
-    expect(completing).toEqual(['src/ui/block-completion-control.tsx'])
-    for (const file of completing) {
+    expect(reporting).toEqual(['src/ui/block-completion-control.tsx'])
+    for (const file of reporting) {
       expect(read(file)).toContain('useBlockCompletion()')
     }
+  })
+
+  it('gives no renderer the section save', () => {
+    const saving = renderers.filter((file) => /useSectionCompletion\(/.test(read(file)))
+
+    expect(saving).toEqual([])
   })
 })
 
