@@ -228,10 +228,10 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Welcome ────────────────────────────────────────────────────────────
     await visit(routeOf('Welcome'))
     await expectScreen('Welcome', routeOf('Welcome'), 'CLEAR')
-    await page.getByRole('button', { name: 'Create account', exact: true }).click()
+    await page.getByRole('button', { name: 'Get started', exact: true }).click()
 
-    // ── OTP Login (the create-account entry to the same door) ──────────────
-    await expectScreen('OTP Login', routeOf('OTP Login'), 'Create account')
+    // ── OTP Login (the one entry, for new and returning accounts) ──────────
+    await expectScreen('OTP Login', routeOf('OTP Login'), 'Get started')
 
     // Delivery only: see the header. The request still has to be made.
     let deliveryRequested = false

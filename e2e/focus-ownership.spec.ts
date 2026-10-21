@@ -338,7 +338,8 @@ for (const skin of SKINS) {
       await expect(card.getByRole('heading', { level: 2, name: 'Your code' })).toBeVisible()
       await expect(card.getByRole('textbox', { name: 'Code', exact: true })).toBeVisible()
       await expect(card.locator('form')).toHaveCount(1)
-      await expect(card.getByRole('button')).toHaveCount(0)
+      // U14: the inline change-email action is the card's one control.
+      await expect(card.getByRole('button')).toHaveText([/^Change email/])
       const footer = page.locator('main .clr-footer')
       await expect(footer).toHaveCount(1)
       const submit = footer.getByRole('button', { name: 'Verify', exact: true })
@@ -346,7 +347,6 @@ for (const skin of SKINS) {
       expect(formId).toBeTruthy()
       await expect(submit).toHaveAttribute('form', formId!)
       await expect(footer.getByRole('button', { name: /^Resend/ })).toBeVisible()
-      await expect(footer.getByRole('button', { name: 'Use a different email' })).toBeVisible()
       await captureResting(page)
       const stops = await tabThroughMain(page, true)
 

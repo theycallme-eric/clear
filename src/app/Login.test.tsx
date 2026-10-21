@@ -31,7 +31,7 @@ function mount(otp: FakeOtpClient, auth = createFakeAuthClient()) {
   return { auth, otp }
 }
 
-function mountCreateAccount(otp: FakeOtpClient, auth = createFakeAuthClient()) {
+function mountLegacyCreateLink(otp: FakeOtpClient, auth = createFakeAuthClient()) {
   renderApp(['/login?mode=create'], { auth, otp })
   return { auth, otp }
 }
@@ -53,7 +53,7 @@ describe('OTP login — requesting a code', () => {
   it('renders the email step with the screen heading', () => {
     mount(createFakeOtpClient())
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Get started' })).toBeInTheDocument()
     expect(emailField()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
     expect(screen.getByRole('main').querySelector('.clr-footer')).toContainElement(
@@ -78,7 +78,9 @@ describe('OTP login — requesting a code', () => {
     expect(card).toContainElement(
       screen.getByRole('heading', { level: 2, name: 'Your email' }),
     )
-    expect(card).toContainElement(screen.getByText(/we email a one-time code/i))
+    expect(card).toContainElement(
+      screen.getByText('New or returning, enter your email and we’ll send a one-time code.'),
+    )
     expect(card).toContainElement(emailField())
     // The field is the 0.14.3 element frame, labelled above and marked required.
     expect(emailField().closest('.clr-field')).toHaveClass('clr-chamfer', 'clr-chamfer--sm')
@@ -115,13 +117,13 @@ describe('OTP login — requesting a code', () => {
     expect(await screen.findByRole('button', { name: 'Verify' })).toBeInTheDocument()
   })
 
-  it('renders an explicit account-creation intent over the same passwordless flow', () => {
-    mountCreateAccount(createFakeOtpClient())
+  it('serves an old create-account link as the same single entry (U14)', () => {
+    mountLegacyCreateLink(createFakeOtpClient())
 
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Create account' }),
+      screen.getByRole('heading', { level: 1, name: 'Get started' }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/enter your email to create your account/i)).toBeInTheDocument()
+    expect(screen.queryByText(/create your account/i)).not.toBeInTheDocument()
     expect(emailField()).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Send code' })).toBeInTheDocument()
   })
@@ -169,7 +171,7 @@ describe('OTP login — requesting a code', () => {
     )
   })
 
-  it('keeps the code step in the same form card with its actions in the footer', async () => {
+  it('keeps the code step in the same form card, with the inline change-email action', async () => {
     const user = userEvent.setup()
     mount(createFakeOtpClient())
 
@@ -178,25 +180,30 @@ describe('OTP login — requesting a code', () => {
     const main = screen.getByRole('main')
     const cards = main.querySelectorAll<HTMLElement>('.clr-card')
     expect(cards).toHaveLength(1)
-    expect(cards[0]).toContainElement(
+    const card = cards[0]
+    expect(card).toContainElement(
       screen.getByRole('heading', { level: 2, name: 'Your code' }),
     )
-    expect(cards[0]).toContainElement(codeField())
+    expect(card).toContainElement(codeField())
     expect(codeField()).toHaveFocus()
     expect(codeField()).toHaveAttribute('autocomplete', 'one-time-code')
     expect(codeField()).toHaveAttribute('inputmode', 'numeric')
-    expect(codeField()).toHaveAccessibleDescription(`Sent to ${EMAIL}`)
+
+    // U14: concise guidance naming the address, and the way to change it
+    // beside it in the card — a quiet TextAction, not a footer button.
+    const guidance = within(card).getByText(/^Enter the code sent to/)
+    expect(guidance).toHaveTextContent(`Enter the code sent to ${EMAIL}.`)
+    const change = within(card).getByRole('button', { name: 'Change email' })
+    expect(change).toHaveClass('clr-text-action')
+    expect(change).not.toHaveClass('clr-text-action--block')
+    expect(guidance.parentElement).toContainElement(change)
 
     const footer = main.querySelector<HTMLElement>('.clr-footer')
     expect(footer).not.toBeNull()
-    for (const name of ['Verify', /resend/i, 'Use a different email']) {
-      expect(footer).toContainElement(screen.getByRole('button', { name }))
-    }
-    // The quiet way back is the public TextAction, full width under the primary.
-    expect(screen.getByRole('button', { name: 'Use a different email' })).toHaveClass(
-      'clr-text-action',
-      'clr-text-action--block',
-    )
+    expect(within(footer as HTMLElement).getAllByRole('button')).toEqual([
+      screen.getByRole('button', { name: 'Verify' }),
+      screen.getByRole('button', { name: /resend/i }),
+    ])
   })
 
   it('reports a send that never left as a typed connection failure', async () => {
@@ -251,7 +258,7 @@ describe('OTP login — verifying a code', () => {
     await user.click(screen.getByRole('button', { name: 'Verify' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('That code is not right. Check the digits and try again.')
+    expect(alert).toHaveTextContent('That code is not right. Check the digits, or resend a new code.')
     expect(document.body.textContent).not.toContain(GOTRUE_PROSE)
     expect(document.body.textContent).not.toContain('401')
     // The field that was wrong says so, and the user can try again in place.
@@ -291,9 +298,14 @@ describe('OTP login — verifying a code', () => {
     await user.click(screen.getByRole('button', { name: 'Verify' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'That code has expired. Request a new one.',
+      'That code has expired. Resend a new code to continue.',
     )
     expect(document.body.textContent).not.toContain('otp_expired')
+    // The recovery paths stay on screen: Resend (after its cooldown) and the
+    // inline change-email action, without leaving the code step.
+    expect(screen.getByRole('button', { name: /^Resend/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Change email' })).toBeEnabled()
+    expect(codeField()).toHaveAttribute('aria-invalid', 'true')
   })
 
   it('refuses digits that cannot be a code without spending an attempt', async () => {
@@ -305,7 +317,7 @@ describe('OTP login — verifying a code', () => {
     await user.click(screen.getByRole('button', { name: 'Verify' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
-      'That code is not right. Check the digits and try again.',
+      'That code is not right. Check the digits, or resend a new code.',
     )
     expect(otp.verifications).toEqual([])
   })
@@ -334,7 +346,7 @@ describe('OTP login — verifying a code', () => {
     )
     // Nothing else can start while the exchange is in flight.
     expect(screen.getByRole('button', { name: /resend/i })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Use a different email' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Change email' })).toBeDisabled()
 
     release()
   })
@@ -394,15 +406,25 @@ describe('OTP login — resend cooldown', () => {
     ).toBeDisabled()
   })
 
-  it('lets the user go back and use a different email', async () => {
+  it('changes the email inline: back to email entry, caret in the kept address', async () => {
     const user = userEvent.setup()
-    mount(createFakeOtpClient())
+    const { otp } = mount(createFakeOtpClient())
 
     await requestCode(user)
-    await user.click(screen.getByRole('button', { name: 'Use a different email' }))
+    await user.click(screen.getByRole('button', { name: 'Change email' }))
 
-    expect(await screen.findByRole('button', { name: 'Send code' })).toBeInTheDocument()
+    // The cooldown belonged to the old address, so sending is open again.
+    expect(await screen.findByRole('button', { name: 'Send code' })).toBeEnabled()
     expect(screen.queryByRole('button', { name: /resend/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: 'Your email' })).toBeInTheDocument()
+    expect(emailField()).toHaveFocus()
+    expect(emailField()).toHaveValue(EMAIL)
+
+    await user.clear(emailField())
+    await user.type(emailField(), 'other@example.test')
+    await user.click(screen.getByRole('button', { name: 'Send code' }))
+    expect(await screen.findByRole('button', { name: 'Verify' })).toBeInTheDocument()
+    expect(otp.requests).toEqual([EMAIL, 'other@example.test'])
   })
 })
 

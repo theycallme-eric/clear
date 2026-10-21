@@ -172,7 +172,7 @@ const test = base.extend<{ evidence: Evidence }>({
       await heading(page, title)
       if (isProtectedPath(at)) {
         // A protected route that fell back to Welcome is a failure, not a picture.
-        await expect(page.getByRole('button', { name: 'Create account', exact: true })).toHaveCount(0)
+        await expect(page.getByRole('button', { name: 'Get started', exact: true })).toHaveCount(0)
       }
       await assertState()
       const size = CAPTURE_VIEWPORTS.find((candidate) => candidate.id === viewport)!
@@ -1331,7 +1331,7 @@ backendTest('settings: sections, held save, refusal, reload, skins and focus', a
     await signOut.click()
     await expect(page).toHaveURL((url) => url.pathname === '/welcome')
     await evidence.shot('Settings', '/settings', 'sign-out', '/welcome', 'CLEAR', () =>
-      expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeEnabled(),
+      expect(page.getByRole('button', { name: 'Get started', exact: true })).toBeEnabled(),
     { variant: 'transition-destination' })
     evidence.disposition('Settings', '/settings', 'profile-loading',
       'The profile read is Boot-watched; BootGate withholds the route tree while it is pending, so Boot is the native surface.',
