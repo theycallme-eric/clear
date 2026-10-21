@@ -149,12 +149,12 @@ async function publicPreviewWorld(page: Page) {
       { sectionType: 'conditioning', title: 'EMOM', blocks: [{
         structureType: 'emom', timerType: 'per_minute', timerSeconds: 360, roundRestSeconds: 15,
         exercises: [
-          { prescription: { exercise_id: catalog[0].id, equipment: catalog[0].default_equipment, sets: null, target_kind: 'sequence', target_value: null, target_sequence: [6, 8, 10] } },
-          { prescription: { exercise_id: catalog[1].id, equipment: catalog[1].default_equipment, sets: null, target_value: 12 } },
+          { prescription: { exercise_id: catalog[0].id, equipment_used: catalog[0].default_equipment, sets: null, target_kind: 'sequence', target_value: null, target_sequence: [6, 8, 10] } },
+          { prescription: { exercise_id: catalog[1].id, equipment_used: catalog[1].default_equipment, sets: null, target_value: 12 } },
         ],
       }] },
       { sectionType: 'cooldown', title: 'Cooldown', blocks: [{
-        exercises: [{ prescription: { exercise_id: catalog[0].id, equipment: catalog[0].default_equipment, sets: 1, target_value: 8 } }],
+        exercises: [{ prescription: { exercise_id: catalog[0].id, equipment_used: catalog[0].default_equipment, sets: 1, target_value: 8 } }],
       }] },
     ],
   }
