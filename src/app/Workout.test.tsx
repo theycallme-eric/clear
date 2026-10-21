@@ -695,9 +695,14 @@ describe('Workout — one forward action saves, then continues', () => {
       .textContent
   }
 
-  /** Starts the Finisher's AMRAP and banks two rounds — entered input to keep. */
+  /**
+   * Runs the Finisher's AMRAP window, then records two rounds after it — the
+   * result is entered only once the window has closed (REQ-014).
+   */
   async function performTwoRounds(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: 'Start AMRAP' }))
+    await user.click(screen.getByRole('button', { name: 'Finish early' }))
+    await user.click(screen.getByRole('button', { name: 'Record rounds' }))
     await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
     await user.click(screen.getByRole('button', { name: 'Add a completed round' }))
     expect(roundsShown()).toBe('2')

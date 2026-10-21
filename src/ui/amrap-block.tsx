@@ -1,6 +1,6 @@
 /**
- * EXE-04c — the AMRAP renderer: a window, a round counter, and a score. This is
- * the IA's `TimedRenderer` in its AMRAP mode (IA.md §3), composing the shipped
+ * EXE-04c — the AMRAP renderer: a window, then an optional result. This is the
+ * IA's `TimedRenderer` in its AMRAP mode (IA.md §3), composing the shipped
  * `TimerDisplay` as its `SectionTimer`.
  *
  * Everything the structure is comes from `workout_blocks`: the window is
@@ -9,25 +9,27 @@
  * the round, its members prescribe reps *per round* (contract §5), and `3 × 8`
  * under each one would describe a block nobody performed.
  *
- * Two places this renderer takes the requirement over the session plan it is
- * specced from, both deliberate and both recorded in the journal:
+ * REQ-014 (E02) decides the rest:
  *
- *   · **The round counter is live while the clock runs.** `amrap-logging.md`
- *     §"What NOT to Do" would put the stepper only in the completion state.
- *     EXE-04c calls incrementing a round "the highest-frequency interaction in
- *     the app", which is not true of a control that appears after the buzzer, so
- *     the counter is on the card from the moment the window opens and stays
- *     there afterwards. What the spec is actually protecting against — a modal, a
- *     form, a trip to another screen — is what a `+1` on a number avoids.
- *   · **A partial round is a number, not a note.** The spec's §2 collects "+ 8
- *     reps into round 6" as free text. EXE-04c requires `partial_round_reps`, and
- *     DATA-01d requires zero to be distinguishable from absence — neither is
- *     expressible in a sentence. It is a count, captured at the cap, and "no
- *     partial round recorded" is its own visible state.
+ *   · **The window is hands-off.** While the clock runs there is nothing to
+ *     enter — the countdown, the round and a way to finish early. There is no
+ *     round goal either: an ordinary AMRAP prescribes a window, not a count.
+ *   · **The result is optional and comes afterwards.** Once the window closes
+ *     the athlete may record rounds and a partial round, or leave both blank.
+ *     Blank is `null` all the way to the column and an entered zero is a zero;
+ *     neither blocks the section's forward action.
+ *   · **A comparison only where it is like-for-like.** A recorded result is
+ *     scored and set against identical earlier pieces through `likeForLike`;
+ *     no history in hand, or none comparable, claims nothing beyond what was
+ *     read. No expected-round range is predicted.
+ *
+ * A partial round is a number, not a note: DATA-01d requires zero to be
+ * distinguishable from absence, so "no partial round recorded" is its own
+ * visible state.
  *
  * Score keeping is `amrap.ts`, which is pure, and `workout-persistence.ts`, which
  * writes it down on every tap: a refresh, a locked phone or a walk to the next
- * section and back all come back to the rounds the user had banked (SES-01). The
+ * section and back all come back to the result the user had entered (SES-01). The
  * window itself is never stored as a tick count — `startedAt` is stamped once and
  * the remaining time is read against the clock, so the buzzer can go while the
  * tab is asleep.
@@ -39,7 +41,7 @@
  * ruled sub-groups with their labels inside, the settled time is the shared
  * bare readout, and the two partial-round toggles are frameless text actions.
  */
-import { useId } from 'react'
+import { use, useId, useMemo } from 'react'
 
 import {
   Button,
@@ -62,9 +64,20 @@ import {
   countRound,
   finishAmrap,
   setPartialRoundReps,
+  setRoundsCompleted,
   startAmrap,
   type AmrapView,
 } from '../state/amrap'
+import { AuthContext } from '../state/auth-context'
+import type { BlockOutcome } from '../state/block-completion'
+import {
+  conditioningSections,
+  likeForLike,
+  type ConditioningSectionRead,
+} from '../state/conditioning'
+import { useConditioningHistoryQuery } from '../state/conditioning-queries'
+import { QueryClientContext } from '../state/query'
+import { WorkoutClientsContext } from '../state/workout-queries'
 import { exerciseName, targetText } from '../state/prescription'
 import {
   elapsedSeconds,
@@ -75,10 +88,11 @@ import {
   usePersistedAmrap,
   type ShellStorage,
 } from '../state/workout-persistence'
-import type { ExerciseProgress } from '../state/workout-progress'
+import type { BlockProgress, ExerciseProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card } from './card'
 import { MetricFrame } from './composition'
+import { ConditioningScoreLine } from './conditioning-score'
 import { useInterfaceLoop } from './motion'
 import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
@@ -89,9 +103,19 @@ export interface AmrapBlockProps extends BlockRendererProps {
   storage?: ShellStorage | null
   /** The wall clock the window is read against. */
   now?: () => number
+  /**
+   * Injected by a test: the conditioning history, read. Omitted, the shell's
+   * own history query is read when there is a signed-in shell to read it.
+   */
+  conditioningHistory?: readonly ConditioningSectionRead[] | null
 }
 
-export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) {
+export function AmrapBlock({
+  block,
+  storage,
+  now = Date.now,
+  conditioningHistory,
+}: AmrapBlockProps) {
   const shape = amrapShape(block)
 
   // Restored once, repaired against the block as it is *now*: a cap shortened
@@ -114,6 +138,7 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
     view.remainingSeconds <= 10
   const loop = useInterfaceLoop('urgent', urgent)
   const roundsLabelId = useId()
+  const outcome = shape.size === 0 ? {} : amrapOutcome(view)
 
   return (
     <div
@@ -163,32 +188,36 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
               />
 
               {/*
-                Live from the moment the window opens, and still there once it has
-                closed: one tap, on the card, with nothing to submit.
-              */}
-              {view.phase !== 'ready' && (
-                <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
-                  <Counter
-                    labelledBy={roundsLabelId}
-                    value={view.roundsCompleted}
-                    decrementLabel="Take back a round"
-                    incrementLabel="Add a completed round"
-                    onChange={(delta) => amrap.update(countRound(amrap.state, delta))}
-                  />
-                </Card>
-              )}
-
-              {/*
-                At the cap and nowhere else: how far into the round the buzzer
-                caught the user is a question that only has an answer once it has.
+                After the window and nowhere before it: the result is optional,
+                one tap on the card, with nothing to submit — and blank is a
+                state of its own rather than a zero.
               */}
               {view.phase === 'complete' && (
-                <PartialRound
-                  reps={view.partialRoundReps}
-                  onChange={(reps) =>
-                    amrap.update(setPartialRoundReps(amrap.state, reps))
-                  }
-                />
+                <>
+                  <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
+                    <Rounds
+                      labelledBy={roundsLabelId}
+                      rounds={view.roundsCompleted}
+                      onCount={(delta) => amrap.update(countRound(amrap.state, delta))}
+                      onSet={(rounds) =>
+                        amrap.update(setRoundsCompleted(amrap.state, rounds))
+                      }
+                    />
+                  </Card>
+                  <PartialRound
+                    reps={view.partialRoundReps}
+                    onChange={(reps) =>
+                      amrap.update(setPartialRoundReps(amrap.state, reps))
+                    }
+                  />
+                  {conditioningHistory === undefined ? (
+                    <AmrapComparison block={block} outcome={outcome} />
+                  ) : (
+                    <ConditioningScoreLine
+                      {...likeForLike(block, outcome, conditioningHistory)}
+                    />
+                  )}
+                </>
               )}
 
               {/*
@@ -223,10 +252,7 @@ export function AmrapBlock({ block, storage, now = Date.now }: AmrapBlockProps) 
             AMRAP nobody started measured nothing — no rounds, no time — and says
             so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
           */}
-          <BlockCompletionControl
-            blockId={block.blockId}
-            outcome={shape.size === 0 ? {} : amrapOutcome(view)}
-          />
+          <BlockCompletionControl blockId={block.blockId} outcome={outcome} />
         </div>
       </Card>
     </div>
@@ -282,6 +308,7 @@ function Window({
             {formatElapsed(view.elapsedSeconds)}.
           </p>
         )}
+        <p style={CONTEXT_STYLE}>Nothing to enter now. Record your rounds afterwards if you like.</p>
         <Button variant="secondary" size="lg" icon={<Stop />} onClick={onFinish}>
           {view.capSeconds === null ? 'Finish' : 'Finish early'}
         </Button>
@@ -371,6 +398,84 @@ function Counter({
       />
     </div>
   )
+}
+
+/**
+ * The rounds, in the two states they genuinely have: not recorded, which is
+ * where every window closes, and a count the athlete chose to enter. Clearing
+ * goes back to not recorded rather than to zero.
+ */
+function Rounds({
+  labelledBy,
+  rounds,
+  onCount,
+  onSet,
+}: {
+  labelledBy: string
+  rounds: number | null
+  onCount: (delta: number) => void
+  onSet: (rounds: number | null) => void
+}) {
+  if (rounds === null) {
+    return (
+      <div
+        className="clr-stack--tight"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
+      >
+        <p style={{ margin: 0 }}>No rounds recorded. Optional — leave it blank if you like.</p>
+        <TextAction onClick={() => onSet(0)}>
+          <Plus size={16} />
+          Record rounds
+        </TextAction>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Counter
+        labelledBy={labelledBy}
+        value={rounds}
+        decrementLabel="Take back a round"
+        incrementLabel="Add a completed round"
+        onChange={onCount}
+      />
+      <div>
+        <TextAction onClick={() => onSet(null)}>
+          <X size={16} />
+          Clear rounds
+        </TextAction>
+      </div>
+    </>
+  )
+}
+
+/**
+ * The recorded result's score, and the like-for-like comparison when the
+ * conditioning history holds an identical earlier piece (OVR-03). Outside the
+ * signed-in shell — a gallery, a renderer test — there is no history to read,
+ * and the score stands alone with no claim about rows nobody read.
+ */
+function AmrapComparison({ block, outcome }: { block: BlockProgress; outcome: BlockOutcome }) {
+  const canRead =
+    use(WorkoutClientsContext) !== null &&
+    use(AuthContext) !== null &&
+    use(QueryClientContext) !== null
+  return canRead ? (
+    <HistoryComparison block={block} outcome={outcome} />
+  ) : (
+    <ConditioningScoreLine {...likeForLike(block, outcome, null)} />
+  )
+}
+
+function HistoryComparison({ block, outcome }: { block: BlockProgress; outcome: BlockOutcome }) {
+  const query = useConditioningHistoryQuery()
+  // Loading and failed reads are both "not in hand": the score, and no claim.
+  const history = useMemo(
+    () => (query.state.status === 'ready' ? conditioningSections(query.state.data) : null),
+    [query.state],
+  )
+  return <ConditioningScoreLine {...likeForLike(block, outcome, history)} />
 }
 
 /**
