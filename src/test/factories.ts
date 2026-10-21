@@ -10,6 +10,7 @@ import { createError, ErrorCode, type AppError } from '../state/errors'
 import {
   CONTRACT_VERSION,
   type GenerationOutput,
+  type LadderTiming,
   type Prescription,
   type SessionAcceptance,
   type WorkoutBlock,
@@ -80,6 +81,59 @@ export function makeWorkoutBlock(overrides: Partial<WorkoutBlock> = {}): Workout
     exercises: [makePrescription()],
     ...overrides,
   }
+}
+
+/**
+ * A ladder block with an explicit REQ-018 timing. The round count and interval
+ * are parameters so no fixture can quietly depend on five rounds or three
+ * minutes: the sequence has `rounds` rungs and the clock is derived from them.
+ */
+export function makeLadderTimingBlock(
+  mode: LadderTiming['mode'],
+  { rounds = 4, intervalSeconds = 120, capSeconds = 90 } = {},
+  overrides: Partial<WorkoutBlock> = {},
+): WorkoutBlock {
+  const sequence = Array.from({ length: rounds }, (_, index) => 2 * (index + 1))
+  const timing: LadderTiming =
+    mode === 'scheduled_starts'
+      ? { mode, rounds, interval_seconds: intervalSeconds, cap_seconds: null }
+      : mode === 'capped_window'
+        ? { mode, rounds, interval_seconds: null, cap_seconds: capSeconds }
+        : { mode, rounds, interval_seconds: null, cap_seconds: null }
+
+  return makeWorkoutBlock({
+    structure_type: mode === 'scheduled_starts' ? 'emom' : 'for_time',
+    timer_type: mode === 'scheduled_starts' ? 'interval' : 'countdown',
+    timer_seconds:
+      mode === 'scheduled_starts' ? rounds * intervalSeconds : rounds * capSeconds + 300,
+    rep_scheme: 'ladder_fixed_interval',
+    exercises: [
+      makePrescription({
+        exercise_id: 'push-up',
+        equipment: 'bodyweight',
+        sets: null,
+        rest_seconds: null,
+        target_kind: 'sequence',
+        target_value: null,
+        target_sequence: sequence,
+        load_type: 'bodyweight',
+        load_value: null,
+      }),
+      // Fixed companion work, performed every round.
+      makePrescription({
+        exercise_id: 'burpee',
+        equipment: 'bodyweight',
+        sets: null,
+        rest_seconds: null,
+        target_value: 4,
+        load_type: 'bodyweight',
+        load_value: null,
+        is_interval_exercise: true,
+      }),
+    ],
+    ladder_timing: timing,
+    ...overrides,
+  })
 }
 
 /**

@@ -15,6 +15,7 @@ import {
 import {
   DURATION_CHECK_OWNER,
   HARD_CHECKS,
+  LADDER_TIMING_GENERATION_ACTIVE,
   SoftCheck,
   VALIDATOR_CHECKS,
   checkReferences,
@@ -335,6 +336,122 @@ describe('generated superset rest must use the field execution honors', () => {
       expect(validateComposition(workout, INPUT).ok).toBe(true)
     },
   )
+})
+
+describe('ladder timing at the edge boundary (REQ-018, TASK-038)', () => {
+  // The edge parses with the same `generationOutputSchema` the client does, so
+  // shape and consistency are one answer in both places. What only the edge
+  // adds is the generation gate: valid timing is still refused in *generated*
+  // output until persistence and the integrated contract can carry it.
+
+  /** sections[2].blocks[0] reshaped into a ladder, keeping its offered exercises. */
+  function ladderWorkout(timing: Record<string, unknown> | null | undefined, rounds = 4): unknown {
+    const workout = composed() as unknown as {
+      sections: { blocks: Record<string, unknown>[] }[]
+    }
+    const block = workout.sections[2].blocks[0]
+    const exercises = block.exercises as Record<string, unknown>[]
+    const scheduled = timing?.mode === 'scheduled_starts'
+    Object.assign(block, {
+      structure_type: scheduled ? 'emom' : 'for_time',
+      rounds: null,
+      timer_type: scheduled ? 'interval' : 'countdown',
+      timer_seconds: scheduled ? rounds * Number(timing.interval_seconds) : 600,
+      round_rest_seconds: null,
+      rep_scheme: 'ladder_fixed_interval',
+    })
+    exercises.forEach((exercise) => Object.assign(exercise, { sets: null, rest_seconds: null }))
+    Object.assign(exercises[0], {
+      target_kind: 'sequence',
+      target_value: null,
+      target_min: null,
+      target_max: null,
+      target_sequence: Array.from({ length: rounds }, (_, index) => index + 1),
+    })
+    if (timing !== undefined) block.ladder_timing = timing
+    return workout
+  }
+
+  const completion = (payload: unknown) => parseCompletion(JSON.stringify(payload))
+
+  const VALID = [
+    ['scheduled_starts', 3, { mode: 'scheduled_starts', rounds: 3, interval_seconds: 150, cap_seconds: null }],
+    ['scheduled_starts', 8, { mode: 'scheduled_starts', rounds: 8, interval_seconds: 45, cap_seconds: null }],
+    ['for_time', 6, { mode: 'for_time', rounds: 6, interval_seconds: null, cap_seconds: null }],
+    ['capped_window', 4, { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: 120 }],
+  ] as const
+
+  it.each(VALID)('client and edge both accept a %s timing with %i rounds', (_, rounds, timing) => {
+    const payload = ladderWorkout(timing, rounds)
+    expect(generationOutputSchema.safeParse(payload).success).toBe(true)
+    expect(completion(payload).ok).toBe(true)
+  })
+
+  it.each(VALID)('the generation gate still refuses a %s timing (%i rounds) until TASK-032', (_, rounds, timing) => {
+    const parsed = completion(ladderWorkout(timing, rounds))
+    if (!parsed.ok) throw new Error('the valid ladder fixture no longer parses')
+
+    expect(LADDER_TIMING_GENERATION_ACTIVE).toBe(false)
+    expect(validateComposition(parsed.value, INPUT)).toEqual({
+      ok: false,
+      error: {
+        code: GenerationFailure.MALFORMED,
+        detail: 'sections[2].blocks[0].ladder_timing: ' +
+          'ladder_timing is not yet supported in generated workouts; omit it',
+      },
+    })
+  })
+
+  it.each([
+    ['absent', undefined],
+    ['null', null],
+  ])('legacy ladder with timing %s validates exactly as before', (_, timing) => {
+    const parsed = completion(ladderWorkout(timing))
+    if (!parsed.ok) throw new Error(parsed.error.detail ?? 'the legacy ladder no longer parses')
+
+    expect(validateComposition(parsed.value, INPUT).ok).toBe(true)
+    expect('ladder_timing' in parsed.value.sections[2].blocks[0]).toBe(timing === null)
+  })
+
+  it.each([
+    ['a mode the contract does not name', { mode: 'every_minute', rounds: 4, interval_seconds: 60, cap_seconds: null }],
+    ['scheduled starts with no interval', { mode: 'scheduled_starts', rounds: 4, interval_seconds: null, cap_seconds: null }],
+    ['free-paced For Time with a cap', { mode: 'for_time', rounds: 4, interval_seconds: null, cap_seconds: 90 }],
+    ['rounds the sequence does not have', { mode: 'for_time', rounds: 5, interval_seconds: null, cap_seconds: null }],
+    ['a window cap longer than the block clock', { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: 900 }],
+  ])('client and edge both reject %s', (_, timing) => {
+    const payload = ladderWorkout(timing)
+    expect(generationOutputSchema.safeParse(payload).success).toBe(false)
+
+    const parsed = completion(payload)
+    expect(parsed.ok).toBe(false)
+    if (parsed.ok) return
+    expect(parsed.error.code).toBe(GenerationFailure.MALFORMED)
+    expect(parsed.error.detail).toContain('sections[2].blocks[0]')
+  })
+
+  it('a scheduled clock that disagrees with rounds × interval is refused at both', () => {
+    const payload = ladderWorkout({ mode: 'scheduled_starts', rounds: 4, interval_seconds: 90, cap_seconds: null }) as {
+      sections: { blocks: Record<string, unknown>[] }[]
+    }
+    payload.sections[2].blocks[0].timer_seconds = 400
+    expect(generationOutputSchema.safeParse(payload).success).toBe(false)
+    const parsed = completion(payload)
+    expect(!parsed.ok && parsed.error.detail).toContain('sections[2].blocks[0].timer_seconds')
+  })
+
+  it('generation instructions do not ask for the new field', () => {
+    expect(read('supabase/functions/_shared/prompt.ts')).not.toContain('ladder_timing')
+  })
+
+  it('the contract states the old/new compatibility matrix', () => {
+    const contract = read(CONTRACT)
+    expect(contract).toContain('### 5.1 Ladder timing')
+    for (const mode of ['scheduled_starts', 'for_time', 'capped_window']) {
+      expect(contract).toContain(`\`${mode}\``)
+    }
+    expect(contract).toMatch(/Old reader.*New payload/s)
+  })
 })
 
 describe('an exercise outside the retrieved candidate set', () => {

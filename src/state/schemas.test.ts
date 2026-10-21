@@ -18,10 +18,17 @@ import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import type { Tables } from '../data/database.types'
+import { Constants, type Tables } from '../data/database.types'
 import { ErrorCode, isErr, isOk } from './errors'
-import { makeSessionAcceptance } from '../test/factories'
+import { isLadderScheme } from './ladder'
 import {
+  makeLadderTimingBlock,
+  makeSessionAcceptance,
+  makeStructureSpectrumWorkout,
+  makeWorkoutBlock,
+} from '../test/factories'
+import {
+  LADDER_TIMING_REP_SCHEMES,
   blockResultRowSchema,
   CONTRACT_VERSION,
   errorResponseSchema,
@@ -368,6 +375,182 @@ describe('a block carries the clock its structure needs (check 6)', () => {
 
   it('rejects a block with no exercises', () => {
     expect(workoutBlockSchema.safeParse(block({ exercises: [] })).success).toBe(false)
+  })
+})
+
+describe('ladder timing is explicit, variable and additive (REQ-018, TASK-038)', () => {
+  const issuesOf = (candidate: unknown) => {
+    const parsed = workoutBlockSchema.safeParse(candidate)
+    return parsed.success ? [] : schemaIssues(parsed.error)
+  }
+
+  describe('valid: every mode, with variable round count and interval length', () => {
+    it.each([
+      ['scheduled_starts', { rounds: 2, intervalSeconds: 45 }],
+      ['scheduled_starts', { rounds: 7, intervalSeconds: 150 }],
+      ['scheduled_starts', { rounds: 10, intervalSeconds: 240 }],
+      ['for_time', { rounds: 3 }],
+      ['for_time', { rounds: 9 }],
+      ['capped_window', { rounds: 4, capSeconds: 60 }],
+      ['capped_window', { rounds: 6, capSeconds: 200 }],
+    ] as const)('%s %o round-trips unchanged', (mode, shape) => {
+      const fixture = makeLadderTimingBlock(mode, shape)
+      const parsed = workoutBlockSchema.safeParse(fixture)
+
+      expect(parsed.success ? null : schemaIssues(parsed.error)).toBeNull()
+      expect(parsed.success && parsed.data).toEqual(fixture)
+    })
+
+    it('accepts a capped window inside an AMRAP and scheduled starts inside For Time', () => {
+      expect(issuesOf(makeLadderTimingBlock('capped_window', {}, { structure_type: 'amrap' }))).toEqual([])
+      expect(
+        issuesOf(makeLadderTimingBlock('scheduled_starts', {}, { structure_type: 'for_time' })),
+      ).toEqual([])
+    })
+
+    it('accepts a scheduled block without its own timer_seconds only where the structure allows it', () => {
+      // emom/for_time still need a clock (check 6); the timing does not replace it.
+      expect(issuesOf(makeLadderTimingBlock('scheduled_starts', {}, { timer_seconds: null }))).toContainEqual({
+        path: 'timer_seconds',
+        message: 'emom, amrap and for_time blocks require timer_seconds',
+      })
+    })
+  })
+
+  describe('legacy: payloads written before REQ-018', () => {
+    it('parses a block without the key and does not add one', () => {
+      const legacy = makeWorkoutBlock()
+      const parsed = workoutBlockSchema.safeParse(legacy)
+
+      expect(parsed.success && parsed.data).toEqual(legacy)
+      expect(parsed.success && 'ladder_timing' in parsed.data).toBe(false)
+    })
+
+    it('parses an explicit null as "no explicit timing"', () => {
+      expect(issuesOf(makeWorkoutBlock({ ladder_timing: null }))).toEqual([])
+    })
+
+    it('still parses the existing ladder shapes with no timing', () => {
+      const parsed = generationOutputSchema.safeParse(everyPrescriptionShape)
+      expect(parsed.success).toBe(true)
+      expect(makeStructureSpectrumWorkout()).toEqual(
+        generationOutputSchema.parse(makeStructureSpectrumWorkout()),
+      )
+    })
+  })
+
+  describe('invalid: malformed timing objects', () => {
+    const scheduled = { mode: 'scheduled_starts', rounds: 4, interval_seconds: 120, cap_seconds: null }
+
+    it.each([
+      ['an unknown mode', { ...scheduled, mode: 'every_minute' }],
+      ['scheduled_starts without an interval', { ...scheduled, interval_seconds: null }],
+      ['scheduled_starts with a cap', { ...scheduled, cap_seconds: 90 }],
+      ['for_time with an interval', { mode: 'for_time', rounds: 4, interval_seconds: 120, cap_seconds: null }],
+      ['for_time with a cap', { mode: 'for_time', rounds: 4, interval_seconds: null, cap_seconds: 90 }],
+      ['capped_window without a cap', { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: null }],
+      ['capped_window with an interval', { mode: 'capped_window', rounds: 4, interval_seconds: 60, cap_seconds: 90 }],
+      ['a zero interval', { ...scheduled, interval_seconds: 0 }],
+      ['a fractional interval', { ...scheduled, interval_seconds: 90.5 }],
+      ['one round', { ...scheduled, rounds: 1 }],
+      ['a missing field', { mode: 'for_time', rounds: 4, interval_seconds: null }],
+      ['an unknown key', { ...scheduled, rest_seconds: 30 }],
+      ['a string', 'every 3 minutes for 5 rounds'],
+    ])('rejects %s', (_, timing) => {
+      expect(issuesOf({ ...makeLadderTimingBlock('scheduled_starts'), ladder_timing: timing })).not.toEqual([])
+    })
+  })
+
+  describe('invalid: timing inconsistent with the block it describes', () => {
+    it('rejects a timing on a rep scheme that is not a ladder', () => {
+      expect(issuesOf(makeLadderTimingBlock('for_time', {}, { rep_scheme: 'n_plus_one' }))).toContainEqual({
+        path: 'ladder_timing',
+        message: "ladder_timing requires a ladder rep_scheme, not 'n_plus_one'",
+      })
+    })
+
+    it.each([
+      ['scheduled_starts', 'amrap'],
+      ['scheduled_starts', 'circuit'],
+      ['for_time', 'emom'],
+      ['for_time', 'amrap'],
+      ['capped_window', 'emom'],
+      ['capped_window', 'standard'],
+    ] as const)('rejects %s inside a %s block', (mode, structure) => {
+      expect(
+        issuesOf(makeLadderTimingBlock(mode, {}, { structure_type: structure, rounds: 4 })),
+      ).toContainEqual({
+        path: 'ladder_timing.mode',
+        message: `${mode} cannot run inside a ${structure} block`,
+      })
+    })
+
+    it('rejects a timing with no sequence member to give it rungs', () => {
+      const fixture = makeLadderTimingBlock('for_time')
+      expect(issuesOf({ ...fixture, exercises: [fixture.exercises[1]] })).toContainEqual({
+        path: 'ladder_timing',
+        message: 'ladder_timing requires a member with a target_sequence',
+      })
+    })
+
+    it('rejects a round count the sequence does not have, rather than inferring either', () => {
+      const fixture = makeLadderTimingBlock('for_time', { rounds: 5 })
+      expect(issuesOf({ ...fixture, ladder_timing: { ...fixture.ladder_timing!, rounds: 6 } })).toContainEqual({
+        path: 'exercises[0].target_sequence',
+        message: 'target_sequence has 5 rungs but ladder_timing.rounds is 6',
+      })
+    })
+
+    it('rejects block rounds that disagree with the timing', () => {
+      expect(issuesOf(makeLadderTimingBlock('for_time', { rounds: 3 }, { rounds: 4 }))).toContainEqual({
+        path: 'rounds',
+        message: 'rounds must be null or equal ladder_timing.rounds (3)',
+      })
+      expect(issuesOf(makeLadderTimingBlock('for_time', { rounds: 3 }, { rounds: 3 }))).toEqual([])
+    })
+
+    it('rejects a scheduled clock that is not rounds × interval', () => {
+      expect(
+        issuesOf(makeLadderTimingBlock('scheduled_starts', { rounds: 6, intervalSeconds: 90 }, { timer_seconds: 600 })),
+      ).toContainEqual({
+        path: 'timer_seconds',
+        message: 'timer_seconds must equal rounds × interval_seconds (540) for scheduled_starts',
+      })
+    })
+
+    it('rejects separate round rest on a scheduled ladder', () => {
+      expect(issuesOf(makeLadderTimingBlock('scheduled_starts', {}, { round_rest_seconds: 30 }))).toContainEqual({
+        path: 'round_rest_seconds',
+        message: 'scheduled_starts rest is the interval remainder; round_rest_seconds must be null',
+      })
+    })
+
+    it('rejects a window cap longer than the block clock', () => {
+      expect(issuesOf(makeLadderTimingBlock('capped_window', { capSeconds: 400 }, { timer_seconds: 300 }))).toContainEqual({
+        path: 'ladder_timing.cap_seconds',
+        message: 'cap_seconds cannot exceed the block timer_seconds',
+      })
+    })
+  })
+
+  it('names the same ladder schemes the renderer does', () => {
+    for (const scheme of Constants.public.Enums.rep_scheme) {
+      expect((LADDER_TIMING_REP_SCHEMES as readonly string[]).includes(scheme), scheme).toBe(
+        isLadderScheme(scheme),
+      )
+    }
+  })
+
+  it('hardcodes no illustrative five rounds or three minutes', () => {
+    const source = read('src/state/schemas.ts')
+    // Code only: the comments are allowed to name the illustration they refuse.
+    const code = source
+      .slice(source.indexOf('// Ladder timing'), source.indexOf('export const workoutSectionSchema'))
+      .split('\n')
+      .filter((line) => !/^\s*(\/\/|\/\*\*|\*)/.test(line))
+      .join('\n')
+    expect(code).toContain('ladder_timing')
+    expect(code).not.toMatch(/\b(5|180)\b/)
   })
 })
 

@@ -220,6 +220,76 @@ const SELF_DESCRIBING_LOAD = new Set(['bodyweight', 'prior_session', 'none'])
 /** The structures defined by a clock rather than by a count. */
 const TIMED_STRUCTURES = new Set(['emom', 'amrap', 'for_time'])
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Ladder timing — REQ-018 / E03, the additive boundary (TASK-038)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The rep pattern (`rep_scheme` + each member's `target_sequence`) says *what*
+// each round asks for. `ladder_timing` says *when* a round happens, and is a
+// separate fact so neither can be read out of the other. Interval length and
+// round count are fields, never constants: nothing here knows five rounds or
+// three minutes.
+//
+// Additive and inert. A block without the key, or with `null`, is a legacy
+// block and keeps its existing behaviour. The edge validator refuses the key in
+// generated output until persistence (TASK-039) and the integrated contract
+// (TASK-032) can carry it — see `validateComposition` and
+// GENERATION_CONTRACT §5.1 for the old/new compatibility matrix.
+
+/** How a ladder's rounds are timed. */
+export const LADDER_TIMING_MODES = ['scheduled_starts', 'for_time', 'capped_window'] as const
+export const ladderTimingModeSchema = z.enum(LADDER_TIMING_MODES)
+
+/**
+ * The rep schemes a timing can belong to: the ones performed as rungs. Kept
+ * equal to `src/state/ladder.ts`'s set by a test rather than imported, because
+ * that module reads progress types that import this one.
+ */
+export const LADDER_TIMING_REP_SCHEMES = [
+  'ladder_up',
+  'ladder_down',
+  'pyramid',
+  'inverse',
+  'ladder_fixed_interval',
+] as const
+
+/** The block structures each mode can be performed inside. */
+export const LADDER_TIMING_STRUCTURES = {
+  scheduled_starts: ['emom', 'for_time'],
+  for_time: ['for_time'],
+  capped_window: ['for_time', 'amrap'],
+} as const satisfies Record<(typeof LADDER_TIMING_MODES)[number], readonly string[]>
+
+/**
+ * Exactly the fields a mode names are populated and the rest are `null`, the
+ * same discipline as the target union. `rounds` is the rung count, at least two
+ * because a one-rung ladder is a fixed target.
+ */
+export const ladderTimingSchema = z.discriminatedUnion('mode', [
+  // Round k starts at (k − 1) × interval_seconds; rest is what is left of it.
+  z.strictObject({
+    mode: z.literal('scheduled_starts'),
+    rounds: z.int().min(2),
+    interval_seconds: positiveInt,
+    cap_seconds: z.null(),
+  }),
+  // Free-paced: rounds run back to back. Progress is observed, never derived
+  // from elapsed time.
+  z.strictObject({
+    mode: z.literal('for_time'),
+    rounds: z.int().min(2),
+    interval_seconds: z.null(),
+    cap_seconds: z.null(),
+  }),
+  // Each round's work is bounded by cap_seconds; rounds are not on a schedule.
+  z.strictObject({
+    mode: z.literal('capped_window'),
+    rounds: z.int().min(2),
+    interval_seconds: z.null(),
+    cap_seconds: positiveInt,
+  }),
+])
+
 export const prescriptionSchema = z
   .discriminatedUnion('target_kind', [fixedTarget, rangeTarget, sequenceTarget])
   // `target_max > target_min`. Equal bounds are a fixed target; inverted ones
@@ -257,6 +327,8 @@ export const workoutBlockSchema = z
     rep_scheme: repSchemeSchema,
     block_notes: z.string().nullable(),
     exercises: z.array(prescriptionSchema).min(1),
+    // Optional so every payload written before REQ-018 parses unchanged.
+    ladder_timing: ladderTimingSchema.nullable().optional(),
   })
   // `CONSTRAINT timed_structures_have_a_clock`. Without it there is nothing to
   // run and nothing to score against.
@@ -274,6 +346,68 @@ export const workoutBlockSchema = z
   .refine((block) => block.structure_type !== 'circuit' || block.rounds !== null, {
     path: ['rounds'],
     message: 'circuit blocks require rounds',
+  })
+  // REQ-018: a timing must agree with the rep pattern and the block's clock it
+  // sits beside. Each rule refuses rather than infers the value it would need.
+  .superRefine((block, ctx) => {
+    const timing = block.ladder_timing
+    if (timing === undefined || timing === null) return
+
+    const issue = (path: (string | number)[], message: string) =>
+      ctx.addIssue({ code: 'custom', path, message })
+
+    if (!(LADDER_TIMING_REP_SCHEMES as readonly string[]).includes(block.rep_scheme)) {
+      issue(['ladder_timing'], `ladder_timing requires a ladder rep_scheme, not '${block.rep_scheme}'`)
+    }
+    if (!(LADDER_TIMING_STRUCTURES[timing.mode] as readonly string[]).includes(block.structure_type)) {
+      issue(
+        ['ladder_timing', 'mode'],
+        `${timing.mode} cannot run inside a ${block.structure_type} block`,
+      )
+    }
+
+    const sequences = block.exercises.flatMap((exercise, index) =>
+      exercise.target_kind === 'sequence' ? [{ index, length: exercise.target_sequence.length }] : [],
+    )
+    if (sequences.length === 0) {
+      issue(['ladder_timing'], 'ladder_timing requires a member with a target_sequence')
+    }
+    for (const { index, length } of sequences) {
+      if (length !== timing.rounds) {
+        issue(
+          ['exercises', index, 'target_sequence'],
+          `target_sequence has ${length} rungs but ladder_timing.rounds is ${timing.rounds}`,
+        )
+      }
+    }
+
+    if (block.rounds !== null && block.rounds !== timing.rounds) {
+      issue(['rounds'], `rounds must be null or equal ladder_timing.rounds (${timing.rounds})`)
+    }
+
+    if (timing.mode === 'scheduled_starts') {
+      // The schedule is the block's clock; a second number for it would be one
+      // of the two disagreeing.
+      const scheduled = timing.rounds * timing.interval_seconds
+      if (block.timer_seconds !== null && block.timer_seconds !== scheduled) {
+        issue(
+          ['timer_seconds'],
+          `timer_seconds must equal rounds × interval_seconds (${scheduled}) for scheduled_starts`,
+        )
+      }
+      // Rest is the remainder of each interval, not a separate field.
+      if (block.round_rest_seconds !== null) {
+        issue(['round_rest_seconds'], 'scheduled_starts rest is the interval remainder; round_rest_seconds must be null')
+      }
+    }
+
+    if (
+      timing.mode === 'capped_window' &&
+      block.timer_seconds !== null &&
+      timing.cap_seconds > block.timer_seconds
+    ) {
+      issue(['ladder_timing', 'cap_seconds'], 'cap_seconds cannot exceed the block timer_seconds')
+    }
   })
 
 export const workoutSectionSchema = z.strictObject({
@@ -1506,6 +1640,7 @@ export function parseBoundary<T>(
 
 export type Prescription = z.infer<typeof prescriptionSchema>
 export type WorkoutBlock = z.infer<typeof workoutBlockSchema>
+export type LadderTiming = z.infer<typeof ladderTimingSchema>
 export type WorkoutSection = z.infer<typeof workoutSectionSchema>
 export type GenerationOutput = z.infer<typeof generationOutputSchema>
 export type GenerationRequest = z.infer<typeof generationRequestSchema>

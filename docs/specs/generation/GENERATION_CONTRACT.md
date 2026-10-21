@@ -209,6 +209,56 @@ Candidates are grouped by section, carry only what composition needs, and never 
 
 `session_function` and `anchor_relationship` split what v4.0 crammed into one relationship field: what job an exercise does, and how it relates to the day's focus. An exercise can be an accessory that is thematically neutral — one field could not say that.
 
+### 5.1 Ladder timing (REQ-018, additive boundary — TASK-038)
+
+The rep pattern (`rep_scheme` plus each member's `target_sequence`) says what each round asks for. An
+optional block key, `ladder_timing`, says when each round happens. The two are separate so neither is
+inferred from the other. Interval length and round count are fields; no round count or interval is a
+constant anywhere in the boundary.
+
+```jsonc
+"ladder_timing": null                    // or absent: legacy, no explicit timing
+"ladder_timing": { "mode": "scheduled_starts", "rounds": 4, "interval_seconds": 120, "cap_seconds": null }
+"ladder_timing": { "mode": "for_time",         "rounds": 6, "interval_seconds": null, "cap_seconds": null }
+"ladder_timing": { "mode": "capped_window",    "rounds": 4, "interval_seconds": null, "cap_seconds": 90 }
+```
+
+| Mode | Meaning | Fields | Block structures |
+|---|---|---|---|
+| `scheduled_starts` | Round *k* starts at (*k* − 1) × `interval_seconds`; rest is the rest of the interval | `interval_seconds` > 0, `cap_seconds` null | `emom`, `for_time` |
+| `for_time` | Free-paced; rounds run back to back. Progress is observed, never derived from elapsed time | both null | `for_time` |
+| `capped_window` | Each round's work is bounded by `cap_seconds`; rounds are not on a schedule | `cap_seconds` > 0, `interval_seconds` null | `for_time`, `amrap` |
+
+Consistency, enforced by `workoutBlockSchema` (shared by client and edge):
+
+- `rounds` is an integer ≥ 2; the object is strict and only the mode's fields are non-null.
+- `rep_scheme` is a ladder scheme (`ladder_up`, `ladder_down`, `pyramid`, `inverse`,
+  `ladder_fixed_interval`); at least one member has a `target_sequence`, and every sequence has exactly
+  `rounds` rungs. Fixed companion members keep their `fixed` target.
+- Block `rounds` is null or equals `ladder_timing.rounds`.
+- `scheduled_starts`: block `timer_seconds` (when present) equals `rounds × interval_seconds`, and
+  `round_rest_seconds` is null.
+- `capped_window`: `cap_seconds` does not exceed block `timer_seconds`.
+- Check 6 is unchanged: `emom`/`amrap`/`for_time` still need `timer_seconds`. The block's clock and the
+  global session clock are not altered by a timing.
+
+**Compatibility matrix.**
+
+| Reader | Payload | Result |
+|---|---|---|
+| New reader (client or edge schema) | Old payload, key absent | Accepted unchanged; no key is added |
+| New reader | Payload with `ladder_timing: null` | Accepted; treated as no explicit timing |
+| New reader | New payload, consistent timing | Accepted by the schema |
+| New reader | Malformed or inconsistent timing | Rejected with a path-level issue (`generation.malformed_prescription` at the edge) |
+| Old reader (strict 4.1.0 schema before TASK-038) | New payload | Rejected as an unknown key — why generation must not emit it yet |
+| Edge generation gate (`LADDER_TIMING_GENERATION_ACTIVE = false`) | Generated output with a non-null timing | Refused and retried as malformed: persistence would drop it |
+| Saved/legacy sessions | No timing | Unchanged behaviour |
+
+The prompt does not ask for `ladder_timing`, persistence and hydration do not store or restore it,
+and duration, dispatch and renderers do not read it. TASK-039 adds the round trip; TASK-032 closes the
+contract and enables the gate only against that proven path. The contract version stays `4.1.0`
+until then, because generated output does not change shape.
+
 ---
 
 ## 6. Validation
