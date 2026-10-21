@@ -230,6 +230,12 @@ function isPerformedSet(value: unknown): value is PerformedSet {
     isOptionalNumber(record.durationSeconds) &&
     isOptionalNumber(record.distance) &&
     isOptionalNumber(record.weight) &&
+    // The provider strips its UI override before queuing. There is exactly
+    // one canonical unit, on the outer entry; never accept conflicting copies.
+    record.weightUnit === undefined &&
+    // An entry queued before effort collection was removed (REQ-015) may still
+    // carry `rpe`. It is tolerated so the set itself is never dropped; the
+    // writer no longer sends it.
     isOptionalNumber(record.rpe) &&
     (record.isWarmup === undefined || typeof record.isWarmup === 'boolean')
   )

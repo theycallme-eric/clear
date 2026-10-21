@@ -410,8 +410,9 @@ assembles SES-01a's lifecycle client per call so the token it presents is never 
 The shell also owns **block completion**, and that is one path rather than a convention.
 `src/state/block-completion.ts` is the vocabulary — the outcome a renderer observed, and the
 `block_results` row it maps to — and `src/state/block-completion-provider.tsx` is the path: mounted
-by the shell around every renderer, it asks for perceived effort once (`src/ui/block-effort.tsx`),
-writes the row through `src/data/workout.ts`, and refuses a block it has already written. Which
+by the shell around every renderer, it asks for no effort (REQ-015; the unmounted
+`src/ui/block-effort.tsx` and its restoration are in
+`docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`), writes the row through `src/data/workout.ts`, and refuses a block it has already written. Which
 renderer performs a structure is `src/ui/block-renderers.tsx`, a map total over `structure_type`, so
 EXE-02…EXE-04c land by replacing an entry; a renderer receives no client and no callback, only
 `useBlockCompletion`. One renderer is not keyed by structure type: a ladder is a **rep scheme**, so

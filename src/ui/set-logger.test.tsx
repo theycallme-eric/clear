@@ -35,7 +35,6 @@ function loggedSet(overrides: Partial<LoggedSet> & { setNumber: number }): Logge
     distanceUnit: null,
     weight: 60,
     weightUnit: 'kg',
-    rpe: null,
     isWarmup: false,
     status: 'logged',
     ...overrides,
@@ -81,15 +80,17 @@ function mount(options: MountOptions = {}) {
   }
 
   const logger = <ExerciseSetLogger exercise={exercise} {...options.props} />
-  const view = render(
+  const tree = (unit = api.weightUnit) => (
     <AppProviders workout={workout.clients}>
-      <SetLoggingContext value={api}>
+      <SetLoggingContext value={{ ...api, weightUnit: unit }}>
         {options.inCard ? <Card>{logger}</Card> : logger}
       </SetLoggingContext>
-    </AppProviders>,
+    </AppProviders>
   )
+  const view = render(tree())
 
-  return { ...view, exercise, logSet }
+  return { ...view, exercise, logSet,
+    rerenderUnit: (unit: Enums<'weight_unit'> | null) => view.rerender(tree(unit)) }
 }
 
 function form(setNumber: number) {
@@ -129,21 +130,36 @@ describe('the logger is drawn with the shared frame, and frames nothing itself',
     expect(screen.getByRole('heading', { name: 'A1 back squat' })).toBeInTheDocument()
   })
 
-  it('sets its three fields in one wrapping row, each a current element frame', () => {
+  it('sets its two numeric fields and unit choice in one wrapping row, each a current element frame', () => {
     mount()
 
     const weight = form(1).getByLabelText('Weight (kg)')
     const row = weight.closest('.clr-row')
     expect(row).not.toBeNull()
 
-    for (const label of ['Weight (kg)', 'Reps', 'RPE']) {
+    // Two optional numbers plus their unit; no effort (REQ-015, U36).
+    expect(form(1).getAllByRole('spinbutton')).toHaveLength(2)
+    for (const label of ['Weight (kg)', 'Reps']) {
       const field = form(1).getByLabelText(label)
       expect(field).toHaveClass('clr-input')
       expect(field.closest('.clr-row')).toBe(row)
       expect(field.closest('.clr-field')).not.toBeNull()
     }
+    const unit = form(1).getByRole('combobox', { name: 'Unit' })
+    expect(unit).toHaveClass('clr-input')
+    expect(unit.closest('.clr-row')).toBe(row)
+    expect(unit.closest('.clr-field')).not.toBeNull()
     // The row adds no frame: the fields are the only chamfers in it.
     expect(row).not.toHaveClass('clr-chamfer')
+  })
+
+  it('asks for no effort and offers no warmup checkbox', () => {
+    mount()
+
+    expect(screen.queryByLabelText(/RPE/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/exertion|effort/i)).not.toBeInTheDocument()
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 })
 
@@ -201,9 +217,13 @@ describe('the readout of sets already recorded', () => {
   })
 
   it('prints a zero as a result and leaves an unrecorded field unsaid', () => {
+    // The warmup classification is still a word, never a tint.
     expect(
-      loggedSetText(loggedSet({ setNumber: 3, reps: 0, weight: null, rpe: 9, isWarmup: true })),
-    ).toBe('Set 3 · 0 reps · RPE 9 · Warmup')
+      loggedSetText(loggedSet({ setNumber: 3, reps: 0, weight: null, isWarmup: true })),
+    ).toBe('Set 3 · 0 reps · Warmup')
+    expect(
+      loggedSetText(loggedSet({ setNumber: 2, reps: null, weight: 0 })),
+    ).toBe('Set 2 · 0 kg')
     expect(
       loggedSetText(
         loggedSet({ setNumber: 1, reps: null, distance: 400, distanceUnit: 'm', weight: null }),
@@ -239,16 +259,90 @@ describe('set progression', () => {
     expect(form(4).getByRole('button', { name: 'Log set 4' })).toBeEnabled()
   })
 
-  it('prefills the next set from the last one performed, and never the RPE', () => {
-    mount({ logged: [loggedSet({ setNumber: 1, weight: 62.5, reps: 7, rpe: 8 })] })
+  it('prefills the next set from the last one performed', () => {
+    mount({ logged: [loggedSet({ setNumber: 1, weight: 62.5, reps: 7 })] })
 
     expect(form(2).getByLabelText('Weight (kg)')).toHaveValue(62.5)
     expect(form(2).getByLabelText('Reps')).toHaveValue(7)
-    expect(form(2).getByLabelText('RPE')).toHaveValue(null)
+  })
+
+  it('never fills the observed reps from the prescription', () => {
+    // The target is printed as the target; the field is the user's.
+    mount()
+
+    expect(form(1).getByText('Set 1 of 3 · Target 8 reps')).toBeInTheDocument()
+    expect(form(1).getByLabelText('Reps')).toHaveValue(null)
+    expect(form(1).getByLabelText('Weight (kg)')).toHaveValue(null)
+  })
+
+  it('keeps a prefilled blank blank rather than turning it into a zero', () => {
+    mount({ logged: [loggedSet({ setNumber: 1, weight: null, reps: 0 })] })
+
+    expect(form(2).getByLabelText('Weight (kg)')).toHaveValue(null)
+    expect(form(2).getByLabelText('Reps')).toHaveValue(0)
   })
 })
 
 describe('what the logger hands the shell', () => {
+  it('freezes the displayed unit after typing when the profile refreshes', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet, rerenderUnit } = mount()
+    await user.type(form(1).getByLabelText('Weight (kg)'), '60')
+    rerenderUnit('lb')
+    expect(form(1).getByLabelText('Weight (kg)')).toHaveValue(60)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 1, weight: 60, weightUnit: 'kg',
+    })
+  })
+
+  it('can follow a loaded profile unit while the form is still untouched', () => {
+    const { rerenderUnit } = mount({ weightUnit: null })
+    rerenderUnit('lb')
+    expect(form(1).getByLabelText('Weight (lb)')).toHaveValue(null)
+    expect(form(1).getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+  })
+
+  it.each([
+    ['kg', 'lb', 135],
+    ['lb', 'kg', 60],
+    ['kg', 'lb', 0],
+  ] as const)('keeps a %s profile from relabelling an observed %s weight', async (profile, unit, weight) => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount({
+      weightUnit: profile,
+      logged: [loggedSet({ setNumber: 1, weight, weightUnit: unit, reps: 5 })],
+    })
+
+    expect(form(2).getByLabelText(`Weight (${unit})`)).toHaveValue(weight)
+    expect(form(2).getByRole('combobox', { name: 'Unit' })).toHaveValue(unit)
+    await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 2, weight, reps: 5, weightUnit: unit,
+    })
+  })
+
+  it('uses the profile unit for a reference with no observed weight', () => {
+    mount({ logged: [loggedSet({ setNumber: 1, weight: null, weightUnit: 'lb' })] })
+    expect(form(2).getByLabelText('Weight (kg)')).toHaveValue(null)
+    expect(form(2).getByRole('combobox', { name: 'Unit' })).toHaveValue('kg')
+  })
+
+  it('explicitly relabels rather than converting entered weight, including clears', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount()
+    await user.type(form(1).getByLabelText('Weight (kg)'), '135.5')
+    await user.selectOptions(form(1).getByRole('combobox', { name: 'Unit' }), 'lb')
+    expect(form(1).getByLabelText('Weight (lb)')).toHaveValue(135.5)
+    expect(form(1).getByText('Changing units keeps the number. Enter the weight in the selected unit.')).toBeInTheDocument()
+    await user.clear(form(1).getByLabelText('Weight (lb)'))
+    await user.type(form(1).getByLabelText('Reps'), '0')
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 1, reps: 0, weightUnit: 'lb',
+    })
+  })
+
   it('logs the set against this prescription, with only what was entered', async () => {
     const user = userEvent.setup()
     const { exercise, logSet } = mount()
@@ -257,7 +351,7 @@ describe('what the logger hands the shell', () => {
     await user.type(form(1).getByLabelText('Reps'), '8')
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
 
-    // No RPE and no warmup flag: an unentered field is absent, not a zero.
+    // No effort and no warmup flag are ever handed over (REQ-015).
     expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
       setNumber: 1,
       reps: 8,
@@ -265,20 +359,44 @@ describe('what the logger hands the shell', () => {
     })
   })
 
-  it('carries RPE and the warmup flag when they are given', async () => {
+  it('logs a blank set without blocking, recording nothing it was not told', async () => {
     const user = userEvent.setup()
     const { exercise, logSet } = mount()
 
-    await user.type(form(1).getByLabelText('Reps'), '5')
-    await user.type(form(1).getByLabelText('RPE'), '7.5')
-    await user.click(form(1).getByRole('checkbox', { name: 'Warmup set' }))
+    const submit = form(1).getByRole('button', { name: 'Log set 1' })
+    expect(submit).toBeEnabled()
+    await user.click(submit)
+
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, { setNumber: 1 })
+  })
+
+  it('logs a partial set with only the field that was entered', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount()
+
+    await user.type(form(1).getByLabelText('Weight (kg)'), '40')
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
 
     expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
       setNumber: 1,
-      reps: 5,
-      rpe: 7.5,
-      isWarmup: true,
+      weight: 40,
+    })
+  })
+
+  it('takes an edited prefill, and a cleared one as not recorded', async () => {
+    const user = userEvent.setup()
+    const { exercise, logSet } = mount({
+      logged: [loggedSet({ setNumber: 1, weight: 60, reps: 8 })],
+    })
+
+    await user.clear(form(2).getByLabelText('Weight (kg)'))
+    await user.clear(form(2).getByLabelText('Reps'))
+    await user.type(form(2).getByLabelText('Reps'), '6')
+    await user.click(form(2).getByRole('button', { name: 'Log set 2' }))
+
+    expect(logSet).toHaveBeenCalledExactlyOnceWith(exercise.exerciseId, {
+      setNumber: 2,
+      reps: 6,
     })
   })
 
@@ -345,17 +463,6 @@ describe('what the logger refuses to hand over', () => {
     expect(form(1).getByRole('button', { name: 'Log set 1' })).toBeDisabled()
 
     await user.type(form(1).getByLabelText('Reps'), '8{Enter}')
-    expect(logSet).not.toHaveBeenCalled()
-  })
-
-  it('refuses an RPE outside the scale', async () => {
-    const user = userEvent.setup()
-    const { logSet } = mount()
-
-    await user.type(form(1).getByLabelText('RPE'), '11{Enter}')
-
-    expect(form(1).getByText('RPE runs 1 to 10')).toBeInTheDocument()
-    expect(form(1).getByRole('button', { name: 'Log set 1' })).toBeDisabled()
     expect(logSet).not.toHaveBeenCalled()
   })
 

@@ -20,8 +20,6 @@ import {
   loggedSetFromEntry,
   loggedSetFromRow,
   prefillFrom,
-  RPE_MAX,
-  RPE_MIN,
   setLogInsert,
   setLogViolation,
   type LoggedSet,
@@ -150,6 +148,17 @@ describe('the row a performed set maps to', () => {
     ).toBeNull()
   })
 
+  it('writes no effort, even for an entry queued while effort was still collected', () => {
+    // REQ-015: `rpe` stays a nullable column with its historical values, and
+    // this writer only ever records it as not recorded. A legacy queued entry
+    // still carrying one is written without it rather than dropped.
+    const legacy = { setNumber: 1, reps: 5, rpe: 8 } as PerformedSet
+
+    expect(setLogInsert(entry({ setNumber: 1, reps: 5 })).rpe).toBeNull()
+    expect(setLogInsert(entry(legacy)).rpe).toBeNull()
+    expect(setLogInsert(entry(legacy)).actual_reps).toBe(5)
+  })
+
   it('defaults the warmup flag to false rather than leaving it absent', () => {
     expect(setLogInsert(entry({ setNumber: 1, reps: 5 })).is_warmup_set).toBe(false)
     expect(
@@ -204,16 +213,10 @@ describe('measurements the table would refuse', () => {
     })
   })
 
-  it.each([RPE_MIN - 1, RPE_MAX + 1])('refuses an RPE of %s', (rpe) => {
-    expect(setLogViolation(entry({ setNumber: 1, rpe }))).toEqual({
-      field: 'rpe',
-      min: RPE_MIN,
-      max: RPE_MAX,
-    })
-  })
+  it('does not refuse a set over an effort it no longer writes', () => {
+    const legacy = { setNumber: 1, reps: 5, rpe: 11 } as PerformedSet
 
-  it.each([RPE_MIN, 7.5, RPE_MAX])('accepts an RPE of %s', (rpe) => {
-    expect(setLogViolation(entry({ setNumber: 1, rpe }))).toBeNull()
+    expect(setLogViolation(entry(legacy))).toBeNull()
   })
 })
 
@@ -240,7 +243,8 @@ describe('a stored row, read back', () => {
       distanceUnit: 'm',
       weight: 135,
       weightUnit: 'lb',
-      rpe: 8,
+      // A historical RPE stays on the row; the execution surface reads only the
+      // warmup classification.
       isWarmup: true,
       // A row exists, so the database has this set: `logged` and nothing else.
       status: 'logged',
@@ -256,7 +260,7 @@ describe('a stored row, read back', () => {
           blockId: '70000001-0000-4000-8000-000000000000',
           distanceUnit: 'm',
           weightUnit: 'kg',
-          performed: { setNumber: 2, distance: 400, rpe: 7 },
+          performed: { setNumber: 2, distance: 400 },
         },
         'syncing',
       ),
@@ -269,7 +273,6 @@ describe('a stored row, read back', () => {
       // Not recorded is null, never zero — the same rule the insert follows.
       weight: null,
       weightUnit: 'kg',
-      rpe: 7,
       isWarmup: false,
       status: 'syncing',
     })
@@ -290,6 +293,7 @@ describe('what the next set starts from', () => {
 
     expect(prefillFrom(sets)).toEqual({
       weight: 80,
+      weightUnit: 'kg',
       reps: 6,
       durationSeconds: null,
       distance: null,
@@ -316,6 +320,7 @@ describe('what the next set starts from', () => {
 
     expect(prefillFrom(sets)).toEqual({
       weight: null,
+      weightUnit: 'kg',
       reps: null,
       durationSeconds: 45,
       distance: 400,

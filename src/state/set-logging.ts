@@ -39,10 +39,6 @@ import type { ExerciseSetLogRow } from './schemas'
 // Vocabulary
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** `exercise_set_logs_rpe_range`, mirrored. */
-export const RPE_MIN = 1
-export const RPE_MAX = 10
-
 /**
  * One set, as the renderer observed it. Every measurement is optional and
  * omitting one records `null` rather than a zero nobody performed.
@@ -58,8 +54,13 @@ export interface PerformedSet {
   readonly distance?: number
   /** What was on the bar, in the unit stamped on the row. */
   readonly weight?: number
-  readonly rpe?: number
-  /** A warmup set is performed work that is not a working set. */
+  /** Optional per-set UI choice, resolved once by the provider before queuing. */
+  readonly weightUnit?: Enums<'weight_unit'>
+  /**
+   * A warmup set is performed work that is not a working set. No control sets
+   * it any more (REQ-015); it is kept so a set already classified — a queued
+   * entry written before the checkbox went — keeps its classification.
+   */
   readonly isWarmup?: boolean
 }
 
@@ -75,7 +76,7 @@ export interface SetLogEntry {
   readonly distanceUnit: Enums<'distance_unit'> | null
   /** Stamped per row at write time, never read back from the profile later. */
   readonly weightUnit: Enums<'weight_unit'>
-  readonly performed: PerformedSet
+  readonly performed: Omit<PerformedSet, 'weightUnit'>
 }
 
 /**
@@ -99,7 +100,6 @@ export interface LoggedSet {
   readonly distanceUnit: Enums<'distance_unit'> | null
   readonly weight: number | null
   readonly weightUnit: Enums<'weight_unit'>
-  readonly rpe: number | null
   readonly isWarmup: boolean
   /** Whether the database has this set, or only this device does (EXE-07). */
   readonly status: SetSyncStatus
@@ -139,7 +139,10 @@ export function setLogInsert(entry: SetLogEntry): TablesInsert<'exercise_set_log
     actual_distance_unit: performed.distance === undefined ? null : entry.distanceUnit,
     weight: recorded(performed.weight),
     weight_unit: entry.weightUnit,
-    rpe: recorded(performed.rpe),
+    // Effort is not collected (REQ-015). The column stays nullable and keeps
+    // its historical values; this writer only ever says "not recorded".
+    // Restoration: docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md.
+    rpe: null,
     is_warmup_set: performed.isWarmup ?? false,
   }
 }
@@ -171,12 +174,6 @@ export function setLogViolation(entry: SetLogEntry): SetLogViolation | null {
     return { field: 'actual_distance_unit' }
   }
   if (!isNonNegative(performed.weight)) return { field: 'weight', min: 0 }
-  if (
-    performed.rpe !== undefined &&
-    (Number.isNaN(performed.rpe) || performed.rpe < RPE_MIN || performed.rpe > RPE_MAX)
-  ) {
-    return { field: 'rpe', min: RPE_MIN, max: RPE_MAX }
-  }
 
   return null
 }
@@ -199,7 +196,6 @@ export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
     distanceUnit: row.actual_distance_unit,
     weight: row.weight,
     weightUnit: row.weight_unit,
-    rpe: row.rpe,
     isWarmup: row.is_warmup_set,
     status: 'logged',
   }
@@ -230,7 +226,6 @@ export function loggedSetFromEntry(
     distanceUnit: performed.distance === undefined ? null : entry.distanceUnit,
     weight: recorded(performed.weight),
     weightUnit: entry.weightUnit,
-    rpe: recorded(performed.rpe),
     isWarmup: performed.isWarmup ?? false,
     status,
   }
@@ -243,6 +238,8 @@ export function loggedSetFromEntry(
 /** What the next set's fields start at, when there is something to start from. */
 export interface SetPrefill {
   readonly weight: number | null
+  /** The observed number's own unit, never the current profile preference. */
+  readonly weightUnit: Enums<'weight_unit'>
   readonly reps: number | null
   readonly durationSeconds: number | null
   readonly distance: number | null
@@ -275,6 +272,7 @@ export function prefillFrom(sets: readonly LoggedSet[]): SetPrefill | null {
 
   return {
     weight: source.weight,
+    weightUnit: source.weightUnit,
     reps: source.reps,
     durationSeconds: source.durationSeconds,
     distance: source.distance,

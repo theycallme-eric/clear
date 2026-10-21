@@ -31,10 +31,11 @@
  */
 import { useState, type ReactNode } from 'react'
 
+import type { Enums } from '../data/database.types'
+
 import {
   AlertTriangle,
   Button,
-  Checkbox,
   CircleCheck,
   Input,
   RefreshCw,
@@ -52,8 +53,6 @@ import {
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import {
   prefillFrom,
-  RPE_MAX,
-  RPE_MIN,
   useSetLogging,
   type LoggedSet,
   type PerformedSet,
@@ -65,6 +64,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
+import { Select } from './select'
 
 export interface ExerciseSetLoggerProps {
   exercise: ExerciseProgress
@@ -262,7 +262,6 @@ export function loggedSetText(set: LoggedSet): string {
     parts.push(`${set.distance} ${set.distanceUnit ?? ''}`.trim())
   }
   if (set.weight !== null) parts.push(`${set.weight} ${set.weightUnit}`)
-  if (set.rpe !== null) parts.push(`RPE ${set.rpe}`)
   if (set.isWarmup) parts.push('Warmup')
 
   return parts.join(' · ')
@@ -278,7 +277,7 @@ interface SetEntryFormProps {
   /** `8 reps`, `8–10 reps`, `400 m` — null when the row carries no target. */
   targetLabel: string | null
   measureLabel: string
-  weightUnit: string | null
+  weightUnit: Enums<'weight_unit'> | null
   prefill: SetPrefill | null
   modality: PrescribedModality
   exerciseName: string
@@ -287,13 +286,19 @@ interface SetEntryFormProps {
 }
 
 /**
- * The set the user is in, and the four things they can say about it.
+ * The set the user is in, and the two things they can say about it — the
+ * weight and the measure. Both are optional: a set logged with neither is a
+ * set performed and not measured, and nothing here blocks the workout on it.
+ * There is no effort field and no warmup checkbox (REQ-015, U36); restoring
+ * either is described in `docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`.
  *
  * Prefilled from the last set actually performed, which is the requirement's
  * "previous weight/reps when history exists": on a resumed session that is the
  * set before this one, and within a session it is the set they just did. The
  * fields stay filled afterwards, because the next set is usually the same
- * weight and retyping it is the friction this screen exists to remove.
+ * weight and retyping it is the friction this screen exists to remove. The
+ * prescription's target is never a prefill — it is printed as the target, and
+ * an observed rep count is only ever one the user typed.
  */
 function SetEntryForm({
   setNumber,
@@ -309,19 +314,19 @@ function SetEntryForm({
 }: SetEntryFormProps) {
   const [weight, setWeight] = useState(() => numberField(prefill?.weight))
   const [measure, setMeasure] = useState(() => numberField(measurePrefill(prefill, modality)))
-  const [rpe, setRpe] = useState('')
-  const [warmup, setWarmup] = useState(false)
-
+  const [chosenUnit, setChosenUnit] = useState<Enums<'weight_unit'> | undefined>()
+  // Zero is an observation too. A row with no observed weight supplies no
+  // reference unit; an untouched empty form can follow the profile as it loads.
+  const referenceUnit = prefill !== null && prefill.weight !== null
+    ? prefill.weightUnit
+    : undefined
+  const selectedUnit = chosenUnit ?? referenceUnit ?? weightUnit
   const weightValue = parsed(weight)
   const measureValue = parsed(measure)
-  const rpeValue = parsed(rpe)
 
   const weightInvalid = weightValue === 'invalid' || isNegative(weightValue)
   const measureInvalid = measureValue === 'invalid' || isNegative(measureValue)
-  const rpeInvalid =
-    rpeValue === 'invalid' ||
-    (typeof rpeValue === 'number' && (rpeValue < RPE_MIN || rpeValue > RPE_MAX))
-  const blocked = weightInvalid || measureInvalid || rpeInvalid
+  const blocked = weightInvalid || measureInvalid
 
   // The shared submit helper (CORE-05): this form says only whether the set
   // was accepted, and where the caret goes on a refusal is its decision.
@@ -332,10 +337,10 @@ function SetEntryForm({
 
     onLog({
       setNumber,
+      ...(selectedUnit !== null && selectedUnit !== weightUnit
+        ? { weightUnit: selectedUnit } : {}),
       ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
       ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
-      ...(typeof rpeValue === 'number' ? { rpe: rpeValue } : {}),
-      ...(warmup ? { isWarmup: true } : {}),
     })
 
     // Nothing is cleared here: once the row comes back the form remounts on
@@ -360,13 +365,18 @@ function SetEntryForm({
 
       <BlockPanel.FieldRow>
         <Input
-          label={weightUnit === null ? 'Weight' : `Weight (${weightUnit})`}
+          label={selectedUnit === null ? 'Weight' : `Weight (${selectedUnit})`}
           type="number"
           inputMode="decimal"
           min={0}
           step="any"
           value={weight}
-          onChange={setWeight}
+          onChange={(value) => {
+            // Once the athlete types, a later profile refresh must not relabel
+            // their number. Explicit Unit changes below never convert the text.
+            if (selectedUnit !== null) setChosenUnit(selectedUnit)
+            setWeight(value)
+          }}
           invalid={weightInvalid}
           errorText={weightInvalid ? 'Enter a weight of zero or more' : undefined}
         />
@@ -381,21 +391,19 @@ function SetEntryForm({
           invalid={measureInvalid}
           errorText={measureInvalid ? 'Enter zero or more' : undefined}
         />
-        <Input
-          label="RPE"
-          type="number"
-          inputMode="decimal"
-          min={RPE_MIN}
-          max={RPE_MAX}
-          step="any"
-          value={rpe}
-          onChange={setRpe}
-          invalid={rpeInvalid}
-          errorText={rpeInvalid ? `RPE runs ${RPE_MIN} to ${RPE_MAX}` : undefined}
-        />
+        <Select
+          label="Unit"
+          value={selectedUnit ?? ''}
+          onChange={(value) => {
+            if (value === 'kg' || value === 'lb') setChosenUnit(value)
+          }}
+          helperText="Changing units keeps the number. Enter the weight in the selected unit."
+        >
+          {selectedUnit === null ? <option value="" disabled>Choose unit</option> : null}
+          <option value="kg">kg</option>
+          <option value="lb">lb</option>
+        </Select>
       </BlockPanel.FieldRow>
-
-      <Checkbox label="Warmup set" checked={warmup} onChange={setWarmup} />
 
       <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
         Log set {setNumber}
