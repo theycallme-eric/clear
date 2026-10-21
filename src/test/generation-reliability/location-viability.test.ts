@@ -625,7 +625,10 @@ describe('the screen', () => {
 
     await user.click(within(card('Home')).getByRole('button', { name: 'Edit' }))
     expect(await screen.findByRole('checkbox', { name: 'Dumbbells' })).toBeChecked()
-    await user.click(screen.getByRole('radio', { name: /^Minimal/ }))
+    // Locations has no tier control (U15); the same removal is made item by item.
+    for (const name of ['Dumbbells', 'Kettlebells', 'Pull-up bar']) {
+      await user.click(screen.getByRole('checkbox', { name }))
+    }
     expect(screen.getByRole('checkbox', { name: 'Dumbbells' })).not.toBeChecked()
     await user.click(screen.getByRole('button', { name: 'Save place' }))
 
@@ -638,9 +641,10 @@ describe('the screen', () => {
 
     // The list is the previous one again …
     await waitFor(() => {
-      expect(within(card('Home')).getByText(/Home gym/)).toBeVisible()
+      expect(within(card('Home')).getByText(/Default for generation/)).toBeVisible()
     })
     expect(server.equipment(HOME)).toEqual([...EQUIPMENT_BY_TIER.home].sort())
+    expect(server.locations().find((location) => location.id === HOME)?.tier).toBe('home')
 
     // … and so is the equipment the editor opens with.
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
@@ -648,7 +652,7 @@ describe('the screen', () => {
     for (const name of ['Dumbbells', 'Kettlebells', 'Pull-up bar']) {
       expect(await screen.findByRole('checkbox', { name })).toBeChecked()
     }
-    expect(screen.getByRole('radio', { name: /^Home gym/ })).toBeChecked()
+    expect(screen.queryAllByRole('radio')).toEqual([])
   })
 
   it('needed no change to do it: the migration and the data layer are the diff (REQ-031)', () => {

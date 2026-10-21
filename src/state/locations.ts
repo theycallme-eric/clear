@@ -16,11 +16,13 @@
  * a fact — the day the catalog gains a machine, the editor would silently offer
  * the old set.
  *
- * **Tier is a label; the list is the answer.** `location_equipment` is the
- * authoritative input to eligibility and `locations.tier` is explicitly not a
- * substitute for it (DATA-01b §5). So choosing a tier here does what the wizard's
- * reducer does — replaces the ticked set with that tier's preset — and the ticks
- * are then editable item by item. What generation reads is always the ticks.
+ * **The list is the answer; tier is only metadata.** `location_equipment` is
+ * the authoritative input to eligibility and `locations.tier` is explicitly not
+ * a substitute for it (DATA-01b §5). Starter presets belong to onboarding alone
+ * (U15): here a new place starts with nothing ticked, an existing place keeps
+ * the tier it was saved with untouched, and nothing on this screen chooses a
+ * tier or infers equipment from one — or from the place's name. What generation
+ * reads is always the ticks.
  */
 import type { Enums } from '../data/database.types'
 import {
@@ -29,13 +31,13 @@ import {
   type LocationRefusal,
   type ViabilityFailureClass,
 } from '../data/viability'
-import { EQUIPMENT, EQUIPMENT_BY_TIER, SECTIONS, TIERS, type Option } from './onboarding'
+import { EQUIPMENT, SECTIONS, type Option } from './onboarding'
 import type { Location, LocationDraft } from './schemas'
 
 type EquipmentTier = Enums<'equipment_tier'>
 
 /** Re-exported so the screen imports one vocabulary, from one place. */
-export { EQUIPMENT, TIERS }
+export { EQUIPMENT }
 
 /** Why the default location cannot be deleted while another one exists. */
 export const DEFAULT_DELETE_REASON =
@@ -46,6 +48,10 @@ export const DUPLICATE_NAME_REASON = 'You already have a location with that name
 
 /** Why a location cannot be saved without one (`locations_name_not_blank`). */
 export const BLANK_NAME_REASON = 'Give this location a name.'
+
+/** What saving a place does, said in the editor before Save place is pressed. */
+export const SAVE_BEHAVIOR =
+  'Nothing changes until you save. Saving stores the name and exactly the equipment ticked here, and workouts at this place use only that equipment.'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Reading the list
@@ -69,11 +75,6 @@ export function orderedLocations(locations: readonly Location[]): Location[] {
 /** The location generation reads when a request names none, or null. */
 export function defaultLocation(locations: readonly Location[]): Location | null {
   return locations.find((location) => location.is_default) ?? null
-}
-
-/** A location's tier as a person reads it, from the one list of tiers. */
-export function tierLabel(tier: EquipmentTier): string {
-  return TIERS.find((option) => option.value === tier)?.label ?? tier
 }
 
 /** An equipment id as a person reads it. An id the catalog lost is still shown. */
@@ -100,10 +101,16 @@ export function equipmentOptions(held: readonly string[]): readonly Option<strin
 // The editor's draft
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** A location being created: an unnamed place at the sparsest tier. */
+/**
+ * The tier a created place is stored with. `locations.tier` is required, so a
+ * new place carries the sparsest value as metadata; it presets nothing.
+ */
 export const NEW_LOCATION_TIER: EquipmentTier = 'minimal'
 
-/** The draft the editor opens with — a new place, or one that exists. */
+/**
+ * The draft the editor opens with — a new place with nothing ticked, or one that
+ * exists with exactly the equipment it holds and the tier it already has.
+ */
 export function draftFor(
   location: Location | null,
   equipment: readonly string[],
@@ -113,7 +120,7 @@ export function draftFor(
       id: null,
       name: '',
       tier: NEW_LOCATION_TIER,
-      equipment: [...EQUIPMENT_BY_TIER[NEW_LOCATION_TIER]],
+      equipment: [],
     }
   }
 
@@ -123,19 +130,6 @@ export function draftFor(
     tier: location.tier,
     equipment: orderedEquipment(equipment),
   }
-}
-
-/**
- * Choosing a tier, and the equipment set it presets.
- *
- * Re-choosing the tier already held changes nothing — the wizard's rule, for the
- * wizard's reason: otherwise every visit to the editor would silently undo the
- * item-by-item edits the editor exists for.
- */
-export function withTier(draft: LocationDraft, tier: EquipmentTier): LocationDraft {
-  if (draft.tier === tier) return draft
-
-  return { ...draft, tier, equipment: [...EQUIPMENT_BY_TIER[tier]] }
 }
 
 export function withName(draft: LocationDraft, name: string): LocationDraft {

@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `79423cfd1353d4467cbe5bf9660ae4af2eeffb5a23285a407f949b4f4397a9a3` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004 and TASK-006 changes below) |
+| Runtime source hash of this audit's tree | `ac446d93ff1d255d78b4f377b19b98f10dbb6268132aaebb5e59c9a931a951a0` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006 and TASK-007 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -162,6 +162,16 @@ trees and this head, from `git diff`:
   rendering on Onboarding's goal step. The pictures above predate it and are not rebound
   (EX-13). Current acceptance evidence is `src/app/Onboarding.test.tsx` and
   `src/test/generation-reliability/legal-state-matrix.test.ts`.
+- `79423cfd…` to `ac446d93…`: TASK-007 (REQ-005, JOURNEY-007, U15, U23) removes the tier
+  selection and tier label from Locations: a new place opens with nothing ticked (starter
+  presets stay in onboarding), an edited place keeps its stored tier as metadata, and the saved
+  ticks remain what candidate retrieval reads. Each place card shows its name as the only
+  identity, leads its framed action row with Edit and puts a quiet Delete beneath it; the editor
+  says what saving does. Writes and rollback are unchanged. Changed:
+  `src/app/LocationSettings.tsx`, `src/state/locations.ts`. This **does** change rendering on
+  `/settings/locations`. The pictures above predate it and are not rebound (EX-13). Current
+  acceptance evidence is `src/app/LocationSettings.test.tsx`, `src/state/locations.test.ts`
+  and `e2e/settings-locations.spec.ts`.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

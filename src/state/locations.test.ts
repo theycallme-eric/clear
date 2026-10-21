@@ -9,12 +9,12 @@ import {
   draftFor,
   draftRefusal,
   equipmentOptions,
+  NEW_LOCATION_TIER,
   orderedLocations,
   withDefault,
   withEquipment,
   withLocation,
   withoutLocation,
-  withTier,
 } from './locations'
 
 const HOME_ID = '00000000-0000-4000-8000-000000000010'
@@ -35,13 +35,37 @@ describe('location settings rules', () => {
     ])
   })
 
-  it('uses a tier as a preset once, then preserves item-by-item edits', () => {
-    const minimal = draftFor(null, [])
-    const home = withTier(minimal, 'home')
-    expect(home.equipment).toContain('dumbbells')
+  it('opens a new place with nothing ticked — no starter preset outside onboarding', () => {
+    const draft = draftFor(null, [])
+    expect(draft.equipment).toEqual([])
+    // Tier is stored metadata only; it presets nothing.
+    expect(draft.tier).toBe(NEW_LOCATION_TIER)
+  })
 
-    const customized = withEquipment(home, 'dumbbells')
-    expect(withTier(customized, 'home')).toEqual(customized)
+  it('opens a place with exactly its saved equipment, never what its name or tier suggests', () => {
+    // Named and tiered like a full gym, holding only a band and a custom sled.
+    const gym = fixtureLocation({ id: HOME_ID, name: 'Full gym', tier: 'full' })
+    const draft = draftFor(gym, ['custom_sled', 'resistance_bands'])
+
+    expect(draft.equipment).toEqual(['resistance_bands', 'custom_sled'])
+    expect(draft.tier).toBe('full')
+  })
+
+  it('adds and removes equipment item by item, keeping the stored tier', () => {
+    const gym = fixtureLocation({ id: HOME_ID, name: 'Garage', tier: 'home' })
+    const added = withEquipment(draftFor(gym, ['bodyweight']), 'dumbbells')
+    expect(added.equipment).toEqual(['bodyweight', 'dumbbells'])
+
+    const removed = withEquipment(added, 'bodyweight')
+    expect(removed.equipment).toEqual(['dumbbells'])
+    expect(removed.tier).toBe('home')
+  })
+
+  it('offers no tier editing or tier labels to the Locations screen', async () => {
+    const rules: Record<string, unknown> = await import('./locations')
+    expect(rules).not.toHaveProperty('withTier')
+    expect(rules).not.toHaveProperty('TIERS')
+    expect(rules).not.toHaveProperty('tierLabel')
   })
 
   it('refuses blank and duplicate names before opening a write', () => {
