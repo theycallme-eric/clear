@@ -34,6 +34,7 @@ import {
   projectCatalog,
 } from '../../../scripts/generation-reliability/section-ledger.mjs'
 import { Constants } from '../../data/database.types'
+import { effectiveIntensity, INTENSITY_BY_GOAL } from '../../state/intensity'
 import { EQUIPMENT, EQUIPMENT_BY_TIER, GOALS, SECTIONS_BY_GOAL, TIERS } from '../../state/onboarding'
 import { seededCatalog } from '../seed-catalog'
 
@@ -98,6 +99,22 @@ describe('the committed dispositions', () => {
 })
 
 describe('every legal configuration', () => {
+  it('is disposed the same at every requested intensity, which each goal reads in range (U27)', () => {
+    // Intensity is no configuration dimension: a supported or prevented state
+    // is that at every requested 1–10, so widening the choice disposes nothing.
+    for (const row of dispositions.configurations) {
+      expect(Object.keys(row).some((key) => /intensity/i.test(key)), row.id).toBe(false)
+    }
+    expect(Object.keys(INTENSITY_BY_GOAL).sort()).toEqual([...ENUMS.goal_preset].sort())
+    for (const goal of ENUMS.goal_preset) {
+      for (let requested = 1; requested <= 10; requested += 1) {
+        const effective = effectiveIntensity(goal, requested)
+        expect(effective).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL[goal].min)
+        expect(effective).toBeLessThanOrEqual(INTENSITY_BY_GOAL[goal].max)
+      }
+    }
+  })
+
   it('has exactly one disposition, from the closed set', () => {
     expect([...DISPOSITIONS]).toEqual(['supported', 'prevented'])
     expect(validateDispositions(dispositions, matrix, rules.enums)).toEqual([])

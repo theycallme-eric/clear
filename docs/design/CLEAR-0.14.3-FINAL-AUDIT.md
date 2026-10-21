@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `b6fbe7c56580a560a85bc390dacc1353dc154cedacd482da383be494d16700a2` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023 and TASK-027 changes below) |
+| Runtime source hash of this audit's tree | `9e1b78b4c958c93c3dba27cb2f48a69289b0eccf16ae42cbbb9e0fd80fc3cd57` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027 and TASK-017 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -276,6 +276,18 @@ trees and this head, from `git diff`:
   (EX-13). Fresh native exact-head verification and independent review are still required.
 
 - Combined current-main tree: `8c3c0b5c…` to `b6fbe7c5…` adds the corrected TASK-027 logging flow to protected-merged TASK-023 main `730190c`. The two candidate histories above are preserved, not represented as a single linear sequence. Existing pictures remain historical (EX-13); fresh combined-head native task/project verification, criterion evidence and independent delivery review are required.
+
+- `b6fbe7c5…` to `9e1b78b4…`: TASK-017 (REQ-009, JOURNEY-016, U27) makes intensity one requested
+  1–10 choice for every goal. The slider no longer narrows to the goal's range; the hint states the
+  goal's range and, when the choice is outside it, the number the workout is composed at
+  ("Recovery works at 1 to 3, so 7 is composed as 3."). The requested number is carried unchanged
+  through the request; §2.2's table moved to `src/state/intensity.ts` and is applied downstream
+  as the effective intensity (prompt 5.2.1). Changed: `src/app/Generate.tsx`,
+  `src/state/generation-form.ts`, `src/state/intensity.ts`. This **does** change rendering of
+  Generate's intensity control; the Generate pictures above predate it and are not rebound (EX-13).
+  Current acceptance evidence is `src/app/Generate.test.tsx`, `src/state/generation-form.test.ts`,
+  `src/test/generation-prompt.test.ts`, `src/test/generation-validation.test.ts` and the two
+  generation-reliability matrix suites.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

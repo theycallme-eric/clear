@@ -1,5 +1,5 @@
 /**
- * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.2.0`.
+ * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.2.1`.
  *
  * This module is pure: candidates and an effective request in, two strings and
  * a measurement out. It opens no connection, reads no environment, and calls no
@@ -37,6 +37,7 @@ import {
   type SessionFocus,
 } from '../../../src/data/candidates.ts'
 import type { UserConstraint } from '../../../src/data/constraints.ts'
+import { effectiveIntensity, INTENSITY_BY_GOAL } from '../../../src/state/intensity.ts'
 import { ANCHOR_RELATIONSHIPS, CONTRACT_VERSION, SESSION_FUNCTIONS } from '../../../src/state/schemas.ts'
 import {
   DELOAD_CONDITIONING_INTENSITY_MAX,
@@ -65,8 +66,12 @@ import {
  * and no field moved. `CONTRACT_VERSION` stays 4.1.0: both keys stay required and
  * `string | null`, so the shape a response is parsed against did not change.
  * Restoring introductions: GENERATION_CONTRACT §13.
+ * 5.2.1 is REQ-009 (U27): requested intensity is one 1–10 choice for every goal,
+ * each goal's range is applied downstream by `effectiveIntensity`, and the rep
+ * guidance names effective_intensity as the value it scales by.
+ * A patch: no rule, output field or progression policy was added or moved.
  */
-export const PROMPT_VERSION = '5.2.0'
+export const PROMPT_VERSION = '5.2.1'
 
 export { CONTRACT_VERSION }
 
@@ -83,22 +88,19 @@ type GoalPreset = Enums<'goal_preset'>
  * says the number is clamped while carrying an unclamped one is worse than no
  * clamp at all: it is a false premise the model will compose against.
  */
-export const ACTIVE_RECOVERY_INTENSITY_MAX = 3
+export const ACTIVE_RECOVERY_INTENSITY_MAX = INTENSITY_BY_GOAL.active_recovery.max
 
 /** The goal whose intensity and section set the generator fixes. */
 const ACTIVE_RECOVERY: GoalPreset = 'active_recovery'
 
 /**
- * The intensity the session is actually composed at. Only active recovery
- * clamps here, because it is the only goal `PROMPT_v4.md` gives a range to —
- * the per-goal slider cascade is GEN-04's, and inventing the other four ranges
- * in this module would put two different answers in the codebase.
+ * The intensity the session is actually composed at (REQ-009, U27). The athlete
+ * requests one 1–10 number for every goal; each goal's §2.2 range is applied
+ * here, downstream of the form, from the one table the browser shares — so
+ * active recovery stays at 1–3 whatever was requested, and the requested number
+ * travels beside it unchanged.
  */
-export function effectiveIntensity(goal: GoalPreset, requested: number): number {
-  return goal === ACTIVE_RECOVERY
-    ? Math.min(requested, ACTIVE_RECOVERY_INTENSITY_MAX)
-    : requested
-}
+export { effectiveIntensity }
 
 /**
  * The sections the prompt announces. Active recovery's are fixed at
@@ -249,7 +251,7 @@ STRUCTURES
 Timed blocks enable a clock; never timer_type=none.
 
 REP AND SET GUIDANCE
-- Standard reps by intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
+- Standard reps by effective_intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
   8–10 → 3–6 heavy.
 - Conditioning reps by intensity: 1–2 → 5–8 per round; 3–4 → 6–10; 5–7 → 8–12;
   8–10 → 10–15, adjusted down when work is technically demanding.

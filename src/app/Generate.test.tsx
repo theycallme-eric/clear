@@ -218,15 +218,49 @@ describe('the CTA', () => {
   })
 })
 
-describe('goal → intensity (v3 delta §2.2)', () => {
-  it('clamps the slider to the standing goal’s range and lands on its start', () => {
+describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
+  it('offers 1–10 for the standing goal and lands on its start', () => {
     renderGenerate({ goal: 'conditioning' })
 
     expect(slider()).toBeEnabled()
-    expect(slider()).toHaveAttribute('min', String(INTENSITY_BY_GOAL.conditioning.min))
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.conditioning.max))
+    expect(slider()).toHaveAttribute('min', '1')
+    expect(slider()).toHaveAttribute('max', '10')
     expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.conditioning.start))
+    expect(screen.getByText('Conditioning works at 4 to 10.')).toBeVisible()
   })
+
+  it.each(GENERATION_GOALS.map((goal) => goal.value))(
+    'offers the same 1–10 choice for %s',
+    async (goal) => {
+      const recovering = goal === 'active_recovery'
+      const { user } = renderGenerate({ goal: recovering ? 'strength' : goal })
+      if (recovering) await user.click(recovery())
+
+      expect(slider()).toHaveAttribute('min', '1')
+      expect(slider()).toHaveAttribute('max', '10')
+    },
+  )
+
+  it.each([
+    ['strength', 1, 'Strength works at 3 to 10, so 1 is composed as 3.'],
+    ['hypertrophy', 10, 'Hypertrophy works at 3 to 9, so 10 is composed as 9.'],
+    ['conditioning', 2, 'Conditioning works at 4 to 10, so 2 is composed as 4.'],
+    ['balanced', 1, 'Balanced works at 1 to 10.'],
+  ] as const)(
+    'sends %s’s chosen %i unchanged and says how the goal reads it',
+    async (goal, chosen, note) => {
+      const { user, generation } = renderGenerate({ goal })
+
+      fireEvent.change(slider(), { target: { value: String(chosen) } })
+      expect(slider()).toHaveValue(String(chosen))
+      expect(screen.getByText(note)).toBeVisible()
+
+      await user.click(chipIn('Anchor', 'Upper body'))
+      await user.click(cta())
+
+      expect(generation.calls[0]).toMatchObject({ goal, requested_intensity: chosen })
+    },
+  )
 })
 
 describe('goal → anchor (v3 delta §2.3)', () => {
@@ -444,20 +478,23 @@ describe('REQ-004 — the recommended Focus and its intensity', () => {
   it.each([
     [10, INTENSITY_BY_GOAL.hypertrophy.max],
     [2, INTENSITY_BY_GOAL.hypertrophy.min],
-  ])('clamps a history averaging %i to the standing goal’s range, at %i', async (average, clamped) => {
+  ])('requests a history averaging %i unchanged; hypertrophy composes it at %i', async (average, effective) => {
     const { user, generation } = renderGenerate({
       goal: 'hypertrophy',
       history: lowerBodyDue(average),
     })
 
-    expect(slider()).toHaveValue(String(clamped))
+    expect(slider()).toHaveValue(String(average))
+    expect(
+      screen.getByText(`Hypertrophy works at 3 to 9, so ${average} is composed as ${effective}.`),
+    ).toBeVisible()
 
     await user.click(cta())
 
     expect(generation.calls[0]).toMatchObject({
       goal: 'hypertrophy',
       focus: 'lower_body',
-      requested_intensity: clamped,
+      requested_intensity: average,
     })
   })
 
@@ -1354,16 +1391,17 @@ describe('REQ-007 — a Focus for this workout only', () => {
 })
 
 describe('REQ-008 — a Recovery session for this workout only', () => {
-  it('sends active_recovery and limits the intensity to 1–3, with the standing Goal still shown', async () => {
+  it('sends active_recovery with the requested intensity unchanged and says it is composed at 1–3', async () => {
     const { user, generation, url } = renderDraft()
 
     await user.click(recovery())
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByText('Strength')).toBeInTheDocument()
-    expect(slider()).toHaveAttribute('min', String(INTENSITY_BY_GOAL.active_recovery.min))
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
-    expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(slider()).toHaveAttribute('min', '1')
+    expect(slider()).toHaveAttribute('max', '10')
+    expect(slider()).toHaveValue('7')
+    expect(screen.getByText('Recovery works at 1 to 3, so 7 is composed as 3.')).toBeVisible()
     expect(url()).toBe('/generate?recovery=1')
 
     await user.click(cta())
@@ -1371,7 +1409,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
     expect(generation.calls[0]).toMatchObject({
       goal: 'active_recovery',
       focus: 'lower_body',
-      requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+      requested_intensity: 7,
     })
   })
 
@@ -1420,7 +1458,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
     const { user, generation } = renderDraft({ entry: reloaded })
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'true')
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(screen.getByText(/^Recovery works at 1 to 3/)).toBeVisible()
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
 
     await user.click(cta())
@@ -1435,7 +1473,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText(new RegExp(POWER_REFUSAL))).not.toBeInTheDocument()
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.strength.max))
+    expect(screen.getByText('Strength works at 3 to 10.')).toBeVisible()
     expect(url()).toBe('/generate')
 
     await user.click(cta())
@@ -1735,7 +1773,7 @@ describe('U28 — minutes spelled out, short helper copy that keeps each field c
 })
 
 describe('U29 — a recovery workout says briefly that it is lighter, and stays recovery', () => {
-  it('says it is lighter, and sends the recovery goal, range and focus unchanged', async () => {
+  it('says it is lighter, and sends the recovery goal, requested intensity and focus unchanged', async () => {
     const { user, generation } = renderDraft()
 
     await user.click(recovery())
@@ -1743,7 +1781,7 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
     expect(screen.getByText(new RegExp(RECOVERY_NOTE))).toBeVisible()
     expect(RECOVERY_NOTE).toMatch(/lighter/i)
     expect(screen.getByText(/^Goal:/)).toHaveTextContent('Goal: Strength')
-    expect(slider()).toHaveAttribute('max', String(INTENSITY_BY_GOAL.active_recovery.max))
+    expect(screen.getByText('Recovery works at 1 to 3, so 7 is composed as 3.')).toBeVisible()
     expect(chipIn(OVERRIDE_GROUP_LABEL, 'Power')).toBeDisabled()
     expect(screen.getByText(new RegExp(POWER_REFUSAL))).toBeVisible()
 
@@ -1752,7 +1790,7 @@ describe('U29 — a recovery workout says briefly that it is lighter, and stays 
     expect(generation.calls[0]).toMatchObject({
       goal: 'active_recovery',
       focus: 'lower_body',
-      requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+      requested_intensity: 7,
     })
   })
 

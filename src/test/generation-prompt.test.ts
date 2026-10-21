@@ -24,6 +24,7 @@ import {
   type SectionType,
   type SessionFocus,
 } from '../data/candidates'
+import { INTENSITY_BY_GOAL } from '../state/intensity'
 import { CONTRACT_VERSION } from '../state/schemas'
 import { FOCUS_PATTERNS } from '../state/session-suggestion'
 import { createCandidatesDouble } from './candidates-double'
@@ -107,8 +108,18 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     expect(SYSTEM_PROMPT).toContain('Useful lifts may repeat across\ndays; do not force novelty or infer absent history.')
   })
 
-  it('requests null introductions and stamps 5.2.0 without moving the contract (REQ-010)', () => {
-    expect(PROMPT_VERSION).toBe('5.2.0')
+  it('stamps 5.2.1 for the per-goal effective intensity without moving the contract (REQ-009)', () => {
+    expect(PROMPT_VERSION).toBe('5.2.1')
+    expect(CONTRACT_VERSION).toBe('4.1.0')
+    expect(read(SPEC)).toContain('**5.2.1 (REQ-009, U27):**')
+    expect(SYSTEM_PROMPT).toContain('Standard reps by effective_intensity:')
+    // The ranges the spec states are the table `effectiveIntensity` applies.
+    for (const [goal, { min, max }] of Object.entries(INTENSITY_BY_GOAL)) {
+      expect(read(SPEC)).toContain(`${goal.replace('_', ' ')} ${min}–${max}`)
+    }
+  })
+
+  it('requests null introductions without moving the contract (REQ-010)', () => {
     expect(CONTRACT_VERSION).toBe('4.1.0')
     expect(SYSTEM_PROMPT).toContain(
       'Return overview and every section_notes as null; write no workout overview or section introduction.',
@@ -168,9 +179,36 @@ describe('the active-recovery clamp', () => {
     expect(effectiveIntensity('active_recovery', 10)).toBe(3)
   })
 
-  it('clamps no other goal, because no other goal has a stated range here', () => {
-    for (const goal of ['strength', 'hypertrophy', 'conditioning', 'balanced'] as const) {
-      expect(effectiveIntensity(goal, 10)).toBe(10)
+  it('applies every other goal’s §2.2 range downstream of the 1–10 request (U27)', () => {
+    expect(effectiveIntensity('strength', 1)).toBe(3)
+    expect(effectiveIntensity('strength', 10)).toBe(10)
+    expect(effectiveIntensity('hypertrophy', 10)).toBe(9)
+    expect(effectiveIntensity('hypertrophy', 2)).toBe(3)
+    expect(effectiveIntensity('conditioning', 1)).toBe(4)
+    expect(effectiveIntensity('balanced', 1)).toBe(1)
+    expect(effectiveIntensity('balanced', 10)).toBe(10)
+  })
+
+  it('carries every requested 1–10 unchanged into the message beside its effective value', () => {
+    for (const goal of Object.keys(INTENSITY_BY_GOAL) as (keyof typeof INTENSITY_BY_GOAL)[]) {
+      for (let requested = 1; requested <= 10; requested += 1) {
+        const request = resolveEffectiveRequest({
+          requestId: 'req_abc123_def456',
+          goal,
+          focus: 'full_body',
+          requestedIntensity: requested,
+          durationTargetMins: 30,
+          enabledSections: ['warmup', 'primary_lift', 'cooldown'],
+        })
+        const { min, max } = INTENSITY_BY_GOAL[goal]
+        const effective = Math.min(max, Math.max(min, requested))
+        const message = buildUserMessage(promptInput({ request }))
+
+        expect(request.requestedIntensity).toBe(requested)
+        expect(request.effectiveIntensity).toBe(effective)
+        expect(message).toContain(`requested_intensity: ${requested}\n`)
+        expect(message).toContain(`effective_intensity: ${effective}\n`)
+      }
     }
   })
 

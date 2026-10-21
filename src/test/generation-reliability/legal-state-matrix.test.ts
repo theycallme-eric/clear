@@ -32,10 +32,25 @@ import {
   validateMatrix,
 } from '../../../scripts/generation-reliability/matrix.mjs'
 import { loadRetrievalRules } from '../../../scripts/generation-reliability/rules.mjs'
-import { CANDIDATE_FLOOR } from '../../data/candidates'
+import {
+  buildUserMessage,
+  resolveEffectiveRequest,
+} from '../../../supabase/functions/_shared/prompt.ts'
+import { ACTIVE_RECOVERY_SECTIONS, CANDIDATE_FLOOR, type SectionType } from '../../data/candidates'
 import { Constants } from '../../data/database.types'
+import { ErrorCode, isErr, isOk } from '../../state/errors'
+import {
+  initialDraft,
+  requestFrom,
+  withIntensity,
+  withRecovery,
+  type FocusHistory,
+  type GenerationContext,
+} from '../../state/generation-form'
+import { INTENSITY_BY_GOAL } from '../../state/intensity'
 import { EQUIPMENT, EQUIPMENT_BY_TIER, SECTIONS_BY_GOAL } from '../../state/onboarding'
 import { createCandidatesDouble } from '../candidates-double'
+import { promptInput } from '../generation-prompt-fixtures'
 import { seededCatalog } from '../seed-catalog'
 
 const rules = loadRetrievalRules()
@@ -405,5 +420,128 @@ describe('the repaired catalog', () => {
     for (const state of matrix.states.filter((row) => row.constraint === null)) {
       expect(state.classification, state.id).not.toBe('legitimate-constraint-refusal')
     }
+  })
+})
+
+describe('requested intensity across the legal states (REQ-009, U27)', () => {
+  it('is no dimension of eligibility: no legal state is keyed or classified by it', () => {
+    for (const state of matrix.states) {
+      expect(Object.keys(state).some((key) => /intensity/i.test(key)), state.id).toBe(false)
+    }
+  })
+
+  it('interprets every requested 1–10 for every enumerated goal inside that goal’s range', () => {
+    for (const goal of ENUMS.goal_preset) {
+      const { min, max } = INTENSITY_BY_GOAL[goal]
+      for (let requested = 1; requested <= 10; requested += 1) {
+        const request = resolveEffectiveRequest({
+          requestId: 'req_matrix_intensity',
+          goal,
+          focus: null,
+          requestedIntensity: requested,
+          durationTargetMins: 45,
+          enabledSections: ['warmup', 'cooldown'],
+        })
+
+        expect(request.requestedIntensity).toBe(requested)
+        expect(request.effectiveIntensity).toBe(Math.min(max, Math.max(min, requested)))
+      }
+    }
+  })
+
+  it('carries one customized returning profile’s choice unchanged, with eligibility and refusal intact', async () => {
+    const USER = 'returning-user'
+    const LOCATION = '00000000-0000-4000-8000-0000000000aa'
+    // Customized rather than preset: no core, and a dumbbell-only home.
+    const ENABLED: SectionType[] = ['warmup', 'primary_lift', 'accessory', 'cooldown']
+    const OWNED = ['bodyweight', 'dumbbells']
+    const double = createCandidatesDouble({
+      url: 'https://clear.test',
+      anonKey: 'anon',
+      users: { token: USER },
+      profiles: {
+        [USER]: {
+          goalPreset: 'hypertrophy',
+          enabledSections: ENABLED,
+          locations: [{ id: LOCATION, isDefault: true, equipment: OWNED }],
+        },
+      },
+    })
+    const due = (focus: 'lower_body' | 'power'): FocusHistory => ({
+      status: 'recommended',
+      focus,
+      intensity: 9,
+      reason: 'No hinge in 11 days.',
+    })
+    const context: GenerationContext = { goalPreset: 'hypertrophy', history: due('lower_body') }
+
+    // Visit one: history's 9 stands. Visit two: the athlete asks for 10.
+    // Visit three: the same 10 on a Recovery day.
+    const hard = withIntensity(initialDraft(LOCATION), 10)
+    const visits = [
+      { draft: initialDraft(LOCATION), requested: 9, goal: 'hypertrophy', effective: 9 },
+      { draft: hard, requested: 10, goal: 'hypertrophy', effective: 9 },
+      { draft: withRecovery(hard, true), requested: 10, goal: 'active_recovery', effective: 3 },
+    ] as const
+
+    for (const [index, visit] of visits.entries()) {
+      const sent = requestFrom(visit.draft, context, `req_returning_${index}`)
+      if (!isOk(sent)) throw new Error(`visit ${index} was refused`)
+      expect(sent.value.requested_intensity, `visit ${index}`).toBe(visit.requested)
+      expect(sent.value.goal, `visit ${index}`).toBe(visit.goal)
+
+      const request = resolveEffectiveRequest({
+        requestId: sent.value.request_id,
+        goal: sent.value.goal,
+        focus: sent.value.focus,
+        requestedIntensity: sent.value.requested_intensity,
+        durationTargetMins: sent.value.requested_duration_mins,
+        enabledSections: ENABLED,
+      })
+      expect(request.effectiveIntensity, `visit ${index}`).toBe(visit.effective)
+      const message = buildUserMessage(promptInput({ request }))
+      expect(message).toContain(`requested_intensity: ${visit.requested}\n`)
+      expect(message).toContain(`effective_intensity: ${visit.effective}\n`)
+      if (visit.goal === 'active_recovery') {
+        // Recovery's gentle constraints hold whatever was requested.
+        expect(request.effectiveSections).toEqual(ACTIVE_RECOVERY_SECTIONS)
+      }
+    }
+
+    // Hard eligibility takes no intensity: the customized pool and the owned
+    // equipment bound every candidate, whatever number was asked for.
+    const response = await double.fetch('https://clear.test/rest/v1/rpc/generation_candidate_sets', {
+      method: 'POST',
+      headers: { apikey: 'anon', Authorization: 'Bearer token' },
+      body: JSON.stringify({
+        p_user_id: USER,
+        p_focus: 'lower_body',
+        p_location_id: LOCATION,
+        p_session_id: null,
+        p_floor: matrix.floor,
+      }),
+    })
+    const sets = (await response.json()) as {
+      section: string
+      candidates: { usable_equipment: string[] }[]
+    }[]
+    expect(sets.map((set) => set.section).sort()).toEqual([...ENABLED].sort())
+    for (const set of sets) {
+      expect(set.candidates.length, set.section).toBeGreaterThan(0)
+      for (const candidate of set.candidates) {
+        expect(candidate.usable_equipment.every((item) => OWNED.includes(item)), set.section).toBe(
+          true,
+        )
+      }
+    }
+
+    // A Power recommendation on a Recovery day is still a typed refusal, not a
+    // substitution and not something a requested number can buy back.
+    const refused = requestFrom(
+      withRecovery(hard, true),
+      { goalPreset: 'hypertrophy', history: due('power') },
+      'req_returning_power',
+    )
+    expect(isErr(refused) && refused.error.code).toBe(ErrorCode.GENERATION_INVALID_PARAMS)
   })
 })

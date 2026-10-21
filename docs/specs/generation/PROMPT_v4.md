@@ -1,6 +1,6 @@
 # CLEAR composition prompt — contract 4.1
 
-> **Prompt version:** `5.2.0`\
+> **Prompt version:** `5.2.1`\
 > **Contract version:** `4.1.0`  
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
@@ -17,7 +17,11 @@
 > deload/re-entry RPE ceiling in `section_notes`. The prose is removed, not relocated. Numerical
 > directive rules (set multiplier and floor, unchanged reps, conditioning intensity, re-entry set
 > reduction) are unchanged. Contract version unchanged — both keys stay required and
-> `string | null`, so the parsed shape did not move. Restoration: `GENERATION_CONTRACT.md` §13.
+> `string | null`, so the parsed shape did not move. Restoration: `GENERATION_CONTRACT.md` §13.\
+> **5.2.1 (REQ-009, U27):** the athlete requests one 1–10 intensity for every goal; the existing
+> per-goal ranges (strength 3–10, hypertrophy 3–9, conditioning 4–10, balanced 1–10,
+> active recovery 1–3; `src/state/intensity.ts`) are applied downstream as `effective_intensity`, and the
+> rep guidance names that value. No rule, output field, progression policy or contract-version change.
 
 This is the composition policy for `GEN-02b`. It carries forward the useful coaching judgment
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
@@ -27,7 +31,8 @@ and structures only; code validates, hydrates facts, and persists.
 
 The caller supplies:
 
-- effective request: goal, focus/anchor, clamped intensity, duration target, available enabled sections;
+- effective request: goal, focus/anchor, the requested 1–10 intensity and the effective intensity
+  it is held to by the goal's range (`src/state/intensity.ts`), duration target, available enabled sections;
 - saved experience level when known, with no invented default;
 - recent-history summary and explicit soft preferences;
 - candidates grouped by section, with IDs, patterns, roles, components, muscles, usable equipment,
@@ -85,7 +90,7 @@ STRUCTURES
 Timed blocks enable a clock; never timer_type=none.
 
 REP AND SET GUIDANCE
-- Standard reps by intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
+- Standard reps by effective_intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
   8–10 → 3–6 heavy.
 - Conditioning reps by intensity: 1–2 → 5–8 per round; 3–4 → 6–10; 5–7 → 8–12;
   8–10 → 10–15, adjusted down when work is technically demanding.

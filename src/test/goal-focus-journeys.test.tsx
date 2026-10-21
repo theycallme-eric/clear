@@ -32,7 +32,12 @@ import { REVIEW_PATH } from '../app/ReviewRoute'
 import { createTestRouter } from '../app/router'
 import type { GenerationInput } from '../data/generation'
 import { ok } from '../state/errors'
-import { ANCHORS, INTENSITY_BY_GOAL, POWER_REFUSAL } from '../state/generation-form'
+import {
+  ANCHORS,
+  effectiveIntensity,
+  INTENSITY_BY_GOAL,
+  POWER_REFUSAL,
+} from '../state/generation-form'
 import { historyQueryKey } from '../state/history-queries'
 import { QueryClient } from '../state/query'
 import type { Profile, SessionAcceptance, WorkoutSessionRow } from '../state/schemas'
@@ -305,7 +310,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(generation.calls).toHaveLength(1)
     expect(generation.calls[0]).toMatchObject({ goal: 'conditioning', focus: 'lower_body' })
-    const sent = generation.calls[0].requested_intensity
+    // U27: the request carries the 1–10 choice; the goal's range is downstream's.
+    const sent = effectiveIntensity('conditioning', generation.calls[0].requested_intensity)
     expect(sent).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL.conditioning.min)
     expect(sent).toBeLessThanOrEqual(INTENSITY_BY_GOAL.conditioning.max)
 
@@ -461,7 +467,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(generation.calls).toHaveLength(1)
     expect(generation.calls[0]).toMatchObject(RECOVERY)
-    const sent = generation.calls[0].requested_intensity
+    // Recovery keeps its gentle ceiling whatever was requested.
+    const sent = effectiveIntensity('active_recovery', generation.calls[0].requested_intensity)
     expect(sent).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL.active_recovery.min)
     expect(sent).toBeLessThanOrEqual(INTENSITY_BY_GOAL.active_recovery.max)
 
@@ -470,7 +477,11 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     await regenerate(journey)
     expect(generation.calls).toHaveLength(2)
-    expect(generation.calls[1]).toMatchObject({ ...RECOVERY, requested_intensity: sent })
+    // Regenerating repeats the requested number, not the effective one.
+    expect(generation.calls[1]).toMatchObject({
+      ...RECOVERY,
+      requested_intensity: generation.calls[0].requested_intensity,
+    })
 
     await answer(generation, 'Journey six again')
     await briefing('Journey six again')
