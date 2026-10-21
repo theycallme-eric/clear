@@ -902,7 +902,9 @@ backendTest('JOURNEY-002: Settings stays readable with long input and concise na
   await expectContainedRoute(page, '/settings')
   const places = page.getByRole('region', { name: 'Places and equipment', exact: true })
   await expect(places.locator('p')).toHaveCount(0)
-  await expect(places.getByRole('button', { name: 'Manage places', exact: true })).toBeVisible()
+  // The shipped TextAction includes its trailing chevron in the browser's
+  // accessible name. Match that actual name while keeping the label anchored.
+  await expect(places.getByRole('button', { name: /^Manage places(?:\s*›)?$/ })).toBeVisible()
   await page.getByLabel(/note/i).fill('Synthetic long limitations context for readable phone controls. '.repeat(8))
   await expectEnlargedFits(page, '/settings long input')
   await page.setViewportSize({ width: 390, height: 500 })
