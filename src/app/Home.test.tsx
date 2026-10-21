@@ -1,5 +1,6 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
@@ -18,7 +19,7 @@ import {
 } from '../state/session-suggestion'
 import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
-import { renderApp, signedIn } from '../test/render'
+import { AppProviders, renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
 import {
   createWorkoutDouble,
@@ -28,8 +29,6 @@ import {
 import {
   FAVORITES_EMPTY,
   FAVORITES_EMPTY_TITLE,
-  FAVORITES_PREVIEW_LIMIT,
-  FAVORITES_SHOW_FEWER_LABEL,
   GENERATE_ACTION_LABEL,
   HISTORY_ROUTE,
   LAST_REQUEST_LABEL,
@@ -39,6 +38,7 @@ import {
   SUGGESTION_LABEL,
   VIEW_HISTORY_LABEL,
 } from './Home'
+import { createTestRouter } from './router'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -147,7 +147,7 @@ describe('Home', () => {
     expect(screen.queryByRole('heading', { level: 1, name: 'Today' })).toBeNull()
   })
 
-  describe('U21: the favorites preview and its full list', () => {
+  describe('U21: the existing full favorites list and retained tab', () => {
     function favoriteRows(count: number) {
       return Array.from({ length: count }, (_, index) =>
         savedWorkoutFixture({
@@ -160,7 +160,13 @@ describe('Home', () => {
 
     function renderFavorites(count: number, path = '/') {
       const workout = createWorkoutDouble({ session: null, favorites: favoriteRows(count) })
-      return renderApp([path], signedIn({ workout: workout.clients }))
+      const router = createTestRouter([path])
+      render(
+        <AppProviders {...signedIn({ workout: workout.clients })}>
+          <RouterProvider router={router} />
+        </AppProviders>,
+      )
+      return router
     }
 
     function favoritesTab() {
@@ -172,77 +178,55 @@ describe('Home', () => {
       return list.querySelectorAll(':scope > .clr-list__row').length
     }
 
-    it('zero favorites: the concise empty state, and no full-list link', async () => {
+    it.each([0, 1, 7])('lists all %i favorites without inventing a preview cap', async (total) => {
       const user = userEvent.setup()
-      renderFavorites(0)
-
+      const router = renderFavorites(total, '/?keep=1')
       await user.click(favoritesTab())
-      expect(await screen.findByText(FAVORITES_EMPTY_TITLE)).toBeInTheDocument()
-      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
+
       expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
-    })
-
-    it('one favorite: listed whole, with no full-list link', async () => {
-      const user = userEvent.setup()
-      renderFavorites(1)
-
-      await user.click(favoritesTab())
-      expect(await favoriteRowCount()).toBe(1)
-      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
-    })
-
-    it('exactly the limit: every favorite is already shown, so nothing links on', async () => {
-      const user = userEvent.setup()
-      renderFavorites(FAVORITES_PREVIEW_LIMIT)
-
-      await user.click(favoritesTab())
-      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
-      expect(screen.queryByRole('link', { name: /Show all/ })).not.toBeInTheDocument()
-    })
-
-    it('more than the limit: a preview, then the full list, on the same tab', async () => {
-      const user = userEvent.setup()
-      const total = FAVORITES_PREVIEW_LIMIT + 2
-      renderFavorites(total)
-
-      await user.click(favoritesTab())
-      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
-
-      const all = screen.getByRole('link', { name: `Show all ${total} favorites` })
-      expect(all).toHaveClass('clr-text-action')
-      await user.click(all)
-
-      await waitFor(async () => expect(await favoriteRowCount()).toBe(total))
-      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
-      for (let index = 1; index <= total; index += 1) {
-        expect(screen.getByRole('heading', { name: `Favorite ${index}` })).toBeInTheDocument()
+      expect(router.state.location.search).toBe('?keep=1&tab=favorites')
+      if (total === 0) {
+        expect(await screen.findByText(FAVORITES_EMPTY_TITLE)).toBeInTheDocument()
+      } else {
+        expect(await favoriteRowCount()).toBe(total)
+        for (let index = 1; index <= total; index += 1) {
+          expect(screen.getByRole('heading', { name: `Favorite ${index}` })).toBeInTheDocument()
+        }
       }
-
-      await user.click(screen.getByRole('link', { name: FAVORITES_SHOW_FEWER_LABEL }))
-      await waitFor(async () => expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT))
-      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(screen.queryByRole('link', { name: /Show all|Show fewer/ })).not.toBeInTheDocument()
     })
 
-    it('a return to Home keeps the Favorites tab and the full list it was on', async () => {
-      const total = FAVORITES_PREVIEW_LIMIT + 1
-      renderFavorites(total, '/?tab=favorites&favorites=all')
-
+    it('the full-list destination opens directly on Favorites with every saved row', async () => {
+      renderFavorites(7, '/?tab=favorites')
       expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
-      expect(await favoriteRowCount()).toBe(total)
+      expect(await favoriteRowCount()).toBe(7)
     })
 
-    it('switching back to Recent forgets nothing the user did not change', async () => {
+    it('returning from Review really restores the selected full-list tab', async () => {
       const user = userEvent.setup()
-      renderFavorites(FAVORITES_PREVIEW_LIMIT + 1, '/?tab=favorites')
-
-      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
-      await user.click(screen.getByRole('tab', { name: 'Recent workouts' }))
-      expect(screen.getByRole('tab', { name: 'Recent workouts' })).toHaveAttribute(
-        'aria-selected',
-        'true',
-      )
+      const router = renderFavorites(7)
       await user.click(favoritesTab())
-      expect(await favoriteRowCount()).toBe(FAVORITES_PREVIEW_LIMIT)
+      expect(await favoriteRowCount()).toBe(7)
+      const list = screen.getByRole('list', { name: 'Favorites' })
+      await user.click(within(list).getAllByRole('button', { name: 'Start' })[0])
+      expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
+      expect(router.state.location.pathname).toBe('/review')
+
+      await act(() => router.navigate(-1))
+      expect(await screen.findByRole('heading', { level: 1, name: 'Today' })).toBeInTheDocument()
+      expect(router.state.location.search).toBe('?tab=favorites')
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(await favoriteRowCount()).toBe(7)
+    })
+
+    it('switching back to Favorites still shows the complete list', async () => {
+      const user = userEvent.setup()
+      renderFavorites(7, '/?tab=favorites')
+      expect(await favoriteRowCount()).toBe(7)
+      await user.click(screen.getByRole('tab', { name: 'Recent workouts' }))
+      expect(screen.getByRole('tab', { name: 'Recent workouts' })).toHaveAttribute('aria-selected', 'true')
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(7)
     })
   })
 

@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `1ca975b89bb94885a153c66b72e59886a23176dd5ffd9ea8770aa3256f00834a` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012 and TASK-013 changes below) |
+| Runtime source hash of this audit's tree | `6f68125022702da27a973b1aae9e810972d386deacd4a6232ed0e6fe61c713ab` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012 and TASK-013 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -320,12 +320,16 @@ trees and this head, from `git diff`:
   intact, not represented as one linear sequence. Historical pictures remain historical;
   combined-tree task/project verification and independent exact-head acceptance are required.
 
-- `6b8661ac…` to `1ca975b8…`: TASK-013 (REQ-008, JOURNEY-013, U21/U44) limits Home's Favorites
-  tab to a three-row preview with a quiet full-list link past that limit, and keeps the selected
-  tab and the full-list view as search params so a return to Home retains both. Recent-workout
+- `6b8661ac…` to `6f681250…`: TASK-013 (REQ-008, JOURNEY-013, U21/U44) retains Home's existing
+  full Favorites list and keeps its selected tab in the URL, including a real return from Review.
+  The conditional preview-limit requirement has no baseline preview cap to expose; no arbitrary
+  cap or redundant Show-all/Show-fewer controls are introduced. Same-screen query/state updates
+  retain tab focus and page scroll; actual pathname arrivals still focus and announce the screen.
+  The earlier `1ca975b8…` worker candidate was held before delivery for its contradictory cap and
+  tab-focus regression, not accepted merely because its old-head checks were green. Recent-workout
   rows on Home and History share one hierarchy — title with its status, then day and focus, then
   requested minutes, actual minutes when recorded, and intensity — and long titles wrap inside the
-  row. Zero, one, at-limit and more-than-limit favorites, and long-name, status and duration
+  row. Zero, one and many favorites, real back-navigation, and long-name, status and duration
   contexts, are owned by the Home and History suites. This changes Home and the shared history
   row; the historical pictures remain bound to their original trees (EX-13), not to this runtime.
 

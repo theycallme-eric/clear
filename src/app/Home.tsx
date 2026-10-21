@@ -40,9 +40,9 @@
  *      parses the saved snapshot and carries the resulting acceptance payload
  *      to `/review` as route state. No generation call is made and no row is
  *      written on the way — Review's own Start is where the session begins to
- *      exist, exactly as it is for a generated workout. Past
- *      `FAVORITES_PREVIEW_LIMIT` the tab previews and links to its full list;
- *      the tab and that view are search params, so neither is lost (U21).
+ *      exist, exactly as it is for a generated workout. The existing full
+ *      favorites list stays full; its selected tab is a search param so a
+ *      refresh or browser return from Review retains that destination (U21).
  *
  * Recent workouts retain `/history/:id` as their durable fallback and use the
  * same direct-Review resolver as History. Favorites restore through their own
@@ -195,21 +195,12 @@ export const FAVORITES_EMPTY_TITLE = 'No favorites yet'
 export const FAVORITES_EMPTY = 'Save a workout from its summary to start it again here.'
 
 /**
- * U21: Home previews the newest favorites; past this many, the full list is
- * one quiet link away. The tab and the full-list view are both in the URL, so
- * Back, a refresh or a return from Review lands on the same tab and view.
+ * U21: the tab itself opens the existing full favorites list. There is no
+ * baseline preview cap to turn into a new limitation. Keep the selected tab
+ * in the URL so a refresh or browser return restores the same full list.
  */
-export const FAVORITES_PREVIEW_LIMIT = 3
 export const HOME_TAB_PARAM = 'tab'
 export const FAVORITES_TAB_VALUE = 'favorites'
-export const FAVORITES_VIEW_PARAM = 'favorites'
-export const FAVORITES_VIEW_ALL = 'all'
-export const FAVORITES_SHOW_FEWER_LABEL = 'Show fewer'
-
-/** `Show all 5 favorites`: the count says what the link adds. */
-function showAllFavoritesLabel(count: number): string {
-  return `Show all ${count} favorites`
-}
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
@@ -812,13 +803,6 @@ function FavoriteWorkouts() {
     query.state.status === 'ready' ? query.state.data : []
   const listed = useMemo(() => favoriteEntries(rows), [rows])
 
-  // U21: a preview while it would be long, the whole list once asked for. The
-  // view is a URL fact beside the tab, so Back returns to the preview.
-  const [params] = useSearchParams()
-  const showingAll = params.get(FAVORITES_VIEW_PARAM) === FAVORITES_VIEW_ALL
-  const limited = listed.length > FAVORITES_PREVIEW_LIMIT
-  const shown = limited && !showingAll ? listed.slice(0, FAVORITES_PREVIEW_LIMIT) : listed
-
   const state: ViewState<readonly FavoriteEntry[]> =
     query.state.status === 'loading'
       ? viewLoading()
@@ -826,19 +810,7 @@ function FavoriteWorkouts() {
         ? viewError(query.state.error)
         : listed.length === 0
           ? viewEmpty()
-          : viewReady(shown)
-
-  const fullList = limited && state.status === 'ready' && (
-    <RouteAction
-      to={{
-        search: showingAll
-          ? `?${HOME_TAB_PARAM}=${FAVORITES_TAB_VALUE}`
-          : `?${HOME_TAB_PARAM}=${FAVORITES_TAB_VALUE}&${FAVORITES_VIEW_PARAM}=${FAVORITES_VIEW_ALL}`,
-      }}
-    >
-      {showingAll ? FAVORITES_SHOW_FEWER_LABEL : showAllFavoritesLabel(listed.length)}
-    </RouteAction>
-  )
+          : viewReady(listed)
 
   const start = (entry: FavoriteEntry) => {
     const row = rows.find((candidate) => candidate.id === entry.id)
@@ -875,7 +847,7 @@ function FavoriteWorkouts() {
 
   return (
     <>
-      <Card heading={FAVORITES_LABEL} meta={fullList || undefined}>
+      <Card heading={FAVORITES_LABEL}>
         {failure !== null && (
           <p role="alert" style={FAVORITE_FAILURE_STYLE}>
             <span aria-hidden="true" style={{ display: 'flex' }}>
