@@ -95,6 +95,7 @@ import {
   refusalFrom,
   REQUESTED_INTENSITY_RANGE,
   requestFrom,
+  requestPrefillFrom,
   resolveGeneration,
   searchWithIntent,
   standingGoalFrom,
@@ -109,6 +110,7 @@ import {
   type FocusHistory,
   type GenerationContext,
   type GenerationDraft,
+  type RequestPrefill,
 } from '../state/generation-form'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
 import type { Location, Profile } from '../state/schemas'
@@ -399,9 +401,17 @@ function GenerateForm({
   // REQ-007/REQ-008: the one-workout intent is the URL's, so an untouched form
   // opens on whatever override or Recovery the address carries, and nothing
   // else in the query string — a bare Focus prefill least of all — seeds it.
+  // U20: Home's next-workout entry also carries the last request's minutes and
+  // place, which history cannot re-derive; Goal, Focus and intensity stay the
+  // resolver's, so the handoff sends what a direct visit with those would.
   const [searchParams, setSearchParams] = useSearchParams()
   const untouched = (): Composition => ({
-    draft: initialDraft(defaultLocationId(places), null, intentFrom(searchParams)),
+    draft: initialDraft(
+      defaultLocationId(places),
+      null,
+      intentFrom(searchParams),
+      carriedRequest(searchParams, places),
+    ),
     applied: null,
     overridden: false,
   })
@@ -806,4 +816,16 @@ const CHIP_ROW = { flexWrap: 'wrap', gap: 'var(--spacing-200)' } as const
 function defaultLocationId(locations: readonly Location[]): string | null {
   const preferred = locations.find((location) => location.is_default) ?? locations[0]
   return preferred?.id ?? null
+}
+
+/**
+ * U20: the request Home carried, with its place kept only while it is still
+ * one of the athlete's. A place since removed is no place, so the draft opens
+ * on the default rather than on an id nothing can send.
+ */
+function carriedRequest(search: URLSearchParams, places: Places): RequestPrefill {
+  const carried = requestPrefillFrom(search)
+  const known = places.some((place) => place.id === carried.locationId)
+
+  return known ? carried : { ...carried, locationId: null }
 }

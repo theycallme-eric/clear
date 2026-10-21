@@ -7,7 +7,7 @@ import { namespaceId } from '../../scripts/e2e/namespace.mjs'
 import { expect, test as base } from '../fixtures'
 import { backend } from '../support/backend'
 import type { WorkoutSessionRow } from '../../src/state/schemas'
-import { suggestSession, suggestionDay, SUGGESTION_DISMISSAL_STORAGE_KEY } from '../../src/state/session-suggestion'
+import { nextWorkout } from '../../src/state/session-suggestion'
 import { captureIdentity, capturePairId } from './capture'
 import { installDeterministicCapture, playwrightCaptureDriver } from './fixtures'
 import {
@@ -903,7 +903,7 @@ backendTest('responsive: representative route families in the missing skins and 
   } finally { await removeActors(cleanup) }
 })
 
-backendTest('suggestion: real qualifying history, Use this and persistent Dismiss destinations', async ({ page, visit, evidence }, testInfo) => {
+backendTest('suggestion: real qualifying history, one next-workout entry into prefilled Generate', async ({ page, visit, evidence }, testInfo) => {
   test.setTimeout(360_000)
   const cleanup: string[] = []
   try {
@@ -912,54 +912,35 @@ backendTest('suggestion: real qualifying history, Use this and persistent Dismis
     const rows = must<WorkoutSessionRow[]>(await actor.client.selectAsService('workout_sessions', {
       select: '*', user_id: `eq.${actor.id}`, order: 'date.desc',
     }), 'Owned suggestion history read')
-    const suggestion = suggestSession(rows)
-    expect(suggestion, 'the actual recent completed fixture must qualify for a suggestion').not.toBeNull()
-    if (!suggestion) throw new Error('Owned completed history did not qualify for a suggestion')
-    const prompt = page.getByLabel('Suggested next')
-    const useThis = prompt.getByRole('button', { name: 'Use this', exact: true })
-    const dismiss = prompt.getByRole('button', { name: 'Dismiss', exact: true })
+    // TASK-012 (U20): Use this, Dismiss and Quick start became one entry.
+    const next = nextWorkout(rows)
+    expect(next.status, 'the actual recent completed fixture must qualify for a suggestion').toBe('recommended')
+    if (next.prior === null) throw new Error('Owned completed history has no prior request')
+    const train = page.locator('.clr-card').filter({ has: page.getByRole('heading', { level: 2, name: 'Train today', exact: true }) })
     const generate = page.getByRole('button', { name: 'Generate workout', exact: true })
-    evidence.note('fixture', 'A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected recommendation/path are derived from the actual owned rows, not a mocked Home suggestion or a model response.')
+    evidence.note('fixture', 'A real disposable actor with one recent completed RPC-written session qualifies under the installed minimum-history rule. Expected entry/path are derived from the actual owned rows, not a mocked Home suggestion or a model response.')
 
     await visit('/')
     await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
-      await expect(prompt).toBeVisible()
-      await expect(prompt.getByText(`${suggestion.focusLabel} · intensity ${suggestion.intensity}`, { exact: true })).toBeVisible()
-      await expect(prompt.getByText(`${suggestion.reason} ${suggestion.intensityReason}`, { exact: true })).toBeVisible()
-      await expect(useThis).toBeEnabled()
-      await expect(dismiss).toBeEnabled()
+      await expect(train.getByText(`Last time: ${next.prior!.summary}.`, { exact: true })).toBeVisible()
+      await expect(train.getByText(`Suggested next: ${next.guidance}`, { exact: true })).toBeVisible()
+      await expect(train.getByRole('button')).toHaveCount(0)
+      for (const retired of ['Use this', 'Dismiss', 'Quick start']) {
+        await expect(page.getByRole('button', { name: retired, exact: true })).toHaveCount(0)
+      }
+      await expect(generate).toBeEnabled()
       await expectCurrentCards(page, 'Home suggestion', ['Train today'])
-    }, { variant: 'suggested-next', skins: true, short: useThis })
-    await useThis.click()
-    const selected = new URL(suggestion.path, 'https://owned-fixture.invalid')
+    }, { variant: 'suggested-next', skins: true, short: generate })
+    await generate.click()
+    const selected = new URL(next.path, 'https://owned-fixture.invalid')
     await expect(page).toHaveURL((url) => url.pathname === selected.pathname && url.search === selected.search)
     await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate workout', async () => {
-      await visibleText(page, suggestion.focusLabel)
-      await visibleText(page, suggestion.reason)
-      await expect(page.getByRole('slider')).toHaveValue(String(suggestion.intensity))
+      await visibleText(page, next.suggestion!.focusLabel)
+      await expect(page.getByRole('slider')).toHaveValue(String(next.suggestion!.intensity))
+      await expect(page.getByLabel(/Time available/i)).toHaveValue(String(next.prior!.durationMins))
       await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
-    }, { variant: 'use-this-destination' })
-
-    await visit('/')
-    await expect(prompt).toBeVisible()
-    await dismiss.click()
-    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
-      await expect(prompt).toHaveCount(0)
-      await expect(generate).toBeEnabled()
-      expect(await page.evaluate((key) => localStorage.getItem(key), SUGGESTION_DISMISSAL_STORAGE_KEY)).toBe(suggestionDay())
-    }, { variant: 'dismissed', skins: true, short: generate })
-    await page.reload()
-    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/', 'Today', async () => {
-      await expect(prompt).toHaveCount(0)
-      await expect(generate).toBeEnabled()
-    }, { variant: 'dismissed-after-reload' })
-    await generate.click()
-    await expect(page).toHaveURL((url) => url.pathname === '/generate' && url.search === '')
-    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate workout', async () => {
-      await visibleText(page, suggestion.reason)
-      await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
-    }, { variant: 'default-destination-after-dismiss' })
-    evidence.note('contract', 'Use this follows the actual recommendation path. Dismiss persists for today across reload and Generate opens without suggestion-prefill query parameters; the form independently derives its recommendation from the same history. No Generate/Quick start/model POST was submitted.')
+    }, { variant: 'next-workout-destination' })
+    evidence.note('contract', 'The one primary action follows the actual next-workout path: Generate opens with the recommended focus, history intensity and the prior request minutes. No Generate/model POST was submitted.')
     expect(evidence.modelAttempts()).toBe(0)
   } finally { await removeActors(cleanup) }
 })

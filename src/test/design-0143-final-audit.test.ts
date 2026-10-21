@@ -6,6 +6,7 @@ import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import {
   browserTestsForTarget,
+  REQ_007_NEXT_WORKOUT_CASE,
   REQ_007_REST_DAY_CASE,
   REQ_011_REVIEW_CASE,
 } from '../../playwright.config'
@@ -26,10 +27,10 @@ describe('TASK-027 browser selection follows the tested package and target', () 
     expect(browserTestsForTarget('0.14.3', 'https://clear.example.com').test(publicOtp)).toBe(true)
   })
 
-  it('keeps the REQ-011 Review→Workout and REQ-007 rest-day cases on current targets, and only those', () => {
+  it('keeps the REQ-011 Review→Workout and REQ-007 rest-day and next-workout cases on current targets, and only those', () => {
     const file = 'design-0143/task-040-home-review.spec.ts TASK-040 — Home and Review additive before-state artifacts'
     const source = readFileSync(resolve(import.meta.dirname, '../../e2e/design-0143/task-040-home-review.spec.ts'), 'utf8')
-    for (const title of [REQ_011_REVIEW_CASE, REQ_007_REST_DAY_CASE]) {
+    for (const title of [REQ_011_REVIEW_CASE, REQ_007_REST_DAY_CASE, REQ_007_NEXT_WORKOUT_CASE]) {
       const kept = `mobile ${file} ${title}`
       expect(source).toContain(`'${title}'`)
       expect(browserTestsForTarget('0.14.3', 'http://127.0.0.1:4173').test(kept)).toBe(true)

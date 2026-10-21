@@ -883,8 +883,9 @@ backendTest('JOURNEY-002: a populated Home and History keep counts with units an
   await reached(page, '/', 'Today')
   await expectContainedRoute(page, '/ populated')
   await expectCountsTogether(page, /\d+\xa0days?/, '/ streak')
-  await expectCountsTogether(page, /\d+\xa0of\xa07\xa0days/, '/ week')
-  await expectCompactGroup(page, 'Quick start', '/ quick start')
+  // TASK-012 (U19, U20): the week repeats no count beside the streak, and the
+  // one next-workout entry has no in-card action; its last request keeps units.
+  await expectCountsTogether(page, /\d+\xa0minutes?|intensity\xa0\d+/, '/ last request')
   await expectEnlargedFits(page, '/ populated')
 })
 
