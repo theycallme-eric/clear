@@ -164,9 +164,13 @@ export function Onboarding() {
       title={ONBOARDING_TITLE}
       pinnedFoot={
         <PhoneFooter>
+          {/* U03: equivalent actions share one size; the forward step is the
+              primary, and the primary sits first in the stack. */}
           <ActionRow>
             {step === 'confirm' ? (
               <Button
+                variant="primary"
+                size="lg"
                 disabled={answers === null}
                 onClick={() => {
                   void submit()
@@ -176,6 +180,8 @@ export function Onboarding() {
               </Button>
             ) : (
               <Button
+                variant="primary"
+                size="lg"
                 disabled={blocked !== null}
                 icon={<ChevronRight size={20} />}
                 onClick={() => {
@@ -188,6 +194,7 @@ export function Onboarding() {
             {index > 0 && (
               <Button
                 variant="secondary"
+                size="lg"
                 icon={<ChevronLeft size={20} />}
                 onClick={() => {
                   go(index - 1, 'back')

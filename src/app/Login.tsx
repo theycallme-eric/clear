@@ -222,6 +222,7 @@ function LoginScreen() {
                   <Button
                     type="button"
                     variant="secondary"
+                    size="lg"
                     onClick={onResend}
                     disabled={cooldown.active || busy !== null}
                   >

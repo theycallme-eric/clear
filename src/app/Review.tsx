@@ -252,9 +252,12 @@ export function Review({
         heading={briefing.title}
         pinnedFoot={
           <PhoneFooter>
+            {/* U03: equivalent actions share one size; priority is the
+                primary styling and its place first in the stack. */}
             <ActionRow>
               <Button
                 variant="secondary"
+                size="lg"
                 icon={<RefreshCw />}
                 disabled={starting}
                 onClick={() => setConfirmingRegenerate(true)}
