@@ -68,6 +68,7 @@ import {
   INTENSITY_LABEL,
   reviewBriefing,
   type ReviewBlockView,
+  type ReviewCadence,
   type ReviewExerciseView,
   type ReviewFact,
   type ReviewSectionView,
@@ -500,34 +501,110 @@ function ReviewSectionCard({
           {section.blocks.map((block) => (
             <ReviewBlockRows key={block.key} block={block} {...suggestion} />
           ))}
+          {section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}
         </div>
       </CollapsibleSection>
     </Card>
   )
 }
 
+/** The optional tempo detail's trigger, and the region it names. */
+export const TEMPO_DETAIL_LABEL = 'Tempo'
+
+/**
+ * Every prescribed tempo in the section, behind one collapsed disclosure
+ * (REQ-011, U33). A `Tempo 3-1-1-0` on each row repeated the same string down
+ * the briefing; nothing is dropped by moving it here — each movement that
+ * prescribes a cadence is listed with it, in the order it is performed — and a
+ * timed prescription (`45 sec`, an EMOM's minutes) stays on its own line,
+ * because that is the work rather than a detail of it.
+ */
+function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
+  return (
+    <CollapsibleSection label={TEMPO_DETAIL_LABEL}>
+      <ul style={{ ...STACK_STYLE, listStyle: 'none', margin: 0, padding: 0 }}>
+        {cadence.map((entry) => (
+          <li key={entry.key} className="clr-row" style={{ gap: 'var(--spacing-200)' }}>
+            <span style={{ textTransform: 'capitalize' }}>{entry.name}</span>
+            <span style={DATA_STYLE}>{entry.tempo}</span>
+          </li>
+        ))}
+      </ul>
+    </CollapsibleSection>
+  )
+}
+
+/**
+ * A group is framed down its leading edge in the structure colour, and is
+ * named by its badge — the colour is never the only cue.
+ */
+const GROUP_STYLE: CSSProperties = {
+  ...STACK_STYLE,
+  borderInlineStart: 'var(--border-width) solid var(--border-frame-structure)',
+  paddingInlineStart: 'var(--spacing-300)',
+}
+
+const ORDERED_LIST_STYLE: CSSProperties = {
+  ...STACK_STYLE,
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+}
+
+/**
+ * One block. A superset, circuit or timed structure is one group: framed,
+ * named by its badge (which carries the round count or clock once), its shared
+ * rest directly under that badge, and its movements numbered in the order they
+ * are performed. A standard block is a movement done set by set, so it gets
+ * no frame and no `STANDARD` badge — that badge on every row was metadata that
+ * said nothing — unless its rep scheme is one the user needs told.
+ */
 function ReviewBlockRows({
   block,
   suggestions,
   overrides,
   onExplain,
 }: { block: ReviewBlockView } & SuggestionProps) {
-  return (
-    <div className="clr-stack--tight" style={STACK_STYLE}>
-      <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-        <StructureBadge identity={block.identity} />
+  const row = (exercise: ReviewExerciseView, ordinal: string | null) => (
+    <ReviewExerciseRow
+      key={exercise.key}
+      ordinal={ordinal}
+      exercise={exercise}
+      suggestion={suggestions.get(exercise.key) ?? null}
+      override={overrides.get(exercise.key) ?? null}
+      onExplain={() => onExplain(exercise.key)}
+    />
+  )
+
+  if (!block.grouped) {
+    const badged = block.identity.detail !== null || block.identity.repScheme !== null
+    return (
+      <div className="clr-stack--tight" style={STACK_STYLE}>
+        {badged && <StructureBadge identity={block.identity} />}
         {block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>}
+        {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
+        {block.exercises.map((exercise) => row(exercise, null))}
       </div>
+    )
+  }
+
+  const name = [
+    block.identity.label.toLowerCase(),
+    block.rounds === null ? null : `${block.rounds} ${block.rounds === 1 ? 'round' : 'rounds'}`,
+  ]
+    .filter(Boolean)
+    .join(', ')
+
+  return (
+    <div className="clr-stack--tight" style={GROUP_STYLE}>
+      <StructureBadge identity={block.identity} />
+      {block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>}
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-      {block.exercises.map((exercise) => (
-        <ReviewExerciseRow
-          key={exercise.key}
-          exercise={exercise}
-          suggestion={suggestions.get(exercise.key) ?? null}
-          override={overrides.get(exercise.key) ?? null}
-          onExplain={() => onExplain(exercise.key)}
-        />
-      ))}
+      <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
+        {block.exercises.map((exercise, index) => (
+          <li key={exercise.key}>{row(exercise, `${index + 1}.`)}</li>
+        ))}
+      </ol>
     </div>
   )
 }
@@ -535,15 +612,19 @@ function ReviewBlockRows({
 /**
  * One prescription. Every reading is a separate element rather than one
  * assembled sentence: `prescriptionText` already refuses to produce a string
- * anything would want to parse back, and the load, the rest and the tempo are
- * three different facts that a screen reader should be able to stop between.
+ * anything would want to parse back, and the load and the rest are different
+ * facts that a screen reader should be able to stop between. Tempo is not on
+ * the row; the section's tempo detail carries it.
  */
 function ReviewExerciseRow({
+  ordinal,
   exercise,
   suggestion,
   override,
   onExplain,
 }: {
+  /** `1.`, `2.` — the movement's place in its group, or null outside one. */
+  ordinal: string | null
   exercise: ReviewExerciseView
   /** Null where there is no anchor — a state, and it renders nothing. */
   suggestion: LoadSuggestionView | null
@@ -553,7 +634,10 @@ function ReviewExerciseRow({
   return (
     <div style={STACK_STYLE}>
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
-        <p style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>{exercise.name}</p>
+        <p style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
+          {ordinal !== null && <span style={DATA_STYLE}>{ordinal} </span>}
+          {exercise.name}
+        </p>
         <span style={DATA_STYLE}>{exercise.prescription}</span>
       </div>
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
@@ -562,7 +646,6 @@ function ReviewExerciseRow({
         </span>
         {exercise.load !== null && <span style={DATA_STYLE}>{exercise.load}</span>}
         {exercise.rest !== null && <span style={DATA_STYLE}>{exercise.rest}</span>}
-        {exercise.tempo !== null && <span style={DATA_STYLE}>Tempo {exercise.tempo}</span>}
       </div>
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />

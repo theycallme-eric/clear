@@ -29,6 +29,13 @@ const designSystemPackage = JSON.parse(
 ) as { version: string }
 
 /**
+ * The exact title of the home-review case that runs after the package import.
+ * Plain words only: it is spliced into the selection pattern unescaped.
+ */
+export const REQ_011_REVIEW_CASE =
+  'REQ-011 Review: type labels, ordered groups, adjacent shared rest and tempo detail into Workout'
+
+/**
  * TASK-027: keep the original browser command, selecting cases for its target.
  * BEFORE assertions belong to 0.9.7; deployed assertions need a deployed origin.
  * Positive grep composes with the command's existing paid-lane grepInvert.
@@ -37,8 +44,10 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
   const exclusions: string[] = []
   if (packageVersion === '0.14.3') {
     exclusions.push(
-      String.raw`design-0143[\\/](?:baseline|task-040-(?:home-review|lifecycle(?:-gaps)?))\.spec\.ts`,
+      String.raw`design-0143[\\/](?:baseline|task-040-lifecycle(?:-gaps)?)\.spec\.ts`,
       String.raw`design-0143[\\/]task-040-entry-settings\.spec\.ts(?!.*entry: Welcome and OTP validation, busy, typed failure and cooldown$)`,
+      // TASK-019: the one post-import, non-capture Review→Workout case (REQ-011).
+      String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*${REQ_011_REVIEW_CASE}$)`,
     )
   }
   const hostname = new URL(baseURL).hostname.toLowerCase()

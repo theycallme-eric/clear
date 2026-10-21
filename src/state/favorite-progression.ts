@@ -68,6 +68,7 @@
 import type { WeightUnit } from './anchors'
 import { convertWeight } from './anchors'
 import { formatDay } from './history'
+import { sectionTypeLabel } from './onboarding'
 import { exerciseName } from './prescription'
 import type {
   ExerciseSetLogRow,
@@ -285,7 +286,8 @@ export function runMeasures(performed: SessionReconstruction): readonly RunMeasu
     for (const held of entry.blocks) {
       const { block, block_result: result } = held
       const position = `${entry.section.order_index}.${block.order_index}`
-      const label = `${entry.section.section_title} · ${structureIdentity(block).label}`
+      // The section's stable type label (REQ-011), never its generated title.
+      const label = `${sectionTypeLabel(entry.section.section_type)} · ${structureIdentity(block).label}`
       const scorable = sameWorkAsPrescribed(held.exercises.map((member) => member.exercise))
 
       if (result !== null && scorable && block.structure_type === 'for_time') {

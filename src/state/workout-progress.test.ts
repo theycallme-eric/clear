@@ -64,13 +64,19 @@ describe('sessionProgress', () => {
     const progress = sessionProgress(
       snapshotFixture({
         sections: [
-          { title: 'Warm-up', blocks: [{ exercises: ['completed', 'completed'] }] },
-          { title: 'Primary lift', blocks: [{ exercises: ['completed', 'not_started'] }] },
-          { title: 'Accessory', blocks: [{ exercises: ['not_started'] }] },
+          // Generated titles that are not the types' labels (REQ-011).
+          { title: 'Prepare', blocks: [{ exercises: ['completed', 'completed'] }] },
+          {
+            title: 'Leg Day Destroyer',
+            sectionType: 'primary_lift',
+            blocks: [{ exercises: ['completed', 'not_started'] }],
+          },
+          { title: 'Extras', sectionType: 'accessory', blocks: [{ exercises: ['not_started'] }] },
         ],
       }),
     )
 
+    // Labelled by type, never by the generated title.
     expect(progress.sections.map((section) => section.title)).toEqual([
       'Warm-up',
       'Primary lift',

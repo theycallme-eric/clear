@@ -161,6 +161,38 @@ function recorder(page: Page, testInfo: TestInfo, skin: CaptureSkin,
   }
 }
 
+/**
+ * TASK-019 (REQ-011): the one case in this file that runs after the package
+ * import, kept by `playwright.config.ts` under this exact title. It verifies
+ * current behavior and writes no historical TASK-040 BEFORE capture, so every
+ * capture operation refuses rather than recording a 0.14.3 picture as one.
+ */
+const REQ_011_REVIEW_CASE =
+  'REQ-011 Review: type labels, ordered groups, adjacent shared rest and tempo detail into Workout'
+
+function postImportRecorder(testInfo: TestInfo,
+  generation: () => { requests: number; forwarded: 0; blockedUnexpected: number }): ReturnType<typeof recorder> {
+  const fixtures: string[] = []
+  const captureOnly = () => {
+    throw new Error('The post-import REQ-011 case cannot use baseline capture operations')
+  }
+  return {
+    take: async () => captureOnly(),
+    transition: async () => captureOnly(),
+    disposition: captureOnly,
+    fixture(name: string) { if (!fixtures.includes(name)) fixtures.push(name) },
+    finish() {
+      return testInfo.attach('task019-review-verification', {
+        body: Buffer.from(JSON.stringify({ version: 1, kind: 'post-import-review-behavior-verification',
+          caseTitle: testInfo.title, project: testInfo.project.name, sourceFile: SOURCE_FILE,
+          identity: captureIdentity(), status: testInfo.status, fixtures, baselineCapture: false,
+          generation: generation(), liveGeneration: false }, null, 2)),
+        contentType: 'application/json',
+      })
+    },
+  }
+}
+
 /** A held fault must match the owned actor/record before it can answer. */
 async function fault(page: Page, matches: (route: Route) => boolean) {
   const held = deferred()
@@ -256,7 +288,10 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     page.on('request', (request) => {
       if (request.method() === 'POST' && /\/functions\/v1\/generate-/.test(new URL(request.url()).pathname)) observed += 1
     })
-    save = recorder(page, testInfo, skin, () => ({ requests: observed, forwarded: 0, blockedUnexpected: blocked() }))
+    const generation = () => ({ requests: observed, forwarded: 0 as const, blockedUnexpected: blocked() })
+    save = testInfo.title === REQ_011_REVIEW_CASE
+      ? postImportRecorder(testInfo, generation)
+      : recorder(page, testInfo, skin, generation)
     save.fixture('Real per-case namespaced actor, catalog-backed prescriptions, authenticated onboarding and cascading exact-user cleanup')
     ready = true
   })
@@ -286,14 +321,15 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     if (captureFailed) throw captureError
   })
 
-  function acceptance(title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body') {
+  function acceptance(title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body',
+    sections?: unknown[]) {
     return sessionAcceptanceSchema.parse({ date: day(offset), location_id: locationId,
       session_focus: focus, goal_preset: 'balanced', requested_duration_mins: 30,
       effective_duration_target_mins: 30, computed_duration_mins: null,
       requested_intensity: 5, effective_intensity: 5, adjustment_reason: null,
       generation_notes: null, prompt_version: 'e2e', contract_version: '4.1.0',
       workout: { title, overview: 'Catalog-backed isolated fixture; not model-created.', estimated_duration_mins: 30,
-        sections: [{ section_type: 'primary_lift', section_title: 'Standard', section_notes: null,
+        sections: sections ?? [{ section_type: 'primary_lift', section_title: 'Standard', section_notes: null,
           blocks: [{ structure_type: 'standard', rounds: null, timer_type: 'none', timer_seconds: null,
             round_rest_seconds: null, rep_scheme: 'fixed', block_notes: null,
             exercises: [{ exercise_id: catalog[0].id, equipment: catalog[0].default_equipment,
@@ -302,11 +338,13 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
               target_sequence: null, per_side: false, distance_unit: null, rest_seconds: 10,
               tempo: null, load_type: 'none', load_value: null, is_interval_exercise: false }] }] }] } })
   }
-  const persist = async (title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body') =>
+  const persist = async (title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body',
+    sections?: unknown[]) =>
     must<Persisted>(await client.rpcAs('persist_session', { p_user_id: actor.id,
-      p_session: acceptance(title, offset, focus) }, actor.token), 'Fixture persistence')
-  async function complete(title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body') {
-    const stored = await persist(title, offset, focus)
+      p_session: acceptance(title, offset, focus, sections) }, actor.token), 'Fixture persistence')
+  async function complete(title: string, offset = 1, focus: 'upper_body' | 'lower_body' | 'full_body' = 'full_body',
+    sections?: unknown[]) {
+    const stored = await persist(title, offset, focus, sections)
     expect(must<{ outcome: string }>(await client.rpcAs('start_session', {
       p_session_id: stored.session.id,
     }, actor.token), 'Fixture start').outcome).toBe('started')
@@ -666,5 +704,71 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       held.release()
       await page.unroute(MODEL, handler)
     }
+  })
+
+  test(REQ_011_REVIEW_CASE, async ({ page, visit }) => {
+    const title = 'TASK-019 grouped review fixture'
+    const custom = ['Get Moving Fast', 'Leg Day Destroyer', 'Finisher']
+    const [first, second] = catalog
+    const member = (row: Catalogued, extra: Record<string, unknown> = {}) => ({
+      exercise_id: row.id, equipment: row.default_equipment, session_function: 'primary',
+      anchor_relationship: 'neutral', modality: 'reps', sets: 3, target_kind: 'fixed', target_value: 8,
+      target_min: null, target_max: null, target_sequence: null, per_side: false, distance_unit: null,
+      rest_seconds: 0, tempo: null, load_type: 'none', load_value: null, is_interval_exercise: false, ...extra })
+    const block = (structure: string, rounds: number | null, rest: number | null, exercises: unknown[]) => ({
+      structure_type: structure, rounds, timer_type: 'none', timer_seconds: null,
+      round_rest_seconds: rest, rep_scheme: 'fixed', block_notes: null, exercises })
+    const sections = [
+      { section_type: 'warmup', section_title: custom[0], section_notes: null,
+        blocks: [block('standard', null, null, [member(first, { rest_seconds: 30 })])] },
+      { section_type: 'primary_lift', section_title: custom[1], section_notes: null,
+        blocks: [block('standard', null, null, [member(first, { tempo: '3-1-1-0', rest_seconds: 90 })]),
+          block('superset', 3, 75, [member(first), member(second)])] },
+      { section_type: 'conditioning', section_title: custom[2], section_notes: null,
+        blocks: [block('circuit', 4, 60, [member(second), member(first)])] },
+    ]
+    const name = (row: Catalogued) => row.id.replaceAll('-', ' ').replaceAll('_', ' ')
+    const main = page.locator('main')
+    const done = await complete(title, 1, 'full_body', sections)
+    await saveFavorite(page, visit, done, title)
+    save.fixture('REQ-011: custom section titles, a superset and a circuit in prescribed order and one tempo, restarted from a real favorite into Review and Workout')
+
+    await openFavorite(page, visit, title)
+    // Labels follow the section types; no generated title reaches the screen.
+    for (const label of ['Warm-up', 'Primary lift', 'Conditioning']) {
+      await expect(main.getByRole('button', { name: new RegExp(`^${label}`) })).toBeVisible()
+    }
+    for (const prose of custom) await expect(main.getByText(prose)).toHaveCount(0)
+    // Groups are named with their round count; members are numbered in order.
+    const superset = main.getByRole('list', { name: 'superset, 3 rounds', exact: true })
+    await expect(superset.getByRole('listitem')).toHaveText([
+      new RegExp(`^1\\. ${name(first)}`, 'i'), new RegExp(`^2\\. ${name(second)}`, 'i')])
+    const circuit = main.getByRole('list', { name: 'circuit, 4 rounds', exact: true })
+    await expect(circuit.getByRole('listitem')).toHaveText([
+      new RegExp(`^1\\. ${name(second)}`, 'i'), new RegExp(`^2\\. ${name(first)}`, 'i')])
+    // Shared rest sits with its own group, once each.
+    const supersetGroup = superset.locator('xpath=..')
+    await expect(supersetGroup).toContainText('SUPERSET · 3 ROUNDS')
+    await expect(supersetGroup.getByText('Rest 75s between rounds', { exact: true })).toBeVisible()
+    await expect(circuit.locator('xpath=..').getByText('Rest 60s between rounds', { exact: true })).toBeVisible()
+    await expect(main.getByText(/between rounds/)).toHaveCount(2)
+    // Tempo is off the rows and kept in a collapsed, optional detail.
+    await expect(main.getByText(/Tempo 3-1-1-0/)).toHaveCount(0)
+    const tempo = main.getByRole('button', { name: 'Tempo', exact: true })
+    await expect(tempo).toHaveAttribute('aria-expanded', 'false')
+    await tempo.click()
+    await expect(tempo).toHaveAttribute('aria-expanded', 'true')
+    await expect(main.getByRole('region', { name: 'Tempo', exact: true })).toContainText('3-1-1-0')
+
+    // Start routes to Workout as always; the custom titles never drive it.
+    await page.getByRole('button', { name: 'Start workout', exact: true }).click()
+    await expect(page).toHaveURL((url) => url.pathname === '/workout')
+    await heading(page, 'Workout')
+    const tracker = main.getByRole('list', { name: 'Sections', exact: true })
+    for (const label of ['Warm-up', 'Primary lift', 'Conditioning']) {
+      await expect(tracker.getByRole('button', { name: new RegExp(`^${label}, `) })).toBeVisible()
+    }
+    await expect(main.getByRole('heading', { level: 2, name: 'Warm-up', exact: true })).toBeVisible()
+    for (const prose of custom) await expect(main.getByText(prose)).toHaveCount(0)
   })
 })
