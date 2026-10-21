@@ -1059,6 +1059,13 @@ export interface ValidationOptions {
   readonly requestId?: string
 }
 
+/**
+ * Whether generated output may carry `ladder_timing` (REQ-018). False until
+ * TASK-032 closes the contract against TASK-039's proven round trip; flipping it
+ * is that task's decision, not this module's.
+ */
+export const LADDER_TIMING_GENERATION_ACTIVE = false
+
 /** Enough to correct, few enough that the retry addendum stays an addendum. */
 const MAX_REPORTED_VIOLATIONS = 10
 
@@ -1082,6 +1089,18 @@ export function validateComposition(
   // honor; refuse them here rather than silently rewriting the prescription.
   workout.sections.forEach((section, sectionIndex) => {
     section.blocks.forEach((block, blockIndex) => {
+      // REQ-018: the schema accepts ladder_timing, but persistence (TASK-039)
+      // and the integrated contract (TASK-032) cannot carry it yet. Generated
+      // output stays on the legacy shape rather than being silently dropped.
+      // Even an explicit null is a new key to an old strict 4.1.0 client.
+      if (!LADDER_TIMING_GENERATION_ACTIVE && Object.hasOwn(block, 'ladder_timing')) {
+        violations.push({
+          check: 6,
+          code: GenerationFailure.MALFORMED,
+          path: `${sectionPath(sectionIndex)}.blocks[${blockIndex}].ladder_timing`,
+          message: 'ladder_timing is not yet supported in generated workouts; omit it',
+        })
+      }
       // EMOM treats `none` as untimed; generated timed protocols enable clocks.
       if (['emom', 'amrap', 'for_time'].includes(block.structure_type) && block.timer_type === 'none') {
         violations.push({
