@@ -16,8 +16,8 @@
  *     `((minute - 1) % movements) + 1` — so a 2-movement EMOM alternates and a
  *     3-movement one rotates (§2). The live movement is named in words (`NOW`,
  *     `NEXT`) and carries `aria-current`; the others are not dimmed into
- *     unreadability, because their set fields stay usable and a 40%-opacity
- *     input is a contrast failure rather than a hint.
+ *     unreadability, because the athlete reads ahead to the next minute and a
+ *     40%-opacity row is a contrast failure rather than a hint.
  *   · **The alternation pattern.** Each movement states the minutes it covers —
  *     `ODD MIN` / `EVEN MIN` for two, the actual minute numbers for three or
  *     more, nothing at all for one (§3).
@@ -32,12 +32,18 @@
  * movements are rows of its list, and the countdown is handed to its `timer`
  * slot — `TimerDisplay` is already a card, and is never put inside another.
  *
- * Two rules from the shared clarity spec shape the rest of the card. Rest is
- * the block's and is honored once per minute rather than once per movement, so
- * the movements state none of their own (`superset-circuit-clarity.md` §8) and
- * the trailing window is stated once at the foot of the card. And completion is
- * the shell's: this renderer supplies `minutes_completed` and nothing else,
- * through the one control every structure composes.
+ * Execution is hands-off (REQ-014). There is no set form, no "Minute done" and
+ * no exertion prompt: each movement states the target its scheduled minute
+ * prescribes — the same number every turn, or the next rung of a rising
+ * sequence — and the clock moves it on. Rest is the block's and is honored
+ * once per minute rather than once per movement, so the movements state none
+ * of their own (`superset-circuit-clarity.md` §8) and the trailing window is
+ * stated once at the foot of the card.
+ *
+ * Completion is the shell's, and this renderer supplies no outcome to it. The
+ * clock running past a minute is the schedule, not work the athlete reported
+ * (E01), so `minutes_completed` stays `null` rather than being filled from the
+ * timer. The section's forward action is what saves the block.
  *
  * Where the user is comes from `emom.ts` as pure arithmetic over a stored
  * timestamp, and `workout-persistence.ts` writes that timestamp down — so a
@@ -47,25 +53,34 @@
  * real, drawable case rather than an empty view — everything in it was swapped
  * out, and it says so.
  */
-import { Button, Check, Play, TimerDisplay } from '../design-system/index'
-import type { BlockOutcome } from '../state/block-completion'
+import { Button, Play, TimerDisplay } from '../design-system/index'
 import {
   clampEmomState,
   emomShape,
   emomView,
   EMOM_START,
-  markMinuteDone,
   minuteAssignment,
+  scheduledMinuteFor,
   startEmom,
+  targetForMinute,
+  type EmomShape,
   type EmomView,
 } from '../state/emom'
+import {
+  exerciseName,
+  prescribedTarget,
+  prescriptionText,
+  targetNumbers,
+  targetText,
+} from '../state/prescription'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
+import { ExerciseCoaching } from './exercise-coaching'
+import { ExerciseSwapControls } from './exercise-swap'
 import { useInterfaceLoop } from './motion'
-import { ExerciseSetLogger } from './set-logger'
 
 export interface EmomBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -77,12 +92,11 @@ export interface EmomBlockProps extends BlockRendererProps {
 export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
   const shape = emomShape(block)
 
-  // Restored once, repaired against the block as it is *now*: a record whose
-  // timestamp no clock can read, or whose marked minute is outside this block's
-  // window, would otherwise freeze the grid at minute one.
+  // Restored once, and repaired: a record whose timestamp no clock can read
+  // would otherwise freeze the grid at minute one.
   const emom = usePersistedEmom(
     block.blockId,
-    (stored) => (stored === null ? EMOM_START : clampEmomState(stored, shape)),
+    (stored) => (stored === null ? EMOM_START : clampEmomState(stored)),
     storage,
   )
 
@@ -94,22 +108,14 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
   const start = () => {
     emom.update(startEmom(emom.state, now()))
   }
-  const minuteDone = () => {
-    emom.update(markMinuteDone(emom.state, view))
-  }
 
   const counting = shape.size > 0 && view.phase !== 'untimed' && view.phase !== 'ready'
 
   return (
-    <BlockPanel
-      block={block}
-      timer={counting ? <MinuteCountdown view={view} /> : null}
-      // The minutes the user actually got through — the outcome this structure
-      // observed, and the only field it supplies. An EMOM whose clock never
-      // ran observed nothing, and says so by supplying nothing rather than a
-      // zero (DATA_MODEL §8).
-      completion={{ outcome: observedOutcome(view) }}
-    >
+    // No `completion` outcome: the clock is the schedule, and a scheduled
+    // minute is not athlete-reported work (E01). The panel's default records
+    // nothing observed, and the section's forward action saves the block.
+    <BlockPanel block={block} timer={counting ? <MinuteCountdown view={view} /> : null}>
       {shape.size === 0 ? (
         <BlockPanel.EmptyNote />
       ) : (
@@ -122,7 +128,7 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
               This block prescribes no clock. Work through the movements as prescribed.
             </BlockPanel.Note>
           ) : (
-            <SectionTimer view={view} onStart={start} onMinuteDone={minuteDone} />
+            <SectionTimer view={view} onStart={start} />
           )}
 
           <BlockPanel.MovementList label="Movements in this EMOM">
@@ -130,9 +136,8 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
               <EmomMovement
                 key={exercise.exerciseId}
                 exercise={exercise}
-                assignment={
-                  view.phase === 'untimed' ? null : minuteAssignment(exercise.position, shape)
-                }
+                shape={shape}
+                view={view}
                 marker={markerFor(exercise.position, view)}
               />
             ))}
@@ -148,21 +153,19 @@ export function EmomBlock({ block, storage, now = Date.now }: EmomBlockProps) {
             <BlockPanel.Note>{shape.restSeconds}s rest at the end of each minute</BlockPanel.Note>
           )}
 
+          {/*
+            The clock has run out, which is all it can say: the schedule is
+            over, not a record of what was performed.
+          */}
           {view.phase === 'finished' && (
             <BlockPanel.Note>
-              Every prescribed minute is done. Record the block when you are ready.
+              The clock has run every prescribed minute. Continue when you are ready.
             </BlockPanel.Note>
           )}
         </>
       )}
     </BlockPanel>
   )
-}
-
-/** What the EMOM watched, or nothing when its clock never started. */
-function observedOutcome(view: EmomView): BlockOutcome {
-  if (view.phase === 'untimed' || view.phase === 'ready') return {}
-  return { minutesCompleted: view.minutesCompleted }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -208,21 +211,15 @@ function MinuteCountdown({ view }: { view: EmomView }) {
 
 /**
  * The minute the user is in, inside the block's card: the minute out of the
- * window, the phase in words, and the one control that belongs to the phase.
+ * window, the phase in words, and — before the clock runs — the one way in.
+ * Once it is running there is nothing to press: every boundary moves the work
+ * on by itself (REQ-014).
  *
  * Neither line is a live region: announcing a number every second makes the
  * rest of the screen unusable, so the phase word is what a screen reader is
  * meant to find.
  */
-function SectionTimer({
-  view,
-  onStart,
-  onMinuteDone,
-}: {
-  view: EmomView
-  onStart: () => void
-  onMinuteDone: () => void
-}) {
+function SectionTimer({ view, onStart }: { view: EmomView; onStart: () => void }) {
   return (
     <div
       className="clr-stack--tight"
@@ -234,17 +231,6 @@ function SectionTimer({
       {view.phase === 'ready' && (
         <Button variant="primary" size="lg" icon={<Play />} onClick={onStart}>
           Start EMOM
-        </Button>
-      )}
-
-      {/*
-        One control, and only while there is work at the top of the minute to
-        finish. During the rest remainder there is nothing to press: the next
-        boundary flips the work back on its own, which is the whole contract.
-      */}
-      {view.phase === 'work' && (
-        <Button variant="primary" size="lg" icon={<Check />} onClick={onMinuteDone}>
-          Minute done
         </Button>
       )}
     </div>
@@ -291,33 +277,72 @@ function markerFor(position: number, view: EmomView): BlockMovementMarker {
 }
 
 /**
- * One movement of the rotation, as a row of the block's list. The live one is
- * `BlockPanel.MovementItem`'s to mark — a word, and `aria-current` — so colour
- * is never the cue.
+ * One movement of the rotation, as a row of the block's list, read rather than
+ * logged. The live one is `BlockPanel.MovementItem`'s to mark — a word, and
+ * `aria-current` — so colour is never the cue.
+ *
+ * Its target is the one its scheduled minute prescribes: the current minute
+ * when the movement is live, otherwise its next turn. A sequence also states
+ * its whole progression, so a rising target is never a surprise at the
+ * boundary. Rest is the block's, stated once per minute at the foot of the
+ * card: a per-movement rest line here would be a rest the user is not meant to
+ * take.
  */
 function EmomMovement({
   exercise,
-  assignment,
+  shape,
+  view,
   marker,
 }: {
   exercise: ExerciseProgress
-  assignment: string | null
+  shape: EmomShape
+  view: EmomView
   marker: BlockMovementMarker
 }) {
+  const prescription = exercise.prescription
+  const timed = view.phase !== 'untimed'
+  const assignment = timed ? minuteAssignment(exercise.position, shape) : null
+  const target = prescribedTarget(prescription)
+
   return (
     <BlockPanel.MovementItem marker={marker}>
       {assignment !== null && <BlockPanel.Label>{assignment}</BlockPanel.Label>}
 
-      {/*
-        Rest is the block's, stated once per minute at the foot of the card: a
-        per-movement rest line here would be a rest the user is not meant to
-        take.
-      */}
-      <ExerciseSetLogger
-        exercise={exercise}
-        ordinal={`${exercise.position}.`}
-        statesRest={false}
-      />
+      <BlockPanel.Movement
+        title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+        detail={timed ? scheduledTargetText(exercise, shape, view) : prescriptionText(prescription)}
+      >
+        {timed && target?.kind === 'sequence' && (
+          <BlockPanel.Note>
+            Each turn: {targetNumbers(target)}
+          </BlockPanel.Note>
+        )}
+        {prescription.tempo === null ? null : (
+          <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
+        )}
+
+        {/* EXE-06 and EXE-05, on demand: neither is an entry the minute asks for. */}
+        <ExerciseSwapControls exercise={exercise} />
+        <ExerciseCoaching exercise={exercise} />
+      </BlockPanel.Movement>
     </BlockPanel.MovementItem>
   )
+}
+
+/**
+ * The target a movement's scheduled minute prescribes, in words. Once the
+ * clock has nothing further for it — finished, or past the window — the row
+ * states the prescription's target as written rather than a minute's.
+ */
+function scheduledTargetText(
+  exercise: ExerciseProgress,
+  shape: EmomShape,
+  view: EmomView,
+): string {
+  const prescription = exercise.prescription
+  const minute = scheduledMinuteFor(exercise.position, view, shape)
+  if (minute === null) return targetText(prescription)
+
+  const target = targetForMinute(prescription, minute, shape.size)
+  return `MIN ${minute} · ${targetText(prescription, target)}`
 }

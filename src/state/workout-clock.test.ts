@@ -9,6 +9,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { emomView, type EmomShape } from './emom'
 import {
   elapsedMinutes,
   elapsedSeconds,
@@ -140,5 +141,68 @@ describe('useElapsedSeconds', () => {
     })
 
     expect(reads).toBe(after)
+  })
+})
+
+/**
+ * REQ-014 drives an EMOM's minutes off this same clock. The session's elapsed
+ * time stays its own reading — an EMOM starting, rolling over a minute or
+ * expiring changes nothing about it — and the EMOM's grid, read through the
+ * same hook, lands on the right minute after a background with no tick.
+ */
+describe('the session clock beside an EMOM (REQ-014)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const SHAPE: EmomShape = { timerType: 'per_minute', minutes: 4, restSeconds: 0, size: 2 }
+
+  it('keeps the session elapsed time independent of the EMOM’s own start', () => {
+    let now = START_MS + 300_000
+    // The EMOM is started five minutes into the session.
+    const emomStart = new Date(now).toISOString()
+    const { result } = renderHook(() => ({
+      session: useElapsedSeconds(START, () => now),
+      emom: useElapsedSeconds(emomStart, () => now),
+    }))
+
+    // Backgrounded across a minute boundary and past the window's expiry.
+    for (const [ahead, minute, phase] of [
+      [61_000, 2, 'work'],
+      [180_000, 4, 'finished'],
+    ] as const) {
+      now += ahead
+      act(() => {
+        window.dispatchEvent(new Event('visibilitychange'))
+      })
+
+      expect(result.current.session).toBe(elapsedSeconds(START, now))
+      const view = emomView({ startedAt: emomStart, workDoneMinute: null }, SHAPE, result.current.emom)
+      expect(view.minute).toBe(minute)
+      expect(view.phase).toBe(phase)
+    }
+
+    // Expiry stops the EMOM's grid, never the session: it reads 9:01 on.
+    expect(formatElapsed(result.current.session)).toBe('09:01')
+  })
+
+  it('reads an EMOM minute boundary off the wall clock, not off ticks', () => {
+    let now = START_MS
+    const { result } = renderHook(() => useElapsedSeconds(START, () => now))
+
+    // One throttled tick across the boundary into minute 2.
+    now += 60_000
+    act(() => {
+      vi.advanceTimersByTime(500)
+    })
+
+    const view = emomView({ startedAt: START, workDoneMinute: null }, SHAPE, result.current)
+    expect(view.minute).toBe(2)
+    expect(view.secondsRemaining).toBe(60)
+    expect(view.activePosition).toBe(2)
   })
 })

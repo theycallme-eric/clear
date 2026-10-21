@@ -7,31 +7,40 @@
  * minute is rest (`structure-types.md` §4). So nothing here counts ticks. The
  * state that is written down is the moment the user started the block, and
  * every reading — which minute it is, how much of it is left, which movement
- * this minute prescribes — is arithmetic on `now - startedAt`. That is the same
- * posture `workout-clock.ts` takes for the session timer, and it buys the same
- * two properties: a phone that locked for four minutes comes back to minute
- * five, and a refresh mid-block resumes the minute it was actually in
- * (SES-01).
+ * this minute prescribes and at what target — is arithmetic on
+ * `now - startedAt`. That is the same posture `workout-clock.ts` takes for the
+ * session timer, and it buys the same two properties: a phone that locked for
+ * four minutes comes back to minute five, and a refresh mid-block resumes the
+ * minute it was actually in (SES-01).
  *
- * Three decisions the requirement and the clarity spec are explicit about:
+ * Four decisions the requirement and the clarity spec are explicit about:
  *
  *   · **The minute boundary flips the work.** `emomView` derives the live
  *     movement from the minute — `((minute - 1) % size) + 1`, which is
  *     `emom-clarity.md` §2's rule — so a 2-movement EMOM alternates odd/even
  *     and a 3-movement one rotates, with no separate state to fall out of step.
- *   · **The remainder of the minute reads as rest.** Two things put the block
- *     in `rest`: the user saying the minute's work is done, and the block's own
- *     `round_rest_seconds` running as a trailing window inside every minute.
- *     Either way the next boundary flips it back to `work` on its own.
+ *   · **The minute decides the target, too.** A fixed or ranged target is the
+ *     same every turn; a sequence (`target_sequence`) is one rung per turn of
+ *     that movement, so a rising EMOM rises on the clock rather than on a tap
+ *     (REQ-014). `targetForMinute` is that rule.
+ *   · **The remainder of the minute reads as rest** only where the block
+ *     prescribes it: `round_rest_seconds` runs as a trailing window inside
+ *     every minute, and the next boundary flips it back to `work` on its own.
+ *     There is no "minute done" — execution is hands-off (REQ-014).
  *   · **Rest is the block's, once per minute.** The number comes from
  *     `workout_blocks.round_rest_seconds`, so the movements of an EMOM cannot
  *     each carry a rest the user is not meant to take
  *     (`superset-circuit-clarity.md` §8).
  *
+ * And one thing it never does: turn the schedule into a result. A minute the
+ * clock ran past is a minute that was *scheduled*, not work the athlete
+ * reported (E01), so nothing here counts completed minutes.
+ *
  * Nothing here imports React, touches storage, or knows what a card looks
  * like. `emom-block.tsx` draws it and `workout-persistence.ts` remembers it.
  */
 import type { Enums } from '../data/database.types'
+import { prescribedTarget, type PrescribedColumns, type PrescribedTarget } from './prescription'
 import type { BlockProgress } from './workout-progress'
 
 const SECONDS_PER_MINUTE = 60
@@ -50,9 +59,9 @@ export interface EmomShape {
   /**
    * Whole minutes the window runs for, from `timer_seconds`. Null is "the block
    * does not say", and the EMOM then never finishes on its own — the user
-   * completes it, and the minutes they got through are still counted. A
-   * remainder shorter than a minute is not a minute of work the block
-   * prescribes, so the seconds floor rather than round.
+   * moves on when they are done. A remainder shorter than a minute is not a
+   * minute of work the block prescribes, so the seconds floor rather than
+   * round.
    */
   readonly minutes: number | null
   /**
@@ -67,20 +76,22 @@ export interface EmomShape {
 }
 
 /**
- * What is remembered about an EMOM, and it is deliberately two fields.
+ * What is remembered about an EMOM: the block's clock, and nothing else that
+ * is read.
  *
- * `startedAt` is the block's clock. `workDoneMinute` is the one thing the
- * clock cannot answer: the user finished this minute's work early, so the rest
- * of the minute is rest. Both survive a refresh; neither is a counter.
+ * `workDoneMinute` is the stored shape of the retired "Minute done" control.
+ * It stays in the record so storage written by an earlier build still parses
+ * (`workout-persistence.ts`), but it is always written as null and never read:
+ * the schedule alone decides the phase (REQ-014).
  */
 export interface EmomState {
   /** When the user started the block, ISO. Null before they have. */
   readonly startedAt: string | null
-  /** The last minute whose work the user marked done. Null for none. */
+  /** Retired; always null. Kept for records written before REQ-014. */
   readonly workDoneMinute: number | null
 }
 
-/** Not started: no clock running, no minute marked. */
+/** Not started: no clock running. */
 export const EMOM_START: EmomState = { startedAt: null, workDoneMinute: null }
 
 /**
@@ -90,6 +101,11 @@ export const EMOM_START: EmomState = { startedAt: null, workDoneMinute: null }
  */
 export type EmomPhase = 'untimed' | 'ready' | 'work' | 'rest' | 'finished'
 
+/**
+ * Where the clock is. Every field is the *schedule* — which minute it is and
+ * what that minute prescribes — and none of them is evidence that the work was
+ * performed (E01).
+ */
 export interface EmomView {
   readonly phase: EmomPhase
   /** 1-based, and never past the prescribed window. */
@@ -102,8 +118,6 @@ export interface EmomView {
   readonly activePosition: number | null
   /** The movement the next minute opens with. Null when there is no next. */
   readonly nextPosition: number | null
-  /** Minutes of work got through — `block_results.minutes_completed`. */
-  readonly minutesCompleted: number
 }
 
 /**
@@ -139,6 +153,72 @@ export function positionForMinute(minute: number, size: number): number | null {
 }
 
 /**
+ * Which of its own turns a minute is for the movement that minute prescribes:
+ * minute 5 of a 2-movement EMOM is the first movement's third turn.
+ */
+export function turnForMinute(minute: number, size: number): number | null {
+  if (size <= 0) return null
+  return Math.floor((Math.max(1, Math.trunc(minute)) - 1) / size) + 1
+}
+
+/**
+ * The target a scheduled minute prescribes for its movement (REQ-014).
+ *
+ * Fixed and ranged targets hold every turn. A sequence is one rung per turn of
+ * this movement, so `[6, 8, 10]` on a 2-movement EMOM is 6 at minute one, 8 at
+ * minute three and 10 at minute five. A turn past the last rung has no target
+ * rather than an invented one: the prescription and its clock disagree, and
+ * the honest answer is that the sequence is spent.
+ */
+export function targetForMinute(
+  prescription: PrescribedColumns,
+  minute: number,
+  size: number,
+): PrescribedTarget | null {
+  const target = prescribedTarget(prescription)
+  if (target === null || target.kind !== 'sequence') return target
+
+  const turn = turnForMinute(minute, size)
+  const rung = turn === null ? undefined : target.rungs[turn - 1]
+  return rung === undefined ? null : { kind: 'fixed', value: rung }
+}
+
+/**
+ * The minute a movement is scheduled for now or next: the current minute when
+ * it is this movement's and its work is still ahead, otherwise its next turn.
+ * Null once the clock is finished, when the block has no clock, or when the
+ * window holds no further turn for it.
+ */
+export function scheduledMinuteFor(
+  position: number,
+  view: EmomView,
+  shape: EmomShape,
+): number | null {
+  if (shape.size <= 0) return null
+
+  let from: number
+  switch (view.phase) {
+    case 'untimed':
+    case 'finished':
+      return null
+    case 'ready':
+      from = 1
+      break
+    case 'work':
+      from = view.minute
+      break
+    case 'rest':
+      // The work at the top of this minute is behind the schedule.
+      from = view.minute + 1
+      break
+  }
+
+  const opening = positionForMinute(from, shape.size) ?? 1
+  const minute = from + ((position - opening + shape.size) % shape.size)
+  return shape.minutes !== null && minute > shape.minutes ? null : minute
+}
+
+/**
  * The clock starts once. Starting an EMOM that is already running would move
  * the grid under a user who is inside it, so a second start is ignored rather
  * than treated as a restart.
@@ -149,38 +229,20 @@ export function startEmom(state: EmomState, nowMs: number): EmomState {
 }
 
 /**
- * "This minute's work is done" — the rest of the minute is rest, and the next
- * boundary flips it back on its own. Only meaningful while working: marking a
- * minute done twice, or during its rest, is the same fact.
- */
-export function markMinuteDone(state: EmomState, view: EmomView): EmomState {
-  if (view.phase !== 'work') return state
-  return { ...state, workDoneMinute: view.minute }
-}
-
-/**
- * A restored record, repaired against the block it is being restored into.
+ * A restored record, repaired before it is used.
  *
  * A `startedAt` no clock can read is worse than no clock: elapsed time would
- * be zero forever and the block would sit at minute one. A marked minute past
- * the window, or one that is not a minute, is dropped — the user is still
- * inside a block whose clock is the truth.
+ * be zero forever and the block would sit at minute one. A mark left by the
+ * retired "Minute done" control is dropped — the clock is the truth, and a
+ * stale mark would otherwise put a restored minute into rest.
  */
-export function clampEmomState(stored: EmomState, shape: EmomShape): EmomState {
+export function clampEmomState(stored: EmomState): EmomState {
   const startedAt =
     stored.startedAt !== null && !Number.isNaN(Date.parse(stored.startedAt))
       ? stored.startedAt
       : null
 
-  const marked = stored.workDoneMinute
-  const usable =
-    startedAt !== null &&
-    marked !== null &&
-    Number.isInteger(marked) &&
-    marked >= 1 &&
-    (shape.minutes === null || marked <= shape.minutes)
-
-  return { startedAt, workDoneMinute: usable ? marked : null }
+  return { startedAt, workDoneMinute: null }
 }
 
 /**
@@ -203,7 +265,6 @@ export function emomView(
       secondsRemaining: 0,
       activePosition: null,
       nextPosition: null,
-      minutesCompleted: 0,
     }
   }
 
@@ -218,7 +279,6 @@ export function emomView(
       // problem rather than this one's.
       activePosition: positionForMinute(1, shape.size),
       nextPosition: positionForMinute(2, shape.size),
-      minutesCompleted: 0,
     }
   }
 
@@ -233,21 +293,15 @@ export function emomView(
       secondsRemaining: 0,
       activePosition: null,
       nextPosition: null,
-      minutesCompleted: shape.minutes,
     }
   }
 
   const minute = elapsedMinutes + 1
   const secondsRemaining = SECONDS_PER_MINUTE - (elapsed % SECONDS_PER_MINUTE)
 
-  // Two ways into the remainder: the user said the work was done, or the
-  // block's own trailing rest window has opened. Both are "the work at the top
-  // of this minute is behind you", which is why both count the minute below.
-  const markedDone = state.workDoneMinute !== null && state.workDoneMinute >= minute
-  const resting =
-    markedDone || (shape.restSeconds > 0 && secondsRemaining <= shape.restSeconds)
-
-  const completed = elapsedMinutes + (resting ? 1 : 0)
+  // The one way into the remainder: the block's own trailing rest window has
+  // opened. It is the schedule speaking, not a claim the work was done.
+  const resting = shape.restSeconds > 0 && secondsRemaining <= shape.restSeconds
   const lastMinute = shape.minutes !== null && minute >= shape.minutes
 
   return {
@@ -257,7 +311,6 @@ export function emomView(
     secondsRemaining,
     activePosition: positionForMinute(minute, shape.size),
     nextPosition: lastMinute ? null : positionForMinute(minute + 1, shape.size),
-    minutesCompleted: shape.minutes === null ? completed : Math.min(completed, shape.minutes),
   }
 }
 

@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `480fcdc68927b57fa8155386955b08b948519076a196c8f243cb852de588a2f9` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019 and TASK-022 changes below) |
+| Runtime source hash of this audit's tree | `4a035b0a332fb6fcb71123c27119041bb902dc9d8d4336065db3d3b46224565a` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022 and TASK-024 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -111,6 +111,17 @@ trees and this head, from `git diff`:
   `src/state/workout-progress.ts`. Current acceptance evidence is the REQ-013 component
   journey, not a rerun or rebinding of the historical effort-dialog capture cases. Individual
   format browser proof remains with those format tasks.
+- `480fcdc6…` to `4a035b0a…`: TASK-024 (REQ-014, JOURNEY-023, E01) makes EMOM execution
+  hands-off. The EMOM renderer no longer draws the set-entry form (with its RPE field) or
+  `Minute done`; each movement states the target its scheduled minute prescribes — fixed,
+  or one rung of a `target_sequence` per turn — read off the stored start against the wall
+  clock, so background and refresh restore the minute, rotation, target and end-of-minute
+  cue. The EMOM supplies no outcome, so its `block_results.minutes_completed` stays `null`
+  rather than being filled from the timer; a stored legacy `workDoneMinute` still parses and
+  is ignored. Changed: `src/state/emom.ts` and `src/ui/emom-block.tsx`. This **does** change
+  rendering on Workout. The pictures above predate it and are not rebound (EX-13). Current
+  acceptance evidence is `e2e/design-0143/workout-emom.spec.ts` on the mobile project and the
+  EMOM renderer/state tests.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
