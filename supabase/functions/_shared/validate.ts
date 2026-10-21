@@ -1092,7 +1092,8 @@ export function validateComposition(
       // REQ-018: the schema accepts ladder_timing, but persistence (TASK-039)
       // and the integrated contract (TASK-032) cannot carry it yet. Generated
       // output stays on the legacy shape rather than being silently dropped.
-      if (!LADDER_TIMING_GENERATION_ACTIVE && block.ladder_timing != null) {
+      // Even an explicit null is a new key to an old strict 4.1.0 client.
+      if (!LADDER_TIMING_GENERATION_ACTIVE && Object.hasOwn(block, 'ladder_timing')) {
         violations.push({
           check: 6,
           code: GenerationFailure.MALFORMED,

@@ -281,7 +281,8 @@ export const ladderTimingSchema = z.discriminatedUnion('mode', [
     interval_seconds: z.null(),
     cap_seconds: z.null(),
   }),
-  // Each round's work is bounded by cap_seconds; rounds are not on a schedule.
+  // One cap bounds the whole ladder/block, not each round. The global
+  // session clock is separate and unchanged (owner clarification 2026-10-21).
   z.strictObject({
     mode: z.literal('capped_window'),
     rounds: z.int().min(2),
@@ -404,9 +405,9 @@ export const workoutBlockSchema = z
     if (
       timing.mode === 'capped_window' &&
       block.timer_seconds !== null &&
-      timing.cap_seconds > block.timer_seconds
+      timing.cap_seconds !== block.timer_seconds
     ) {
-      issue(['ladder_timing', 'cap_seconds'], 'cap_seconds cannot exceed the block timer_seconds')
+      issue(['ladder_timing', 'cap_seconds'], 'cap_seconds must equal the whole ladder block timer_seconds')
     }
   })
 

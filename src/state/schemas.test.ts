@@ -528,7 +528,34 @@ describe('ladder timing is explicit, variable and additive (REQ-018, TASK-038)',
     it('rejects a window cap longer than the block clock', () => {
       expect(issuesOf(makeLadderTimingBlock('capped_window', { capSeconds: 400 }, { timer_seconds: 300 }))).toContainEqual({
         path: 'ladder_timing.cap_seconds',
-        message: 'cap_seconds cannot exceed the block timer_seconds',
+        message: 'cap_seconds must equal the whole ladder block timer_seconds',
+      })
+    })
+
+    it('rejects a smaller per-round cap instead of changing the whole ladder window', () => {
+      expect(issuesOf(makeLadderTimingBlock('capped_window', { capSeconds: 90 }, { timer_seconds: 300 }))).toContainEqual({
+        path: 'ladder_timing.cap_seconds',
+        message: 'cap_seconds must equal the whole ladder block timer_seconds',
+      })
+    })
+
+    it('uses one cap for the whole ladder regardless of its rung count', () => {
+      for (const rounds of [2, 7, 10]) {
+        const block = makeLadderTimingBlock('capped_window', { rounds, capSeconds: 240 })
+        expect(block.timer_seconds).toBe(240)
+        expect(issuesOf(block)).toEqual([])
+      }
+    })
+
+    it('validates every sequence member and preserves fixed companion work', () => {
+      const block = makeLadderTimingBlock('for_time', { rounds: 3 })
+      const second = { ...block.exercises[0], exercise_id: 'second-ladder', target_sequence: [6, 4, 2] }
+      const multiple = { ...block, exercises: [...block.exercises, second] }
+      expect(workoutBlockSchema.parse(multiple)).toEqual(multiple)
+      expect(workoutBlockSchema.parse(multiple).exercises[1]).toEqual(block.exercises[1])
+      expect(issuesOf({ ...multiple, exercises: [...block.exercises, { ...second, target_sequence: [6, 4] }] })).toContainEqual({
+        path: 'exercises[2].target_sequence',
+        message: 'target_sequence has 2 rungs but ladder_timing.rounds is 3',
       })
     })
   })

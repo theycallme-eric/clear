@@ -105,7 +105,7 @@ export function makeLadderTimingBlock(
     structure_type: mode === 'scheduled_starts' ? 'emom' : 'for_time',
     timer_type: mode === 'scheduled_starts' ? 'interval' : 'countdown',
     timer_seconds:
-      mode === 'scheduled_starts' ? rounds * intervalSeconds : rounds * capSeconds + 300,
+      mode === 'scheduled_starts' ? rounds * intervalSeconds : mode === 'capped_window' ? capSeconds : rounds * capSeconds + 300,
     rep_scheme: 'ladder_fixed_interval',
     exercises: [
       makePrescription({

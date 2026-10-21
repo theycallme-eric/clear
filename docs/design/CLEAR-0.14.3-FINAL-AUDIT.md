@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `ed68fef080a95c4020953b8607eb0789bb2a3f4949202a1f0b3a60a00e316fa8` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017 and TASK-038 changes below) |
+| Runtime source hash of this audit's tree | `8ff175a2dc4fa11a7349eb64775e292041190659d547afb86526777dd4497480` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017 and TASK-038 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -296,6 +296,14 @@ trees and this head, from `git diff`:
   TASK-032. Legacy payloads parse unchanged. No prompt, persistence, duration, dispatch or renderer
   change; this does **not** change rendering of any route. Current acceptance evidence is
   `src/state/schemas.test.ts` and `src/test/generation-validation.test.ts`.
+
+- `ed68fef0…` to `8ff175a2…`: TASK-038 independent review correction. The inactive generation gate
+  also rejects an explicit null timing key, keeping generated blocks inside old strict 4.1.0 readers'
+  closed key space. The owner's clarification makes `capped_window` one whole-ladder/block cap equal
+  to the block clock, separate from the unchanged global session timer, not a per-round cap. Added
+  null-key, closed-wire-key, cap consistency and multi-sequence/fixed-companion regressions; the
+  focused schema/backend command passes 193 tests. No renderer, persistence, prompt or clock module
+  is changed, and no historical picture is rebound to this head.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
