@@ -86,13 +86,14 @@ import {
   GENERATION_GOALS,
   initialDraft,
   inputFrom,
-  intensityRange,
+  intensityNote,
   intentFrom,
   needsFirstWorkoutGuidance,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
   RECOVERY_NOTE,
   refusalFrom,
+  REQUESTED_INTENSITY_RANGE,
   requestFrom,
   resolveGeneration,
   searchWithIntent,
@@ -469,9 +470,8 @@ function GenerateForm({
   const suggestion = applied ?? deload.suggestion
 
   const intensityHint = useId()
-  const range = intensityRange(resolved.goal)
+  const range = REQUESTED_INTENSITY_RANGE
   const intensity = resolved.intensity ?? draft.intensity ?? range.start
-  const chosenGoal = GENERATION_GOALS.find((goal) => goal.value === resolved.goal)
   const standingGoal = GENERATION_GOALS.find((goal) => goal.value === goalPreset)
 
   /** Dismissing the choices takes the override with them (REQ-007). */
@@ -702,7 +702,7 @@ function GenerateForm({
           />
         )}
 
-        {/* Intensity — the range is the goal's, and the readout says so */}
+        {/* Intensity — one 1–10 choice; the hint says what the goal makes of it (U27) */}
         <div className="clr-stack clr-stack--tight">
           <IntensitySlider
             label="Intensity"
@@ -715,11 +715,7 @@ function GenerateForm({
             aria-describedby={intensityHint}
             onChange={chooseIntensity}
           />
-          <p id={intensityHint}>
-            {resolved.goal === null
-              ? 'Your goal sets the range.'
-              : `${chosenGoal?.label} runs ${range.min} to ${range.max}.`}
-          </p>
+          <p id={intensityHint}>{intensityNote(resolved.goal, intensity)}</p>
         </div>
 
         <Select

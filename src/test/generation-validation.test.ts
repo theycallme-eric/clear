@@ -8,7 +8,10 @@ import {
   createComposer,
   parseCompletion,
 } from '../../supabase/functions/_shared/claude.ts'
-import type { PromptInput } from '../../supabase/functions/_shared/prompt.ts'
+import {
+  resolveEffectiveRequest,
+  type PromptInput,
+} from '../../supabase/functions/_shared/prompt.ts'
 import {
   DURATION_CHECK_OWNER,
   HARD_CHECKS,
@@ -1004,5 +1007,35 @@ describe('introductory prose is accepted and never retried (REQ-010)', () => {
     expect(light.sections.some((section) => /rpe/i.test(section.section_notes ?? ''))).toBe(false)
     expect(honoured?.status).toBe('within')
     expect(honoured?.detail).toEqual(['directive:deload'])
+  })
+
+  it('validates at the effective intensity, so Recovery stays gentle whatever was requested (U27)', () => {
+    const compliance = (record: QualityRecord) =>
+      record.observations.find((observation) => observation.check === SoftCheck.DIRECTIVE_COMPLIANCE)
+    const deloadFor = (goal: 'active_recovery' | 'strength', requested: number) =>
+      promptInput({
+        request: resolveEffectiveRequest({ ...INPUT.request, goal, requestedIntensity: requested }),
+        training: buildTrainingHistory({ anchors: TRAINING_ANCHORS, today: TODAY, deload: true }),
+      })
+    const threeSets = composed()
+    threeSets.sections[1].blocks[0].exercises[0].sets = 3
+
+    for (const requested of [1, 3, 9, 10]) {
+      const recovering = deloadFor('active_recovery', requested)
+      // The requested number reaches validation unchanged; the ceiling is Recovery's.
+      expect(recovering.request.requestedIntensity).toBe(requested)
+      expect(recovering.request.effectiveIntensity).toBe(Math.min(requested, 3))
+      // Primary at effective ≤3: ceiling 3 × 0.6 → 1, floor 2. Three sets is over.
+      expect(compliance(observeQuality(threeSets, recovering))?.detail).toContain(
+        'sets:back-squat:3',
+      )
+    }
+
+    // The same 9 under Strength is composed at 9: ceiling 6 × 0.6 → 3, so three sets is within.
+    const strength = deloadFor('strength', 9)
+    expect(strength.request.effectiveIntensity).toBe(9)
+    expect(compliance(observeQuality(threeSets, strength))?.detail).not.toContain(
+      'sets:back-squat:3',
+    )
   })
 })

@@ -24,7 +24,9 @@ import {
   INTENSITY_BY_GOAL,
   initialDraft,
   inputFrom,
-  intensityRange,
+  effectiveIntensity,
+  intensityNote,
+  REQUESTED_INTENSITY_RANGE,
   needsFirstWorkoutGuidance,
   NOTES_MAX_LENGTH,
   POWER_REFUSAL,
@@ -151,9 +153,9 @@ describe('the opening draft', () => {
     expect(initialDraft(null).locationId).toBeNull()
   })
 
-  it('offers the full range until a goal is resolved', () => {
-    expect(intensityRange(null)).toEqual(FULL_INTENSITY_RANGE)
-    expect(intensityRange('conditioning')).toEqual(INTENSITY_BY_GOAL.conditioning)
+  it('offers the schema’s full 1–10 as the one requested range (U27)', () => {
+    expect(FULL_INTENSITY_RANGE).toEqual(REQUESTED_INTENSITY_RANGE)
+    expect(REQUESTED_INTENSITY_RANGE).toMatchObject({ min: 1, max: 10 })
   })
 })
 
@@ -260,14 +262,48 @@ describe('the resolver (REQ-001, REQ-004, REQ-005)', () => {
   })
 })
 
-describe('intensity (REQ-004, v3 delta §2.2)', () => {
-  it('clamps the history intensity to the standing Goal’s range', () => {
+describe('intensity (REQ-004, REQ-009 U27, v3 delta §2.2)', () => {
+  it('carries the history intensity unchanged whatever the standing Goal', () => {
     const draft = initialDraft(LOCATION)
 
-    expect(resolveGeneration(draft, contextFor('hypertrophy', recommended(10))).intensity).toBe(9)
-    expect(resolveGeneration(draft, contextFor('hypertrophy', recommended(2))).intensity).toBe(3)
-    expect(resolveGeneration(draft, contextFor('conditioning', recommended(1))).intensity).toBe(4)
+    expect(resolveGeneration(draft, contextFor('hypertrophy', recommended(10))).intensity).toBe(10)
+    expect(resolveGeneration(draft, contextFor('hypertrophy', recommended(2))).intensity).toBe(2)
+    expect(resolveGeneration(draft, contextFor('conditioning', recommended(1))).intensity).toBe(1)
     expect(resolveGeneration(draft, contextFor('balanced', recommended(10))).intensity).toBe(10)
+  })
+
+  it('offers every goal the same 1–10 choice, and carries every value unchanged to the request', () => {
+    for (const goal of STANDING_GOALS) {
+      for (const recovery of [false, true]) {
+        for (let value = FULL_INTENSITY_RANGE.min; value <= FULL_INTENSITY_RANGE.max; value += 1) {
+          const draft = withRecovery(withIntensity(completeDraft(), value), recovery)
+          const context = contextFor(goal)
+          const resolved = resolveGeneration(draft, context)
+          const request = requestFrom(draft, context, REQUEST_ID)
+
+          expect(resolved.intensity).toBe(value)
+          expect(isOk(request) && request.value.requested_intensity).toBe(value)
+          expect(isOk(request) && inputFrom(request.value).requested_intensity).toBe(value)
+        }
+      }
+    }
+  })
+
+  it('says what the Goal makes of the choice, Recovery’s gentle ceiling included', () => {
+    expect(intensityNote(null, 5)).toBe('Your goal sets how it is used.')
+    expect(intensityNote('strength', 6)).toBe('Strength works at 3 to 10.')
+    expect(intensityNote('strength', 1)).toBe('Strength works at 3 to 10, so 1 is composed as 3.')
+    expect(intensityNote('active_recovery', 8)).toBe(
+      'Recovery works at 1 to 3, so 8 is composed as 3.',
+    )
+    for (const goal of Constants.public.Enums.goal_preset) {
+      for (let value = 1; value <= 10; value += 1) {
+        const effective = effectiveIntensity(goal, value)
+        if (effective !== value) {
+          expect(intensityNote(goal, value)).toContain(`${value} is composed as ${effective}.`)
+        }
+      }
+    }
   })
 
   it('starts on the Goal’s own start with no recommendation', () => {
@@ -280,30 +316,31 @@ describe('intensity (REQ-004, v3 delta §2.2)', () => {
     }
   })
 
-  it('starts Recovery on its own start, and clamps history into its range', () => {
+  it('starts Recovery on its own start, and leaves Recovery’s ceiling to the effective intensity', () => {
     const recovery = withRecovery(initialDraft(LOCATION), true)
 
     expect(resolveGeneration(recovery, STRENGTH).intensity).toBe(
       INTENSITY_BY_GOAL.active_recovery.start,
     )
-    expect(resolveGeneration(recovery, contextFor('strength', recommended(7))).intensity).toBe(
-      INTENSITY_BY_GOAL.active_recovery.max,
-    )
+    const fromHistory = resolveGeneration(recovery, contextFor('strength', recommended(7)))
+    expect(fromHistory.intensity).toBe(7)
+    expect(effectiveIntensity('active_recovery', 7)).toBe(INTENSITY_BY_GOAL.active_recovery.max)
   })
 
-  it('keeps the number the athlete set over the history one, clamped to the range', () => {
+  it('keeps the number the athlete set over the history one, unchanged', () => {
     const context = contextFor('hypertrophy', recommended(7))
 
     expect(resolveGeneration(withIntensity(initialDraft(LOCATION), 5), context).intensity).toBe(5)
-    expect(resolveGeneration(withIntensity(initialDraft(LOCATION), 10), context).intensity).toBe(9)
-    expect(resolveGeneration(withIntensity(initialDraft(LOCATION), 1), context).intensity).toBe(3)
+    expect(resolveGeneration(withIntensity(initialDraft(LOCATION), 10), context).intensity).toBe(10)
+    expect(resolveGeneration(withIntensity(initialDraft(LOCATION), 1), context).intensity).toBe(1)
   })
 
   it('keeps a set number through Recovery and back rather than resetting it', () => {
     const hard = withIntensity(initialDraft(LOCATION), 8)
     const recovering = withRecovery(hard, true)
 
-    expect(resolveGeneration(recovering, STRENGTH).intensity).toBe(3)
+    expect(resolveGeneration(recovering, STRENGTH).intensity).toBe(8)
+    expect(effectiveIntensity('active_recovery', 8)).toBe(3)
     expect(resolveGeneration(withRecovery(recovering, false), STRENGTH).intensity).toBe(8)
   })
 
@@ -337,14 +374,13 @@ describe('a prefilled draft (HOME-03)', () => {
     expect(canGenerate(draft, contextFor('strength', recommended(7)))).toBe(true)
   })
 
-  it('keeps the prefilled intensity, clamped to the effective goal’s range', () => {
+  it('keeps the prefilled intensity unchanged; the effective goal interprets it', () => {
     const prefilled = initialDraft(LOCATION, { focus: 'lower_body', intensity: 9 })
 
     expect(resolveGeneration(prefilled, STRENGTH).intensity).toBe(9)
-    // Recovery tops out at 3, so the suggestion snaps rather than overriding it.
-    expect(resolveGeneration(withRecovery(prefilled, true), STRENGTH).intensity).toBe(
-      INTENSITY_BY_GOAL.active_recovery.max,
-    )
+    // Recovery tops out at 3 downstream; the requested number is not rewritten.
+    expect(resolveGeneration(withRecovery(prefilled, true), STRENGTH).intensity).toBe(9)
+    expect(effectiveIntensity('active_recovery', 9)).toBe(INTENSITY_BY_GOAL.active_recovery.max)
   })
 
   it('builds the destination Home links to, and reads it back', () => {
@@ -556,8 +592,10 @@ describe('one-workout intent in the URL (REQ-007, REQ-008)', () => {
       focus: null,
       why: 'power-refused',
     })
-    expect(resolved.intensity).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL.active_recovery.min)
-    expect(resolved.intensity).toBeLessThanOrEqual(INTENSITY_BY_GOAL.active_recovery.max)
+    // The requested number is kept; Recovery's 1–3 is the effective one.
+    const effective = effectiveIntensity('active_recovery', resolved.intensity ?? 0)
+    expect(effective).toBeGreaterThanOrEqual(INTENSITY_BY_GOAL.active_recovery.min)
+    expect(effective).toBeLessThanOrEqual(INTENSITY_BY_GOAL.active_recovery.max)
     expect(canGenerate(recovering, POWER)).toBe(false)
     expect(canGenerate(withOverride(recovering, 'full_body'), POWER)).toBe(true)
   })
@@ -584,7 +622,8 @@ describe('the resolver’s sources (REQ-009)', () => {
 
   describe.each(GOAL_SOURCES)('a $name Goal', ({ recovery, goal }) => {
     const base = withRecovery(initialDraft(LOCATION), recovery)
-    const intensity = clampIntensity(goal, 7)
+    // U27: the requested number is the same under either Goal.
+    const intensity = 7
 
     it('with the recommended Focus', () => {
       expect(resolveGeneration(base, contextFor('strength', recommended(7)))).toMatchObject({
@@ -700,7 +739,7 @@ describe('purity', () => {
     const runtime = imports.filter((match) => match[1] === undefined).map((match) => match[2])
 
     // Everything it runs is the state layer's own: no client, no query, no store.
-    expect(runtime.sort()).toEqual(['./errors', './onboarding', './schemas'])
+    expect(runtime.sort()).toEqual(['./errors', './intensity', './onboarding', './schemas'])
     expect(source).not.toMatch(/localStorage|sessionStorage|indexedDB|supabase\s*[.(]|fetch\(/)
   })
 
@@ -770,7 +809,7 @@ describe('the payload (CORE-03 §1)', () => {
     })
   })
 
-  it('sends the standing Goal, the recommended Focus and the clamped history intensity untouched', () => {
+  it('sends the standing Goal, the recommended Focus and the history intensity untouched', () => {
     const request = requestFrom(
       initialDraft(LOCATION),
       contextFor('hypertrophy', recommended(10)),
@@ -783,8 +822,10 @@ describe('the payload (CORE-03 §1)', () => {
     expect(request.value).toMatchObject({
       goal: 'hypertrophy',
       focus: 'lower_body',
-      requested_intensity: 9,
+      requested_intensity: 10,
     })
+    // Hypertrophy's 3–9 is applied downstream, to the effective intensity.
+    expect(effectiveIntensity('hypertrophy', request.value.requested_intensity)).toBe(9)
   })
 
   it('takes goal and focus from the resolver in every state it is ready', () => {
@@ -875,12 +916,18 @@ describe('the payload (CORE-03 §1)', () => {
     expect(isErr(over)).toBe(true)
   })
 
-  it('never sends an intensity outside the goal’s range, whatever the draft holds', () => {
+  it('never sends an intensity outside the schema’s 1–10, whatever the draft holds', () => {
     // Not reachable through the slider — the point is that the resolver, not
-    // the control, is what the payload's intensity is held to.
-    const request = requestFrom(completeDraft({ intensity: 0 }), STRENGTH, REQUEST_ID)
+    // the control, is what the payload's intensity is held to. The Goal's own
+    // range is the effective intensity's, downstream.
+    const low = requestFrom(completeDraft({ intensity: 0 }), STRENGTH, REQUEST_ID)
+    const high = requestFrom(completeDraft({ intensity: 14 }), STRENGTH, REQUEST_ID)
 
-    expect(isOk(request) && request.value.requested_intensity).toBe(INTENSITY_BY_GOAL.strength.min)
+    expect(isOk(low) && low.value.requested_intensity).toBe(FULL_INTENSITY_RANGE.min)
+    expect(isOk(high) && high.value.requested_intensity).toBe(FULL_INTENSITY_RANGE.max)
+    expect(effectiveIntensity('strength', FULL_INTENSITY_RANGE.min)).toBe(
+      INTENSITY_BY_GOAL.strength.min,
+    )
   })
 
   it('hands the client the request minus the id it mints for itself', () => {
@@ -965,8 +1012,10 @@ describe('the recovery note is copy only (TASK-015, U29)', () => {
       expect(isOk(request) && request.value).toMatchObject({
         goal: 'active_recovery',
         focus: 'upper_body',
-        requested_intensity: INTENSITY_BY_GOAL.active_recovery.max,
+        requested_intensity: 9,
       })
+      // The recovery range is kept, as the effective intensity.
+      expect(effectiveIntensity('active_recovery', 9)).toBe(INTENSITY_BY_GOAL.active_recovery.max)
 
       const power = withRecovery(withAnchor(initialDraft(LOCATION), 'power'), true)
       expect(power.anchor).toBeNull()

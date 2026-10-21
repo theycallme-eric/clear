@@ -41,6 +41,13 @@ import type { Database } from '../data/database.types'
 import type { GenerationInput } from '../data/generation'
 import type { AppError, Result } from './errors'
 import { ErrorCode } from './errors'
+import {
+  effectiveIntensity,
+  INTENSITY_BY_GOAL,
+  REQUESTED_INTENSITY_RANGE,
+  requestedIntensity,
+  type IntensityRange,
+} from './intensity'
 import { GOALS, type Option } from './onboarding'
 import {
   generationRequestSchema,
@@ -80,28 +87,16 @@ export const ANCHORS: readonly Option<SessionFocus>[] = [
   { value: 'power', label: 'Power' },
 ] as const
 
-export interface IntensityRange {
-  readonly min: number
-  readonly max: number
-  /** Where the slider lands the first time this goal is chosen. */
-  readonly start: number
-}
-
 /**
- * §2.2's table. Every range sits inside `requested_intensity between 1 and 10`,
- * which is the database's own bound and the schema's — these narrow it, and
- * nothing here may widen it.
+ * U27: §2.2's per-goal table is the *effective* range a session is composed at,
+ * applied downstream by `effectiveIntensity`. The form offers every goal the
+ * same requested 1–10 and uses the table only for where the choice opens.
  */
-export const INTENSITY_BY_GOAL: Record<GoalPreset, IntensityRange> = {
-  strength: { min: 3, max: 10, start: 6 },
-  hypertrophy: { min: 3, max: 9, start: 6 },
-  conditioning: { min: 4, max: 10, start: 7 },
-  balanced: { min: 1, max: 10, start: 5 },
-  active_recovery: { min: 1, max: 3, start: 2 },
-}
+export { effectiveIntensity, INTENSITY_BY_GOAL, REQUESTED_INTENSITY_RANGE }
+export type { IntensityRange }
 
-/** The slider's bounds while no goal is resolved: the schema's own. */
-export const FULL_INTENSITY_RANGE: IntensityRange = { min: 1, max: 10, start: 5 }
+/** The slider's bounds for every goal, and while none is resolved: the schema's own. */
+export const FULL_INTENSITY_RANGE: IntensityRange = REQUESTED_INTENSITY_RANGE
 
 /** The time target the screen opens on, in minutes. */
 export const DEFAULT_DURATION_MINS = 45
@@ -329,15 +324,30 @@ export function initialDraft(
   }
 }
 
-/** The range the slider offers right now. Full while no goal is resolved. */
-export function intensityRange(goal: GoalPreset | null): IntensityRange {
-  return goal === null ? FULL_INTENSITY_RANGE : INTENSITY_BY_GOAL[goal]
+/**
+ * U27: what the intensity choice says about itself. The choice is 1–10 for
+ * every Goal; this states the Goal's range and, when the requested number is
+ * outside it, the effective number the workout is composed at — so the
+ * interpretation is said rather than hidden in a narrower slider.
+ */
+export function intensityNote(goal: GoalPreset | null, requested: number): string {
+  if (goal === null) return 'Your goal sets how it is used.'
+  const label = GENERATION_GOALS.find((option) => option.value === goal)?.label ?? goal
+  const { min, max } = INTENSITY_BY_GOAL[goal]
+  const effective = effectiveIntensity(goal, requested)
+  const range = `${label} works at ${min} to ${max}`
+  return effective === requested
+    ? `${range}.`
+    : `${range}, so ${requested} is composed as ${effective}.`
 }
 
-/** §2.2: outside the range snaps to the nearest valid value, never to the end. */
+/**
+ * §2.2: outside the Goal's range snaps to the nearest valid value, never to the
+ * end. The Goal's own interpretation, as `effectiveIntensity` applies it — the
+ * form does not apply it to the athlete's choice.
+ */
 export function clampIntensity(goal: GoalPreset, value: number): number {
-  const { min, max } = INTENSITY_BY_GOAL[goal]
-  return Math.min(max, Math.max(min, value))
+  return effectiveIntensity(goal, value)
 }
 
 /** §2.3: which anchors a goal offers. Power is Active Recovery's only exclusion. */
@@ -431,9 +441,10 @@ export type GenerationResolution =
  * The Goal is the standing one, or Recovery when the draft asks for it for this
  * workout. The Focus is the athlete's own choice when they made one and the
  * recommendation otherwise; Power under Recovery is refused rather than
- * swapped for another Focus (§2.3). The intensity is the athlete's number, else
- * the history-derived one, else the Goal's start — clamped to the Goal's range
- * whichever it was.
+ * swapped for another Focus (§2.3). The intensity is the athlete's requested
+ * number, else the history-derived one, else the Goal's start — held to 1–10
+ * and otherwise unchanged (U27). The Goal's range, Recovery's 1–3 included, is
+ * applied downstream as the effective intensity, never to this number.
  */
 export function resolveGeneration(
   draft: GenerationDraft,
@@ -447,8 +458,7 @@ export function resolveGeneration(
   const { history } = context
   const goal: GoalPreset = draft.recovery ? 'active_recovery' : standing
   const recommended = history.status === 'recommended' ? history : null
-  const intensity = clampIntensity(
-    goal,
+  const intensity = requestedIntensity(
     draft.intensity ?? recommended?.intensity ?? INTENSITY_BY_GOAL[goal].start,
   )
 
@@ -492,8 +502,8 @@ export function needsFirstWorkoutGuidance(
  * Recovery for this one workout, on or off. An anchor Recovery does not offer
  * is deselected rather than sent: §2.3 is explicit that the anchor is left
  * blank rather than substituted — the user chooses again, because no other
- * anchor is the one they meant. The intensity is left alone; the resolver
- * clamps it to whichever range is in force.
+ * anchor is the one they meant. The intensity is left alone: Recovery's 1–3 is
+ * applied downstream as the effective intensity, not to the requested number.
  */
 export function withRecovery(draft: GenerationDraft, recovery: boolean): GenerationDraft {
   const goal = recovery ? 'active_recovery' : null
@@ -531,12 +541,11 @@ export function withOverride(
 
 /**
  * The number the athlete set, held inside the schema's own bounds. The Goal's
- * narrower range is the resolver's to apply, so the number survives a change of
- * Goal instead of being rewritten by it.
+ * narrower range is applied downstream, so the number survives a change of Goal
+ * instead of being rewritten by it.
  */
 export function withIntensity(draft: GenerationDraft, value: number): GenerationDraft {
-  const { min, max } = FULL_INTENSITY_RANGE
-  return { ...draft, intensity: Math.min(max, Math.max(min, Math.round(value))) }
+  return { ...draft, intensity: requestedIntensity(value) }
 }
 
 export function withLocation(
