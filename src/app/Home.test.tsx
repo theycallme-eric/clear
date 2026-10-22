@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
+import { favoriteRunsQueryKey } from '../state/favorite-queries'
 import { QueryClient } from '../state/query'
 import type { Profile, WorkoutSessionRow } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey } from '../state/user-queries'
@@ -19,7 +20,7 @@ import {
 } from '../state/session-suggestion'
 import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
-import { AppProviders, renderApp, signedIn } from '../test/render'
+import { AppProviders, createWarmQueryClient, renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
 import {
   createWorkoutDouble,
@@ -39,6 +40,7 @@ import {
   VIEW_HISTORY_LABEL,
 } from './Home'
 import { createTestRouter } from './router'
+import { REMOVE_FAVORITE_CONFIRM, REMOVE_FAVORITE_LABEL } from '../ui/favorite-list'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -145,6 +147,55 @@ describe('Home', () => {
 
     expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: 'Today' })).toBeNull()
+  })
+
+  it('drops deleted progression on actual Review Back → Home remove → Forward', async () => {
+    const user = userEvent.setup()
+    const favorite = savedWorkoutFixture({ times_completed: 3 })
+    const performed = reconstructionFixture({ state: 'completed',
+      sections: [{ sectionType: 'conditioning', blocks: [{ structureType: 'for_time',
+        timerType: 'count_up', timerSeconds: 600, exercises: ['completed'],
+        result: { elapsed_seconds: 123, completed_under_cap: true } }] }] })
+    const workout = createWorkoutDouble({ session: null, favorites: [favorite],
+      historyRows: [performed.session], favoriteAttempts: [{
+        id: 'c0000001-0000-4000-8000-000000000000', saved_workout_id: favorite.id,
+        session_id: performed.session.id, started_at: '2026-09-24T09:00:00+00:00',
+        completed_at: '2026-09-24T09:30:00+00:00',
+      }], sessions: { asPerformed: async () => ok(performed) } })
+    const attempts = workout.clients.favorites.attempts
+    let progressionReads = 0
+    workout.clients.favorites.attempts = async id => {
+      progressionReads += 1
+      // The hosted FK cascade removes these rows with saved_workouts. The
+      // existing in-memory double keeps attempt history, so model that boundary.
+      return workout.favorites().some(row => row.id === id) ? attempts(id) : ok([])
+    }
+    const queryClient = createWarmQueryClient()
+    const router = createTestRouter(['/?tab=favorites'])
+    render(<AppProviders {...signedIn({ workout: workout.clients, queryClient })}>
+      <RouterProvider router={router} />
+    </AppProviders>)
+    await user.click(await screen.findByRole('button', { name: 'Start' }))
+    await screen.findByText(/Completed 3 times/)
+    expect(await screen.findByText(/Personal best · set/)).toBeInTheDocument()
+    expect(progressionReads).toBe(1)
+
+    await act(() => router.navigate(-1))
+    await screen.findByRole('heading', { level: 1, name: 'Today' })
+    expect(screen.getByRole('tab', { name: 'Favorites' })).toHaveAttribute('aria-selected', 'true')
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: REMOVE_FAVORITE_CONFIRM }))
+    await screen.findByText(FAVORITES_EMPTY_TITLE)
+    expect(workout.favorites()).toEqual([])
+
+    await act(() => router.navigate(1))
+    await screen.findByRole('button', { name: 'Start workout' })
+    await screen.findByText('Never completed')
+    expect(progressionReads).toBe(2)
+    expect(queryClient.getState(favoriteRunsQueryKey(favorite.id))).toEqual({ status: 'ready', data: [] })
+    expect(screen.queryByText(/Completed 3 times/)).toBeNull()
+    expect(screen.queryByText(/Personal best · set/)).toBeNull()
+    expect(screen.queryByRole('list', { name: 'Completions' })).toBeNull()
   })
 
   describe('U21: the existing full favorites list and retained tab', () => {
