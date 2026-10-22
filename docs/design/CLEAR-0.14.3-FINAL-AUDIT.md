@@ -20,8 +20,10 @@ Current Task034 capture acceptance is a **new**, separately scoped group at
 `docs/design/evidence-0143/task034-format-preview-mobile/`: four actual mobile
 skin cases and eight unique phone/short PNG cells. The same real-session,
 no-generation/no-write, route/Back, accessibility, motion/layout, pixel/byte and
-source/driver identity predicates remain mandatory. New mobile captures and
-native exact-head verification are pending; no old picture is rebound.
+source/driver identity predicates remain mandatory. The current Task036 runtime
+was genuinely recaptured at `32dd376627713e42283281969b77f37369cfd845`
+(four cases/eight phone PNGs, session93528, exit0); native exact-head verification
+is pending. No old picture is rebound.
 
 **Status:** the three route evidence groups are complete and aggregated here. Local same-source
 proof is executed by the protected wrapper on the committed head. Exact deployed proof and owner
@@ -542,12 +544,23 @@ trees and this head, from `git diff`:
   retains its current-runtime hash guard. The previous13-file phone group is preserved
   byte-for-byte at `task034-format-preview-mobile-before-task036/` (sorted payload digest
   `225ffc69e3905242e4a7c310cdc2f992b73b39c39038ac0f9ccbbea5e6db2d9c`), not rebound
-  as current proof. A genuinely fresh four-skin/eight-PNG phone capture on this runtime is
-  pending. Task-local phone proof is the U09 block of `e2e/settings-locations.spec.ts`.
+  as current proof. A genuinely fresh four-skin/eight-PNG phone capture on this runtime
+  passed all4cases in26.8seconds (session93528, process53147) on
+  `32dd376627713e42283281969b77f37369cfd845`, observed21:54:14–21:54:30UTC.
+  The capture driver is
+  `bfa3ccd709bc4e1647c7962cd56def7e7becfd54a659d7f9391f99d5ed09d005`.
+  Records retain their actual checkout/process/time identities (the first checkout was
+  clean; later records truthfully include newly written evidence). Normal390×844 and
+  short390×320 captures retain real session, route/Back, Axe, motion, layout, PNG
+  byte/pixel and zero generation/write checks. This is local proof, not deployed
+  release proof or owner UAT. Task-local checkbox phone proof remains the U09 block of
+  `e2e/settings-locations.spec.ts` and still requires full native reverification.
   Source continuity after a protected squash requires either direct capture ancestry or
   exact retained run-branch, capture payload and full-tree incorporation on the tested
   base. The lineage helper grants no delivery credit and waives no capture predicate.
 
+  The following wider-device paragraph and command are retained earlier Task034
+  history, not Task036's current mobile-only capture or an instruction to rerun it.
   The added task-local `e2e/design-0143/format-preview.spec.ts` uses the existing real
   authenticated-session fixture, deterministic skin/motion setup and reached-state/motion
   capture driver. The exact canonical-top matrix passed with workers1/retries0, no failures
