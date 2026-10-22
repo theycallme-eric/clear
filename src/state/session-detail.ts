@@ -163,7 +163,7 @@ const STATE_LABELS: Readonly<Record<SessionState, string>> = {
   abandoned: 'Abandoned',
 }
 
-const STATUS_LABELS: Readonly<Record<Enums<'execution_status'>, string>> = {
+export const STATUS_LABELS: Readonly<Record<Enums<'execution_status'>, string>> = {
   not_started: 'Not logged',
   completed: 'Done',
   skipped: 'Skipped',

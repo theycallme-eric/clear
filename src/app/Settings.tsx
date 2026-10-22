@@ -4,7 +4,7 @@
  * IA.md §4: atmosphere `full`, protected, in from Home, out to Home and the
  * sub-views. Composition is 0.14.3's contained form: the screen `<h1>` is the
  * only text on the atmosphere, and each section — training, limitations,
- * appearance, places, session — is one `Card` holding its own heading, its
+ * appearance, places, formats, session — is one `Card` holding its own heading, its
  * controls and its save line. Nothing is pinned while the screen is usable,
  * because every change saves itself; the footer carries Retry alone.
  *
@@ -96,6 +96,7 @@ import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
+import { FORMAT_PREVIEW_ROUTE } from './FormatPreview'
 import { Screen } from './Screen'
 import { ANONYMOUS_HOME, AUTHENTICATED_HOME, ONBOARDING_ROUTE } from './guards'
 
@@ -177,6 +178,7 @@ export function Settings() {
             <LimitationsSection />
             <AppearanceSection />
             <TrainingPlacesSection />
+            <FormatsSection />
             <SessionSection />
           </div>
         )}
@@ -534,6 +536,22 @@ function TrainingPlacesSection() {
     <SettingsCard id="settings-places" heading="Places and equipment">
       <TextAction onClick={() => void navigate('/settings/locations', { state: FROM_SETTINGS_STATE })}>
         Manage places
+      </TextAction>
+    </SettingsCard>
+  )
+}
+
+/**
+ * E06: how each workout format reads, shown from fixed examples. The preview
+ * is read-only, so this card offers only the way there.
+ */
+function FormatsSection() {
+  const navigate = useNavigate()
+
+  return (
+    <SettingsCard id="settings-formats" heading="Workout formats">
+      <TextAction onClick={() => void navigate(FORMAT_PREVIEW_ROUTE, { state: FROM_SETTINGS_STATE })}>
+        Preview formats
       </TextAction>
     </SettingsCard>
   )

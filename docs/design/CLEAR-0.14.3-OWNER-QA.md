@@ -37,8 +37,9 @@ pictures under `docs/design/evidence-0143/` named in the audit.
 | 8 | `/summary` | Duration and Streak cards; the four moods are round line faces, Peak has no plus. Save and close returns Home with the session in Recent. |
 | 9 | `/history` | The list is one card with rows, not a card per row. Empty, filtered and Load older behave. |
 | 10 | `/history/:id` | Open a past session: one Overview card with Mood and Notes set off by rules. |
-| 11 | `/settings` | Five section cards. Switch through all four skins; the selection carries a tick. |
+| 11 | `/settings` | Six section cards. Switch through all four skins; the selection carries a tick. |
 | 12 | `/settings/locations` | One card per place; the default carries a tick and a sentence; delete asks first. |
+| 13 | `/settings/formats` | From Settings → Workout formats → Preview formats. Fixed examples of every format and ladder timing mode, with status glyphs; nothing to start, log or save. Back returns to Settings, and History and Settings are unchanged. Check in all four skins. |
 
 Across the walk:
 

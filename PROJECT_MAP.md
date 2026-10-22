@@ -504,6 +504,13 @@ two writes PostgREST cannot make atomic by itself: replacing a location and its 
 and moving the single default. The next generation already reads `location_equipment`, so saving
 that editor changes eligibility through the existing generation path rather than a UI-only copy.
 
+E06 adds a second protected Settings sub-view, `/settings/formats` in `src/app/FormatPreview.tsx`.
+It is read-only by construction: it holds no client and reads no query, and its format-only data
+(structure and prescription columns, never a whole session) is declared in that file and drawn through
+History's `SessionSectionCard`, the read-only `LadderRungs` and the ladder renderer's
+`timingSummary`, with every label derived by `structureIdentity`/`prescriptionText`. It is not the
+developer gallery, which stays behind `import.meta.env.DEV`.
+
 OVR-01a adds the first derived athlete state, and its split is SES-01c's split rather than a new one.
 `supabase/migrations/20260921000011_load_anchors.sql` owns the `load_anchors` table, the `is_deload`
 flag the exclusion needs, and `anchor_evidence(user)` — the working sets that may move an anchor,

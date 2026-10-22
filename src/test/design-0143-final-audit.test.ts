@@ -84,6 +84,16 @@ const GROUPS = [
 ] as const
 const SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
 
+/**
+ * Routes mounted after the three capture groups closed, by owning task. A
+ * screen that did not exist at capture has no BEFORE picture to pair, so it
+ * cannot join a group; it must instead carry an exception-ledger row naming it
+ * and its owner, and an owner QA step. Nothing else may be listed here.
+ */
+const POST_AUDIT_ROUTES: Readonly<Record<string, string>> = {
+  '/settings/formats': 'TASK-034',
+}
+
 type Identity = {
   packageName: string
   packageVersion: string
@@ -249,9 +259,21 @@ describe('CLEAR 0.14.3 final audit — aggregated evidence groups', () => {
     expect(new Set(routes)).toEqual(new Set([
       '/welcome', '/login', '/onboarding', '/', '/generate', '/review', '/workout', '/summary',
       '/history', '/history/:id', '/settings', '/settings/locations',
+      ...Object.keys(POST_AUDIT_ROUTES),
     ]))
+    const audit = text(AUDIT)
     for (const route of routes) {
-      expect(covered.has(route), `${route} has AFTER pictures`).toBe(true)
+      const owner = POST_AUDIT_ROUTES[route]
+      if (owner === undefined) {
+        expect(covered.has(route), `${route} has AFTER pictures`).toBe(true)
+      } else {
+        // No BEFORE picture can exist for it, so it is not passed off as one
+        // of the groups: the exception ledger names the route and its owner.
+        expect(covered.has(route), `${route} is not claimed by a capture group`).toBe(false)
+        expect(audit, `${route} has an exception naming ${owner}`).toMatch(
+          new RegExp(`^\\| EX-\\d{2} \\| \`${route}\` \\(${owner}`, 'm'),
+        )
+      }
       expect(qa, `${route} has an owner QA step`).toContain(`\`${route}\``)
     }
     for (const skin of SKINS) expect(qa.toLowerCase()).toContain(skin)

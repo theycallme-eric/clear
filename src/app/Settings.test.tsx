@@ -18,6 +18,7 @@ import type { UserConstraint } from '../data/constraints'
 import { SKINS } from '../design-system/skin'
 import { appearanceLabel, appearanceOptions, DEFAULT_SKIN } from '../state/appearance'
 import { startFaviconSync } from './favicon'
+import { FORMAT_PREVIEW_TITLE } from './FormatPreview'
 import { QueryClient } from '../state/query'
 import {
   GOALS,
@@ -188,10 +189,11 @@ describe('each section is one card with its heading inside', () => {
     'Limitations',
     'Appearance',
     'Places and equipment',
+    'Workout formats',
     'Session',
   ]
 
-  it('is five headed cards, with only the title on the atmosphere', async () => {
+  it('is six headed cards, with only the title on the atmosphere', async () => {
     renderSettings()
 
     const cards: HTMLElement[] = []
@@ -277,6 +279,27 @@ describe('each section is one card with its heading inside', () => {
     ).toBeVisible()
   })
 
+  it('links to the read-only format preview, and to nothing else (E06)', async () => {
+    const user = userEvent.setup()
+    renderSettings()
+
+    const formats = within(await sectionCard('Workout formats'))
+    const preview = formats.getByRole('button', { name: 'Preview formats' })
+    expect(preview).toHaveClass('clr-text-action')
+    expect(formats.getAllByRole('button')).toEqual([preview])
+    // The preview, not the developer gallery.
+    expect(screen.queryByRole('link', { name: /gallery/i })).toBeNull()
+    expect(document.querySelector('a[href^="/dev/"]')).toBeNull()
+
+    await user.click(preview)
+    expect(
+      await screen.findByRole('heading', { level: 1, name: FORMAT_PREVIEW_TITLE }),
+    ).toBeVisible()
+
+    await user.click(screen.getByRole('button', { name: 'Settings' }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
+  })
+
   it('holds the limitations loading and error states inside the same card', async () => {
     const user = userEvent.setup()
     let attempts = 0
@@ -307,8 +330,8 @@ describe('each section is one card with its heading inside', () => {
     const alert = await within(card).findByRole('alert')
     expect(alert).toHaveTextContent(/limitations didn’t load/i)
     expect(card.querySelector('.clr-card')).toBeNull()
-    // The other cards are still the screen; the failure cost one of five.
-    expect(screen.getByRole('main').querySelectorAll('.clr-card')).toHaveLength(5)
+    // The other cards are still the screen; the failure cost one of six.
+    expect(screen.getByRole('main').querySelectorAll('.clr-card')).toHaveLength(6)
 
     await user.click(within(card).getByRole('button', { name: /retry|try again/i }))
     expect(await within(card).findByRole('group', { name: 'Work around' })).toBeVisible()

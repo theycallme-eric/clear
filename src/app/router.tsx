@@ -7,6 +7,7 @@ import {
 
 import type { RouteMotion } from '../ui/motion'
 import { AppChrome } from './AppChrome'
+import { FORMAT_PREVIEW_ROUTE, FORMAT_PREVIEW_TITLE, FormatPreview } from './FormatPreview'
 import { Generate } from './Generate'
 import { ONBOARDING_ROUTE, OnboardingOnly, Protected, PublicOnly } from './guards'
 import { History } from './History'
@@ -221,6 +222,18 @@ export const routes: RouteObject[] = [
             element: (
               <Protected title="Places and equipment">
                 <LocationSettings />
+              </Protected>
+            ),
+          },
+          // E06 — `protected`, reached from Settings. Read-only and fixed: the
+          // screen holds no client and reads no query, and it is not the
+          // developer gallery, which stays behind `devRoutes`.
+          {
+            path: FORMAT_PREVIEW_ROUTE,
+            handle: motion({ depth: 5 }),
+            element: (
+              <Protected title={FORMAT_PREVIEW_TITLE}>
+                <FormatPreview />
               </Protected>
             ),
           },
