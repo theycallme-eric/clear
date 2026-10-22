@@ -81,7 +81,7 @@ export interface FormatCapture {
   before: null
   reached: ReachedObservation
   motion: MotionObservation
-  layout: { noHorizontalOverflow: boolean; documentHeight: number }
+  layout: { noHorizontalOverflow: boolean; documentHeight: number; scrollTop: number; scrollLeft: number; headingVisibleAtCapture: boolean }
   screenshot: { name: string; sha256: string; bytes: number; width: number; height: number; explicit: true; fullPage: true; scale: 'css' }
 }
 
@@ -165,6 +165,7 @@ export function validateFormatPreviewEvidence(
       require(capture.reached.pathname === FORMAT_ROUTE && capture.reached.heading === FORMAT_TITLE && capture.reached.stateVisible === true, 'route/heading/state not reached')
       require(capture.motion.reducedMotion === true && capture.motion.settled === true && capture.motion.running.length === 0, 'unsettled frame')
       require(capture.layout.noHorizontalOverflow === true && Number.isInteger(capture.layout.documentHeight) && capture.layout.documentHeight >= capture.viewport.height, 'overflow or invalid full-page height')
+      require(capture.layout.scrollTop === 0 && capture.layout.scrollLeft === 0 && capture.layout.headingVisibleAtCapture === true, 'actual inner-scroller top and visible heading required')
       const cell = `${capture.viewport.id}/${capture.skin}`
       require(!matrix.has(cell), 'duplicate matrix cell')
       matrix.add(cell)

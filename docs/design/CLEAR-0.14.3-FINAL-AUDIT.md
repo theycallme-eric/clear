@@ -492,13 +492,17 @@ trees and this head, from `git diff`:
   inventory at full baseline commit `c31ef865f60811df076db396a40f90517701380e`; it therefore has
   no BEFORE preview picture. That absence is not an AFTER-coverage waiver. Its separate
   introduced-route group is `docs/design/evidence-0143/task034-format-preview/` and its actual
-  AFTER proof is **pending**. No new pictures, capture records or passing matrix are claimed.
+  canonical-top AFTER proof is pending. The prior32987806 matrix genuinely passed12 cases
+  but retained inner-scroll offsets; it is preserved outside this product, not accepted or
+  relabelled. The corrected driver resets and records the actual ScrollRegion position,
+  requires the heading in view, and retains every accessibility/short-viewport/write check.
   `src/app/FormatPreview.test.tsx` proves no client call or `fetch` across Settings → preview →
   Back in every skin; historical pictures and their three aggregate rows remain unchanged.
 
   The added task-local `e2e/design-0143/format-preview.spec.ts` uses the existing real
   authenticated-session fixture, deterministic skin/motion setup and reached-state/motion
-  capture driver. After the active browser owner is idle, the next operator may run:
+  capture driver. The exact canonical-top matrix must be collected with workers1/retries0
+  and no skips. Its records retain actual process/time/checkout identities. The command is:
 
   ```sh
   CLEAR_TASK034_RECORD_AFTER=1 npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile --project=tablet --project=desktop --workers=1 --retries=0
@@ -702,7 +706,7 @@ and owner QA outcome. Local proof, healthy CI and task counts do not fill those 
 | EX-12 | The polite toast variant is not raised by a real route | TASK-026 | proved through Settings' polite "Saved" status and `src/ui/toast-host.test.tsx` |
 | EX-13 | Pictures predate this head's runtime source (the Home Settings `.clr-hit` target) and are not rebound | all groups | the deterministic browser lane re-asserts on this head; deployed pictures are owner QA |
 | EX-14 | Exact deployed proof and production identity are not yet recorded for this candidate | this task | reported open above; never waived |
-| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: separate introduced-route AFTER group and strict sixteen-cell PNG gate required; actual capture pending; owner QA step 13 remains open |
+| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: strict canonical-top16-cell PNG/source gate remains mandatory; current capture pending; owner QA step13 remains open |
 
 ## Owner QA path
 

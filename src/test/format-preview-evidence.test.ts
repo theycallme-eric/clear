@@ -39,7 +39,7 @@ function fixture() {
           phase: 'after' as const, route: FORMAT_ROUTE, state: FORMAT_STATE, skin, viewport, before: null,
           reached: { pathname: FORMAT_ROUTE, heading: FORMAT_TITLE, stateVisible: true },
           motion: { reducedMotion: true, running: [], settled: true },
-          layout: { noHorizontalOverflow: true, documentHeight: pixels.height },
+          layout: { noHorizontalOverflow: true, documentHeight: pixels.height, scrollTop: 0, scrollLeft: 0, headingVisibleAtCapture: true },
           screenshot: { name, sha256: bytesHash(bytes), bytes: bytes.length, ...pixels, explicit: true as const, fullPage: true as const, scale: 'css' as const },
         }
       })
@@ -105,6 +105,9 @@ describe('Task034 introduced-route evidence guard — offline fixtures, not capt
     ['storage changed', (records) => { records[0].observations.storageUnchanged = false as never }],
     ['running animation', (records) => { records[0].captures[0].motion = { ...records[0].captures[0].motion, running: ['animation'] } }],
     ['horizontal overflow', (records) => { records[0].captures[0].layout.noHorizontalOverflow = false }],
+    ['inner vertical scroll offset', (records) => { records[0].captures[0].layout.scrollTop = 1 }],
+    ['inner horizontal scroll offset', (records) => { records[0].captures[0].layout.scrollLeft = 1 }],
+    ['heading outside captured view', (records) => { records[0].captures[0].layout.headingVisibleAtCapture = false }],
     ['incorrect PNG hash', (records) => { records[0].captures[0].screenshot.sha256 = '0'.repeat(64) }],
     ['incorrect PNG pixels', (records) => { records[0].captures[0].screenshot.width += 1 }],
     ['implicit failure screenshot', (records) => { records[0].captures[0].screenshot.explicit = false as never }],
@@ -151,6 +154,10 @@ describe('Task034 introduced-route evidence guard — offline fixtures, not capt
     expect(source).toContain("from '../support/authenticated-session'")
     expect(source).toContain("await page.screenshot({ fullPage: true, caret: 'hide', scale: 'css' })")
     expect(source).toContain('verifyReached(target, reached)')
+    expect(source).toContain("main .clr-scroll-region__scroller")
+    expect(source).toContain("element.scrollTo({ top: 0, left: 0, behavior: 'instant' })")
+    expect(source).toContain('headingVisibleAtCapture')
+    expect(source).not.toContain('window.scrollTo(')
     expect(source).toContain('await checkA11y()')
     expect(source).toContain('await document.fonts.ready')
     expect(source).toContain("hasAttribute('data-measured')")

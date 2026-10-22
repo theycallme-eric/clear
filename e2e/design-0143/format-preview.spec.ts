@@ -181,19 +181,35 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       const driver = playwrightCaptureDriver(page, info)
       for (const viewport of viewports) {
         await page.setViewportSize({ width: viewport.width, height: viewport.height })
-        await page.evaluate(() => window.scrollTo(0, 0))
         await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
         await checkA11y()
+        // Screen owns an inner scroller; resetting window leaves disclosure-click
+        // offsets in the picture. Reset and prove the actual capture surface.
+        const scroller = page.locator('main .clr-scroll-region__scroller')
+        await expect(scroller).toHaveCount(1)
+        await scroller.evaluate((element) => element.scrollTo({ top: 0, left: 0, behavior: 'instant' }))
+        await expect.poll(() => scroller.evaluate((element) => [element.scrollTop, element.scrollLeft])).toEqual([0, 0])
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+        await expect(page.locator('main h1')).toBeInViewport({ ratio: 1 })
         const reached = await driver.observe(target)
         verifyReached(target, reached)
         await expect.poll(async () => (await driver.motion()).settled).toBe(true)
         const motion = await driver.motion()
         expect(motion).toEqual({ reducedMotion: true, running: [], settled: true })
-        const layout = await page.evaluate(() => ({
-          noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-          documentHeight: Math.max(window.innerHeight, document.documentElement.scrollHeight, document.body.scrollHeight),
-        }))
+        const layout = await page.evaluate(() => {
+          const surface = document.querySelector<HTMLElement>('main .clr-scroll-region__scroller')!
+          const heading = document.querySelector('main h1')!.getBoundingClientRect()
+          const region = surface.getBoundingClientRect()
+          return {
+            noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+            documentHeight: Math.max(window.innerHeight, document.documentElement.scrollHeight, document.body.scrollHeight),
+            scrollTop: surface.scrollTop, scrollLeft: surface.scrollLeft,
+            headingVisibleAtCapture: heading.top >= region.top && heading.bottom <= Math.min(region.bottom, window.innerHeight),
+          }
+        })
         expect(layout.noHorizontalOverflow).toBe(true)
+        expect([layout.scrollTop, layout.scrollLeft]).toEqual([0, 0])
+        expect(layout.headingVisibleAtCapture).toBe(true)
         const name = `task034-format-preview-${viewport.id}-${skin}.png`
         // This buffer is the actual explicit full-page picture, CSS-scaled on every DPR.
         const bytes = await page.screenshot({ fullPage: true, caret: 'hide', scale: 'css' })
