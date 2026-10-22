@@ -1,9 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
+import {
+  currentFormatRuntimeHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest,
+  FORMAT_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
+} from '../../e2e/design-0143/format-preview-evidence'
 import {
   browserTestsForTarget,
   REQ_007_NEXT_WORKOUT_CASE,
@@ -83,16 +88,6 @@ const GROUPS = [
   { consumer: 'workout-lifecycle', task: 'TASK-036' },
 ] as const
 const SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
-
-/**
- * Routes mounted after the three capture groups closed, by owning task. A
- * screen that did not exist at capture has no BEFORE picture to pair, so it
- * cannot join a group; it must instead carry an exception-ledger row naming it
- * and its owner, and an owner QA step. Nothing else may be listed here.
- */
-const POST_AUDIT_ROUTES: Readonly<Record<string, string>> = {
-  '/settings/formats': 'TASK-034',
-}
 
 type Identity = {
   packageName: string
@@ -247,10 +242,14 @@ describe('CLEAR 0.14.3 final audit — aggregated evidence groups', () => {
   })
 
   it('every real route is covered by an evidence group and owner QA', () => {
+    const introducedRecords = resolve(root, FORMAT_EVIDENCE_DIR, 'records')
     const covered = new Set(
-      GROUPS.flatMap(({ consumer }) => readdirSync(resolve(root, dir(consumer), 'records'))
+      [...GROUPS.flatMap(({ consumer }) => readdirSync(resolve(root, dir(consumer), 'records'))
         .flatMap((name) => json<EvidenceRecord>(`${dir(consumer)}/records/${name}`).captures)
         .map((capture) => capture.route)),
+      ...(existsSync(introducedRecords) ? readdirSync(introducedRecords).filter((name) => name.endsWith('.json'))
+        .flatMap((name) => json<FormatEvidenceRecord>(`${FORMAT_EVIDENCE_DIR}/records/${name}`).captures)
+        .map((capture) => capture.route) : [])],
     )
     const qa = text(OWNER_QA)
     const routes = REQUIRED_SCREENS
@@ -259,24 +258,41 @@ describe('CLEAR 0.14.3 final audit — aggregated evidence groups', () => {
     expect(new Set(routes)).toEqual(new Set([
       '/welcome', '/login', '/onboarding', '/', '/generate', '/review', '/workout', '/summary',
       '/history', '/history/:id', '/settings', '/settings/locations',
-      ...Object.keys(POST_AUDIT_ROUTES),
+      '/settings/formats',
     ]))
-    const audit = text(AUDIT)
     for (const route of routes) {
-      const owner = POST_AUDIT_ROUTES[route]
-      if (owner === undefined) {
-        expect(covered.has(route), `${route} has AFTER pictures`).toBe(true)
-      } else {
-        // No BEFORE picture can exist for it, so it is not passed off as one
-        // of the groups: the exception ledger names the route and its owner.
-        expect(covered.has(route), `${route} is not claimed by a capture group`).toBe(false)
-        expect(audit, `${route} has an exception naming ${owner}`).toMatch(
-          new RegExp(`^\\| EX-\\d{2} \\| \`${route}\` \\(${owner}`, 'm'),
-        )
-      }
+      expect(covered.has(route), `${route} has AFTER pictures`).toBe(true)
       expect(qa, `${route} has an owner QA step`).toContain(`\`${route}\``)
     }
     for (const skin of SKINS) expect(qa.toLowerCase()).toContain(skin)
+  })
+})
+
+describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a coverage waiver', () => {
+  it('requires the complete actual sixteen-cell group and byte/pixel/source/session records', () => {
+    const manifestPath = `${FORMAT_EVIDENCE_DIR}/manifest.json`
+    expect(existsSync(resolve(root, manifestPath)), 'real Task034 AFTER capture is still required').toBe(true)
+    const names = readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'records')).filter((name) => name.endsWith('.json')).sort()
+    const records = names.map((name) => json<FormatEvidenceRecord>(`${FORMAT_EVIDENCE_DIR}/records/${name}`))
+    validateFormatPreviewEvidence(records, {
+      runtimeHash: currentFormatRuntimeHash(root), packageHash: PACKAGE_HASH, driverHash: formatDriverHash(root),
+      absence: formatBaselineAbsence(root), readPng: (name) => readFileSync(resolve(root, FORMAT_EVIDENCE_DIR, 'screenshots', name)),
+    })
+    const derived = formatPreviewManifest(records)
+    expect(derived.status).toBe('complete')
+    expect(json(manifestPath)).toEqual(derived)
+    expect(new Set(readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'screenshots'))))
+      .toEqual(new Set(records.flatMap((record) => record.captures.map((capture) => capture.screenshot.name))))
+    for (const record of records) {
+      expect(record.captures.every((capture) => capture.route === FORMAT_ROUTE && capture.before === null)).toBe(true)
+      // Captured source commit is retained, not rewritten to a later evidence commit.
+      expect(spawnSync('git', ['merge-base', '--is-ancestor', record.identity.applicationCommit ?? '', 'HEAD'], {
+        cwd: root, stdio: 'ignore',
+      }).status, 'the actual captured source commit remains an ancestor of the evidence tree').toBe(0)
+      for (const identity of [record.identity.applicationCommit, record.identity.runtimeSourceHash, record.driverSourceHash]) {
+        expect(text(AUDIT), 'the audit names the actual capture identities').toContain(identity)
+      }
+    }
   })
 })
 

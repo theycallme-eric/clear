@@ -488,9 +488,37 @@ trees and this head, from `git diff`:
   Settings linking to it, and exports `timingSummary`/`PACING_NOTES` from `src/ui/ladder-block.tsx`
   and `STATUS_LABELS` from `src/state/session-detail.ts` without changing them. The preview holds no
   client and reads no query; fixed format-only data is drawn through History's `SessionSectionCard`
-  and read-only `LadderRungs`. The new route is EX-15: it has no BEFORE picture and is not claimed
-  by any capture group. Proof is `src/app/FormatPreview.test.tsx` (no client call or `fetch` across
-  Settings → preview → Back, every skin); historical pictures are not rebound.
+  and read-only `LadderRungs`. It is absent from the router and independent required-route
+  inventory at full baseline commit `c31ef865f60811df076db396a40f90517701380e`; it therefore has
+  no BEFORE preview picture. That absence is not an AFTER-coverage waiver. Its separate
+  introduced-route group is `docs/design/evidence-0143/task034-format-preview/` and its actual
+  AFTER proof is **pending**. No new pictures, capture records or passing matrix are claimed.
+  `src/app/FormatPreview.test.tsx` proves no client call or `fetch` across Settings → preview →
+  Back in every skin; historical pictures and their three aggregate rows remain unchanged.
+
+  The added task-local `e2e/design-0143/format-preview.spec.ts` uses the existing real
+  authenticated-session fixture, deterministic skin/motion setup and reached-state/motion
+  capture driver. After the active browser owner is idle, the next operator may run:
+
+  ```sh
+  npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile --project=tablet --project=desktop --workers=1 --retries=0
+  ```
+
+  It must produce all sixteen actual AFTER captures: clear/vapour/signal/mono at 390×844,
+  768×1024, 1280×720 and 390×320. Each explicit CSS-scale full-page PNG retains its real pixel
+  dimensions and byte hash, real route/heading/state, settled reduced-motion frame, no horizontal
+  overflow, source/package/driver identity, actual capture process/time, and the real session
+  journey's non-secret counts. The fixture owns only its disposable authentication/onboarding;
+  the preview walk refuses data writes and generation and checks disclosures, accessibility,
+  Settings entry/Back, direct-entry Back and unchanged athlete storage. Records preserve the
+  actual captured source commit and dirty-status digest; a later evidence/journal commit must
+  not be substituted for that identity. Runtime and capture-driver bytes are independently
+  checked against this tree. No session token, email or athlete storage value is recorded.
+  Every new capture has `before: null` and a source-hashed c31 route-absence disposition,
+  never a baseline Not Found image. Missing trusted configuration is non-proof, not a pass.
+  The strict audit now requires the complete new group, real PNG files and hashes; it remains
+  held until those artifacts exist and their actual identities are recorded here. Existing
+  records are never overwritten. This lane is not live-generation, deployed or owner-UAT proof.
 
 - `25779dbf…` to `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`: TASK-021
   (REQ-012, JOURNEY-020, U43) replaces Summary's five face-and-word mood chips with
@@ -671,7 +699,7 @@ and owner QA outcome. Local proof, healthy CI and task counts do not fill those 
 | EX-12 | The polite toast variant is not raised by a real route | TASK-026 | proved through Settings' polite "Saved" status and `src/ui/toast-host.test.tsx` |
 | EX-13 | Pictures predate this head's runtime source (the Home Settings `.clr-hit` target) and are not rebound | all groups | the deterministic browser lane re-asserts on this head; deployed pictures are owner QA |
 | EX-14 | Exact deployed proof and production identity are not yet recorded for this candidate | this task | reported open above; never waived |
-| EX-15 | `/settings/formats` (TASK-034, E06) was mounted after the capture groups closed and has no BEFORE picture to pair | TASK-034 | not claimed by any group; `src/app/FormatPreview.test.tsx` proves it on the real route tree in every skin; owner QA step 13 walks it |
+| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: separate introduced-route AFTER group and strict sixteen-cell PNG gate required; actual capture pending; owner QA step 13 remains open |
 
 ## Owner QA path
 

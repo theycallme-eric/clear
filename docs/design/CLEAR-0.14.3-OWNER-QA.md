@@ -41,6 +41,12 @@ pictures under `docs/design/evidence-0143/` named in the audit.
 | 12 | `/settings/locations` | One card per place; the default carries a tick and a sentence; delete asks first. |
 | 13 | `/settings/formats` | From Settings → Workout formats → Preview formats. Fixed examples of every format and ladder timing mode, with status glyphs; nothing to start, log or save. Back returns to Settings, and History and Settings are unchanged. Check in all four skins. |
 
+Step 13 is still owner QA, not certified by unit tests or the new task-local capture spec.
+The introduced route has no BEFORE preview at baseline `c31ef865f60811df076db396a40f90517701380e`.
+Its separate real AFTER matrix (four skins × phone/tablet/desktop/short viewport) is pending
+under `docs/design/evidence-0143/task034-format-preview/`; missing evidence is a gate, not a
+waiver. The three historical paired groups and their original pictures remain unchanged.
+
 Across the walk:
 
 - **Keyboard (desktop):** Tab reaches every action, focus is always visible (brackets on choices),
