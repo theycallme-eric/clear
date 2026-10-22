@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020 and TASK-021 changes below) |
+| Runtime source hash of this audit's tree | `ed139427b2bf3ccfc6bd8188b09782b5aece9789f09a707d17fe18e7136a477b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021 and TASK-033 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -472,6 +472,15 @@ trees and this head, from `git diff`:
   unchanged. This is an integration source binding, not new native task/project/criterion proof,
   deployed proof or owner acceptance. All original checks require fresh execution on the final
   combined head. Historical pictures and earlier single-branch receipts are not rebound.
+
+- TASK-033 (#468, E03/JOURNEY-029) runtime source:
+  `52625dde41b9e171e6823d3f2d2d279050e7cb46a8f4e2942e4f0f86beb4e9b6` on base `90287c6`. Only
+  `src/ui/ladder-block.tsx` changed at runtime: ladders with explicit `ladder_timing` render
+  precomputed rounds (start offsets for scheduled starts, per-round rung targets, fixed companion
+  work), a wall-clock-restored schedule countdown for `scheduled_starts` only, no clock-driven
+  progress for free-paced `for_time` or `capped_window`, and the stated cap. Legacy ladders are
+  unchanged; the global session clock is not read or changed. Task-local phone proof is
+  `e2e/design-0143/workout-ladder.spec.ts`; historical pictures are not rebound.
 
 - `25779dbf…` to `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`: TASK-021
   (REQ-012, JOURNEY-020, U43) replaces Summary's five face-and-word mood chips with
