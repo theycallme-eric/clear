@@ -1,0 +1,37 @@
+/* =============================================================================
+   FEELING ROW — U43, the debrief's optional 1–5 choice.
+
+   One row of five equal cells that never wraps, at 390 wide or narrower. The
+   row is `ChoiceGroup`'s radiogroup, which draws itself as a wrapping flex
+   row inline; the override below is the one place that changes, so the radio
+   keyboard pattern, the chip surface and the selection tick are the
+   component's own. Tokens only; no corner radius.
+   ============================================================================= */
+
+.clr-feeling-row {
+  min-width: 0;
+}
+
+.clr-feeling-row [role="radiogroup"] {
+  flex-wrap: nowrap !important;
+}
+
+/* Each chip sits in its bleed span; the span is the flex item, the chip fills
+   it, so the five read as one evenly divided strip rather than five widths. */
+.clr-feeling-row [role="radiogroup"] > * {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.clr-feeling-row [role="radio"] {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--spacing-100);
+}
+
+.clr-feeling-row__clear {
+  display: flex;
+  justify-content: flex-end;
+}

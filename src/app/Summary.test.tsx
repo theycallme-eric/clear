@@ -4,6 +4,8 @@
  * What this file is answerable for:
  *
  *   · mood and notes persist to the session row;
+ *   · U43: the feeling is one row of numbers 1–5, its words in the accessible
+ *     names, keyboard-operable, optional and clearable, and never an effort;
  *   · the copy is a brief acknowledgment and then the debrief;
  *   · the streak is SES-01's derivation, in its own four states;
  *   · U41: the duration and the streak at one enlarged size, and Home's week
@@ -53,9 +55,7 @@ import {
 } from '../ui/favorite-list'
 import { FAVORITES_EMPTY_TITLE } from './Home'
 import { routes } from './router'
-import { renderToStaticMarkup } from 'react-dom/server'
-
-import { Frown, Meh, Smile, SmilePlus, ThumbsDown } from '../design-system/index'
+import { FEELING_CLEAR_LABEL } from '../ui/feeling-row'
 import {
   DEBRIEF_HEADING,
   SAVE_FAVORITE_FAILED,
@@ -193,13 +193,9 @@ describe('Summary — the debrief', () => {
     expect(screen.getByText('42 min')).toBeInTheDocument()
 
     const moods = within(screen.getByRole('group', { name: 'How do you feel?' }))
-    expect(moods.getAllByRole('radio').map((radio) => radio.textContent)).toEqual([
-      'Spent',
-      'Worn',
-      'Flat',
-      'Ready',
-      'Peak',
-    ])
+    expect(moods.getAllByRole('radio').map((radio) => radio.getAttribute('aria-checked'))).toEqual(
+      ['false', 'false', 'false', 'false', 'false'],
+    )
     expect(screen.getByRole('textbox', { name: /Notes/ })).toBeInTheDocument()
   })
 
@@ -264,31 +260,92 @@ describe('Summary — the debrief', () => {
     expect(card.queryByRole('button', { name: DONE })).not.toBeInTheDocument()
   })
 
-  it('draws the moods with the public glyphs, faces round and SmilePlus without a plus', async () => {
+  it('U43: the feeling is one row of five numbers, its words in the accessible names only', async () => {
     await debrief()
-    const option = (label: string) => screen.getByRole('radio', { name: label })
+    const group = screen.getByRole('group', { name: 'How do you feel?' })
+    const radios = within(group).getAllByRole('radio')
 
-    const expected: [string, typeof Frown][] = [
-      ['Spent', ThumbsDown],
-      ['Worn', Frown],
-      ['Flat', Meh],
-      ['Ready', Smile],
-      ['Peak', SmilePlus],
-    ]
-    for (const [label, Icon] of expected) {
-      const drawn = option(label).querySelector('.clr-row > svg')
-      expect(drawn).not.toBeNull()
-      expect(drawn?.outerHTML).toBe(
-        new DOMParser()
-          .parseFromString(renderToStaticMarkup(<Icon size={20} />), 'text/html')
-          .body.querySelector('svg')?.outerHTML,
-      )
+    // The existing meaning, kept for anyone who hears rather than sees it.
+    const names = ['1, Spent', '2, Worn', '3, Flat', '4, Ready', '5, Peak']
+    expect(radios).toHaveLength(5)
+    for (const [index, name] of names.entries()) {
+      expect(within(group).getByRole('radio', { name })).toBe(radios[index])
     }
-    // The four faces are round and line-drawn; the top one is a wider smile
-    // and nothing else — one stroked mouth, no plus mark beside it.
-    const peak = option('Peak').querySelector('.clr-row > svg') as SVGElement
-    expect(peak.querySelector('circle[fill="none"]')).not.toBeNull()
-    expect(peak.querySelectorAll('path')).toHaveLength(1)
+    // What is drawn is the number and nothing else: no face, no repeated word.
+    for (const [index, radio] of radios.entries()) {
+      const shown = Array.from(radio.querySelectorAll('[aria-hidden="true"]'))
+        .map((node) => node.textContent)
+        .join('')
+      expect(shown).toBe(String(index + 1))
+      expect(radio.querySelector('svg:not([aria-hidden="true"])')).toBeNull()
+      expect(radio.querySelector('.clr-row > svg')).toBeNull()
+      for (const word of ['Spent', 'Worn', 'Flat', 'Ready', 'Peak']) {
+        const visible = Array.from(radio.querySelectorAll('*'))
+          .filter((node) => !node.closest('.a11y-hidden'))
+          .some((node) => node.childNodes.length === 1 && node.textContent === word)
+        expect(visible).toBe(false)
+      }
+    }
+    // One row: the strip the five share is the non-wrapping feeling row.
+    expect(group).toHaveClass('clr-feeling-row')
+    expect(group.querySelectorAll('[role="radiogroup"]')).toHaveLength(1)
+  })
+
+  it('U43: the feeling works from the keyboard as one radio group', async () => {
+    const user = userEvent.setup()
+    const { summary } = await debrief()
+
+    const first = screen.getByRole('radio', { name: '1, Spent' })
+    first.focus()
+    await user.keyboard('{ArrowRight}{ArrowRight}')
+    expect(screen.getByRole('radio', { name: '3, Flat' })).toBeChecked()
+    await user.keyboard('{End}')
+    expect(screen.getByRole('radio', { name: '5, Peak' })).toBeChecked()
+    // One tab stop: only the chosen option is reachable by Tab.
+    const reachable = screen
+      .getAllByRole('radio')
+      .filter((radio) => radio.getAttribute('tabindex') === '0')
+    expect(reachable).toEqual([screen.getByRole('radio', { name: '5, Peak' })])
+
+    await user.click(screen.getByRole('button', { name: DONE }))
+    await waitFor(() => expect(summary.saved.map((entry) => entry.debrief.mood)).toEqual([5]))
+  })
+
+  it('U43: no answer is allowed, and a chosen or restored feeling can be cleared back to none', async () => {
+    const user = userEvent.setup()
+    const { summary } = await debrief({
+      summary: { latest: async () => ok(completedSession({ mood: 4 })) },
+    })
+
+    expect(screen.getByRole('radio', { name: '4, Ready' })).toBeChecked()
+    await user.click(screen.getByRole('button', { name: FEELING_CLEAR_LABEL }))
+
+    for (const radio of screen.getAllByRole('radio')) expect(radio).not.toBeChecked()
+    // The question keeps the caret once the control that cleared it is gone.
+    expect(screen.queryByRole('button', { name: FEELING_CLEAR_LABEL })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: '1, Spent' }))
+
+    await user.click(screen.getByRole('button', { name: DONE }))
+    await waitFor(() =>
+      expect(summary.saved).toEqual([
+        { sessionId: SESSION_ID, debrief: { mood: null, session_notes: null } },
+      ]),
+    )
+  })
+
+  it('U43: the feeling is saved as the session’s mood and never as an effort value', async () => {
+    const user = userEvent.setup()
+    const { summary } = await debrief()
+
+    // No effort question sits beside it to be confused with it.
+    expect(screen.queryByText(/effort|RPE|exertion/i)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('radio', { name: '2, Worn' }))
+    await user.click(screen.getByRole('button', { name: DONE }))
+
+    await waitFor(() => expect(summary.saved).toHaveLength(1))
+    const [saved] = summary.saved
+    expect(Object.keys(saved?.debrief ?? {}).sort()).toEqual(['mood', 'session_notes'])
+    expect(saved?.debrief.mood).toBe(2)
   })
 
   it('keeps completion associated with the scrolling form', async () => {
@@ -304,7 +361,7 @@ describe('Summary — the debrief', () => {
     const user = userEvent.setup()
     const { summary, router } = await debrief()
 
-    await user.click(screen.getByRole('radio', { name: 'Ready' }))
+    await user.click(screen.getByRole('radio', { name: '4, Ready' }))
     await user.type(screen.getByRole('textbox', { name: /Notes/ }), '  Squats moved well.  ')
     await user.click(screen.getByRole('button', { name: DONE }))
 
@@ -335,7 +392,7 @@ describe('Summary — the debrief', () => {
       },
     })
 
-    expect(screen.getByRole('radio', { name: 'Worn' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '2, Worn' })).toBeChecked()
     expect(screen.getByRole('textbox', { name: /Notes/ })).toHaveValue('Heavy day.')
   })
 
@@ -354,14 +411,14 @@ describe('Summary — the debrief', () => {
     })
     const card = document.querySelector('.clr-boot')
 
-    await user.click(screen.getByRole('radio', { name: 'Peak' }))
+    await user.click(screen.getByRole('radio', { name: '5, Peak' }))
     await user.click(screen.getByRole('button', { name: DONE }))
 
     expect(await screen.findByText('No connection. Check your network.')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/summary')
     // The same node: the booted card was not remounted, so it does not boot again.
     expect(document.querySelector('.clr-boot')).toBe(card)
-    expect(screen.getByRole('radio', { name: 'Peak' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '5, Peak' })).toBeChecked()
 
     await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
@@ -574,7 +631,7 @@ describe('Summary — the streak and the week', () => {
     expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
     expect(within(streak as HTMLElement).getByRole('button', { name: 'Retry' })).toBeEnabled()
 
-    await user.click(screen.getByRole('radio', { name: 'Flat' }))
+    await user.click(screen.getByRole('radio', { name: '3, Flat' }))
     await user.click(screen.getByRole('button', { name: DONE }))
 
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
