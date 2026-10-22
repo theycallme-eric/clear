@@ -48,6 +48,9 @@ async function settingsReadiness(page: Page) {
 }
 
 async function waitForSettingsLayout(page: Page) {
+  // visit() first sees any visible main heading, including BootSequence's.
+  // Wait for the actual route before measuring it or invoking the Axe scan.
+  await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
   await page.evaluate(async () => { await document.fonts.ready })
   await expect.poll(async () => {
     const before = await settingsReadiness(page)
