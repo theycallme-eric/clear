@@ -366,15 +366,20 @@ for (const skin of SKINS) {
 
       expect(stops.some((stop) => stop.kind === 'field')).toBe(true)
       expect(stops.some((stop) => stop.kind === 'brackets')).toBe(true)
+      expect(stops.some((stop) => stop.kind === 'brackets' &&
+        stop.focused.includes('Preview formats'))).toBe(true)
       for (const stop of stops) expectNormalFocus(stop)
       const cards = page.locator('main .clr-card')
-      await expect(cards).toHaveCount(5)
+      await expect(cards).toHaveCount(6)
       await expect(page.locator('main .clr-list')).toHaveCount(0)
-      for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Session']) {
+      for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Workout formats', 'Session']) {
         const heading = page.getByRole('heading', { level: 2, name, exact: true })
         await expect(cards.filter({ has: heading })).toHaveCount(1)
         await expect(heading).toBeVisible()
       }
+      await expect(cards.filter({
+        has: page.getByRole('heading', { level: 2, name: 'Workout formats', exact: true }),
+      }).getByRole('button', { name: /^Preview formats(?:\s*›)?$/ })).toBeVisible()
     })
   })
 }
