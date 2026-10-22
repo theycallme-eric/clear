@@ -67,6 +67,7 @@ const SECTION_HEADINGS = [
   'Limitations',
   'Appearance',
   'Places and equipment',
+  'Workout formats',
   'Session',
 ]
 
@@ -166,6 +167,12 @@ test.describe('Settings to appearance', () => {
     await expect(
       sectionCard(page, 'Places and equipment').getByRole('button', { name: 'Manage places' }),
     ).toHaveClass(/clr-text-action/)
+    const formatsAction = sectionCard(page, 'Workout formats').getByRole('button', {
+      name: /^Preview formats(?:\s*›)?$/,
+    })
+    await expect(formatsAction).toHaveCount(1)
+    await expect(formatsAction).toBeVisible()
+    await expect(formatsAction).toHaveClass(/clr-text-action/)
 
     const appearance = sectionCard(page, 'Appearance')
     const picker = appearance.getByRole('radiogroup')
