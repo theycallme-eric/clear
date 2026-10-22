@@ -178,6 +178,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20261002000022_settings_viability_guard.sql',
       '20261002000023_onboarding_viability.sql',
       '20261002000024_location_viability.sql',
+      '20261021000025_ladder_timing_persistence.sql',
     ])
   })
 

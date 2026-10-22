@@ -19,15 +19,21 @@ import {
   type PromptInput,
 } from '../../supabase/functions/_shared/prompt.ts'
 import { validateComposition } from '../../supabase/functions/_shared/validate.ts'
+import { migrationFiles, readSchema } from '../../scripts/gen-types/schema.mjs'
+import { createSessionsClient } from '../data/sessions'
 import { ErrorCode } from '../state/errors'
 import { createLogger, type LogSink } from '../state/logger'
 import {
   CONTRACT_VERSION,
+  generationOutputSchema,
   sessionAcceptanceSchema,
+  sessionSnapshotSchema,
   type GenerationOutput,
   type SessionSnapshot,
+  type WorkoutBlock,
   type WorkoutSessionRow,
 } from '../state/schemas'
+import { makeCatalogLadderTimingBlock } from './ladder-persistence-fixtures'
 import {
   CANDIDATE_LIBRARY,
   catalogRowFixtures,
@@ -935,6 +941,381 @@ describe('introductions never reach the stored session (REQ-010)', () => {
     }
     expect(JSON.stringify(payload.value)).not.toContain(INTRODUCTION_PROSE.overview)
     expect(JSON.stringify(payload.value)).not.toContain(INTRODUCTION_PROSE.sectionNotes)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 7. Explicit ladder timing survives acceptance, insert and load (REQ-018)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// TASK-039. The chain is the production one from §6 onwards: a verdict,
+// hydration, `acceptanceFor`'s strict parse, one `persist_session` request,
+// the snapshot it answers, and a fresh client loading the session again. The
+// one step that is not production is how the timed block enters the verdict:
+// the edge gate keeps generated output legacy-shaped until TASK-032, so the
+// block is added to the legacy fixture's verdict and re-read through
+// TASK-038's `generationOutputSchema`.
+
+const LADDER_MIGRATION = 'supabase/migrations/20261021000025_ladder_timing_persistence.sql'
+
+/** Varied, so no fixture can lean on one round count or interval. */
+const LADDER_CASES = [
+  ['scheduled_starts', { rounds: 3, intervalSeconds: 75 }],
+  ['scheduled_starts', { rounds: 8, intervalSeconds: 200 }],
+  ['for_time', { rounds: 2 }],
+  ['for_time', { rounds: 10 }],
+  ['capped_window', { rounds: 4, capSeconds: 420 }],
+  ['capped_window', { rounds: 7, capSeconds: 900 }],
+] as const
+
+/** The legacy fixture's hydrated workout, with `blocks` added to its accessory section. */
+function hydratedWithLadders(...blocks: WorkoutBlock[]) {
+  const parsed = parseCompletion(VALID_RESPONSE)
+  if (!parsed.ok) throw new Error('the fixture no longer parses')
+  const verdict = validateComposition(parsed.value, INPUT)
+  if (!verdict.ok) throw new Error('the fixture no longer validates')
+
+  const workout = structuredClone(verdict.value.workout)
+  workout.sections[2].blocks.push(...structuredClone(blocks))
+
+  const ids = [...prescribedIds(workout)]
+  const rows = catalogRowFixtures(ids)
+  const referenced = rows.map((row) => row.regression).filter((id): id is string => id !== null)
+  const names = new Map(
+    catalogRowFixtures([...new Set([...ids, ...referenced])]).map((row) => [row.id, row.name]),
+  )
+
+  const hydrated = hydrateWorkout(
+    { ...verdict.value, workout: generationOutputSchema.parse(workout) },
+    factsFromRows(rows, names),
+  )
+  if (!hydrated.ok) throw new Error(`hydration failed: ${hydrated.error.code}`)
+
+  return hydrated.value
+}
+
+async function persistedLadders(store: ReturnType<typeof createSessionDouble>, ...blocks: WorkoutBlock[]) {
+  const result = await persist(
+    hydratedWithLadders(...blocks),
+    { userId: USER_ID, input: INPUT, facts: FACTS },
+    writerFor(store),
+  )
+  if (!result.ok) throw new Error(`persist failed: ${result.error.code}`)
+
+  return result.value
+}
+
+/** A second client, remembering nothing: the load a refresh performs. */
+async function reloaded(store: ReturnType<typeof createSessionDouble>, sessionId: string) {
+  const client = createSessionsClient({
+    url: PROJECT_URL,
+    anonKey: ANON_KEY,
+    accessToken: ACCESS_TOKEN,
+    fetch: store.fetch,
+  })
+  const result = await client.snapshot(sessionId)
+  if (!result.ok) throw new Error(`load failed: ${result.error.code}`)
+
+  return result.value
+}
+
+describe('explicit ladder timing survives acceptance, insert and load (REQ-018)', () => {
+  it.each(LADDER_CASES)('round-trips a %s timing (%o) unchanged', async (mode, options) => {
+    const block = makeCatalogLadderTimingBlock(mode, options)
+
+    const payload = acceptanceFor(hydratedWithLadders(block), INPUT, FACTS)
+    if (!payload.ok) throw new Error(`acceptance refused: ${payload.error.code}`)
+    expect(payload.value.workout.sections[2].blocks[1].ladder_timing).toEqual(block.ladder_timing)
+
+    const store = double()
+    const written = await persistedLadders(store, block)
+    const stored = written.sections[2].blocks[1].block
+
+    expect(stored.ladder_timing).toEqual(block.ladder_timing)
+    // Beside it, the columns it agrees with, as composed rather than re-derived.
+    expect(stored).toMatchObject({
+      structure_type: block.structure_type,
+      timer_type: block.timer_type,
+      timer_seconds: block.timer_seconds,
+      rounds: null,
+      round_rest_seconds: null,
+      rep_scheme: block.rep_scheme,
+    })
+
+    const loaded = await reloaded(store, written.session.id)
+    expect(loaded.sections[2].blocks[1].block).toEqual(stored)
+  })
+
+  it.each(LADDER_CASES)('keeps every rung and the fixed companion of a %s ladder (%o)', async (mode, options) => {
+    const block = makeCatalogLadderTimingBlock(mode, options)
+    const store = double()
+    const written = await persistedLadders(store, block)
+    const loaded = await reloaded(store, written.session.id)
+
+    const [sequence, companion] = loaded.sections[2].blocks[1].exercises.map((entry) => entry.exercise)
+    expect(sequence).toMatchObject({
+      exercise_id: block.exercises[0].exercise_id,
+      target_kind: 'sequence',
+      target_sequence: block.exercises[0].target_sequence,
+    })
+    expect(sequence.target_sequence).toHaveLength(options.rounds)
+    // Companion work is the same every round, and stays a member of the block.
+    expect(companion).toMatchObject({
+      exercise_id: block.exercises[1].exercise_id,
+      target_kind: 'fixed',
+      target_value: 4,
+      target_sequence: null,
+      is_interval_exercise: true,
+    })
+  })
+
+  it('stores no timing for a legacy payload, absent or null, and invents none on load', async () => {
+    const absent = makeCatalogLadderTimingBlock('scheduled_starts', { rounds: 5, intervalSeconds: 60 })
+    delete absent.ladder_timing
+    const explicitNull = makeCatalogLadderTimingBlock('for_time', { rounds: 3 })
+    explicitNull.ladder_timing = null
+
+    // The payload says what the workout said: no key is added where none was.
+    const payload = acceptanceFor(hydratedWithLadders(absent, explicitNull), INPUT, FACTS)
+    if (!payload.ok) throw new Error('acceptance refused')
+    const sent = payload.value.workout.sections[2].blocks
+    expect(Object.hasOwn(sent[0], 'ladder_timing')).toBe(false)
+    expect(Object.hasOwn(sent[1], 'ladder_timing')).toBe(false)
+    expect(sent[2].ladder_timing).toBeNull()
+
+    const store = double()
+    const written = await persistedLadders(store, absent, explicitNull)
+    const loaded = await reloaded(store, written.session.id)
+
+    // SQL NULL for all three, never a schedule read out of a ladder's sequence.
+    for (const section of loaded.sections) {
+      for (const { block } of section.blocks) expect(block.ladder_timing).toBeNull()
+    }
+    expect(loaded.sections[2].blocks[1].exercises[0].exercise.target_sequence).toHaveLength(5)
+  })
+
+  it('loads a session saved before the column existed as the legacy session it was', async () => {
+    const store = double()
+    const written = await persisted(store)
+    if (!written.ok) throw new Error('persist failed')
+
+    // A database the migration has not reached answers without the key.
+    const before = structuredClone(written.value) as unknown as {
+      sections: { blocks: { block: Record<string, unknown> }[] }[]
+    }
+    for (const section of before.sections) {
+      for (const entry of section.blocks) delete entry.block.ladder_timing
+    }
+
+    const parsed = sessionSnapshotSchema.parse(before)
+    for (const section of parsed.sections) {
+      for (const { block } of section.blocks) expect(Object.hasOwn(block, 'ladder_timing')).toBe(false)
+    }
+  })
+
+  it('refuses a stored timing no reader could run, rather than dropping it', () => {
+    const block = makeCatalogLadderTimingBlock('capped_window', { rounds: 4, capSeconds: 300 })
+
+    // The block row on its own, as `to_jsonb(b)` would answer it.
+    const row = (timing: unknown) => ({
+      id: '00000000-0000-4000-8000-000000000001',
+      section_id: '00000000-0000-4000-8000-000000000002',
+      created_at: '2026-10-21T00:00:00+00:00',
+      order_index: 0,
+      structure_type: block.structure_type,
+      rounds: null,
+      timer_type: block.timer_type,
+      timer_seconds: block.timer_seconds,
+      round_rest_seconds: null,
+      rep_scheme: block.rep_scheme,
+      block_notes: null,
+      ladder_timing: timing,
+    })
+    const blockRow = sessionSnapshotSchema.shape.sections.element.shape.blocks.element.shape.block
+
+    expect(blockRow.parse(row(block.ladder_timing)).ladder_timing).toEqual(block.ladder_timing)
+    expect(blockRow.parse(row(null)).ladder_timing).toBeNull()
+    for (const malformed of [
+      { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: null },
+      { mode: 'every_minute', rounds: 4, interval_seconds: 60, cap_seconds: null },
+      { mode: 'for_time', rounds: 1, interval_seconds: null, cap_seconds: null },
+      { mode: 'for_time', rounds: 4, interval_seconds: null, cap_seconds: null, extra: 1 },
+      'scheduled_starts',
+    ]) {
+      expect(blockRow.safeParse(row(malformed)).success).toBe(false)
+    }
+  })
+})
+
+describe('the migration that carries it is additive', () => {
+  const migration = read(LADDER_MIGRATION)
+
+  it('is appended after every migration that was already there', () => {
+    const files = migrationFiles()
+    expect(files.at(-1)).toBe(LADDER_MIGRATION.split('/').at(-1))
+  })
+
+  it('adds one nullable column with no default and rewrites no row', () => {
+    expect(migration).toMatch(/alter table public\.workout_blocks\s+add column if not exists ladder_timing jsonb;/)
+    expect(migration).not.toMatch(/ladder_timing jsonb (not null|default)/i)
+    // History stays as written: no UPDATE, DELETE or backfill of any table.
+    expect(migration).not.toMatch(/^\s*(update|delete from|truncate)\b/im)
+    expect(migration).not.toMatch(/drop (table|column)/i)
+  })
+
+  it('is typed by the existing generator as nullable JSON', () => {
+    const table = readSchema().tables.find((candidate) => candidate.name === 'workout_blocks')
+    expect(table?.columns.find((column) => column.name === 'ladder_timing')).toMatchObject({
+      pgType: 'jsonb',
+      nullable: true,
+      hasDefault: false,
+    })
+  })
+
+  it('makes it the newest persist_session, which writes the timing as sent', () => {
+    const definers = migrationFiles().filter((file) =>
+      read(`supabase/migrations/${file}`).includes('create or replace function public.persist_session('),
+    )
+    expect(definers.at(-1)).toBe(LADDER_MIGRATION.split('/').at(-1))
+
+    expect(migration).toMatch(/round_rest_seconds, rep_scheme, block_notes,\s+ladder_timing\s+\) values/)
+    expect(migration).toContain("nullif(v_block -> 'ladder_timing', 'null'::jsonb)")
+    // Everything else in the function is the deload migration's, unchanged.
+    expect(migration).toContain("coalesce((p_session ->> 'is_deload')::boolean, false)")
+    expect(migration).toContain('return public.session_snapshot(v_session_id);')
+    expect(migration).toMatch(/revoke all on function public\.persist_session\(uuid, jsonb\) from public, anon;/)
+  })
+
+  it('reads it back through to_jsonb, so no reader needed changing', () => {
+    expect(read(LIFECYCLE_MIGRATION)).toMatch(/'block', to_jsonb\(b\)/)
+    expect(read('supabase/migrations/20260921000010_session_reconstruction.sql')).toMatch(
+      /'block', to_jsonb\(b\)/,
+    )
+  })
+
+  it('constrains the stored shape to the modes the schema knows', () => {
+    expect(migration).toContain('add constraint workout_blocks_ladder_timing_shape')
+    for (const mode of ['scheduled_starts', 'for_time', 'capped_window']) {
+      expect(migration).toContain(`ladder_timing ->> 'mode' = '${mode}'`)
+    }
+    // No round count or interval is a scheduling constant: the numeric bounds
+    // belong to the existing reader's integer domain, not to a workout policy.
+    expect(migration).toContain("(ladder_timing ->> 'rounds')::numeric < 2")
+    expect(migration).not.toMatch(/\b(180|300)\b/)
+  })
+
+  const timingReader = sessionSnapshotSchema.shape.sections.element.shape.blocks.element.shape.block.shape.ladder_timing
+  const MAX_SAFE = 9007199254740991
+  const timing = (mode: 'for_time' | 'scheduled_starts' | 'capped_window', overrides = {}) => ({
+    mode,
+    rounds: 2,
+    interval_seconds: mode === 'scheduled_starts' ? 1 : null,
+    cap_seconds: mode === 'capped_window' ? 1 : null,
+    ...overrides,
+  })
+
+  /**
+   * Offline transcription of this column CHECK, not a PostgreSQL execution.
+   * The upper bounds are read from the actual SQL: removing one makes its
+   * overflow fixtures fail instead of letting a hardcoded test oracle hide it.
+   * Null here means SQL NULL after persist_session's nullif, not JSONB null.
+   * This tests the stored timing's shape, not whole-block/sequence consistency.
+   */
+  function storedTimingShape(value: unknown, sql = migration): boolean {
+    if (value === null || value === undefined) return true
+    if (typeof value !== 'object' || Array.isArray(value)) return false
+    const row = value as Record<string, unknown>
+    if (Object.keys(row).sort().join(',') !== 'cap_seconds,interval_seconds,mode,rounds') return false
+    const integer = (field: string, minimum: number) => {
+      const operator = field === 'rounds' ? '>' : '<='
+      const match = new RegExp(`\\(ladder_timing ->> '${field}'\\)::numeric ${operator} (\\d+)`).exec(sql)
+      const ceiling = match === null ? Infinity : Number(match[1])
+      const candidate = row[field]
+      return typeof candidate === 'number' && Number.isInteger(candidate) && candidate >= minimum && candidate <= ceiling
+    }
+    if (!integer('rounds', 2)) return false
+    switch (row.mode) {
+      case 'scheduled_starts': return row.cap_seconds === null && integer('interval_seconds', 1)
+      case 'for_time': return row.interval_seconds === null && row.cap_seconds === null
+      case 'capped_window': return row.interval_seconds === null && integer('cap_seconds', 1)
+      default: return false
+    }
+  }
+
+  it('binds all three SQL integer ceilings and strict null/key rules to the unchanged reader', () => {
+    for (const field of ['rounds', 'interval_seconds', 'cap_seconds']) {
+      const operator = field === 'rounds' ? '>' : '<='
+      const bound = new RegExp(`\\(ladder_timing ->> '${field}'\\)::numeric ${operator} (\\d+)`).exec(migration)
+      expect(bound?.[1], field).toBe(String(MAX_SAFE))
+    }
+    expect(migration).toContain('ladder_timing is null')
+    expect(migration).toContain("ladder_timing ?& array['mode', 'rounds', 'interval_seconds', 'cap_seconds']")
+    expect(migration).toContain("ladder_timing - array['mode', 'rounds', 'interval_seconds', 'cap_seconds']")
+    expect(migration).toContain("jsonb_typeof(ladder_timing -> 'rounds') <> 'number'")
+    expect(migration).toContain("(ladder_timing ->> 'rounds')::numeric % 1 <> 0")
+    for (const field of ['interval_seconds', 'cap_seconds']) {
+      expect(migration).toContain(`jsonb_typeof(ladder_timing -> '${field}') <> 'number'`)
+      expect(migration).toContain(`(ladder_timing ->> '${field}')::numeric > 0`)
+      expect(migration).toContain(`(ladder_timing ->> '${field}')::numeric % 1 = 0`)
+    }
+  })
+
+  const shapeCases: [string, unknown, boolean][] = [
+    ['absent legacy value normalizes to SQL NULL', undefined, true],
+    ['persisted SQL NULL', null, true],
+    ['minimum free-paced rungs', timing('for_time'), true],
+    ['maximum free-paced rungs', timing('for_time', { rounds: MAX_SAFE }), true],
+    ['maximum scheduled rungs', timing('scheduled_starts', { rounds: MAX_SAFE }), true],
+    ['maximum capped rungs', timing('capped_window', { rounds: MAX_SAFE }), true],
+    ['minimum interval', timing('scheduled_starts'), true],
+    ['maximum interval', timing('scheduled_starts', { interval_seconds: MAX_SAFE }), true],
+    ['minimum cap', timing('capped_window'), true],
+    ['maximum cap', timing('capped_window', { cap_seconds: MAX_SAFE }), true],
+    ['one rung', timing('for_time', { rounds: 1 }), false],
+    ['fractional rungs', timing('for_time', { rounds: 2.5 }), false],
+    ['null rungs', timing('for_time', { rounds: null }), false],
+    ['string rungs', timing('for_time', { rounds: '2' }), false],
+    ['zero interval', timing('scheduled_starts', { interval_seconds: 0 }), false],
+    ['fractional interval', timing('scheduled_starts', { interval_seconds: 1.5 }), false],
+    ['null interval', timing('scheduled_starts', { interval_seconds: null }), false],
+    ['zero cap', timing('capped_window', { cap_seconds: 0 }), false],
+    ['negative cap', timing('capped_window', { cap_seconds: -1 }), false],
+    ['fractional cap', timing('capped_window', { cap_seconds: 1.5 }), false],
+    ['null cap', timing('capped_window', { cap_seconds: null }), false],
+    ['extra key', { ...timing('for_time'), extra: 1 }, false],
+    ['missing nullable key', { mode: 'for_time', rounds: 2, interval_seconds: null }, false],
+    ['unknown mode', { ...timing('for_time'), mode: 'unknown' }, false],
+    ['free-paced interval', timing('for_time', { interval_seconds: 1 }), false],
+    ['scheduled cap', timing('scheduled_starts', { cap_seconds: 1 }), false],
+    ['capped interval', timing('capped_window', { interval_seconds: 1 }), false],
+    ['array', [], false],
+    ['scalar', 'for_time', false],
+  ]
+  for (const overflow of [MAX_SAFE + 1, MAX_SAFE * 2, 1e20]) {
+    shapeCases.push(
+      [`round overflow ${overflow}`, timing('for_time', { rounds: overflow }), false],
+      [`interval overflow ${overflow}`, timing('scheduled_starts', { interval_seconds: overflow }), false],
+      [`cap overflow ${overflow}`, timing('capped_window', { cap_seconds: overflow }), false],
+    )
+  }
+
+  it.each(shapeCases)('stored timing shape agrees with the unchanged reader: %s', (_label, value, accepted) => {
+    expect(timingReader.safeParse(value).success).toBe(accepted)
+    expect(storedTimingShape(value)).toBe(accepted)
+  })
+
+  it.each([
+    ['rounds', timing('for_time', { rounds: MAX_SAFE + 1 })],
+    ['interval_seconds', timing('scheduled_starts', { interval_seconds: MAX_SAFE + 1 })],
+    ['cap_seconds', timing('capped_window', { cap_seconds: MAX_SAFE + 1 })],
+  ])('detects a missing SQL upper-bound guard for %s rather than trusting the reader alone', (_field, value) => {
+    const withoutCeilings = migration.replace(
+      /(?:or|and) \(ladder_timing ->> '(?:rounds|interval_seconds|cap_seconds)'\)::numeric (?:>|<=) 9007199254740991/g,
+      '',
+    )
+    expect(storedTimingShape(value, withoutCeilings)).toBe(true)
+    expect(storedTimingShape(value)).toBe(false)
+    expect(timingReader.safeParse(value).success).toBe(false)
   })
 })
 

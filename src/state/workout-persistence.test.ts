@@ -10,6 +10,13 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
+import { createSessionsClient } from '../data/sessions'
+import {
+  makeGenerationOutput,
+  makeLadderTimingBlock,
+  makeSessionAcceptance,
+} from '../test/factories'
+import { createSessionDouble } from '../test/session-double'
 import { AMRAP_START, type AmrapState } from './amrap'
 import { CIRCUIT_START } from './circuit'
 import {
@@ -22,6 +29,7 @@ import {
   type EmomState,
 } from './emom'
 import type { PrescribedColumns } from './prescription'
+import type { WorkoutBlock } from './schemas'
 import { elapsedSeconds } from './workout-clock'
 import {
   clearWorkoutShellState,
@@ -31,6 +39,7 @@ import {
   readCircuitStates,
   readEmomState,
   readEmomStates,
+  readForTimeState,
   readWorkoutShellState,
   restoredSectionIndex,
   usePersistedAmrap,
@@ -40,10 +49,12 @@ import {
   WORKOUT_AMRAP_STORAGE_KEY,
   WORKOUT_CIRCUIT_STORAGE_KEY,
   WORKOUT_EMOM_STORAGE_KEY,
+  WORKOUT_FOR_TIME_STORAGE_KEY,
   WORKOUT_SHELL_STORAGE_KEY,
   writeAmrapState,
   writeCircuitState,
   writeEmomState,
+  writeForTimeState,
   writeWorkoutShellState,
   type ShellStorage,
 } from './workout-persistence'
@@ -679,5 +690,127 @@ describe('EMOM records', () => {
     expect(readEmomStates(storage)).toEqual({})
     expect(readEmomStates(hostileStorage())).toEqual({})
     expect(() => writeEmomState(hostileStorage(), BLOCK, RUNNING)).not.toThrow()
+  })
+})
+
+/**
+ * REQ-018 (TASK-039) — a cached session restored after a refresh.
+ *
+ * The structure comes back from the database through `resume`, and only where
+ * the user was comes back from this module's keys. So an explicit ladder
+ * timing has to survive the first, and must not be written into, or read out
+ * of, the second: a block record is keyed by block id and holds a clock or a
+ * position, never a schedule and never a round count derived from time.
+ */
+describe('a restored session keeps its explicit ladder timing (REQ-018)', () => {
+  const URL_ = 'https://project.supabase.co'
+  const TOKEN = 'user-token'
+  const USER = 'a0000001-0000-4000-8000-000000000000'
+
+  function memoryStorage(): ShellStorage & { keys(): string[]; raw(key: string): string | null } {
+    const values = new Map<string, string>()
+    return {
+      getItem: (key) => values.get(key) ?? null,
+      setItem: (key, value) => void values.set(key, value),
+      removeItem: (key) => void values.delete(key),
+      keys: () => [...values.keys()],
+      raw: (key) => values.get(key) ?? null,
+    }
+  }
+
+  const client = (double: ReturnType<typeof createSessionDouble>) =>
+    createSessionsClient({ url: URL_, anonKey: 'anon-key', accessToken: TOKEN, fetch: double.fetch })
+
+  /** Accept and start, the way Review hands a session to the shell. */
+  async function started(...blocks: WorkoutBlock[]) {
+    const double = createSessionDouble({ url: URL_, anonKey: 'anon-key', users: { [TOKEN]: USER } })
+    const workout = makeGenerationOutput()
+    workout.sections[1].blocks.push(...blocks)
+
+    const accepted = await client(double).accept(USER, makeSessionAcceptance({ workout }))
+    if (!accepted.ok) throw new Error(`accept failed: ${accepted.error.code}`)
+    const start = await client(double).start(accepted.value.session.id)
+    if (!start.ok) throw new Error(`start failed: ${start.error.code}`)
+
+    return { double, accepted: accepted.value }
+  }
+
+  /** A refresh: a new client with nothing remembered, asking what is in progress. */
+  async function resumed(double: ReturnType<typeof createSessionDouble>) {
+    const result = await client(double).resume(USER)
+    if (!result.ok || result.value === null) throw new Error('nothing to resume')
+    return result.value
+  }
+
+  it.each([
+    ['scheduled_starts', { rounds: 3, intervalSeconds: 105 }],
+    ['scheduled_starts', { rounds: 9, intervalSeconds: 45 }],
+    ['for_time', { rounds: 6 }],
+    ['capped_window', { rounds: 5, capSeconds: 480 }],
+  ] as const)('restores a %s timing (%o) with its rungs and companion work', async (mode, options) => {
+    const ladder = makeLadderTimingBlock(mode, options)
+    const { double, accepted } = await started(ladder)
+
+    const restored = await resumed(double)
+    expect(restored.session.id).toBe(accepted.session.id)
+    expect(restored.state).toBe('active')
+
+    const entry = restored.sections[1].blocks[1]
+    expect(entry.block.ladder_timing).toEqual(ladder.ladder_timing)
+    expect(entry.block.timer_seconds).toBe(ladder.timer_seconds)
+    expect(entry.exercises.map(({ exercise }) => exercise.target_sequence)).toEqual([
+      ladder.exercises[0].target_sequence,
+      null,
+    ])
+    expect(entry.exercises[1].exercise).toMatchObject({ target_kind: 'fixed', target_value: 4 })
+  })
+
+  it('restores a free-paced clock beside the timing without deriving a round from it', async () => {
+    const ladder = makeLadderTimingBlock('for_time', { rounds: 4 })
+    const { double, accepted } = await started(ladder)
+    const blockId = accepted.sections[1].blocks[1].block.id
+
+    // Mid-ladder: the shell is on the section, the clock has run eleven minutes.
+    const storage = memoryStorage()
+    writeWorkoutShellState(storage, {
+      sessionId: accepted.session.id,
+      sectionIndex: 1,
+      updatedAt: '2026-10-21T10:11:00.000Z',
+    })
+    const clock = { startedAt: '2026-10-21T10:00:00.000Z', finishedAt: null }
+    writeForTimeState(storage, blockId, clock)
+
+    const restored = await resumed(double)
+
+    expect(restoredSectionIndex(storage, restored.session.id)).toBe(1)
+    expect(restored.sections[1].blocks[1].block.id).toBe(blockId)
+    expect(readForTimeState(storage, blockId)).toEqual(clock)
+    expect(restored.sections[1].blocks[1].block.ladder_timing).toEqual(ladder.ladder_timing)
+
+    // Nothing local carries the timing or a round count: the rows own the
+    // former, and free-paced progress is observed, never computed from time.
+    for (const key of storage.keys()) {
+      expect(storage.raw(key)).not.toMatch(/ladder_timing|rounds|interval_seconds|cap_seconds/)
+    }
+
+    clearWorkoutShellState(storage)
+    expect(readForTimeState(storage, blockId)).toBeNull()
+    expect(storage.raw(WORKOUT_FOR_TIME_STORAGE_KEY)).toBeNull()
+  })
+
+  it('restores a legacy session, ladder included, with no timing invented', async () => {
+    const legacyLadder = makeLadderTimingBlock('scheduled_starts', { rounds: 5, intervalSeconds: 60 })
+    delete legacyLadder.ladder_timing
+    const { double } = await started(legacyLadder)
+
+    const restored = await resumed(double)
+
+    for (const section of restored.sections) {
+      for (const { block } of section.blocks) expect(block.ladder_timing).toBeNull()
+    }
+    // The legacy ladder still prescribes its rungs, from its sequence alone.
+    expect(restored.sections[1].blocks[1].exercises[0].exercise.target_sequence).toEqual(
+      legacyLadder.exercises[0].target_sequence,
+    )
   })
 })

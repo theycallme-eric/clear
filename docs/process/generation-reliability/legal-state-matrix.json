@@ -34,6 +34,7 @@
     "supabase/migrations/20261002000022_settings_viability_guard.sql",
     "supabase/migrations/20261002000023_onboarding_viability.sql",
     "supabase/migrations/20261002000024_location_viability.sql",
+    "supabase/migrations/20261021000025_ladder_timing_persistence.sql",
     "supabase/seed/010_exercise_definitions.sql",
     "supabase/seed/030_exercise_pattern_weights.sql",
     "src/state/onboarding.ts"

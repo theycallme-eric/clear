@@ -397,6 +397,9 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
           round_rest_seconds: (sourceBlock.round_rest_seconds ?? null) as number | null,
           rep_scheme: (sourceBlock.rep_scheme ?? 'fixed') as WorkoutBlockRow['rep_scheme'],
           block_notes: (sourceBlock.block_notes ?? null) as string | null,
+          // `nullif(v_block -> 'ladder_timing', 'null')` (20261021000025):
+          // absent and null are both NULL; an object is stored as sent.
+          ladder_timing: (sourceBlock.ladder_timing ?? null) as WorkoutBlockRow['ladder_timing'],
         }
         stagedBlocks.push(block)
 

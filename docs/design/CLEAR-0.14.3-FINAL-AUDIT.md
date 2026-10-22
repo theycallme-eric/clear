@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `de268781a6fbdcbaba976f54c5097340b07ee49cb98751777e6d935042749d42` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028 and TASK-013 changes below) |
+| Runtime source hash of this audit's tree | `971bf55f8ce46dd900b2c413120a605a7bbe1572b6ccbf5d1a06b50d5fe239cb` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013 and TASK-039 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -349,6 +349,24 @@ trees and this head, from `git diff`:
   intact, not represented as one linear sequence. Historical pictures remain historical;
   combined-tree task/project verification and independent exact-head acceptance are required.
 
+- `6b8661ac…` to `55450010…`: TASK-039 (REQ-018, E03) persists and restores explicit ladder
+  timing. Migration `20261021000025_ladder_timing_persistence.sql` adds nullable
+  `workout_blocks.ladder_timing` with a shape check and has `persist_session` write it;
+  `src/data/database.types.ts` follows from the existing generator, and `workoutBlockRowSchema`
+  in `src/state/schemas.ts` reads it back instead of stripping it. The generation gate stays
+  closed, and no prompt, duration, dispatch, renderer or global-clock code changed. This does
+  **not** change rendering of any route. Current acceptance evidence is
+  `src/test/generation-hydration.test.ts`, `src/test/generation-persistence.test.ts` and
+  `src/state/workout-persistence.test.ts`.
+  Codex's bounded cleanup restored TASK-038's readonly contract and shared factories exactly,
+  placed catalog choices in a TASK-039-only fixture, and retained the latest-definition guard
+  for all four location functions. These are offline source/unit results, not an applied live
+  migration, enabled generation format, new rendered capture or native delivery acknowledgement.
+  Subsequent independent review found the new SQL shape CHECK lacked the unchanged reader's
+  safe-integer ceilings. Its rounds/interval/cap bounds now match `z.int()`; boundary, overflow,
+  null and strict-key fixtures bind an offline transcription to the SQL text. PostgreSQL was
+  not executed, and the browser runtime digest is unchanged by this migration/test correction.
+
 - `6b8661ac…` to `6f681250…`: TASK-013 (REQ-008, JOURNEY-013, U21/U44) retains Home's existing
   full Favorites list and keeps its selected tab in the URL, including a real return from Review.
   The conditional preview-limit requirement has no baseline preview cap to expose; no arbitrary
@@ -370,6 +388,14 @@ trees and this head, from `git diff`:
   are unchanged. This is an integration binding, not new native acceptance, a picture rebind,
   deployed proof or owner UAT. Original full task/project checks and fresh criterion evidence
   remain required on the new committed candidate.
+
+- Combined TASK-039/protected TASK-028 and TASK-013 main tree:
+  `971bf55f8ce46dd900b2c413120a605a7bbe1572b6ccbf5d1a06b50d5fe239cb` preserves the
+  frozen TASK-039 source `eeb5538` plus actual protected main `d52f5834`. Only shared audit and
+  journal text conflicted; both full histories are preserved and no product/test behavior was
+  rewritten. This is a local source integration binding, not native verification, an applied
+  PostgreSQL migration, deployed proof, a new capture or owner UAT. Full original native checks,
+  fresh criterion evidence and independent exact-head review remain required before delivery.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

@@ -146,8 +146,16 @@ describe('the fixture', () => {
 })
 
 describe('the migration — shape', () => {
-  it('is the latest migration and only replaces or adds functions', () => {
-    expect(migrationFiles().at(-1)).toBe(MIGRATION)
+  it('is the latest definer of every location write and only replaces or adds functions', () => {
+    // Unrelated append-only migrations may follow, but the behavior exercised
+    // below must remain the active definition of every location function.
+    for (const name of ['location_viability_failures', 'save_location', 'set_default_location', 'delete_location']) {
+      const declaration = new RegExp(`\\bcreate (?:or replace )?function public\\.${name}\\s*\\(`, 'i')
+      const definers = migrationFiles().filter((file) =>
+        declaration.test(statementsOf(file)),
+      )
+      expect(definers.at(-1), name).toBe(MIGRATION)
+    }
 
     expect(
       [...statements.matchAll(/create or replace function public\.([a-z_]+)\(/g)].map(

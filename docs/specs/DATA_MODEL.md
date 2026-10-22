@@ -272,6 +272,7 @@ CREATE TABLE workout_blocks (
   round_rest_seconds int,
   rep_scheme         rep_scheme NOT NULL DEFAULT 'fixed',
   block_notes        text,
+  ladder_timing      jsonb,                      -- REQ-018 explicit ladder timing (GENERATION_CONTRACT §5.1); NULL = none
   created_at timestamptz NOT NULL DEFAULT now(),
 
   CONSTRAINT timed_structures_have_a_clock CHECK (

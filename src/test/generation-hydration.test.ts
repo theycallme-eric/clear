@@ -17,7 +17,11 @@ import {
   type HydratedWorkout,
 } from '../../supabase/functions/_shared/hydrate.ts'
 import { PROMPT_VERSION } from '../../supabase/functions/_shared/prompt.ts'
-import { validateComposition, type Validated } from '../../supabase/functions/_shared/validate.ts'
+import {
+  LADDER_TIMING_GENERATION_ACTIVE,
+  validateComposition,
+  type Validated,
+} from '../../supabase/functions/_shared/validate.ts'
 import { ErrorCode, createError, err, ok } from '../state/errors'
 import { createLogger, type LogSink } from '../state/logger'
 import {
@@ -25,7 +29,9 @@ import {
   generationOutputSchema,
   type ExerciseCatalogRow,
   type GenerationOutput,
+  type WorkoutBlock,
 } from '../state/schemas'
+import { makeCatalogLadderTimingBlock } from './ladder-persistence-fixtures'
 import { catalogRowFixtures, promptInput } from './generation-prompt-fixtures'
 import {
   INTRODUCTION_PROSE,
@@ -659,6 +665,117 @@ describe('the catalog read', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.error.code).toBe(ErrorCode.PERSISTENCE_READ_FAILED)
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-018 — explicit ladder timing survives hydration (TASK-039)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Varied on purpose: no round count or interval here is one a fixture could
+ * quietly depend on, and each mode appears at more than one size.
+ */
+const TIMING_CASES = [
+  ['scheduled_starts', { rounds: 3, intervalSeconds: 75 }],
+  ['scheduled_starts', { rounds: 7, intervalSeconds: 150 }],
+  ['for_time', { rounds: 2 }],
+  ['for_time', { rounds: 9 }],
+  ['capped_window', { rounds: 4, capSeconds: 420 }],
+  ['capped_window', { rounds: 6, capSeconds: 600 }],
+] as const
+
+/**
+ * A verdict whose accessory section also holds `blocks`.
+ *
+ * The edge gate keeps generated output on the legacy shape until TASK-032, so
+ * no timed block can come out of §6 yet. What hydration will be handed once
+ * the gate opens is that verdict with a boundary-valid block in it, so this is
+ * the legacy verdict with the block added and the result re-read through
+ * `generationOutputSchema` — TASK-038's contract, unmodified.
+ */
+function validatedWith(...blocks: WorkoutBlock[]): Validated {
+  const verdict = validated()
+  const workout = structuredClone(verdict.workout)
+  workout.sections[2].blocks.push(...structuredClone(blocks))
+
+  return { ...verdict, workout: generationOutputSchema.parse(workout) }
+}
+
+const LADDER_IDS = ['glute-bridge', 'walking-lunges'] as const
+
+function hydratedWith(...blocks: WorkoutBlock[]): HydratedWorkout {
+  const result = hydrateWorkout(validatedWith(...blocks), catalogFacts([...PRESCRIBED, ...LADDER_IDS]))
+  if (!result.ok) throw new Error(`hydration failed: ${result.error.code}`)
+
+  return result.value
+}
+
+describe('explicit ladder timing survives hydration (REQ-018)', () => {
+  it('is hydrated from a verdict the edge gate does not yet produce', () => {
+    // If this flips, TASK-032 has opened the gate and these fixtures can come
+    // out of §6 directly instead of being added beside it.
+    expect(LADDER_TIMING_GENERATION_ACTIVE).toBe(false)
+  })
+
+  it.each(TIMING_CASES)('keeps a %s timing exactly as composed (%o)', (mode, options) => {
+    const block = makeCatalogLadderTimingBlock(mode, options)
+    const hydratedBlock = hydratedWith(block).sections[2].blocks[1]
+
+    expect(hydratedBlock.ladder_timing).toEqual(block.ladder_timing)
+    expect(hydratedBlock.ladder_timing?.rounds).toBe(options.rounds)
+    // The clock it agrees with is untouched, so nothing was re-derived.
+    expect(hydratedBlock.timer_seconds).toBe(block.timer_seconds)
+    expect(hydratedBlock.round_rest_seconds).toBeNull()
+    expect(hydratedBlock.rep_scheme).toBe(block.rep_scheme)
+  })
+
+  it.each(TIMING_CASES)('keeps the rungs and the fixed companion work of a %s ladder (%o)', (mode, options) => {
+    const block = makeCatalogLadderTimingBlock(mode, options)
+    const [sequence, companion] = hydratedWith(block).sections[2].blocks[1].exercises
+
+    // The rep pattern is the prescriptions', beside the timing and not in it.
+    expect(sequence.prescription).toEqual(block.exercises[0])
+    expect(sequence.prescription.target_sequence).toHaveLength(options.rounds)
+    expect(companion.prescription).toEqual(block.exercises[1])
+    expect(companion.prescription).toMatchObject({ target_kind: 'fixed', target_value: 4 })
+    expect(companion.displayName).not.toBe('')
+  })
+
+  it('infers no timing for a legacy block, ladder or not', () => {
+    // A ladder with its sequence and clock but no key is a pre-REQ-018 block.
+    // Hydration must not read a schedule out of it.
+    const legacyLadder = makeCatalogLadderTimingBlock('scheduled_starts', { rounds: 5, intervalSeconds: 60 })
+    delete legacyLadder.ladder_timing
+
+    const workout = hydratedWith(legacyLadder)
+
+    for (const section of workout.sections) {
+      for (const hydratedBlock of section.blocks) {
+        expect(Object.hasOwn(hydratedBlock, 'ladder_timing')).toBe(false)
+      }
+    }
+    expect(workout.sections[2].blocks[1].exercises[0].prescription.target_sequence).toHaveLength(5)
+  })
+
+  it('keeps an explicit null as null, which is no explicit timing', () => {
+    const nullTiming = makeCatalogLadderTimingBlock('for_time', { rounds: 3 })
+    nullTiming.ladder_timing = null
+
+    const hydratedBlock = hydratedWith(nullTiming).sections[2].blocks[1]
+    expect(Object.hasOwn(hydratedBlock, 'ladder_timing')).toBe(true)
+    expect(hydratedBlock.ladder_timing).toBeNull()
+  })
+
+  it('keeps old and new blocks side by side without crossing their timing', () => {
+    const scheduled = makeCatalogLadderTimingBlock('scheduled_starts', { rounds: 4, intervalSeconds: 90 })
+    const capped = makeCatalogLadderTimingBlock('capped_window', { rounds: 3, capSeconds: 240 })
+
+    const blocks = hydratedWith(scheduled, capped).sections[2].blocks
+
+    expect(Object.hasOwn(blocks[0], 'ladder_timing')).toBe(false)
+    expect(blocks[1].ladder_timing).toEqual(scheduled.ladder_timing)
+    expect(blocks[2].ladder_timing).toEqual(capped.ladder_timing)
   })
 })
 
