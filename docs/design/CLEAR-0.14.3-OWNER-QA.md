@@ -46,7 +46,8 @@ The introduced route has no BEFORE preview at baseline `c31ef865f60811df076db396
 Its separate real AFTER matrix (four skins × phone/tablet/desktop/short viewport) requires
 canonical-top16-PNG proof under `docs/design/evidence-0143/task034-format-preview/`;
 the prior12 passed cases/16 real PNGs on source9fc8c7b are preserved as history
-after a required fixture-lint correction changed the driver. Fresh current proof is pending.
+after a required fixture-lint correction changed the driver. Fresh current source5b84f43
+now has12 actually passed cases/16 real PNGs; no failed/skipped case is counted.
 The prior32987806 matrix is preserved outside the product after independent review found
 retained inner-scroll offsets. Every corrected-driver cell records zero actual scroll offsets
 and visible heading; missing/stale evidence still fails the strict gate. Local browser proof

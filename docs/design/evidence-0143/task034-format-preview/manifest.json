@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 469,
+  "consumer": "task034-format-preview",
+  "phase": "after",
+  "status": "complete",
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "cases": [
+    {
+      "project": "desktop",
+      "skin": "clear",
+      "caseTitle": "clear: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "desktop",
+      "skin": "mono",
+      "caseTitle": "mono: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "desktop",
+      "skin": "signal",
+      "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "desktop",
+      "skin": "vapour",
+      "caseTitle": "vapour: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "clear",
+      "caseTitle": "clear: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "mono",
+      "caseTitle": "mono: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "signal",
+      "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "vapour",
+      "caseTitle": "vapour: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "tablet",
+      "skin": "clear",
+      "caseTitle": "clear: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "tablet",
+      "skin": "mono",
+      "caseTitle": "mono: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "tablet",
+      "skin": "signal",
+      "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "tablet",
+      "skin": "vapour",
+      "caseTitle": "vapour: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    }
+  ],
+  "matrix": {
+    "captures": 16,
+    "withBeforePicture": 0,
+    "introducedWithoutBeforePicture": 16,
+    "byViewport": {
+      "phone": 4,
+      "tablet": 4,
+      "desktop": 4,
+      "short": 4
+    },
+    "bySkin": {
+      "clear": 4,
+      "vapour": 4,
+      "signal": 4,
+      "mono": 4
+    }
+  }
+}
