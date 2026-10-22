@@ -76,6 +76,7 @@ import {
   LoadSuggestionsStatus,
 } from '../ui/load-suggestion'
 import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
+import { FeelingRow } from '../ui/feeling-row'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
@@ -806,6 +807,16 @@ function MoodReadingRecorded() {
 
 function MoodReadingUnanswered() {
   return <MoodReading step={null} />
+}
+
+function FeelingRowUnanswered() {
+  const [value, setValue] = useState<number | null>(null)
+  return <FeelingRow value={value} onChange={setValue} />
+}
+
+function FeelingRowChosen() {
+  const [value, setValue] = useState<number | null>(4)
+  return <FeelingRow value={value} onChange={setValue} />
 }
 
 const SAMPLE_CONDITIONING_SCORE: ConditioningScore = {
@@ -1812,6 +1823,25 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'unanswered',
         note: 'No neutral value is invented for an unanswered debrief.',
         Render: MoodReadingUnanswered,
+      },
+    ],
+  },
+  {
+    component: 'FeelingRow',
+    requirement: 'SUM-01',
+    module: 'src/ui/feeling-row.tsx',
+    summary:
+      'Asks the optional 1–5 feeling as one non-wrapping row of five even numbers; each option’s accessible name carries the scale word.',
+    specimens: [
+      {
+        state: 'unanswered',
+        note: 'No answer is the opening state and a valid saved one.',
+        Render: FeelingRowUnanswered,
+      },
+      {
+        state: 'chosen',
+        note: 'The selection carries a tick; Clear returns it to no answer.',
+        Render: FeelingRowChosen,
       },
     ],
   },

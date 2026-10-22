@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `25779dbf09c6ffa444f2c9e3e16a1f171b4f039cb4686b2ed9aa06a509cfc387` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014 and TASK-020 changes below) |
+| Runtime source hash of this audit's tree | `ed139427b2bf3ccfc6bd8188b09782b5aece9789f09a707d17fe18e7136a477b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021 and TASK-033 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -481,6 +481,34 @@ trees and this head, from `git diff`:
   progress for free-paced `for_time` or `capped_window`, and the stated cap. Legacy ladders are
   unchanged; the global session clock is not read or changed. Task-local phone proof is
   `e2e/design-0143/workout-ladder.spec.ts`; historical pictures are not rebound.
+
+- `25779dbf…` to `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`: TASK-021
+  (REQ-012, JOURNEY-020, U43) replaces Summary's five face-and-word mood chips with
+  `src/ui/feeling-row.tsx`: one non-wrapping row of five evenly sized numeric options 1–5 over the
+  same `ChoiceGroup` radiogroup (one tab stop, arrows, Home/End, tick on selection). Only the
+  number is drawn; each option's accessible name is the number and `MOOD_SCALE`'s existing word
+  ("4, Ready"), visually hidden by the shared `.a11y-hidden` utility. No answer stays the opening
+  state, and a Clear control (shown only once something is chosen) returns it to `null`, which
+  saves as `workout_sessions.mood = null`. Storage, the 1–5 range and HIST-01's `MoodReading` are
+  unchanged; the debrief writes `mood` and `session_notes` only, never an effort field. Changed:
+  `src/app/Summary.tsx`, `src/ui/feeling-row.tsx`, `src/ui/feeling-row.css`. This **does** change
+  rendering of Summary's debrief card; historical pictures are not rebound (EX-13). Current
+  acceptance evidence is `src/app/Summary.test.tsx`, `src/data/summary.test.ts` and the
+  JOURNEY-020 case in `e2e/design-0143/accessibility.spec.ts`.
+
+- TASK-021 later native verification event3546 genuinely failed the complete mobile
+  accessibility command: 16 cases, 11 passed, 5 failed, no flaky cases or skips. JOURNEY-020
+  passed; one populated-Home geometry sample found no streak count before an explicit readiness
+  assertion, and four cases failed with fixture OTP verification HTTP429 before reaching UI
+  assertions. The bounded correction awaits the real populated streak before retaining all
+  original count/unit, containment and enlarged-text checks. It changes no runtime bytes:
+  `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`, 183 files by the
+  canonical method. The separately preserved safe failure summary remains failed evidence.
+  The original focused unit command passed 55 tests and related Home/workout-chrome suites
+  passed 78 tests after this correction; Typecheck and diff checks passed. No browser was rerun
+  by the correction author, and neither these author checks nor the earlier green author run
+  replaces fresh complete original browser/native/current-criterion proof on the committed head.
+  Historical captures and all original attempts, deadlines and failure events remain unchanged.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

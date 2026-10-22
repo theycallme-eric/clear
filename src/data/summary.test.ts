@@ -213,6 +213,60 @@ describe('the debrief write (SUM-01)', () => {
     expect(double.requests()).toEqual([])
   })
 
+  it('U43: writes the feeling to the session’s mood alone, never to an effort field', async () => {
+    const double = createSessionDouble({
+      url: URL_,
+      anonKey: ANON_KEY,
+      users: { [TOKEN]: USER },
+      sessions: [session(1, '2026-09-22T18:00:00.000Z')],
+    })
+    const sent: { method: string; path: string; body: unknown }[] = []
+    const client = createSummaryClient({
+      auth: authDouble(TOKEN),
+      supabase: {
+        url: URL_,
+        anonKey: ANON_KEY,
+        fetch: async (input, init) => {
+          const url = new URL(input instanceof Request ? input.url : String(input))
+          sent.push({
+            method: init?.method ?? 'GET',
+            path: url.pathname,
+            body: init?.body === undefined ? undefined : JSON.parse(String(init.body)),
+          })
+          return double.fetch(input, init)
+        },
+      },
+      timeZone: NEW_YORK,
+    })
+    const id = 'b0000001-0000-4000-8000-000000000000'
+
+    // Even handed one, an effort value is not part of the debrief.
+    const debrief = { mood: 3, session_notes: null, perceived_effort: 3, rpe: 3 }
+    expectOk(await client.saveDebrief(id, debrief))
+
+    expect(sent).toEqual([
+      {
+        method: 'PATCH',
+        path: '/rest/v1/workout_sessions',
+        body: { mood: 3, session_notes: null },
+      },
+    ])
+    // Nothing was scored: no block result or set log carries the feeling.
+    expect(double.store().blockResults).toEqual([])
+    expect(double.store().setLogs).toEqual([])
+  })
+
+  it('U43: restores the saved feeling, and no answer, on the next read', async () => {
+    const { client } = setup([session(1, '2026-09-22T18:00:00.000Z')])
+    const id = 'b0000001-0000-4000-8000-000000000000'
+
+    expectOk(await client.saveDebrief(id, { mood: 2, session_notes: null }))
+    expect(expectOk(await client.latest(USER))?.session.mood).toBe(2)
+
+    expectOk(await client.saveDebrief(id, { mood: null, session_notes: null }))
+    expect(expectOk(await client.latest(USER))?.session.mood).toBeNull()
+  })
+
   it('answers not found for a session the caller may not write', async () => {
     const { client } = setup([
       session(1, '2026-09-22T18:00:00.000Z', { user_id: OTHER_USER }),

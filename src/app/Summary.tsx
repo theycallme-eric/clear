@@ -5,10 +5,12 @@
  * Workout completion, out to Home. Composition is
  * `AppLayout › PageHeader + Card › MoodIcon(×5) + Textarea + WeekStreakDisplay
  * + CTAButton` — the shell and its atmosphere come from `RootLayout`,
- * `PageHeader` is `AppHeader`, the five mood icons are one `ChoiceGroup`
- * (ATOMIC.md §11: a radiogroup whose selection already carries a tick as well
- * as a colour), and the textarea is `Input multiline`, because the export has
- * no separate Textarea and never needed one. Per 0.14.3 containment each key
+ * `PageHeader` is `AppHeader`, the five moods are `FeelingRow` — U43's one row
+ * of numbers 1–5 over a `ChoiceGroup` (ATOMIC.md §11: a radiogroup whose
+ * selection already carries a tick as well as a colour), the scale's words in
+ * the accessible names only — and the textarea is `Input multiline`, because
+ * the export has no separate Textarea and never needed one. Per 0.14.3
+ * containment each key
  * number is its own small card and the debrief's fields share one card, labels
  * inside; only the screen title sits on the atmosphere.
  *
@@ -46,7 +48,6 @@ import {
   AppHeader,
   Button,
   Check,
-  ChoiceGroup,
   ClearLogo,
   Input,
 } from '../design-system/index'
@@ -54,7 +55,6 @@ import { useAuth } from '../state/auth-context'
 import type { AppError } from '../state/errors'
 import { useHistoryQuery } from '../state/history-queries'
 import { daysTrained, weekStrip, type WeekDay } from '../state/home'
-import { MOOD_SCALE } from '../state/mood'
 import { useQueryClient } from '../state/query'
 import { restDayMarks, useRestDaysQuery } from '../state/rest-day-queries'
 import type { Streak } from '../state/streak'
@@ -75,7 +75,7 @@ import { Card } from '../ui/card'
 import { Heading } from '../ui/Heading'
 import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
-import { MOOD_ICONS } from '../ui/mood'
+import { FeelingRow } from '../ui/feeling-row'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { FavoriteToggle } from './FavoriteToggle'
@@ -118,16 +118,6 @@ export const SUMMARY_FORM_ID = 'summary-debrief'
 
 /** The debrief card's heading, inside the card with the fields it names. */
 export const DEBRIEF_HEADING = 'Debrief'
-
-/**
- * The stored 1–5 scale and its public glyphs, from the one shared list that
- * HIST-01's report also reads — no local copy of the faces lives here.
- */
-const MOODS = MOOD_SCALE.map(({ value, label, glyph }) => ({
-  value,
-  label,
-  Icon: MOOD_ICONS[glyph],
-}))
 
 export function Summary() {
   const query = useCompletedSessionQuery()
@@ -280,22 +270,7 @@ function Debrief({ completed }: { completed: CompletedSession }) {
               </div>
             )}
 
-            <ChoiceGroup
-              legend="How do you feel?"
-              options={MOODS.map(({ value, label, Icon }) => ({
-                value: String(value),
-                label: (
-                  <span className="clr-row">
-                    <Icon size={20} />
-                    {label}
-                  </span>
-                ),
-              }))}
-              value={mood === null ? undefined : String(mood)}
-              onChange={(next) => {
-                setMood(Number(Array.isArray(next) ? next[0] : next))
-              }}
-            />
+            <FeelingRow value={mood} onChange={setMood} />
 
             <Input
               label="Notes · optional"

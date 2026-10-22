@@ -155,8 +155,8 @@ function ladderSession(catalog: Catalogued[], locationId: string | null) {
 
 /**
  * Adds each block's timing to every block row in an API answer, wherever it
- * sits. Used by the hermetic fixture, whose shared builders carry no timing
- * column, and by the trusted run only when the hosted schema lacks it.
+ * sits. Used only by the labelled hermetic public-preview fixture, whose
+ * shared builders carry no timing column. Trusted responses are never augmented.
  */
 function withTimings<T>(value: T, timings: ReadonlyMap<string, LadderTiming>): T {
   if (Array.isArray(value)) return value.map((item) => withTimings(item, timings)) as T
@@ -175,8 +175,8 @@ interface World {
   blockResults(): Promise<BlockResult[]>
   ladderSetLogs(): Promise<unknown[]>
   sessionState(): Promise<string>
-  /** The timing each block holds in storage, or null where storage cannot hold it. */
-  storedTimings(): Promise<Record<string, unknown> | null>
+  /** Real stored timing in trusted mode; fixture contract values in hermetic mode. */
+  storedTimings(): Promise<Record<string, unknown>>
 }
 
 /**
@@ -290,28 +290,9 @@ async function publicPreviewWorld(page: Page) {
     blockResults: async () => rows,
     ladderSetLogs: async () => [],
     sessionState: async () => completedAt === null ? 'active' : 'completed',
-    storedTimings: async () => null,
+    storedTimings: async () => Object.fromEntries(timings),
   }
   return { world, assertRequests: () => expect(unexpected).toEqual([]) }
-}
-
-/**
- * Trusted mode, where the hosted schema predates `ladder_timing`: the real
- * snapshot answers are passed through with the stored timing added to the
- * three blocks, and nothing else about them is changed.
- */
-async function overlayTimings(page: Page, timings: ReadonlyMap<string, LadderTiming>) {
-  const handler = async (route: Route) => {
-    const request = route.request()
-    if (request.method() !== 'POST') return route.fallback()
-    const response = await route.fetch()
-    if (!response.ok()) return route.fulfill({ response })
-    const body: unknown = await response.json()
-    return route.fulfill({ response, json: withTimings(body, timings) })
-  }
-  for (const name of ['session_snapshot', 'resume_session', 'session_as_performed']) {
-    await page.route(`**/rest/v1/rpc/${name}*`, handler)
-  }
 }
 
 function proofMode(testInfo: TestInfo, description: string) {
@@ -341,11 +322,12 @@ const test = base.extend<{ world: World; modelPosts: () => number }>({
     }), 'Fixture catalog read')
     expect(catalog).toHaveLength(2)
 
-    // Does the hosted schema carry TASK-039's column? Only the status is read.
-    const timingColumn = (await client.selectAsService('workout_blocks', { select: 'id,ladder_timing', limit: '1' })).ok
-    proofMode(testInfo, timingColumn
-      ? 'Trusted namespaced disposable-account integration; ladder timing persisted and restored by the hosted backend; real rows and cleanup.'
-      : 'Trusted namespaced disposable-account integration; hosted schema has no workout_blocks.ladder_timing column (migration 20261021000025 not applied), so the stored timing is added to the real snapshot responses in the browser. Real session, rows and cleanup; not timing-persistence proof.')
+    // A zero-row read checks the real hosted column without reading an athlete.
+    // Missing columns, permissions and service errors fail closed, never overlay.
+    must(await client.selectAsService('workout_blocks', {
+      select: 'id,ladder_timing', limit: '0',
+    }), 'Hosted timing boundary read')
+    proofMode(testInfo, 'Trusted namespaced disposable-account integration; ladder timing persisted and restored by the hosted backend; real rows and cleanup.')
 
     const suffix = createHash('sha256').update(testInfo.titlePath.join('\0')).digest('hex').slice(0, 10)
     const email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-t033-${suffix}@example.com`
@@ -406,10 +388,6 @@ const test = base.extend<{ world: World; modelPosts: () => number }>({
       }), 'Fixture prescription read')
       expect(exercises).toHaveLength(4)
 
-      if (!timingColumn) {
-        await overlayTimings(page, new Map<string, LadderTiming>([[scheduled, SCHEDULED], [freePaced, FREE_PACED], [capped, CAPPED]]))
-      }
-
       await page.addInitScript(({ key, session }) => localStorage.setItem(key, JSON.stringify(session)), {
         key: SESSION_KEY, session: { accessToken: token, refreshToken,
           expiresAt: Date.now() + 60 * 60 * 1000, user: { id: owner, email } },
@@ -427,7 +405,6 @@ const test = base.extend<{ world: World; modelPosts: () => number }>({
         sessionState: async () => must<{ state: string }>(await client.rpcAs('session_snapshot', {
           p_session_id: sessionId }, token), 'Snapshot read').state,
         storedTimings: async () => {
-          if (!timingColumn) return null
           const stored = must<Array<{ id: string; ladder_timing: unknown }>>(
             await client.selectAsService('workout_blocks', {
               select: 'id,ladder_timing', id: `in.(${[scheduled, freePaced, capped].join(',')})`,
@@ -688,14 +665,13 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   expect(row(world.blocks.capped)).toMatchObject({ highest_rung: 2, ...nothingFromTheClock })
   expect(await world.ladderSetLogs()).toEqual([])
 
-  // Where the hosted schema holds timing, it is exactly what was prescribed.
+  // Trusted reads must always prove persisted timing. The separately labelled
+  // public-preview mode checks its hermetic contract values, not a backend.
   const stored = await world.storedTimings()
-  if (stored !== null) {
-    expect(stored).toEqual({
-      [world.blocks.scheduled]: SCHEDULED,
-      [world.blocks.freePaced]: FREE_PACED,
-      [world.blocks.capped]: CAPPED,
-    })
-  }
+  expect(stored).toEqual({
+    [world.blocks.scheduled]: SCHEDULED,
+    [world.blocks.freePaced]: FREE_PACED,
+    [world.blocks.capped]: CAPPED,
+  })
   expect(modelPosts()).toBe(0)
 })

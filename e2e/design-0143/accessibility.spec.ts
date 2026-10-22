@@ -881,6 +881,12 @@ backendTest('JOURNEY-002: a populated Home and History keep counts with units an
 
   await visit('/')
   await reached(page, '/', 'Today')
+  // The heading can arrive before the independent rest-day/streak reads.
+  // Wait for their real populated result before measuring its count and unit;
+  // a loading, failed or empty streak is not a substitute for this fixture.
+  await expect(page.locator('main').getByText(
+    /^Current streak:\s+[1-9]\d*\s+days?(?:,\s+through yesterday)?$/,
+  )).toBeVisible()
   await expectContainedRoute(page, '/ populated')
   await expectCountsTogether(page, /\d+\xa0days?/, '/ streak')
   // TASK-012 (U19, U20): the week repeats no count beside the streak, and the
@@ -1039,6 +1045,120 @@ backendTest('JOURNEY-003: Home and Summary keep rest and training days distinct 
   await expectRestTrainingDistinct(page, '/ week')
 })
 
+const FEELINGS = ['1, Spent', '2, Worn', '3, Flat', '4, Ready', '5, Peak'] as const
+
+/** The feeling row's geometry and what it draws, read in the page. */
+async function feelingRow(page: Page) {
+  return page.getByRole('group', { name: 'How do you feel?' }).evaluate((group) => {
+    const strip = group.querySelector('[role="radiogroup"]') as HTMLElement
+    const radios = Array.from(group.querySelectorAll<HTMLElement>('[role="radio"]'))
+    const card = group.closest('.clr-card') as HTMLElement
+    const cardBox = card.getBoundingClientRect()
+    return {
+      boxes: radios.map((radio) => {
+        const box = radio.getBoundingClientRect()
+        return { top: box.top, left: box.left, right: box.right, width: box.width, height: box.height }
+      }),
+      // What a sighted reader sees: everything but the visually-hidden words.
+      drawn: radios.map((radio) => {
+        const copy = radio.cloneNode(true) as HTMLElement
+        copy.querySelectorAll('.a11y-hidden').forEach((node) => node.remove())
+        return copy.textContent?.trim() ?? ''
+      }),
+      hiddenClipped: radios.every((radio) => {
+        const words = radio.querySelector('.a11y-hidden')
+        return words !== null && getComputedStyle(words).clipPath.startsWith('inset(50%')
+      }),
+      overflows: strip.scrollWidth > strip.clientWidth + 1 ||
+        radios.some((radio) => radio.scrollWidth > radio.clientWidth + 1),
+      inCard: radios.every((radio) => {
+        const box = radio.getBoundingClientRect()
+        return box.left >= cardBox.left - 1 && box.right <= cardBox.right + 1
+      }),
+      checked: radios.map((radio) => radio.getAttribute('aria-checked')),
+    }
+  })
+}
+
+/** HIST-01's report of the session's mood, read where a reopened session shows it. */
+function moodCard(page: Page) {
+  return page.locator('.clr-card').filter({ has: page.getByRole('heading', { name: 'Mood', exact: true }) })
+}
+
+backendTest('JOURNEY-020: Summary feeling is one 1–5 row at 390x844, keyboard-chosen, saved, restored and clearable', async ({
+  page, visit, world,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'JOURNEY-020 is proven at the 390 by 844 phone viewport')
+  test.setTimeout(240_000)
+  expect(page.viewportSize()).toEqual({ width: 390, height: 844 })
+  const done = await world.completed(0)
+
+  await visit('/summary')
+  await reached(page, '/summary', 'Nice work')
+  await settled(page)
+
+  // Five options, each named with the scale's existing word for screen readers.
+  const group = page.getByRole('group', { name: 'How do you feel?' })
+  await expect(group.getByRole('radio')).toHaveCount(5)
+  for (const name of FEELINGS) {
+    await expect(group.getByRole('radio', { name, exact: true })).toBeVisible()
+  }
+
+  const row = await feelingRow(page)
+  // No answer is the opening state.
+  expect(row.checked).toEqual(['false', 'false', 'false', 'false', 'false'])
+  // Only the numbers are drawn; the words are clipped away from sight.
+  expect(row.drawn).toEqual(['1', '2', '3', '4', '5'])
+  expect(row.hiddenClipped, 'the scale words are visually hidden').toBe(true)
+  // One row, five even cells, nothing spilling out of its card.
+  const [first] = row.boxes
+  for (const box of row.boxes) {
+    expect(Math.abs(box.top - first!.top), 'the feeling row wraps').toBeLessThanOrEqual(1)
+    expect(Math.abs(box.width - first!.width), 'the feeling cells are uneven').toBeLessThanOrEqual(1)
+    expect(box.height, 'a feeling option is below the touch target').toBeGreaterThanOrEqual(40)
+  }
+  for (let index = 1; index < row.boxes.length; index += 1) {
+    expect(row.boxes[index]!.left, 'the feeling options are out of order').toBeGreaterThan(row.boxes[index - 1]!.right - 1)
+  }
+  expect(row.overflows, 'the feeling row overflows').toBe(false)
+  expect(row.inCard, 'the feeling row leaves its card').toBe(true)
+  await expect(page.getByText(/effort|RPE|exertion/i)).toHaveCount(0)
+
+  // Keyboard: one radio group, arrows choose.
+  await group.getByRole('radio', { name: '1, Spent', exact: true }).focus()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowRight')
+  await expect(group.getByRole('radio', { name: '4, Ready', exact: true })).toBeChecked()
+  await expect(group.getByRole('radio', { name: '4, Ready', exact: true })).toBeFocused()
+
+  await page.getByRole('button', { name: 'Save and close' }).click()
+  await reached(page, '/', 'Today')
+
+  // Reopened from History: the stored answer is the one chosen.
+  await visit(`/history/${done.session.id}`)
+  await expect(moodCard(page)).toContainText('Ready', { timeout: 30_000 })
+  await expect(moodCard(page)).toContainText('4 of 5')
+
+  // And the debrief opens on it again.
+  await visit('/summary')
+  await reached(page, '/summary', 'Nice work')
+  await expect(group.getByRole('radio', { name: '4, Ready', exact: true })).toBeChecked()
+
+  // No answer is a valid saved state: clear it and save.
+  await page.getByRole('button', { name: 'Clear feeling' }).click()
+  expect((await feelingRow(page)).checked).toEqual(['false', 'false', 'false', 'false', 'false'])
+  await page.getByRole('button', { name: 'Save and close' }).click()
+  await reached(page, '/', 'Today')
+
+  await visit(`/history/${done.session.id}`)
+  await expect(moodCard(page)).toContainText('Not recorded', { timeout: 30_000 })
+  await visit('/summary')
+  await reached(page, '/summary', 'Nice work')
+  await expect(group.getByRole('radio')).toHaveCount(5)
+  expect((await feelingRow(page)).checked).toEqual(['false', 'false', 'false', 'false', 'false'])
+})
+
 test.describe('onboarding', () => {
   test.use({ onboarded: false })
   backendTest('JOURNEY-002: all five onboarding steps keep readable controls and concise grouping', async ({
@@ -1190,10 +1310,18 @@ backendTest('motion: one breathing atmosphere, interrupted entries cut, one info
   expect(loops.length, `more than one interface loop: ${loops.join(', ')}`).toBeLessThanOrEqual(1)
   // The session clock is a labelled, static readout, not only something that moves.
   await expect(page.getByRole('timer', { name: 'Session time', exact: true })).toHaveText(/\d/)
-  // REQ-010: section navigation stays reachable on every viewport.
-  const sectionTabs = page.getByRole('button', { name: /^(Standard|Ladder), / })
-  await expect(sectionTabs).toHaveCount(2)
-  for (const tab of await sectionTabs.all()) {
+  // REQ-010: section navigation stays reachable on every viewport. The full
+  // jump list is collapsed behind the active section's header (U34), and each
+  // section is named by its type rather than by its stored title.
+  const allSections = page.getByRole('button', { name: 'All sections', exact: true })
+  const expanded = async () => {
+    if (await allSections.getAttribute('aria-expanded') !== 'true') await allSections.click()
+  }
+  await expanded()
+  await expect(page.getByRole('button', { name: /^(Primary lift|Conditioning), / })).toHaveCount(2)
+  for (const name of ['Primary lift', 'Conditioning']) {
+    await expanded()
+    const tab = page.getByRole('button', { name: new RegExp(`^${name}, `) })
     await tab.scrollIntoViewIfNeeded()
     await expect(tab).toBeInViewport()
     await tab.click()
