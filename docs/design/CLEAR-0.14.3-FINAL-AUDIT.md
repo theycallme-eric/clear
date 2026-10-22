@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `a1a55d157896cd61c50c5e82071cd78d1c2f012b59e9f7ecd4675cad8f52a44b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039 and TASK-014 changes below) |
+| Runtime source hash of this audit's tree | `fcf5eadf81c4a443d634a34378d84a2e226342af8f29d2aca414130636d877f5` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-014 and TASK-020 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -419,6 +419,20 @@ trees and this head, from `git diff`:
   removal and Session Detail save, the reverse deferred-save settlement, and Review Back → Home
   remove → Forward. These are offline author checks, not fresh native criterion, deployed,
   PostgreSQL or owner proof. Historical pictures and the prior7ada native receipt are not rebound.
+
+- `a1a55d15…` to `fcf5eadf81c4a443d634a34378d84a2e226342af8f29d2aca414130636d877f5`: TASK-020
+  (REQ-012, JOURNEY-019, U41/U42) recomposes Summary's results. The session title now heads the
+  result card as a display-face h2 (`--heading-h2-size`, wrapping anywhere for long titles), and
+  the shared favorite control renders compact, so "favorite" is said once before saving and once
+  (status plus its way back) after. Duration and Streak stay two small cards in the metric grid
+  with one enlarged display-face value size (`--heading-h4-size`); a duration nothing could measure
+  keeps its card as a dash with spoken words instead of disappearing. The streak's loading and
+  error stay in its card. The squeezed trailing seven-day strip is replaced by Home's own week —
+  `weekStrip` over the shared history read with HOME-02's marks, drawn by the shared `WeekStrip` —
+  in its own card with four states, so a day trained before a broken run keeps its tick and a
+  marked rest day keeps its reason. Copy that e2e specs pin (`<title>, done.`, the empty-streak
+  sentence) is unchanged. The Summary suite owns these cases; these are offline author checks, not
+  fresh native criterion, deployed or owner proof. Historical pictures are not rebound.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
