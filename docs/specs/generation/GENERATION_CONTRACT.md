@@ -167,6 +167,7 @@ Candidates are grouped by section, carry only what composition needs, and never 
       "round_rest_seconds": null,
       "rep_scheme": "fixed",
       "block_notes": "string | null",
+      "ladder_timing": null,            // 4.2.0: explicit ladder timing, see §5.1
 
       "exercises": [{
         "exercise_id": "kb-swing",      // MUST be from this section's candidates
@@ -209,7 +210,7 @@ Candidates are grouped by section, carry only what composition needs, and never 
 
 `session_function` and `anchor_relationship` split what v4.0 crammed into one relationship field: what job an exercise does, and how it relates to the day's focus. An exercise can be an accessory that is thematically neutral — one field could not say that.
 
-### 5.1 Ladder timing (REQ-018, additive boundary — TASK-038)
+### 5.1 Ladder timing (REQ-018 — boundary TASK-038, persistence TASK-039, contract 4.2.0 TASK-032)
 
 The rep pattern (`rep_scheme` plus each member's `target_sequence`) says what each round asks for. An
 optional block key, `ladder_timing`, says when each round happens. The two are separate so neither is
@@ -253,14 +254,32 @@ Consistency, enforced by `workoutBlockSchema` (shared by client and edge):
 | New reader | Payload with `ladder_timing: null` | Accepted; treated as no explicit timing |
 | New reader | New payload, consistent timing | Accepted by the schema |
 | New reader | Malformed or inconsistent timing | Rejected with a path-level issue (`generation.malformed_prescription` at the edge) |
-| Old reader (strict 4.1.0 schema before TASK-038) | New payload | Rejected as an unknown key — why generation must not emit it yet |
-| Edge generation gate (`LADDER_TIMING_GENERATION_ACTIVE = false`) | Generated output with the timing key, including explicit null | Refused and retried as malformed: old strict clients reject the new key and persistence cannot retain it |
+| Old reader (strict 4.1.0 schema before TASK-038) | New payload | Rejected as an unknown key — why the contract version moved to `4.2.0` when generation began emitting it |
+| Edge generation (contract `4.2.0`) | Generated output with consistent timing or explicit null | Accepted, persisted as stored (`persist_session`, TASK-039), stamped `4.2.0` |
+| Edge generation (contract `4.2.0`) | Generated output with the key absent | Accepted as a legacy block; nothing is inferred |
+| Snapshot readers (`SNAPSHOT_SCHEMAS`) | Session or favorite stamped `4.1.0` or `4.2.0` | Both read by the one additive schema; restart and favorites keep working |
 | Saved/legacy sessions | No timing | Unchanged behaviour |
 
-The prompt does not ask for `ladder_timing`, persistence and hydration do not store or restore it,
-and duration, dispatch and renderers do not read it. TASK-039 adds the round trip; TASK-032 closes the
-contract and enables the gate only against that proven path. The contract version stays `4.1.0`
-until then, because generated output does not change shape.
+**Before contract 4.2.0** (TASK-038/039), an edge gate refused the key in generated output, including
+an explicit null, because nothing could persist it. TASK-032 explicitly enabled the existing
+`LADDER_TIMING_GENERATION_ACTIVE` constant only once the round trip was proven, retaining the
+original refusal branch and error invariant, and moved prompt and contract together.
+
+**Integration (TASK-032).** Prompt `5.3.0` asks for `ladder_timing` under its `LADDER TIMING` rules
+and lists it in the output contract; neither names a standard round count or interval. Reading it:
+
+- **Duration (§7)** reads the timing's own clock: `scheduled_starts` → `rounds × interval_seconds`,
+  `capped_window` → `cap_seconds`, free-paced `for_time` → the block's `timer_seconds` cap. The schema
+  makes these equal to `timer_seconds`, so duration and execution count the same numbers.
+- **Execution state** (`src/state/ladder.ts`) precomputes every round: its rung target(s), the fixed
+  companion work beside it, and — for `scheduled_starts` only — its start offset. The round a
+  schedule is in is read from the block's own elapsed time; for free-paced `for_time` and
+  `capped_window` there is no such reading, because progress is observed from the user and never
+  inferred from elapsed time.
+- **Dispatch** (`blockRendererFor`) sends a ladder with explicit timing to the ladder renderer under
+  any timed structure; legacy blocks dispatch exactly as before. What that renderer shows per mode is
+  TASK-033.
+- The global session clock is not an input to any of these and is not changed by them.
 
 ---
 
@@ -320,6 +339,11 @@ per block:
   amrap      → timer_seconds
   for_time   → timer_seconds            (the full cap — the user may need all of it)
 
+  ladder_timing on a timed block (§5.1):
+    scheduled_starts → rounds × interval_seconds
+    capped_window    → cap_seconds
+    for_time         → timer_seconds    (free-paced; the block cap)
+
 per section:
   Σ blocks + (exercise_count × TRANSITION)
 
@@ -375,6 +399,11 @@ Prompt `5.2.0` (REQ-010, U31) removes generated introductions: `overview` and ev
 `section_notes` are requested as null. That is a composition-rule change, so the prompt version
 moves; the contract stays `4.1.0` because the output shape does not — both keys remain required
 on every object and are still parsed as `string | null`. See §13.
+
+Contract `4.2.0` with prompt `5.3.0` (REQ-018, E03): generated blocks carry `ladder_timing` (§5.1).
+The output shape gained a key, so the contract moves; the prompt gained a composition rule, so it
+moves too. The change is additive — a `4.1.0` payload is a valid `4.2.0` payload — so both versions
+stay registered in `SNAPSHOT_SCHEMAS` and earlier sessions and favorites stay restorable.
 
 ---
 

@@ -1060,11 +1060,11 @@ export interface ValidationOptions {
 }
 
 /**
- * Whether generated output may carry `ladder_timing` (REQ-018). False until
- * TASK-032 closes the contract against TASK-039's proven round trip; flipping it
- * is that task's decision, not this module's.
+ * Whether generated output may carry `ladder_timing` (REQ-018). TASK-032
+ * activates the existing gate against TASK-039's proven round trip, retaining
+ * its original refusal branch and error invariant.
  */
-export const LADDER_TIMING_GENERATION_ACTIVE = false
+export const LADDER_TIMING_GENERATION_ACTIVE = true
 
 /** Enough to correct, few enough that the retry addendum stays an addendum. */
 const MAX_REPORTED_VIOLATIONS = 10
@@ -1089,10 +1089,9 @@ export function validateComposition(
   // honor; refuse them here rather than silently rewriting the prescription.
   workout.sections.forEach((section, sectionIndex) => {
     section.blocks.forEach((block, blockIndex) => {
-      // REQ-018: the schema accepts ladder_timing, but persistence (TASK-039)
-      // and the integrated contract (TASK-032) cannot carry it yet. Generated
-      // output stays on the legacy shape rather than being silently dropped.
-      // Even an explicit null is a new key to an old strict 4.1.0 client.
+      // REQ-018: preserve the original refusal when the generation gate is
+      // inactive. TASK-032 explicitly enables it only after validation and
+      // persistence can carry the field under the updated contract version.
       if (!LADDER_TIMING_GENERATION_ACTIVE && Object.hasOwn(block, 'ladder_timing')) {
         violations.push({
           check: 6,

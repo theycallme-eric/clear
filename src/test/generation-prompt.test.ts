@@ -25,7 +25,12 @@ import {
   type SessionFocus,
 } from '../data/candidates'
 import { INTENSITY_BY_GOAL } from '../state/intensity'
-import { CONTRACT_VERSION } from '../state/schemas'
+import {
+  CONTRACT_VERSION,
+  LADDER_TIMING_MODES,
+  LEGACY_CONTRACT_VERSION,
+  SNAPSHOT_SCHEMAS,
+} from '../state/schemas'
 import { FOCUS_PATTERNS } from '../state/session-suggestion'
 import { createCandidatesDouble } from './candidates-double'
 import {
@@ -108,10 +113,10 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     expect(SYSTEM_PROMPT).toContain('Useful lifts may repeat across\ndays; do not force novelty or infer absent history.')
   })
 
-  it('stamps 5.2.1 for the per-goal effective intensity without moving the contract (REQ-009)', () => {
-    expect(PROMPT_VERSION).toBe('5.2.1')
-    expect(CONTRACT_VERSION).toBe('4.1.0')
-    expect(read(SPEC)).toContain('**5.2.1 (REQ-009, U27):**')
+  it('stamped 5.2.1 for the per-goal effective intensity without moving the contract (REQ-009)', () => {
+    // History since 5.3.0 / 4.2.0: 5.2.1 shipped on the 4.1.0 contract.
+    expect(LEGACY_CONTRACT_VERSION).toBe('4.1.0')
+    expect(read(SPEC)).toMatch(/\*\*5\.2\.1 \(REQ-009, U27\):\*\*[\s\S]*?contract-version change\./)
     expect(SYSTEM_PROMPT).toContain('Standard reps by effective_intensity:')
     // The ranges the spec states are the table `effectiveIntensity` applies.
     for (const [goal, { min, max }] of Object.entries(INTENSITY_BY_GOAL)) {
@@ -120,7 +125,7 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
   })
 
   it('requests null introductions without moving the contract (REQ-010)', () => {
-    expect(CONTRACT_VERSION).toBe('4.1.0')
+    expect(LEGACY_CONTRACT_VERSION).toBe('4.1.0')
     expect(SYSTEM_PROMPT).toContain(
       'Return overview and every section_notes as null; write no workout overview or section introduction.',
     )
@@ -132,6 +137,41 @@ describe('the system prompt against PROMPT_v4.md §2', () => {
     expect(SYSTEM_PROMPT).not.toMatch(/RPE ceiling/)
     expect(SYSTEM_PROMPT).not.toMatch(/the\s+overview\./)
     expect(read(SPEC)).toContain('**5.2.0 (REQ-010, U31):**')
+  })
+
+  it('stamps 5.3.0 and contract 4.2.0 for explicit ladder timing, keeping 4.1.0 readable (REQ-018)', () => {
+    expect(PROMPT_VERSION).toBe('5.3.0')
+    expect(CONTRACT_VERSION).toBe('4.2.0')
+    expect(read(SPEC)).toContain('**5.3.0 (REQ-018, E03):**')
+    // Additive: sessions and favorites stamped before the key still restore.
+    expect(Object.keys(SNAPSHOT_SCHEMAS).sort()).toEqual(['4.1.0', '4.2.0'])
+    expect(SNAPSHOT_SCHEMAS[LEGACY_CONTRACT_VERSION]).toBe(SNAPSHOT_SCHEMAS[CONTRACT_VERSION])
+    expect(read('docs/specs/generation/GENERATION_CONTRACT.md')).toContain(
+      'Contract `4.2.0` with prompt `5.3.0` (REQ-018, E03)',
+    )
+  })
+
+  it('asks for ladder timing as its own field, every mode named, beside the rep pattern', () => {
+    const section = SYSTEM_PROMPT.slice(SYSTEM_PROMPT.indexOf('LADDER TIMING'))
+    expect(section).toContain('Rep pattern and timing are separate.')
+    for (const mode of LADDER_TIMING_MODES) {
+      expect(section).toContain(`- ${mode} (`)
+      expect(OUTPUT_CONTRACT).toContain(mode)
+    }
+    expect(OUTPUT_CONTRACT).toMatch(/"ladder_timing": "null \| \{mode: [a-z_|]+, rounds, interval_seconds, cap_seconds\}"/)
+    // Interval length and round count are the model's choice, never a default.
+    expect(section).toContain('none is standard')
+    expect(section).toContain('round k starts at (k − 1) × interval_seconds')
+    expect(section).toContain('cap_seconds bounds the whole ladder and equals timer_seconds')
+    expect(section).toContain('free-paced; interval_seconds and cap_seconds null')
+  })
+
+  it('hardcodes no five-round or three-minute ladder anywhere it instructs', () => {
+    for (const text of [SYSTEM_PROMPT, OUTPUT_CONTRACT]) {
+      expect(text).not.toMatch(/\b(five|5)[ -]rounds?\b/i)
+      expect(text).not.toMatch(/\b(three|3)[ -]minutes?\b/i)
+      expect(text).not.toMatch(/\b180\b/)
+    }
   })
 
   it('puts superset shared rest where execution reads it rather than on ignored members', () => {
@@ -618,14 +658,26 @@ describe('the Goal/Focus recovery against the prompt it inherited', () => {
   // or a paragraph of instruction: the smallest of those costs more than it.
   const PRE_RECOVERY_TOTAL_BYTES = 12_340
   const RECOVERY_TOLERANCE_BYTES = 256
+  // REQ-018 (prompt 5.3.0) is a new section — exactly what the tolerance above
+  // is not room for — so its cost is stated here rather than absorbed: the
+  // LADDER TIMING rules plus one output-contract line, measured, and nothing
+  // the Goal/Focus recovery may spend.
+  const LADDER_TIMING_PROMPT_BYTES =
+    byteLength(SYSTEM_PROMPT.slice(SYSTEM_PROMPT.indexOf('\n\nLADDER TIMING'), SYSTEM_PROMPT.indexOf('\n\nREP AND SET'))) +
+    byteLength(OUTPUT_CONTRACT.split('\n').find((line) => line.includes('"ladder_timing"')) ?? '') + 1
 
   const assembled = assemblePrompt(promptInput())
   const userLines = assembled.user.split('\n')
 
+  it('states the ladder timing allowance as the ladder section and nothing more', () => {
+    expect(LADDER_TIMING_PROMPT_BYTES).toBeGreaterThan(0)
+    expect(LADDER_TIMING_PROMPT_BYTES).toBeLessThan(800)
+  })
+
   it.each([undefined, 'confident'] as const)('does not materially grow the fixture prompt with experience %s', (experience) => {
     const measured = assemblePrompt(promptInput({ experience })).measurement
     expect(measured.totalBytes).toBeLessThanOrEqual(
-      PRE_RECOVERY_TOTAL_BYTES + RECOVERY_TOLERANCE_BYTES,
+      PRE_RECOVERY_TOTAL_BYTES + RECOVERY_TOLERANCE_BYTES + LADDER_TIMING_PROMPT_BYTES,
     )
   })
 

@@ -338,11 +338,11 @@ describe('generated superset rest must use the field execution honors', () => {
   )
 })
 
-describe('ladder timing at the edge boundary (REQ-018, TASK-038)', () => {
+describe('ladder timing at the edge boundary (REQ-018, TASK-038, TASK-032)', () => {
   // The edge parses with the same `generationOutputSchema` the client does, so
-  // shape and consistency are one answer in both places. What only the edge
-  // adds is the generation gate: valid timing is still refused in *generated*
-  // output until persistence and the integrated contract can carry it.
+  // shape and consistency are one answer in both places. TASK-038's generation
+  // gate refused valid timing until persistence (TASK-039) could carry it;
+  // contract 4.2.0 (TASK-032) explicitly enabled it, so valid timing is now accepted.
 
   /** sections[2].blocks[0] reshaped into a ladder, keeping its offered exercises. */
   function ladderWorkout(timing: Record<string, unknown> | null | undefined, rounds = 4): unknown {
@@ -387,19 +387,14 @@ describe('ladder timing at the edge boundary (REQ-018, TASK-038)', () => {
     expect(completion(payload).ok).toBe(true)
   })
 
-  it.each(VALID)('the generation gate still refuses a %s timing (%i rounds) until TASK-032', (_, rounds, timing) => {
+  it.each(VALID)('the 4.2.0 contract accepts a generated %s timing (%i rounds), as composed', (_, rounds, timing) => {
     const parsed = completion(ladderWorkout(timing, rounds))
     if (!parsed.ok) throw new Error('the valid ladder fixture no longer parses')
 
-    expect(LADDER_TIMING_GENERATION_ACTIVE).toBe(false)
-    expect(validateComposition(parsed.value, INPUT)).toEqual({
-      ok: false,
-      error: {
-        code: GenerationFailure.MALFORMED,
-        detail: 'sections[2].blocks[0].ladder_timing: ' +
-          'ladder_timing is not yet supported in generated workouts; omit it',
-      },
-    })
+    const validated = validateComposition(parsed.value, INPUT)
+    if (!validated.ok) throw new Error(validated.error.detail ?? validated.error.code)
+    // Carried through unchanged — nothing defaulted, nothing inferred.
+    expect(validated.value.workout.sections[2].blocks[0].ladder_timing).toEqual(timing)
   })
 
   it('legacy ladder with timing absent validates exactly as before', () => {
@@ -410,36 +405,33 @@ describe('ladder timing at the edge boundary (REQ-018, TASK-038)', () => {
     expect('ladder_timing' in parsed.value.sections[2].blocks[0]).toBe(false)
   })
 
-  it('refuses an explicit null in generated output because old strict clients reject that new key', () => {
+  it('accepts the explicit null the output contract asks every non-ladder block for', () => {
     const parsed = completion(ladderWorkout(null))
     if (!parsed.ok) throw new Error('the additive schema must still accept an explicit null')
-    expect(validateComposition(parsed.value, INPUT)).toEqual({
-      ok: false,
-      error: {
-        code: GenerationFailure.MALFORMED,
-        detail: 'sections[2].blocks[0].ladder_timing: ' +
-          'ladder_timing is not yet supported in generated workouts; omit it',
-      },
-    })
+    expect(validateComposition(parsed.value, INPUT).ok).toBe(true)
   })
 
-  it('keeps accepted generated blocks inside the pre-TASK038 strict 4.1.0 wire key space', () => {
+  it('moved the contract to 4.2.0 because accepted generated blocks leave the 4.1.0 wire key space', () => {
     // An independent closed-key contract: deriving these keys from the new
     // schema would silently bless the very compatibility drift being tested.
     const oldBlockKeys = new Set([
       'structure_type', 'rounds', 'timer_type', 'timer_seconds',
       'round_rest_seconds', 'rep_scheme', 'block_notes', 'exercises',
     ])
-    expect(CONTRACT_VERSION).toBe('4.1.0')
-    for (const payload of [composed(), ladderWorkout(undefined), ladderWorkout(null)]) {
+    expect(CONTRACT_VERSION).toBe('4.2.0')
+    for (const [payload, extra] of [
+      [composed(), []],
+      [ladderWorkout(undefined), []],
+      [ladderWorkout(null), ['ladder_timing']],
+      [ladderWorkout(VALID[0][2], VALID[0][1]), ['ladder_timing']],
+    ] as const) {
       const parsed = completion(payload)
       if (!parsed.ok) throw new Error('wire compatibility fixture no longer parses')
       const unknownKeys = parsed.value.sections.flatMap((section) => section.blocks.flatMap((block) =>
         Object.keys(block).filter((key) => !oldBlockKeys.has(key)),
       ))
-      const validated = validateComposition(parsed.value, INPUT)
-      if (validated.ok) expect(unknownKeys).toEqual([])
-      else expect(unknownKeys).toContain('ladder_timing')
+      expect(validateComposition(parsed.value, INPUT).ok).toBe(true)
+      expect(unknownKeys).toEqual(extra)
     }
   })
 
@@ -479,8 +471,14 @@ describe('ladder timing at the edge boundary (REQ-018, TASK-038)', () => {
     expect(!parsed.ok && parsed.error.detail).toContain('sections[2].blocks[0].ladder_timing.cap_seconds')
   })
 
-  it('generation instructions do not ask for the new field', () => {
-    expect(read('supabase/functions/_shared/prompt.ts')).not.toContain('ladder_timing')
+  it('generation instructions ask for the field with the original generation gate explicitly enabled', () => {
+    expect(read('supabase/functions/_shared/prompt.ts')).toContain('"ladder_timing": "null | {mode:')
+    const validator = read('supabase/functions/_shared/validate.ts')
+    expect(LADDER_TIMING_GENERATION_ACTIVE).toBe(true)
+    expect(validator.includes('export const LADDER_TIMING_GENERATION_ACTIVE = true'), 'existing activation constant').toBe(true)
+    expect(validator.includes("if (!LADDER_TIMING_GENERATION_ACTIVE && Object.hasOwn(block, 'ladder_timing'))"), 'original refusal condition').toBe(true)
+    expect(validator.includes("path: `${sectionPath(sectionIndex)}.blocks[${blockIndex}].ladder_timing`"), 'original refusal path').toBe(true)
+    expect(validator.includes("message: 'ladder_timing is not yet supported in generated workouts; omit it'"), 'original refusal message').toBe(true)
   })
 
   it('the contract states the old/new compatibility matrix', () => {

@@ -33,7 +33,8 @@
  */
 import type { Enums } from '../data/database.types.ts'
 import { modalityUnit, prescribedTarget } from './prescription.ts'
-import type { ExerciseProgress } from './workout-progress.ts'
+import type { LadderTiming } from './schemas.ts'
+import type { BlockProgress, ExerciseProgress } from './workout-progress.ts'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Which schemes are ladders
@@ -176,4 +177,86 @@ export function rungNumbers(rung: LadderRung): string {
 export function rungLabel(rung: LadderRung, unit: string): string {
   const numbers = rungNumbers(rung)
   return unit === '' ? numbers : `${numbers} ${unit}`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Timing — REQ-018 / E03 (TASK-032)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The rungs above say *what* each round asks for; `ladder_timing` says *when*
+// it happens (GENERATION_CONTRACT §5.1). Everything below reads the stored
+// timing and nothing else: round count and interval length are the block's own
+// numbers, never constants, and no round is ever derived from a clock unless
+// the mode schedules it.
+
+/**
+ * The block's explicit timing, or `null` for a legacy block — absent, null, or
+ * on a scheme that is not a ladder (which the schema refuses, and this does not
+ * try to honour).
+ */
+export function explicitLadderTiming(
+  block: Pick<BlockProgress, 'repScheme' | 'ladderTiming'>,
+): LadderTiming | null {
+  const timing = block.ladderTiming ?? null
+  return timing !== null && isLadderScheme(block.repScheme) ? timing : null
+}
+
+/** One round of a timed ladder, with everything the screen needs precomputed. */
+export interface LadderRoundPlan {
+  /** 1-based round number — the rung number `highest_rung` records. */
+  readonly number: number
+  /** The rung's target(s), indexed from `target_sequence`. */
+  readonly rung: LadderRung | null
+  /** The fixed companion work, performed in full every round. */
+  readonly companions: readonly ExerciseProgress[]
+  /**
+   * Seconds into the block at which this round starts — `(k − 1) × interval`
+   * for `scheduled_starts`, and `null` in every other mode, where a round
+   * starts when the last one is finished.
+   */
+  readonly startSeconds: number | null
+}
+
+/**
+ * Every round of the ladder, as the timing declares them: `timing.rounds`
+ * entries, each with its rung and the companions beside it. Nothing is left
+ * for the user to add up mid-workout.
+ */
+export function ladderRoundPlan(
+  exercises: readonly ExerciseProgress[],
+  timing: LadderTiming,
+): readonly LadderRoundPlan[] {
+  const rungs = ladderRungs(exercises)
+  const companions = ladderMovements(exercises).interval
+
+  return Array.from({ length: timing.rounds }, (_, index): LadderRoundPlan => ({
+    number: index + 1,
+    rung: rungs.find((rung) => rung.number === index + 1) ?? null,
+    companions,
+    startSeconds:
+      timing.mode === 'scheduled_starts' ? index * timing.interval_seconds : null,
+  }))
+}
+
+/**
+ * The round a *scheduled* ladder is in, `blockElapsedSeconds` into the block's
+ * own clock — and `null` for free-paced `for_time` and `capped_window`, whose
+ * progress is observed from the user and never inferred from elapsed time.
+ * Also `null` once the schedule has run out. The global session clock is not an
+ * input here and is not changed by anything in this module.
+ */
+export function scheduledRoundAt(
+  timing: LadderTiming,
+  blockElapsedSeconds: number,
+): number | null {
+  if (timing.mode !== 'scheduled_starts') return null
+  if (!Number.isFinite(blockElapsedSeconds) || blockElapsedSeconds < 0) return null
+
+  const round = Math.floor(blockElapsedSeconds / timing.interval_seconds) + 1
+  return round <= timing.rounds ? round : null
+}
+
+/** The one cap a `capped_window` places on the whole ladder; `null` otherwise. */
+export function ladderCapSeconds(timing: LadderTiming): number | null {
+  return timing.mode === 'capped_window' ? timing.cap_seconds : null
 }

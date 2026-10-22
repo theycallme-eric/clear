@@ -24,6 +24,7 @@ import type { Enums } from '../data/database.types.ts'
 import { sectionTypeLabel } from './onboarding'
 import type {
   ExerciseSetLogRow,
+  LadderTiming,
   SessionSnapshot,
   WorkoutExerciseRow,
 } from './schemas'
@@ -104,6 +105,12 @@ export interface BlockProgress {
    * words (`structureIdentity`); EXE-04a…c need the number to count it down.
    */
   readonly timerSeconds: number | null
+  /**
+   * `workout_blocks.ladder_timing` (REQ-018): when each rung happens, apart
+   * from what it asks for. Absent or null is a legacy block with no explicit
+   * timing; `state/ladder.ts` reads it and dispatch keys on it.
+   */
+  readonly ladderTiming?: LadderTiming | null
 }
 
 export interface SectionProgress {
@@ -193,6 +200,8 @@ export function sessionProgress(
         rounds: blockEntry.block.rounds,
         roundRestSeconds: blockEntry.block.round_rest_seconds,
         timerSeconds: blockEntry.block.timer_seconds,
+        // As stored and never defaulted: no key and NULL are both legacy.
+        ladderTiming: blockEntry.block.ladder_timing ?? null,
       }
     })
 
