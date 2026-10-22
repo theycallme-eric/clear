@@ -28,12 +28,12 @@ export function formatSourceCheckout(root: string) {
   return { dirty: status.length > 0, statusSha256: bytesHash(status) }
 }
 
-/** Boot's existing constraints read is a read-only RPC; every other non-GET data call is refused. */
+/** Existing boot reads use POST RPCs; the SQL for both is stable/read-only. */
 export function isPreviewWrite(method: string, pathname: string) {
   // This inert preview has no reason even to preflight/read a model endpoint.
   if (pathname.startsWith('/functions/v1/generate-')) return true
   if (['GET', 'HEAD', 'OPTIONS'].includes(method)) return false
-  if (method === 'POST' && pathname === '/rest/v1/rpc/constraints_in_force') return false
+  if (method === 'POST' && ['/rest/v1/rpc/constraints_in_force', '/rest/v1/rpc/resume_session'].includes(pathname)) return false
   return pathname.startsWith('/rest/v1/') || pathname.startsWith('/functions/v1/')
 }
 

@@ -73,7 +73,10 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       expect(authenticatedSession.journey.generationRequests).toBe(0)
       await visit('/settings')
       await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
-      await expect(page.getByRole('button', { name: 'Preview formats', exact: true })).toBeEnabled()
+      // TextAction's CSS-generated chevron is included in Chromium's name.
+      const previewEntry = page.getByRole('button', { name: /^Preview formats(?:\s*›)?$/ })
+      await expect(previewEntry).toHaveCount(1)
+      await expect(previewEntry).toBeEnabled()
       // Hash inside the browser; no stored athlete/auth value is returned or recorded.
       const storageHash = () => page.evaluate(async () => {
         const entries = Object.keys(window.localStorage).filter((key) => key !== 'clear.auth.session' && key !== 'clear.skin')
@@ -82,7 +85,7 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
         return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('')
       })
       const storageBefore = await storageHash()
-      await page.getByRole('button', { name: 'Preview formats', exact: true }).click()
+      await previewEntry.click()
       await expect(page).toHaveURL((url) => url.pathname === FORMAT_ROUTE)
       await expect(page.locator('main h1')).toHaveAccessibleName(FORMAT_TITLE)
       await expect(page.getByText(FORMAT_NOTE, { exact: true })).toBeVisible()

@@ -117,15 +117,27 @@ describe('Task034 introduced-route evidence guard — offline fixtures, not capt
     expect(() => validateFormatPreviewEvidence(records, { ...expected, readPng: () => { throw new Error('absent') } })).toThrow('absent')
   })
 
-  it('permits only reads and the existing read-only boot RPC, never a write or generation', () => {
+  it('permits only reads and the two existing read-only boot RPCs, never a write or generation', () => {
     expect(isPreviewWrite('GET', '/rest/v1/profiles')).toBe(false)
     expect(isPreviewWrite('GET', '/functions/v1/generate-workout')).toBe(true)
     expect(isPreviewWrite('OPTIONS', '/functions/v1/generate-workout')).toBe(true)
     expect(isPreviewWrite('POST', '/rest/v1/rpc/constraints_in_force')).toBe(false)
+    expect(isPreviewWrite('POST', '/rest/v1/rpc/resume_session')).toBe(false)
+    expect(isPreviewWrite('DELETE', '/rest/v1/rpc/resume_session')).toBe(true)
+    expect(isPreviewWrite('POST', '/rest/v1/rpc/resume_session/other')).toBe(true)
     for (const path of ['/rest/v1/profiles', '/rest/v1/rpc/persist_session', '/rest/v1/rpc/complete_onboarding', '/functions/v1/generate-workout', '/functions/v1/generate-section']) {
       expect(isPreviewWrite('POST', path), path).toBe(true)
     }
     expect(isPreviewWrite('DELETE', '/rest/v1/rpc/constraints_in_force')).toBe(true)
+  })
+
+  it('binds the admitted resume RPC to the existing stable SELECT-only SQL', () => {
+    const migration = readFileSync(resolve(root, 'supabase/migrations/20260921000006_session_lifecycle.sql'), 'utf8')
+    const body = migration.split('create or replace function public.resume_session(p_user_id uuid)')[1]?.split('$$;')[0]
+    expect(body).toBeDefined()
+    expect(body).toMatch(/language sql\s+stable\s+security invoker/)
+    expect(body).toContain('select public.session_snapshot(s.id)')
+    expect(body).not.toMatch(/\b(?:insert|update|delete|merge|truncate)\b/i)
   })
 
   it('wires the real capture posture rather than creating baseline or synthetic screenshots', () => {
