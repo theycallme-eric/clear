@@ -1,8 +1,14 @@
 /** TASK-072 — the modules become one generation, not six adjacent features. */
 import { describe, expect, it } from 'vitest'
+import { isTrustedBrowserEligible } from '../../e2e/design-0143/trusted-browser-lane'
 
+import { deriveAnchors } from '../state/anchors'
 import { ErrorCode, createError, err, ok } from '../state/errors'
-import type { GenerationRequest } from '../state/schemas'
+import type {
+  AnchorEvidenceRow,
+  ConditioningHistoryRow,
+  GenerationRequest,
+} from '../state/schemas'
 import { makeGenerationOutput } from './factories'
 import {
   catalogRowFixture,
@@ -15,10 +21,42 @@ import {
   type GenerationComposerFactory,
   type GenerationDatabase,
 } from '../../supabase/functions/_shared/generate.ts'
+import type { PromptInput } from '../../supabase/functions/_shared/prompt.ts'
 
 const USER_ID = '11111111-1111-4111-8111-111111111111'
 const LOCATION_ID = '22222222-2222-4222-8222-222222222222'
 const REQUEST_ID = 'req_task072_mount'
+
+describe('TASK-030 trusted proof admission', () => {
+  const preview = {
+    CI: 'true', GITHUB_ACTIONS: 'true', GITHUB_JOB: 'preview-e2e',
+    GITHUB_EVENT_NAME: 'deployment_status',
+  }
+
+  it('excludes only the existing credentialless public preview job', () => {
+    expect(isTrustedBrowserEligible(false, preview)).toBe(false)
+    expect(isTrustedBrowserEligible(true, preview)).toBe(true)
+  })
+
+  it.each([
+    {},
+    { CI: 'true' },
+    { ...preview, CI: undefined },
+    { ...preview, GITHUB_ACTIONS: undefined },
+    { ...preview, GITHUB_JOB: undefined },
+    { ...preview, GITHUB_JOB: 'backend-e2e', GITHUB_EVENT_NAME: 'push' },
+    { ...preview, GITHUB_JOB: 'deployed-journeys' },
+    { ...preview, GITHUB_JOB: 'live-model-canary', GITHUB_EVENT_NAME: 'workflow_dispatch' },
+    { ...preview, GITHUB_EVENT_NAME: 'push' },
+    { ...preview, GITHUB_EVENT_NAME: 'workflow_dispatch' },
+    { ...preview, GITHUB_EVENT_NAME: undefined },
+  ])('keeps missing-key local, trusted and unknown environments fail-closed: %j', (environment) => {
+    // Eligible means createAthlete must assert that the backend is available;
+    // none of these environments may silently skip the required proof.
+    expect(isTrustedBrowserEligible(false, environment)).toBe(true)
+    expect(isTrustedBrowserEligible(true, environment)).toBe(true)
+  })
+})
 
 const request: GenerationRequest = {
   request_id: REQUEST_ID,
@@ -138,5 +176,163 @@ describe('whole-workout generation integration', () => {
       error: { code: ErrorCode.PERSISTENCE_READ_FAILED, requestId: REQUEST_ID },
     })
     expect(composed).toBe(false)
+  })
+})
+
+/**
+ * REQ-016 / TASK-030 — a returning athlete whose recent history carries no
+ * effort generates like anyone else. The readers' own rules are not re-proved
+ * here (`anchors.test.ts`, `generation-training-history.test.ts`); what is
+ * proved is the seam: their outputs reach composition and the acceptance
+ * payload without a refusal, a defaulted effort or a fabricated load.
+ */
+describe('no-feedback and mixed history through one generation (REQ-016)', () => {
+  /** One working set as `anchor_evidence` answers it. */
+  const evidenceSet = (
+    session: string,
+    date: string,
+    overrides: Partial<AnchorEvidenceRow> = {},
+  ): AnchorEvidenceRow => ({
+    session_id: session,
+    session_date: date,
+    logged_at: `${date}T10:00:00.000Z`,
+    exercise_id: 'back-squat',
+    equipment_used: 'barbell',
+    set_number: 1,
+    actual_reps: 5,
+    prescribed_reps: 5,
+    weight: 100,
+    weight_unit: 'kg',
+    rpe: 8,
+    ...overrides,
+  })
+
+  /** One scored conditioning section as `conditioning_history` answers it. */
+  const conditioningSection = (
+    index: number,
+    overrides: Partial<ConditioningHistoryRow> = {},
+  ): ConditioningHistoryRow => ({
+    session_id: `c000000${index}-0000-4000-8000-000000000000`,
+    session_date: `2026-09-${`${20 - index}`.padStart(2, '0')}`,
+    effective_intensity: 7,
+    goal_preset: 'strength',
+    section_id: `a000000${index}-0000-4000-8000-000000000000`,
+    section_order: 2,
+    block_id: `b000000${index}-0000-4000-8000-000000000000`,
+    block_order: 0,
+    structure_type: 'amrap',
+    rep_scheme: 'fixed',
+    timer_type: 'countdown',
+    timer_seconds: 600,
+    rounds: null,
+    round_rest_seconds: null,
+    elapsed_seconds: null,
+    completed_under_cap: null,
+    rounds_completed: null,
+    partial_round_reps: null,
+    minutes_completed: null,
+    highest_rung: null,
+    perceived_effort: null,
+    scored_at: `2026-09-${`${20 - index}`.padStart(2, '0')}T10:30:00.000Z`,
+    prescriptions: [{
+      exercise_id: 'kb-swing', order_index: 0, modality: 'reps', sets: null,
+      target_kind: 'fixed', target_value: 10, target_min: null, target_max: null,
+      target_sequence: null, per_side: false, distance_unit: null,
+      load_type: 'absolute', load_value: 24, equipment_used: 'kettlebell',
+    }],
+    ...overrides,
+  })
+
+  /** Old sessions logged RPE; the newest, after collection was removed, did not. */
+  const mixedEvidence: AnchorEvidenceRow[] = [
+    evidenceSet('d0000001-0000-4000-8000-000000000000', '2026-09-01'),
+    evidenceSet('d0000002-0000-4000-8000-000000000000', '2026-09-08', { weight: 105 }),
+    evidenceSet('d0000003-0000-4000-8000-000000000000', '2026-09-15', { weight: 140, rpe: null }),
+  ]
+
+  async function generateWith(
+    evidence: readonly AnchorEvidenceRow[],
+    conditioning: readonly ConditioningHistoryRow[],
+  ) {
+    const inputs: PromptInput[] = []
+    const observing: GenerationComposerFactory = (options) => {
+      const inner = composer(options)
+      return {
+        compose(input) {
+          inputs.push(input)
+          return inner.compose(input)
+        },
+      }
+    }
+    const result = await performGeneration(
+      request,
+      { userId: USER_ID, requestId: REQUEST_ID },
+      {
+        db: {
+          ...database(),
+          anchors: async () => ok(deriveAnchors(evidence).map((anchor) => ({ anchor }))),
+          conditioning: async () => ok(conditioning),
+        },
+        catalog,
+        composer: observing,
+      },
+    )
+    return { result, inputs }
+  }
+
+  /** What the composer chose, with nothing added on the way to acceptance. */
+  const composedLoads = () =>
+    makeGenerationOutput().sections.flatMap((section) => section.blocks.flatMap((block) =>
+      block.exercises
+        .filter((exercise) => section.section_type !== 'primary_lift' || exercise.exercise_id === 'back-squat')
+        .map((exercise) => [exercise.exercise_id, exercise.load_type, exercise.load_value]),
+    ))
+
+  it('generates with every optional effort and result absent, and estimates nothing', async () => {
+    const unrated = [
+      evidenceSet('d0000003-0000-4000-8000-000000000000', '2026-09-15', { weight: null, actual_reps: null, rpe: null }),
+    ]
+    const { result, inputs } = await generateWith(unrated, [1, 2, 3].map((index) => conditioningSection(index)))
+
+    // Missing feedback alone is never a refusal: one composition, one acceptance.
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(inputs).toHaveLength(1)
+    // No estimate from a session that recorded no RPE, and no nudge up from
+    // sections nobody rated; the conditioning read holds rather than guesses.
+    expect(inputs[0].training.anchors).toEqual([])
+    expect(inputs[0].training.conditioningTrend).not.toBe('ready')
+    expect(result.value.acceptance.is_deload).toBe(false)
+    // The persisted prescription is the composed one: no load was fabricated.
+    expect(result.value.acceptance.workout.sections.flatMap((section) => section.blocks.flatMap((block) =>
+      block.exercises.map((exercise) => [exercise.exercise_id, exercise.load_type, exercise.load_value]),
+    ))).toEqual(composedLoads())
+  })
+
+  it('rests a mixed old/new history on the RPE it has and leaves that history unrewritten', async () => {
+    const before = structuredClone(mixedEvidence)
+    const conditioning = [
+      conditioningSection(1),
+      conditioningSection(2),
+      conditioningSection(3, { perceived_effort: 6, rounds_completed: 8 }),
+    ]
+    const { result, inputs } = await generateWith(mixedEvidence, conditioning)
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    // The anchor the existing rule computes is exactly the RPE-bearing sessions'
+    // own; the newer unrated 140 kg is not turned into evidence of a heavier max.
+    const historical = deriveAnchors(mixedEvidence.filter((row) => row.rpe !== null))
+    expect(inputs[0].training.anchors.map((anchor) => [anchor.exerciseId, anchor.sessionCount]))
+      .toEqual([['back-squat', 2]])
+    expect(deriveAnchors(mixedEvidence)).toEqual(historical)
+    expect(historical[0]).toMatchObject({ session_count: 2, last_session_date: '2026-09-08' })
+    expect(inputs[0].training.conditioningTrend).not.toBe('ready')
+    // Historical RPE stays readable, and nothing wrote a default into a null.
+    expect(mixedEvidence).toEqual(before)
+    expect(mixedEvidence.map((row) => row.rpe)).toEqual([8, 8, null])
+    expect(result.value.acceptance.workout.sections.flatMap((section) => section.blocks.flatMap((block) =>
+      block.exercises.map((exercise) => [exercise.exercise_id, exercise.load_type, exercise.load_value]),
+    ))).toEqual(composedLoads())
   })
 })
