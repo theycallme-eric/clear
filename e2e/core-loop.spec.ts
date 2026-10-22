@@ -5,7 +5,7 @@ import { resolve } from 'node:path'
 import { namespaceId } from '../scripts/e2e/namespace.mjs'
 import { createGenerationDatabase } from '../supabase/functions/_shared/generate.ts'
 import { GENERATION_SINGLE_ATTEMPT_ACCEPT, generationRequestSchema, generationSuccessSchema, type GenerationOutput } from '../src/state/schemas'
-import { EQUIPMENT, GOALS, SECTIONS_BY_GOAL, TIERS } from '../src/state/onboarding'
+import { EQUIPMENT, GOALS, SECTIONS_BY_GOAL, TIERS, sectionTypeLabel } from '../src/state/onboarding'
 import {
   assertReleaseGate,
   buildReleaseEvidence,
@@ -18,6 +18,13 @@ import { REQUIRED_JOURNEYS, REQUIRED_SCREENS } from './required-routes'
 import { backend } from './support/backend'
 import { assertSingleAttemptDeployment, createGenerationBudget, MODEL_ROUTE } from './support/generation-budget'
 import { liveModelEnabled, liveModelReason } from './support/live-model'
+import {
+  assertTask035ReleaseCase,
+  buildTask035ReleaseObservations,
+  writeTask035ReleaseObservations,
+  type Task035ReleaseObservations,
+  type Task035StoredSession,
+} from './support/task035-release-case'
 
 /**
  * REQ-010 / TASK-018 — the new-user core loop, walked in a browser on the
@@ -111,6 +118,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
   let client: ReturnType<typeof backend.client>
   let commit = ''
   let dispatchBudget: ReturnType<typeof createGenerationBudget> | undefined
+  let task035Observations: Task035ReleaseObservations | undefined
 
   /** What the journey saw of its one generation; only this reaches the evidence. */
   const observed = {
@@ -144,10 +152,22 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
 
   test.afterEach(async ({ browserName }, testInfo) => {
     void browserName
+    // An adjunct write/attachment failure is a failed walk too, not a retained
+    // successful journey with silently missing case evidence.
+    let adjunctError: Error | null = null
+    try {
+      if (testInfo.status === 'passed') {
+        if (!task035Observations) throw new Error('The successful release walk has no Task035 observations.')
+        const path = writeTask035ReleaseObservations(process.cwd(), task035Observations)
+        await testInfo.attach('task035-release-observations', { path, contentType: 'application/json' })
+      }
+    } catch (error) {
+      adjunctError = error instanceof Error ? error : new Error('Task035 observation retention failed.')
+    }
     const evidence = buildReleaseEvidence({
       ...observed,
       commit,
-      passed: testInfo.status === 'passed',
+      passed: testInfo.status === 'passed' && adjunctError === null,
     })
     const path = writeReleaseEvidence(process.cwd(), evidence)
     await testInfo.attach('release-evidence', { path, contentType: 'application/json' })
@@ -155,6 +175,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       body: Buffer.from(JSON.stringify(dispatchBudget?.snapshot() ?? { attempted: 0, forwarded: 0, blocked: 0 })),
       contentType: 'application/json',
     })
+    if (adjunctError) throw adjunctError
   })
 
   test('walks every screen on the path and lands Home with the session in recents', async ({
@@ -318,13 +339,22 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // ── Generate ───────────────────────────────────────────────────────────
     await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
 
-    // Onboarding persisted the fixture's standing Goal and that goal's sections.
-    // Generate shows that Goal as context instead of asking for it again; a first-time
-    // athlete only supplies the unresolved Focus (labelled Anchor in the UI).
+    // Preserve the standing Goal, but explicitly request this one Recovery
+    // session. Requested 9 stays 9 on the wire; only the effective value is 3.
     await expect(page.getByText(new RegExp(`^Goal: ${labelOf(GOALS, MIRROR.goal)}`))).toBeVisible({ timeout: 30_000 })
+    const recovery = page.getByRole('button', { name: 'Recovery session', exact: true })
+    await recovery.click()
+    await expect(recovery).toHaveAttribute('aria-pressed', 'true')
     const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
     await expect(anchor).toBeVisible({ timeout: 30_000 })
-    await anchor.getByRole('button', { name: 'Upper body', exact: true }).click()
+    await anchor.getByRole('button', { name: 'Full body', exact: true }).click()
+    await page.getByLabel('Time available').fill('15')
+    const intensity = page.getByRole('slider', { name: /^Intensity/ })
+    await intensity.focus()
+    await intensity.press('Home')
+    for (let step = 1; step < 9; step += 1) await intensity.press('ArrowRight')
+    await expect(intensity).toHaveValue('9')
+    await expect(intensity).toHaveAttribute('aria-valuetext', '9 of 10')
 
     // Every generation request the page makes is counted: one press, one call.
     const generationRequests: Request[] = []
@@ -356,23 +386,16 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     observed.status = response.status()
     const refusal = (payload as { code?: unknown } | null)?.code
     observed.code = typeof refusal === 'string' ? refusal : null
-    expect(
-      response.status(),
-      `generate-workout failed: ${JSON.stringify(payload)}`,
-    ).toBe(200)
+    expect(response.status(), 'generate-workout did not accept the release case').toBe(200)
     expect(response.fromServiceWorker(), 'the workout came from a service worker').toBe(false)
     expect(budget.snapshot()).toEqual({ attempted: 1, forwarded: 1, blocked: 0 })
 
     const body = generationSuccessSchema.parse(payload)
     const sent = generationRequestSchema.parse(response.request().postDataJSON())
-    expect(sent.goal).toBe(MIRROR.goal)
-    expect(sent.focus).toBe('upper_body')
-    expect(sent.requested_duration_mins).toBe(45)
     const requestId = await response.request().headerValue('x-request-id')
     expect(requestId, 'the call carried no request id').toBeTruthy()
     expect(body.requestId, 'the answer is not for this request').toBe(requestId)
-    expect(body.acceptance.prompt_version).toBeTruthy()
-    expect(body.acceptance.contract_version).toBeTruthy()
+    assertTask035ReleaseCase(sent, body.acceptance)
     const workout = body.acceptance.workout
     expect(workout.title.trim()).not.toBe('')
     expect(workout.sections.length).toBeGreaterThan(0)
@@ -380,14 +403,60 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // heading into this session. Domain validation still owns IDs/equipment.
     for (const section of workout.sections) {
       expect(ENABLED_POOL).toContain(section.section_type)
+      expect(['warmup', 'mobility', 'cooldown']).toContain(section.section_type)
     }
     observed.accepted = true
 
     // ── Review ─────────────────────────────────────────────────────────────
     await expectScreen('Review', routeOf('Review'), workout.title)
-    for (const section of workout.sections) {
-      await expect(page.getByText(section.section_title, { exact: true }).first()).toBeVisible()
+    const facts = page.locator('dl[aria-label="Workout facts"]')
+    async function displayedFact(label: string, expected: string) {
+      const value = facts.locator('dt').filter({ hasText: new RegExp(`^${label}$`) })
+        .locator('..').locator('dd')
+      await expect(value).toHaveText(expected)
+      return (await value.innerText()).trim()
     }
+    const display = {
+      intensity: await displayedFact('Intensity', '3 of 10'),
+      goal: await displayedFact('Goal', 'Active recovery'),
+      focus: await displayedFact('Anchor', 'Full body'),
+      duration: await displayedFact('Duration', '15 min'),
+      overviewSuppressed: false,
+      sectionNotesSuppressed: false,
+    }
+    const overview = page.locator('main .clr-card').filter({
+      has: page.getByRole('heading', { name: 'Overview', exact: true }),
+    })
+    await expect(overview).toHaveCount(1)
+    // The only legitimate prose is the actual effective-intensity adjustment,
+    // not a generated introduction. No raw generated text enters diagnostics.
+    const adjustment = body.acceptance.adjustment_reason?.trim() || null
+    const overviewParagraphs = overview.locator('p')
+    await expect(overviewParagraphs).toHaveCount(adjustment === null ? 0 : 1)
+    const actualOverviewParagraphs = (await overviewParagraphs.allTextContents()).map((text) => text.trim())
+    display.overviewSuppressed = adjustment === null
+      ? actualOverviewParagraphs.length === 0
+      : actualOverviewParagraphs.length === 1 && actualOverviewParagraphs[0] === adjustment
+    expect(display.overviewSuppressed, 'Review contains unexpected overview prose').toBe(true)
+    for (const section of workout.sections) {
+      // Review intentionally labels sections by their canonical type, not the
+      // retired model-generated title/introduction fields.
+      const trigger = page.locator('main .clr-collapsible__trigger').filter({
+        has: page.getByText(sectionTypeLabel(section.section_type), { exact: true }),
+      })
+      await expect(trigger).toHaveCount(1)
+      await expect(trigger).toBeVisible()
+      await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+      const regionId = await trigger.getAttribute('aria-controls')
+      if (!regionId) throw new Error('A Review section has no controlled region.')
+      const content = page.locator(`[id="${regionId}"]`)
+        .locator(':scope > .clr-collapsible__content')
+      await expect(content).toBeVisible()
+      // Section introductions used these direct prose slots; movement notes
+      // deeper inside their real block rows are deliberately not prohibited.
+      await expect(content.locator(':scope > p, :scope > .clr-stack--tight > p')).toHaveCount(0)
+    }
+    display.sectionNotesSuppressed = true
     await expectPinnedAction(page, 'Start workout')
     await reachByKeyboard(page, 'Start workout')
     await page.screenshot({ path: testInfo.outputPath('vibe-c-review.png') })
@@ -427,10 +496,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     const user = await client.findUserByEmail(email)
     expect(user, 'the namespaced user vanished mid-run').toBeTruthy()
     const stored = await client.selectAsService('workout_sessions', {
-      select: 'title,overview,prompt_version,contract_version,completed_at,' +
+      select: 'title,overview,goal_preset,session_focus,requested_duration_mins,' +
+        'effective_duration_target_mins,requested_intensity,effective_intensity,' +
+        'prompt_version,contract_version,completed_at,' +
         'sections:workout_sections(order_index,section_type,section_title,section_notes,' +
         'blocks:workout_blocks(order_index,structure_type,rounds,timer_type,timer_seconds,' +
-        'round_rest_seconds,rep_scheme,block_notes,' +
+        'round_rest_seconds,rep_scheme,block_notes,ladder_timing,' +
         'exercises:workout_exercises(order_index,exercise_id,equipment_used,modality,sets,' +
         'target_kind,target_value,target_min,target_max,target_sequence,per_side,distance_unit,' +
         'rest_seconds,tempo,load_type,load_value,is_interval_exercise)))',
@@ -451,6 +522,12 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       {
         title: workout.title,
         overview: workout.overview,
+        goal_preset: body.acceptance.goal_preset,
+        session_focus: body.acceptance.session_focus,
+        requested_duration_mins: body.acceptance.requested_duration_mins,
+        effective_duration_target_mins: body.acceptance.effective_duration_target_mins,
+        requested_intensity: body.acceptance.requested_intensity,
+        effective_intensity: body.acceptance.effective_intensity,
         prompt_version: body.acceptance.prompt_version,
         contract_version: body.acceptance.contract_version,
         completed_at: expect.any(String) as unknown,
@@ -459,6 +536,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
           order_index: sectionIndex,
           blocks: section.blocks.map((block, blockIndex) => ({
             ...block,
+            ladder_timing: block.ladder_timing ?? null,
             order_index: blockIndex,
             exercises: block.exercises.map((exercise, exerciseIndex) => {
               const { equipment, session_function, anchor_relationship, ...prescription } = exercise
@@ -473,7 +551,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     // Navigation completion is not performed training. This exercises the real
     // authenticated embedded history query without another provider request.
     expect(await contextReader.recentHistory(contextUser.id)).toEqual({
-      ok: true, value: { focuses: ['upper_body'], patterns: [], exerciseIds: [] },
+      ok: true, value: { focuses: ['full_body'], patterns: [], exerciseIds: [] },
     })
     // Success must leave the actual non-personal workout available for coaching
     // review after disposable-user cleanup. Never attach the whole acceptance,
@@ -493,6 +571,14 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       }, null, 2)),
       contentType: 'application/json',
     })
+    task035Observations = buildTask035ReleaseObservations({
+      commit,
+      requestId: body.requestId,
+      request: sent,
+      acceptance: body.acceptance,
+      display,
+      stored: ordered,
+    })
   })
 })
 
@@ -502,7 +588,7 @@ type StoredBlock = Omit<GenerationOutput['sections'][number]['blocks'][number], 
   { order_index: number; exercises: StoredExercise[] }
 type StoredSection = Omit<GenerationOutput['sections'][number], 'blocks'> &
   { order_index: number; blocks: StoredBlock[] }
-type StoredComposition = { sections: StoredSection[]; [key: string]: unknown }
+type StoredComposition = Omit<Task035StoredSession, 'sections'> & { sections: StoredSection[]; [key: string]: unknown }
 const byOrder = (a: { order_index: number }, b: { order_index: number }) => a.order_index - b.order_index
 
 /** Navigation to Finish; not a claim that every prescribed set was performed. */

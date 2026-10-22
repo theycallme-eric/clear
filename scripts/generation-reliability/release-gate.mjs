@@ -22,7 +22,8 @@
  */
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /** Ignored by git, and outside `test-results/`, which every Playwright run empties. */
@@ -336,4 +337,156 @@ export function writeReleaseEvidence(root, evidence) {
   const path = join(directory, EVIDENCE_FILE)
   writeFileSync(path, `${JSON.stringify(evidence, null, 2)}\n`)
   return path
+}
+
+const TASK035_BINDING = 'docs/process/ui-ux-2026-10-20-release-proof.json'
+const TASK035_DOCUMENTS = new Set([
+  TASK035_BINDING,
+  'docs/process/ui-ux-2026-10-20-owner-uat.md',
+  'docs/journal/2026-10-22.md',
+])
+const TASK035_CASE = 'task035-recovery-intensity-9-mobile-v1'
+const TASK035_PROMPT = '5.3.0'
+const TASK035_CONTRACT = '4.2.0'
+const SHA256 = /^[0-9a-f]{64}$/
+
+/**
+ * TASK-035's local retained-proof check, not release permission or remote proof.
+ *
+ * R is the actual clean runtime tested/deployed by the existing lanes. D is the
+ * actual later clean HEAD retaining its binding. R's evidence is never renamed
+ * to D: every tracked byte AND mode outside the exact three documentary paths
+ * must still equal R. The original assertReleaseGate and evidence writer above
+ * remain unchanged. Workflow/deployment receipts and assertion execution still
+ * need independent actual-source/remote review before final release acceptance.
+ * This function only reads Git and local files; it starts no lane or live call.
+ *
+ * @param {string} [root]
+ */
+export function assertTask035ReleaseBinding(root = process.cwd()) {
+  const fail = () => { throw new Error('Missing, stale or inconclusive Task035 local release proof') }
+  const require = (/** @type {unknown} */ condition) => { if (!condition) fail() }
+  const hash = (/** @type {import('node:crypto').BinaryLike} */ bytes) =>
+    createHash('sha256').update(bytes).digest('hex')
+  const object = (/** @type {unknown} */ value) => {
+    if (value === null || typeof value !== 'object' || Array.isArray(value)) fail()
+    return /** @type {Record<string, unknown>} */ (value)
+  }
+  const exactKeys = (/** @type {Record<string, unknown>} */ value, /** @type {string[]} */ keys) =>
+    require(Object.keys(value).sort().join('\0') === [...keys].sort().join('\0'))
+  const reference = (/** @type {unknown} */ value) =>
+    typeof value === 'string' && value.trim() === value && value.length > 0 && value.length <= 2048
+  const time = (/** @type {unknown} */ value) => {
+    const at = typeof value === 'string' ? Date.parse(value) : NaN
+    require(Number.isFinite(at) && new Date(at).toISOString() === value && at <= Date.now())
+    return at
+  }
+  try {
+    const directory = realpathSync(root)
+    const git = (/** @type {string[]} */ args) => execFileSync('git', ['--no-replace-objects', ...args], {
+      cwd: directory, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, GIT_NO_REPLACE_OBJECTS: '1', GIT_OPTIONAL_LOCKS: '0' },
+    })
+    const read = (/** @type {string} */ path) => {
+      // No symlink, traversal or external artifact can stand in for retained bytes.
+      require(!path.startsWith('/') && path.split('/').every(part => part !== '' && part !== '.' && part !== '..'))
+      let current = directory
+      for (const part of path.split('/')) {
+        current = join(current, part)
+        require(!lstatSync(current).isSymbolicLink())
+      }
+      require(lstatSync(current).isFile())
+      return readFileSync(current)
+    }
+    const json = (/** @type {string} */ path) => object(JSON.parse(read(path).toString('utf8')))
+    const documentCommit = git(['rev-parse', '--verify', 'HEAD']).trim()
+    require(COMMIT.test(documentCommit) && git(['status', '--porcelain', '--untracked-files=all']).trim() === '')
+    const binding = json(TASK035_BINDING)
+    require(binding.version === 1 && binding.outcome === 'passed')
+    const runtimeCommit = binding.runtimeCommit
+    require(typeof runtimeCommit === 'string' && COMMIT.test(runtimeCommit) && binding.frontendCommit === runtimeCommit)
+    const runtime = /** @type {string} */ (runtimeCommit)
+    require(git(['rev-parse', '--verify', `${runtime}^{commit}`]).trim() === runtime)
+    git(['merge-base', '--is-ancestor', runtime, documentCommit])
+    const tree = (/** @type {string} */ commit) => new Map(git(['ls-tree', '-r', '-z', commit])
+      .split('\0').filter(Boolean).map(row => {
+        const tab = row.indexOf('\t')
+        require(tab > 0)
+        return [row.slice(tab + 1), row.slice(0, tab)]
+      }))
+    const before = tree(runtime), after = tree(documentCommit)
+    require(after.get(TASK035_BINDING)?.startsWith('100644 blob ') === true)
+    for (const path of new Set([...before.keys(), ...after.keys()])) {
+      if (!TASK035_DOCUMENTS.has(path)) require(before.get(path) === after.get(path))
+    }
+    // Exact current source/version hashes, independently recomputed at BOTH R/D.
+    const sourceHashes = [
+      ['promptSha256', 'supabase/functions/_shared/prompt.ts'],
+      ['contractSha256', 'src/state/schemas.ts'],
+      ['backendValidatorSha256', 'supabase/functions/_shared/validate.ts'],
+      ['contractDocumentSha256', 'docs/specs/generation/GENERATION_CONTRACT.md'],
+    ]
+    for (const [field, path] of sourceHashes) {
+      require(typeof binding[field] === 'string' && SHA256.test(/** @type {string} */ (binding[field])))
+      const previous = git(['show', `${runtime}:${path}`])
+      require(binding[field] === hash(previous) && previous === git(['show', `${documentCommit}:${path}`]))
+    }
+    const functionsTree = git(['rev-parse', `${runtime}:supabase/functions`]).trim()
+    require(binding.backendSourceTree === functionsTree &&
+      functionsTree === git(['rev-parse', `${documentCommit}:supabase/functions`]).trim())
+    require(binding.promptVersion === TASK035_PROMPT && binding.contractVersion === TASK035_CONTRACT)
+    require(/^export const PROMPT_VERSION = ['"]5\.3\.0['"]$/m.test(git(['show', `${runtime}:supabase/functions/_shared/prompt.ts`])))
+    require(/^export const CONTRACT_VERSION = ['"]4\.2\.0['"]$/m.test(git(['show', `${runtime}:src/state/schemas.ts`])))
+    require(git(['show', `${runtime}:docs/specs/generation/GENERATION_CONTRACT.md`])
+      .includes('Contract `4.2.0` with prompt `5.3.0`'))
+    for (const key of ['backendDeploymentReceipt', 'frontendDeploymentReceipt', 'ownerAuthorizationRef']) require(reference(binding[key]))
+    require((typeof binding.workflowRunId === 'string' && /^[1-9]\d*$/.test(binding.workflowRunId)) ||
+      (typeof binding.workflowRunId === 'number' && Number.isSafeInteger(binding.workflowRunId) && binding.workflowRunId > 0))
+    require(binding.proofCaseId === TASK035_CASE && binding.introductionsObserved === true && binding.intensityObserved === true)
+    const bindingAt = time(binding.recordedAt)
+
+    // These are the original artifacts under R, not fabricated D-labeled copies.
+    const live = json(`${EVIDENCE_DIR}/${runtime}/${EVIDENCE_FILE}`)
+    exactKeys(live, EVIDENCE_FIELDS)
+    require(live.lane === 'release' && live.commit === runtime && live.outcome === 'passed' &&
+      live.status === 200 && live.code === null && live.failureClass === 'none' && live.generationRequests === 1 &&
+      typeof live.requestId === 'string' && REQUEST_ID.test(live.requestId) && binding.requestId === live.requestId)
+    const liveAt = time(live.recordedAt)
+    require(liveAt <= bindingAt)
+    for (const lane of RELEASE_LANES) {
+      const record = json(`${EVIDENCE_DIR}/${runtime}/lanes/${lane.id}.json`)
+      exactKeys(record, ['lane', 'commit', 'status', 'recordedAt'])
+      require(time(record.recordedAt) <= liveAt)
+    }
+    assertReleaseGate(directory, () => ({ commit: runtime, dirty: false }))
+    const assertion = object(binding.assertionArtifact)
+    exactKeys(assertion, ['path', 'sha256'])
+    const assertionPath = `${EVIDENCE_DIR}/${runtime}/task035-release-observations.json`
+    require(assertion.path === assertionPath && typeof assertion.sha256 === 'string' && SHA256.test(assertion.sha256))
+    require(hash(read(assertionPath)) === assertion.sha256)
+    const observations = json(assertionPath)
+    exactKeys(observations, ['version', 'proofCaseId', 'commit', 'requestId', 'promptVersion', 'contractVersion', 'request', 'accepted', 'display', 'persisted'])
+    require(observations.version === 1 && observations.proofCaseId === TASK035_CASE && observations.commit === runtime &&
+      observations.requestId === live.requestId && observations.promptVersion === TASK035_PROMPT && observations.contractVersion === TASK035_CONTRACT)
+    const request = object(observations.request), accepted = object(observations.accepted)
+    const display = object(observations.display), persisted = object(observations.persisted)
+    exactKeys(request, ['goal', 'focus', 'requestedDurationMins', 'requestedIntensity'])
+    exactKeys(accepted, ['goal', 'focus', 'requestedDurationMins', 'effectiveDurationMins', 'requestedIntensity', 'effectiveIntensity', 'overview', 'sectionNotes'])
+    exactKeys(display, ['overviewSuppressed', 'sectionNotesSuppressed', 'intensity', 'goal', 'focus', 'duration'])
+    exactKeys(persisted, ['sessionCount', 'requestedIntensity', 'effectiveIntensity', 'overview', 'sectionNotes', 'ladderTimingMatches', 'promptVersion', 'contractVersion'])
+    for (const value of [request, accepted]) require(value.goal === 'active_recovery' && value.focus === 'full_body' &&
+      value.requestedDurationMins === 15 && value.requestedIntensity === 9)
+    require(accepted.effectiveDurationMins === 15 && accepted.effectiveIntensity === 3 && accepted.overview === null)
+    require(display.overviewSuppressed === true && display.sectionNotesSuppressed === true && display.intensity === '3 of 10' &&
+      display.goal === 'Active recovery' && display.focus === 'Full body' && display.duration === '15 min')
+    require(persisted.sessionCount === 1 && persisted.requestedIntensity === 9 && persisted.effectiveIntensity === 3 &&
+      persisted.overview === null && persisted.ladderTimingMatches === true && persisted.promptVersion === TASK035_PROMPT && persisted.contractVersion === TASK035_CONTRACT)
+    require(Array.isArray(accepted.sectionNotes) && accepted.sectionNotes.length > 0 && accepted.sectionNotes.every(value => value === null) &&
+      Array.isArray(persisted.sectionNotes) && persisted.sectionNotes.length === accepted.sectionNotes.length && persisted.sectionNotes.every(value => value === null))
+    return { ok: true, localOnly: true, runtimeCommit: runtime, documentCommit,
+      independentRemoteProofReviewRequired: true, ownerAcceptance: false }
+  } catch {
+    // No raw artifact, token, private observation or subprocess diagnostic escapes.
+    return fail()
+  }
 }
