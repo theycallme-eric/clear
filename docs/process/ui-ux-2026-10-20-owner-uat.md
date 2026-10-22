@@ -1,7 +1,7 @@
 # UI/UX 2026-10-20: owner phone UAT guide
 
 TASK-040 (#475), REQ-020. This is a documentation handoff only. It covers the owner-directed
-completed UI and format work on `main`, including TASK-034, the null-safe TASK-029/037 paths,
+completed UI and format work on `main`, including TASK-034/036, the null-safe TASK-029/037 paths,
 and the ladder timing boundary TASK-038. TASK-031 remains explicitly unproven, as agreed.
 
 This guide does **not**:
@@ -17,7 +17,7 @@ sessions you have already saved.
 
 Open this exact protected preview on your phone:
 
-**[Open CLEAR for phone UAT](https://clear-fipz1868x-erics-projects-0ade0dda.vercel.app)**
+**[Open CLEAR for phone UAT](https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app)**
 
 The link was confirmed through the existing browser access on 2026-10-22: it opened the actual
 CLEAR Welcome screen, not a Vercel protection error. This is an access check only, not owner UAT.
@@ -25,24 +25,26 @@ Normal Vercel sign-in may still be required on your phone; no protection setting
 
 | Field | Value |
 |---|---|
-| Preview source commit | `37ffc80983708a89e3291a8586b63590b8b47ea6` (TASK-034, PR #510) |
-| Equivalent merged app | `b17995add308f1533c97c90470ec55f62b13bb1a`; the complete Git trees are identical: `1aa30ee17bf81a14cadf0922e8f5e68d934bfa97` |
-| Protected preview URL | `https://clear-fipz1868x-erics-projects-0ade0dda.vercel.app` |
-| Actual deployment / status receipt | Deployment `7263533817`, successful status `20312701592`, created 2026-10-22T20:59:13Z; source `37ffc80983708a89e3291a8586b63590b8b47ea6` |
-| Protected preview check | [Successful exact-source mobile check, run 39853501241](https://github.com/theycallme-eric/clear/actions/runs/39853501241) |
+| Preview source commit | `984de82a1dccd69ab706189953930e4570706e35` (TASK-036, PR #512) |
+| Equivalent merged app | `863169cb814ab9b8e028b2f8664c3ffe7d53bd7f`; the complete Git trees are identical: `a6912489c361d4c4732429684c53f6280d5ce9f2` |
+| Protected preview URL | `https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app` |
+| Actual deployment / status receipt | Deployment `7264832878`, successful status `20319054372`, created 2026-10-22T22:04:31Z; source `984de82a1dccd69ab706189953930e4570706e35` |
+| Protected preview check | [Successful exact-source mobile check, run 39862216581](https://github.com/theycallme-eric/clear/actions/runs/39862216581) |
 
-Retained identity receipts are also in this revision's `runner/delivery/PREMERGE_TASK034_37ffc80.json`
-and `AFTER_READY_TASK034_37ffc80.json`. The following read-only GitHub pages identify the source and
+Retained identity receipts are also in this revision's `runner/delivery/PREMERGE_TASK036_984de82.json`
+and `AFTER_READY_TASK036_984de82.json`. This later guide changes documentation only; it does not
+relabel the preview's app source or claim its own document commit was deployed.
+The following read-only GitHub pages identify the source and
 deployment; you need to be signed in to GitHub:
 
 - Preview source commit and its deployment status:
-  https://github.com/theycallme-eric/clear/commit/37ffc80983708a89e3291a8586b63590b8b47ea6
+  https://github.com/theycallme-eric/clear/commit/984de82a1dccd69ab706189953930e4570706e35
 - Exact deployment receipt:
-  https://api.github.com/repos/theycallme-eric/clear/deployments/7263533817
+  https://api.github.com/repos/theycallme-eric/clear/deployments/7264832878
 - Exact deployment status receipts:
-  https://api.github.com/repos/theycallme-eric/clear/deployments/7263533817/statuses
+  https://api.github.com/repos/theycallme-eric/clear/deployments/7264832878/statuses
 - The merged PR that produced it (Vercel's deployment link is in its checks and timeline):
-  https://github.com/theycallme-eric/clear/pull/510
+  https://github.com/theycallme-eric/clear/pull/512
 - Deployment history for the repository:
   https://github.com/theycallme-eric/clear/deployments
 
@@ -54,8 +56,8 @@ These are **not** the UAT target. They are listed so nobody mistakes them for it
   serves whichever build is promoted to it, so neither identifies a commit.
 
 This is a fixed preview, not an alias for later changes. If a newer app build is handed over,
-record its exact deployment separately and do not mix results. The checkbox repair and final
-release proof are not included in this preview.
+record its exact deployment separately and do not mix results. The checkbox repair is included;
+final live release proof is still pending. Automated checks are not owner acceptance.
 
 Before you start:
 
@@ -87,6 +89,7 @@ History. Do not create new variants.
 | P12 | Completion | Finish that existing in-progress session. On Summary, try both leaving the feeling row unanswered and choosing a value. |
 | P13 | Saved history | Open History, then the session you just finished and one older saved session. |
 | P14 | Reload and reopen | On the session detail, reload. Close the app or tab completely, reopen it, and return to the same session. |
+| P15 | Checkbox choices | In Settings limitations and a place's equipment editor, note the original choices. Tap a box, tap its label, and use Space if a keyboard is connected. Add and remove a choice, Save or wait for autosave, then reload. Restore your original choices afterward. |
 
 If you have no in-progress saved session, mark P11 and P12 "not run: no existing session". Do not
 generate one. The format preview and P13 still cover display.
@@ -109,6 +112,7 @@ generate one. The format preview and P13 still cover display.
 | P12 | Completion saves with or without effort. The feeling row is one row of five numbers that can be cleared, and the Summary title, metrics and streak read clearly. There is no overview or section-introduction text. |
 | P13 | History lists the session with a readable entry. The detail shows each block's result or "Not scored", each movement's status glyph and text, and only the values you entered. |
 | P14 | After a reload and a full reopen, the same values, statuses and feeling (or its absence) are shown. Nothing is duplicated or lost. |
+| P15 | Each box tap, label tap or Space press toggles exactly once. Targets are easy to hit without toggling a neighbour. Added and removed choices survive Save/autosave and reload; there is no need for the former label-only workaround. |
 
 Any difference is a finding. Note the step number, skin, screen and what you saw. A screenshot
 helps but is optional.
@@ -137,7 +141,7 @@ none of them is claimed as done here.
 |---|---|---|
 | Protected preview identity | TASK-040 handoff | **Confirmed** for the fixed source and tree above through the actual deployment/status receipts and existing browser access. This is not final release proof or owner acceptance. |
 | Original incident | TASK-031 | **Accepted unproven: original evidence unavailable.** The owner accepts this outcome; no reproduced cause or cause-specific fix is asserted. It receives no delivery credit, does not block this guide, and no further request for the unavailable evidence is needed. |
-| Checkbox activation (U09: tapping the drawn box does not toggle on a phone; tapping the label and pressing Space do) | TASK-036 | **Not fixed on `main`.** The baseline regression in `e2e/settings-locations.spec.ts` is still marked as an expected failure. In UAT, tap the label text. A box tap that fails to toggle is the known U09 defect, not a new finding. |
+| Checkbox activation (U09) | TASK-036 | **Delivered on `main` and included in this preview.** PR #512 repairs the reproduced hit-area cause with contained44pixel targets. All7phone cases and a separately fresh7case criterion passed, including box/label/Space and saved-choice reload. The old expected-failure marker is removed. Owner UAT remains pending; report any failed toggle in P15. |
 | Live and release proof for the changed generation prompt (null introductions, intensity, ladder timing) | TASK-035 | **Pending, unproved.** No owner-authorized minimal real product-path case has been run or bound to the frontend commit, backend deployment and prompt/contract versions. Offline contract tests are not live proof. Final TASK-035 still requires all original CI/RLS/deployed checks. |
 | Live generation during UAT | Owner | **Not authorized** by this guide. It needs separate action-time approval within the existing attempt limits. |
 
@@ -154,7 +158,7 @@ Fill in when testing:
 | Commit / deployment id | |
 | Phone, OS and browser (or PWA) | |
 | Date | |
-| P1–P14 results (pass / fail / not run, with reason) | |
+| P1–P15 results (pass / fail / not run, with reason) | |
 | Findings | |
 | Owner decision (accept / accept with findings / reject) | |
 
