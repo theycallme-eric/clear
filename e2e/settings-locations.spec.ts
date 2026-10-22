@@ -57,16 +57,56 @@ async function expectPinnedActions(page: Page, names: string[]) {
 
   const viewport = page.viewportSize()
   if (viewport === null) throw new Error('the page has no viewport')
-  const footerBox = await boxOf(footer, 'the pinned footer')
+
+  // The route translates in four steps. Separate rect reads can straddle a
+  // step and falsely compare yesterday's footer with today's action. Wait on
+  // actual finite geometry animations, then sample all rectangles together.
+  await expect.poll(() => footer.evaluate((element) => {
+    const geometry = ['transform', 'translate', 'scale', 'rotate', 'left', 'right', 'top', 'bottom', 'width', 'height']
+    for (let ancestor: Element | null = element; ancestor; ancestor = ancestor.parentElement) {
+      for (const animation of ancestor.getAnimations()) {
+        const effect = animation.effect
+        if (!(effect instanceof KeyframeEffect) || !Number.isFinite(effect.getComputedTiming().endTime)) continue
+        const movesGeometry = effect.getKeyframes().some((frame) => geometry.some((key) => key in frame))
+        if (movesGeometry && (animation.pending || !['finished', 'idle'].includes(animation.playState))) return false
+      }
+    }
+    return true
+  }), { message: 'finite footer/route geometry animations reach their actual end state' }).toBe(true)
+
+  const footerHandle = await footer.elementHandle()
+  if (footerHandle === null) throw new Error('the pinned footer disappeared')
+  const actions = []
+  for (const name of names) {
+    const action = footer.getByRole('button', { name, exact: true })
+    await expect(action).toBeVisible()
+    const handle = await action.elementHandle()
+    if (handle === null) throw new Error(`${name} disappeared`)
+    actions.push({ name, handle })
+  }
+  const snapshot = await page.evaluate(({ footer, actions }) => {
+    const rect = (element: Element) => {
+      const { x, y, width, height } = element.getBoundingClientRect()
+      return { x, y, width, height }
+    }
+    return {
+      connected: footer.isConnected && actions.every(({ handle }) => handle.isConnected && footer.contains(handle)),
+      actionCount: footer.querySelectorAll('button').length,
+      footer: rect(footer),
+      actions: actions.map(({ name, handle }) => ({ name, box: rect(handle) })),
+      noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    }
+  }, { footer: footerHandle, actions })
+  await Promise.all([footerHandle.dispose(), ...actions.map(({ handle }) => handle.dispose())])
+  expect(snapshot.connected, 'the sampled footer and its actions remain connected and contained').toBe(true)
+  expect(snapshot.actionCount).toBe(names.length)
+  const footerBox = snapshot.footer
   expect(
     footerBox.y + footerBox.height,
     'the footer is pinned on screen',
   ).toBeLessThanOrEqual(viewport.height + BOX_TOLERANCE)
 
-  for (const name of names) {
-    const action = footer.getByRole('button', { name, exact: true })
-    await expect(action).toBeVisible()
-    const box = await boxOf(action, name)
+  for (const { name, box } of snapshot.actions) {
     expect(box.x, `${name} starts inside the footer`).toBeGreaterThanOrEqual(
       footerBox.x - BOX_TOLERANCE,
     )
@@ -82,9 +122,7 @@ async function expectPinnedActions(page: Page, names: string[]) {
   }
 
   expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-    ),
+    snapshot.noHorizontalOverflow,
     'the document scrolls sideways',
   ).toBe(true)
 }
@@ -553,57 +591,142 @@ test.describe('settings locations — live CRUD and generation default', () => {
 })
 
 /**
- * U09 (TASK-005) — the reproduced baseline defect, kept as an expected failure.
+ * U09 (TASK-005 diagnosis, TASK-036 repair) — box, label and Space each toggle
+ * once on every equipment and limitation checklist, at 390x844 on a touch
+ * phone, and what was added and removed is what a reload reads back.
  *
- * At 390x844 every equipment and limitation row is stretched to the stack's
- * width, and the design system centres the (opacity 0, 44px coarse-pointer)
- * input on that whole row. The drawn 20px box sits at the row's left edge, so
- * a tap on it lands on the aria-hidden `.clr-check__box`, which is neither the
- * input nor inside its label, and nothing toggles. Label and Space do toggle.
- *
- * `test.fail()` keeps this suite green on the unchanged baseline and turns it
- * red the moment the box responds: whoever lands the repair (TASK-036) removes
- * the annotation, and this becomes the passing proof.
+ * The baseline cause, measured by TASK-005: every row is stretched to the
+ * stack's width and the design system centres the transparent input on that
+ * whole row, so a tap on the drawn box at the row's left edge landed on the
+ * aria-hidden `.clr-check__box` — neither the input nor inside its label — and
+ * nothing toggled. `CheckboxGroup` now lays the input over the row's box and
+ * label. Each tap here first asks the page what is under the finger, so a
+ * regression names the element that swallowed it rather than only the state.
  */
-test.describe('U09 — equipment box activation on the phone', () => {
+type Activation = 'box' | 'label' | 'Space'
+
+/** Every checked choice in a checklist, by its visible label. */
+async function checkedNames(group: Locator) {
+  return (await group.locator('.clr-check:has(input:checked) label').allTextContents()).sort()
+}
+
+/**
+ * One activation of one choice, by one path: the state flips, and the input
+ * reports exactly one change — a double toggle or a missed press both fail.
+ */
+async function activateOnce(page: Page, group: Locator, name: string, how: Activation) {
+  const checkbox = group.getByRole('checkbox', { name, exact: true })
+  const row = group
+    .locator('.clr-check')
+    .filter({ has: page.getByRole('checkbox', { name, exact: true }) })
+  await row.evaluate((element) => element.scrollIntoView({ block: 'center' }))
+  const target = await boxOf(checkbox, `the ${name} native touch target`)
+  expect(target.width, `${name} preserves the coarse-pointer target width`).toBeGreaterThanOrEqual(44)
+  expect(target.height, `${name} preserves the coarse-pointer target height`).toBeGreaterThanOrEqual(44)
+  const before = await checkbox.isChecked()
+  await checkbox.evaluate((element) => {
+    const input = element as HTMLInputElement & { u09Changes?: number }
+    if (input.u09Changes === undefined) {
+      input.addEventListener('change', () => {
+        input.u09Changes = (input.u09Changes ?? 0) + 1
+      })
+    }
+    input.u09Changes = 0
+  })
+
+  if (how === 'Space') {
+    await checkbox.focus()
+    await page.keyboard.press('Space')
+  } else {
+    const part = how === 'box' ? row.locator('.clr-check__box') : row.locator('label')
+    const box = await boxOf(part, `the ${name} ${how}`)
+    const x = box.x + box.width / 2
+    const y = box.y + box.height / 2
+    const hit = await checkbox.evaluate((input, point) => {
+      const under = document.elementFromPoint(point.x, point.y)
+      return under === input
+        ? 'input'
+        : `${under?.tagName.toLowerCase() ?? 'nothing'}.${under?.className ?? ''}`
+    }, { x, y })
+    // Soft, so a miss reports both what was under the finger and the state.
+    expect.soft(hit, `a ${how} tap on ${name} lands on its own input`).toBe('input')
+    await page.touchscreen.tap(x, y)
+  }
+
+  await expect(checkbox, `${how} toggles ${name}`).toBeChecked({ checked: !before })
+  expect(
+    await checkbox.evaluate((element) => (element as HTMLInputElement & { u09Changes?: number }).u09Changes),
+    `${how} toggles ${name} once`,
+  ).toBe(1)
+}
+
+/**
+ * Each path in both directions on one choice, then one addition by the box and
+ * one removal by the label. Returns the set the checklist should now hold.
+ */
+async function exerciseChecklist(
+  page: Page,
+  group: Locator,
+  { probe, add, remove }: { probe: string; add: string; remove: string },
+  afterEach: () => Promise<void> = async () => undefined,
+) {
+  const initial = await checkedNames(group)
+  const targets = await group.locator('.clr-check > input').evaluateAll((inputs) =>
+    inputs.map((input) => {
+      const { top, bottom } = input.getBoundingClientRect()
+      return { top, bottom }
+    }).sort((a, b) => a.top - b.top),
+  )
+  for (let i = 1; i < targets.length; i++) {
+    expect(targets[i - 1].bottom, 'neighbouring checkbox touch targets do not overlap')
+      .toBeLessThanOrEqual(targets[i].top)
+  }
+  expect(initial, `${add} starts unticked`).not.toContain(add)
+  expect(initial, `${remove} starts ticked`).toContain(remove)
+  for (const how of ['box', 'label', 'Space'] as const) {
+    await activateOnce(page, group, probe, how)
+    await afterEach()
+    await activateOnce(page, group, probe, how)
+    await afterEach()
+  }
+  expect(await checkedNames(group), 'the round trips left the checklist as it was').toEqual(initial)
+  await activateOnce(page, group, add, 'box')
+  await afterEach()
+  await activateOnce(page, group, remove, 'label')
+  await afterEach()
+  const expected = [...initial.filter((name) => name !== remove), add].sort()
+  expect(await checkedNames(group)).toEqual(expected)
+  return expected
+}
+
+test.describe('U09 — checkbox activation on the phone', () => {
   test.skip(!backend.available, backend.reason)
 
-  let email = ''
+  const emails: string[] = []
   let client: ReturnType<typeof backend.client>
 
   test.afterAll(async () => {
     if (!client) return
-    const provisioned = await client.findUserByEmail(email)
-    if (provisioned) await client.deleteUser(provisioned.id)
+    for (const email of emails) {
+      const provisioned = await client.findUserByEmail(email)
+      if (provisioned) await client.deleteUser(provisioned.id)
+      expect(await client.findUserByEmail(email), 'a U09 user outlived the run').toBeNull()
+    }
   })
 
-  test('box tap toggles a saved equipment choice once', async ({ page, visit }, testInfo) => {
-    test.fail(true, 'U09 reproduced on the baseline: the box is outside the input hit area')
-    test.setTimeout(60_000)
-
-    email = `clear-e2e-${namespaceId()}-${testInfo.project.name}-u09@example.com`
-    const placeName = `U09 gym ${namespaceId()}`
+  /** A disposable user signed in on this page; onboarded only when asked. */
+  async function signIn(page: Page, purpose: string, project: string, onboarding?: Record<string, unknown>) {
     client = backend.client()
+    const email = `clear-e2e-${namespaceId()}-${project}-u09-${purpose}@example.com`
+    emails.push(email)
     const prior = await client.findUserByEmail(email)
     if (prior) await client.deleteUser(prior.id)
     const created = await client.ensureConfirmedUser(email)
     const session = await client.mintSession(email)
-    const onboarded = await client.rpcAs(
-      'complete_onboarding',
-      {
-        p_location_name: placeName,
-        p_location_tier: 'home',
-        p_equipment: ['bodyweight', 'dumbbells'],
-        p_experience_level: 'some',
-        p_goal_preset: 'balanced',
-        p_sections: ['warmup', 'primary_lift', 'cooldown'],
-        p_avoid_patterns: ['squat'],
-        p_note: null,
-      },
-      session.accessToken,
-    )
-    expect(onboarded.ok, `onboarding the U09 user (status ${onboarded.status})`).toBe(true)
-
+    if (onboarding !== undefined) {
+      const onboarded = await client.rpcAs('complete_onboarding', onboarding, session.accessToken)
+      expect(onboarded.ok, `onboarding the U09 user (status ${onboarded.status})`).toBe(true)
+    }
     await page.addInitScript(
       ({ key, value }) => {
         if (window.localStorage.getItem(key) === null) window.localStorage.setItem(key, value)
@@ -618,30 +741,152 @@ test.describe('U09 — equipment box activation on the phone', () => {
         }),
       },
     )
+  }
+
+  const savedOnboarding = (placeName: string) => ({
+    p_location_name: placeName,
+    p_location_tier: 'home',
+    p_equipment: ['bodyweight', 'dumbbells'],
+    p_experience_level: 'some',
+    p_goal_preset: 'balanced',
+    p_sections: ['warmup', 'primary_lift', 'cooldown'],
+    p_avoid_patterns: ['squat'],
+    p_note: null,
+  })
+
+  test('ENTRY-014 — saved place equipment: box, label, Space, Save, reload', async ({
+    page,
+    visit,
+  }, testInfo) => {
+    test.setTimeout(90_000)
+    const placeName = `U09 gym ${namespaceId()}`
+    await signIn(page, 'place', testInfo.project.name, savedOnboarding(placeName))
+
+    const editPlace = async () => {
+      await page
+        .locator('main .clr-card')
+        .filter({ has: page.getByRole('heading', { level: 2, name: placeName, exact: true }) })
+        .getByRole('button', { name: 'Edit', exact: true })
+        .click()
+      await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue(placeName)
+      return page.getByRole('group', { name: 'Equipment', exact: true })
+    }
 
     await visit('/settings/locations')
-    await page
-      .locator('main .clr-card')
-      .filter({ has: page.getByRole('heading', { level: 2, name: placeName, exact: true }) })
-      .getByRole('button', { name: 'Edit', exact: true })
-      .click()
-    await expect(page.getByRole('textbox', { name: 'Name' })).toHaveValue(placeName)
+    const expected = await exerciseChecklist(page, await editPlace(), {
+      probe: 'Kettlebells',
+      add: 'Barbell',
+      remove: 'Dumbbells',
+    })
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().includes('/rest/v1/rpc/save_location') &&
+        response.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: 'Save place', exact: true }).click()
+    expect((await saved).status(), 'saving the place').toBe(200)
+    await expect(page.getByRole('button', { name: 'Save place', exact: true })).toHaveCount(0)
 
-    const row = page.locator('.clr-check').filter({ hasText: 'Kettlebells' })
-    const checkbox = page.getByRole('checkbox', { name: 'Kettlebells', exact: true })
-    await row.evaluate((element) => element.scrollIntoView({ block: 'center' }))
-    await expect(checkbox).not.toBeChecked()
+    await page.reload()
+    await expect(page.locator('main h1')).toHaveAccessibleName('Places and equipment')
+    expect(await checkedNames(await editPlace()), 'the reload reads the saved set').toEqual(expected)
+  })
 
-    // The two paths that work on the baseline, so the failure below is the box.
-    const label = await boxOf(row.locator('label'), 'the Kettlebells label')
-    await page.touchscreen.tap(label.x + 4, label.y + label.height / 2)
-    await expect(checkbox).toBeChecked()
-    await checkbox.focus()
-    await page.keyboard.press('Space')
-    await expect(checkbox).not.toBeChecked()
+  test('ENTRY-014 — Settings limitations: box, label, Space, autosave, reload', async ({
+    page,
+    visit,
+  }, testInfo) => {
+    test.setTimeout(90_000)
+    await signIn(page, 'limits', testInfo.project.name, savedOnboarding(`U09 limits ${namespaceId()}`))
 
-    const box = await boxOf(row.locator('.clr-check__box'), 'the Kettlebells box')
-    await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
-    await expect(checkbox, 'a tap on the drawn box toggles it').toBeChecked({ timeout: 2_000 })
+    await visit('/settings')
+    const group = page.getByRole('group', { name: 'Work around', exact: true })
+    await expect(group.getByRole('checkbox', { name: 'Squatting', exact: true })).toBeChecked()
+    // Every toggle is its own save; each is awaited so the next press acts on
+    // a settled row, as a person's next tap would.
+    const watch = () =>
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/rest/v1/user_constraints') &&
+          ['POST', 'DELETE'].includes(response.request().method()),
+      )
+    let pending = watch()
+    const settle = async () => {
+      expect((await pending).ok(), 'the limitation saved').toBe(true)
+      pending = watch()
+      // The watch armed after the last toggle never sees a save; that is fine.
+      pending.catch(() => undefined)
+    }
+    const expected = await exerciseChecklist(
+      page,
+      group,
+      { probe: 'Pressing', add: 'Pulling', remove: 'Squatting' },
+      settle,
+    )
+
+    await page.reload()
+    await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+    await expect(group.getByRole('checkbox', { name: 'Pulling', exact: true })).toBeChecked()
+    expect(await checkedNames(group), 'the reload reads the saved set').toEqual(expected)
+  })
+
+  test('ENTRY-013 — onboarding equipment and limitations: box, label, Space, Finish, reload', async ({
+    page,
+    visit,
+  }, testInfo) => {
+    test.setTimeout(120_000)
+    await signIn(page, 'onboarding', testInfo.project.name)
+
+    await visit('/onboarding')
+    await expect(page.getByRole('heading', { name: 'What’s your gym setup?' })).toBeVisible()
+    await page.getByRole('radio', { name: /^Home gym/ }).click()
+    const equipment = await exerciseChecklist(
+      page,
+      page.getByRole('group', { name: 'Equipment', exact: true }),
+      { probe: 'Barbell', add: 'Plyo box', remove: 'Dumbbells' },
+    )
+    const next = page.getByRole('button', { name: 'Next', exact: true })
+    await next.click()
+    await page.getByRole('radio', { name: /^Some experience/ }).click()
+    await next.click()
+    await page.getByRole('radio', { name: /^Balanced/ }).click()
+    await next.click()
+    await expect(page.getByRole('heading', { name: 'Any ongoing limitations?' })).toBeVisible()
+
+    // Nothing is ticked yet, so this run's removal is of a choice it ticks.
+    const limitations = page.getByRole('group', { name: 'Work around', exact: true })
+    await activateOnce(page, limitations, 'Squatting', 'Space')
+    const avoided = await exerciseChecklist(page, limitations, {
+      probe: 'Pressing',
+      add: 'Pulling',
+      remove: 'Squatting',
+    })
+
+    await page.getByRole('button', { name: 'Next', exact: true }).click()
+    const committed = page.waitForResponse(
+      (response) =>
+        response.url().includes('/rest/v1/rpc/complete_onboarding') &&
+        response.request().method() === 'POST',
+    )
+    await page.getByRole('button', { name: 'Finish setup', exact: true }).click()
+    expect((await committed).status(), 'finishing setup').toBe(200)
+    await expect(page).toHaveURL((url) => url.pathname === '/')
+
+    // The onboarding commit is read back by the screens that edit it.
+    await page.reload()
+    await visit('/settings/locations')
+    await page.getByRole('button', { name: 'Edit', exact: true }).click()
+    await expect(page.getByRole('textbox', { name: 'Name' })).not.toHaveValue('')
+    await expect
+      .poll(() => checkedNames(page.getByRole('group', { name: 'Equipment', exact: true })), {
+        message: 'the place holds what onboarding ticked',
+      })
+      .toEqual(equipment)
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+    await visit('/settings')
+    await expect(limitations.getByRole('checkbox', { name: 'Pulling', exact: true })).toBeChecked()
+    expect(await checkedNames(limitations), 'the limitations are what onboarding ticked').toEqual(
+      avoided,
+    )
   })
 })

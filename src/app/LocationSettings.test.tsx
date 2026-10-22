@@ -536,6 +536,37 @@ describe('a place holds its real equipment (U15) and saves obviously and atomica
     expect(stored.ok && stored.value).toEqual(['custom_sled', 'dumbbells', 'pullup_bar'])
   })
 
+  // U09: the box tap is proved in the browser (e2e/settings-locations.spec.ts);
+  // here the editor's checklist is the hit-area group, and label and Space
+  // each toggle once in both directions before Save.
+  it('label and Space each toggle a saved equipment choice once (U09)', async () => {
+    const user = userEvent.setup()
+    const options = { equipment: { [HOME_ID]: ['bodyweight'], [GYM_ID]: ['pullup_bar', 'dumbbells'] } }
+    const { userData } = renderLocations([home(), gym()], options)
+
+    await user.click(within(card('Full gym')).getByRole('button', { name: 'Edit' }))
+    const equipment = await screen.findByRole('group', { name: 'Equipment' })
+    expect(equipment).toHaveClass('clr-checkbox-group')
+    const barbell = within(equipment).getByRole('checkbox', { name: 'Barbell' })
+    const dumbbells = within(equipment).getByRole('checkbox', { name: 'Dumbbells' })
+    expect(dumbbells).toBeChecked()
+
+    await user.click(within(equipment).getByText('Barbell'))
+    expect(barbell).toBeChecked()
+    await user.click(within(equipment).getByText('Barbell'))
+    expect(barbell).not.toBeChecked()
+    barbell.focus()
+    await user.keyboard(' ')
+    expect(barbell).toBeChecked()
+    dumbbells.focus()
+    await user.keyboard(' ')
+    expect(dumbbells).not.toBeChecked()
+
+    await user.click(screen.getByRole('button', { name: 'Save place' }))
+    await waitFor(() => expect(userData.locationWrites).toHaveLength(1))
+    expect(userData.locationWrites[0]?.equipment).toEqual(['pullup_bar', 'barbell'])
+  })
+
   it('creates a place from only the equipment ticked, with tier kept as metadata', async () => {
     const user = userEvent.setup()
     const { userData } = renderLocations([home()])

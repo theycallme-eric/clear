@@ -502,6 +502,39 @@ describe('a limitation persists', () => {
     expect(screen.getByLabelText(/note/i)).toHaveValue('Left knee, long term')
   })
 
+  // U09: the box tap is proved in the browser (e2e/settings-locations.spec.ts);
+  // here the checklist is the hit-area group, and label and Space each toggle
+  // once in both directions, each a save that a reload reads back.
+  it('label and Space each toggle a limitation once, and a reload reads the result (U09)', async () => {
+    const user = userEvent.setup()
+    const { constraintsClient, unmount } = renderSettings()
+    const patterns = () =>
+      constraintsClient
+        .rows()
+        .map((row) => (row.target.scope === 'movement_pattern' ? row.target.pattern : null))
+
+    const group = await screen.findByRole('group', { name: 'Work around' })
+    expect(group).toHaveClass('clr-checkbox-group')
+    const pulling = within(group).getByRole('checkbox', { name: /Pulling/ })
+    await user.click(within(group).getByText('Pulling'))
+    expect(pulling).toBeChecked()
+    await waitFor(() => expect(patterns()).toEqual(['pull']))
+    await user.click(within(group).getByText('Pulling'))
+    expect(pulling).not.toBeChecked()
+    await waitFor(() => expect(patterns()).toEqual([]))
+
+    const pressing = within(group).getByRole('checkbox', { name: /Pressing/ })
+    pressing.focus()
+    await user.keyboard(' ')
+    expect(pressing).toBeChecked()
+    await waitFor(() => expect(patterns()).toEqual(['press']))
+
+    unmount()
+    reloadSettings(constraintsClient)
+    expect(await screen.findByRole('checkbox', { name: /Pressing/ })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /Pulling/ })).not.toBeChecked()
+  })
+
   it('keeps a clear across a reload: an emptied note and unticked patterns stay cleared', async () => {
     const user = userEvent.setup()
     const { constraintsClient, unmount } = renderSettings({

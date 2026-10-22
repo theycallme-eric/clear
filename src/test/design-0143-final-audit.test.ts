@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
-import { spawnSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { hashTree } from '../../e2e/design-0143/capture'
@@ -15,6 +14,7 @@ import {
   REQ_007_REST_DAY_CASE,
   REQ_011_REVIEW_CASE,
 } from '../../playwright.config'
+import { assertCaptureSourceLineage } from './capture-source-lineage'
 
 describe('TASK-027 browser selection follows the tested package and target', () => {
   const publicOtp = 'mobile design-0143/task-040-entry-settings.spec.ts entry: Welcome and OTP validation, busy, typed failure and cooldown'
@@ -299,12 +299,21 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
     expect(json(manifestPath)).toEqual(derived)
     expect(new Set(readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'screenshots'))))
       .toEqual(new Set(records.flatMap((record) => record.captures.map((capture) => capture.screenshot.name))))
+    // Capture source remains genuine after normal protected squash delivery:
+    // direct ancestry, or exact retained-input/payload/full-tree incorporation.
+    // This is source continuity only; it never certifies merge approval or ACK.
+    assertCaptureSourceLineage(root, {
+      repository: 'theycallme-eric/clear',
+      taskId: 'TASK-036',
+      taskRevision: 'aec878c805e8f0d17620c1063977fccf753194afb783b00ef5aec317a9b74052:TASK-036',
+      runId: '4b51f5c5-9389-430e-9df1-8339cbd089b8',
+      attempt: 1,
+      testedBase: 'b17995add308f1533c97c90470ec55f62b13bb1a',
+      groupPath: FORMAT_EVIDENCE_DIR,
+      capturedSourceCommits: records.map((record) => record.identity.applicationCommit!),
+    })
     for (const record of records) {
       expect(record.captures.every((capture) => capture.route === FORMAT_ROUTE && capture.before === null)).toBe(true)
-      // Captured source commit is retained, not rewritten to a later evidence commit.
-      expect(spawnSync('git', ['merge-base', '--is-ancestor', record.identity.applicationCommit ?? '', 'HEAD'], {
-        cwd: root, stdio: 'ignore',
-      }).status, 'the actual captured source commit remains an ancestor of the evidence tree').toBe(0)
       for (const identity of [record.identity.applicationCommit, record.identity.runtimeSourceHash, record.driverSourceHash]) {
         expect(text(AUDIT), 'the audit names the actual capture identities').toContain(identity)
       }

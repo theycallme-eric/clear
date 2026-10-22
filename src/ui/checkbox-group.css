@@ -1,0 +1,31 @@
+/* =============================================================================
+   CHECKBOX GROUP — U09, the box that did not respond.
+
+   The design system centres each checkbox's transparent input on its
+   `.clr-check` row. In a stack that row is stretched to the stack's width, so
+   the input sat in the middle of the row and the drawn box at its left edge
+   was an aria-hidden span outside the label: a press on it reached nothing.
+
+   Each row and its native input share a target at least as large as the
+   shipped 40-pixel control plus one 4-pixel spacing step: the 44-pixel coarse-pointer
+   minimum. The row grows to contain that target, rather than shrinking the
+   input or overlapping neighbouring choices. The box, label and space between
+   them hit their own input once. The drawn box, states and focus treatment
+   remain the public component's; only the app-owned list composition changes.
+   ============================================================================= */
+
+.clr-checkbox-group > .clr-check {
+  align-self: flex-start;
+  min-width: calc(var(--control-height) + var(--spacing-100));
+  min-height: calc(var(--control-height) + var(--spacing-100));
+}
+
+.clr-checkbox-group > .clr-check > input {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  transform: none;
+}

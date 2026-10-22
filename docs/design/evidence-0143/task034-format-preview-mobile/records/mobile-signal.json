@@ -9,14 +9,14 @@
   "project": "mobile",
   "skin": "signal",
   "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
-  "observedAt": "2026-10-22T19:39:20.013Z",
-  "captureProcessId": 5353,
+  "observedAt": "2026-10-22T21:54:25.640Z",
+  "captureProcessId": 53147,
   "identity": {
     "packageName": "clear-design-system",
     "packageVersion": "0.14.3",
     "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
-    "runtimeSourceHash": "718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0",
-    "applicationCommit": "91255346e557e416d13326c7c01c7545d8a48f01",
+    "runtimeSourceHash": "9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e",
+    "applicationCommit": "32dd376627713e42283281969b77f37369cfd845",
     "testedDeployment": "http://localhost:5173"
   },
   "sourceCheckout": {

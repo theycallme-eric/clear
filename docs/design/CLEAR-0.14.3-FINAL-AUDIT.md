@@ -20,8 +20,10 @@ Current Task034 capture acceptance is a **new**, separately scoped group at
 `docs/design/evidence-0143/task034-format-preview-mobile/`: four actual mobile
 skin cases and eight unique phone/short PNG cells. The same real-session,
 no-generation/no-write, route/Back, accessibility, motion/layout, pixel/byte and
-source/driver identity predicates remain mandatory. New mobile captures and
-native exact-head verification are pending; no old picture is rebound.
+source/driver identity predicates remain mandatory. The current Task036 runtime
+was genuinely recaptured at `32dd376627713e42283281969b77f37369cfd845`
+(four cases/eight phone PNGs, session93528, exit0); native exact-head verification
+is pending. No old picture is rebound.
 
 **Status:** the three route evidence groups are complete and aggregated here. Local same-source
 proof is executed by the protected wrapper on the committed head. Exact deployed proof and owner
@@ -45,7 +47,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
+| Runtime source hash of this audit's tree | `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` (TASK-036 below, on `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -531,6 +533,34 @@ trees and this head, from `git diff`:
   `src/app/FormatPreview.test.tsx` proves no client call or `fetch` across Settings → preview →
   Back in every skin; historical pictures and their three aggregate rows remain unchanged.
 
+- TASK-036 (#471, REQ-003/U09, JOURNEY-005) runtime source:
+  `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` on base `b17995a`
+  (`718ed686…`). Only `src/ui/checkbox-group.tsx` and the new `src/ui/checkbox-group.css`
+  changed at runtime: inside `CheckboxGroup`, each `.clr-check` row is as wide as its box and
+  label, with token-derived minimum width and height of44pixels, and its transparent input
+  covers that whole row. This replaces the centred square that left the drawn box outside
+  the hit area. Rows grow to contain the existing minimum touch target without overlapping
+  neighbours; colour, focus treatment and the vendored package are unchanged. The audit
+  retains its current-runtime hash guard. The previous13-file phone group is preserved
+  byte-for-byte at `task034-format-preview-mobile-before-task036/` (sorted payload digest
+  `225ffc69e3905242e4a7c310cdc2f992b73b39c39038ac0f9ccbbea5e6db2d9c`), not rebound
+  as current proof. A genuinely fresh four-skin/eight-PNG phone capture on this runtime
+  passed all4cases in26.8seconds (session93528, process53147) on
+  `32dd376627713e42283281969b77f37369cfd845`, observed21:54:14–21:54:30UTC.
+  The capture driver is
+  `bfa3ccd709bc4e1647c7962cd56def7e7becfd54a659d7f9391f99d5ed09d005`.
+  Records retain their actual checkout/process/time identities (the first checkout was
+  clean; later records truthfully include newly written evidence). Normal390×844 and
+  short390×320 captures retain real session, route/Back, Axe, motion, layout, PNG
+  byte/pixel and zero generation/write checks. This is local proof, not deployed
+  release proof or owner UAT. Task-local checkbox phone proof remains the U09 block of
+  `e2e/settings-locations.spec.ts` and still requires full native reverification.
+  Source continuity after a protected squash requires either direct capture ancestry or
+  exact retained run-branch, capture payload and full-tree incorporation on the tested
+  base. The lineage helper grants no delivery credit and waives no capture predicate.
+
+  The following wider-device paragraph and command are retained earlier Task034
+  history, not Task036's current mobile-only capture or an instruction to rerun it.
   The added task-local `e2e/design-0143/format-preview.spec.ts` uses the existing real
   authenticated-session fixture, deterministic skin/motion setup and reached-state/motion
   capture driver. The exact canonical-top matrix passed with workers1/retries0, no failures
