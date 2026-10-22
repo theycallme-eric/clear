@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import type { Page } from '@playwright/test'
 
 import { test as base, expect } from '../support/authenticated-session'
 import { backend } from '../support/backend'
@@ -19,8 +20,64 @@ import {
  * this preview walk refuses data writes and generation. No release/UAT claim.
  */
 const root = process.cwd()
+/** Only known synthetic UI labels/styles/geometry; no athlete or auth values. */
+async function settingsReadiness(page: Page) {
+  return page.evaluate(() => {
+    const expected = [
+      ['settings-training', 'Training'], ['settings-limitations', 'Limitations'],
+      ['settings-appearance', 'Appearance'], ['settings-places', 'Places and equipment'],
+      ['settings-formats', 'Workout formats'], ['settings-session', 'Session'],
+    ]
+    return {
+      fonts: document.fonts.status,
+      measured: document.querySelector('main > .clr-scroll-region')?.hasAttribute('data-measured') === true,
+      headings: expected.map(([id, text]) => {
+        const span = document.querySelector(`h2 > #${id}`)
+        const heading = span?.parentElement
+        const style = span ? getComputedStyle(span) : null
+        const parentStyle = heading ? getComputedStyle(heading) : null
+        const rect = span?.getBoundingClientRect()
+        return { id, expected: text, text: span?.textContent?.trim(), connected: span?.isConnected === true,
+          display: style?.display, visibility: style?.visibility, opacity: style?.opacity,
+          headingDisplay: parentStyle?.display, headingVisibility: parentStyle?.visibility,
+          headingOpacity: parentStyle?.opacity,
+          rect: rect ? { x: rect.x, y: rect.y, width: rect.width, height: rect.height } : null }
+      }),
+    }
+  })
+}
+
+async function waitForSettingsLayout(page: Page) {
+  await page.evaluate(async () => { await document.fonts.ready })
+  await expect.poll(async () => {
+    const before = await settingsReadiness(page)
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+    const after = await settingsReadiness(page)
+    return after.fonts === 'loaded' && after.measured && JSON.stringify(before) === JSON.stringify(after)
+      && after.headings.every((h) => h.connected && h.text === h.expected && h.display !== 'none'
+        && h.visibility === 'visible' && Number(h.opacity) > 0 && h.headingDisplay !== 'none'
+        && h.headingVisibility === 'visible' && Number(h.headingOpacity) > 0
+        && h.rect !== null && h.rect.width > 0 && h.rect.height > 0)
+  }, { message: 'Settings headings and measured layout settle before the unchanged accessibility scan' }).toBe(true)
+}
+
 type PendingEvidence = { record: FormatEvidenceRecord; pictures: Map<string, Uint8Array> }
 const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }>({
+  checkA11y: async ({ page, checkA11y }, use, info) => {
+    await use(async () => {
+      const isSettings = new URL(page.url()).pathname === '/settings'
+      if (isSettings) await waitForSettingsLayout(page)
+      const before = isSettings ? await settingsReadiness(page) : undefined
+      try {
+        await checkA11y() // The original unfiltered Axe assertion; no rule is waived.
+      } catch (error) {
+        if (isSettings) await info.attach('task034-settings-a11y-readiness.json', {
+          body: JSON.stringify({ before, after: await settingsReadiness(page) }, null, 2), contentType: 'application/json',
+        })
+        throw error
+      }
+    })
+  },
   recordEvidence: async ({}, use, info) => {
     let pending: PendingEvidence | undefined
     await use((evidence) => { pending = evidence })
