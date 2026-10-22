@@ -180,7 +180,7 @@ export const REQUIRED_SCREENS: readonly RequiredScreen[] = [
     screen: 'Settings',
     route: '/settings',
     path: '/settings',
-    subPaths: ['/settings/locations'],
+    subPaths: ['/settings/locations', '/settings/formats'],
     guard: 'protected',
     journeys: ['settings-appearance', 'focused-forms'],
   },

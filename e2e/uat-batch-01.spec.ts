@@ -245,15 +245,18 @@ test('Generate and Settings follow the contained-form and measured-footer ruling
   await visit('/settings')
   await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible()
   const settingsCards = page.locator('main .clr-card')
-  await expect(settingsCards).toHaveCount(5)
+  await expect(settingsCards).toHaveCount(6)
   await expect(page.locator('main .clr-list')).toHaveCount(0)
-  for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Session']) {
+  for (const name of ['Training', 'Limitations', 'Appearance', 'Places and equipment', 'Workout formats', 'Session']) {
     const heading = page.getByRole('heading', { level: 2, name, exact: true })
     await expect(settingsCards.filter({ has: heading })).toHaveCount(1)
     await expect(heading).toBeVisible()
   }
   await expect(page.getByRole('heading', { name: 'Training' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Places and equipment' })).toBeVisible()
+  await expect(settingsCards.filter({
+    has: page.getByRole('heading', { level: 2, name: 'Workout formats', exact: true }),
+  }).getByRole('button', { name: /^Preview formats(?:\s*›)?$/ })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('vibe-d-settings.png') })
 })
 

@@ -7,11 +7,9 @@ import { LOCAL_BASE_URL, readE2eEnv } from './scripts/e2e/env.mjs'
 /**
  * ENV-07 — the E2E harness.
  *
- * **The default project is a phone.** ~80% of CLEAR is used on a handset in a
- * gym, so `mobile` is listed first and every `npx playwright test` with no
- * arguments starts there. Tablet and desktop are additional coverage:
- * a suite whose baseline is a 1280px window proves the minority case and calls
- * it done.
+ * CLEAR is mobile-only under the owner's 2026-10-22 scope decision.
+ * The sole project is a touch phone; specs retain short/narrow-phone checks.
+ * Wider-device evidence is historical, not a request to rerun those targets.
  *
  * Where it runs is one decision, made from one variable. `E2E_BASE_URL` names
  * an origin — that is CI, pointed at the pull request's Vercel preview
@@ -110,6 +108,7 @@ if (process.env.CI && e2e.usesExternalTarget && !protectionHeaders) {
 
 /** The requirement's viewport, written as the numbers it states. */
 export const MOBILE_VIEWPORT = { width: 390, height: 844 }
+/** Historical evidence geometry only; no active tablet browser project. */
 export const TABLET_VIEWPORT = { width: 768, height: 1024 }
 
 export default defineConfig({
@@ -149,21 +148,6 @@ export default defineConfig({
         viewport: MOBILE_VIEWPORT,
         deviceScaleFactor: 3,
       },
-    },
-    {
-      // A touch tablet is its own breakpoint and input mode, not a desktop
-      // window narrowed until it happens to fit. Chromium is explicit so CI
-      // still installs one browser engine for all three representative widths.
-      name: 'tablet',
-      use: {
-        ...devices['iPad Mini'],
-        browserName: 'chromium',
-        viewport: TABLET_VIEWPORT,
-      },
-    },
-    {
-      name: 'desktop',
-      use: { ...devices['Desktop Chrome'] },
     },
   ],
 

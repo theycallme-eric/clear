@@ -1,5 +1,28 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Current scope — owner decision 2026-10-22
+
+CLEAR and its CLEAR-specific design-system compositions are mobile-only. Future
+verification explicitly selects `--project=mobile`, retaining normal390×844,
+short390×320 and narrow320×568 phone behavior, touch, keyboard and accessibility.
+The existing protected `Preview E2E (mobile + desktop)` identifier is unchanged;
+its label does not authorize a wider-device run. All functional/security checks,
+exact-head proof, independent review and protected delivery gates remain.
+
+The wider-device numbers and commands below are retained historical provenance,
+not instructions to recapture them. The Task034 twelve-case/sixteen-PNG group at
+`docs/design/evidence-0143/task034-format-preview/` is preserved byte-for-byte
+from `eb61b9daf21848c2727eaa6fa2c5e203f4effd7b` (29 files, sorted path/byte-hash
+manifest `1e0edab78fc87e6ddc10d8a3b21873179723a3a3adca449d20ddb171470ec48e`).
+No former failure becomes a pass when a viewport leaves current scope.
+
+Current Task034 capture acceptance is a **new**, separately scoped group at
+`docs/design/evidence-0143/task034-format-preview-mobile/`: four actual mobile
+skin cases and eight unique phone/short PNG cells. The same real-session,
+no-generation/no-write, route/Back, accessibility, motion/layout, pixel/byte and
+source/driver identity predicates remain mandatory. New mobile captures and
+native exact-head verification are pending; no old picture is rebound.
+
 **Status:** the three route evidence groups are complete and aggregated here. Local same-source
 proof is executed by the protected wrapper on the committed head. Exact deployed proof and owner
 acceptance are open; see [Exact deployed proof](#exact-deployed-proof) and
@@ -22,7 +45,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `ed139427b2bf3ccfc6bd8188b09782b5aece9789f09a707d17fe18e7136a477b` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021 and TASK-033 changes below) |
+| Runtime source hash of this audit's tree | `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -482,6 +505,61 @@ trees and this head, from `git diff`:
   unchanged; the global session clock is not read or changed. Task-local phone proof is
   `e2e/design-0143/workout-ladder.spec.ts`; historical pictures are not rebound.
 
+- TASK-034 (#469, E06/JOURNEY-030) runtime source:
+  `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0` on base `c31ef86`. Adds the
+  protected `/settings/formats` route (`src/app/FormatPreview.tsx`), a Workout formats card in
+  Settings linking to it, and exports `timingSummary`/`PACING_NOTES` from `src/ui/ladder-block.tsx`
+  and `STATUS_LABELS` from `src/state/session-detail.ts` without changing them. The preview holds no
+  client and reads no query; fixed format-only data is drawn through History's `SessionSectionCard`
+  and read-only `LadderRungs`. It is absent from the router and independent required-route
+  inventory at full baseline commit `c31ef865f60811df076db396a40f90517701380e`; it therefore has
+  no BEFORE preview picture. That absence is not an AFTER-coverage waiver. Its separate
+  introduced-route group is `docs/design/evidence-0143/task034-format-preview/` and its actual
+  canonical-top AFTER proof has12 actually passed browser cases and16 actual PNGs on
+  `5b84f43b3a2b146a8cf4a564fdaddc9297bb7532`, unchanged runtime
+  `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, and capture-driver
+  `9771dd8282446fd9d81e344a6f31b02ccbf1688f5bbbe07dcdd07b3cd49eb72b`.
+  All records retain their real capture commit/process/time/checkout identity, not this later
+  evidence commit. Every cell proves actual ScrollRegion top/left0 and visible heading,
+  all original accessibility/short-viewport checks, and zero generation requests or writes.
+  Prior32987806 real but noncanonical-scroll captures remain outside this product as history.
+  Native lint rejected the prior artifact fixture's empty destructuring. The bounded fixture
+  correction retains every rule and additionally checks final Settings before recording.
+  Its fresh actual matrix passed all12 cases in session22661; full lint also passed with
+  zero errors before capture. The prior9fc matrix remains history outside the product,
+  unchanged in Git history; it is not relabelled or mixed with this corrected-driver proof.
+  `src/app/FormatPreview.test.tsx` proves no client call or `fetch` across Settings → preview →
+  Back in every skin; historical pictures and their three aggregate rows remain unchanged.
+
+  The added task-local `e2e/design-0143/format-preview.spec.ts` uses the existing real
+  authenticated-session fixture, deterministic skin/motion setup and reached-state/motion
+  capture driver. The exact canonical-top matrix passed with workers1/retries0, no failures
+  and no skips (session22661). Its records retain actual process/time/checkout identities.
+  The command was:
+
+  ```sh
+  CLEAR_TASK034_RECORD_AFTER=1 npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile --project=tablet --project=desktop --workers=1 --retries=0
+  ```
+
+  It produced all sixteen actual AFTER captures: clear/vapour/signal/mono at 390×844,
+  768×1024, 1280×720 and 390×320. Each explicit CSS-scale full-page PNG retains its real pixel
+  dimensions and byte hash, real route/heading/state, settled reduced-motion frame, no horizontal
+  overflow, source/package/driver identity, actual capture process/time, and the real session
+  journey's non-secret counts. The fixture owns only its disposable authentication/onboarding;
+  the preview walk refuses data writes and generation and checks disclosures, accessibility,
+  Settings entry/Back, direct-entry Back and unchanged athlete storage. Records preserve the
+  actual captured source commit and dirty-status digest; a later evidence/journal commit must
+  not be substituted for that identity. Runtime and capture-driver bytes are independently
+  checked against this tree. No session token, email or athlete storage value is recorded.
+  Every new capture has `before: null` and a source-hashed c31 route-absence disposition,
+  never a baseline Not Found image. Missing trusted configuration is non-proof, not a pass.
+  The strict audit now requires the complete new group, real PNG files and hashes; it remains
+  held until those artifacts exist and their actual identities are recorded here. Existing
+  records are never overwritten. Recording requires the explicit marker above; ordinary
+  browser runs still execute every journey/capture assertion and attach their actual outcomes,
+  but cannot rewrite the committed historical records. This lane is not live-generation,
+  deployed or owner-UAT proof.
+
 - `25779dbf…` to `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`: TASK-021
   (REQ-012, JOURNEY-020, U43) replaces Summary's five face-and-word mood chips with
   `src/ui/feeling-row.tsx`: one non-wrapping row of five evenly sized numeric options 1–5 over the
@@ -661,6 +739,7 @@ and owner QA outcome. Local proof, healthy CI and task counts do not fill those 
 | EX-12 | The polite toast variant is not raised by a real route | TASK-026 | proved through Settings' polite "Saved" status and `src/ui/toast-host.test.tsx` |
 | EX-13 | Pictures predate this head's runtime source (the Home Settings `.clr-hit` target) and are not rebound | all groups | the deterministic browser lane re-asserts on this head; deployed pictures are owner QA |
 | EX-14 | Exact deployed proof and production identity are not yet recorded for this candidate | this task | reported open above; never waived |
+| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: corrected-driver12 actual passed cases/16 real PNGs on5b84f43; prior9fc matrix retained as history; strict matrix/byte/source gate remains mandatory and owner QA step13 remains open |
 
 ## Owner QA path
 
@@ -685,3 +764,28 @@ Actual receipts: `TASK027_POLLING_REPAIR_PHONE_VERIFICATION_COMPLETE_ACTUAL_ACK_
 - TASK-004 later CI39588516964 retained the same U04 misses despite the motion experiment. CI screenshot shows the Vercel feedback overlay overlapping the centered action. The unproven motion correction and its structural/motion-test changes were withdrawn; current runtime is restored62161e8d, with vendor unchanged. Test-only documented x-vercel-skip-toolbar header excludes preview tooling without changing any hit samples/assertions or authentication/protections. Prior failed proof is retained; new exact-head protected CI remains required.
 
 - Combined protected-main Task012/Task028 tree: `ff6001a07e183f00fa45666fc7b02ba54b3e8145173ba231bba9b60871799baf` after normal integration of actual main `785dd64`. Both complete histories above are retained; no screenshot identity is rebound. All original task/project checks, fresh criterion receipt and independent exact-head review remain required.
+
+## TASK-034 current phone-only proof — 2026-10-22
+
+The owner's current CLEAR scope is mobile-only. The newly introduced format
+preview has four actual passing theme cases and eight real AFTER PNGs at normal
+390×844 and short 390×320 phone viewports, collected by root in session31269
+with zero failed or skipped cases. The current group is
+`docs/design/evidence-0143/task034-format-preview-mobile`; consumer
+`task034-format-preview-mobile`, scope `mobile-only-2026-10-22`.
+
+The genuine captured source is `91255346e557e416d13326c7c01c7545d8a48f01`,
+runtime `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`,
+and capture driver `bfa3ccd709bc4e1647c7962cd56def7e7becfd54a659d7f9391f99d5ed09d005`.
+These original identities are retained rather than rewritten to the later
+evidence commit. All route/interaction, real disposable-session, accessibility,
+pixel/byte, canonical-scroll and no-generation/no-workout-write predicates
+remain required by the strict offline evidence gate. No BEFORE image exists for
+the preview route absent from baseline c31; `before: null` remains explicit.
+
+The former twelve-case/sixteen-PNG wider group remains byte-identical historical
+evidence, not current device scope. An earlier current-phone attempt failed one
+case during boot; its partial group and trace were preserved outside the product
+and are not counted as this passing invocation. This is local source-bound proof,
+not exact deployed proof, release acceptance or owner UAT. Full native checks,
+fresh criterion validation and protected exact-head delivery remain pending.

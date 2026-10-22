@@ -1,4 +1,4 @@
-import { MOBILE_VIEWPORT, TABLET_VIEWPORT } from '../playwright.config'
+import { MOBILE_VIEWPORT } from '../playwright.config'
 
 import { expect, test } from './fixtures'
 
@@ -6,9 +6,9 @@ import { expect, test } from './fixtures'
  * ENV-07 — the baseline itself, asserted rather than assumed.
  *
  * "The default project is a mobile viewport" is a claim about a config file,
- * and a config file can drift. These two tests are the claim restated where a
+ * and a config file can drift. These tests are the claim restated where a
  * browser can answer it: the project that runs first reports a phone's
- * geometry and a phone's input, and the additional project reports a desktop's.
+ * geometry and a phone's input, including short and narrow phone shapes.
  */
 
 test('the default project is a 390×844 touch, coarse-pointer phone', async ({
@@ -30,42 +30,20 @@ test('the default project is a 390×844 touch, coarse-pointer phone', async ({
   expect(input).toEqual({ touch: true, coarse: true, hoverless: true })
 })
 
-test('desktop is additional coverage, not the baseline', async ({
-  page,
-  visit,
-}) => {
-  test.skip(
-    test.info().project.name !== 'desktop',
-    'asserts the desktop project',
-  )
-
-  await visit('/')
-
-  expect(page.viewportSize()?.width).toBeGreaterThan(MOBILE_VIEWPORT.width)
-
-  const input = await page.evaluate(() => ({
-    fine: window.matchMedia('(pointer: fine)').matches,
-    hover: window.matchMedia('(hover: hover)').matches,
-  }))
-
-  expect(input).toEqual({ fine: true, hover: true })
-})
-
-test('tablet is a representative touch viewport, not a resized desktop', async ({
-  page,
-  visit,
-}) => {
-  test.skip(test.info().project.name !== 'tablet', 'asserts the tablet project')
-
-  await visit('/')
-
-  expect(page.viewportSize()).toEqual(TABLET_VIEWPORT)
-
-  const input = await page.evaluate(() => ({
-    touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-    coarse: window.matchMedia('(pointer: coarse)').matches,
-    hoverless: window.matchMedia('(hover: none)').matches,
-  }))
-
-  expect(input).toEqual({ touch: true, coarse: true, hoverless: true })
-})
+// Wider-device cases remain in Git history; CLEAR's current scope is phones.
+for (const viewport of [
+  { name: 'short phone', width: 390, height: 320 },
+  { name: 'narrow phone', width: 320, height: 568 },
+] as const) {
+  test(`${viewport.name} retains touch, coarse-pointer and hoverless input`, async ({ page, visit }) => {
+    await page.setViewportSize(viewport)
+    await visit('/')
+    expect(page.viewportSize()).toEqual({ width: viewport.width, height: viewport.height })
+    const input = await page.evaluate(() => ({
+      touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+      coarse: window.matchMedia('(pointer: coarse)').matches,
+      hoverless: window.matchMedia('(hover: none)').matches,
+    }))
+    expect(input).toEqual({ touch: true, coarse: true, hoverless: true })
+  })
+}

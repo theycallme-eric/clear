@@ -462,7 +462,7 @@ function TimedLadder({
  * The timing in one line: how many rounds, and what moves them on. Every number
  * is the stored timing's; none is a default.
  */
-function timingSummary(timing: LadderTiming, blockTimerSeconds: number | null): string {
+export function timingSummary(timing: LadderTiming, blockTimerSeconds: number | null): string {
   const rounds = `${timing.rounds} rounds`
   switch (timing.mode) {
     case 'scheduled_starts':
@@ -476,7 +476,7 @@ function timingSummary(timing: LadderTiming, blockTimerSeconds: number | null): 
   }
 }
 
-const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string>> = {
+export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string>> = {
   scheduled_starts:
     'Each round starts on the clock. Whatever is left of its interval is your rest.',
   for_time:
