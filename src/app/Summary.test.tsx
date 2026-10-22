@@ -14,13 +14,17 @@
  * Arriving here from a finished workout is `Workout.test.tsx`'s subject; this
  * file starts at `/summary` with Home behind it.
  */
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
-import { AppProviders, signedIn } from '../test/render'
+import { favoritesQueryKey } from '../state/favorite-queries'
+import type { QueryClient } from '../state/query'
+import type { SavedWorkoutRow } from '../state/schemas'
+import { AppProviders, createWarmQueryClient, signedIn } from '../test/render'
+import { FIXTURE_USER_ID } from '../test/user-data-double'
 import {
   completedSession,
   createFakeSummaryClient,
@@ -67,6 +71,7 @@ interface Mounted {
   summary: FakeSummaryClient
   double: WorkoutDouble
   router: ReturnType<typeof createMemoryRouter>
+  queryClient: QueryClient
 }
 
 function mountSummary(
@@ -96,14 +101,15 @@ function mountSummary(
     initialEntries: ['/', '/summary'],
     initialIndex: 1,
   })
+  const queryClient = createWarmQueryClient()
 
   render(
-    <AppProviders {...signedIn({ summary, workout: double.clients })}>
+    <AppProviders {...signedIn({ summary, workout: double.clients, queryClient })}>
       <RouterProvider router={router} />
     </AppProviders>,
   )
 
-  return { summary, double, router }
+  return { summary, double, router, queryClient }
 }
 
 /** The debrief, once the session has loaded. */
@@ -555,5 +561,82 @@ describe('Summary — undoing a favorite (U22)', () => {
     // Still saved, and the retry is the same action.
     expect(screen.getByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: REMOVE_FAVORITE_LABEL })).toBeEnabled()
+  })
+
+  it('settles a deferred Summary delete against newer Home removal and Session Detail save', async () => {
+    const user = userEvent.setup()
+    const first = savedWorkoutFixture({ id: '70000009-0000-4000-8000-000000000000',
+      original_session_id: SESSION_ID, title: TITLE })
+    const sibling = savedWorkoutFixture({ id: '70000008-0000-4000-8000-000000000000',
+      original_session_id: '50000008-0000-4000-8000-000000000000', title: 'Sibling favorite' })
+    const newlySaved = reconstructionFixture({ sessionId: '50000003-0000-4000-8000-000000000000',
+      state: 'completed', title: 'New sibling favorite',
+      sections: [{ title: 'Main', blocks: [{ exercises: ['completed'] }] }] })
+    const { double, router, queryClient } = await favorited({ workout: {
+      favorites: [first, sibling],
+      sessions: {
+        asPerformed: async () => ok(newlySaved),
+        asIntendedAtStart: async () => ok({ ...newlySaved, reconstruction: 'intended_at_start' }),
+      },
+    } })
+    const remove = double.clients.favorites.remove
+    let finishFirst: () => Promise<void> = async () => { throw new Error('The first delete has not started') }
+    double.clients.favorites.remove = (id) => id !== first.id ? remove(id) : new Promise((resolve) => {
+      finishFirst = async () => { resolve(await remove(id)) }
+    })
+
+    await confirmRemove(user)
+    await user.click(screen.getByRole('button', { name: DONE }))
+    await screen.findByRole('heading', { name: HOME_HEADING })
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+    const siblingRow = (await screen.findByRole('heading', { name: sibling.title })).closest('li')!
+    await user.click(within(siblingRow).getByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: REMOVE_FAVORITE_CONFIRM }))
+    await waitFor(() => expect(screen.queryByRole('heading', { name: sibling.title })).toBeNull())
+
+    await act(() => router.navigate(`/history/${newlySaved.session.id}`))
+    const save = await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })
+    await waitFor(() => expect(save).toBeEnabled())
+    await user.click(save)
+    await screen.findByText(SAVED_FAVORITE_LABEL)
+    await act(() => router.navigate(-1))
+    await screen.findByRole('heading', { name: 'New sibling favorite' })
+
+    // Summary's handler is still pending even though its control unmounted.
+    await act(async () => finishFirst())
+    const cached = queryClient.getState<readonly SavedWorkoutRow[]>(favoritesQueryKey(FIXTURE_USER_ID))
+    expect(cached).toEqual({ status: 'ready', data: double.favorites() })
+    expect(double.favorites().map(row => row.original_session_id)).toEqual([newlySaved.session.id])
+    expect(screen.getByRole('heading', { name: 'New sibling favorite' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: sibling.title })).toBeNull()
+    expect(screen.queryByRole('heading', { name: TITLE })).toBeNull()
+  })
+
+  it('settles a deferred save without resurrecting a favorite removed on Home', async () => {
+    const user = userEvent.setup()
+    const sibling = savedWorkoutFixture({ id: '70000008-0000-4000-8000-000000000000',
+      original_session_id: '50000008-0000-4000-8000-000000000000', title: 'Sibling favorite' })
+    const { double, queryClient } = await favorited({ workout: { favorites: [sibling] } })
+    const save = double.clients.favorites.save
+    let finishSave: () => Promise<void> = async () => { throw new Error('The save has not started') }
+    double.clients.favorites.save = (...args) => new Promise((resolve) => {
+      finishSave = async () => { resolve(await save(...args)) }
+    })
+    const button = await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })
+    await waitFor(() => expect(button).toBeEnabled())
+    await user.click(button)
+    await user.click(screen.getByRole('button', { name: DONE }))
+    await screen.findByRole('heading', { name: HOME_HEADING })
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: REMOVE_FAVORITE_CONFIRM }))
+    await screen.findByText(FAVORITES_EMPTY_TITLE)
+
+    await act(async () => finishSave())
+    await screen.findByRole('heading', { name: TITLE })
+    expect(queryClient.getState<readonly SavedWorkoutRow[]>(favoritesQueryKey(FIXTURE_USER_ID)))
+      .toEqual({ status: 'ready', data: double.favorites() })
+    expect(double.favorites().map(row => row.original_session_id)).toEqual([SESSION_ID])
+    expect(screen.queryByRole('heading', { name: sibling.title })).toBeNull()
   })
 })

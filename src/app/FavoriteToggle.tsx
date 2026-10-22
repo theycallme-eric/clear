@@ -19,6 +19,7 @@ import {
 } from '../state/favorite-queries'
 import { favoriteDraft } from '../state/favorites'
 import { useQueryClient } from '../state/query'
+import type { SavedWorkoutRow } from '../state/schemas'
 import { useWorkoutClients } from '../state/workout-queries'
 import {
   REMOVE_FAVORITE_FAILED,
@@ -115,14 +116,20 @@ export function FavoriteToggle({
       return
     }
 
-    // The cache holds what the database now holds, newest first, so the
-    // favorites tab shows it without a second read and this control knows it
-    // is saved without asking again.
-    const held = query.state.status === 'ready' ? query.state.data : []
-    cache.setData(favoritesQueryKey(user.id), [
-      written.value,
-      ...held.filter((row) => row.id !== written.value.id),
-    ])
+    // Other screens can change this shared list while the write is pending.
+    // Merge into its current value, never the render that started the save.
+    const key = favoritesQueryKey(user.id)
+    const current = cache.getState<readonly SavedWorkoutRow[]>(key)
+    if (current.status === 'ready') {
+      cache.setData(key, [
+        written.value,
+        ...current.data.filter((row) => row.id !== written.value.id),
+      ])
+    } else {
+      // A loading/failed list is not a known empty list. Let its real reader
+      // resolve all rows rather than publishing a partial list from this write.
+      cache.invalidate(key)
+    }
   }
 
   async function remove() {
@@ -141,15 +148,16 @@ export function FavoriteToggle({
       return
     }
 
-    // The list loses the row without a second read — the favorites tab and
-    // this control both answer "not saved" at once — and the progression
-    // cached for it is dropped with it. History's caches are left alone: the
-    // session was never part of what was removed.
-    const held = query.state.status === 'ready' ? query.state.data : []
-    cache.setData(
-      favoritesQueryKey(user.id),
-      held.filter((row) => row.id !== favorite.id),
-    )
+    // Remove this row from the latest known list, or refresh an unresolved
+    // list. Drop its cached progression as well. History's caches are left
+    // alone: the session was never part of what was removed.
+    const key = favoritesQueryKey(user.id)
+    const current = cache.getState<readonly SavedWorkoutRow[]>(key)
+    if (current.status === 'ready') {
+      cache.setData(key, current.data.filter((row) => row.id !== favorite.id))
+    } else {
+      cache.invalidate(key)
+    }
     cache.invalidate(favoriteRunsQueryKey(favorite.id))
   }
 

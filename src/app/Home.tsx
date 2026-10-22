@@ -83,7 +83,7 @@ import {
   TextAction,
   Zap,
 } from '../design-system/index'
-import { useFavoritesQuery } from '../state/favorite-queries'
+import { favoriteRunsQueryKey, useFavoritesQuery } from '../state/favorite-queries'
 import {
   favoriteEntries,
   isOutdatedSnapshot,
@@ -103,6 +103,7 @@ import {
 import type { HistorySessionEntry } from '../state/history'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
 import { isErr } from '../state/errors'
+import { useQueryClient } from '../state/query'
 import {
   useMarkRestDay,
   useRestDaysQuery,
@@ -796,6 +797,7 @@ function RecentWorkouts({
  */
 function FavoriteWorkouts() {
   const query = useFavoritesQuery()
+  const cache = useQueryClient()
   const { favorites } = useWorkoutClients()
   const navigate = useNavigate()
 
@@ -846,6 +848,7 @@ function FavoriteWorkouts() {
       return
     }
 
+    cache.invalidate(favoriteRunsQueryKey(entry.id))
     query.refetch()
   }
 
