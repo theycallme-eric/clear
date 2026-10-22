@@ -14,7 +14,7 @@
     "backend:snapshot": "bash scripts/backend-audit/snapshot.sh",
     "build": "tsc --noEmit && vite build",
     "dag:ready": "python3 scripts/dag-ready.py",
-    "e2e": "playwright test",
+    "e2e": "playwright test --project=mobile",
     "e2e:report": "playwright show-report",
     "e2e:reset": "node scripts/e2e/reset.mjs",
     "e2e:seed": "node scripts/e2e/seed.mjs",

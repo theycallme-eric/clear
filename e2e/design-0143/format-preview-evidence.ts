@@ -1,10 +1,14 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { hashTree, type CaptureIdentity, type MotionObservation, type ReachedObservation } from './capture'
-import { CAPTURE_SKINS, CAPTURE_VIEWPORTS, type CaptureSkin, type CaptureViewport } from './state-inventory'
+import { ACTIVE_CAPTURE_VIEWPORTS, CAPTURE_SKINS, type CaptureSkin, type CaptureViewport } from './state-inventory'
 
 /** Follow-up #469 only. This does not alter or rebind the three historical paired groups. */
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview'
+export const FORMAT_HISTORICAL_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview'
+export const FORMAT_HISTORICAL_COMMIT = 'eb61b9daf21848c2727eaa6fa2c5e203f4effd7b'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-mobile'
+export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
+export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'
 export const FORMAT_BASELINE_COMMIT = 'c31ef865f60811df076db396a40f90517701380e'
 export const FORMAT_ROUTE = '/settings/formats'
@@ -20,6 +24,7 @@ export const FORMAT_DRIVER_FILES = [
   'e2e/design-0143/capture.ts', 'e2e/design-0143/fixtures.ts',
   'e2e/design-0143/state-inventory.ts', 'e2e/fixtures.ts',
   'e2e/support/authenticated-session.ts', 'e2e/support/backend.ts',
+  'playwright.config.ts', 'package.json',
 ] as const
 
 export const bytesHash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex')
@@ -89,7 +94,8 @@ export interface FormatEvidenceRecord {
   version: 1
   task: 'TASK-034'
   issue: 469
-  consumer: 'task034-format-preview'
+  consumer: typeof FORMAT_EVIDENCE_CONSUMER
+  scope: typeof FORMAT_EVIDENCE_SCOPE
   sourceFile: typeof FORMAT_EVIDENCE_SOURCE
   status: 'passed'
   project: string
@@ -112,11 +118,11 @@ export interface FormatEvidenceRecord {
 
 export function formatPreviewManifest(records: readonly FormatEvidenceRecord[]) {
   const captures = records.flatMap((record) => record.captures)
-  const byViewport = Object.fromEntries(CAPTURE_VIEWPORTS.map(({ id }) => [id, captures.filter((capture) => capture.viewport.id === id).length]))
+  const byViewport = Object.fromEntries(ACTIVE_CAPTURE_VIEWPORTS.map(({ id }) => [id, captures.filter((capture) => capture.viewport.id === id).length]))
   const bySkin = Object.fromEntries(CAPTURE_SKINS.map((skin) => [skin, captures.filter((capture) => capture.skin === skin).length]))
   return {
-    version: 1, task: 'TASK-034', issue: 469, consumer: 'task034-format-preview', phase: 'after',
-    status: records.length === 12 && captures.length === 16 ? 'complete' : 'incomplete',
+    version: 1, task: 'TASK-034', issue: 469, consumer: FORMAT_EVIDENCE_CONSUMER, scope: FORMAT_EVIDENCE_SCOPE, phase: 'after',
+    status: records.length === 4 && captures.length === 8 ? 'complete' : 'incomplete',
     deterministic: true, liveGeneration: false, deployedProof: false,
     cases: records.map(({ project, skin, caseTitle, status }) => ({ project, skin, caseTitle, status }))
       .sort((a, b) => `${a.project}-${a.skin}`.localeCompare(`${b.project}-${b.skin}`)),
@@ -130,14 +136,15 @@ export function validateFormatPreviewEvidence(
   expected: { runtimeHash: string; packageHash: string; driverHash: string; absence: BaselineAbsence; readPng: (name: string) => Uint8Array },
 ) {
   const require = (condition: boolean, reason: string) => { if (!condition) throw new Error(`Task034 AFTER evidence: ${reason}`) }
-  require(records.length === 12, 'all twelve project/skin cases must actually pass')
+  require(records.length === 4, 'all four mobile skin cases must actually pass')
   const caseKeys = new Set<string>()
   const matrix = new Set<string>()
   const pictures = new Set<string>()
   for (const record of records) {
-    require(record.version === 1 && record.task === 'TASK-034' && record.issue === 469 && record.consumer === 'task034-format-preview', 'wrong body/task/issue')
+    require(record.version === 1 && record.task === 'TASK-034' && record.issue === 469 &&
+      record.consumer === FORMAT_EVIDENCE_CONSUMER && record.scope === FORMAT_EVIDENCE_SCOPE, 'wrong body/task/issue/mobile scope')
     require(record.sourceFile === FORMAT_EVIDENCE_SOURCE && record.status === 'passed', 'wrong driver or failed case')
-    require(['mobile', 'tablet', 'desktop'].includes(record.project) && CAPTURE_SKINS.includes(record.skin), 'unexpected project/skin')
+    require(record.project === 'mobile' && CAPTURE_SKINS.includes(record.skin), 'unexpected project/skin')
     const key = `${record.project}/${record.skin}`
     require(!caseKeys.has(key), 'duplicate project/skin case')
     caseKeys.add(key)
@@ -156,11 +163,11 @@ export function validateFormatPreviewEvidence(
       .every((key) => record.observations[key as keyof typeof record.observations] === true), 'incomplete route/interaction observations')
     require(record.network.generationRequests === 0 && record.network.blockedGenerations === 0 && record.network.attemptedWrites === 0 && record.network.forwardedWrites === 0, 'generation or write attempted')
     require(record.deterministic === true && record.liveGeneration === false && record.deployedProof === false, 'overclaimed proof')
-    const ids = record.project === 'mobile' ? ['phone', 'short'] : [record.project]
+    const ids = ACTIVE_CAPTURE_VIEWPORTS.map(({ id }) => id)
     require(record.captures.length === ids.length, 'missing project viewport capture')
     for (const capture of record.captures) {
-      const viewport = CAPTURE_VIEWPORTS.find(({ id }) => id === capture.viewport.id)
-      require(viewport !== undefined && ids.includes(capture.viewport.id) && JSON.stringify(capture.viewport) === JSON.stringify(viewport), 'wrong explicit viewport')
+      const viewport = ACTIVE_CAPTURE_VIEWPORTS.find(({ id }) => id === capture.viewport.id)
+      require(viewport !== undefined && JSON.stringify(capture.viewport) === JSON.stringify(viewport), 'wrong explicit viewport')
       require(capture.skin === record.skin && capture.route === FORMAT_ROUTE && capture.state === FORMAT_STATE && capture.phase === 'after' && capture.before === null, 'invented BEFORE or wrong route/state')
       require(capture.reached.pathname === FORMAT_ROUTE && capture.reached.heading === FORMAT_TITLE && capture.reached.stateVisible === true, 'route/heading/state not reached')
       require(capture.motion.reducedMotion === true && capture.motion.settled === true && capture.motion.running.length === 0, 'unsettled frame')
@@ -179,5 +186,5 @@ export function validateFormatPreviewEvidence(
         pixels.height === capture.layout.documentHeight && shot.width === pixels.width && shot.height === pixels.height, 'wrong actual PNG dimensions or capture posture')
     }
   }
-  require(matrix.size === 16 && CAPTURE_VIEWPORTS.every(({ id }) => CAPTURE_SKINS.every((skin) => matrix.has(`${id}/${skin}`))), 'incomplete sixteen-cell matrix')
+  require(matrix.size === 8 && ACTIVE_CAPTURE_VIEWPORTS.every(({ id }) => CAPTURE_SKINS.every((skin) => matrix.has(`${id}/${skin}`))), 'incomplete eight-cell phone/short matrix')
 }

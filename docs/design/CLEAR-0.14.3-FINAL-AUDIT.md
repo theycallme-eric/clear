@@ -1,5 +1,28 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Current scope — owner decision 2026-10-22
+
+CLEAR and its CLEAR-specific design-system compositions are mobile-only. Future
+verification explicitly selects `--project=mobile`, retaining normal390×844,
+short390×320 and narrow320×568 phone behavior, touch, keyboard and accessibility.
+The existing protected `Preview E2E (mobile + desktop)` identifier is unchanged;
+its label does not authorize a wider-device run. All functional/security checks,
+exact-head proof, independent review and protected delivery gates remain.
+
+The wider-device numbers and commands below are retained historical provenance,
+not instructions to recapture them. The Task034 twelve-case/sixteen-PNG group at
+`docs/design/evidence-0143/task034-format-preview/` is preserved byte-for-byte
+from `eb61b9daf21848c2727eaa6fa2c5e203f4effd7b` (29 files, sorted path/byte-hash
+manifest `1e0edab78fc87e6ddc10d8a3b21873179723a3a3adca449d20ddb171470ec48e`).
+No former failure becomes a pass when a viewport leaves current scope.
+
+Current Task034 capture acceptance is a **new**, separately scoped group at
+`docs/design/evidence-0143/task034-format-preview-mobile/`: four actual mobile
+skin cases and eight unique phone/short PNG cells. The same real-session,
+no-generation/no-write, route/Back, accessibility, motion/layout, pixel/byte and
+source/driver identity predicates remain mandatory. New mobile captures and
+native exact-head verification are pending; no old picture is rebound.
+
 **Status:** the three route evidence groups are complete and aggregated here. Local same-source
 proof is executed by the protected wrapper on the committed head. Exact deployed proof and owner
 acceptance are open; see [Exact deployed proof](#exact-deployed-proof) and

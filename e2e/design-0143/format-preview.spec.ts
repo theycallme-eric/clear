@@ -6,10 +6,10 @@ import { test as base, expect } from '../support/authenticated-session'
 import { backend } from '../support/backend'
 import { captureIdentity, verifyReached } from './capture'
 import { installDeterministicCapture, playwrightCaptureDriver } from './fixtures'
-import { CAPTURE_SKINS, CAPTURE_VIEWPORTS, VIEWPORT_OF_PROJECT } from './state-inventory'
+import { ACTIVE_CAPTURE_VIEWPORTS, ACTIVE_VIEWPORT_OF_PROJECT, CAPTURE_SKINS } from './state-inventory'
 import {
   bytesHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest, formatSourceCheckout,
-  FORMAT_EVIDENCE_DIR, FORMAT_EVIDENCE_SOURCE, FORMAT_NOTE, FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE,
+  FORMAT_EVIDENCE_DIR, FORMAT_EVIDENCE_CONSUMER, FORMAT_EVIDENCE_SCOPE, FORMAT_EVIDENCE_SOURCE, FORMAT_NOTE, FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE,
   FORMAT_RECORD_MARKER, shouldRecordFormatArtifacts, isPreviewWrite, pngDimensions, type FormatEvidenceRecord,
 } from './format-preview-evidence'
 
@@ -105,17 +105,17 @@ const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }
 
 test.describe('TASK-034 introduced format-preview route — real AFTER evidence', () => {
   // Missing trusted config is an explicit non-proof outcome. The offline audit
-  // still fails without the complete real sixteen-cell committed evidence.
+  // still fails without the complete real eight-cell phone/short evidence.
   test.skip(!backend.available, backend.reason)
 
   for (const skin of CAPTURE_SKINS) {
     test(`${skin}: Settings entry, read-only formats, Back and direct-entry Back`, async ({
       authenticatedPage: page, authenticatedSession, visit, checkA11y, recordEvidence,
     }, info) => {
-      const viewportId = VIEWPORT_OF_PROJECT[info.project.name]
-      expect(viewportId, 'only the three existing browser projects own captures').toBeTruthy()
-      const viewports = CAPTURE_VIEWPORTS.filter(({ id }) => id === viewportId || (info.project.name === 'mobile' && id === 'short'))
-      expect(viewports).toHaveLength(info.project.name === 'mobile' ? 2 : 1)
+      const viewportId = ACTIVE_VIEWPORT_OF_PROJECT[info.project.name]
+      expect(viewportId, 'only the mobile browser project owns current captures').toBe('phone')
+      const viewports = ACTIVE_CAPTURE_VIEWPORTS
+      expect(viewports).toHaveLength(2)
       const deterministic = await installDeterministicCapture(page, { skin, reducedMotion: true })
       let generationRequests = 0
       let attemptedWrites = 0
@@ -238,7 +238,7 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       expect(attemptedWrites).toBe(0)
 
       recordEvidence({ pictures, record: {
-        version: 1, task: 'TASK-034', issue: 469, consumer: 'task034-format-preview', sourceFile: FORMAT_EVIDENCE_SOURCE,
+        version: 1, task: 'TASK-034', issue: 469, consumer: FORMAT_EVIDENCE_CONSUMER, scope: FORMAT_EVIDENCE_SCOPE, sourceFile: FORMAT_EVIDENCE_SOURCE,
         status: 'passed', project: info.project.name, skin, caseTitle: info.title, observedAt: new Date().toISOString(), captureProcessId: process.pid,
         identity: captureIdentity(root), sourceCheckout: formatSourceCheckout(root), driverSourceHash: formatDriverHash(root), baselineAbsence: formatBaselineAbsence(root),
         session: { fixture: 'authenticatedSession', realSession: true, codeRequests: authenticatedSession.journey.codeRequests,

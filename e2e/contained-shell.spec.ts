@@ -15,9 +15,9 @@ import { backend } from './support/backend'
  */
 
 const VIEWPORTS = [
-  { name: 'phone', width: 390, height: 320 },
-  { name: 'tablet', width: 834, height: 600 },
-  { name: 'desktop', width: 1280, height: 720 },
+  { name: 'phone', width: 390, height: 844 },
+  { name: 'short phone', width: 390, height: 320 },
+  { name: 'narrow phone', width: 320, height: 568 },
 ] as const
 
 for (const viewport of VIEWPORTS) {
@@ -208,10 +208,9 @@ test('the fixed shell follows a reduced visual viewport without creating documen
 })
 
 for (const viewport of [
+  { name: 'phone', width: 390, height: 844 },
   { name: 'short phone', width: 390, height: 320 },
   { name: 'narrow phone', width: 320, height: 568 },
-  { name: 'touch tablet', width: 768, height: 1024 },
-  { name: 'desktop', width: 1280, height: 720 },
 ] as const) {
   test(`${viewport.name} pins the primary action in a measured transparent layer`, async ({
     page,

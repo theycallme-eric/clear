@@ -1,9 +1,9 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CAPTURE_SKINS, CAPTURE_VIEWPORTS } from '../../e2e/design-0143/state-inventory'
+import { ACTIVE_CAPTURE_VIEWPORTS, CAPTURE_SKINS } from '../../e2e/design-0143/state-inventory'
 import {
-  bytesHash, formatBaselineAbsence, formatPreviewManifest, FORMAT_BASELINE_COMMIT, FORMAT_EVIDENCE_SOURCE,
+  bytesHash, formatBaselineAbsence, formatPreviewManifest, FORMAT_BASELINE_COMMIT, FORMAT_EVIDENCE_CONSUMER, FORMAT_EVIDENCE_SCOPE, FORMAT_EVIDENCE_SOURCE,
   FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE, isPreviewWrite, pngDimensions, shouldRecordFormatArtifacts,
   validateFormatPreviewEvidence, type FormatEvidenceRecord,
 } from '../../e2e/design-0143/format-preview-evidence'
@@ -25,9 +25,9 @@ function fixture() {
   const pictures = new Map<string, Uint8Array>()
   const absence = formatBaselineAbsence(root)
   const records: FormatEvidenceRecord[] = []
-  for (const project of ['mobile', 'tablet', 'desktop']) {
+  for (const project of ['mobile']) {
     for (const skin of CAPTURE_SKINS) {
-      const viewports = CAPTURE_VIEWPORTS.filter(({ id }) => id === (project === 'mobile' ? 'phone' : project) || (project === 'mobile' && id === 'short'))
+      const viewports = ACTIVE_CAPTURE_VIEWPORTS
       const captures: FormatEvidenceRecord['captures'] = viewports.map((viewport) => {
         const prior = old.find((capture) => capture.viewport.id === viewport.id)
         if (prior === undefined) throw new Error('Missing historical PNG test fixture')
@@ -44,7 +44,7 @@ function fixture() {
         }
       })
       records.push({
-        version: 1, task: 'TASK-034', issue: 469, consumer: 'task034-format-preview', sourceFile: FORMAT_EVIDENCE_SOURCE,
+        version: 1, task: 'TASK-034', issue: 469, consumer: FORMAT_EVIDENCE_CONSUMER, scope: FORMAT_EVIDENCE_SCOPE, sourceFile: FORMAT_EVIDENCE_SOURCE,
         status: 'passed', project, skin, caseTitle: 'UNIT FIXTURE — NOT ACTUAL TASK034 PROOF', observedAt: '2026-10-22T00:00:00.000Z', captureProcessId: 1,
         identity: { packageName: 'unit-fixture', packageVersion: '0.14.3', packageHash: 'a'.repeat(64), runtimeSourceHash: 'b'.repeat(64), applicationCommit: 'c'.repeat(40), testedDeployment: 'http://127.0.0.1:4173' },
         sourceCheckout: { dirty: false, statusSha256: bytesHash(new Uint8Array()) }, driverSourceHash: 'd'.repeat(64), baselineAbsence: structuredClone(absence),
@@ -74,17 +74,23 @@ describe('Task034 introduced-route evidence guard — offline fixtures, not capt
     expect(absence.sources.every(({ sha256 }) => /^[a-f0-9]{64}$/.test(sha256))).toBe(true)
   })
 
-  it('accepts a complete in-memory validator fixture with all sixteen unique cells', () => {
+  it('accepts a complete in-memory mobile validator fixture with all eight phone/short cells', () => {
     const { records, expected } = fixture()
     expect(() => validateFormatPreviewEvidence(records, expected)).not.toThrow()
-    expect(formatPreviewManifest(records).matrix).toEqual({ captures: 16, withBeforePicture: 0, introducedWithoutBeforePicture: 16,
-      byViewport: { phone: 4, tablet: 4, desktop: 4, short: 4 }, bySkin: { clear: 4, vapour: 4, signal: 4, mono: 4 } })
+    expect(formatPreviewManifest(records).matrix).toEqual({ captures: 8, withBeforePicture: 0, introducedWithoutBeforePicture: 8,
+      byViewport: { phone: 4, short: 4 }, bySkin: { clear: 2, vapour: 2, signal: 2, mono: 2 } })
     expect(formatPreviewManifest([]).status).toBe('incomplete')
   })
 
   const mutations: [string, (records: FormatEvidenceRecord[]) => void][] = [
     ['missing case', (records) => { records.pop() }],
     ['duplicate case', (records) => { records[1] = records[0] }],
+    ['historical consumer cannot become current proof', (records) => { records[0].consumer = 'task034-format-preview' as never }],
+    ['missing mobile scope', (records) => { records[0].scope = undefined as never }],
+    ['tablet project is not current scope', (records) => { records[0].project = 'tablet' }],
+    ['desktop project is not current scope', (records) => { records[0].project = 'desktop' }],
+    ['missing phone capture', (records) => { records[0].captures.shift() }],
+    ['tablet viewport is not current scope', (records) => { records[0].captures[0].viewport = { id: 'tablet', width: 768, height: 1024 } }],
     ['missing short capture', (records) => { records[0].captures.pop() }],
     ['wrong CSS viewport', (records) => { records[0].captures[0].viewport = { ...records[0].captures[0].viewport, width: 391 } as never }],
     ['old route', (records) => { records[0].captures[0].route = '/settings' as never }],

@@ -1,5 +1,12 @@
 # CLEAR 0.14.3 — Owner QA path
 
+**Current scope (owner 2026-10-22): phones only**, including normal, short and
+narrow phone layouts and all four skins. Tablet/desktop work is separate future
+portfolio scope. Historical wider-device pictures and results below remain
+history, not a request to rerun or re-approve them. The new Task034 current mobile
+group is `docs/design/evidence-0143/task034-format-preview-mobile/`; its four
+actual cases/eight PNG cells are still pending and are not owner acceptance.
+
 The owner's walk of the deployed application after the 0.14.3 pass merges. It is the one piece of
 proof the automated lanes cannot give: a person, on the real deployment, with the real account.
 `docs/design/CLEAR-0.14.3-FINAL-AUDIT.md` lists what is already proved locally and which pictures
@@ -56,10 +63,10 @@ The three historical paired groups and their original pictures remain unchanged.
 
 Across the walk:
 
-- **Keyboard (desktop):** Tab reaches every action, focus is always visible (brackets on choices),
+- **Keyboard:** Tab reaches every action, focus is always visible (brackets on choices),
   and Esc closes a dialog and returns focus.
 - **Reduced motion:** with the OS setting on, screens appear at once and the atmosphere is still.
-- **Width:** narrow the desktop window to phone width and back; nothing scrolls sideways and the
+- **Width:** use normal, short and narrow phone shapes; nothing scrolls sideways and the
   pinned actions stay reachable.
 - **Failure honesty:** if anything fails (network, save), the message says what failed and offers a
   way back; nothing claims success it did not have.

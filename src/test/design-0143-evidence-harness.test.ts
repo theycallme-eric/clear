@@ -22,6 +22,8 @@ import {
 } from '../../e2e/design-0143/fixtures'
 import {
   AUTHENTICATED_CAPTURE_TARGETS,
+  ACTIVE_CAPTURE_VIEWPORTS,
+  ACTIVE_VIEWPORT_OF_PROJECT,
   baselineEntry,
   BASELINE_INVENTORY_PATH,
   CAPTURE_SKINS,
@@ -320,7 +322,7 @@ describe('the capture schema binds a screenshot to what it shows', () => {
     ).toThrow(message)
   })
 
-  it('covers every required screen, the four skins and the four viewports', () => {
+  it('retains historical geometry and limits current captures to four skins on phones', () => {
     const inventory = readBaselineInventory(root)
 
     for (const { screen, route } of REQUIRED_SCREENS) {
@@ -337,6 +339,8 @@ describe('the capture schema binds a screenshot to what it shows', () => {
     expect(CAPTURE_VIEWPORTS[0]).toMatchObject(MOBILE_VIEWPORT)
     expect(CAPTURE_VIEWPORTS[1]).toMatchObject(TABLET_VIEWPORT)
     expect(VIEWPORT_OF_PROJECT).toEqual({ mobile: 'phone', tablet: 'tablet', desktop: 'desktop' })
+    expect(ACTIVE_CAPTURE_VIEWPORTS.map(({ id }) => id)).toEqual(['phone', 'short'])
+    expect(ACTIVE_VIEWPORT_OF_PROJECT).toEqual({ mobile: 'phone' })
   })
 })
 

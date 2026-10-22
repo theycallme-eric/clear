@@ -19,7 +19,7 @@ import { REQUIRED_SCREENS } from '../required-routes'
 export const BASELINE_INVENTORY_PATH = 'docs/design/0143-intake-baseline/route-state-inventory.json'
 export const BASELINE_INTAKE_PATH = 'docs/design/0143-intake-baseline/intake-baseline.json'
 
-/** REQ-029's four viewports, written as the numbers it states. */
+/** Historical REQ-029 geometry: retain it to validate the original evidence. */
 export const CAPTURE_VIEWPORTS = [
   { id: 'phone', width: 390, height: 844 },
   { id: 'tablet', width: 768, height: 1024 },
@@ -31,11 +31,15 @@ export const CAPTURE_VIEWPORTS = [
 export type CaptureViewport = (typeof CAPTURE_VIEWPORTS)[number]
 export type CaptureViewportId = CaptureViewport['id']
 
+/** Current CLEAR scope (owner 2026-10-22): normal and short phones only. */
+export const ACTIVE_CAPTURE_VIEWPORTS = [CAPTURE_VIEWPORTS[0], CAPTURE_VIEWPORTS[3]] as const
+export const ACTIVE_VIEWPORT_OF_PROJECT: Readonly<Record<string, 'phone'>> = { mobile: 'phone' }
+
 /** The export's four skins; the unit suite holds this to `SKINS`. */
 export const CAPTURE_SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
 export type CaptureSkin = (typeof CAPTURE_SKINS)[number]
 
-/** The Playwright project a viewport is captured in. `short` resizes a phone. */
+/** Historical project labels; active captures use ACTIVE_VIEWPORT_OF_PROJECT. */
 export const VIEWPORT_OF_PROJECT: Readonly<Record<string, CaptureViewportId>> = {
   mobile: 'phone',
   tablet: 'tablet',

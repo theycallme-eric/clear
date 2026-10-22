@@ -7,7 +7,7 @@ import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import {
   currentFormatRuntimeHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest,
-  FORMAT_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
+  FORMAT_EVIDENCE_DIR, FORMAT_HISTORICAL_COMMIT, FORMAT_HISTORICAL_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
 } from '../../e2e/design-0143/format-preview-evidence'
 import {
   browserTestsForTarget,
@@ -59,7 +59,7 @@ describe('TASK-027 browser selection follows the tested package and target', () 
     },
   )
 
-  it.each(['mobile', 'tablet', 'desktop'])('retains current UI and accessibility coverage on %s', (project) => {
+  it.each(['mobile'])('retains current UI and accessibility coverage on %s', (project) => {
     for (const file of ['entry-forms', 'collections-settings', 'workout-lifecycle', 'accessibility']) {
       expect(browserTestsForTarget('0.14.3', 'http://127.0.0.1:4173').test(
         `${project} design-0143/${file}.spec.ts current UI requirement`,
@@ -269,7 +269,23 @@ describe('CLEAR 0.14.3 final audit — aggregated evidence groups', () => {
 })
 
 describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a coverage waiver', () => {
-  it('requires the complete actual sixteen-cell group and byte/pixel/source/session records', () => {
+  it('preserves the committed twelve-case/sixteen-PNG wider group byte-for-byte as history', () => {
+    // Pinned from the actual committed eb61 group before any mobile changes.
+    // A shallow CI checkout can prove its bytes without fetching old commits.
+    expect(FORMAT_HISTORICAL_COMMIT).toBe('eb61b9daf21848c2727eaa6fa2c5e203f4effd7b')
+    const names = [
+      `${FORMAT_HISTORICAL_EVIDENCE_DIR}/manifest.json`,
+      ...['records', 'screenshots'].flatMap((folder) => readdirSync(resolve(root, FORMAT_HISTORICAL_EVIDENCE_DIR, folder))
+        .map((name) => `${FORMAT_HISTORICAL_EVIDENCE_DIR}/${folder}/${name}`)),
+    ].sort()
+    expect(names.filter((name) => name.includes('/records/'))).toHaveLength(12)
+    expect(names.filter((name) => name.endsWith('.png'))).toHaveLength(16)
+    const manifest = names.map((path) => ({ path, sha256: sha256(path) }))
+    expect(createHash('sha256').update(JSON.stringify(manifest)).digest('hex'))
+      .toBe('1e0edab78fc87e6ddc10d8a3b21873179723a3a3adca449d20ddb171470ec48e')
+  })
+
+  it('requires the complete actual eight-cell mobile group and byte/pixel/source/session records', () => {
     const manifestPath = `${FORMAT_EVIDENCE_DIR}/manifest.json`
     expect(existsSync(resolve(root, manifestPath)), 'real Task034 AFTER capture is still required').toBe(true)
     const names = readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'records')).filter((name) => name.endsWith('.json')).sort()

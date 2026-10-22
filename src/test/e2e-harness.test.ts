@@ -7,7 +7,6 @@ import { SCREENS } from '../../e2e/screens'
 import playwrightConfig, {
   browserSupabaseEnv,
   MOBILE_VIEWPORT,
-  TABLET_VIEWPORT,
   vercelProtectionHeaders,
 } from '../../playwright.config'
 import { routes } from '../app/router'
@@ -50,14 +49,10 @@ describe('the default Playwright project is a phone (ENV-07)', () => {
     expect(mobile?.isMobile).toBe(true)
   })
 
-  it('keeps tablet and desktop as additional coverage rather than the baseline', () => {
+  it('runs only the owner-approved mobile project, never wider-device projects', () => {
     const names = projects.map((project) => project.name)
 
-    expect(TABLET_VIEWPORT).toEqual({ width: 768, height: 1024 })
-    expect(names).toContain('tablet')
-    expect(names).toContain('desktop')
-    expect(names.indexOf('tablet')).toBeGreaterThan(names.indexOf('mobile'))
-    expect(names.indexOf('desktop')).toBeGreaterThan(names.indexOf('mobile'))
+    expect(names).toEqual(['mobile'])
   })
 })
 
@@ -90,7 +85,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     // This process has no `E2E_BASE_URL`, which is the local case.
     expect(playwrightConfig.webServer).toBeDefined()
     expect(packageJson.scripts['e2e:server']).toContain('vite')
-    expect(packageJson.scripts.e2e).toBe('playwright test')
+    expect(packageJson.scripts.e2e).toBe('playwright test --project=mobile')
   })
 
   it('gives a local browser only the public Supabase configuration', () => {
