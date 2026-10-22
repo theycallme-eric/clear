@@ -1,5 +1,6 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { RouterProvider } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
@@ -18,7 +19,7 @@ import {
 } from '../state/session-suggestion'
 import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
-import { renderApp, signedIn } from '../test/render'
+import { AppProviders, renderApp, signedIn } from '../test/render'
 import { createFakeRestDayClient } from '../test/rest-day-double'
 import {
   createWorkoutDouble,
@@ -37,6 +38,7 @@ import {
   SUGGESTION_LABEL,
   VIEW_HISTORY_LABEL,
 } from './Home'
+import { createTestRouter } from './router'
 
 const LOCATION_ID = 'd0000001-0000-4000-8000-000000000000'
 
@@ -143,6 +145,115 @@ describe('Home', () => {
 
     expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: 'Today' })).toBeNull()
+  })
+
+  describe('U21: the existing full favorites list and retained tab', () => {
+    function favoriteRows(count: number) {
+      return Array.from({ length: count }, (_, index) =>
+        savedWorkoutFixture({
+          id: `70000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+          title: `Favorite ${index + 1}`,
+          created_at: `2026-09-${String(10 + index).padStart(2, '0')}T10:00:00+00:00`,
+        }),
+      )
+    }
+
+    function renderFavorites(count: number, path = '/') {
+      const workout = createWorkoutDouble({ session: null, favorites: favoriteRows(count) })
+      const router = createTestRouter([path])
+      render(
+        <AppProviders {...signedIn({ workout: workout.clients })}>
+          <RouterProvider router={router} />
+        </AppProviders>,
+      )
+      return router
+    }
+
+    function favoritesTab() {
+      return screen.getByRole('tab', { name: 'Favorites' })
+    }
+
+    async function favoriteRowCount() {
+      const list = await screen.findByRole('list', { name: 'Favorites' })
+      return list.querySelectorAll(':scope > .clr-list__row').length
+    }
+
+    it.each([0, 1, 7])('lists all %i favorites without inventing a preview cap', async (total) => {
+      const user = userEvent.setup()
+      const router = renderFavorites(total, '/?keep=1')
+      await user.click(favoritesTab())
+
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(router.state.location.search).toBe('?keep=1&tab=favorites')
+      if (total === 0) {
+        expect(await screen.findByText(FAVORITES_EMPTY_TITLE)).toBeInTheDocument()
+      } else {
+        expect(await favoriteRowCount()).toBe(total)
+        for (let index = 1; index <= total; index += 1) {
+          expect(screen.getByRole('heading', { name: `Favorite ${index}` })).toBeInTheDocument()
+        }
+      }
+      expect(screen.queryByRole('link', { name: /Show all|Show fewer/ })).not.toBeInTheDocument()
+    })
+
+    it('the full-list destination opens directly on Favorites with every saved row', async () => {
+      renderFavorites(7, '/?tab=favorites')
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(await favoriteRowCount()).toBe(7)
+    })
+
+    it('returning from Review really restores the selected full-list tab', async () => {
+      const user = userEvent.setup()
+      const router = renderFavorites(7)
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(7)
+      const list = screen.getByRole('list', { name: 'Favorites' })
+      await user.click(within(list).getAllByRole('button', { name: 'Start' })[0])
+      expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
+      expect(router.state.location.pathname).toBe('/review')
+
+      await act(() => router.navigate(-1))
+      expect(await screen.findByRole('heading', { level: 1, name: 'Today' })).toBeInTheDocument()
+      expect(router.state.location.search).toBe('?tab=favorites')
+      expect(favoritesTab()).toHaveAttribute('aria-selected', 'true')
+      expect(await favoriteRowCount()).toBe(7)
+    })
+
+    it('switching back to Favorites still shows the complete list', async () => {
+      const user = userEvent.setup()
+      renderFavorites(7, '/?tab=favorites')
+      expect(await favoriteRowCount()).toBe(7)
+      await user.click(screen.getByRole('tab', { name: 'Recent workouts' }))
+      expect(screen.getByRole('tab', { name: 'Recent workouts' })).toHaveAttribute('aria-selected', 'true')
+      await user.click(favoritesTab())
+      expect(await favoriteRowCount()).toBe(7)
+    })
+  })
+
+  it('U44: a recent workout groups title and status, then context, then both durations', async () => {
+    const workout = createWorkoutDouble({
+      session: null,
+      historyRows: [
+        makeSessionRow({
+          id: 'b0000021-0000-4000-8000-000000000000',
+          location_id: LOCATION_ID,
+          date: '2026-09-24',
+          title: 'A deliberately long recent workout name that has to wrap on a phone',
+          requested_duration_mins: 40,
+          actual_duration_mins: 33,
+        }),
+      ],
+    })
+    renderApp(['/'], signedIn({ workout: workout.clients }))
+
+    const list = await screen.findByRole('list', { name: 'Recent workouts' })
+    const row = list.querySelector(':scope > li') as HTMLElement
+    expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
+      .toEqual(['head', 'status', 'context', 'metrics'])
+    expect(row.querySelector('[data-part="status"]')).toHaveTextContent('Completed')
+    expect(row.querySelector('[data-part="metrics"]')).toHaveTextContent(
+      /Requested 40 min.*Actual 33 min.*Intensity 7\/10/,
+    )
   })
 
   it('opens a recent workout into its Session Detail rather than Not Found', async () => {

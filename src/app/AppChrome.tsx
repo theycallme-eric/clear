@@ -38,7 +38,7 @@ export function AppChrome() {
   const location = useLocation()
   const navigationType = useNavigationType()
   const routeMotion = useMatchedRouteMotion()
-  const initialKey = useRef(location.key)
+  const previousPathname = useRef(location.pathname)
   const screenTitle = useRef<string | null>(null)
   const [announcement, setAnnouncement] = useState<Announcement | null>(null)
   const [trail, setTrail] = useState(() =>
@@ -85,10 +85,13 @@ export function AppChrome() {
 
   // Child (Screen) effects run before this parent effect, so by the time a
   // navigation lands here the new screen has registered its title and set
-  // document.title. On the initial load the browser owns focus and the page
-  // announces itself — do nothing.
+  // document.title. Like motion, focus, scroll and the route announcement
+  // belong to an actual screen arrival, not an inline query/state update.
+  // On initial load the browser owns focus and announces the page itself;
+  // returning to that original history entry later is still a new arrival.
   useEffect(() => {
-    if (location.key === initialKey.current) return
+    if (location.pathname === previousPathname.current) return
+    previousPathname.current = location.pathname
     const scroller = document.querySelector('.clr-scroll-region__scroller')
     scroller?.scrollTo({ top: 0, left: 0 })
     const main = document.querySelector('main')
@@ -101,7 +104,7 @@ export function AppChrome() {
       key: location.key,
       text: screenTitle.current ?? document.title,
     })
-  }, [location.key])
+  }, [location.key, location.pathname])
 
   return (
     <ScreenRegistryContext.Provider value={registry}>

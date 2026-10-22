@@ -79,7 +79,6 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
-import { ExerciseSwapControls } from './exercise-swap'
 import { useInterfaceLoop } from './motion'
 
 export interface EmomBlockProps extends BlockRendererProps {
@@ -321,8 +320,7 @@ function EmomMovement({
           <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
         )}
 
-        {/* EXE-06 and EXE-05, on demand: neither is an entry the minute asks for. */}
-        <ExerciseSwapControls exercise={exercise} />
+        {/* EXE-05, on demand: not an entry the minute asks for. Swaps are Review's (U37). */}
         <ExerciseCoaching exercise={exercise} />
       </BlockPanel.Movement>
     </BlockPanel.MovementItem>

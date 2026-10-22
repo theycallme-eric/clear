@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `55450010256c6b63979cb9f2c758e8fc7d291148efd90dfae80b1a35359d7bab` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012 and TASK-039 changes below) |
+| Runtime source hash of this audit's tree | `971bf55f8ce46dd900b2c413120a605a7bbe1572b6ccbf5d1a06b50d5fe239cb` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013 and TASK-039 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -289,6 +289,27 @@ trees and this head, from `git diff`:
   `src/test/generation-prompt.test.ts`, `src/test/generation-validation.test.ts` and the two
   generation-reliability matrix suites.
 
+- `9e1b78b4…` to `91995231…`: TASK-028 (REQ-015, JOURNEY-027, U37/U38) moves exercise swaps to
+  Review. The active workout mounts no swap provider and its set-logger and EMOM rows draw no swap
+  or undo control; Review's rows offer one, reading `generation_candidate_sets` for the
+  composition's user, focus and location and narrowing to the slot's section and away from
+  movements already in the workout. A swap changes only the movement and equipment of the
+  in-memory composition (and clears that row's load override); Start persists it, and undo
+  returns to the composed movement. The catalog coaching panel attributes its cues and regression
+  to the exercise library and states blank cues/regressions as answers. Changed:
+  `src/app/Review.tsx`, `src/app/Workout.tsx`, `src/state/swap.ts`, `src/state/swap-provider.tsx`,
+  `src/state/swap-context.ts`, `src/state/review.ts`, `src/ui/exercise-swap.tsx`,
+  `src/ui/exercise-coaching.tsx`, `src/ui/set-logger.tsx`, `src/ui/emom-block.tsx`. This **does**
+  change rendering of Review rows and workout movement rows; the pictures above predate it and are
+  not rebound (EX-13). Current acceptance evidence is `src/app/Review.test.tsx`,
+  `src/app/Workout.test.tsx` and `src/ui/exercise-coaching.test.tsx`.
+
+- `91995231…` to `ea109c62…`: Task028's review-authored eligibility correction replaces the
+  app-wide swap-alternatives cache with fresh disclosure-owned reads and selects the existing
+  goal-scoped retrieval using the workout's goal, retaining legacy null-goal behavior. Exact-head
+  author unit evidence is in `src/data/candidates.test.ts` and `src/app/Review.test.tsx`; no rendered
+  evidence is rebound. Independent review and full native verification remain separate gates.
+
 - `9e1b78b4…` to `0c1ffb63…`: TASK-012 (REQ-007, U19/U20, JOURNEY-012) keeps the weekly strip,
   streak and history, removes the repeated weekly count, and replaces immediate Quick Start plus
   Use this/Dismiss with one next-workout entry. Its pinned action opens Generate with prior
@@ -315,6 +336,14 @@ trees and this head, from `git diff`:
   focused schema/backend command passes 193 tests. No renderer, persistence, prompt or clock module
   is changed, and no historical picture is rebound to this head.
 
+- Combined Task028/Task038 tree: `2cdfb3e4…`, after merging actual main `5d392c0` into the
+  local Task028 candidate. Both histories above are retained; the shared vendor is unchanged.
+  The digest labels current source only, not fresh browser or deployed evidence.
+
+- `2cdfb3e4…` to `364f7814…`: the disclosure-owned read also retains its signed-in user identity,
+  so an old user's pending/read result cannot be displayed under another user. Current runtime
+  proof remains separate from historical rendered evidence.
+
 - Combined TASK-012/current-main tree: `6b8661ac…` adds the preserved Home/Generate-prefill
   changes to protected-merged TASK-038 main `5d392c0`. Both candidate histories above remain
   intact, not represented as one linear sequence. Historical pictures remain historical;
@@ -337,6 +366,36 @@ trees and this head, from `git diff`:
   safe-integer ceilings. Its rounds/interval/cap bounds now match `z.int()`; boundary, overflow,
   null and strict-key fixtures bind an offline transcription to the SQL text. PostgreSQL was
   not executed, and the browser runtime digest is unchanged by this migration/test correction.
+
+- `6b8661ac…` to `6f681250…`: TASK-013 (REQ-008, JOURNEY-013, U21/U44) retains Home's existing
+  full Favorites list and keeps its selected tab in the URL, including a real return from Review.
+  The conditional preview-limit requirement has no baseline preview cap to expose; no arbitrary
+  cap or redundant Show-all/Show-fewer controls are introduced. Same-screen query/state updates
+  retain tab focus and page scroll; actual pathname arrivals still focus and announce the screen.
+  The earlier `1ca975b8…` worker candidate was held before delivery for its contradictory cap and
+  tab-focus regression, not accepted merely because its old-head checks were green. Recent-workout
+  rows on Home and History share one hierarchy — title with its status, then day and focus, then
+  requested minutes, actual minutes when recorded, and intensity — and long titles wrap inside the
+  row. Zero, one and many favorites, real back-navigation, and long-name, status and duration
+  contexts, are owned by the Home and History suites. This changes Home and the shared history
+  row; the historical pictures remain bound to their original trees (EX-13), not to this runtime.
+
+- Combined TASK-013/protected-main TASK-028 tree: `de268781a6fbdcbaba976f54c5097340b07ee49cb98751777e6d935042749d42`
+  preserves corrected TASK-013 runtime `6f681250…` and delivered TASK-028/TASK-012 runtime
+  `ff6001a0…` after merging actual main `dbe1d7c00c18366dc7340d05457957356f730e22` into
+  corrected local Task013 source `a226dbf`. The two complete audit and journal histories are
+  retained. Only their shared documentation conflicted; Task013's owned source and test bytes
+  are unchanged. This is an integration binding, not new native acceptance, a picture rebind,
+  deployed proof or owner UAT. Original full task/project checks and fresh criterion evidence
+  remain required on the new committed candidate.
+
+- Combined TASK-039/protected TASK-028 and TASK-013 main tree:
+  `971bf55f8ce46dd900b2c413120a605a7bbe1572b6ccbf5d1a06b50d5fe239cb` preserves the
+  frozen TASK-039 source `eeb5538` plus actual protected main `d52f5834`. Only shared audit and
+  journal text conflicted; both full histories are preserved and no product/test behavior was
+  rewritten. This is a local source integration binding, not native verification, an applied
+  PostgreSQL migration, deployed proof, a new capture or owner UAT. Full original native checks,
+  fresh criterion evidence and independent exact-head review remain required before delivery.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
@@ -511,3 +570,5 @@ The same original recovery passed Typecheck, Lint and design-system Lint, then s
 Actual receipts: `TASK027_POLLING_REPAIR_PHONE_VERIFICATION_COMPLETE_ACTUAL_ACK_2026-10-16.json`, `TASK027_POLLING_REPAIR_ORIGINAL_PUBLIC_RECOVERY_COMMAND_2_2026-10-16.json`, and `TASK027_POLLING_REPAIR_ORIGINAL_PUBLIC_RECOVERY_COMMAND_6_RAW_OUTCOME_2026-10-16.json` in the existing recovery evidence directory.
 
 - TASK-004 later CI39588516964 retained the same U04 misses despite the motion experiment. CI screenshot shows the Vercel feedback overlay overlapping the centered action. The unproven motion correction and its structural/motion-test changes were withdrawn; current runtime is restored62161e8d, with vendor unchanged. Test-only documented x-vercel-skip-toolbar header excludes preview tooling without changing any hit samples/assertions or authentication/protections. Prior failed proof is retained; new exact-head protected CI remains required.
+
+- Combined protected-main Task012/Task028 tree: `ff6001a07e183f00fa45666fc7b02ba54b3e8145173ba231bba9b60871799baf` after normal integration of actual main `785dd64`. Both complete histories above are retained; no screenshot identity is rebound. All original task/project checks, fresh criterion receipt and independent exact-head review remain required.

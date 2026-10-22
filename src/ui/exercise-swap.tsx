@@ -1,18 +1,17 @@
 /**
- * EXE-06 — swapping a movement while the workout is running.
+ * Swapping a movement — in Review, before the workout starts (U37).
  *
- * Two components, and the split is the one every seam in this shell uses: the
- * control asks, the shell writes. `ExerciseSwapControls` sits on a movement's
- * card and does nothing but say which slot the user means;
- * `SwapDialog` renders the alternatives the shell fetched and reports the one
- * that was picked. Neither knows where the database is, and neither can — the
- * only import either has from the state layer is the seam itself.
+ * Two components, and the split is the one every seam in this app uses: the
+ * control asks, the provider changes. `ExerciseSwapControls` sits on a
+ * movement's row and does nothing but say which slot the user means;
+ * `SwapDialog` renders the alternatives the provider fetched and reports the
+ * one that was picked. Neither knows where the database is, and neither can —
+ * the only import either has from the state layer is the seam itself.
  *
- * The controls draw nothing when the seam is absent. A card rendered outside
- * the workout shell — a preview, a test of a block renderer — has no session to
- * revise, and "no swap on offer" is the honest thing to show rather than a
- * control that would throw on tap (`swap-context.ts` states why this seam is
- * nullable where set logging's is not).
+ * The controls draw nothing when the seam is absent, and the active workout is
+ * deliberately where it is absent: no swap is on offer there, so none is drawn
+ * and none can be tapped (`swap-context.ts` states why this seam is nullable
+ * where set logging's is not).
  *
  * Two accessibility rules are load-bearing here rather than incidental. Every
  * control names the movement it acts on — three cards on a screen means three
@@ -28,7 +27,6 @@ import { Button, EmptyState, RefreshCw, TextAction } from '../design-system/inde
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
-import type { ExerciseProgress } from '../state/workout-progress'
 import { ErrorView, LoadingView } from './view-state'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -57,7 +55,10 @@ const EQUIPMENT_STYLE: CSSProperties = {
 }
 
 export interface ExerciseSwapControlsProps {
-  exercise: ExerciseProgress
+  /** The slot the controls act on, as the provider names it. */
+  slot: string
+  /** The catalog id of the movement the slot currently prescribes. */
+  exerciseId: string
 }
 
 /**
@@ -70,13 +71,13 @@ export interface ExerciseSwapControlsProps {
  * write is in flight they are disabled and busy rather than animated — the
  * dialog's loader is the one loop on screen.
  */
-export function ExerciseSwapControls({ exercise }: ExerciseSwapControlsProps) {
+export function ExerciseSwapControls({ slot, exerciseId }: ExerciseSwapControlsProps) {
   const swap = useExerciseSwap()
   if (swap === null) return null
 
-  const name = exerciseName(exercise.prescription.exercise_id)
-  const previous = swap.undoTarget(exercise.exerciseId)
-  const busy = swap.isBusy(exercise.exerciseId)
+  const name = exerciseName(exerciseId)
+  const previous = swap.undoTarget(slot)
+  const busy = swap.isBusy(slot)
 
   return (
     <div className="clr-row" style={ACTIONS_STYLE}>
@@ -84,7 +85,7 @@ export function ExerciseSwapControls({ exercise }: ExerciseSwapControlsProps) {
         aria-label={`Swap ${name}`}
         aria-busy={busy || undefined}
         disabled={busy}
-        onClick={() => swap.open(exercise.exerciseId)}
+        onClick={() => swap.open(slot)}
       >
         <RefreshCw size={16} />
         Swap
@@ -95,7 +96,7 @@ export function ExerciseSwapControls({ exercise }: ExerciseSwapControlsProps) {
           aria-label={`Undo swap — back to ${exerciseName(previous)}`}
           aria-busy={busy || undefined}
           disabled={busy}
-          onClick={() => swap.undo(exercise.exerciseId)}
+          onClick={() => swap.undo(slot)}
         >
           Undo swap
         </TextAction>

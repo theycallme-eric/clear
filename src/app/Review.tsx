@@ -83,11 +83,13 @@ import {
 } from '../state/load-suggestions'
 import { useQueryClient } from '../state/query'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
+import { ReviewSwapProvider } from '../state/swap-provider'
 import { useProfileQuery } from '../state/user-queries'
 import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queries'
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { ExerciseSwapControls } from '../ui/exercise-swap'
 import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import {
   LoadSuggestionButton,
@@ -138,6 +140,14 @@ export function Review({
   const { sessions } = useWorkoutClients()
   const queryCache = useQueryClient()
 
+  // U37: the workout as the user has settled it, swaps included. It starts as
+  // what generation composed and starts over when a new composition arrives;
+  // everything below — the briefing, the suggestions and what Start persists —
+  // reads this rather than the prop.
+  const [held, setHeld] = useState(() => ({ source: acceptance, composition: acceptance }))
+  const composition = held.source === acceptance ? held.composition : acceptance
+  if (held.source !== acceptance) setHeld({ source: acceptance, composition: acceptance })
+
   // The profile's unit, for an `absolute` load. Null while the query is
   // settling and null when it failed: `reviewBriefing` states such a load
   // without a unit rather than in one guessed from a default, so a slow
@@ -157,7 +167,7 @@ export function Review({
   const suggestions: LoadSuggestions =
     anchorsState.status === 'ready' && evidenceState.status === 'ready'
       ? reviewLoadSuggestions({
-          acceptance,
+          acceptance: composition,
           anchors: anchorsState.data,
           evidence: evidenceState.data,
           weightUnit,
@@ -177,7 +187,7 @@ export function Review({
   const [overrides, setOverrides] = useState<LoadOverrides>(() => new Map())
   // Display and persist the same supported rep targets. Always derive from the
   // original composition so re-rendering/retrying never stacks the increase.
-  const personalizedAcceptance = applyLoadOverrides(acceptance, NO_OVERRIDES, suggestions)
+  const personalizedAcceptance = applyLoadOverrides(composition, NO_OVERRIDES, suggestions)
   const briefing = reviewBriefing(personalizedAcceptance, weightUnit)
   const [explaining, setExplaining] = useState<string | null>(null)
   const explained = explaining === null ? undefined : suggestions.get(explaining)
@@ -189,6 +199,16 @@ export function Review({
       else next.set(key, override)
       return next
     })
+  }
+
+  /**
+   * A swapped slot keeps its sets, target and rest but not its load override:
+   * that was a weight for the movement that is no longer there.
+   */
+  function swapped(next: SessionAcceptance, site: string) {
+    setHeld({ source: acceptance, composition: next })
+    setOverride(site, null)
+    if (explaining === site) setExplaining(null)
   }
 
   const [starting, setStarting] = useState(false)
@@ -280,6 +300,17 @@ export function Review({
           </PhoneFooter>
         }
       >
+      {/* U37: the one place a movement is swapped. Each row's control asks;
+          the provider reads alternatives under the original constraints and
+          hands back the revised composition. Its dialog sits beside the
+          stack, with this screen's other dialogs. */}
+      <ReviewSwapProvider
+        userId={userId}
+        original={acceptance}
+        composition={composition}
+        onSwapped={swapped}
+        locked={starting}
+      >
       <div
         className="clr-stack"
         style={{ display: 'flex', flexDirection: 'column' }}
@@ -318,6 +349,7 @@ export function Review({
           />
         ))}
       </div>
+      </ReviewSwapProvider>
 
       {explained !== undefined && (
         <LoadSuggestionDialog
@@ -650,6 +682,7 @@ function ReviewExerciseRow({
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}
+      <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} />
     </div>
   )
 }

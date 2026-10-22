@@ -1,5 +1,11 @@
 /**
- * EXE-06 — the mid-workout swap, as arithmetic over rows.
+ * The swap, as arithmetic — over rows (EXE-06) and over a composition (U37).
+ *
+ * Since U37 a swap is offered only in Review, where the workout is still the
+ * acceptance payload; the composition functions at the end of this file are
+ * what Review's provider uses, and they apply the same `swapOptions`. The row
+ * functions below describe the `swap_session_exercise` lineage the database
+ * keeps; no screen offers a mid-workout swap any more.
  *
  * The rack is taken at minute 12. The requirement's answer is not a new
  * mechanism: it is REV-02's lineage — append a revision carrying the same
@@ -42,8 +48,10 @@
  */
 import type { Candidate, SectionCandidates, SectionType } from '../data/candidates'
 import type { SwapResult } from '../data/sessions'
+import { prescriptionSiteKey } from './load-suggestions'
 import type {
   Prescription,
+  SessionAcceptance,
   SessionSnapshot,
   WorkoutExerciseRow,
 } from './schemas'
@@ -78,7 +86,7 @@ export interface SwapOption {
 export function swapOptions(
   sections: readonly SectionCandidates[],
   sectionType: SectionType,
-  outgoing: WorkoutExerciseRow,
+  outgoing: Pick<WorkoutExerciseRow, 'equipment_used'>,
   inUse: ReadonlySet<string>,
 ): readonly SwapOption[] {
   const section = sections.find((entry) => entry.section === sectionType)
@@ -315,5 +323,103 @@ export function applySwap(snapshot: SessionSnapshot, revision: SwapResult): Sess
         }
       }),
     })),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Review: the composition before it is a session (U37)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// Swaps happen in Review and nowhere else. There, nothing has been written:
+// the workout is the acceptance payload in memory, so a swap is a change to
+// that payload rather than a revision row, and Start persists whatever the
+// user settled on. The constraints are the same ones — the same candidate
+// read, the same section, the same "not already in the workout" narrowing and
+// the same equipment preference — because `swapOptions` is the one place they
+// are applied. A slot is named by `prescriptionSiteKey`, the position OVR-01c's
+// load suggestions already key a prescription by.
+
+/** A prescription in the composition, and the section it is performed in. */
+export interface CompositionSlot {
+  readonly prescription: Prescription
+  readonly sectionType: SectionType
+}
+
+/** The prescription at this site, or null for a key the composition lacks. */
+export function compositionSlot(
+  acceptance: SessionAcceptance,
+  site: string,
+): CompositionSlot | null {
+  const sections = acceptance.workout.sections
+  for (const [sectionIndex, section] of sections.entries()) {
+    for (const [blockIndex, block] of section.blocks.entries()) {
+      for (const [exerciseIndex, prescription] of block.exercises.entries()) {
+        if (prescriptionSiteKey(sectionIndex, blockIndex, exerciseIndex) === site) {
+          return { prescription, sectionType: section.section_type }
+        }
+      }
+    }
+  }
+  return null
+}
+
+/** Every exercise the composition prescribes. */
+export function exercisesInComposition(acceptance: SessionAcceptance): ReadonlySet<string> {
+  const used = new Set<string>()
+  for (const section of acceptance.workout.sections) {
+    for (const block of section.blocks) {
+      for (const prescription of block.exercises) used.add(prescription.exercise_id)
+    }
+  }
+  return used
+}
+
+/** The alternatives for one site, under the same constraints as any swap. */
+export function compositionSwapOptions(
+  sections: readonly SectionCandidates[],
+  acceptance: SessionAcceptance,
+  site: string,
+): readonly SwapOption[] {
+  const slot = compositionSlot(acceptance, site)
+  if (slot === null) return []
+  return swapOptions(
+    sections,
+    slot.sectionType,
+    { equipment_used: slot.prescription.equipment },
+    exercisesInComposition(acceptance),
+  )
+}
+
+/**
+ * The composition with one site performed as `exercise`. As with
+ * `prescriptionFor`, only the movement and its equipment change: sets, the
+ * target, rest, tempo and load guidance are the slot's, not the movement's.
+ * A key the composition lacks answers the composition unchanged.
+ */
+export function swapInComposition(
+  acceptance: SessionAcceptance,
+  site: string,
+  exercise: { readonly exerciseId: string; readonly equipment: string },
+): SessionAcceptance {
+  return {
+    ...acceptance,
+    workout: {
+      ...acceptance.workout,
+      sections: acceptance.workout.sections.map((section, sectionIndex) => ({
+        ...section,
+        blocks: section.blocks.map((block, blockIndex) => ({
+          ...block,
+          exercises: block.exercises.map((prescription, exerciseIndex) =>
+            prescriptionSiteKey(sectionIndex, blockIndex, exerciseIndex) === site
+              ? {
+                  ...prescription,
+                  exercise_id: exercise.exerciseId,
+                  equipment: exercise.equipment,
+                }
+              : prescription,
+          ),
+        })),
+      })),
+    },
   }
 }

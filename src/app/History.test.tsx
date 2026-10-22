@@ -192,8 +192,87 @@ describe('History route', () => {
 
     const list = await historyList()
     const kept = [...list.querySelectorAll('.clr-nowrap')].map((node) => node.textContent)
-    expect(kept).toContainEqual(expect.stringMatching(/^\d+ min$/))
+    expect(kept).toContainEqual(expect.stringMatching(/^Requested \d+ min$/))
+    expect(kept).toContainEqual(expect.stringMatching(/^Actual \d+ min$/))
     expect(kept).toContainEqual(expect.stringMatching(/^Intensity \d+\/10$/))
+  })
+
+  it('U44: every row groups title and status, then context, then metrics, whatever its status', async () => {
+    const LONG =
+      'Posterior-chain strength with unilateral accessories and a loaded-carry finisher'
+    const day = '2026-09-24'
+    const rows = [
+      makeSessionRow({
+        id: 'b0000011-0000-4000-8000-000000000000',
+        date: day,
+        title: LONG,
+        session_focus: 'lower_body',
+        requested_duration_mins: 45,
+        actual_duration_mins: 38,
+        effective_intensity: 6,
+        created_at: `${day}T15:00:00.000Z`,
+        completed_at: `${day}T15:40:00.000Z`,
+      }),
+      makeSessionRow({
+        id: 'b0000012-0000-4000-8000-000000000000',
+        date: day,
+        title: 'Partial upper',
+        session_focus: 'upper_body',
+        requested_duration_mins: 30,
+        actual_duration_mins: null,
+        created_at: `${day}T16:00:00.000Z`,
+        started_at: `${day}T16:05:00.000Z`,
+        completed_at: null,
+        abandoned_at: `${day}T16:15:00.000Z`,
+      }),
+      makeSessionRow({
+        id: 'b0000013-0000-4000-8000-000000000000',
+        date: day,
+        title: 'Never begun',
+        requested_duration_mins: 20,
+        actual_duration_mins: null,
+        created_at: `${day}T17:00:00.000Z`,
+        started_at: null,
+        completed_at: null,
+      }),
+    ]
+    renderHistory({}, rows)
+
+    const list = await historyList()
+    const rowOf = (title: string) =>
+      within(list).getByRole('heading', { level: 2, name: title }).closest('li') as HTMLElement
+
+    const expectations = [
+      { title: LONG, status: 'Completed', metrics: ['Requested 45 min', 'Actual 38 min', 'Intensity 6/10'] },
+      { title: 'Partial upper', status: 'Partial', metrics: ['Requested 30 min', 'Intensity 7/10'] },
+      { title: 'Never begun', status: 'Not started', metrics: ['Requested 20 min', 'Intensity 7/10'] },
+    ]
+
+    for (const { title, status, metrics } of expectations) {
+      const row = rowOf(title)
+      const parts = [...row.querySelectorAll('[data-part]')].map((node) =>
+        node.getAttribute('data-part'),
+      )
+      // The same order in every row: head (title + status), context, metrics.
+      expect(parts).toEqual(['head', 'status', 'context', 'metrics'])
+
+      const head = row.querySelector('[data-part="head"]') as HTMLElement
+      expect(within(head).getByRole('heading', { name: title })).toBeInTheDocument()
+      expect(head.querySelector('[data-part="status"]')).toHaveTextContent(status)
+      // The status is a word with its glyph, never the glyph alone.
+      expect(head.querySelector('[data-part="status"] svg')).not.toBeNull()
+
+      expect(row.querySelector('[data-part="context"]')).toHaveTextContent(/^Thu 24 Sep 2026 · /)
+      const shown = [...row.querySelectorAll('[data-part="metrics"] .clr-nowrap')].map(
+        (node) => node.textContent,
+      )
+      expect(shown).toEqual(metrics)
+    }
+
+    // A long name wraps inside its row rather than pushing the status away.
+    const longTitle = within(rowOf(LONG)).getByRole('heading', { name: LONG })
+    expect(longTitle.style.overflowWrap).toBe('anywhere')
+    expect(longTitle.style.minWidth).toBe('0px')
   })
 
   it('REQ-010: lists a legacy session by its label and facts, never its generated overview', async () => {
