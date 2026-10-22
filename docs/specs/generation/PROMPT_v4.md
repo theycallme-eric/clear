@@ -1,7 +1,7 @@
-# CLEAR composition prompt — contract 4.1
+# CLEAR composition prompt — contract 4.2
 
-> **Prompt version:** `5.2.1`\
-> **Contract version:** `4.1.0`  
+> **Prompt version:** `5.3.0`\
+> **Contract version:** `4.2.0`\
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
 > version 5 because removing the library dump and moving eligibility into code is a major prompt change.  
@@ -21,7 +21,12 @@
 > **5.2.1 (REQ-009, U27):** the athlete requests one 1–10 intensity for every goal; the existing
 > per-goal ranges (strength 3–10, hypertrophy 3–9, conditioning 4–10, balanced 1–10,
 > active recovery 1–3; `src/state/intensity.ts`) are applied downstream as `effective_intensity`, and the
-> rep guidance names that value. No rule, output field, progression policy or contract-version change.
+> rep guidance names that value. No rule, output field, progression policy or contract-version change.\
+> **5.3.0 (REQ-018, E03):** the `LADDER TIMING` rules and the block key `ladder_timing`
+> (`scheduled_starts`, free-paced `for_time`, `capped_window`), requested only now that the key
+> validates (TASK-038) and persists (TASK-039). Round count, interval and cap are the model's choice
+> per session; no value is standard. A composition rule was added, so the prompt is a minor bump; the
+> generated output gained a key, so the contract moves to `4.2.0` (`GENERATION_CONTRACT.md` §5.1, §10).
 
 This is the composition policy for `GEN-02b`. It carries forward the useful coaching judgment
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
@@ -88,6 +93,15 @@ STRUCTURES
 - amrap: two to four movements per round.
 - for_time: fixed work with a timer cap.
 Timed blocks enable a clock; never timer_type=none.
+
+LADDER TIMING
+Rep pattern and timing are separate. ladder_timing is null unless a timed block has a ladder
+rep_scheme. Choose rounds, interval or cap per session; none is standard. rounds = each
+target_sequence length; block rounds null or equal. Fixed companions stay fixed, every round.
+- scheduled_starts (emom|for_time): round k starts at (k − 1) × interval_seconds;
+  timer_seconds = rounds × interval_seconds; round_rest_seconds null.
+- for_time (for_time): free-paced; interval_seconds and cap_seconds null.
+- capped_window (for_time|amrap): cap_seconds bounds the whole ladder and equals timer_seconds.
 
 REP AND SET GUIDANCE
 - Standard reps by effective_intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;

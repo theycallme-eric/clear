@@ -32,7 +32,7 @@
 import { createElement, type ReactElement } from 'react'
 
 import type { Enums } from '../data/database.types'
-import { isLadderScheme } from '../state/ladder'
+import { explicitLadderTiming, isLadderScheme } from '../state/ladder'
 import type { BlockProgress } from '../state/workout-progress'
 import { AmrapBlock } from './amrap-block'
 import { CircuitBlock } from './circuit-block'
@@ -79,9 +79,18 @@ export const BLOCK_RENDERERS: Readonly<Record<Enums<'structure_type'>, BlockRend
  * accessory pyramid — but those structures have their own renderers landing in
  * EXE-03 and EXE-04c, and each of them composes `LadderRungs` when it does.
  * Claiming them here would be this ticket rendering another ticket's structure.
+ *
+ * REQ-018 widens the override by exactly one fact: a ladder with an explicit
+ * `ladder_timing` is a ladder whatever clock it runs under. A scheduled ladder
+ * inside an `emom` block, or a capped window inside an `amrap`, has rungs to
+ * perform rather than a minute grid or a score, so it goes to `LadderBlock`
+ * too. Legacy blocks — no timing — dispatch exactly as before.
  */
 export function blockRendererFor(block: BlockProgress): BlockRenderer {
-  if (block.structureType === 'for_time' && isLadderScheme(block.repScheme)) {
+  if (
+    isLadderScheme(block.repScheme) &&
+    (block.structureType === 'for_time' || explicitLadderTiming(block) !== null)
+  ) {
     return LadderBlock
   }
   return BLOCK_RENDERERS[block.structureType]

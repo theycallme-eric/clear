@@ -142,8 +142,15 @@ export const anchorRelationshipSchema = z.enum(ANCHOR_RELATIONSHIPS)
 // disagree about the clock and then persist the half of it the database can
 // hold.
 
-/** The prescription contract version this file parses. */
-export const CONTRACT_VERSION = '4.1.0'
+/**
+ * The prescription contract version this file parses. 4.2.0 is REQ-018: blocks
+ * may carry `ladder_timing`, and generation asks for it (GENERATION_CONTRACT
+ * §10). Additive, so a 4.1.0 payload — no key — is still a 4.2.0 payload.
+ */
+export const CONTRACT_VERSION = '4.2.0'
+
+/** The contract before `ladder_timing`; its sessions and favorites stay readable. */
+export const LEGACY_CONTRACT_VERSION = '4.1.0'
 
 /**
  * Every field of a prescription except the target, which is discriminated
@@ -230,11 +237,11 @@ const TIMED_STRUCTURES = new Set(['emom', 'amrap', 'for_time'])
 // round count are fields, never constants: nothing here knows five rounds or
 // three minutes.
 //
-// Additive and inert. A block without the key, or with `null`, is a legacy
-// block and keeps its existing behaviour. The edge validator refuses the key in
-// generated output until persistence (TASK-039) and the integrated contract
-// (TASK-032) can carry it — see `validateComposition` and
-// GENERATION_CONTRACT §5.1 for the old/new compatibility matrix.
+// Additive. A block without the key, or with `null`, is a legacy block and
+// keeps its existing behaviour. Persistence (TASK-039) carries it, and since
+// contract 4.2.0 (TASK-032) generation asks for it and duration, dispatch and
+// `state/ladder.ts` read it — GENERATION_CONTRACT §5.1 has the old/new
+// compatibility matrix.
 
 /** How a ladder's rounds are timed. */
 export const LADDER_TIMING_MODES = ['scheduled_starts', 'for_time', 'capped_window'] as const
@@ -1263,6 +1270,9 @@ export const workoutSnapshotSchema = sessionAcceptanceSchema.omit({ date: true }
  * behaviour that emerges from a parse error.
  */
 export const SNAPSHOT_SCHEMAS: Readonly<Record<string, typeof workoutSnapshotSchema>> = {
+  // 4.2.0 only added an optional, nullable block key, so the one schema reads
+  // both: a 4.1.0 snapshot has no `ladder_timing` and is a legacy block.
+  [LEGACY_CONTRACT_VERSION]: workoutSnapshotSchema,
   [CONTRACT_VERSION]: workoutSnapshotSchema,
 }
 

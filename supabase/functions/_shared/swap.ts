@@ -65,6 +65,7 @@ import {
   userConstraintRowSchema,
   type BlockSwapResult,
   type GenerationOutput,
+  type LadderTiming,
   type Prescription,
   type SessionSnapshot,
   type SessionTransition,
@@ -297,6 +298,7 @@ export function blockContract(block: WorkoutBlockRow): string {
     `timer_seconds: ${block.timer_seconds ?? 'null'}`,
     `round_rest_seconds: ${block.round_rest_seconds ?? 'null'}`,
     `rep_scheme: ${block.rep_scheme}`,
+    `ladder_timing: ${JSON.stringify(block.ladder_timing ?? null)}`,
   ].join(' | ')
 }
 
@@ -331,7 +333,7 @@ export function swapDirective(scope: SwapScope): string {
     '',
     'RETURN SHAPE',
     `Return the contract object with exactly one section — ${section.section_type} — holding`,
-    'exactly one block, whose structure, rounds, timer and rest are the values above,',
+    'exactly one block, whose structure, rounds, timer, rest and ladder_timing are the values above,',
     `unchanged, and holding exactly ${outgoing.length} ` +
       `exercise${outgoing.length === 1 ? '' : 's'}: the replacement` +
       `${unit ? 's, in the order they are performed' : ''}.`,
@@ -374,6 +376,18 @@ const BLOCK_SHAPE = [
   'round_rest_seconds',
   'rep_scheme',
 ] as const
+
+/** Timing is block metadata, not a replacement prescription. Absent/null are legacy. */
+function sameLadderTiming(
+  original: LadderTiming | null | undefined,
+  replacement: LadderTiming | null | undefined,
+): boolean {
+  const before = original ?? null
+  const after = replacement ?? null
+  if (before === null || after === null) return before === after
+  return before.mode === after.mode && before.rounds === after.rounds &&
+    before.interval_seconds === after.interval_seconds && before.cap_seconds === after.cap_seconds
+}
 
 /**
  * REV-02's own checks, beside GEN-02c's: one section, one block, that block's
@@ -424,6 +438,14 @@ export function checkSwapShape(
           `timer are not what is being replaced; this returned ${String(block[field])}`,
       })
     }
+  }
+
+  if (!sameLadderTiming(scope.block.ladder_timing, block.ladder_timing)) {
+    violations.push({
+      path: 'sections[0].blocks[0].ladder_timing',
+      message: 'ladder_timing must preserve the original mode, rounds, interval_seconds and ' +
+        'cap_seconds; a swap does not replace the block timing',
+    })
   }
 
   if (block.exercises.length !== scope.outgoing.length) {

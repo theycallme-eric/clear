@@ -20,7 +20,9 @@ import { describe, expect, it } from 'vitest'
 
 import { Constants, type Tables } from '../data/database.types'
 import { ErrorCode, isErr, isOk } from './errors'
+import { restore } from './favorites'
 import { isLadderScheme } from './ladder'
+import { savedWorkoutFixture } from '../test/workout-double'
 import {
   makeLadderTimingBlock,
   makeSessionAcceptance,
@@ -31,6 +33,7 @@ import {
   LADDER_TIMING_REP_SCHEMES,
   blockResultRowSchema,
   CONTRACT_VERSION,
+  LEGACY_CONTRACT_VERSION,
   errorResponseSchema,
   generationOutputSchema,
   generationRequestSchema,
@@ -43,6 +46,7 @@ import {
   schemaIssues,
   userConstraintRowSchema,
   workoutBlockSchema,
+  workoutSnapshotSchema,
   type GenerationOutput,
   type Location,
   type Profile,
@@ -186,8 +190,34 @@ describe('a contract 4.1.0 sample round-trips (CORE-03)', () => {
     expect(parsed.success && parsed.data).toEqual(everyPrescriptionShape)
   })
 
-  it('names the version it parses', () => {
-    expect(CONTRACT_VERSION).toBe('4.1.0')
+  it('names the version it parses: 4.2.0, which a 4.1.0 sample still is', () => {
+    // REQ-018 added only the optional `ladder_timing` key, so the 4.1.0 samples
+    // above parse unchanged under the 4.2.0 schema.
+    expect(CONTRACT_VERSION).toBe('4.2.0')
+    expect(LEGACY_CONTRACT_VERSION).toBe('4.1.0')
+  })
+
+  it.each([LEGACY_CONTRACT_VERSION, CONTRACT_VERSION])('restores a favorite stamped %s without losing its workout', (version) => {
+    const row = savedWorkoutFixture({ snapshot_contract_version: version })
+    const snapshot = workoutSnapshotSchema.parse(row.workout_snapshot)
+    snapshot.contract_version = version
+    if (version === CONTRACT_VERSION) {
+      snapshot.workout.sections[0].blocks[0] = makeLadderTimingBlock('scheduled_starts', {
+        rounds: 3, intervalSeconds: 90,
+      })
+    }
+    row.workout_snapshot = snapshot
+    const restored = restore(row, '2026-10-22')
+    expect(restored.ok).toBe(true)
+    if (!restored.ok) throw new Error(`the supported favorite did not restore: ${restored.error.code}`)
+    expect(restored.value.workout).toEqual(snapshot.workout)
+    expect(restored.value.contract_version).toBe(version)
+    expect(restored.value.date).toBe('2026-10-22')
+    if (version === CONTRACT_VERSION) {
+      expect(restored.value.workout.sections[0].blocks[0].ladder_timing).toEqual({
+        mode: 'scheduled_starts', rounds: 3, interval_seconds: 90, cap_seconds: null,
+      })
+    }
   })
 })
 

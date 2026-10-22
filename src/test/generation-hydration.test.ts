@@ -17,11 +17,7 @@ import {
   type HydratedWorkout,
 } from '../../supabase/functions/_shared/hydrate.ts'
 import { PROMPT_VERSION } from '../../supabase/functions/_shared/prompt.ts'
-import {
-  LADDER_TIMING_GENERATION_ACTIVE,
-  validateComposition,
-  type Validated,
-} from '../../supabase/functions/_shared/validate.ts'
+import { validateComposition, type Validated } from '../../supabase/functions/_shared/validate.ts'
 import { ErrorCode, createError, err, ok } from '../state/errors'
 import { createLogger, type LogSink } from '../state/logger'
 import {
@@ -688,18 +684,14 @@ const TIMING_CASES = [
 /**
  * A verdict whose accessory section also holds `blocks`.
  *
- * The edge gate keeps generated output on the legacy shape until TASK-032, so
- * no timed block can come out of §6 yet. What hydration will be handed once
- * the gate opens is that verdict with a boundary-valid block in it, so this is
- * the legacy verdict with the block added and the result re-read through
- * `generationOutputSchema` — TASK-038's contract, unmodified.
+ * Contract 4.2.0 (TASK-032) enabled the edge gate TASK-039 was written behind,
+ * so the timed block now comes out of §6 itself: the composed workout with the
+ * block added, run through `validateComposition` like any generated output.
  */
 function validatedWith(...blocks: WorkoutBlock[]): Validated {
-  const verdict = validated()
-  const workout = structuredClone(verdict.workout)
-  workout.sections[2].blocks.push(...structuredClone(blocks))
-
-  return { ...verdict, workout: generationOutputSchema.parse(workout) }
+  return validated((workout) => {
+    workout.sections[2].blocks.push(...structuredClone(blocks))
+  })
 }
 
 const LADDER_IDS = ['glute-bridge', 'walking-lunges'] as const
@@ -712,10 +704,9 @@ function hydratedWith(...blocks: WorkoutBlock[]): HydratedWorkout {
 }
 
 describe('explicit ladder timing survives hydration (REQ-018)', () => {
-  it('is hydrated from a verdict the edge gate does not yet produce', () => {
-    // If this flips, TASK-032 has opened the gate and these fixtures can come
-    // out of §6 directly instead of being added beside it.
-    expect(LADDER_TIMING_GENERATION_ACTIVE).toBe(false)
+  it.each(TIMING_CASES)('is hydrated from a verdict §6 itself produced (%s, %o)', (mode, options) => {
+    const block = makeCatalogLadderTimingBlock(mode, options)
+    expect(validatedWith(block).workout.sections[2].blocks[1].ladder_timing).toEqual(block.ladder_timing)
   })
 
   it.each(TIMING_CASES)('keeps a %s timing exactly as composed (%o)', (mode, options) => {

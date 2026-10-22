@@ -1,5 +1,5 @@
 /**
- * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.2.1`.
+ * GEN-02b — the composition prompt, assembled. `PROMPT_v4.md` version `5.3.0`.
  *
  * This module is pure: candidates and an effective request in, two strings and
  * a measurement out. It opens no connection, reads no environment, and calls no
@@ -38,7 +38,12 @@ import {
 } from '../../../src/data/candidates.ts'
 import type { UserConstraint } from '../../../src/data/constraints.ts'
 import { effectiveIntensity, INTENSITY_BY_GOAL } from '../../../src/state/intensity.ts'
-import { ANCHOR_RELATIONSHIPS, CONTRACT_VERSION, SESSION_FUNCTIONS } from '../../../src/state/schemas.ts'
+import {
+  ANCHOR_RELATIONSHIPS,
+  CONTRACT_VERSION,
+  LADDER_TIMING_MODES,
+  SESSION_FUNCTIONS,
+} from '../../../src/state/schemas.ts'
 import {
   DELOAD_CONDITIONING_INTENSITY_MAX,
   DELOAD_MIN_SETS,
@@ -70,8 +75,12 @@ import {
  * each goal's range is applied downstream by `effectiveIntensity`, and the rep
  * guidance names effective_intensity as the value it scales by.
  * A patch: no rule, output field or progression policy was added or moved.
+ * 5.3.0 is REQ-018 (E03): the LADDER TIMING rules and the block's `ladder_timing`
+ * key, requested now that it validates (TASK-038) and persists (TASK-039).
+ * Minor, because a composition rule was added. The output shape gained a key, so
+ * `CONTRACT_VERSION` moves too, to 4.2.0 (GENERATION_CONTRACT §10).
  */
-export const PROMPT_VERSION = '5.2.1'
+export const PROMPT_VERSION = '5.3.0'
 
 export { CONTRACT_VERSION }
 
@@ -250,6 +259,15 @@ STRUCTURES
 - for_time: fixed work with a timer cap.
 Timed blocks enable a clock; never timer_type=none.
 
+LADDER TIMING
+Rep pattern and timing are separate. ladder_timing is null unless a timed block has a ladder
+rep_scheme. Choose rounds, interval or cap per session; none is standard. rounds = each
+target_sequence length; block rounds null or equal. Fixed companions stay fixed, every round.
+- scheduled_starts (emom|for_time): round k starts at (k − 1) × interval_seconds;
+  timer_seconds = rounds × interval_seconds; round_rest_seconds null.
+- for_time (for_time): free-paced; interval_seconds and cap_seconds null.
+- capped_window (for_time|amrap): cap_seconds bounds the whole ladder and equals timer_seconds.
+
 REP AND SET GUIDANCE
 - Standard reps by effective_intensity: 1–2 → 10–15 light; 3–4 → 8–12; 5–7 → 6–10;
   8–10 → 3–6 heavy.
@@ -355,6 +373,7 @@ object; a key with no value is null.
       "round_rest_seconds": "int >= 0 | null — shared rest, counted once per round",
       "rep_scheme": "${alternatives(enums.rep_scheme)}",
       "block_notes": "string | null",
+      "ladder_timing": "null | {mode: ${alternatives(LADDER_TIMING_MODES)}, rounds, interval_seconds, cap_seconds}",
       "exercises": [{
         "exercise_id": "an id from this section's candidate group",
         "equipment": "a value from that candidate's usable_equipment",
