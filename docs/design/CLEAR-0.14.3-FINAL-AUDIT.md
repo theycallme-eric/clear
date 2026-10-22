@@ -22,7 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `971bf55f8ce46dd900b2c413120a605a7bbe1572b6ccbf5d1a06b50d5fe239cb` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013 and TASK-039 changes below) |
+| Runtime source hash of this audit's tree | `ff9d8937341f4155b406837cef014b16f4225150844a4f90f08039153f1de122` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039 and TASK-014 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -396,6 +396,17 @@ trees and this head, from `git diff`:
   rewritten. This is a local source integration binding, not native verification, an applied
   PostgreSQL migration, deployed proof, a new capture or owner UAT. Full original native checks,
   fresh criterion evidence and independent exact-head review remain required before delivery.
+
+- `971bf55f…` to `ff9d8937341f4155b406837cef014b16f4225150844a4f90f08039153f1de122`: TASK-014
+  (REQ-008, JOURNEY-014, U22) gives the shared save-as-favorite control on Summary and Session
+  Detail a quiet Remove from favorites action once saved. It uses the Favorites tab's existing
+  semantics — the same `favorites.remove` hard delete behind the same critical confirmation, now
+  one shared `RemoveFavoriteDialog` that Home also renders — and cancelling changes nothing. On
+  success the favorites cache drops the row and that favorite's progression cache is invalidated;
+  history caches and the session row are not touched. A delete already in flight blocks a second
+  one, and a failed delete is reported in place with the favorite still saved. The Summary and
+  History suites own the cancel, remove, repeated-press, failure and still-in-history cases. The
+  historical pictures remain bound to their original trees (EX-13), not to this runtime.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

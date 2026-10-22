@@ -134,7 +134,6 @@ import {
   useActiveSessionQuery,
   useWorkoutClients,
 } from '../state/workout-queries'
-import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import {
   ActionGroup,
@@ -143,7 +142,11 @@ import {
   PhoneFooter,
   TabBand,
 } from '../ui/composition'
-import { FavoriteList } from '../ui/favorite-list'
+import {
+  FavoriteList,
+  REMOVE_FAVORITE_FAILED,
+  RemoveFavoriteDialog,
+} from '../ui/favorite-list'
 import { HeadingSection } from '../ui/Heading'
 import { HistoryList } from '../ui/history-list'
 import { useArrivalStagger } from '../ui/motion'
@@ -788,7 +791,8 @@ function RecentWorkouts({
  *
  * **Removing asks first.** Unfavoriting deletes the progression the favorite
  * existed to accumulate (favorites-v2 §"Removing from Favorites"), which is
- * exactly the case `ConfirmDialog critical` is for.
+ * exactly the case `ConfirmDialog critical` is for — the shared
+ * `RemoveFavoriteDialog`, so Summary and Session Detail ask the same question.
  */
 function FavoriteWorkouts() {
   const query = useFavoritesQuery()
@@ -838,7 +842,7 @@ function FavoriteWorkouts() {
     setRemovingId(null)
 
     if (isErr(removed)) {
-      setFailure('That favorite wasn’t removed. Try again.')
+      setFailure(REMOVE_FAVORITE_FAILED)
       return
     }
 
@@ -877,20 +881,13 @@ function FavoriteWorkouts() {
       </Card>
 
       {/* An overlay, not content: it stays outside the card it answers for. */}
-      <ConfirmDialog
+      <RemoveFavoriteDialog
         open={confirming !== null}
-        critical
-        title="Remove from favorites?"
-        confirmLabel="Remove"
-        cancelLabel="Keep it"
         onConfirm={() => {
           if (confirming !== null) void remove(confirming)
         }}
         onCancel={() => setConfirming(null)}
-      >
-        Tracked data including completion history and personal bests will be
-        lost. The workout itself stays in your history.
-      </ConfirmDialog>
+      />
     </>
   )
 }

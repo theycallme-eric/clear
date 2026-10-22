@@ -31,9 +31,18 @@ import {
 import {
   createWorkoutDouble,
   reconstructionFixture,
+  savedWorkoutFixture,
   type WorkoutDouble,
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
+import {
+  REMOVE_FAVORITE_CANCEL,
+  REMOVE_FAVORITE_CONFIRM,
+  REMOVE_FAVORITE_FAILED,
+  REMOVE_FAVORITE_LABEL,
+  REMOVE_FAVORITE_TITLE,
+} from '../ui/favorite-list'
+import { FAVORITES_EMPTY_TITLE } from './Home'
 import { routes } from './router'
 import { renderToStaticMarkup } from 'react-dom/server'
 
@@ -450,5 +459,101 @@ describe('Summary — save as favorite, then Done', () => {
     await user.click(screen.getByRole('button', { name: DONE }))
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(summary.saved).toHaveLength(1)
+  })
+})
+
+describe('Summary — undoing a favorite (U22)', () => {
+  /** A debrief whose favorites client records every delete it is asked for. */
+  async function favorited(options: Parameters<typeof mountSummary>[0] = {}) {
+    const mounted = await debrief(options)
+    const removed: string[] = []
+    const remove = mounted.double.clients.favorites.remove
+    mounted.double.clients.favorites.remove = (savedWorkoutId) => {
+      removed.push(savedWorkoutId)
+      return remove(savedWorkoutId)
+    }
+    return { ...mounted, removed }
+  }
+
+  async function confirmRemove(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent(REMOVE_FAVORITE_TITLE)
+    await user.click(within(dialog).getByRole('button', { name: REMOVE_FAVORITE_CONFIRM }))
+  }
+
+  it('undoes a favorite just saved, behind the Favorites tab’s confirm', async () => {
+    const user = userEvent.setup()
+    const { double, removed, summary } = await favorited()
+
+    await user.click(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL }))
+    await screen.findByText(SAVED_FAVORITE_LABEL)
+    const favoriteId = double.favorites()[0].id
+
+    await confirmRemove(user)
+
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(screen.queryByText(SAVED_FAVORITE_LABEL)).toBeNull()
+    expect(removed).toEqual([favoriteId])
+    expect(double.favorites()).toEqual([])
+    // Same screen, and the workout being debriefed is still the one on it.
+    expect(screen.getByText(`${TITLE}, done.`)).toBeInTheDocument()
+
+    // Done still saves the session, and Home's favorites tab no longer has it.
+    await user.click(screen.getByRole('button', { name: DONE }))
+    expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
+    expect(summary.saved).toHaveLength(1)
+    await user.click(screen.getByRole('tab', { name: 'Favorites' }))
+    expect(await screen.findByText(FAVORITES_EMPTY_TITLE)).toBeInTheDocument()
+  })
+
+  it('removes a favorite saved earlier, and cancelling keeps it', async () => {
+    const user = userEvent.setup()
+    const { double, removed } = await favorited({
+      workout: {
+        favorites: [savedWorkoutFixture({ original_session_id: SESSION_ID, title: TITLE })],
+      },
+    })
+
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: REMOVE_FAVORITE_CANCEL,
+      }),
+    )
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.getByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(removed).toEqual([])
+
+    await confirmRemove(user)
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(removed).toHaveLength(1)
+    expect(double.favorites()).toEqual([])
+  })
+
+  it('sends one delete while one is in flight, and reports a failure in place', async () => {
+    const user = userEvent.setup()
+    let settle: () => void = () => {}
+    const { removed } = await favorited({
+      workout: {
+        favorites: [savedWorkoutFixture({ original_session_id: SESSION_ID, title: TITLE })],
+        favoritesClient: {
+          remove: () =>
+            new Promise((resolve) => {
+              settle = () => resolve(err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)))
+            }),
+        },
+      },
+    })
+
+    await confirmRemove(user)
+    expect(screen.getByRole('button', { name: REMOVE_FAVORITE_LABEL })).toBeDisabled()
+
+    settle()
+    expect(await screen.findByText(REMOVE_FAVORITE_FAILED)).toBeInTheDocument()
+    expect(removed).toHaveLength(1)
+    // Still saved, and the retry is the same action.
+    expect(screen.getByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: REMOVE_FAVORITE_LABEL })).toBeEnabled()
   })
 })
