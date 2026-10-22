@@ -13,7 +13,9 @@ import { installDeterministicCapture } from './fixtures'
 /**
  * REQ-018 / E03 / TASK-033 / JOURNEY-029 — explicitly timed ladders on a phone.
  *
- * The real app on its real `/workout` route at 390×844, behind its real guards.
+ * The real app on its real `/workout` route, behind its real guards. The mobile
+ * criterion stays at 390×844; preview also runs the full journey at each
+ * explicitly configured tablet and desktop viewport.
  * One session carries all three timing modes, each with its own round count and
  * interval or cap — none of them five rounds or three minutes:
  *
@@ -36,13 +38,12 @@ import { installDeterministicCapture } from './fixtures'
  * API and labels its report hermetic. Neither mode skips, and neither relaxes
  * a UI or result assertion.
  *
- * The trusted run first asks the hosted schema whether `workout_blocks` has the
- * `ladder_timing` column (TASK-039's append-only migration). Where it does, the
- * timing makes the full round trip and the stored value is asserted. Where the
- * hosted database has not had that migration applied, the stored timing cannot
- * come back from it, so the same values are added to the real snapshot
- * responses in the browser and the report says exactly that — it is then proof
- * of the screen against real rows, not of timing persistence.
+ * The trusted run requires the hosted `workout_blocks.ladder_timing` column.
+ * A zero-row read fails closed on missing schema, permission or service errors.
+ * Timing passes through the real persistence and snapshot RPCs, and the stored
+ * values must equal the prescribed timing. Trusted responses are never augmented.
+ * The separately labelled hermetic public-preview fixture proves its intercepted
+ * contract only; it provides no hosted timing-persistence proof.
  *
  * What it proves, against the rows the shared progression action wrote: no
  * set-entry form or exertion prompt in any phase; a failed save keeps the
@@ -492,16 +493,23 @@ async function failFirstBlockSave(page: Page) {
   return { failed: () => failed, dispose: () => page.unroute(pattern, handler) }
 }
 
-/** A full-page phone render, attached to the report as evidence. */
-async function phoneRender(page: Page, testInfo: TestInfo, name: string) {
-  await testInfo.attach(name, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' })
+/** A full-page render labelled with its actual project and viewport dimensions. */
+async function projectRender(page: Page, testInfo: TestInfo, name: string) {
+  const viewport = page.viewportSize()
+  if (!viewport) throw new Error('Ladder proof requires an explicit viewport')
+  await testInfo.attach(`${name}-${testInfo.project.name}-${viewport.width}x${viewport.height}`, {
+    body: await page.screenshot({ fullPage: true }), contentType: 'image/png',
+  })
 }
 
 // ── The journey ──────────────────────────────────────────────────────────
 
 test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progress observed, show the cap, and save to Summary', async ({ page, visit, checkA11y, world, modelPosts }, testInfo) => {
   test.setTimeout(240_000)
-  expect(page.viewportSize()).toEqual(MOBILE_VIEWPORT)
+  const configuredViewport = testInfo.project.use.viewport
+  if (!configuredViewport) throw new Error('Ladder proof requires an explicitly configured project viewport')
+  expect(page.viewportSize()).toEqual(configuredViewport)
+  if (testInfo.project.name === 'mobile') expect(page.viewportSize()).toEqual(MOBILE_VIEWPORT)
   const [laddered, companion] = world.catalog
   const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
   const sessionTime = page.getByRole('timer', { name: 'Session time', exact: true })
@@ -536,7 +544,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await expectNoLiveRound(page, 1, FREE_PACED.rounds)
   await expectNoLiveRound(page, 2, CAPPED.rounds)
   await expectHandsOff(page)
-  await phoneRender(page, testInfo, 'ladders-ready-390x844')
+  await projectRender(page, testInfo, 'ladders-ready')
 
   // The one tap: start the schedule. Everything after it is the clock's.
   await page.getByRole('button', { name: 'Start schedule', exact: true }).click()
@@ -576,7 +584,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await expect(round(page, 0, 3)).toHaveAttribute('aria-current', 'step')
   await expect(timer).toContainText('01:05')
   await expect(countdown).toHaveAttribute('data-urgent', 'false')
-  await phoneRender(page, testInfo, 'scheduled-round-3-390x844')
+  await projectRender(page, testInfo, 'scheduled-round-3')
 
   // Refreshed inside round 4: restored from the stored start, not restarted.
   await page.clock.resume()
@@ -620,7 +628,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   await expect(reached.getByRole('radio', { name: `${CAPPED_RUNGS[1]} reps`, exact: true })).toBeChecked()
   await expect(page.getByText(`Reached rung 2 of 3 — ${CAPPED_RUNGS[1]} reps`, { exact: true })).toBeVisible()
   await expectHandsOff(page)
-  await phoneRender(page, testInfo, 'ladders-declared-390x844')
+  await projectRender(page, testInfo, 'ladders-declared')
 
   // Save recovery: the shared forward action fails once, the athlete stays on
   // the section with every declaration intact, and the retry is the same action.
