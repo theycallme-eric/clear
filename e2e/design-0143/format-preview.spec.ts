@@ -78,11 +78,12 @@ const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }
       }
     })
   },
-  recordEvidence: async ({}, use, info) => {
+  recordEvidence: async ({ page }, use, info) => {
     let pending: PendingEvidence | undefined
     await use((evidence) => { pending = evidence })
     // Failed/skipped/aborted cases never become passing committed evidence.
     if (info.status !== 'passed' || pending === undefined) return
+    await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
     await info.attach('task034-format-preview-evidence.json', { body: JSON.stringify(pending.record, null, 2), contentType: 'application/json' })
     // Recording is an explicit one-time operator action, not a side effect of
     // every future trusted E2E run. All browser assertions/captures still run.

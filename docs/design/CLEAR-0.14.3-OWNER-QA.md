@@ -45,7 +45,8 @@ Step 13 is still owner QA, not certified by unit tests or the new task-local cap
 The introduced route has no BEFORE preview at baseline `c31ef865f60811df076db396a40f90517701380e`.
 Its separate real AFTER matrix (four skins × phone/tablet/desktop/short viewport) requires
 canonical-top16-PNG proof under `docs/design/evidence-0143/task034-format-preview/`;
-that matrix now has12 actually passed cases/16 real PNGs on source9fc8c7b.
+the prior12 passed cases/16 real PNGs on source9fc8c7b are preserved as history
+after a required fixture-lint correction changed the driver. Fresh current proof is pending.
 The prior32987806 matrix is preserved outside the product after independent review found
 retained inner-scroll offsets. Every corrected-driver cell records zero actual scroll offsets
 and visible heading; missing/stale evidence still fails the strict gate. Local browser proof

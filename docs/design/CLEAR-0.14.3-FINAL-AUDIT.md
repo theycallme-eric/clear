@@ -492,7 +492,7 @@ trees and this head, from `git diff`:
   inventory at full baseline commit `c31ef865f60811df076db396a40f90517701380e`; it therefore has
   no BEFORE preview picture. That absence is not an AFTER-coverage waiver. Its separate
   introduced-route group is `docs/design/evidence-0143/task034-format-preview/` and its actual
-  canonical-top AFTER proof now has12 actually passed browser cases and16 actual PNGs on
+  The prior canonical-top AFTER proof had12 actually passed browser cases and16 actual PNGs on
   `9fc8c7b1828a8967fb21364845e935f20d69953f`, unchanged runtime
   `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, and capture-driver
   `4386fdf17a11a105b27406687bd87a67d9e400798eeb1edbd877d99244ede16d`.
@@ -500,6 +500,10 @@ trees and this head, from `git diff`:
   evidence commit. Every cell proves actual ScrollRegion top/left0 and visible heading,
   all original accessibility/short-viewport checks, and zero generation requests or writes.
   Prior32987806 real but noncanonical-scroll captures remain outside this product as history.
+  Native lint then rejected the artifact fixture's empty destructuring. The bounded fixture
+  correction retains every rule and additionally checks final Settings before recording;
+  driver bytes changed, so the9fc matrix is now preserved as history outside the product.
+  Fresh corrected-driver captures remain mandatory and are pending; old proof is not relabelled.
   `src/app/FormatPreview.test.tsx` proves no client call or `fetch` across Settings → preview →
   Back in every skin; historical pictures and their three aggregate rows remain unchanged.
 
@@ -711,7 +715,7 @@ and owner QA outcome. Local proof, healthy CI and task counts do not fill those 
 | EX-12 | The polite toast variant is not raised by a real route | TASK-026 | proved through Settings' polite "Saved" status and `src/ui/toast-host.test.tsx` |
 | EX-13 | Pictures predate this head's runtime source (the Home Settings `.clr-hit` target) and are not rebound | all groups | the deterministic browser lane re-asserts on this head; deployed pictures are owner QA |
 | EX-14 | Exact deployed proof and production identity are not yet recorded for this candidate | this task | reported open above; never waived |
-| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: canonical-top12 actual passed cases/16 real PNGs on9fc8c7b; strict matrix/byte/source gate remains mandatory; owner QA step13 remains open |
+| EX-15 | `/settings/formats` (follow-up TASK-034/#469, E06) is source-proven absent at `c31ef865f60811df076db396a40f90517701380e`, so no BEFORE preview image exists | TASK-034 | no coverage waiver: corrected-driver current16-cell proof pending; prior9fc12/16matrix retained as history; strict matrix/byte/source gate and owner QA step13 remain open |
 
 ## Owner QA path
 
