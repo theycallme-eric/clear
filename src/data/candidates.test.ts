@@ -498,6 +498,27 @@ describe('an empty set is a typed error, never an empty workout (GEN-02a)', () =
 })
 
 describe('no model call (GEN-02a)', () => {
+  it('uses the workout’s chosen goal instead of the saved active-recovery default', async () => {
+    const { client, double } = setup({ goalPreset: 'active_recovery' })
+    const result = await client.retrieve({ userId: USER, focus: 'lower_body', goal: 'strength' })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(sectionsOf(result.value)).toEqual(DEFAULT_SECTIONS)
+    expect(result.value.find((section) => section.section === 'primary_lift')?.candidates.length).toBeGreaterThan(0)
+    expect(double.requests()).toEqual([{ method: 'POST', path: '/rpc/generation_candidate_sets_for_goal' }])
+  })
+
+  it('uses a chosen active-recovery goal even when the saved default is strength', async () => {
+    const { client, double } = setup({ goalPreset: 'strength' })
+    const result = await client.retrieve({ userId: USER, focus: 'lower_body', goal: 'active_recovery' })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(sectionsOf(result.value)).toEqual(ACTIVE_RECOVERY_SECTIONS)
+    expect(double.requests()).toEqual([{ method: 'POST', path: '/rpc/generation_candidate_sets_for_goal' }])
+  })
+
   it('makes exactly one request, and it is the retrieval RPC', async () => {
     const { client, double } = setup()
 

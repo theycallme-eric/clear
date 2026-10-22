@@ -73,6 +73,8 @@ export type BriefingWeightUnit = Enums<'weight_unit'>
 export interface ReviewExerciseView {
   /** Stable within one briefing. Composed rows have no ids until acceptance. */
   readonly key: string
+  /** The catalog slug, for what acts on the movement rather than names it. */
+  readonly exerciseId: string
   readonly name: string
   /** `3 × 8 reps`, `5 rungs · 15-12-9-6-3 reps` — the structured target. */
   readonly prescription: string
@@ -397,6 +399,7 @@ function reviewExercise(
 ): ReviewExerciseView {
   return {
     key,
+    exerciseId: exercise.exercise_id,
     name: exerciseName(exercise.exercise_id),
     prescription: prescriptionText(exercise),
     equipment: equipmentName(exercise.equipment),

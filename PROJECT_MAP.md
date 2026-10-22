@@ -224,6 +224,14 @@ function inside one plpgsql body so a half-revised block cannot exist. Neither w
 response carries the database's own rows, superseded beside substitute, because a client rendering
 the prescription it asked for would not know whether it was stored (D6).
 
+REQ-015/U37 confines the client swap to Review: `src/state/swap-provider.tsx` owns a fresh,
+on-demand candidate read for the composition's user, chosen goal, focus and location. The existing
+goal-scoped RPC supplies eligibility; legacy null-goal compositions retain profile-scoped retrieval.
+`src/state/swap.ts` narrows alternatives to the slot's section without duplicates, and changes only
+the selected movement/equipment in the in-memory acceptance. Start persists that composition.
+Workout mounts no swap seam. Catalog coaching and per-prescription notes remain independently
+available on demand through `src/ui/exercise-coaching.tsx`; no generated coaching prose is added.
+
 Before any of that runs locally there is a gate: `npm run dev` is
 `scripts/dev-preflight/preflight.mjs && vite`, so Vite starts only once `.env.example`'s
 documented variables hold real values and the hosted Supabase project answers. The preflight
