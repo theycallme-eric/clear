@@ -27,10 +27,12 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from '../state/block-completion'
+import type { LadderTiming } from '../state/schemas'
 import { readForTimeState, type ShellStorage } from '../state/workout-persistence'
 import type { BlockProgress } from '../state/workout-progress'
 import { sessionProgress } from '../state/workout-progress'
 import { snapshotFixture, type BlockFixture } from '../test/workout-double'
+import { BlockSlot } from './block-renderers'
 import { ForTimeBlock } from './for-time-block'
 import { LoadingView } from './view-state'
 
@@ -698,5 +700,68 @@ describe('the clock takes the shipped low state and nothing more', () => {
     expect(MOTION_CSS).toMatch(
       /prefers-reduced-motion: reduce\) \{[\s\S]*\.clr-pulse-micro[\s\S]*animation: none/,
     )
+  })
+})
+
+// REQ-018 / E03 (TASK-033): a For Time block whose ladder carries explicit
+// timing is performed as rounds, and its progress is the athlete's to declare.
+describe('For Time with explicit ladder timing', () => {
+  function timedLadder(timing: LadderTiming, rungs: number[]): BlockProgress {
+    const block = forTimeBlock({
+      repScheme: 'ladder_down',
+      exercises: [
+        {
+          prescription: {
+            exercise_id: 'wall-ball',
+            target_kind: 'sequence',
+            target_value: null,
+            target_sequence: rungs,
+          },
+        },
+      ],
+    })
+    return { ...block, ladderTiming: timing }
+  }
+
+  function renderSlot(block: BlockProgress) {
+    const { api, reportOutcome } = completionDouble()
+    render(
+      <BlockCompletionContext value={api}>
+        <BlockSlot block={block} />
+      </BlockCompletionContext>,
+    )
+    return reportOutcome
+  }
+
+  it.each([
+    [3, [21, 15, 9]],
+    [5, [10, 8, 6, 4, 2]],
+  ])('free-paced, %i rounds: rounds listed, no race clock and nothing inferred from it', (rounds, rungs) => {
+    const block = timedLadder({ mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null }, rungs)
+    const reportOutcome = renderSlot(block)
+
+    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(rounds)
+    expect(screen.getByText(`${rounds} rounds · for time, at your pace · 08:00 cap`)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start For Time' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+  })
+
+  it('a capped window inside For Time states the cap it carries', () => {
+    const block = timedLadder(
+      { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: CAP_SECONDS },
+      [4, 8, 12, 16],
+    )
+    renderSlot(block)
+
+    expect(screen.getByText('4 rounds · 08:00 cap on the whole ladder')).toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { name: /^Round \d+$/ })).toHaveLength(4)
+  })
+
+  it('a For Time block with no ladder timing keeps its race clock', () => {
+    renderSlot(forTimeBlock())
+
+    expect(screen.getByRole('button', { name: 'Start For Time' })).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Rounds in this ladder' })).not.toBeInTheDocument()
   })
 })

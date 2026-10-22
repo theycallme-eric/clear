@@ -19,7 +19,7 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -28,6 +28,8 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from '../state/block-completion'
+import type { LadderTiming } from '../state/schemas'
+import type { ShellStorage } from '../state/workout-persistence'
 import { sessionProgress, type BlockProgress } from '../state/workout-progress'
 import type { Enums } from '../data/database.types'
 import {
@@ -36,6 +38,7 @@ import {
   type ExerciseFixture,
 } from '../test/workout-double'
 import { BlockSlot } from './block-renderers'
+import { LadderBlock } from './ladder-block'
 
 const css = readFileSync(join(process.cwd(), 'src/ui/ladder-rungs.css'), 'utf8')
 
@@ -522,5 +525,328 @@ describe('the ladder states its structure identity like every other block', () =
     })
 
     expect(rungNames()).toEqual(['60 sec', '45 sec', '30 sec'])
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQ-018 / E03 (TASK-033) — explicit timing, drawn as precomputed rounds
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** `localStorage`, in memory, so one test cannot see another's schedule. */
+function memoryStorage(): ShellStorage {
+  const values = new Map<string, string>()
+  return {
+    getItem: (key) => values.get(key) ?? null,
+    setItem: (key, value) => void values.set(key, value),
+    removeItem: (key) => void values.delete(key),
+  }
+}
+
+const SCHEDULE_START = Date.parse('2026-10-22T10:00:00.000Z')
+
+interface TimedMount extends Mounted {
+  unmount: () => void
+}
+
+/**
+ * A timed ladder, as the shell would hand it over. The shared snapshot double
+ * carries no `ladder_timing` column, so the stored value is set on the block
+ * the progress model reads — exactly the one fact the renderer keys on.
+ */
+function mountTimed(
+  timing: LadderTiming,
+  block: BlockFixture,
+  options: { storage?: ShellStorage; now?: () => number } = {},
+): TimedMount {
+  const snapshot = snapshotFixture({
+    sections: [{ title: 'Conditioning', sectionType: 'conditioning', blocks: [block] }],
+  })
+  const blockProgress: BlockProgress = {
+    ...sessionProgress(snapshot).sections[0].blocks[0],
+    ladderTiming: timing,
+  }
+
+  const reportOutcome = vi.fn<(id: string, outcome: BlockOutcome) => void>()
+  const completion: BlockCompletionApi = { reportOutcome, isBlockRecorded: () => false }
+
+  const { container, unmount } = render(
+    <BlockCompletionContext value={completion}>
+      {options.storage === undefined ? (
+        // Dispatched rather than named: the registry decides the renderer.
+        <BlockSlot block={blockProgress} />
+      ) : (
+        <LadderBlock
+          block={blockProgress}
+          storage={options.storage}
+          now={options.now ?? (() => SCHEDULE_START)}
+        />
+      )}
+    </BlockCompletionContext>,
+  )
+
+  return { block: blockProgress, reportOutcome, container, unmount }
+}
+
+/** Each round row of the timed ladder. */
+function roundRows(): HTMLElement[] {
+  return within(screen.getByRole('list', { name: 'Rounds in this ladder' })).getAllByRole('listitem')
+}
+
+/** Nothing on the screen asks for a set, a number or an exertion. */
+function expectNoSetEntry() {
+  expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
+  expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+  expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+  expect(screen.queryByText(/\bRPE\b|exertion/i)).not.toBeInTheDocument()
+}
+
+/** Move the wall clock and let the block re-read it, as a resumed page does. */
+function moveClockTo(setNow: (value: number) => void, value: number) {
+  act(() => {
+    setNow(value)
+    window.dispatchEvent(new Event('focus'))
+  })
+}
+
+/**
+ * Variable round counts and interval lengths: none of them five rounds or three
+ * minutes, and no two the same, so a hardcoded template fails at least one.
+ */
+const SCHEDULES = [
+  { rounds: 4, interval: 150, sequence: [6, 8, 10, 12], companion: 10 },
+  { rounds: 7, interval: 45, sequence: [1, 2, 3, 4, 5, 6, 7], companion: 3 },
+  { rounds: 3, interval: 240, sequence: [20, 15, 10], companion: 200 },
+] as const
+
+function scheduledBlock(schedule: (typeof SCHEDULES)[number]): BlockFixture {
+  return {
+    structureType: 'emom',
+    timerType: 'per_minute',
+    repScheme: 'ladder_fixed_interval',
+    timerSeconds: schedule.rounds * schedule.interval,
+    exercises: [
+      sequence('thruster', [...schedule.sequence], { order_index: 0 }),
+      {
+        prescription: {
+          exercise_id: 'burpee',
+          target_kind: 'fixed',
+          target_value: schedule.companion,
+          order_index: 1,
+        },
+      },
+    ],
+  }
+}
+
+const formatClock = (seconds: number) =>
+  `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+
+describe('a scheduled ladder shows every round precomputed — no mental arithmetic', () => {
+  it.each(SCHEDULES)(
+    '$rounds rounds every $interval s: each round names its start, its rung target and the fixed companion work',
+    (schedule) => {
+      mountTimed(
+        { mode: 'scheduled_starts', rounds: schedule.rounds, interval_seconds: schedule.interval, cap_seconds: null },
+        scheduledBlock(schedule),
+      )
+
+      expect(
+        screen.getByText(`${schedule.rounds} rounds · a new round every ${formatClock(schedule.interval)}`),
+      ).toBeInTheDocument()
+
+      const rows = roundRows()
+      expect(rows).toHaveLength(schedule.rounds)
+      rows.forEach((row, index) => {
+        const round = within(row)
+        expect(round.getByRole('heading', { name: `Round ${index + 1}` })).toBeInTheDocument()
+        expect(round.getByText(`Starts at ${formatClock(index * schedule.interval)}`)).toBeInTheDocument()
+        // The rung target for *this* round, already looked up.
+        expect(round.getByText(`${schedule.sequence[index]} reps thruster`)).toBeInTheDocument()
+        // The fixed companion work, stated in full on every round.
+        expect(round.getByText(`${schedule.companion} reps burpee — same every round`)).toBeInTheDocument()
+      })
+      expectNoSetEntry()
+    },
+  )
+
+  it('states a per-side rung as per side, in the round it belongs to', () => {
+    mountTimed(
+      { mode: 'scheduled_starts', rounds: 3, interval_seconds: 90, cap_seconds: null },
+      {
+        structureType: 'emom',
+        repScheme: 'ladder_up',
+        timerSeconds: 270,
+        exercises: [sequence('lunge', [4, 6, 8], { per_side: true })],
+      },
+    )
+
+    expect(within(roundRows()[1]).getByText('6 reps each side lunge')).toBeInTheDocument()
+  })
+})
+
+describe('a scheduled ladder runs on its own clock, restored from wall-clock time', () => {
+  it('marks the live round from the stored start, survives a remount, and records nothing the clock produced', async () => {
+    const user = userEvent.setup()
+    const storage = memoryStorage()
+    let wall = SCHEDULE_START
+    const now = () => wall
+    const setWall = (value: number) => {
+      wall = value
+    }
+    const schedule = SCHEDULES[0]
+    const timing: LadderTiming = {
+      mode: 'scheduled_starts',
+      rounds: schedule.rounds,
+      interval_seconds: schedule.interval,
+      cap_seconds: null,
+    }
+
+    const first = mountTimed(timing, scheduledBlock(schedule), { storage, now })
+
+    // Ready: the schedule is stated, round 1 is next, one control starts it.
+    expect(screen.getByText('NOT STARTED')).toBeInTheDocument()
+    expect(within(roundRows()[0]).getByText('Next')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Start schedule' }))
+    expect(screen.queryByRole('button', { name: 'Start schedule' })).not.toBeInTheDocument()
+
+    // One and a half intervals in: round 2 is live, and the countdown is what
+    // is left of its interval.
+    moveClockTo(setWall, SCHEDULE_START + schedule.interval * 1500)
+    expect(screen.getByText(`ROUND 2 OF ${schedule.rounds}`)).toBeInTheDocument()
+    expect(roundRows()[1]).toHaveAttribute('aria-current', 'step')
+    expect(roundRows()[0]).not.toHaveAttribute('aria-current')
+    expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent(
+      formatClock(schedule.interval / 2),
+    )
+    expectNoSetEntry()
+    first.unmount()
+
+    // A refresh: the same storage, a later wall clock. The schedule is read
+    // back from the stored start, not restarted.
+    wall = SCHEDULE_START + (schedule.interval * 3 + 20) * 1000
+    const second = mountTimed(timing, scheduledBlock(schedule), { storage, now })
+    expect(screen.getByText(`ROUND 4 OF ${schedule.rounds}`)).toBeInTheDocument()
+    expect(roundRows()[3]).toHaveAttribute('aria-current', 'step')
+    expect(screen.queryByRole('button', { name: 'Start schedule' })).not.toBeInTheDocument()
+
+    // Past the last interval: complete, nothing live, and no rung claimed.
+    moveClockTo(setWall, SCHEDULE_START + (schedule.rounds * schedule.interval + 5) * 1000)
+    expect(screen.getByText('COMPLETE')).toBeInTheDocument()
+    for (const row of roundRows()) expect(row).not.toHaveAttribute('aria-current')
+    expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, {})
+
+    // Falling behind is the athlete's to say, and is what records a rung.
+    await declare(user, 'Fell behind the schedule')
+    await user.click(screen.getByRole('radio', { name: `${schedule.sequence[2]} reps` }))
+    expect(second.reportOutcome).toHaveBeenLastCalledWith(second.block.blockId, { highestRung: 3 })
+  })
+})
+
+describe('free-paced For Time never infers progress from elapsed time', () => {
+  it.each([
+    { rounds: 3, rungs: [21, 15, 9], cap: 600 },
+    { rounds: 6, rungs: [2, 4, 6, 8, 10, 12], cap: 1500 },
+  ])('$rounds rounds: no live round and no schedule, however long passes', ({ rounds, rungs, cap }) => {
+    const storage = memoryStorage()
+    let wall = SCHEDULE_START
+    const mounted = mountTimed(
+      { mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null },
+      {
+        structureType: 'for_time',
+        timerType: 'countdown',
+        repScheme: 'ladder_up',
+        timerSeconds: cap,
+        exercises: [sequence('wall-ball', rungs)],
+      },
+      { storage, now: () => wall },
+    )
+
+    expect(
+      screen.getByText(`${rounds} rounds · for time, at your pace · ${formatClock(cap)} cap`),
+    ).toBeInTheDocument()
+    expect(roundRows()).toHaveLength(rounds)
+    roundRows().forEach((row, index) => {
+      expect(within(row).getByText(`${rungs[index]} reps wall ball`)).toBeInTheDocument()
+      expect(within(row).queryByText(/^Starts at/)).not.toBeInTheDocument()
+    })
+
+    moveClockTo((value) => {
+      wall = value
+    }, SCHEDULE_START + cap * 750)
+    for (const row of roundRows()) {
+      expect(row).not.toHaveAttribute('aria-current')
+      expect(within(row).queryByText(/^(Now|Next)$/)).not.toBeInTheDocument()
+    }
+    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /start/i })).not.toBeInTheDocument()
+    expect(storage.getItem('clear.workout-for-time')).toBeNull()
+    expect(mounted.reportOutcome).toHaveBeenLastCalledWith(mounted.block.blockId, {})
+    expectNoSetEntry()
+  })
+
+  it('records progress only once the athlete declares it', async () => {
+    const user = userEvent.setup()
+    const { block, reportOutcome } = mountTimed(
+      { mode: 'for_time', rounds: 4, interval_seconds: null, cap_seconds: null },
+      {
+        structureType: 'for_time',
+        repScheme: 'ladder_down',
+        timerSeconds: 720,
+        exercises: [sequence('wall-ball', [20, 15, 10, 5])],
+      },
+    )
+
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    await declare(user, 'Finished the ladder')
+    expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { highestRung: 4 })
+  })
+})
+
+describe('a capped window shows its one cap', () => {
+  it.each([
+    { structureType: 'amrap' as const, rounds: 9, cap: 720 },
+    { structureType: 'for_time' as const, rounds: 3, cap: 420 },
+  ])('$rounds rounds inside $structureType: the cap is stated, and no round runs on the clock', ({ structureType, rounds, cap }) => {
+    const rungs = Array.from({ length: rounds }, (_, index) => (index + 1) * 2)
+    mountTimed(
+      { mode: 'capped_window', rounds, interval_seconds: null, cap_seconds: cap },
+      {
+        structureType,
+        repScheme: 'ladder_fixed_interval',
+        timerSeconds: cap,
+        exercises: [
+          sequence('kettlebell-swing', rungs, { order_index: 0 }),
+          {
+            prescription: {
+              exercise_id: 'push-up',
+              target_kind: 'fixed',
+              target_value: 5,
+              order_index: 1,
+            },
+          },
+        ],
+      },
+    )
+
+    expect(
+      screen.getByText(`${rounds} rounds · ${formatClock(cap)} cap on the whole ladder`),
+    ).toBeInTheDocument()
+    const rows = roundRows()
+    expect(rows).toHaveLength(rounds)
+    const last = within(rows[rounds - 1])
+    expect(last.getByText(`${rungs[rounds - 1]} reps kettlebell swing`)).toBeInTheDocument()
+    expect(last.getByText('5 reps push up — same every round')).toBeInTheDocument()
+    for (const row of rows) expect(row).not.toHaveAttribute('aria-current')
+    expect(screen.getByRole('radio', { name: 'Hit the time cap' })).toBeInTheDocument()
+    expectNoSetEntry()
+  })
+})
+
+describe('legacy ladders are unchanged by explicit timing', () => {
+  it('a ladder with no timing keeps its movement list and draws no rounds', () => {
+    mount()
+
+    expect(screen.getByRole('list', { name: 'Movements in this ladder' })).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Rounds in this ladder' })).not.toBeInTheDocument()
   })
 })

@@ -473,6 +473,15 @@ trees and this head, from `git diff`:
   deployed proof or owner acceptance. All original checks require fresh execution on the final
   combined head. Historical pictures and earlier single-branch receipts are not rebound.
 
+- TASK-033 (#468, E03/JOURNEY-029) runtime source:
+  `52625dde41b9e171e6823d3f2d2d279050e7cb46a8f4e2942e4f0f86beb4e9b6` on base `90287c6`. Only
+  `src/ui/ladder-block.tsx` changed at runtime: ladders with explicit `ladder_timing` render
+  precomputed rounds (start offsets for scheduled starts, per-round rung targets, fixed companion
+  work), a wall-clock-restored schedule countdown for `scheduled_starts` only, no clock-driven
+  progress for free-paced `for_time` or `capped_window`, and the stated cap. Legacy ladders are
+  unchanged; the global session clock is not read or changed. Task-local phone proof is
+  `e2e/design-0143/workout-ladder.spec.ts`; historical pictures are not rebound.
+
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;
 the historical captures alone do not certify those later heads.
