@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { CAPTURE_SKINS, CAPTURE_VIEWPORTS } from '../../e2e/design-0143/state-inventory'
 import {
   bytesHash, formatBaselineAbsence, formatPreviewManifest, FORMAT_BASELINE_COMMIT, FORMAT_EVIDENCE_SOURCE,
-  FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE, isPreviewWrite, pngDimensions,
+  FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE, isPreviewWrite, pngDimensions, shouldRecordFormatArtifacts,
   validateFormatPreviewEvidence, type FormatEvidenceRecord,
 } from '../../e2e/design-0143/format-preview-evidence'
 
@@ -60,6 +60,12 @@ function fixture() {
 }
 
 describe('Task034 introduced-route evidence guard — offline fixtures, not capture proof', () => {
+  it.each([
+    [undefined, 'passed', false], ['1', 'failed', false], ['1', 'skipped', false],
+    ['1', 'timedOut', false], ['0', 'passed', false], ['1', 'passed', true],
+  ] as const)('records only an explicitly requested passing case: %s/%s', (marker, status, expected) => {
+    expect(shouldRecordFormatArtifacts(marker, status)).toBe(expected)
+  })
   it('checks real c31 source absence without inventing a BEFORE image', () => {
     const absence = formatBaselineAbsence(root)
     expect(absence.commit).toBe(FORMAT_BASELINE_COMMIT)

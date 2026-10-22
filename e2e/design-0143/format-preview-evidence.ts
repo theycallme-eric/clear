@@ -10,6 +10,10 @@ export const FORMAT_BASELINE_COMMIT = 'c31ef865f60811df076db396a40f90517701380e'
 export const FORMAT_ROUTE = '/settings/formats'
 export const FORMAT_TITLE = 'Workout formats'
 export const FORMAT_STATE = 'expanded-read-only-formats'
+export const FORMAT_RECORD_MARKER = 'CLEAR_TASK034_RECORD_AFTER'
+/** Ordinary browser reruns still verify the whole journey, without rewriting history. */
+export const shouldRecordFormatArtifacts = (marker: string | undefined, status: string | undefined) =>
+  marker === '1' && status === 'passed'
 export const FORMAT_NOTE = 'Fixed examples of how each format is shown. Nothing here generates or starts a workout, logs a set, or changes your training.'
 export const FORMAT_DRIVER_FILES = [
   FORMAT_EVIDENCE_SOURCE, 'e2e/design-0143/format-preview-evidence.ts',

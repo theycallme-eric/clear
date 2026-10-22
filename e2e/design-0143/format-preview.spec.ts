@@ -9,7 +9,7 @@ import { CAPTURE_SKINS, CAPTURE_VIEWPORTS, VIEWPORT_OF_PROJECT } from './state-i
 import {
   bytesHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest, formatSourceCheckout,
   FORMAT_EVIDENCE_DIR, FORMAT_EVIDENCE_SOURCE, FORMAT_NOTE, FORMAT_ROUTE, FORMAT_STATE, FORMAT_TITLE,
-  isPreviewWrite, pngDimensions, type FormatEvidenceRecord,
+  FORMAT_RECORD_MARKER, shouldRecordFormatArtifacts, isPreviewWrite, pngDimensions, type FormatEvidenceRecord,
 } from './format-preview-evidence'
 
 /**
@@ -26,6 +26,10 @@ const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }
     await use((evidence) => { pending = evidence })
     // Failed/skipped/aborted cases never become passing committed evidence.
     if (info.status !== 'passed' || pending === undefined) return
+    await info.attach('task034-format-preview-evidence.json', { body: JSON.stringify(pending.record, null, 2), contentType: 'application/json' })
+    // Recording is an explicit one-time operator action, not a side effect of
+    // every future trusted E2E run. All browser assertions/captures still run.
+    if (!shouldRecordFormatArtifacts(process.env[FORMAT_RECORD_MARKER], info.status)) return
     const directory = resolve(root, FORMAT_EVIDENCE_DIR)
     const recordName = `${pending.record.project}-${pending.record.skin}.json`
     if (existsSync(resolve(directory, 'records', recordName))) throw new Error(`Refusing to overwrite historical Task034 evidence: ${recordName}`)
@@ -38,7 +42,6 @@ const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }
     const records = readdirSync(resolve(directory, 'records')).filter((name) => name.endsWith('.json'))
       .sort().map((name) => JSON.parse(readFileSync(resolve(directory, 'records', name), 'utf8')) as FormatEvidenceRecord)
     writeFileSync(resolve(directory, 'manifest.json'), `${JSON.stringify(formatPreviewManifest(records), null, 2)}\n`)
-    await info.attach('task034-format-preview-evidence.json', { body: JSON.stringify(pending.record, null, 2), contentType: 'application/json' })
   },
 })
 

@@ -501,7 +501,7 @@ trees and this head, from `git diff`:
   capture driver. After the active browser owner is idle, the next operator may run:
 
   ```sh
-  npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile --project=tablet --project=desktop --workers=1 --retries=0
+  CLEAR_TASK034_RECORD_AFTER=1 npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile --project=tablet --project=desktop --workers=1 --retries=0
   ```
 
   It must produce all sixteen actual AFTER captures: clear/vapour/signal/mono at 390×844,
@@ -518,7 +518,10 @@ trees and this head, from `git diff`:
   never a baseline Not Found image. Missing trusted configuration is non-proof, not a pass.
   The strict audit now requires the complete new group, real PNG files and hashes; it remains
   held until those artifacts exist and their actual identities are recorded here. Existing
-  records are never overwritten. This lane is not live-generation, deployed or owner-UAT proof.
+  records are never overwritten. Recording requires the explicit marker above; ordinary
+  browser runs still execute every journey/capture assertion and attach their actual outcomes,
+  but cannot rewrite the committed historical records. This lane is not live-generation,
+  deployed or owner-UAT proof.
 
 - `25779dbf…` to `d8be20efd31b176ed2c3bf7c0e0e86e2cf1087a122053572a0c06a28d247225d`: TASK-021
   (REQ-012, JOURNEY-020, U43) replaces Summary's five face-and-word mood chips with
