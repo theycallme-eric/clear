@@ -20,11 +20,13 @@ import type { UserConstraint } from '../data/constraints'
 import { ErrorCode, err, ok, type Result } from '../state/errors'
 import {
   blockSwapResultSchema,
+  generationOutputSchema,
   sessionSnapshotSchema,
   sessionTransitionSchema,
   swapRequestSchema,
   swapSuccessSchema,
   type GenerationOutput,
+  type LadderTiming,
   type Prescription,
   type SessionSnapshot,
   type SessionTransition,
@@ -355,7 +357,7 @@ describe('the swap prompt is generation’s, with one directive', () => {
     expect(assembled.user).toContain('OUTPUT CONTRACT')
     // Last, so the one instruction this call does not share is read last.
     expect(assembled.user.endsWith(swapDirective(scope))).toBe(true)
-    expect(assembled.measurement.contractVersion).toBe('4.1.0')
+    expect(assembled.measurement.contractVersion).toBe('4.2.0')
     // §9's echo: the id the envelope is answering with, not the session's.
     expect(assembled.user).toContain(`request_id: ${REQUEST_ID}`)
     expect(assembled.user).not.toContain(`request_id: ${SESSION_ID}`)
@@ -589,6 +591,112 @@ const run = async (
     { db: recorder.db, catalog, composer, today: () => TODAY },
   )) as Result<Record<string, unknown>, { code: ErrorCode }>
 }
+
+describe('a ladder swap preserves the existing block timing (TASK-032 compatibility)', () => {
+  const freePaced = (rounds = 4): LadderTiming => ({
+    mode: 'for_time', rounds, interval_seconds: null, cap_seconds: null,
+  })
+  const scheduled = (interval = 75): LadderTiming => ({
+    mode: 'scheduled_starts', rounds: 4, interval_seconds: interval, cap_seconds: null,
+  })
+  const capped = (cap = 600): LadderTiming => ({
+    mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: cap,
+  })
+  const blockShape = (timing: LadderTiming | null | undefined) => ({
+    structure_type: 'for_time' as const,
+    rounds: null,
+    timer_type: timing?.mode === 'scheduled_starts' ? 'interval' as const : 'countdown' as const,
+    timer_seconds: timing?.mode === 'scheduled_starts'
+      ? timing.rounds * timing.interval_seconds
+      : timing?.mode === 'capped_window' ? timing.cap_seconds : 600,
+    round_rest_seconds: null,
+    rep_scheme: 'ladder_up' as const,
+    ...(timing === undefined ? {} : { ladder_timing: timing }),
+  })
+  const ladderSnapshot = (timing: LadderTiming | null | undefined) => {
+    const snapshot = snapshotFixture({ structure: blockShape(timing) })
+    Object.assign(snapshot.sections[0].blocks[0].exercises[0].exercise, {
+      sets: 1, target_kind: 'sequence', target_value: null,
+      target_sequence: Array.from({ length: timing?.rounds ?? 4 }, (_, index) => 2 * (index + 1)),
+    })
+    return snapshot
+  }
+  const ladderResponse = (timing: LadderTiming | null | undefined, ids: readonly string[] = ['front-squat']) => {
+    const workout = composed(ids)
+    const block = workout.sections[0].blocks[0]
+    Object.assign(block, blockShape(timing))
+    Object.assign(block.exercises[0], {
+      sets: 1, target_kind: 'sequence', target_value: null,
+      target_sequence: Array.from({ length: timing?.rounds ?? 4 }, (_, index) => 2 * (index + 1)),
+    })
+    // Prove that mismatch cases can be valid NEW blocks; the swap must also
+    // preserve the OLD block they will be stored under.
+    return generationOutputSchema.parse(workout)
+  }
+
+  it('names all original timing values in the existing swap directive', () => {
+    const timing = scheduled()
+    const directive = swapDirective(scopeFor(singleRequest, ladderSnapshot(timing)))
+    expect(directive).toContain(`ladder_timing: ${JSON.stringify(timing)}`)
+    expect(directive).toContain('unchanged')
+  })
+
+  it.each([freePaced(), scheduled(), capped()])('accepts independently allocated matching %s timing by value', (timing) => {
+    const scope = scopeFor(singleRequest, ladderSnapshot(timing))
+    const response = ladderResponse({ ...timing })
+    expect(response.sections[0].blocks[0].ladder_timing).not.toBe(scope.block.ladder_timing)
+    expect(checkSwapShape(response, scope)).toEqual([])
+  })
+
+  it('ignores object key insertion order without ignoring timing values', () => {
+    const timing = scheduled()
+    const reordered = { cap_seconds: null, interval_seconds: 75, rounds: 4, mode: 'scheduled_starts' as const }
+    expect(checkSwapShape(ladderResponse(reordered), scopeFor(singleRequest, ladderSnapshot(timing)))).toEqual([])
+  })
+
+  it.each([
+    [freePaced(), freePaced(3)],
+    [freePaced(), capped()],
+    [scheduled(), scheduled(90)],
+    [capped(), capped(420)],
+    [freePaced(), null],
+    [freePaced(), undefined],
+    [null, freePaced()],
+    [undefined, freePaced()],
+  ])('rejects changed, removed or added timing (%o → %o)', (original, replacement) => {
+    const scope = scopeFor(singleRequest, ladderSnapshot(original))
+    const response = ladderResponse(replacement)
+    expect(checkSwapShape(response, scope).map(row => row.path)).toContain('sections[0].blocks[0].ladder_timing')
+  })
+
+  it.each([
+    [undefined, undefined], [undefined, null], [null, undefined], [null, null],
+  ] as const)('keeps legacy absent/null timing interchangeable (%o → %o)', (original, replacement) => {
+    expect(checkSwapShape(ladderResponse(replacement), scopeFor(singleRequest, ladderSnapshot(original)))).toEqual([])
+  })
+
+  it.each([singleRequest, unitRequest])('rejects a valid three-rung replacement under original four-round timing before any %o persistence', async (request) => {
+    const recorder = recordingDatabase({}, ladderSnapshot(freePaced()))
+    const response = ladderResponse(freePaced(3), request.mode === 'unit' ? ['front-squat', 'back-squat'] : ['front-squat'])
+    const result = await run(request, recorder, response)
+    expect(result.ok).toBe(false)
+    expect(recorder.calls.exercise).toEqual([])
+    expect(recorder.calls.block).toEqual([])
+  })
+
+  it('passes matching timing through the existing unit pipeline without changing RPC shape', async () => {
+    const snapshot = ladderSnapshot(freePaced())
+    const recorder = recordingDatabase({}, snapshot)
+    const result = await run(unitRequest, recorder, ladderResponse(freePaced(), ['front-squat', 'back-squat']))
+    expect(result.ok).toBe(true)
+    expect(recorder.calls.exercise).toEqual([])
+    expect(recorder.calls.block).toHaveLength(1)
+    expect(recorder.calls.block[0].blockId).toBe(BLOCK_ID)
+    expect(recorder.calls.block[0].revisions[0].prescription.target_sequence).toEqual([2, 4, 6, 8])
+    expect(Object.keys(recorder.calls.block[0]).sort()).toEqual(['blockId', 'revisions'])
+    expect(snapshot.sections[0].blocks[0].block.ladder_timing).toEqual(freePaced())
+  })
+})
 
 describe('a swap draws from the same candidate query as generation', () => {
   it('retrieves with this session’s focus, location and constraints', async () => {

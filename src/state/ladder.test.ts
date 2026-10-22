@@ -9,20 +9,27 @@
  * rung *target* stay separate things, and that a malformed block degrades to a
  * shorter ladder instead of throwing the session away.
  */
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import type { Enums } from '../data/database.types'
 import { Constants } from '../data/database.types'
 import { snapshotFixture, type ExerciseFixture } from '../test/workout-double'
 import {
+  explicitLadderTiming,
   isLadderScheme,
+  ladderCapSeconds,
   ladderMovements,
+  ladderRoundPlan,
   ladderRungs,
   ladderUnit,
   rungLabel,
   rungNumbers,
+  scheduledRoundAt,
 } from './ladder'
-import { sessionProgress, type ExerciseProgress } from './workout-progress'
+import { LADDER_TIMING_MODES, workoutBlockRowSchema, type LadderTiming } from './schemas'
+import { sessionProgress, type BlockProgress, type ExerciseProgress } from './workout-progress'
 
 /** The block's active prescriptions, as the shell hands them to a renderer. */
 function movements(
@@ -200,5 +207,159 @@ describe('a fixed-interval ladder divides into the ladder and its companion', ()
     expect(interval.map((entry) => entry.prescription.exercise_id)).toEqual(['burpee'])
     // The companion's fixed target is not a rung: the ladder is 2-4-6-8.
     expect(ladderRungs(exercises).map(rungNumbers)).toEqual(['2', '4', '6', '8'])
+  })
+})
+
+describe('explicit ladder timing, as execution state reads it (REQ-018, E03)', () => {
+  /** A rung sequence of `rounds` length, with a fixed companion every round. */
+  function timedBlock(
+    timing: LadderTiming | null | undefined,
+    structureType: Enums<'structure_type'>,
+    rounds: number,
+    timerSeconds: number,
+  ): BlockProgress {
+    const snapshot = snapshotFixture({
+      sections: [
+        {
+          blocks: [
+            {
+              structureType,
+              repScheme: 'ladder_fixed_interval',
+              timerSeconds,
+              exercises: [
+                sequence(
+                  'push-up',
+                  Array.from({ length: rounds }, (_, index) => 3 * (index + 1)),
+                  { order_index: 0 },
+                ),
+                {
+                  prescription: {
+                    exercise_id: 'burpee',
+                    order_index: 1,
+                    target_kind: 'fixed',
+                    target_value: 4,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+    const stored = snapshot.sections[0]?.blocks[0]
+    if (stored === undefined) throw new Error('the fixture built no stored block')
+    // Task-local timing fixture: keep the shared workout factory unchanged.
+    if (timing !== undefined) stored.block.ladder_timing = timing
+    const block = sessionProgress(snapshot).sections[0]?.blocks[0]
+    if (block === undefined) throw new Error('the fixture built no block')
+    return block
+  }
+
+  const scheduled = (rounds: number, interval: number): LadderTiming => ({
+    mode: 'scheduled_starts',
+    rounds,
+    interval_seconds: interval,
+    cap_seconds: null,
+  })
+  const freePaced = (rounds: number): LadderTiming => ({
+    mode: 'for_time',
+    rounds,
+    interval_seconds: null,
+    cap_seconds: null,
+  })
+  const capped = (rounds: number, cap: number): LadderTiming => ({
+    mode: 'capped_window',
+    rounds,
+    interval_seconds: null,
+    cap_seconds: cap,
+  })
+
+  it('carries the stored timing onto the block, and nothing onto a legacy one', () => {
+    const timing = scheduled(4, 75)
+    expect(timedBlock(timing, 'emom', 4, 300).ladderTiming).toEqual(timing)
+    expect(explicitLadderTiming(timedBlock(timing, 'emom', 4, 300))).toEqual(timing)
+
+    for (const legacy of [undefined, null]) {
+      const block = timedBlock(legacy, 'for_time', 4, 600)
+      expect(block.ladderTiming).toBeNull()
+      expect(explicitLadderTiming(block)).toBeNull()
+    }
+  })
+
+  it('reads every mode the stored-row schema admits', () => {
+    expect([...LADDER_TIMING_MODES].sort()).toEqual(['capped_window', 'for_time', 'scheduled_starts'])
+    for (const timing of [scheduled(3, 90), freePaced(3), capped(3, 240)]) {
+      expect(workoutBlockRowSchema.shape.ladder_timing.safeParse(timing).success).toBe(true)
+    }
+  })
+
+  it.each([
+    [2, 45],
+    [4, 75],
+    [6, 150],
+    [9, 240],
+  ])('precomputes %i scheduled rounds every %is: start, target and companion work', (rounds, interval) => {
+    const block = timedBlock(scheduled(rounds, interval), 'emom', rounds, rounds * interval)
+    const timing = explicitLadderTiming(block)
+    if (timing === null) throw new Error('the scheduled fixture lost its timing')
+
+    const plan = ladderRoundPlan(block.exercises, timing)
+
+    expect(plan).toHaveLength(rounds)
+    plan.forEach((round, index) => {
+      expect(round.number).toBe(index + 1)
+      expect(round.startSeconds).toBe(index * interval)
+      expect(round.rung?.targets).toEqual([3 * (index + 1)])
+      // The fixed companion is stated with every round — never left out.
+      expect(round.companions.map((entry) => entry.prescription.exercise_id)).toEqual(['burpee'])
+    })
+  })
+
+  it.each([3, 5, 8])('reads a scheduled round from the block clock alone (%i rounds)', (rounds) => {
+    const interval = 70
+    const timing = scheduled(rounds, interval)
+
+    expect(scheduledRoundAt(timing, 0)).toBe(1)
+    expect(scheduledRoundAt(timing, interval - 1)).toBe(1)
+    expect(scheduledRoundAt(timing, interval)).toBe(2)
+    expect(scheduledRoundAt(timing, rounds * interval - 1)).toBe(rounds)
+    // Past the schedule there is no round, rather than a clamped last one.
+    expect(scheduledRoundAt(timing, rounds * interval)).toBeNull()
+    expect(scheduledRoundAt(timing, -1)).toBeNull()
+  })
+
+  it.each([2, 6, 12])('never infers free-paced For Time progress from elapsed time (%i rounds)', (rounds) => {
+    const timing = freePaced(rounds)
+    for (const elapsed of [0, 30, 600, 10_000]) {
+      expect(scheduledRoundAt(timing, elapsed)).toBeNull()
+    }
+    const plan = ladderRoundPlan(timedBlock(timing, 'for_time', rounds, 900).exercises, timing)
+    expect(plan).toHaveLength(rounds)
+    expect(plan.every((round) => round.startSeconds === null)).toBe(true)
+    expect(ladderCapSeconds(timing)).toBeNull()
+  })
+
+  it.each([
+    [3, 150],
+    [7, 600],
+  ])('keeps a capped window of %i rounds unscheduled under its one %is cap', (rounds, cap) => {
+    const timing = capped(rounds, cap)
+    const plan = ladderRoundPlan(timedBlock(timing, 'amrap', rounds, cap).exercises, timing)
+
+    expect(ladderCapSeconds(timing)).toBe(cap)
+    expect(plan).toHaveLength(rounds)
+    expect(plan.every((round) => round.startSeconds === null)).toBe(true)
+    expect(scheduledRoundAt(timing, cap - 1)).toBeNull()
+  })
+
+  it('hardcodes no round count or interval, and never touches the global session clock', () => {
+    const source = readFileSync(resolve(import.meta.dirname, 'ladder.ts'), 'utf-8')
+    const code = source
+      .split('\n')
+      .filter((line) => !/^\s*(\*|\/\/|\/\*)/.test(line))
+      .join('\n')
+
+    expect(code).not.toMatch(/\b(5|180)\b/)
+    expect(code).not.toMatch(/workout-clock|Date\.now|performance\.now|setInterval|setTimeout/)
   })
 })

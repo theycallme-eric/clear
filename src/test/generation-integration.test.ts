@@ -109,7 +109,7 @@ describe('whole-workout generation integration', () => {
       effective_intensity: 7,
       generation_notes: 'Keep the shoulder comfortable.',
       prompt_version: PROMPT_VERSION,
-      contract_version: '4.1.0',
+      contract_version: '4.2.0',
       is_deload: false,
     })
     expect(result.value.acceptance.computed_duration_mins).toBeGreaterThan(0)

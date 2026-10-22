@@ -18,6 +18,7 @@ import {
   type BlockCompletionApi,
   type BlockOutcome,
 } from '../state/block-completion'
+import type { LadderTiming } from '../state/schemas'
 import type { BlockProgress } from '../state/workout-progress'
 import { BLOCK_RENDERERS, BlockSlot, blockRendererFor } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
@@ -115,6 +116,49 @@ describe('the renderer registry', () => {
         BLOCK_RENDERERS[structureType],
       )
     }
+  })
+
+  describe('a ladder with explicit timing (REQ-018)', () => {
+    const TIMINGS = [
+      ['emom', { mode: 'scheduled_starts', rounds: 3, interval_seconds: 100, cap_seconds: null }],
+      ['for_time', { mode: 'scheduled_starts', rounds: 8, interval_seconds: 45, cap_seconds: null }],
+      ['for_time', { mode: 'for_time', rounds: 6, interval_seconds: null, cap_seconds: null }],
+      ['for_time', { mode: 'capped_window', rounds: 4, interval_seconds: null, cap_seconds: 420 }],
+      ['amrap', { mode: 'capped_window', rounds: 9, interval_seconds: null, cap_seconds: 720 }],
+    ] as const satisfies readonly (readonly [Enums<'structure_type'>, LadderTiming])[]
+
+    it.each(TIMINGS)('goes to the ladder renderer under %s, whatever its mode or size', (structureType, timing) => {
+      const block = blockFixture(structureType, { repScheme: 'ladder_up', ladderTiming: timing })
+      expect(blockRendererFor(block)).toBe(LadderBlock)
+    })
+
+    it('leaves legacy ladders, timing absent or null, where they always went', () => {
+      for (const ladderTiming of [undefined, null]) {
+        expect(blockRendererFor(blockFixture('emom', { repScheme: 'pyramid', ladderTiming }))).toBe(
+          BLOCK_RENDERERS.emom,
+        )
+        expect(blockRendererFor(blockFixture('amrap', { repScheme: 'pyramid', ladderTiming }))).toBe(
+          BLOCK_RENDERERS.amrap,
+        )
+        expect(blockRendererFor(blockFixture('for_time', { repScheme: 'pyramid', ladderTiming }))).toBe(
+          LadderBlock,
+        )
+      }
+    })
+
+    it('never claims a non-ladder scheme, even with a timing on it', () => {
+      const block = blockFixture('emom', { repScheme: 'fixed', ladderTiming: TIMINGS[0][1] })
+      expect(blockRendererFor(block)).toBe(BLOCK_RENDERERS.emom)
+    })
+
+    it.each(TIMINGS)('reports a timed %s ladder with no outcome it did not observe', (structureType, timing) => {
+      const block = blockFixture(structureType, { repScheme: 'ladder_up', ladderTiming: timing })
+      const { api, reportOutcome } = completionDouble()
+      renderSlot(block, api)
+
+      // No rung, round or elapsed time is inferred from a clock.
+      expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
+    })
   })
 
   it.each([...Constants.public.Enums.structure_type])(

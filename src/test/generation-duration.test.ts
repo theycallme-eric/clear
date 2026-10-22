@@ -23,7 +23,8 @@ import {
 } from '../../supabase/functions/_shared/validate.ts'
 import { ErrorCode } from '../state/errors'
 import { createLogger, type LogLevel, type LogSink } from '../state/logger'
-import type { GenerationOutput, WorkoutBlock } from '../state/schemas'
+import { workoutBlockSchema, type GenerationOutput, type WorkoutBlock } from '../state/schemas'
+import { makeLadderTimingBlock } from './factories'
 import { promptInput } from './generation-prompt-fixtures'
 import { VALID_RESPONSE, claudeResponse } from './generation-response-fixtures'
 
@@ -516,5 +517,87 @@ describe('the retry a duration failure buys', () => {
       ],
     })
     expect(JSON.stringify(composition.error)).not.toContain('Lower Body Strength')
+  })
+})
+
+describe('explicit ladder timing (REQ-018, §5.1)', () => {
+  // Duration reads the timing's own clock, so it and execution count the same
+  // numbers. Round counts and intervals vary across the fixtures on purpose:
+  // nothing in §7 knows a standard ladder.
+  const valid = (block: WorkoutBlock) => {
+    expect(workoutBlockSchema.safeParse(block).success).toBe(true)
+    return block
+  }
+
+  it.each([
+    [2, 45],
+    [3, 150],
+    [7, 90],
+    [10, 240],
+  ])('a schedule of %i rounds every %is costs rounds × interval, and counts its rounds', (rounds, intervalSeconds) => {
+    const block = valid(makeLadderTimingBlock('scheduled_starts', { rounds, intervalSeconds }))
+    const estimated = estimateBlock(block, 'sections[0].blocks[0]', 'conditioning')
+
+    expect(estimated.seconds).toBe(rounds * intervalSeconds)
+    expect(estimated.seconds).toBe(block.timer_seconds)
+    expect(estimated.rounds).toBe(rounds)
+    expect(estimated.declaredClock).toBe(true)
+  })
+
+  it.each([
+    [2, 60],
+    [4, 420],
+    [9, 900],
+  ])('a capped window of %i rounds costs its one whole-ladder cap of %is', (rounds, capSeconds) => {
+    const block = valid(makeLadderTimingBlock('capped_window', { rounds, capSeconds }))
+    const estimated = estimateBlock(block, 'sections[0].blocks[0]', 'conditioning')
+
+    expect(estimated.seconds).toBe(capSeconds)
+    // A window bounds the ladder; it does not schedule rounds.
+    expect(estimated.rounds).toBeNull()
+  })
+
+  it.each([3, 6, 11])('free-paced For Time with %i rounds budgets the block cap, never a per-round time', (rounds) => {
+    const block = valid(makeLadderTimingBlock('for_time', { rounds }))
+    const estimated = estimateBlock(block, 'sections[0].blocks[0]', 'conditioning')
+
+    expect(estimated.seconds).toBe(block.timer_seconds)
+    expect(estimated.rounds).toBeNull()
+  })
+
+  it('a legacy ladder, timing absent or null, costs exactly what it did', () => {
+    const timed = makeLadderTimingBlock('for_time', { rounds: 4 })
+    const absent: WorkoutBlock = { ...timed }
+    delete absent.ladder_timing
+    const legacyNull: WorkoutBlock = { ...timed, ladder_timing: null }
+
+    for (const block of [absent, legacyNull]) {
+      expect(estimateBlock(block, 'p', 'conditioning')).toMatchObject({
+        seconds: timed.timer_seconds,
+        rounds: null,
+        declaredClock: true,
+      })
+    }
+  })
+
+  it('a scheduled ladder too long for the session is rejected, naming the block', () => {
+    const workout = composed()
+    workout.sections[2].blocks[0] = valid(
+      makeLadderTimingBlock('scheduled_starts', { rounds: 12, intervalSeconds: 300 }),
+    )
+    const verdict = checkDuration(workout, TARGET_MINS)
+
+    expect(verdict.fits).toBe(false)
+    expect(verdict.longestBlock?.path).toBe('sections[2].blocks[0]')
+    expect(verdict.longestBlock?.seconds).toBe(12 * 300)
+  })
+
+  it('names no standard round count or interval in the duration module', () => {
+    const code = read('supabase/functions/_shared/duration.ts')
+      .split('\n')
+      .filter((line) => !/^\s*(\*|\/\/|\/\*)/.test(line))
+      .join('\n')
+    expect(code).not.toMatch(/\b180\b/)
+    expect(code).not.toMatch(/rounds\s*[=:]\s*5\b/)
   })
 })

@@ -39,7 +39,7 @@
 
 import type { SectionType } from '../../../src/data/candidates.ts'
 import type { Enums } from '../../../src/data/database.types.ts'
-import type { GenerationOutput, WorkoutBlock } from '../../../src/state/schemas.ts'
+import type { GenerationOutput, LadderTiming, WorkoutBlock } from '../../../src/state/schemas.ts'
 import { prescribedSetCount } from '../../../src/state/prescription.ts'
 
 type StructureType = Enums<'structure_type'>
@@ -94,7 +94,8 @@ export interface BlockDuration {
   readonly seconds: number
   /**
    * How many rounds the formula counted, and `null` for a declared clock, which
-   * has no rounds to count. `assumedRounds` says the number was not the block's
+   * has no rounds to count — except a scheduled ladder, whose clock is its
+   * rounds × interval. `assumedRounds` says the number was not the block's
    * own (see `roundsOf`).
    */
   readonly rounds: number | null
@@ -148,6 +149,26 @@ function roundsOf(block: WorkoutBlock): { rounds: number; assumed: boolean } {
 }
 
 /**
+ * The clock an explicit ladder timing declares (REQ-018, §5.1), read from its
+ * own fields: a schedule is `rounds × interval_seconds` and a capped window is
+ * its one `cap_seconds`. Free-paced `for_time` declares no clock of its own, so
+ * it — and every legacy block — falls through to the block's `timer_seconds`.
+ * The schema already makes both equal to the block clock; reading the timing
+ * here means duration and execution count the same numbers.
+ */
+function ladderClockSeconds(timing: LadderTiming | null): number | null {
+  if (timing === null) return null
+  switch (timing.mode) {
+    case 'scheduled_starts':
+      return timing.rounds * timing.interval_seconds
+    case 'capped_window':
+      return timing.cap_seconds
+    case 'for_time':
+      return null
+  }
+}
+
+/**
  * §7's per-block formula, one branch per structure and nothing else:
  *
  * ```
@@ -157,6 +178,11 @@ function roundsOf(block: WorkoutBlock): { rounds: number; assumed: boolean } {
  * emom       → timer_seconds
  * amrap      → timer_seconds
  * for_time   → timer_seconds            (the full cap)
+ *
+ * ladder_timing, on a timed block:
+ *   scheduled_starts → rounds × interval_seconds
+ *   capped_window    → cap_seconds
+ *   for_time         → timer_seconds     (free-paced; the block cap)
  * ```
  *
  * A member of a round-based block is one set per round: the block is what
@@ -174,14 +200,16 @@ export function estimateBlock(
   // budgeted in full: the user may need all of it, and a workout planned around
   // them finishing early is one that does not fit when they do not.
   if (TIMED_STRUCTURES.has(block.structure_type)) {
-    const seconds = block.timer_seconds ?? 0
+    const timing = block.ladder_timing ?? null
+    const seconds = ladderClockSeconds(timing) ?? block.timer_seconds ?? 0
 
     return {
       ...base,
       workSeconds: seconds,
       restSeconds: 0,
       seconds,
-      rounds: null,
+      // A schedule is the one declared clock that has rounds to count.
+      rounds: timing?.mode === 'scheduled_starts' ? timing.rounds : null,
       assumedRounds: false,
       declaredClock: true,
     }
