@@ -1,5 +1,6 @@
 /** TASK-072 — the modules become one generation, not six adjacent features. */
 import { describe, expect, it } from 'vitest'
+import { isTrustedBrowserEligible } from '../../e2e/design-0143/trusted-browser-lane'
 
 import { deriveAnchors } from '../state/anchors'
 import { ErrorCode, createError, err, ok } from '../state/errors'
@@ -25,6 +26,37 @@ import type { PromptInput } from '../../supabase/functions/_shared/prompt.ts'
 const USER_ID = '11111111-1111-4111-8111-111111111111'
 const LOCATION_ID = '22222222-2222-4222-8222-222222222222'
 const REQUEST_ID = 'req_task072_mount'
+
+describe('TASK-030 trusted proof admission', () => {
+  const preview = {
+    CI: 'true', GITHUB_ACTIONS: 'true', GITHUB_JOB: 'preview-e2e',
+    GITHUB_EVENT_NAME: 'deployment_status',
+  }
+
+  it('excludes only the existing credentialless public preview job', () => {
+    expect(isTrustedBrowserEligible(false, preview)).toBe(false)
+    expect(isTrustedBrowserEligible(true, preview)).toBe(true)
+  })
+
+  it.each([
+    {},
+    { CI: 'true' },
+    { ...preview, CI: undefined },
+    { ...preview, GITHUB_ACTIONS: undefined },
+    { ...preview, GITHUB_JOB: undefined },
+    { ...preview, GITHUB_JOB: 'backend-e2e', GITHUB_EVENT_NAME: 'push' },
+    { ...preview, GITHUB_JOB: 'deployed-journeys' },
+    { ...preview, GITHUB_JOB: 'live-model-canary', GITHUB_EVENT_NAME: 'workflow_dispatch' },
+    { ...preview, GITHUB_EVENT_NAME: 'push' },
+    { ...preview, GITHUB_EVENT_NAME: 'workflow_dispatch' },
+    { ...preview, GITHUB_EVENT_NAME: undefined },
+  ])('keeps missing-key local, trusted and unknown environments fail-closed: %j', (environment) => {
+    // Eligible means createAthlete must assert that the backend is available;
+    // none of these environments may silently skip the required proof.
+    expect(isTrustedBrowserEligible(false, environment)).toBe(true)
+    expect(isTrustedBrowserEligible(true, environment)).toBe(true)
+  })
+})
 
 const request: GenerationRequest = {
   request_id: REQUEST_ID,

@@ -4,6 +4,7 @@ import { expect } from '@playwright/test'
 
 import { namespaceId } from '../../scripts/e2e/namespace.mjs'
 import { backend } from '../support/backend'
+import { isTrustedBrowserEligible } from './trusted-browser-lane'
 
 /**
  * TASK-030 — one disposable, namespaced athlete on the real backend, shared by
@@ -18,7 +19,7 @@ import { backend } from '../support/backend'
 
 const SESSION_KEY = 'clear.auth.session'
 
-export const trustedBrowserEligible = backend.available || !process.env.CI
+export const trustedBrowserEligible = isTrustedBrowserEligible(backend.available, process.env)
 
 export const CORS = {
   'access-control-allow-origin': '*',
