@@ -101,7 +101,7 @@ export function createCandidatesDouble(
       return json(refusalDiagnostics(caller, args))
     }
 
-    if (path !== '/rpc/generation_candidate_sets' || method !== 'POST') {
+    if (!['/rpc/generation_candidate_sets', '/rpc/generation_candidate_sets_for_goal'].includes(path) || method !== 'POST') {
       return problem(404, '42883', `no function matches ${path}`)
     }
 
@@ -111,6 +111,7 @@ export function createCandidatesDouble(
       p_location_id: string | null
       p_session_id: string | null
       p_floor: number
+      p_goal?: string
     }
 
     return json(candidateSets(caller, args))
@@ -127,11 +128,13 @@ export function createCandidatesDouble(
     )
 
   /** `generation_sections`. */
-  const sectionsFor = (caller: string, userId: string): string[] => {
+  const sectionsFor = (caller: string, userId: string, goal?: string): string[] => {
     const profile = caller === userId ? options.profiles[userId] : undefined
     if (profile === undefined) return []
 
-    return profile.goalPreset === 'active_recovery'
+    // The additive goal-scoped RPC resolves today's goal, not the stored default
+    // (20260927000018_generation_goal_scope.sql); eligibility below is unchanged.
+    return (goal ?? profile.goalPreset) === 'active_recovery'
       ? [...ACTIVE_RECOVERY_SECTIONS]
       : [...profile.enabledSections]
   }
@@ -224,11 +227,12 @@ export function createCandidatesDouble(
       p_location_id: string | null
       p_session_id: string | null
       p_floor: number
+      p_goal?: string
     },
   ) => {
     const available = equipmentFor(caller, args.p_user_id, args.p_location_id)
 
-    return sectionsFor(caller, args.p_user_id).map((section) => {
+    return sectionsFor(caller, args.p_user_id, args.p_goal).map((section) => {
       const strict = candidatesFor(caller, args, section, available, false)
       const relaxed = strict.length < args.p_floor
 

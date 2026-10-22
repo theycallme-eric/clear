@@ -13,13 +13,15 @@
  * the criterion's own wording: a screen is shown one workout, and a briefing
  * that rendered two structures identically would pass six single-block tests.
  */
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import { Route, Routes } from 'react-router-dom'
 
 import type { AnchorsClient } from '../data/anchors'
+import { createCandidatesClient, type Candidate, type CandidatesClient, type SectionCandidates } from '../data/candidates'
+import type { UserConstraintRow } from '../data/constraints'
 import type { GenerationInput } from '../data/generation'
 import { regenerationInput } from '../state/review-handoff'
 import { Constants } from '../data/database.types'
@@ -52,7 +54,10 @@ import {
   SUGGESTIONS_LOADING_LABEL,
   WHY_TITLE,
 } from '../ui/load-suggestion'
-import { renderWithProviders, signedIn } from '../test/render'
+import { createWarmQueryClient, renderWithProviders, signedIn } from '../test/render'
+import { createCandidatesDouble, type DoubleProfile } from '../test/candidates-double'
+import { onboardedProfile } from '../test/user-data-double'
+import { profileQueryKey } from '../state/user-queries'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import {
   FACTS_LABEL,
@@ -99,6 +104,9 @@ interface HarnessOptions {
   anchors?: Partial<AnchorsClient>
   /** Lets a handoff assertion inspect the same cache the screen publishes. */
   queryClient?: QueryClient
+  /** U37: the swap's candidate read, and what it answers. */
+  candidates?: Partial<CandidatesClient>
+  candidateSets?: readonly SectionCandidates[]
 }
 
 function sessionsDouble(
@@ -141,6 +149,8 @@ function renderReview(
     anchorRows: options.anchorRows,
     anchorEvidence: options.anchorEvidence,
     anchors: options.anchors,
+    candidates: options.candidates,
+    candidateSets: options.candidateSets,
   })
 
   const view = renderWithProviders(
@@ -702,6 +712,264 @@ describe('Regenerate confirms before discarding', () => {
 
     expect(recorder.accepted).toEqual([])
     expect(recorder.started).toEqual([])
+  })
+})
+
+describe('swapping a movement happens in Review, under the original constraints (U37)', () => {
+  /** Back squat (barbell) and kb swing in the primary lift; air squat warms up. */
+  const SWAPPABLE = makeSessionAcceptance()
+
+  function candidate(overrides: Partial<Candidate>): Candidate {
+    return {
+      exerciseId: 'romanian-deadlift',
+      name: 'Romanian deadlift',
+      patterns: ['hinge'],
+      primaryPatterns: ['hinge'],
+      role: 'compound_lift',
+      components: [],
+      muscles: [],
+      canBePrimary: true,
+      usableEquipment: ['barbell', 'dumbbell'],
+      ...overrides,
+    }
+  }
+
+  /**
+   * What the constrained retrieval answers: the primary lift's pool includes a
+   * movement already in the workout, and another section's pool has a
+   * movement that would be fine anywhere but here.
+   */
+  const CANDIDATE_SETS: readonly SectionCandidates[] = [
+    {
+      section: 'primary_lift',
+      relaxed: false,
+      candidates: [
+        candidate({}),
+        candidate({ exerciseId: 'kb-swing', name: 'Kettlebell swing', usableEquipment: ['kettlebell'] }),
+        candidate({ exerciseId: 'goblet-squat', name: 'Goblet squat', usableEquipment: ['dumbbell'] }),
+      ],
+    },
+    {
+      section: 'warmup',
+      relaxed: false,
+      candidates: [candidate({ exerciseId: 'world-greatest-stretch', name: 'World’s greatest stretch', usableEquipment: ['bodyweight'] })],
+    },
+  ]
+
+  function alternatives() {
+    return within(screen.getByRole('list', { name: 'Alternatives' }))
+  }
+
+  function constrainedClient(profile: DoubleProfile, constraints: readonly UserConstraintRow[] = []) {
+    const double = createCandidatesDouble({
+      url: 'https://clear.test', anonKey: 'public-test-key', users: { token: 'user-1' },
+      profiles: { 'user-1': profile }, constraints,
+    })
+    return {
+      double,
+      client: createCandidatesClient({
+        url: 'https://clear.test', anonKey: 'public-test-key', accessToken: 'token', fetch: double.fetch,
+      }),
+    }
+  }
+
+  const SAVED_PROFILE: DoubleProfile = {
+    goalPreset: 'strength', enabledSections: ['warmup', 'primary_lift'],
+    locations: [{ id: SWAPPABLE.location_id!, isDefault: true, equipment: ['bodyweight', 'barbell', 'dumbbells', 'kettlebells'] }],
+  }
+
+  it('uses the actual retrieval adapter with the workout goal, not a different saved goal', async () => {
+    const user = userEvent.setup()
+    const { client, double } = constrainedClient({ ...SAVED_PROFILE, goalPreset: 'active_recovery' })
+    const queryClient = createWarmQueryClient()
+    queryClient.setData(profileQueryKey('user-1'), onboardedProfile({ goal_preset: 'active_recovery' }))
+    renderReview({ acceptance: { ...SWAPPABLE, goal_preset: 'strength' }, candidates: client, queryClient })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    expect(await screen.findByRole('button', { name: /^Deadlift\s*BARBELL$/ })).toBeInTheDocument()
+    expect(double.requests()).toEqual([{ method: 'POST', path: '/rpc/generation_candidate_sets_for_goal' }])
+  })
+
+  it('reads current limitations and equipment for a subsequent Review sharing the same app cache', async () => {
+    const user = userEvent.setup()
+    const queryClient = createWarmQueryClient()
+    const constraints: UserConstraintRow[] = []
+    const profile = { ...SAVED_PROFILE }
+    const { client, double } = constrainedClient(profile, constraints)
+    const first = renderReview({ acceptance: SWAPPABLE, candidates: client, queryClient })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    expect(await screen.findByRole('button', { name: /^Deadlift\s*BARBELL$/ })).toBeInTheDocument()
+    first.unmount()
+
+    // These are the saved changes the next SQL retrieval reads, not a replacement
+    // canned answer: exclude a movement and remove barbell at the same location.
+    constraints.push({
+      id: 'exclude-rdl', user_id: 'user-1', action: 'exclude', persistence: 'persistent',
+      applies_to_session_id: null, scope: 'exercise', target_exercise_id: 'rdl',
+      target_pattern: null, target_equipment: null, note: null, created_at: '2026-10-21T21:00:00Z',
+    })
+    profile.locations = [{ id: SWAPPABLE.location_id!, isDefault: true, equipment: ['bodyweight', 'dumbbells', 'kettlebells'] }]
+    renderReview({ acceptance: { ...SWAPPABLE }, candidates: client, queryClient })
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+
+    await screen.findByRole('list', { name: 'Alternatives' })
+    expect(alternatives().queryByRole('button', { name: /^Deadlift\s*BARBELL$/ })).toBeNull()
+    expect(alternatives().queryByRole('button', { name: /^RDL\s/ })).toBeNull()
+    expect(alternatives().queryByText('BARBELL')).toBeNull()
+    expect(double.requests().filter((request) => request.path.includes('generation_candidate_sets'))).toHaveLength(2)
+  })
+
+  it('locks both swap and undo while Start persists the chosen composition', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS, holdAccept: true })
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    await user.click(await screen.findByRole('button', { name: /Romanian deadlift/ }))
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+
+    expect(screen.getByRole('button', { name: 'Swap romanian deadlift' })).toBeDisabled()
+    const undo = screen.getByRole('button', { name: 'Undo swap — back to back squat' })
+    expect(undo).toBeDisabled()
+    await user.click(undo)
+    expect(recorder.accepted).toHaveLength(1)
+    expect(recorder.accepted[0]?.acceptance.workout.sections[1].blocks[0].exercises[0].exercise_id).toBe('romanian-deadlift')
+  })
+
+  it('ignores a late answer from a disclosure that was closed and reopened', async () => {
+    const user = userEvent.setup()
+    let release!: (value: Result<SectionCandidates[]>) => void
+    const retrieve = vi.fn<CandidatesClient['retrieve']>()
+      .mockImplementationOnce(() => new Promise((resolve) => { release = resolve }))
+      .mockResolvedValue(ok([...CANDIDATE_SETS]))
+    renderReview({ acceptance: SWAPPABLE, candidates: { retrieve } })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    await screen.findByText('Finding alternatives')
+    await user.click(screen.getByRole('button', { name: 'Keep back squat' }))
+    await user.click(screen.getByRole('button', { name: 'Swap kb swing' }))
+    expect(await screen.findByRole('button', { name: /Romanian deadlift/ })).toBeInTheDocument()
+
+    await act(async () => { release(err(createError(ErrorCode.PERSISTENCE_READ_FAILED))) })
+    expect(alternatives().getByRole('button', { name: /Romanian deadlift/ })).toBeInTheDocument()
+    expect(screen.queryByText('Alternatives didn’t load')).toBeNull()
+    expect(retrieve).toHaveBeenCalledTimes(2)
+  })
+
+  it('does not carry the previous movement’s manual load override into a swap', async () => {
+    const user = userEvent.setup()
+    const acceptance = suggestionAcceptance()
+    const { recorder } = renderReview({ acceptance, anchorRows: [anchorRow()], anchorEvidence: evidenceRows(), candidateSets: CANDIDATE_SETS })
+    await user.click(await screen.findByRole('button', { name: /^(Suggested|No suggested weight)/ }))
+    const dialog = await screen.findByRole('dialog')
+    await user.type(within(dialog).getByRole('spinbutton'), '205')
+    await user.click(within(dialog).getByRole('button', { name: APPLY_OVERRIDE_LABEL }))
+    expect(await screen.findByRole('button', { name: /^Your weight 205 kg/ })).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    await user.click(await screen.findByRole('button', { name: /Romanian deadlift/ }))
+    expect(screen.queryByRole('button', { name: /^Your weight 205 kg/ })).toBeNull()
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+    expect(recorder.accepted[0]?.acceptance.workout.sections[0].blocks[0].exercises[0]).toMatchObject({
+      exercise_id: 'romanian-deadlift', load_type: 'rir', load_value: 2,
+    })
+  })
+
+  it('offers a swap on every movement, named for the movement', () => {
+    renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS })
+
+    for (const name of ['air squat', 'back squat', 'kb swing']) {
+      expect(screen.getByRole('button', { name: `Swap ${name}` })).toBeEnabled()
+    }
+  })
+
+  it('reads alternatives for this composition only when asked, and offers only what fits', async () => {
+    const user = userEvent.setup()
+    const retrieve = vi.fn(async () => ok([...CANDIDATE_SETS]))
+    renderReview({ acceptance: SWAPPABLE, candidates: { retrieve } })
+    expect(retrieve).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+
+    expect(await screen.findByRole('heading', { name: 'Swap back squat' })).toBeInTheDocument()
+    expect(retrieve).toHaveBeenCalledWith(
+      expect.objectContaining({ focus: 'lower_body', locationId: SWAPPABLE.location_id }),
+    )
+    const offered = (await screen.findByRole('list', { name: 'Alternatives' })).textContent
+    // The same section, never a movement already in the workout, never another
+    // section's pool — and the barbell already in hand where the movement takes it.
+    expect(alternatives().getByRole('button', { name: /Romanian deadlift\s*BARBELL/ })).toBeInTheDocument()
+    expect(alternatives().getByRole('button', { name: /Goblet squat\s*DUMBBELL/ })).toBeInTheDocument()
+    expect(offered).not.toMatch(/Kettlebell swing/)
+    expect(offered).not.toMatch(/greatest stretch/)
+  })
+
+  it('swaps the movement and keeps the slot’s work, and Start persists the swap', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    await user.click(await screen.findByRole('button', { name: /Romanian deadlift/ }))
+
+    await waitFor(() => expect(screen.queryByRole('list', { name: 'Alternatives' })).toBeNull())
+    expect(screen.getByRole('button', { name: 'Swap romanian deadlift' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Swap back squat' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+
+    const before = SWAPPABLE.workout.sections[1].blocks[0].exercises[0]
+    const after = recorder.accepted[0]?.acceptance.workout.sections[1].blocks[0].exercises[0]
+    expect(after).toEqual({ ...before, exercise_id: 'romanian-deadlift', equipment: 'barbell' })
+    // Nothing else in the composition moved.
+    expect(recorder.accepted[0]?.acceptance.workout.sections[0]).toEqual(SWAPPABLE.workout.sections[0])
+  })
+
+  it('undoes a swap back to the movement generation composed', async () => {
+    const user = userEvent.setup()
+    const { recorder } = renderReview({ acceptance: SWAPPABLE, candidateSets: CANDIDATE_SETS })
+    expect(screen.queryByRole('button', { name: /Undo swap/ })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    await user.click(await screen.findByRole('button', { name: /Goblet squat/ }))
+    await user.click(await screen.findByRole('button', { name: 'Undo swap — back to back squat' }))
+
+    expect(screen.getByRole('button', { name: 'Swap back squat' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Undo swap/ })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: START_LABEL }))
+    await screen.findByText(WORKOUT_MARKER)
+    expect(recorder.accepted[0]?.acceptance.workout).toEqual(SWAPPABLE.workout)
+  })
+
+  it('says so when nothing else fits the slot, and leaves the movement as it was', async () => {
+    const user = userEvent.setup()
+    renderReview({
+      acceptance: SWAPPABLE,
+      candidateSets: [{ section: 'primary_lift', relaxed: false, candidates: [candidate({ exerciseId: 'kb-swing' })] }],
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    expect(await screen.findByText('Nothing else fits this slot')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Keep back squat' }))
+    expect(screen.getByRole('button', { name: 'Swap back squat' })).toBeInTheDocument()
+  })
+
+  it('shows a failed read in the dialog and retries it', async () => {
+    const user = userEvent.setup()
+    let fail = true
+    const retrieve = vi.fn(async () =>
+      fail ? err(createError(ErrorCode.PERSISTENCE_READ_FAILED)) : ok([...CANDIDATE_SETS]),
+    )
+    renderReview({ acceptance: SWAPPABLE, candidates: { retrieve } })
+
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('Alternatives didn’t load')
+
+    fail = false
+    await user.click(within(alert).getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByRole('button', { name: /Romanian deadlift/ })).toBeInTheDocument()
   })
 })
 

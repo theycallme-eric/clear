@@ -62,7 +62,6 @@ import {
 import type { ExerciseProgress } from '../state/workout-progress'
 import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
-import { ExerciseSwapControls } from './exercise-swap'
 import { useInvalidFocus } from './formFocus'
 import { Select } from './select'
 
@@ -152,11 +151,9 @@ export function ExerciseSetLogger({
       />
 
       {/*
-        EXE-06. Below the set form rather than beside the heading: the rack
-        being taken is the exception, and the movement's own work is what the
-        card is for. Draws nothing outside the workout shell.
+        No swap control here (U37): a movement is swapped in Review, before the
+        session exists, and never from the card of a workout in progress.
       */}
-      <ExerciseSwapControls exercise={exercise} />
 
       {/*
         EXE-05. Its own component with its own reads and write, so a panel

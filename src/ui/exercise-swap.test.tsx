@@ -1,5 +1,5 @@
 /**
- * EXE-06 — the swap controls on a movement's card, and the alternatives.
+ * U37 — the swap controls on a movement's Review row, and the alternatives.
  *
  * Two things are pinned. The treatment: the controls are the public quiet
  * `TextAction` and add no frame to the card that holds them, and the
@@ -19,8 +19,7 @@ import {
   type ExerciseSwapApi,
   type SwapOptionsState,
 } from '../state/swap-context'
-import { sessionProgress, type ExerciseProgress } from '../state/workout-progress'
-import { snapshotFixture } from '../test/workout-double'
+import { prescriptionSiteKey } from '../state/load-suggestions'
 import { Card } from './card'
 import {
   equipmentText,
@@ -29,14 +28,8 @@ import {
   type SwapDialogProps,
 } from './exercise-swap'
 
-/** The fixture's one movement: a back squat. */
-function exerciseFixture(): ExerciseProgress {
-  const exercise = sessionProgress(snapshotFixture()).sections[0]?.blocks[0]?.exercises[0]
-  if (exercise === undefined) throw new Error('the fixture has no movement')
-  return exercise
-}
-
-const EXERCISE = exerciseFixture()
+/** One slot, prescribing a back squat. */
+const SLOT = prescriptionSiteKey(0, 0, 0)
 
 function seam(overrides: Partial<ExerciseSwapApi> = {}): ExerciseSwapApi {
   return {
@@ -85,26 +78,26 @@ function renderDialog(overrides: Partial<SwapDialogProps> = {}) {
 
 describe('ExerciseSwapControls', () => {
   it('draws nothing where there is no session to revise', () => {
-    const { container } = render(withSeam(null, <ExerciseSwapControls exercise={EXERCISE} />))
+    const { container } = render(withSeam(null, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
     expect(container).toBeEmptyDOMElement()
   })
 
   it('asks for the slot it sits on, once, and names the movement', async () => {
     const user = userEvent.setup()
     const api = seam()
-    render(withSeam(api, <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
 
     const swap = screen.getByRole('button', { name: 'Swap back squat' })
     expect(swap).toHaveTextContent('Swap')
     await user.click(swap)
 
     expect(api.open).toHaveBeenCalledTimes(1)
-    expect(api.open).toHaveBeenCalledWith(EXERCISE.exerciseId)
+    expect(api.open).toHaveBeenCalledWith(SLOT)
     expect(api.undo).not.toHaveBeenCalled()
   })
 
   it('offers no undo for a slot that has no predecessor', () => {
-    render(withSeam(seam(), <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(seam(), <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
     expect(screen.queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
   })
 
@@ -112,13 +105,13 @@ describe('ExerciseSwapControls', () => {
     const user = userEvent.setup()
     const undoTarget = vi.fn(() => 'front-squat')
     const api = seam({ undoTarget })
-    render(withSeam(api, <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
 
-    expect(undoTarget).toHaveBeenCalledWith(EXERCISE.exerciseId)
+    expect(undoTarget).toHaveBeenCalledWith(SLOT)
     await user.click(screen.getByRole('button', { name: 'Undo swap — back to front squat' }))
 
     expect(api.undo).toHaveBeenCalledTimes(1)
-    expect(api.undo).toHaveBeenCalledWith(EXERCISE.exerciseId)
+    expect(api.undo).toHaveBeenCalledWith(SLOT)
     expect(api.open).not.toHaveBeenCalled()
   })
 
@@ -128,7 +121,7 @@ describe('ExerciseSwapControls', () => {
       withSeam(
         api,
         <Card heading="Strength">
-          <ExerciseSwapControls exercise={EXERCISE} />
+          <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />
         </Card>,
       ),
     )
@@ -146,7 +139,7 @@ describe('ExerciseSwapControls', () => {
   it('takes the keyboard like any other action', async () => {
     const user = userEvent.setup()
     const api = seam()
-    render(withSeam(api, <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
 
     await user.tab()
     expect(screen.getByRole('button', { name: 'Swap back squat' })).toHaveFocus()
@@ -159,11 +152,11 @@ describe('ExerciseSwapControls', () => {
     const user = userEvent.setup()
     const isBusy = vi.fn(() => true)
     const api = seam({ isBusy, undoTarget: () => 'front-squat' })
-    render(withSeam(api, <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
 
     const swap = screen.getByRole('button', { name: 'Swap back squat' })
     const undo = screen.getByRole('button', { name: 'Undo swap — back to front squat' })
-    expect(isBusy).toHaveBeenCalledWith(EXERCISE.exerciseId)
+    expect(isBusy).toHaveBeenCalledWith(SLOT)
     for (const action of [swap, undo]) {
       expect(action).toBeDisabled()
       expect(action).toHaveAttribute('aria-busy', 'true')
@@ -176,7 +169,7 @@ describe('ExerciseSwapControls', () => {
   })
 
   it('is not busy at rest', () => {
-    render(withSeam(seam(), <ExerciseSwapControls exercise={EXERCISE} />))
+    render(withSeam(seam(), <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" />))
     const swap = screen.getByRole('button', { name: 'Swap back squat' })
     expect(swap).toBeEnabled()
     expect(swap).not.toHaveAttribute('aria-busy')

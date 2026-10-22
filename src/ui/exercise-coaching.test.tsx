@@ -34,6 +34,7 @@ import {
   type WorkoutDoubleOptions,
 } from '../test/workout-double'
 import {
+  CATALOG_SOURCE_TEXT,
   ExerciseCoaching,
   NO_CUES_TEXT,
   NO_DEFINITION_TEXT,
@@ -238,6 +239,80 @@ describe('the coaching panel', () => {
     expect(within(panel).queryByText(NOTE_SAVED_TEXT)).toBeNull()
     expect(field).toHaveValue('Grip slipped on set 3')
     expect(saveNotes).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('optional catalog coaching (U38)', () => {
+  it('opens and closes on demand, naming its movement on the disclosure', async () => {
+    mount({ definitions: { 'back-squat': definitionFixture() } })
+    const trigger = screen.getByRole('button', { name: PANEL })
+    const region = screen.getByRole('region', { name: PANEL })
+
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(region).toHaveAttribute('data-expanded', 'false')
+
+    await userEvent.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    expect(region).toHaveAttribute('data-expanded', 'true')
+    expect(await within(region).findByText('Goblet squat')).toBeInTheDocument()
+
+    await userEvent.click(trigger)
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(region).toHaveAttribute('data-expanded', 'false')
+
+    // Reopened, it shows what was read rather than reading it again.
+    await userEvent.click(trigger)
+    expect(within(region).getByText('Goblet squat')).toBeInTheDocument()
+  })
+
+  it('attributes the cues and regression to the library, not to generation', async () => {
+    mount({ definitions: { 'back-squat': definitionFixture() } })
+    expect(screen.queryByText(CATALOG_SOURCE_TEXT)).toBeNull()
+
+    const panel = await open()
+    expect(await within(panel).findByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
+  })
+
+  it('states blank catalog cues and a blank regression rather than drawing empty ones', async () => {
+    mount({
+      definitions: {
+        'back-squat': definitionFixture({ coaching_cues: ['  ', ''], regression: '   ' }),
+      },
+    })
+    const panel = await open()
+
+    expect(await within(panel).findByText(NO_CUES_TEXT)).toBeInTheDocument()
+    expect(within(panel).getByText(NO_REGRESSION_TEXT)).toBeInTheDocument()
+    expect(within(panel).queryByRole('list', { name: 'Coaching cues' })).toBeNull()
+    expect(within(panel).queryAllByRole('listitem')).toEqual([])
+  })
+
+  it('keeps only the written cues when some are blank', async () => {
+    mount({
+      definitions: {
+        'back-squat': definitionFixture({ coaching_cues: ['Brace before you descend', ' '] }),
+      },
+    })
+    const panel = await open()
+
+    const cues = await within(panel).findByRole('list', { name: 'Coaching cues' })
+    expect(within(cues).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Brace before you descend',
+    ])
+  })
+
+  it('still saves a note for a movement the library has no entry for', async () => {
+    const { double, exercise } = mount({ definitions: {} })
+    const panel = await open()
+    await within(panel).findByText(NO_DEFINITION_TEXT)
+
+    await userEvent.type(within(panel).getByRole('textbox', { name: /Notes — back squat/ }), 'Use the safety bars')
+    await userEvent.click(within(panel).getByRole('button', { name: 'Save note — back squat' }))
+
+    expect(await within(panel).findByText(NOTE_SAVED_TEXT)).toBeInTheDocument()
+    expect(double.savedNotes()).toEqual([
+      { exerciseId: exercise.exerciseId, notes: 'Use the safety bars' },
+    ])
   })
 })
 

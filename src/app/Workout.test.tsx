@@ -46,6 +46,7 @@ import {
   type FakeSummaryClient,
 } from '../test/summary-double'
 import {
+  CATALOG_SOURCE_TEXT,
   NO_CUES_TEXT,
   NO_REGRESSION_TEXT,
   NOTE_FAILED_TEXT,
@@ -1065,6 +1066,50 @@ describe('Workout — one forward action saves, then continues', () => {
   })
 })
 
+describe('Workout — no swap during the session (U37)', () => {
+  /** Every structure that used to carry a swap control, one per section. */
+  const SWAPPABLE_ONCE: SectionFixture[] = [
+    { title: 'Primary lift', sectionType: 'primary_lift', blocks: [{ exercises: ['not_started'] }] },
+    {
+      title: 'Accessory',
+      sectionType: 'accessory',
+      blocks: [{
+        structureType: 'superset',
+        rounds: 3,
+        exercises: [
+          { prescription: { exercise_id: 'bench-press' } },
+          { prescription: { exercise_id: 'barbell-row' } },
+        ],
+      }],
+    },
+    {
+      title: 'Conditioning',
+      sectionType: 'conditioning',
+      blocks: [{ structureType: 'emom', timerSeconds: 600, exercises: ['not_started', 'not_started'] }],
+    },
+  ]
+
+  it('draws no swap or undo on any card, and never reads alternatives', async () => {
+    const user = userEvent.setup()
+    const retrieve = vi.fn(async () => ok([]))
+    const { double } = await shell({
+      session: activeSession(SWAPPABLE_ONCE),
+      candidates: { retrieve },
+    })
+
+    for (const next of [null, 'Next section', 'Next section']) {
+      if (next !== null) await user.click(screen.getByRole('button', { name: next }))
+      await screen.findAllByRole('button', { name: /^Coaching and notes — / })
+      expect(screen.queryByRole('button', { name: /swap/i })).toBeNull()
+      expect(screen.queryByText(/^Swap$/)).toBeNull()
+      expect(screen.queryByRole('dialog')).toBeNull()
+    }
+
+    expect(retrieve).not.toHaveBeenCalled()
+    expect(double.swaps()).toEqual([])
+  })
+})
+
 describe('Workout — coaching and notes', () => {
   /** One movement per section, so each panel on screen names one card. */
   const COACHED: SectionFixture[] = [
@@ -1123,6 +1168,68 @@ describe('Workout — coaching and notes', () => {
     await user.click(screen.getByRole('button', { name: 'Next section' }))
     expect(await screen.findByRole('heading', { name: 'Conditioning' })).toBeInTheDocument()
     expect(document.body).not.toHaveTextContent(SECTION_NOTE)
+  })
+
+  it('opens one movement’s coaching on demand, inside that movement, and closes it (U38)', async () => {
+    const user = userEvent.setup()
+    await shell({
+      session: activeSession([{
+        title: 'Accessory',
+        sectionType: 'accessory',
+        blocks: [{
+          structureType: 'superset',
+          rounds: 3,
+          exercises: [
+            { prescription: { exercise_id: 'back-squat' } },
+            { prescription: { exercise_id: 'barbell-row' } },
+          ],
+        }],
+      }]),
+      definitions: { 'back-squat': definitionFixture() },
+    })
+
+    const squat = screen.getByRole('button', { name: PANEL })
+    const row = screen.getByRole('button', { name: 'Coaching and notes — barbell row' })
+    expect(squat).toHaveAttribute('aria-expanded', 'false')
+    expect(row).toHaveAttribute('aria-expanded', 'false')
+
+    // Each panel is inside its own movement, so the cues cannot be read as
+    // the partner's: the movements' rows do not contain each other's panel.
+    let movement: HTMLElement | null = squat.parentElement
+    while (movement !== null && within(movement).queryAllByRole('heading').length === 0) {
+      movement = movement.parentElement
+    }
+    if (movement === null) throw new Error('the coaching panel sits under no movement')
+    expect(within(movement).getAllByRole('heading')[0]).toHaveTextContent(/back squat/i)
+    expect(movement).not.toContainElement(row)
+
+    await user.click(squat)
+    const panel = screen.getByRole('region', { name: PANEL })
+    expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
+    expect(within(panel).getByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
+    // Opening one movement's coaching opens nothing else.
+    expect(row).toHaveAttribute('aria-expanded', 'false')
+
+    await user.click(squat)
+    expect(squat).toHaveAttribute('aria-expanded', 'false')
+    expect(panel).toHaveAttribute('data-expanded', 'false')
+  })
+
+  it('shows no broken panel when the catalog has nothing for a movement', async () => {
+    const user = userEvent.setup()
+    await coached({
+      definitions: {
+        'back-squat': definitionFixture({ coaching_cues: ['', '  '], regression: ' ' }),
+      },
+    })
+
+    await user.click(screen.getByRole('button', { name: PANEL }))
+    const panel = screen.getByRole('region', { name: PANEL })
+
+    expect(await within(panel).findByText(NO_CUES_TEXT)).toBeInTheDocument()
+    expect(within(panel).getByText(NO_REGRESSION_TEXT)).toBeInTheDocument()
+    expect(within(panel).queryAllByRole('listitem')).toEqual([])
+    expect(within(panel).getByRole('textbox', { name: /Notes — back squat/ })).toBeEnabled()
   })
 
   it('says a movement with no cues and no regression has none', async () => {

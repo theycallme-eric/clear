@@ -92,14 +92,14 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
     'EXE-07 — the unsynced-set count of a live session, read from the shell’s set-log queue',
   SaveStatusLine:
     'SET-01/SET-02 — live save state beside its owning form; the settings screens frame it in context',
-  // EXE-06's swap. The controls exist only where the shell provides the seam,
-  // and the dialog's subject is a candidate read for one slot of a live
-  // session — the four states it draws are that read's, so a specimen would be
+  // The swap (U37). The controls exist only where Review provides the seam,
+  // and the dialog's subject is a candidate read for one slot of a composed
+  // workout — the four states it draws are that read's, so a specimen would be
   // framing an invented retrieval rather than the panel.
   ExerciseSwapControls:
-    'EXE-06 — the swap affordance on a live prescription; nothing to show outside the shell',
+    'U37 — the swap affordance on a Review row; nothing to show outside Review’s provider',
   SwapDialog:
-    'EXE-06 — the alternatives for one slot of a live session, opened by the shell’s provider',
+    'U37 — the alternatives for one slot of a composed workout, opened by Review’s provider',
   // EXE-05's panel. Its guidance is a catalog read keyed by a live
   // prescription's slug and its note is a write to that prescription's row, so
   // a specimen would be framing an invented read and an invented row.
