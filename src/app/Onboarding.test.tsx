@@ -551,3 +551,64 @@ describe('U17 ongoing limitations', () => {
     })
   })
 })
+
+/**
+ * U09 — the browser proof (e2e/settings-locations.spec.ts) owns the box tap,
+ * which needs real hit testing. Here: both checklists sit in the group that
+ * lays each input over its row, and label and Space each toggle exactly once,
+ * in both directions, with additions and removals reaching the commit.
+ */
+describe('U09 checkbox activation', () => {
+  it('label and Space each toggle an equipment and a limitation choice once', async () => {
+    const { user, userData } = setup()
+
+    await onStep('location')
+    await user.click(screen.getByRole('radio', { name: 'Home gym' }))
+    const equipment = screen.getByRole('group', { name: 'Equipment' })
+    expect(equipment).toHaveClass('clr-checkbox-group')
+    const barbell = within(equipment).getByRole('checkbox', { name: 'Barbell' })
+    const dumbbells = within(equipment).getByRole('checkbox', { name: 'Dumbbells' })
+    expect(barbell).not.toBeChecked()
+    expect(dumbbells).toBeChecked()
+    await user.click(within(equipment).getByText('Barbell'))
+    expect(barbell).toBeChecked()
+    await user.click(within(equipment).getByText('Barbell'))
+    expect(barbell).not.toBeChecked()
+    barbell.focus()
+    await user.keyboard(' ')
+    expect(barbell).toBeChecked()
+    dumbbells.focus()
+    await user.keyboard(' ')
+    expect(dumbbells).not.toBeChecked()
+
+    await user.click(next())
+    await onStep('experience')
+    await user.click(screen.getByRole('radio', { name: 'Some experience' }))
+    await user.click(next())
+    await onStep('goals')
+    await user.click(screen.getByRole('radio', { name: 'Balanced' }))
+    await user.click(next())
+    await onStep('limitations')
+    const limitations = screen.getByRole('group', { name: 'Work around' })
+    expect(limitations).toHaveClass('clr-checkbox-group')
+    const pulling = within(limitations).getByRole('checkbox', { name: 'Pulling' })
+    await user.click(within(limitations).getByText('Pulling'))
+    expect(pulling).toBeChecked()
+    pulling.focus()
+    await user.keyboard(' ')
+    expect(pulling).not.toBeChecked()
+    await user.keyboard(' ')
+    expect(pulling).toBeChecked()
+
+    await user.click(next())
+    await onStep('confirm')
+    await user.click(screen.getByRole('button', { name: 'Finish setup' }))
+    await waitFor(() => {
+      expect(userData.onboardingCalls).toHaveLength(1)
+    })
+    const committed = userData.onboardingCalls[0]
+    expect(committed?.equipment).toContain('barbell')
+    expect(committed?.equipment).not.toContain('dumbbells')
+    expect(committed?.avoid_patterns).toEqual(['pull'])
+  })
+})

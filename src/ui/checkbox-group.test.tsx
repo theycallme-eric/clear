@@ -77,6 +77,29 @@ describe('CheckboxGroup', () => {
     expect(screen.getByRole('checkbox', { name: 'Dumbbells' })).toBeChecked()
     expect(screen.getByRole('checkbox', { name: 'Kettlebell' })).toBeChecked()
   })
+
+  // U09: the browser proof is e2e/settings-locations.spec.ts. This pins the
+  // rule it depends on: each row's input spans its row, not its row's middle.
+  it('lays each input over its whole row, in tokens only', () => {
+    const css = readFileSync(resolve(import.meta.dirname, './checkbox-group.css'), 'utf-8')
+    render(
+      <CheckboxGroup legend="Equipment">
+        <Checkbox label="Dumbbells" />
+      </CheckboxGroup>,
+    )
+
+    expect(screen.getByRole('group', { name: 'Equipment' })).toHaveClass('clr-checkbox-group')
+    const rule = /\.clr-checkbox-group > \.clr-check > input \{([^}]*)\}/.exec(css)?.[1] ?? ''
+    expect(rule).toMatch(/left:\s*0;/)
+    expect(rule).toMatch(/right:\s*0;/)
+    expect(rule).toMatch(/top:\s*0;/)
+    expect(rule).toMatch(/bottom:\s*0;/)
+    expect(rule).toMatch(/transform:\s*none;/)
+    expect(css).toMatch(/\.clr-checkbox-group > \.clr-check \{\s*align-self: flex-start;/)
+    expect(css).toContain('min-width: calc(var(--control-height) + var(--spacing-100));')
+    expect(css).toContain('min-height: calc(var(--control-height) + var(--spacing-100));')
+    expect(css).not.toMatch(/\d+px|#[0-9a-f]{3,8}\b|border-radius/i)
+  })
 })
 
 /**
