@@ -85,8 +85,8 @@ History. Do not create new variants.
 | P8 | Ladder timing | Scroll to Ladder timing. Read Scheduled starts, For time and Capped window. |
 | P9 | Preview is read-only | Toggle every disclosure in the preview twice. Then use Back (`Settings`). |
 | P10 | Preview direct open | Open `/settings/formats` by typing it into the address bar, then tap Back. |
-| P11 | Optional entries | In a saved session that is still in progress, leave weight, reps and effort empty on one movement, and fill only one of them on another. |
-| P12 | Completion | Finish that existing in-progress session. On Summary, try both leaving the feeling row unanswered and choosing a value. |
+| P11 | Optional entries | In an existing in-progress session with editable sets, log one set with optional weight and the movement's measurement (reps, time or distance, as labelled) blank. Clear prefills if present. If another editable set is available, fill only one of its fields. No effort field should appear. |
+| P12 | Completion | Finish that existing in-progress session. On Summary, choose a feeling, then use Clear to remove it. Leave it cleared or choose your final value; note which state you intend to save. Tap Save and close once. |
 | P13 | Saved history | Open History, then the session you just finished and one older saved session. |
 | P14 | Reload and reopen | On the session detail, reload. Close the app or tab completely, reopen it, and return to the same session. |
 | P15 | Checkbox choices | In Settings limitations and a place's equipment editor, note the original choices. Tap a box, tap its label, and use Space if a keyboard is connected. Add and remove a choice, Save or wait for autosave, then reload. Restore your original choices afterward. |
@@ -108,8 +108,8 @@ generate one. The format preview and P13 still cover display.
 | P8 | Each mode shows the 10-8-6-4-2 rungs with targets already worked out, a timing summary and a pacing note. Scheduled starts says "Finished the ladder", For time says "Reached rung 3 of 5", and Capped window says "Not scored". The rungs are not tappable choices. |
 | P9 | Disclosures open and close. Nothing starts a workout, shows a timer running, or asks to save. Back returns to Settings. |
 | P10 | The preview opens, and Back goes to Settings (it replaces the entry, so a second Back does not return to the preview). |
-| P11 | Empty optional fields are accepted, with no forced default and no error. Partial entries keep exactly what you typed, including units. |
-| P12 | Completion saves with or without effort. The feeling row is one row of five numbers that can be cleared, and the Summary title, metrics and streak read clearly. There is no overview or section-introduction text. |
+| P11 | Empty optional fields are accepted, with no forced default and no error. Partial entries keep exactly what you typed, including units. There is no per-set effort or warm-up checkbox control. |
+| P12 | No effort answer is required to complete the session. Feeling is a separate optional mood, not effort: one row of five numbers with a Clear control. Save and close accepts your final chosen or cleared state; P14 checks only the state you actually saved. The Summary title, metrics and streak read clearly, with no overview or section-introduction text. |
 | P13 | History lists the session with a readable entry. The detail shows each block's result or "Not scored", each movement's status glyph and text, and only the values you entered. |
 | P14 | After a reload and a full reopen, the same values, statuses and feeling (or its absence) are shown. Nothing is duplicated or lost. |
 | P15 | Each box tap, label tap or Space press toggles exactly once. Targets are easy to hit without toggling a neighbour. Added and removed choices survive Save/autosave and reload; there is no need for the former label-only workaround. |
