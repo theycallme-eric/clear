@@ -72,6 +72,12 @@ export interface HistorySessionEntry {
    * minutes and abandoned did not take 45 minutes.
    */
   readonly durationMins: number | null
+  /**
+   * `requested_duration_mins` — what the athlete asked for. Shown beside the
+   * actual minutes rather than in place of them (U44), so a short or unstarted
+   * session still says what it was meant to be.
+   */
+  readonly requestedMins: number
   /** `effective_intensity` — what the session was actually composed at. */
   readonly intensity: number
   readonly mood: number | null
@@ -205,6 +211,7 @@ function sessionEntry(row: WorkoutSessionRow): HistorySessionEntry {
     focus: row.session_focus,
     status: historyStatus(row),
     durationMins: row.actual_duration_mins,
+    requestedMins: row.requested_duration_mins,
     intensity: row.effective_intensity,
     mood: row.mood,
   }

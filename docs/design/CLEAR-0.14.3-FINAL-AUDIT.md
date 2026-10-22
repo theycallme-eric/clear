@@ -22,8 +22,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `ff6001a07e183f00fa45666fc7b02ba54b3e8145173ba231bba9b60871799baf` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038 TASK-028 and TASK-012 changes below) |
-
+| Runtime source hash of this audit's tree | `de268781a6fbdcbaba976f54c5097340b07ee49cb98751777e6d935042749d42` (audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028 and TASK-013 changes below) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -349,6 +348,28 @@ trees and this head, from `git diff`:
   changes to protected-merged TASK-038 main `5d392c0`. Both candidate histories above remain
   intact, not represented as one linear sequence. Historical pictures remain historical;
   combined-tree task/project verification and independent exact-head acceptance are required.
+
+- `6b8661ac…` to `6f681250…`: TASK-013 (REQ-008, JOURNEY-013, U21/U44) retains Home's existing
+  full Favorites list and keeps its selected tab in the URL, including a real return from Review.
+  The conditional preview-limit requirement has no baseline preview cap to expose; no arbitrary
+  cap or redundant Show-all/Show-fewer controls are introduced. Same-screen query/state updates
+  retain tab focus and page scroll; actual pathname arrivals still focus and announce the screen.
+  The earlier `1ca975b8…` worker candidate was held before delivery for its contradictory cap and
+  tab-focus regression, not accepted merely because its old-head checks were green. Recent-workout
+  rows on Home and History share one hierarchy — title with its status, then day and focus, then
+  requested minutes, actual minutes when recorded, and intensity — and long titles wrap inside the
+  row. Zero, one and many favorites, real back-navigation, and long-name, status and duration
+  contexts, are owned by the Home and History suites. This changes Home and the shared history
+  row; the historical pictures remain bound to their original trees (EX-13), not to this runtime.
+
+- Combined TASK-013/protected-main TASK-028 tree: `de268781a6fbdcbaba976f54c5097340b07ee49cb98751777e6d935042749d42`
+  preserves corrected TASK-013 runtime `6f681250…` and delivered TASK-028/TASK-012 runtime
+  `ff6001a0…` after merging actual main `dbe1d7c00c18366dc7340d05457957356f730e22` into
+  corrected local Task013 source `a226dbf`. The two complete audit and journal histories are
+  retained. Only their shared documentation conflicted; Task013's owned source and test bytes
+  are unchanged. This is an integration binding, not new native acceptance, a picture rebind,
+  deployed proof or owner UAT. Original full task/project checks and fresh criterion evidence
+  remain required on the new committed candidate.
 
 The pictures are not rebound to this head. The original browser lane supplied the three groups'
 evidence below. Later behavior changes listed above require their current acceptance evidence;

@@ -73,6 +73,27 @@ const TITLE_STYLE: CSSProperties = {
   margin: 0,
 }
 
+/** The two duration contexts, each named, so neither is read as the other. */
+export const REQUESTED_DURATION_LABEL = 'Requested'
+export const ACTUAL_DURATION_LABEL = 'Actual'
+
+/** Title left, status right; the status drops below a title that needs the width. */
+const HEAD_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  columnGap: 'var(--spacing-200)',
+  rowGap: 'var(--spacing-100)',
+}
+
+/** A long name wraps inside the row, even a single unbroken word. */
+const LONG_TITLE_STYLE: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  overflowWrap: 'anywhere',
+}
+
 export interface WorkoutListItemProps {
   entry: HistoryEntry
   /**
@@ -122,38 +143,49 @@ function SessionItem({
     // A list row is a top-level section of both History and Home's recent
     // panel. `Screen` has already established h2 for this content; deepening
     // here would skip directly from the screen's h1 to h3.
+    // U44: one hierarchy for every row, whatever its status. The title and
+    // its status are the head group; the day and focus say when and what; the
+    // metrics close the row in a fixed order, the requested minutes always and
+    // the actual minutes only when some were recorded.
     <ListRow as={as ?? 'section'} aria-busy={opening || undefined}>
-      <p style={META_STYLE}>{formatDay(entry.day)}</p>
-      {/* The title carries the link rather than the whole card: an accessible
-          name is the workout, not every fact printed beside it. */}
-      <Heading style={TITLE_STYLE}>
-        {to === undefined ? (
-          entry.title
-        ) : (
-          <Link
-            to={to}
-            onClick={(event) => {
-              if (onOpen === undefined) return
-              event.preventDefault()
-              if (!opening) onOpen(entry)
-            }}
-            aria-disabled={opening || undefined}
-          >
-            {entry.title}
-          </Link>
-        )}
-      </Heading>
-      <p style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-200)' }}>
-        <span style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)' }}>
+      <div data-part="head" style={HEAD_STYLE}>
+        {/* The title carries the link rather than the whole card: an accessible
+            name is the workout, not every fact printed beside it. */}
+        <Heading style={{ ...TITLE_STYLE, ...LONG_TITLE_STYLE }}>
+          {to === undefined ? (
+            entry.title
+          ) : (
+            <Link
+              to={to}
+              onClick={(event) => {
+                if (onOpen === undefined) return
+                event.preventDefault()
+                if (!opening) onOpen(entry)
+              }}
+              aria-disabled={opening || undefined}
+            >
+              {entry.title}
+            </Link>
+          )}
+        </Heading>
+        <span
+          data-part="status"
+          style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)', flexShrink: 0 }}
+        >
           <span aria-hidden="true" style={{ display: 'flex' }}>
             {STATUS_GLYPH[entry.status]}
           </span>
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>
-        <span>{formatFocus(entry.focus)}</span>
-        {/* A count never wraps away from its unit. */}
+      </div>
+      <p data-part="context" style={{ ...META_STYLE, marginTop: 'var(--spacing-100)' }}>
+        {`${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
+      </p>
+      {/* A count never wraps away from its unit. */}
+      <p data-part="metrics" style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-100)' }}>
+        <span className="clr-nowrap">{`${REQUESTED_DURATION_LABEL} ${entry.requestedMins} min`}</span>
         {entry.durationMins !== null && (
-          <span className="clr-nowrap">{`${entry.durationMins} min`}</span>
+          <span className="clr-nowrap">{`${ACTUAL_DURATION_LABEL} ${entry.durationMins} min`}</span>
         )}
         <span className="clr-nowrap">{`Intensity ${entry.intensity}/10`}</span>
       </p>

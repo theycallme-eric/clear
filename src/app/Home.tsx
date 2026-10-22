@@ -40,7 +40,9 @@
  *      parses the saved snapshot and carries the resulting acceptance payload
  *      to `/review` as route state. No generation call is made and no row is
  *      written on the way — Review's own Start is where the session begins to
- *      exist, exactly as it is for a generated workout.
+ *      exist, exactly as it is for a generated workout. The existing full
+ *      favorites list stays full; its selected tab is a search param so a
+ *      refresh or browser return from Review retains that destination (U21).
  *
  * Recent workouts retain `/history/:id` as their durable fallback and use the
  * same direct-Review resolver as History. Favorites restore through their own
@@ -57,7 +59,13 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react'
-import { useHref, useLinkClickHandler, useNavigate, type To } from 'react-router-dom'
+import {
+  useHref,
+  useLinkClickHandler,
+  useNavigate,
+  useSearchParams,
+  type To,
+} from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -185,6 +193,14 @@ export const STREAK_EMPTY = 'No streak yet.'
 export const FAVORITES_LABEL = 'Favorites'
 export const FAVORITES_EMPTY_TITLE = 'No favorites yet'
 export const FAVORITES_EMPTY = 'Save a workout from its summary to start it again here.'
+
+/**
+ * U21: the tab itself opens the existing full favorites list. There is no
+ * baseline preview cap to turn into a new limitation. Keep the selected tab
+ * in the URL so a refresh or browser return restores the same full list.
+ */
+export const HOME_TAB_PARAM = 'tab'
+export const FAVORITES_TAB_VALUE = 'favorites'
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
@@ -663,8 +679,23 @@ function WorkoutTabs({
   query: HistoryQuery
   entries: readonly HistorySessionEntry[]
 }) {
-  const [active, setActive] = useState(0)
+  // U21: the selected tab is the URL's, so leaving Home and coming back — or
+  // opening the full favorites list — never drops the user onto Recent.
+  const [params, setParams] = useSearchParams()
+  const active = params.get(HOME_TAB_PARAM) === FAVORITES_TAB_VALUE ? 1 : 0
   const idBase = 'home-workout-tabs'
+
+  const select = (index: number) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        if (index === 1) next.set(HOME_TAB_PARAM, FAVORITES_TAB_VALUE)
+        else next.delete(HOME_TAB_PARAM)
+        return next
+      },
+      { replace: true },
+    )
+  }
 
   return (
     <div className="clr-stack clr-stack--tight">
@@ -672,7 +703,7 @@ function WorkoutTabs({
         <TabBar
           tabs={[RECENT_WORKOUTS_LABEL, FAVORITES_LABEL]}
           active={active}
-          onChange={setActive}
+          onChange={select}
           idBase={idBase}
         />
       </TabBand>

@@ -379,6 +379,7 @@ const SAMPLE_HISTORY_SESSION: HistoryEntry = {
   focus: 'lower_body',
   status: 'completed',
   durationMins: 42,
+  requestedMins: 45,
   intensity: 7,
   mood: 4,
 }
@@ -392,6 +393,7 @@ const SAMPLE_HISTORY_PARTIAL: HistoryEntry = {
   focus: 'upper_body',
   status: 'partial',
   durationMins: 18,
+  requestedMins: 40,
   intensity: 6,
   mood: null,
 }
