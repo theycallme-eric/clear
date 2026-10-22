@@ -764,3 +764,28 @@ Actual receipts: `TASK027_POLLING_REPAIR_PHONE_VERIFICATION_COMPLETE_ACTUAL_ACK_
 - TASK-004 later CI39588516964 retained the same U04 misses despite the motion experiment. CI screenshot shows the Vercel feedback overlay overlapping the centered action. The unproven motion correction and its structural/motion-test changes were withdrawn; current runtime is restored62161e8d, with vendor unchanged. Test-only documented x-vercel-skip-toolbar header excludes preview tooling without changing any hit samples/assertions or authentication/protections. Prior failed proof is retained; new exact-head protected CI remains required.
 
 - Combined protected-main Task012/Task028 tree: `ff6001a07e183f00fa45666fc7b02ba54b3e8145173ba231bba9b60871799baf` after normal integration of actual main `785dd64`. Both complete histories above are retained; no screenshot identity is rebound. All original task/project checks, fresh criterion receipt and independent exact-head review remain required.
+
+## TASK-034 current phone-only proof — 2026-10-22
+
+The owner's current CLEAR scope is mobile-only. The newly introduced format
+preview has four actual passing theme cases and eight real AFTER PNGs at normal
+390×844 and short 390×320 phone viewports, collected by root in session31269
+with zero failed or skipped cases. The current group is
+`docs/design/evidence-0143/task034-format-preview-mobile`; consumer
+`task034-format-preview-mobile`, scope `mobile-only-2026-10-22`.
+
+The genuine captured source is `91255346e557e416d13326c7c01c7545d8a48f01`,
+runtime `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`,
+and capture driver `bfa3ccd709bc4e1647c7962cd56def7e7becfd54a659d7f9391f99d5ed09d005`.
+These original identities are retained rather than rewritten to the later
+evidence commit. All route/interaction, real disposable-session, accessibility,
+pixel/byte, canonical-scroll and no-generation/no-workout-write predicates
+remain required by the strict offline evidence gate. No BEFORE image exists for
+the preview route absent from baseline c31; `before: null` remains explicit.
+
+The former twelve-case/sixteen-PNG wider group remains byte-identical historical
+evidence, not current device scope. An earlier current-phone attempt failed one
+case during boot; its partial group and trace were preserved outside the product
+and are not counted as this passing invocation. This is local source-bound proof,
+not exact deployed proof, release acceptance or owner UAT. Full native checks,
+fresh criterion validation and protected exact-head delivery remain pending.
