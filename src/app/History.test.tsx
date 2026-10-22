@@ -7,8 +7,22 @@ import { createError, err, ok, ErrorCode } from '../state/errors'
 import type { WorkoutSessionRow } from '../state/schemas'
 import { makeSessionRow } from '../test/factories'
 import { renderApp, signedIn } from '../test/render'
-import { createWorkoutDouble, reconstructionFixture } from '../test/workout-double'
+import {
+  createWorkoutDouble,
+  reconstructionFixture,
+  savedWorkoutFixture,
+  type WorkoutDoubleOptions,
+} from '../test/workout-double'
+import {
+  REMOVE_FAVORITE_CANCEL,
+  REMOVE_FAVORITE_CONFIRM,
+  REMOVE_FAVORITE_FAILED,
+  REMOVE_FAVORITE_LABEL,
+  REMOVE_FAVORITE_TITLE,
+} from '../ui/favorite-list'
 import { screenAtmosphere } from './atmosphere'
+import { SAVE_FAVORITE_LABEL, SAVED_FAVORITE_LABEL } from './FavoriteToggle'
+import { SESSION_DETAIL_BACK_LABEL } from './SessionDetail'
 import {
   HISTORY_BACK_LABEL,
   HISTORY_EMPTY_ACTION,
@@ -427,5 +441,121 @@ describe('History route', () => {
 
     expect(await screen.findByRole('button', { name: 'Start workout' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { level: 1, name: 'History' })).toBeNull()
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
+// U22 · JOURNEY-014 — undoing a favorite from /history/:id
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('History detail — removing a favorite (U22)', () => {
+  const row = sessionRow(1, '2026-09-24')
+  const detailPath = `/history/${row.id}`
+
+  /** A favorited, completed session opened from the History list. */
+  function renderFavorited(favoritesClient: WorkoutDoubleOptions['favoritesClient'] = {}) {
+    const removed: string[] = []
+    const double = createWorkoutDouble({
+      session: null,
+      historyRows: [row],
+      favorites: [savedWorkoutFixture({ original_session_id: row.id, title: row.title })],
+      sessions: {
+        asPerformed: async (sessionId) =>
+          ok(reconstructionFixture({ sessionId, title: row.title, state: 'completed' })),
+      },
+      favoritesClient,
+    })
+    const remove = double.clients.favorites.remove
+    double.clients.favorites.remove = (savedWorkoutId) => {
+      removed.push(savedWorkoutId)
+      return remove(savedWorkoutId)
+    }
+    renderApp(['/history', detailPath], signedIn({ workout: double.clients }))
+    return { double, removed }
+  }
+
+  it('asks first, and keeping it changes nothing', async () => {
+    const user = userEvent.setup()
+    const { double, removed } = renderFavorited()
+
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveTextContent(REMOVE_FAVORITE_TITLE)
+    expect(dialog).toHaveTextContent('The workout itself stays in your history.')
+    await user.click(within(dialog).getByRole('button', { name: REMOVE_FAVORITE_CANCEL }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(screen.getByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(removed).toEqual([])
+    expect(double.favorites()).toHaveLength(1)
+  })
+
+  it('removes the favorite in place and keeps the workout in history', async () => {
+    const user = userEvent.setup()
+    const { double, removed } = renderFavorited()
+    const favoriteId = double.favorites()[0].id
+
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    const dialog = await screen.findByRole('dialog')
+    await user.click(within(dialog).getByRole('button', { name: REMOVE_FAVORITE_CONFIRM }))
+
+    // Same screen, now offering to save again: the cache answered at once.
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(screen.queryByText(SAVED_FAVORITE_LABEL)).toBeNull()
+    expect(screen.queryByRole('button', { name: REMOVE_FAVORITE_LABEL })).toBeNull()
+    expect(screen.getByRole('heading', { level: 1, name: row.title })).toBeInTheDocument()
+    expect(removed).toEqual([favoriteId])
+    expect(double.favorites()).toEqual([])
+
+    // The session is still in the record it came from.
+    await user.click(screen.getByRole('button', { name: SESSION_DETAIL_BACK_LABEL }))
+    const list = await historyList()
+    expect(within(list).getByRole('link', { name: row.title })).toBeInTheDocument()
+  })
+
+  it('sends one delete however often it is pressed while one is in flight', async () => {
+    const user = userEvent.setup()
+    let settle: () => void = () => {}
+    const { double, removed } = renderFavorited({
+      remove: () =>
+        new Promise((resolve) => {
+          settle = () => resolve(ok(undefined))
+        }),
+    })
+
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: REMOVE_FAVORITE_CONFIRM,
+      }),
+    )
+
+    const pending = screen.getByRole('button', { name: REMOVE_FAVORITE_LABEL })
+    expect(pending).toBeDisabled()
+    expect(pending).toHaveAttribute('aria-busy', 'true')
+
+    settle()
+    expect(await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })).toBeEnabled()
+    expect(removed).toHaveLength(1)
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(double.favorites()).toHaveLength(1)
+  })
+
+  it('reports a failed removal in place and leaves the favorite saved', async () => {
+    const user = userEvent.setup()
+    renderFavorited({
+      remove: async () => err(createError(ErrorCode.PERSISTENCE_WRITE_FAILED)),
+    })
+
+    await user.click(await screen.findByRole('button', { name: REMOVE_FAVORITE_LABEL }))
+    await user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', {
+        name: REMOVE_FAVORITE_CONFIRM,
+      }),
+    )
+
+    expect(await screen.findByText(REMOVE_FAVORITE_FAILED)).toBeInTheDocument()
+    expect(screen.getByText(SAVED_FAVORITE_LABEL)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: REMOVE_FAVORITE_LABEL })).toBeEnabled()
   })
 })

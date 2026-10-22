@@ -83,7 +83,7 @@ import {
   TextAction,
   Zap,
 } from '../design-system/index'
-import { useFavoritesQuery } from '../state/favorite-queries'
+import { favoriteRunsQueryKey, useFavoritesQuery } from '../state/favorite-queries'
 import {
   favoriteEntries,
   isOutdatedSnapshot,
@@ -103,6 +103,7 @@ import {
 import type { HistorySessionEntry } from '../state/history'
 import { useHistoryQuery, type HistoryQuery } from '../state/history-queries'
 import { isErr } from '../state/errors'
+import { useQueryClient } from '../state/query'
 import {
   useMarkRestDay,
   useRestDaysQuery,
@@ -134,7 +135,6 @@ import {
   useActiveSessionQuery,
   useWorkoutClients,
 } from '../state/workout-queries'
-import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import {
   ActionGroup,
@@ -143,7 +143,11 @@ import {
   PhoneFooter,
   TabBand,
 } from '../ui/composition'
-import { FavoriteList } from '../ui/favorite-list'
+import {
+  FavoriteList,
+  REMOVE_FAVORITE_FAILED,
+  RemoveFavoriteDialog,
+} from '../ui/favorite-list'
 import { HeadingSection } from '../ui/Heading'
 import { HistoryList } from '../ui/history-list'
 import { useArrivalStagger } from '../ui/motion'
@@ -788,10 +792,12 @@ function RecentWorkouts({
  *
  * **Removing asks first.** Unfavoriting deletes the progression the favorite
  * existed to accumulate (favorites-v2 §"Removing from Favorites"), which is
- * exactly the case `ConfirmDialog critical` is for.
+ * exactly the case `ConfirmDialog critical` is for — the shared
+ * `RemoveFavoriteDialog`, so Summary and Session Detail ask the same question.
  */
 function FavoriteWorkouts() {
   const query = useFavoritesQuery()
+  const cache = useQueryClient()
   const { favorites } = useWorkoutClients()
   const navigate = useNavigate()
 
@@ -838,10 +844,11 @@ function FavoriteWorkouts() {
     setRemovingId(null)
 
     if (isErr(removed)) {
-      setFailure('That favorite wasn’t removed. Try again.')
+      setFailure(REMOVE_FAVORITE_FAILED)
       return
     }
 
+    cache.invalidate(favoriteRunsQueryKey(entry.id))
     query.refetch()
   }
 
@@ -877,20 +884,13 @@ function FavoriteWorkouts() {
       </Card>
 
       {/* An overlay, not content: it stays outside the card it answers for. */}
-      <ConfirmDialog
+      <RemoveFavoriteDialog
         open={confirming !== null}
-        critical
-        title="Remove from favorites?"
-        confirmLabel="Remove"
-        cancelLabel="Keep it"
         onConfirm={() => {
           if (confirming !== null) void remove(confirming)
         }}
         onCancel={() => setConfirming(null)}
-      >
-        Tracked data including completion history and personal bests will be
-        lost. The workout itself stays in your history.
-      </ConfirmDialog>
+      />
     </>
   )
 }

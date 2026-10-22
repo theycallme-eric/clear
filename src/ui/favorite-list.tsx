@@ -27,11 +27,48 @@ import {
   OUTDATED_SNAPSHOT_MESSAGE,
   type FavoriteEntry,
 } from '../state/favorites'
+import { ConfirmDialog } from './blocking-dialog'
 import { ActionRow, ListFrame, ListRow } from './composition'
 import { Heading } from './Heading'
 
 export const START_FAVORITE_LABEL = 'Start'
 export const REMOVE_FAVORITE_LABEL = 'Remove from favorites'
+export const REMOVE_FAVORITE_TITLE = 'Remove from favorites?'
+export const REMOVE_FAVORITE_CONFIRM = 'Remove'
+export const REMOVE_FAVORITE_CANCEL = 'Keep it'
+export const REMOVE_FAVORITE_FAILED = 'That favorite wasn’t removed. Try again.'
+
+/**
+ * U22: the one confirmation every unfavorite goes through. The Favorites tab,
+ * Summary and Session Detail ask the same question in the same words, because
+ * removing deletes the progression the favorite existed to accumulate
+ * (favorites-v2 §"Removing from Favorites"). The sentence also says what is
+ * *not* lost: the completed workout stays in history.
+ */
+export function RemoveFavoriteDialog({
+  open,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <ConfirmDialog
+      open={open}
+      critical
+      title={REMOVE_FAVORITE_TITLE}
+      confirmLabel={REMOVE_FAVORITE_CONFIRM}
+      cancelLabel={REMOVE_FAVORITE_CANCEL}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    >
+      Tracked data including completion history and personal bests will be
+      lost. The workout itself stays in your history.
+    </ConfirmDialog>
+  )
+}
 
 const META_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
