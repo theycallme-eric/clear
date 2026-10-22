@@ -26,13 +26,18 @@
  *      was never a disabled one here to explain.
  *   3. **The streak is displayed, never stored.** It is SES-01's derivation
  *      over SES-01c's read, in its own query with its own four states, so a
- *      streak that fails to load does not cost the user their debrief.
+ *      streak that fails to load does not cost the user their debrief. The
+ *      week beside it is Home's week (U41) — the same derivation, the same
+ *      marks and the same strip — with four states of its own.
+ *
+ * U42: the session title heads the result card at a size of its own, and the
+ * favorite control is the only thing that says "favorite", before and after.
  *
  * Motion: the result card boots once with `.clr-boot`; a save that fails
  * re-renders in place and replays no entrance, which is the IA's rule for this
  * screen ("save retries do not replay the entrance").
  */
-import { useState } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
 import type { CompletedSession } from '../data/summary'
@@ -47,10 +52,12 @@ import {
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import type { AppError } from '../state/errors'
-import type { WeekDay } from '../state/home'
+import { useHistoryQuery } from '../state/history-queries'
+import { daysTrained, weekStrip, type WeekDay } from '../state/home'
 import { MOOD_SCALE } from '../state/mood'
 import { useQueryClient } from '../state/query'
-import { previousDay, type LocalDay, type Streak } from '../state/streak'
+import { restDayMarks, useRestDaysQuery } from '../state/rest-day-queries'
+import type { Streak } from '../state/streak'
 import {
   completedSessionQueryKey,
   useCompletedSessionQuery,
@@ -65,6 +72,7 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { Card } from '../ui/card'
+import { Heading } from '../ui/Heading'
 import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { MOOD_ICONS } from '../ui/mood'
@@ -88,8 +96,22 @@ export const SUMMARY_ROUTE = '/summary'
 /** The longest note the session row is asked to hold (CORE-03, `schemas.ts`). */
 export const NOTES_MAX_LENGTH = 2000
 
-/** How many days the week display shows, ending today. */
-export const STREAK_WEEK_DAYS = 7
+/** The two readouts, each its own small card's heading. */
+export const DURATION_LABEL = 'Duration'
+export const STREAK_LABEL = 'Streak'
+
+/** What a reader hears for a duration nothing could measure. */
+export const DURATION_NOT_RECORDED = 'Not recorded'
+
+/** The qualifier under a run that has not reached today. */
+export const STREAK_THROUGH_YESTERDAY = 'Through yesterday'
+
+/** An empty streak has no number to enlarge, so it is said in a sentence. */
+export const STREAK_EMPTY = 'No streak yet. Sessions on consecutive days build one.'
+
+/** Home's week, under Home's name for it. */
+export const SUMMARY_WEEK_LABEL = 'This week'
+export const WEEK_EMPTY = 'No sessions this week yet.'
 
 /** Lets the hard-edge footer submit the form that remains in the scroller. */
 export const SUMMARY_FORM_ID = 'summary-debrief'
@@ -220,18 +242,26 @@ function Debrief({ completed }: { completed: CompletedSession }) {
         {/* Only the screen title sits on the atmosphere: the acknowledgment,
             each key number and the debrief are each inside a card. */}
         <div className="clr-stack clr-boot">
-          <MetricGrid>
-            {durationMins !== null && (
-              <Stat label="Duration" value={`${durationMins} min`} />
-            )}
-            <StreakPanel />
-          </MetricGrid>
-          {/* FAV-01 remains distinct from the result readouts: it is an action,
-              not a statistic, and it keeps its one-tap behavior. */}
+          {/* U42: the session's own title leads, as this card's heading, and
+              FAV-01's control is labelled once — by the control itself. It
+              stays distinct from the readouts: an action, not a statistic. */}
           <Card>
-            <p>{session.title}, done.</p>
-            <FavoriteToggle sessionId={session.id} />
+            <Heading style={SESSION_TITLE_STYLE}>{session.title}, done.</Heading>
+            <FavoriteToggle sessionId={session.id} compact />
           </Card>
+          {/* U41: two readouts, one size. The week is its own card under them
+              rather than squeezed into half of one. */}
+          <MetricGrid>
+            <Stat label={DURATION_LABEL}>
+              {durationMins === null ? (
+                <NotRecorded />
+              ) : (
+                `${durationMins} min`
+              )}
+            </Stat>
+            <StreakStat />
+          </MetricGrid>
+          <SummaryWeek />
         </div>
 
         {/* A form sits inside one card, its labels with it; the primary
@@ -289,21 +319,74 @@ function Debrief({ completed }: { completed: CompletedSession }) {
 }
 
 /**
+ * U42: the session title is the result card's heading, a step under the
+ * screen's own and well above the card labels. A long title wraps inside the
+ * card rather than widening it.
+ */
+const SESSION_TITLE_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--heading-h2-size)',
+  lineHeight: 'var(--heading-h2-line-height)',
+  color: 'var(--text-card-header)',
+  overflowWrap: 'anywhere',
+}
+
+/**
+ * U41: every key number is drawn at this one size, so the duration and the
+ * streak read as a pair rather than as a number beside a sentence.
+ */
+const METRIC_VALUE_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--heading-h4-size)',
+  lineHeight: 'var(--heading-h4-line-height)',
+  color: 'var(--text-card-header)',
+}
+
+const METRIC_NOTE_STYLE: CSSProperties = {
+  margin: 0,
+  color: 'var(--text-secondary)',
+}
+
+/**
  * One key number in its own small card, its label the card's heading. The
  * readout inside drops its own frame, so there is never a frame in a frame.
  */
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  note,
+  children,
+}: {
+  label: string
+  /** A qualifier under the number, in the secondary role. */
+  note?: string
+  children: ReactNode
+}) {
   return (
     <Card heading={label} padding="sm">
       <MetricFrame>
-        <p>{value}</p>
+        <p data-metric-value="" style={METRIC_VALUE_STYLE}>
+          {children}
+        </p>
+        {note === undefined ? null : <p style={METRIC_NOTE_STYLE}>{note}</p>}
       </MetricFrame>
     </Card>
   )
 }
 
+/** A duration nothing can measure: a dash to the eye, words to a reader. */
+function NotRecorded() {
+  return (
+    <>
+      <span aria-hidden="true">–</span>
+      <span className="a11y-hidden">{DURATION_NOT_RECORDED}</span>
+    </>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// The streak
+// The streak and the week
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -311,7 +394,7 @@ function Stat({ label, value }: { label: string; value: string }) {
  * readable and writable whether or not this read succeeded, and a shared state
  * would have made one failure into two.
  */
-function StreakPanel() {
+function StreakStat() {
   const query = useStreakQuery()
 
   const state: ViewState<Streak> =
@@ -323,72 +406,100 @@ function StreakPanel() {
           ? viewEmpty()
           : viewReady(query.state.data)
 
+  if (state.status === 'ready') {
+    const streak = state.data
+    return (
+      <Stat
+        label={STREAK_LABEL}
+        note={streak.includesToday ? undefined : STREAK_THROUGH_YESTERDAY}
+      >
+        {streak.days} {streak.days === 1 ? 'day' : 'days'}
+      </Stat>
+    )
+  }
+
+  if (state.status === 'empty') {
+    return (
+      <Card heading={STREAK_LABEL} padding="sm">
+        <MetricFrame>
+          <p style={{ margin: 0 }}>{STREAK_EMPTY}</p>
+        </MetricFrame>
+      </Card>
+    )
+  }
+
+  // Loading and a failed read hold the same small card, so the pair of
+  // readouts keeps its shape while the streak settles or offers its retry.
   return (
-    <Card heading="Streak" padding="sm">
+    <Card heading={STREAK_LABEL} padding="sm">
       <MetricFrame>
-        <ViewStateSwitch
-          state={state}
-          loadingLabel="Reading your streak"
-          errorTitle="Your streak didn’t load"
-          onRetry={query.refetch}
-          empty={<p>No streak yet. Sessions on consecutive days build one.</p>}
-        >
-          {(streak) => <WeekStreak streak={streak} />}
-        </ViewStateSwitch>
+        {state.status === 'loading' ? (
+          <LoadingView label="Reading your streak" />
+        ) : (
+          <ErrorView
+            error={state.error}
+            title="Your streak didn’t load"
+            onRetry={query.refetch}
+          />
+        )}
       </MetricFrame>
     </Card>
   )
 }
 
-/** Names the streak's seven days for assistive technology. */
-const STREAK_WEEK_LABEL = 'Last seven days'
-
 /**
- * The last seven days, oldest first, drawn by Home's own week strip (U12): a
- * trained day in the completed role with its tick, a finished day without one
- * in the skin's information role with its `Rest` mark, and today — until it is
- * trained — as the dash still to come.
+ * Home's week, as Home draws it (U41): the same `weekStrip` over the same
+ * history and HOME-02's marks, so a day that was trained before a broken run
+ * still carries its tick and a marked rest day keeps its reason. The strip
+ * itself is the shared one (U12) — the completed role and its tick for a
+ * trained day, the information role and its `Rest` mark for a rested one.
+ *
+ * Four states of its own, for the same independence as the streak's: the
+ * strip is drawn whenever there are days to draw, and a failed read says so
+ * with its retry rather than costing the debrief.
  */
-function WeekStreak({ streak }: { streak: Streak }) {
-  const trained = new Set(streak.trainingDays)
-  const days: WeekDay[] = weekEnding(streak.today).map((day) => ({
-    day,
-    reason: null,
-    initial: weekdayName(day, 'narrow'),
-    weekday: weekdayName(day, 'long'),
-    state: trained.has(day) ? 'workout' : day < streak.today ? 'rest' : 'upcoming',
-    isToday: day === streak.today,
-  }))
+function SummaryWeek() {
+  const history = useHistoryQuery()
+  const restDays = useRestDaysQuery()
+
+  const sessions =
+    history.state.status === 'ready' ? history.state.data.sessions : null
+  const marks = restDayMarks(restDays)
+  const week = useMemo(
+    () => weekStrip(sessions ?? [], { restDays: marks ?? undefined }),
+    [marks, sessions],
+  )
+
+  const state: ViewState<readonly WeekDay[]> =
+    history.state.status === 'loading' || restDays.state.status === 'loading'
+      ? viewLoading()
+      : history.state.status === 'error'
+        ? viewError(history.state.error)
+        : restDays.state.status === 'error'
+          ? viewError(restDays.state.error)
+          : daysTrained(week) === 0
+            ? viewEmpty()
+            : viewReady(week)
 
   return (
-    <div className="clr-stack clr-stack--tight">
-      <p>
-        {streak.days} {streak.days === 1 ? 'day' : 'days'}
-        {streak.includesToday ? '' : ', through yesterday'}
-      </p>
-      <WeekStrip days={days} label={STREAK_WEEK_LABEL} />
-    </div>
+    <Card heading={SUMMARY_WEEK_LABEL}>
+      <ViewStateSwitch
+        state={state}
+        loadingLabel="Reading your training week"
+        errorTitle="This week didn’t load"
+        onRetry={() => {
+          history.refetch()
+          restDays.refetch()
+        }}
+        empty={
+          <div className="clr-stack clr-stack--tight">
+            <WeekStrip days={week} label={SUMMARY_WEEK_LABEL} />
+            <p style={{ margin: 0 }}>{WEEK_EMPTY}</p>
+          </div>
+        }
+      >
+        {(days) => <WeekStrip days={days} label={SUMMARY_WEEK_LABEL} />}
+      </ViewStateSwitch>
+    </Card>
   )
-}
-
-/** Seven local days ending on `today`, oldest first. */
-export function weekEnding(today: LocalDay): LocalDay[] {
-  const days = [today]
-  while (days.length < STREAK_WEEK_DAYS) {
-    days.push(previousDay(days[days.length - 1]))
-  }
-
-  return days.reverse()
-}
-
-/**
- * A day's name, as its first letter or in full. A `LocalDay` is a calendar
- * date with no zone of its own, so it is read as UTC — which is what makes the
- * weekday a property of the date rather than of the machine rendering it.
- */
-function weekdayName(day: LocalDay, weekday: 'narrow' | 'long'): string {
-  return new Intl.DateTimeFormat('en-US', {
-    weekday,
-    timeZone: 'UTC',
-  }).format(new Date(`${day}T00:00:00Z`))
 }

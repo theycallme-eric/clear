@@ -6,6 +6,9 @@
  *   · mood and notes persist to the session row;
  *   · the copy is a brief acknowledgment and then the debrief;
  *   · the streak is SES-01's derivation, in its own four states;
+ *   · U41: the duration and the streak at one enlarged size, and Home's week
+ *     (its derivation, its rest marks, its strip) in four states of its own;
+ *   · U42: the session title leads, long or short, and "favorite" is said once;
  *   · nothing on the screen is non-functional — no disabled control, no
  *     "coming soon";
  *   · only a completed session reaches the screen;
@@ -17,13 +20,15 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createError, err, ErrorCode, ok } from '../state/errors'
 import { favoritesQueryKey } from '../state/favorite-queries'
 import type { QueryClient } from '../state/query'
-import type { SavedWorkoutRow } from '../state/schemas'
+import type { RestDayRow, SavedWorkoutRow } from '../state/schemas'
+import { makeSessionRow } from '../test/factories'
 import { AppProviders, createWarmQueryClient, signedIn } from '../test/render'
+import { createFakeRestDayClient } from '../test/rest-day-double'
 import { FIXTURE_USER_ID } from '../test/user-data-double'
 import {
   completedSession,
@@ -61,6 +66,8 @@ import {
 const COMPLETED = completedSession()
 const SESSION_ID = COMPLETED.session.id
 const TITLE = COMPLETED.session.title
+/** U42: the session title heads its result card, acknowledged in the one line. */
+const TITLE_HEADING = `${TITLE}, done.`
 
 /** Home's page heading, which is where Done lands. */
 const HOME_HEADING = 'Today'
@@ -75,7 +82,11 @@ interface Mounted {
 }
 
 function mountSummary(
-  options: { summary?: FakeSummaryOptions; workout?: WorkoutDoubleOptions } = {},
+  options: {
+    summary?: FakeSummaryOptions
+    workout?: WorkoutDoubleOptions
+    restDays?: readonly RestDayRow[]
+  } = {},
 ): Mounted {
   const summary = createFakeSummaryClient(options.summary)
   const double = createWorkoutDouble({
@@ -104,7 +115,14 @@ function mountSummary(
   const queryClient = createWarmQueryClient()
 
   render(
-    <AppProviders {...signedIn({ summary, workout: double.clients, queryClient })}>
+    <AppProviders
+      {...signedIn({
+        summary,
+        workout: double.clients,
+        queryClient,
+        restDays: createFakeRestDayClient(options.restDays),
+      })}
+    >
       <RouterProvider router={router} />
     </AppProviders>,
   )
@@ -117,7 +135,7 @@ async function debrief(
   options: Parameters<typeof mountSummary>[0] = {},
 ): Promise<Mounted> {
   const mounted = mountSummary(options)
-  await screen.findByText(`${TITLE}, done.`)
+  await screen.findByRole('heading', { name: TITLE_HEADING })
   return mounted
 }
 
@@ -158,7 +176,7 @@ describe('Summary — only a completed session reaches it', () => {
     expect(within(alert).getByText('That session didn’t load')).toBeInTheDocument()
     await user.click(within(alert).getByRole('button', { name: 'Retry' }))
 
-    expect(await screen.findByText(`${TITLE}, done.`)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: TITLE_HEADING })).toBeInTheDocument()
   })
 })
 
@@ -171,7 +189,7 @@ describe('Summary — the debrief', () => {
     await debrief()
 
     expect(screen.getByRole('heading', { level: 1, name: SUMMARY_HEADING })).toBeInTheDocument()
-    expect(screen.getByText(`${TITLE}, done.`)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: TITLE_HEADING })).toBeInTheDocument()
     expect(screen.getByText('42 min')).toBeInTheDocument()
 
     const moods = within(screen.getByRole('group', { name: 'How do you feel?' }))
@@ -197,8 +215,39 @@ describe('Summary — the debrief', () => {
     // Inside a card the readout drops its own frame: never a frame in a frame.
     expect(duration?.querySelector('.clr-metric-frame.clr-chamfer')).toBeNull()
     expect(streak?.querySelector('.clr-card .clr-card')).toBeNull()
-    // Only the screen title sits on the atmosphere; the acknowledgment is carded.
-    expect(screen.getByText(`${TITLE}, done.`).closest('.clr-card')).toBeInTheDocument()
+    // Only the screen title sits on the atmosphere; the session title is carded.
+    expect(screen.getByRole('heading', { name: TITLE_HEADING }).closest('.clr-card')).toBeInTheDocument()
+  })
+
+  it('U41: draws the duration and the streak side by side at one enlarged size', async () => {
+    await debrief()
+    await screen.findByText('3 days')
+
+    const grid = document.querySelector('.clr-metric-grid') as HTMLElement
+    const values = Array.from(grid.querySelectorAll<HTMLElement>('[data-metric-value]'))
+    expect(values.map((value) => value.textContent)).toEqual(['42 min', '3 days'])
+    // One size for both, and larger than body copy: a display-face heading step.
+    for (const value of values) {
+      expect(value.style.fontFamily).toBe('var(--font-display)')
+      expect(value.style.fontSize).toBe('var(--heading-h4-size)')
+    }
+    // The week is not squeezed into half of the grid: it is its own card.
+    expect(within(grid).queryByRole('list')).toBeNull()
+    const week = screen.getByRole('list', { name: 'This week' })
+    expect(week.closest('.clr-card')).not.toBe(grid.closest('.clr-card'))
+  })
+
+  it('U41: a duration nothing could measure keeps its card, as a dash with words', async () => {
+    await debrief({
+      summary: {
+        latest: async () => ok({ ...completedSession(), durationMins: null }),
+      },
+    })
+
+    const duration = screen.getByRole('heading', { name: 'Duration' }).closest('.clr-card')!
+    const value = duration.querySelector('[data-metric-value]') as HTMLElement
+    expect(value).toHaveTextContent('Not recorded')
+    expect(value.querySelector('[aria-hidden="true"]')).toHaveTextContent('–')
   })
 
   it('keeps the debrief fields in one card, labels inside, and the action pinned', async () => {
@@ -341,29 +390,90 @@ describe('Summary — the debrief', () => {
 // The streak
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('Summary — the streak', () => {
-  it('shows SES-01’s count and marks the trained days of the week', async () => {
-    await debrief()
+/** A performed session on one local day, as HIST-01's page answers it. */
+function trainedOn(day: string, index: number) {
+  return makeSessionRow({
+    id: `b00000${String(10 + index)}-0000-4000-8000-000000000000`,
+    date: day,
+    started_at: `${day}T11:00:00.000Z`,
+    completed_at: `${day}T12:00:00.000Z`,
+  })
+}
 
-    expect(await screen.findByText('3 days')).toBeInTheDocument()
-    // 18–24 September, oldest first; the fixture trained the last three.
-    const days = Array.from(screen.getByRole('list', { name: 'Last seven days' }).children)
+/** Thursday 24 September 2026: the week is Monday 21 to Sunday 27. */
+const TODAY = '2026-09-24'
+
+/** Trained Monday, missed Tuesday, trained Wednesday and today. */
+const WEEK_ROWS = [trainedOn('2026-09-24', 0), trainedOn('2026-09-23', 1), trainedOn('2026-09-21', 2)]
+
+/** The two-day run those rows make, as SES-01 derives it. */
+const RUN = fixtureStreak({ days: 2, trainingDays: ['2026-09-24', '2026-09-23'], today: TODAY })
+
+describe('Summary — the streak and the week', () => {
+  beforeEach(() => {
+    // Only the clock: the week is drawn around today, and nothing here waits.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(`${TODAY}T15:00:00`))
+  })
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  /** The week strip's seven days, Monday first. */
+  async function weekDays(): Promise<HTMLElement[]> {
+    const strip = await screen.findByRole('list', { name: 'This week' })
+    await waitFor(() =>
+      expect(strip.querySelector('[data-day-state="workout"]')).not.toBeNull(),
+    )
+    return Array.from(strip.children) as HTMLElement[]
+  }
+
+  it('shows SES-01’s count and Home’s week, ticks before a broken run included', async () => {
+    await debrief({
+      summary: { streak: async () => ok(RUN) },
+      workout: { historyRows: WEEK_ROWS },
+    })
+
+    expect(await screen.findByText('2 days')).toBeInTheDocument()
+    const days = await weekDays()
+    // Monday was trained even though the run it began was broken on Tuesday:
+    // the week is what happened, not what the streak still counts.
     expect(days.map((day) => day.getAttribute('data-day-state'))).toEqual([
-      'rest', 'rest', 'rest', 'rest', 'workout', 'workout', 'workout',
+      'workout', 'rest', 'workout', 'workout', 'upcoming', 'upcoming', 'upcoming',
     ])
-    expect(days[3]).toHaveTextContent(/: Rest$/)
-    expect(days[6]).toHaveTextContent(/\(today\): Workout$/)
+    expect(days[1]).toHaveTextContent(/: Rest$/)
+    expect(days[3]).toHaveTextContent(/\(today\): Workout$/)
+  })
+
+  it('U41: a marked rest day keeps its reason, as it does on Home', async () => {
+    await debrief({
+      summary: { streak: async () => ok(RUN) },
+      workout: { historyRows: WEEK_ROWS },
+      restDays: [{
+        id: 'a0000002-0000-4000-8000-000000000000',
+        user_id: FIXTURE_USER_ID,
+        day: '2026-09-22',
+        reason: 'injury',
+        note: null,
+        created_at: '2026-09-22T12:00:00.000Z',
+        updated_at: '2026-09-22T12:00:00.000Z',
+      }],
+    })
+
+    const days = await weekDays()
+    await waitFor(() => expect(days[1]).toHaveTextContent(/: Rest — Injured$/))
+    expect(days[1]).toHaveAttribute('data-day-state', 'rest')
   })
 
   it('U12: rest days take the info role and trained days the completed role, each with its own glyph', async () => {
-    await debrief()
+    await debrief({
+      summary: { streak: async () => ok(RUN) },
+      workout: { historyRows: WEEK_ROWS },
+    })
 
-    await screen.findByText('3 days')
-    const days = Array.from(
-      screen.getByRole('list', { name: 'Last seven days' }).children,
-    ) as HTMLElement[]
-    const trained = days[6]
-    const rest = days[3]
+    const days = await weekDays()
+    const trained = days[3]
+    const rest = days[1]
 
     expect(trained).toHaveAttribute('data-day-state', 'workout')
     expect(trained.style.getPropertyValue('--surface')).toBe('var(--surface-selected)')
@@ -394,17 +504,62 @@ describe('Summary — the streak', () => {
       },
     })
 
-    expect(await screen.findByText('1 day, through yesterday')).toBeInTheDocument()
+    const streak = screen.getByRole('heading', { name: 'Streak' }).closest('.clr-card')!
+    expect(await within(streak as HTMLElement).findByText('1 day')).toBeInTheDocument()
+    expect(within(streak as HTMLElement).getByText('Through yesterday')).toBeInTheDocument()
   })
 
-  it('states an honest empty streak', async () => {
+  it('waits for the streak inside its own card, beside the duration', async () => {
+    await debrief({ summary: { streak: () => new Promise(() => {}) } })
+
+    const streak = screen.getByRole('heading', { name: 'Streak' }).closest('.clr-card')!
+    expect(within(streak as HTMLElement).getByText('Reading your streak')).toBeInTheDocument()
+    expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
+    expect(screen.getByText('42 min')).toBeInTheDocument()
+  })
+
+  it('states an honest empty streak and an empty week, still drawn', async () => {
     await debrief({
       summary: { streak: async () => ok(fixtureStreak({ days: 0, trainingDays: [] })) },
     })
 
+    const streak = screen.getByRole('heading', { name: 'Streak' }).closest('.clr-card')!
+    // No number to enlarge: the empty streak is a sentence in the same card.
     expect(
-      await screen.findByText('No streak yet. Sessions on consecutive days build one.'),
-    ).toBeInTheDocument()
+      await within(streak as HTMLElement).findByText(
+        'No streak yet. Sessions on consecutive days build one.',
+      ),
+    ).not.toHaveAttribute('data-metric-value')
+    expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
+    expect(await screen.findByText('No sessions this week yet.')).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: 'This week' }).children).toHaveLength(7)
+  })
+
+  it('offers the week’s own retry when its read fails, and keeps the streak', async () => {
+    const user = userEvent.setup()
+    let attempts = 0
+    await debrief({
+      summary: { streak: async () => ok(RUN) },
+      workout: {
+        historyRows: WEEK_ROWS,
+        history: {
+          page: async () => {
+            attempts += 1
+            return attempts === 1
+              ? err(createError(ErrorCode.NETWORK_SERVER_ERROR))
+              : ok({ sessions: WEEK_ROWS, hasMore: false })
+          },
+        },
+      },
+    })
+
+    const week = screen.getByRole('heading', { name: 'This week' }).closest('.clr-card')!
+    const alert = await within(week as HTMLElement).findByRole('alert')
+    expect(alert).toHaveTextContent('This week didn’t load')
+    expect(await screen.findByText('2 days')).toBeInTheDocument()
+
+    await user.click(within(alert).getByRole('button', { name: 'Retry' }))
+    expect((await weekDays())[3]).toHaveAttribute('data-day-state', 'workout')
   })
 
   it('costs the streak display, not the debrief, when the streak read fails', async () => {
@@ -414,6 +569,10 @@ describe('Summary — the streak', () => {
     })
 
     expect(await screen.findByText('Your streak didn’t load')).toBeInTheDocument()
+    // The failure keeps its small card in the pair, retry included.
+    const streak = screen.getByRole('heading', { name: 'Streak' }).closest('.clr-card')!
+    expect(streak.closest('.clr-metric-grid')).toBeInTheDocument()
+    expect(within(streak as HTMLElement).getByRole('button', { name: 'Retry' })).toBeEnabled()
 
     await user.click(screen.getByRole('radio', { name: 'Flat' }))
     await user.click(screen.getByRole('button', { name: DONE }))
@@ -426,6 +585,56 @@ describe('Summary — the streak', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Save as favorite, and Done
 // ─────────────────────────────────────────────────────────────────────────────
+
+describe('Summary — the title and its one favorite label (U42)', () => {
+  /** Every visible mention of "favorite" in the session's result card. */
+  function favoriteMentions(): string[] {
+    const card = screen.getByRole('heading', { name: TITLE_HEADING }).closest('.clr-card') as HTMLElement
+    const walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT)
+    const found: string[] = []
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      // The closed confirm is an overlay that is not on screen until asked.
+      if (node.parentElement?.closest('dialog, [role="dialog"]')) continue
+      if (/favorite/i.test(node.textContent ?? '')) found.push(node.textContent!.trim())
+    }
+    return found
+  }
+
+  it('heads the result card with the session title, above every card label', async () => {
+    await debrief()
+
+    const title = screen.getByRole('heading', { level: 2, name: TITLE_HEADING })
+    expect(title.style.fontFamily).toBe('var(--font-display)')
+    expect(title.style.fontSize).toBe('var(--heading-h2-size)')
+    expect(title).not.toHaveClass('label')
+    // The readouts are named by labels, which the title is not.
+    expect(screen.getByRole('heading', { name: 'Duration' })).toHaveClass('label')
+  })
+
+  it('wraps a long title inside its card rather than truncating it', async () => {
+    const long =
+      'Full-body strength ladder with conditioning finisher and accessory superset work'
+    mountSummary({ summary: { latest: async () => ok(completedSession({ title: long })) } })
+
+    const title = await screen.findByRole('heading', { name: `${long}, done.` })
+    expect(title).toHaveTextContent(long)
+    expect(title.style.overflowWrap).toBe('anywhere')
+  })
+
+  it('says “favorite” once before saving and once after', async () => {
+    const user = userEvent.setup()
+    await debrief()
+
+    const save = await screen.findByRole('button', { name: SAVE_FAVORITE_LABEL })
+    await waitFor(() => expect(save).not.toHaveAttribute('aria-busy', 'true'))
+    expect(favoriteMentions()).toEqual([SAVE_FAVORITE_LABEL])
+
+    await user.click(save)
+    await screen.findByText(SAVED_FAVORITE_LABEL)
+    // The status and its way back — no field label repeating either one.
+    expect(favoriteMentions()).toEqual([SAVED_FAVORITE_LABEL, REMOVE_FAVORITE_LABEL])
+  })
+})
 
 describe('Summary — save as favorite, then Done', () => {
   it('saves the session as a favorite in one tap, and Home’s favorites tab has it', async () => {
@@ -503,7 +712,7 @@ describe('Summary — undoing a favorite (U22)', () => {
     expect(removed).toEqual([favoriteId])
     expect(double.favorites()).toEqual([])
     // Same screen, and the workout being debriefed is still the one on it.
-    expect(screen.getByText(`${TITLE}, done.`)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: TITLE_HEADING })).toBeInTheDocument()
 
     // Done still saves the session, and Home's favorites tab no longer has it.
     await user.click(screen.getByRole('button', { name: DONE }))
