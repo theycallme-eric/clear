@@ -28,7 +28,7 @@ Normal Vercel sign-in may still be required on your phone; no protection setting
 | Preview source commit | `984de82a1dccd69ab706189953930e4570706e35` (TASK-036, PR #512) |
 | Equivalent merged app | `863169cb814ab9b8e028b2f8664c3ffe7d53bd7f`; the complete Git trees are identical: `a6912489c361d4c4732429684c53f6280d5ce9f2` |
 | Protected preview URL | `https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app` |
-| Actual deployment / status receipt | Deployment `7264832878`, successful status `20319054372`, created 2026-10-22T22:04:31Z; source `984de82a1dccd69ab706189953930e4570706e35` |
+| Actual deployment / status receipt | Deployment `7264832878`, successful status `20319054372` at 2026-10-22T22:04:31Z; source `984de82a1dccd69ab706189953930e4570706e35` |
 | Protected preview check | [Successful exact-source mobile check, run 39862216581](https://github.com/theycallme-eric/clear/actions/runs/39862216581) |
 
 Retained identity receipts are also in this revision's `runner/delivery/PREMERGE_TASK036_984de82.json`
@@ -141,7 +141,7 @@ none of them is claimed as done here.
 |---|---|---|
 | Protected preview identity | TASK-040 handoff | **Confirmed** for the fixed source and tree above through the actual deployment/status receipts and existing browser access. This is not final release proof or owner acceptance. |
 | Original incident | TASK-031 | **Accepted unproven: original evidence unavailable.** The owner accepts this outcome; no reproduced cause or cause-specific fix is asserted. It receives no delivery credit, does not block this guide, and no further request for the unavailable evidence is needed. |
-| Checkbox activation (U09) | TASK-036 | **Delivered on `main` and included in this preview.** PR #512 repairs the reproduced hit-area cause with contained44pixel targets. All7phone cases and a separately fresh7case criterion passed, including box/label/Space and saved-choice reload. The old expected-failure marker is removed. Owner UAT remains pending; report any failed toggle in P15. |
+| Checkbox activation (U09) | TASK-036 | **Delivered on `main` and included in this preview.** PR #512 repairs the reproduced hit-area cause with contained 44-pixel targets. All seven automated phone cases and a separate fresh seven-case check passed, including box/label/Space and saved-choice reload. The old expected-failure marker is removed. Owner UAT remains pending; report any failed toggle in P15. |
 | Live and release proof for the changed generation prompt (null introductions, intensity, ladder timing) | TASK-035 | **Pending, unproved.** No owner-authorized minimal real product-path case has been run or bound to the frontend commit, backend deployment and prompt/contract versions. Offline contract tests are not live proof. Final TASK-035 still requires all original CI/RLS/deployed checks. |
 | Live generation during UAT | Owner | **Not authorized** by this guide. It needs separate action-time approval within the existing attempt limits. |
 
