@@ -15,53 +15,53 @@ sessions you have already saved.
 
 ## What to open
 
-Open this exact protected preview on your phone:
+Open this exact protected deployment on your phone:
 
-**[Open CLEAR for phone UAT](https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app)**
+**[Open CLEAR for phone UAT](https://clear-i33yf6d25-erics-projects-0ade0dda.vercel.app)**
 
-The link was confirmed through the existing browser access on 2026-10-22: it opened the actual
-CLEAR Welcome screen, not a Vercel protection error. This is an access check only, not owner UAT.
-Normal Vercel sign-in may still be required on your phone; no protection setting was changed.
+This is the immutable Production deployment of runtime commit
+`b54287abaa43db0d5c171c4a0da17cb7b476bac6` (R), the same build the TASK-035 release proof ran
+against. Normal Vercel sign-in may still be required on your phone; no protection setting was
+changed.
 
 | Field | Value |
 |---|---|
-| Preview source commit | `984de82a1dccd69ab706189953930e4570706e35` (TASK-036, PR #512) |
-| Equivalent merged app | `863169cb814ab9b8e028b2f8664c3ffe7d53bd7f`; the complete Git trees are identical: `a6912489c361d4c4732429684c53f6280d5ce9f2` |
-| Protected preview URL | `https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app` |
-| Actual deployment / status receipt | Deployment `7264832878`, successful status `20319054372` at 2026-10-22T22:04:31Z; source `984de82a1dccd69ab706189953930e4570706e35` |
-| Protected preview check | [Successful exact-source mobile check, run 39862216581](https://github.com/theycallme-eric/clear/actions/runs/39862216581) |
+| Runtime source commit (R) | `b54287abaa43db0d5c171c4a0da17cb7b476bac6` (PR #515; includes TASK-034/036/038/040) |
+| Deployment URL | `https://clear-i33yf6d25-erics-projects-0ade0dda.vercel.app` |
+| Actual deployment / status receipt | GitHub deployment `7266643635`, successful status `20328356391` at 2026-10-22T23:58:29Z, environment Production, commit R |
+| Deployed mobile check | [Successful exact-deployed mobile run 39875215337](https://github.com/theycallme-eric/clear/actions/runs/39875215337) |
+| Release proof record | [`ui-ux-2026-10-20-release-proof.json`](ui-ux-2026-10-20-release-proof.json) (see [Open items](#open-items)) |
 
-Retained identity receipts are also in this revision's `runner/delivery/PREMERGE_TASK036_984de82.json`
-and `AFTER_READY_TASK036_984de82.json`. This later guide changes documentation only; it does not
-relabel the preview's app source or claim its own document commit was deployed.
-The following read-only GitHub pages identify the source and
+This later guide changes documentation only; it does not relabel the app source or claim its own
+document commit was deployed. The following read-only GitHub pages identify the source and
 deployment; you need to be signed in to GitHub:
 
-- Preview source commit and its deployment status:
-  https://github.com/theycallme-eric/clear/commit/984de82a1dccd69ab706189953930e4570706e35
+- Runtime source commit and its deployment status:
+  https://github.com/theycallme-eric/clear/commit/b54287abaa43db0d5c171c4a0da17cb7b476bac6
 - Exact deployment receipt:
-  https://api.github.com/repos/theycallme-eric/clear/deployments/7264832878
+  https://api.github.com/repos/theycallme-eric/clear/deployments/7266643635
 - Exact deployment status receipts:
-  https://api.github.com/repos/theycallme-eric/clear/deployments/7264832878/statuses
-- The merged PR that produced it (Vercel's deployment link is in its checks and timeline):
-  https://github.com/theycallme-eric/clear/pull/512
+  https://api.github.com/repos/theycallme-eric/clear/deployments/7266643635/statuses
 - Deployment history for the repository:
   https://github.com/theycallme-eric/clear/deployments
 
 These are **not** the UAT target. They are listed so nobody mistakes them for it:
 
+- `https://clear-2r5sb44oh-erics-projects-0ade0dda.vercel.app` is the earlier TASK-036 preview
+  (source `984de82`, deployment `7264832878`). It was the target of an earlier revision of this
+  guide and is superseded by the R deployment above.
 - `https://clear-37caizbsu-erics-projects-0ade0dda.vercel.app` is the immutable production build
   from 2026-10-03 (`df91e41`, deployment `6822912431`). It predates all of this work.
 - `https://clear-peach.vercel.app` and `https://clear-app-1111.vercel.app` are aliases. Each one
   serves whichever build is promoted to it, so neither identifies a commit.
 
-This is a fixed preview, not an alias for later changes. If a newer app build is handed over,
-record its exact deployment separately and do not mix results. The checkbox repair is included;
-final live release proof is still pending. Automated checks are not owner acceptance.
+This is a fixed deployment, not an alias for later changes. If a newer app build is handed over,
+record its exact deployment separately and do not mix results. The checkbox repair is included.
+Automated checks and the release proof are not owner acceptance.
 
 Before you start:
 
-1. Open the confirmed preview URL on your phone. If Vercel asks, sign in through its normal
+1. Open the deployment URL above on your phone. If Vercel asks, sign in through its normal
    protection. Use an account you already use. Do not create one just for UAT.
 2. Install to the home screen if that is how you normally use CLEAR. Run the Back checks in that
    mode too.
@@ -139,10 +139,10 @@ none of them is claimed as done here.
 
 | Item | Owner | Status |
 |---|---|---|
-| Protected preview identity | TASK-040 handoff | **Confirmed** for the fixed source and tree above through the actual deployment/status receipts and existing browser access. This is not final release proof or owner acceptance. |
+| Deployment identity | TASK-035 handoff | **Recorded** for runtime commit R above through GitHub deployment `7266643635` / status `20328356391` (Production). This is not owner acceptance. |
 | Original incident | TASK-031 | **Accepted unproven: original evidence unavailable.** The owner accepts this outcome; no reproduced cause or cause-specific fix is asserted. It receives no delivery credit, does not block this guide, and no further request for the unavailable evidence is needed. |
-| Checkbox activation (U09) | TASK-036 | **Delivered on `main` and included in this preview.** PR #512 repairs the reproduced hit-area cause with contained 44-pixel targets. All seven automated phone cases and a separate fresh seven-case check passed, including box/label/Space and saved-choice reload. The old expected-failure marker is removed. Owner UAT remains pending; report any failed toggle in P15. |
-| Live and release proof for the changed generation prompt (null introductions, intensity, ladder timing) | TASK-035 | **Pending, unproved.** No owner-authorized minimal real product-path case has been run or bound to the frontend commit, backend deployment and prompt/contract versions. Offline contract tests are not live proof. Final TASK-035 still requires all original CI/RLS/deployed checks. |
+| Checkbox activation (U09) | TASK-036 | **Delivered on `main` and included in this deployment.** PR #512 repairs the reproduced hit-area cause with contained 44-pixel targets. All seven automated phone cases and a separate fresh seven-case check passed, including box/label/Space and saved-choice reload. The old expected-failure marker is removed. Owner UAT remains pending; report any failed toggle in P15. |
+| Live and release proof for the changed generation prompt (null introductions, intensity, ladder timing) | TASK-035 | **One owner-authorized case passed; final release not yet delivered.** Case `task035-recovery-intensity-9-mobile-v1` (active recovery, full body, 15 min, requested intensity 9) ran once through the protected `e2e.yml` live lane, [run 39878566415](https://github.com/theycallme-eric/clear/actions/runs/39878566415), against R: 1 generation request, 1 attempt, request `req_mvk8k1ou_k3jaj4`. Observed: overview and section introductions null and not shown; effective intensity clamped to 3 and shown as "3 of 10"; one saved session with matching ladder timing; disposable-account cleanup passed. Bound to frontend R, backend source tree `25779ab`, Supabase deployment (generate-workout v34, generate-section v2), prompt `5.3.0` and contract `4.2.0` in [`ui-ux-2026-10-20-release-proof.json`](ui-ux-2026-10-20-release-proof.json). That one case does not cover every format variant; other timing formats are proved offline only. The authorized paid case is consumed; no further live action is authorized. Native delivery/merge of this record is still pending. |
 | Live generation during UAT | Owner | **Not authorized** by this guide. It needs separate action-time approval within the existing attempt limits. |
 
 ## Acceptance
