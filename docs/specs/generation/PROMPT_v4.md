@@ -1,6 +1,6 @@
 # CLEAR composition prompt — contract 4.2
 
-> **Prompt version:** `5.3.0`\
+> **Prompt version:** `5.4.0`\
 > **Contract version:** `4.2.0`\
 > **Status:** implementation-ready baseline  
 > **Why the filename says v4:** it marks the v4 architecture checkpoint. The prompt itself is
@@ -32,6 +32,8 @@ This is the composition policy for `GEN-02b`. It carries forward the useful coac
 from v3 while honoring the v4.1 boundary: code resolves eligibility and candidates; Claude selects
 and structures only; code validates, hydrates facts, and persists.
 
+> **5.4.0 (reviewed V3):** compact conditioning composition, execution-only block notes and eligible progressing squat-anchor retention. Existing ladder timing/contract4.2 and code-owned loads unchanged. Owner-approved size budget recorded in tests.
+
 ## 1. Inputs and ownership
 
 The caller supplies:
@@ -58,6 +60,8 @@ values present in the candidate group for that section. Select equipment only fr
 candidate's usable_equipment. Return structure and prescription fields only; do not return exercise
 names, equipment display strings, coaching cues, regressions, or factual catalog content.
 Return overview and every section_notes as null; write no workout overview or section introduction.
+Use block_notes only for necessary execution instructions; otherwise null. No effort-category slogans,
+editorial commentary or adjustment explanations.
 
 PRIORITY
 1. Safety and the supplied hard boundary
@@ -147,13 +151,24 @@ session_function and anchor_relationship values.
 - Warmup progresses general movement → dynamic range → activation → specific movement prep.
   Prepare the main work's candidate components; protect rehearsal before heat-building. At intensity
   1–3 omit loaded prep; at 7–10 include specific prep when available.
+Warmup glute-bridge uses bodyweight.
 - Primary chooses one `can_be_primary` compound relevant to the focus; availability is resolved.
 - Accessory supports the theme's synergists/stabilizers or opposing pattern, not random novelty.
 - Core uses useful complementary work; superset only for simple transitions.
 - Conditioning uses two to four movements per block with sustainable flow and practical setup.
 - Cooldown targets muscles actually worked; its amount fits the available time.
 
+CONDITIONING COMPOSITION
+Use these as flexible guides within the existing request, recovery directives and candidate boundary; never force volume to satisfy a quota.
+At intensity 5+, include a suitable high-demand movement when available: burpees, db-thruster, swing, snatch, box-jumps, squat-jumps, rowing-machine, assault-bike, sled-push, sled-pull, battle-ropes, high-pulls. Push-ups, step-ups and jump rope can share demand; air squats, crawls, climbers, runners and carries complement it. Sustained jump rope may drive a bodyweight block; otherwise use suitable volume when harder candidates do not fit.
+Size fixed work from the sum across all rounds/rungs, not the pattern alone. For a typical 30-minute conditioning request, about 15–20 minutes of conditioning in one or two blocks is a guide; allow 60–90s between blocks. Adapt to shorter requests and other work.
+For an ordinary fixed-work main block, roughly 10–15 minutes of work with a cap about 1.3 times expected work is a starting point. Estimate simple reps, swings, jumps and step-ups at 2–3s; burpees/thrusters/snatches at 4–5s; rows of 150/200m at 35/45s; transitions at 10–15s. Adjust for movement quality and fatigue. The cap is a stopping limit, not work to fill after finishing.
+Two-movement ladders without companions should start around 50–60 total reps each, adjusted for difficulty; fixed companions can supply demand. In supported scheduled ladders, the hardest rung should occupy roughly half its window. Use only supported timing fields, never prose as a substitute.
+EMOMs: roughly 25–40s work per minute at intensity 5–7, 35–45s at 8–10, adapted for technique, recovery and power quality. A demanding minute may alternate with filler; avoid filler-only higher-intensity blocks. Conditioning rep bands are starting points, not ceilings.
+Carries use time, usually 30–45s, including suitcase carries for grip; no carry distances or invented weights.
+
 HISTORY AND VARIETY
+For lower-body strength with an eligible high-confidence progressing back squat anchor, retain it as the primary lift or 3x5 support using prior_session load; honor recovery directives and the session time budget.
 Respect the chosen focus. Use supplied history to balance squat/hinge within lower-body work and
 press/pull within upper-body work, with complementary accessories. Useful lifts may repeat across
 days; do not force novelty or infer absent history. Avoid redundant work within a workout.

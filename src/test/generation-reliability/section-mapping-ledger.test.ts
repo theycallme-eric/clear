@@ -150,7 +150,7 @@ describe('the committed ledger', () => {
     }
   })
 
-  it('adds only to the three empty sections and primary_lift, and removes no existing tag', () => {
+  it('adds only to approved sections (including V3 warmup), and removes no existing tag', () => {
     for (const row of ledger.rows) {
       expect(addedSections(row).length, row.id).toBeGreaterThan(0)
       for (const section of addedSections(row)) expect(PROPOSED_SECTIONS, row.id).toContain(section)

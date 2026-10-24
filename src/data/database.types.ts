@@ -33,6 +33,7 @@
  *   supabase/migrations/20261002000023_onboarding_viability.sql
  *   supabase/migrations/20261002000024_location_viability.sql
  *   supabase/migrations/20261021000025_ladder_timing_persistence.sql
+ *   supabase/migrations/20261024000026_v3_hinge_warmup.sql
  */
 
 export type Json =
