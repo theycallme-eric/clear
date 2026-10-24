@@ -28,7 +28,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { REPO_ROOT, loadSnapshot } from '../../../scripts/catalog-seed/sources.mjs'
-import { buildRepair } from '../../../scripts/generation-reliability/catalog-repair-migration.mjs'
+import { buildRepair, V3_WARMUP_MIGRATION_PATH, V3_WARMUP_ROLLBACK_PATH } from '../../../scripts/generation-reliability/catalog-repair-migration.mjs'
 import {
   MIGRATION_PATH,
   ROLLBACK_SQL_PATH,
@@ -61,6 +61,8 @@ interface Membership {
 const ledger = loadLedger(REPO_ROOT)
 const migration = read(MIGRATION_PATH)
 const rollback = read(ROLLBACK_SQL_PATH)
+const warmupMigration = read(V3_WARMUP_MIGRATION_PATH)
+const warmupRollback = read(V3_WARMUP_ROLLBACK_PATH)
 const catalog = seededCatalog()
 
 const capture = new Map<string, Membership>(
@@ -74,7 +76,7 @@ const seed = new Map<string, Membership>(
 )
 
 /** What the committed SQL says, as opposed to what the ledger would render. */
-const committedChanges = parseMigration(migration)
+const committedChanges = [...parseMigration(migration), ...parseMigration(warmupMigration)]
 const once = applyChanges(capture, committedChanges)
 const twice = applyChanges(once.catalog, committedChanges)
 
@@ -82,7 +84,8 @@ const sorted = (values: readonly string[]) => [...values].sort()
 
 describe('the migration and the ledger', () => {
   it('is byte-identical to what the ledger renders', () => {
-    expect(migration).toBe(renderMigration(ledger))
+    expect(migration).toBe(renderMigration({ rows: ledger.rows.filter((row) => row.id !== 'glute-bridge') }))
+    expect(warmupMigration).toBe(renderMigration({ rows: ledger.rows.filter((row) => row.id === 'glute-bridge') }))
   })
 
   it('and the rollback are both current', () => {
@@ -241,7 +244,7 @@ describe('the seed and the ledger', () => {
 })
 
 describe('the rollback', () => {
-  const restored = parseRollback(rollback)
+  const restored = new Map([...parseRollback(rollback), ...parseRollback(warmupRollback)])
 
   it('restores, for every ledger row, exactly what the pre-change capture holds', () => {
     expect(sorted([...restored.keys()])).toEqual(sorted(ledger.rows.map((row) => row.id)))

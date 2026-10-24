@@ -1152,7 +1152,10 @@ describe('the migration that carries it is additive', () => {
 
   it('is appended after every migration that was already there', () => {
     const files = migrationFiles()
-    expect(files.at(-1)).toBe(LADDER_MIGRATION.split('/').at(-1))
+    expect(files.slice(files.indexOf(LADDER_MIGRATION.split('/').at(-1)!))).toEqual([
+      '20261021000025_ladder_timing_persistence.sql',
+      '20261024000026_v3_hinge_warmup.sql',
+    ])
   })
 
   it('adds one nullable column with no default and rewrites no row', () => {

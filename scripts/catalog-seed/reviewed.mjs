@@ -190,13 +190,15 @@ export const WEIGHTS_OUTSIDE_DERIVATION = Object.freeze([
  * be done with no implement, which is also `madePrimary` — a row raises
  * `can_be_primary` exactly when it adds `primary_lift`.
  */
+// V3 owner-approved glute-bridge warmup adds one row/candidate per focus and tier.
 export const SECTION_REPAIR = Object.freeze({
-  rows: 28,
+  rows: 29,
   added: Object.freeze({
     skill_power: 12,
     carries: 4,
     stability_balance: 10,
     primary_lift: 8,
+    warmup: 1,
   }),
   madePrimary: 8,
 })
@@ -208,7 +210,7 @@ export const SECTION_REPAIR = Object.freeze({
  * empty hold exactly what the ledger added.
  */
 export const SECTION_MEMBERSHIP = Object.freeze({
-  warmup: 31,
+  warmup: 32,
   primary_lift: 33,
   accessory: 97,
   core: 21,
@@ -240,88 +242,88 @@ export const SECTION_MEMBERSHIP = Object.freeze({
 export const FOCUS_RETRIEVAL = Object.freeze({
   upper_body: Object.freeze({
     minimal: Object.freeze({
-      warmup: [26, 28], mobility: [14, 14], primary_lift: [2, 8], accessory: [9, 23],
+      warmup: [27, 29], mobility: [14, 14], primary_lift: [2, 8], accessory: [9, 23],
       skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [1, 7],
       conditioning: [11, 13], cooldown: [6, 6],
     }),
     home: Object.freeze({
-      warmup: [26, 29], mobility: [14, 14], primary_lift: [5, 13], accessory: [30, 59],
+      warmup: [27, 30], mobility: [14, 14], primary_lift: [5, 13], accessory: [30, 59],
       skill_power: [1, 3], carries: [4, 4], core: [10, 19], stability_balance: [1, 10],
       conditioning: [17, 23], cooldown: [6, 6],
     }),
     building: Object.freeze({
-      warmup: [28, 31], mobility: [14, 14], primary_lift: [13, 32], accessory: [45, 92],
+      warmup: [29, 32], mobility: [14, 14], primary_lift: [13, 32], accessory: [45, 92],
       skill_power: [4, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
       conditioning: [19, 25], cooldown: [6, 6],
     }),
     full: Object.freeze({
-      warmup: [28, 31], mobility: [14, 14], primary_lift: [13, 33], accessory: [46, 97],
+      warmup: [29, 32], mobility: [14, 14], primary_lift: [13, 33], accessory: [46, 97],
       skill_power: [4, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
       conditioning: [21, 27], cooldown: [6, 6],
     }),
   }),
   lower_body: Object.freeze({
     minimal: Object.freeze({
-      warmup: [25, 28], mobility: [14, 14], primary_lift: [6, 8], accessory: [12, 23],
+      warmup: [26, 29], mobility: [14, 14], primary_lift: [6, 8], accessory: [12, 23],
       skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [7, 7],
       conditioning: [9, 13], cooldown: [6, 6],
     }),
     home: Object.freeze({
-      warmup: [26, 29], mobility: [14, 14], primary_lift: [8, 13], accessory: [27, 59],
+      warmup: [27, 30], mobility: [14, 14], primary_lift: [8, 13], accessory: [27, 59],
       skill_power: [2, 3], carries: [4, 4], core: [10, 19], stability_balance: [10, 10],
       conditioning: [17, 23], cooldown: [6, 6],
     }),
     building: Object.freeze({
-      warmup: [28, 31], mobility: [14, 14], primary_lift: [23, 32], accessory: [46, 92],
+      warmup: [29, 32], mobility: [14, 14], primary_lift: [23, 32], accessory: [46, 92],
       skill_power: [9, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
       conditioning: [19, 25], cooldown: [6, 6],
     }),
     full: Object.freeze({
-      warmup: [28, 31], mobility: [14, 14], primary_lift: [24, 33], accessory: [49, 97],
+      warmup: [29, 32], mobility: [14, 14], primary_lift: [24, 33], accessory: [49, 97],
       skill_power: [9, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
       conditioning: [21, 27], cooldown: [6, 6],
     }),
   }),
   full_body: Object.freeze({
     minimal: Object.freeze({
-      warmup: [26, 28], mobility: [14, 14], primary_lift: [8, 8], accessory: [18, 23],
+      warmup: [27, 29], mobility: [14, 14], primary_lift: [8, 8], accessory: [18, 23],
       skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [7, 7],
       conditioning: [11, 13], cooldown: [6, 6],
     }),
     home: Object.freeze({
-      warmup: [27, 29], mobility: [14, 14], primary_lift: [13, 13], accessory: [48, 59],
+      warmup: [28, 30], mobility: [14, 14], primary_lift: [13, 13], accessory: [48, 59],
       skill_power: [2, 3], carries: [4, 4], core: [10, 19], stability_balance: [10, 10],
       conditioning: [20, 23], cooldown: [6, 6],
     }),
     building: Object.freeze({
-      warmup: [29, 31], mobility: [14, 14], primary_lift: [32, 32], accessory: [78, 92],
+      warmup: [30, 32], mobility: [14, 14], primary_lift: [32, 32], accessory: [78, 92],
       skill_power: [10, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
       conditioning: [22, 25], cooldown: [6, 6],
     }),
     full: Object.freeze({
-      warmup: [29, 31], mobility: [14, 14], primary_lift: [33, 33], accessory: [82, 97],
+      warmup: [30, 32], mobility: [14, 14], primary_lift: [33, 33], accessory: [82, 97],
       skill_power: [10, 12], carries: [4, 4], core: [10, 21], stability_balance: [10, 10],
       conditioning: [24, 27], cooldown: [6, 6],
     }),
   }),
   power: Object.freeze({
     minimal: Object.freeze({
-      warmup: [25, 28], mobility: [14, 14], primary_lift: [0, 8], accessory: [3, 23],
+      warmup: [26, 29], mobility: [14, 14], primary_lift: [0, 8], accessory: [3, 23],
       skill_power: [1, 1], carries: [0, 0], core: [9, 15], stability_balance: [1, 7],
       conditioning: [9, 13], cooldown: [6, 6],
     }),
     home: Object.freeze({
-      warmup: [25, 29], mobility: [14, 14], primary_lift: [1, 13], accessory: [12, 59],
+      warmup: [26, 30], mobility: [14, 14], primary_lift: [1, 13], accessory: [12, 59],
       skill_power: [3, 3], carries: [4, 4], core: [10, 19], stability_balance: [1, 10],
       conditioning: [17, 23], cooldown: [6, 6],
     }),
     building: Object.freeze({
-      warmup: [27, 31], mobility: [14, 14], primary_lift: [8, 32], accessory: [21, 92],
+      warmup: [28, 32], mobility: [14, 14], primary_lift: [8, 32], accessory: [21, 92],
       skill_power: [12, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
       conditioning: [19, 25], cooldown: [6, 6],
     }),
     full: Object.freeze({
-      warmup: [27, 31], mobility: [14, 14], primary_lift: [8, 33], accessory: [21, 97],
+      warmup: [28, 32], mobility: [14, 14], primary_lift: [8, 33], accessory: [21, 97],
       skill_power: [12, 12], carries: [4, 4], core: [10, 21], stability_balance: [1, 10],
       conditioning: [21, 27], cooldown: [6, 6],
     }),

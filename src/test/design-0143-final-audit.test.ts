@@ -14,7 +14,7 @@ import {
   REQ_007_REST_DAY_CASE,
   REQ_011_REVIEW_CASE,
 } from '../../playwright.config'
-import { assertCaptureSourceLineage } from './capture-source-lineage'
+import { assertCaptureSourceLineage, capturePayloadSha256 } from './capture-source-lineage'
 
 describe('TASK-027 browser selection follows the tested package and target', () => {
   const publicOtp = 'mobile design-0143/task-040-entry-settings.spec.ts entry: Welcome and OTP validation, busy, typed failure and cooldown'
@@ -283,6 +283,11 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
     const manifest = names.map((path) => ({ path, sha256: sha256(path) }))
     expect(createHash('sha256').update(JSON.stringify(manifest)).digest('hex'))
       .toBe('1e0edab78fc87e6ddc10d8a3b21873179723a3a3adca449d20ddb171470ec48e')
+  })
+
+  it('preserves the pre-V3 mobile captures unchanged', () => {
+    expect(capturePayloadSha256(root, 'docs/design/evidence-0143/task034-format-preview-mobile'))
+      .toBe('632c242e9f6bac131336ecec32e84223b0805628397d99b9ab9524456152b9cc')
   })
 
   it('requires the complete actual eight-cell mobile group and byte/pixel/source/session records', () => {

@@ -15,7 +15,7 @@
 -- other column verbatim from the capture — including a null regression or
 -- progression, which means "no variant authored" and is preserved as null.
 --
--- sections and can_be_primary are the capture's plus the 28 rows of the
+-- sections and can_be_primary are the capture's plus the 29 rows of the
 -- section-mapping ledger (GR-02 / REQ-004), which only add. The repair
 -- migration is generated from the same rows.
 
@@ -84,7 +84,7 @@ insert into public.exercise_definitions as ed (
   ('foam-rolling', 'Foam Rolling', array['foam_roller']::text[], 'foam_roller', '{}'::jsonb, array['Roll slowly', 'Pause on tight spots', 'Breathe through discomfort']::text[], array['warmup', 'cooldown']::public.section_type[], false, array['hip-mobility', 'posterior-chain-activation']::text[], 'mobility'::public.exercise_role),
   ('front-squat', 'Front Squat', array['barbell']::text[], 'barbell', '{}'::jsonb, array['Elbows high, upper back tight', 'Upright torso', 'Full depth']::text[], array['primary_lift', 'accessory']::public.section_type[], true, array['knee-flexion', 'hip-mobility', 'ankle-mobility', 'brace']::text[], 'compound_lift'::public.exercise_role),
   ('frontal-raises', 'Frontal Raises', array['dumbbells']::text[], 'dumbbells', '{}'::jsonb, array['Lift to shoulder height', 'Control the descent', 'Avoid swinging']::text[], array['accessory']::public.section_type[], false, array['vertical-press']::text[], 'accessory'::public.exercise_role),
-  ('glute-bridge', 'Glute Bridge', array['bodyweight', 'dumbbells', 'barbell']::text[], 'bodyweight', '{"barbell":"Barbell Glute Bridge","bodyweight":"Bodyweight Glute Bridge","dumbbells":"Dumbbell Glute Bridge"}'::jsonb, array['Feet hip-width', 'Squeeze glutes at top', 'Do not hyperextend']::text[], array['accessory']::public.section_type[], false, array['posterior-chain-activation', 'hip-hinge']::text[], 'activation'::public.exercise_role),
+  ('glute-bridge', 'Glute Bridge', array['bodyweight', 'dumbbells', 'barbell']::text[], 'bodyweight', '{"barbell":"Barbell Glute Bridge","bodyweight":"Bodyweight Glute Bridge","dumbbells":"Dumbbell Glute Bridge"}'::jsonb, array['Feet hip-width', 'Squeeze glutes at top', 'Do not hyperextend']::text[], array['accessory', 'warmup']::public.section_type[], false, array['posterior-chain-activation', 'hip-hinge']::text[], 'activation'::public.exercise_role),
   ('goblet-reverse-lunges', 'Goblet Reverse Lunges', array['dumbbells', 'kettlebells']::text[], 'dumbbells', '{}'::jsonb, array['Weight at chest', 'Step back with control', 'Front knee stable']::text[], array['accessory', 'stability_balance']::public.section_type[], false, array['knee-flexion', 'single-leg-stability']::text[], 'accessory'::public.exercise_role),
   ('goblet-squat', 'Goblet Squat', array['dumbbells', 'kettlebells']::text[], 'dumbbells', '{"dumbbells":"Dumbbell Goblet Squat","kettlebells":"Kettlebell Goblet Squat"}'::jsonb, array['Weight at chest', 'Elbows inside knees', 'Upright torso']::text[], array['accessory', 'warmup']::public.section_type[], false, array['knee-flexion', 'hip-mobility', 'ankle-mobility', 'brace']::text[], 'accessory'::public.exercise_role),
   ('good-morning', 'Good Morning', array['barbell']::text[], 'barbell', '{}'::jsonb, array['Bar on back', 'Hinge at hips', 'Slight knee bend']::text[], array['accessory']::public.section_type[], false, array['hip-hinge', 'posterior-chain-activation', 'brace']::text[], 'accessory'::public.exercise_role),

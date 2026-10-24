@@ -42,7 +42,7 @@ export const LEDGER_SECTIONS = Object.freeze(['skill_power', 'carries', 'stabili
 export const MAIN_WORK_SECTION = 'primary_lift'
 
 /** Every section a row may add to. */
-export const PROPOSED_SECTIONS = Object.freeze([...LEDGER_SECTIONS, MAIN_WORK_SECTION])
+export const PROPOSED_SECTIONS = Object.freeze([...LEDGER_SECTIONS, MAIN_WORK_SECTION, 'warmup'])
 
 /** The closed set. `add` carries the proposed `after`; `leave` proposes nothing. */
 export const RECOMMENDATIONS = Object.freeze(['add', 'leave'])

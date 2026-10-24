@@ -15,6 +15,10 @@
   ],
   "capture": "docs/backend/snapshot/2026-09-18T162821Z/catalog/exercise_definitions.csv",
   "references": {
+    "onboarding.warmup": {
+        "path": "src/state/onboarding.ts",
+        "quote": "Light movement to get your body ready"
+    },
     "onboarding.skill_power": {
       "path": "src/state/onboarding.ts",
       "quote": "Explosive movements — jumps, throws, Olympic lifts"
@@ -380,6 +384,30 @@
       "after": { "sections": ["accessory", "conditioning", "stability_balance"], "canBePrimary": false },
       "evidence": ["ref:onboarding.stability_balance", "component:single-leg-stability", "ref:anatomy.single-leg-stability", "cue:Minimal push from rear leg", "ref:tags.squat-accessories"],
       "rationale": "Tagged single-leg-stability, and its cue makes the point: the working leg does the lift alone. Single-leg work in everything but the name."
+    },
+    {
+      "id": "glute-bridge",
+      "change": "V3 owner-approved bodyweight hinge rehearsal in warmup",
+      "before": {
+        "sections": [
+          "accessory"
+        ],
+        "canBePrimary": false
+      },
+      "after": {
+        "sections": [
+          "accessory",
+          "warmup"
+        ],
+        "canBePrimary": false
+      },
+      "evidence": [
+        "ref:onboarding.warmup",
+        "component:hip-hinge",
+        "role:activation",
+        "equipment:bodyweight"
+      ],
+      "rationale": "Eric approved an existing bodyweight hinge warm-up option after V3 review. Glute bridge is bodyweight-default activation and hip-hinge tagged; preserve accessory eligibility and equipment/exercise/pattern restrictions."
     }
   ],
   "ambiguous": [

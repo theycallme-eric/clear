@@ -1,5 +1,21 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## V3 source-bound recapture — 24 October 2026
+
+Current format-preview evidence is a fresh group at
+`docs/design/evidence-0143/task034-format-preview-mobile-v3-verified/`:
+four actually executed mobile skin cases and eight phone/short PNG cells, all passed.
+Captured source `5e4e2de810df8016a804ca3dc8060925b53f170b`, runtime source `319d101b86b00af31588cfa328b4184b98801a8386dceef798aee408644e73d8`, driver `1917f877ec24b6f5fa87c5ec4f845ad9c7b46f7c06617c8457a12d26c4bd0589`.
+The V3 catalog migration adds only a source-list comment to generated database types
+on the UI side; it still changes the byte-level source identity, so these are real new
+captures rather than relabeled old evidence. The original mobile group and wider
+historical group remain byte-for-byte intact. Same real-session, no-generation/no-write,
+a11y, route/Back, motion/layout and byte/pixel/source validation remain mandatory.
+The first rehearsal's external dependency symlink blocked fonts; its output was retained
+outside canonical evidence and is not accepted. This group used local dependencies and
+served fonts without those errors. No UI runtime behavior was changed for this recapture.
+This is local source-bound verification, not deployed proof or owner acceptance.
+
 ## Current scope — owner decision 2026-10-22
 
 CLEAR and its CLEAR-specific design-system compositions are mobile-only. Future
@@ -16,7 +32,7 @@ from `eb61b9daf21848c2727eaa6fa2c5e203f4effd7b` (29 files, sorted path/byte-hash
 manifest `1e0edab78fc87e6ddc10d8a3b21873179723a3a3adca449d20ddb171470ec48e`).
 No former failure becomes a pass when a viewport leaves current scope.
 
-Current Task034 capture acceptance is a **new**, separately scoped group at
+Previous Task034 capture acceptance is preserved as a historical group at
 `docs/design/evidence-0143/task034-format-preview-mobile/`: four actual mobile
 skin cases and eight unique phone/short PNG cells. The same real-session,
 no-generation/no-write, route/Back, accessibility, motion/layout, pixel/byte and
@@ -47,7 +63,7 @@ audit that drifts from them fails the unit suite.
 | --- | --- |
 | Package | `clear-design-system` 0.14.3 |
 | Package hash (all 63 records and this tree) | `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` |
-| Runtime source hash of this audit's tree | `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` (TASK-036 below, on `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
+| Runtime source hash of this audit's tree | `319d101b86b00af31588cfa328b4184b98801a8386dceef798aee408644e73d8` (fresh V3 verification above; source `5e4e2de810df8016a804ca3dc8060925b53f170b`) |
 | Application base of this audit | `main` at `cb333caf53c86e28b65f688e556d6f6cb6228b72` (TASK-026, #434) |
 | Tested deployment of every picture | the wrapper's owned local Vite server (`http://127.0.0.1:<port>`); no deployed origin |
 
@@ -819,3 +835,7 @@ case during boot; its partial group and trace were preserved outside the product
 and are not counted as this passing invocation. This is local source-bound proof,
 not exact deployed proof, release acceptance or owner UAT. Full native checks,
 fresh criterion validation and protected exact-head delivery remain pending.
+
+Previous audit binding retained as history (not rebound):
+
+| Runtime source hash of this audit's tree | `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` (TASK-036 below, on `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |

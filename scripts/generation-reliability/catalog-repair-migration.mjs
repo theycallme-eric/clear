@@ -28,6 +28,9 @@ import {
 } from './catalog-repair.mjs'
 import { loadLedger } from './section-ledger.mjs'
 
+export const V3_WARMUP_MIGRATION_PATH = 'supabase/migrations/20261024000026_v3_hinge_warmup.sql'
+export const V3_WARMUP_ROLLBACK_PATH = 'docs/backend/rollback/v3-hinge-warmup.sql'
+
 /**
  * Everything the command would write, as strings.
  *
@@ -42,9 +45,15 @@ export function buildRepair() {
     ]),
   )
 
+  // Preserve applied migration19 and its historical rollback byte-for-byte.
+  // Newly approved V3 warmup membership is a separate forward migration.
+  const original = { ...ledger, rows: ledger.rows.filter((row) => row.id !== 'glute-bridge') }
+  const warmup = { ...ledger, rows: ledger.rows.filter((row) => row.id === 'glute-bridge') }
   return [
-    { label: MIGRATION_PATH, contents: renderMigration(ledger) },
-    { label: ROLLBACK_SQL_PATH, contents: renderRollback(ledger, capture) },
+    { label: MIGRATION_PATH, contents: renderMigration(original) },
+    { label: ROLLBACK_SQL_PATH, contents: renderRollback(original, capture) },
+    { label: V3_WARMUP_MIGRATION_PATH, contents: renderMigration(warmup) },
+    { label: V3_WARMUP_ROLLBACK_PATH, contents: renderRollback(warmup, capture) },
   ]
 }
 

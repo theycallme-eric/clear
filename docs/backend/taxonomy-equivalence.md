@@ -267,8 +267,8 @@ catalog before this seed existed, and they agree exactly.
 
 ### repair
 
-- PASS — sections differ from the capture only as the ledger says: 112 exercises carry the captured sections and can_be_primary unchanged; 28 carry them plus their ledger row
+- PASS — sections differ from the capture only as the ledger says: 111 exercises carry the captured sections and can_be_primary unchanged; 29 carry them plus their ledger row
 - PASS — no captured section or primary eligibility is removed: every captured tag is still on its exercise
-- PASS — every ledger row changes a seeded exercise: 28 ledger rows, each naming one exercise and adding to it
-- PASS — the repair is the reviewed one: 28 rows: skill_power=12 carries=4 stability_balance=10 primary_lift=8; 8 made primary
+- PASS — every ledger row changes a seeded exercise: 29 ledger rows, each naming one exercise and adding to it
+- PASS — the repair is the reviewed one: 29 rows: skill_power=12 carries=4 stability_balance=10 primary_lift=8 warmup=1; 8 made primary
 - PASS — section membership after the repair: 10 values, every count as reviewed
