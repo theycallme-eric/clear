@@ -3,6 +3,10 @@
 AI-powered workout generator. The application shell is React 19, TypeScript strict, and Vite;
 the approved requirements, specs, design export, and dependency graph live under `docs/`.
 
+For UI and design-system work, start at the [governing design guide](docs/specs/design/ATOMIC.md)
+and its task-to-reference table. It identifies the integrated version, source precedence and
+existing component, token, pattern and specimen indexes.
+
 ## Start in three commands
 
 ```sh
@@ -95,8 +99,9 @@ approved Latin weights. Vite fingerprints their local font files; `index.html` p
 above-the-fold Rajdhani 700, Oxanium 700 and Space Grotesk 500 faces. The browser E2E suite
 loads all three role faces and fails if they are unavailable or requested from another origin.
 
-No CSS framework or component library is used. `DS-01` will vendor the approved public design
-system into `src/design-system/`; until then the shell intentionally uses browser-default styling.
+The app consumes the immutable CLEAR 0.14.3 export in `src/design-system/`. Its public API,
+consumer adapters and documented package discrepancies are governed by
+[ATOMIC.md](docs/specs/design/ATOMIC.md).
 
 Read [PROJECT_MAP.md](PROJECT_MAP.md) before adding a file and
 [docs/process/AGENT_PLAYBOOK.md](docs/process/AGENT_PLAYBOOK.md) before selecting work.

@@ -1,6 +1,6 @@
 # ATOMIC.md — CLEAR 0.14.3 component and token contract
 
-**Status:** revision 5 · pinned to `clear-design-system@0.14.3`
+**Status:** revision 6 · pinned to `clear-design-system@0.14.3`
 **Companion to:** `docs/specs/IA.md` (screens and journeys)
 **Companion to:** `docs/design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md` (rule sources, owner
 dispositions, task mapping and app-owned exceptions)
@@ -55,8 +55,53 @@ intent through the public surface, never its sample behavior. `templates/` and `
 visual references, not production imports.
 
 The prose header in the supplied `index.d.ts` still says 0.5.0. It is a non-blocking upstream
-documentation defect: `VERSION`, `package.json`, the changelog, the archive name, and this pin all
-agree on 0.14.3. The vendor remains byte-identical rather than patching the header locally.
+documentation defect: the exported `VERSION` in `src/design-system/index.js`, its `package.json`,
+the changelog, the archive name, and this pin all agree on 0.14.3. `VERSION` is an export, not a
+file. The vendor remains byte-identical rather than patching the header locally.
+
+### 1.2 Verify the product revision before reading
+
+The product repository is [theycallme-eric/clear](https://github.com/theycallme-eric/clear), default
+branch `main`. `theycallme-eric/clear-app` in package provenance is the historical origin, not the
+current product repository. Read this guide and its
+[reconciliation ledger](../../design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md) from the same product
+revision being reviewed.
+
+Record the checkout's `git remote -v` and `git rev-parse HEAD`; inspect cached `origin/main`
+separately, then verify the live remote with `git ls-remote origin refs/heads/main`. A cached ref,
+directory name or branch named `main` does not prove currency. Inspect the verified revision in
+an isolated checkout or by commit; preserve historical worktrees and local changes. Confirm this
+pin against `src/design-system/package.json`, the exported `VERSION` and `CHANGELOG.md` there.
+Record the exact revision with comparison evidence; source verification does not identify a
+deployed build or prove service-worker freshness.
+
+### 1.3 Find the reference for the task
+
+Read §1.1 first, then the ledger's rule, discrepancy and exception tables. Use the existing
+indexes below; paths in this table are repository-relative. Package-relative paths named in
+§1.1 resolve under `src/design-system/` (runtime) or its identical evidence copy in `exports/`.
+The ledger's Historical material and F-04 identify superseded visual guides and a missing old
+skill reference: use §3–§4 here for composition, retaining the current issue/spec's behavior.
+
+| Task | Existing entry point | How to use it |
+| --- | --- | --- |
+| Find a component, icon or prop | [Public declarations](../../../src/design-system/index.d.ts), [public exports](../../../src/design-system/index.js), [manifest](../../../src/design-system/_ds_manifest.json) | Start with manifest `components[].name` / `sourcePath`, then the public entry and the component's `.d.ts`. A source path is a lookup, never permission to import internals. §4 summarizes the components. |
+| Find a token, skin or motion value | Manifest `tokens[]` (`name`, `kind`, `definedIn`, optional `scope`), `themes`, `brandFonts`, `globalCssPaths`; [foundation](../../../src/design-system/css/foundation.css), [motion](../../../src/design-system/css/motion.css), [CLEAR skin](../../../src/design-system/css/skin-clear.css), [other skins](../../../src/design-system/css/skins.css) | Resolve the definition and scope in CSS. The manifest includes internal and repeated scoped names; it is not an allow-list of public tokens. Follow §2 and §7 and load only `styles.css`. |
+| Find a workflow or design rationale | [Patterns](../../../src/design-system/docs/patterns.md), [decisions and their visual lookup table](../../../src/design-system/docs/decisions.md), [changelog](../../../src/design-system/CHANGELOG.md), [README Index](../../../src/design-system/README.md#index) | Apply §1.1 and the ledger before extrapolating. §8 identifies the workflow patterns; do not turn older prose into a new rule. |
+| Find visual references | Manifest `cards[].path` and `templates[].entryPath`; [specimen inventory](../../../src/dev/specimens.ts); `/dev/gallery/ds` | Inspect `preview/`, component `card.html` files and templates. The manifest also indexes the worked kit; its card count differs from the gallery's preview/component inventory. IA names each screen's visual reference. References are not production imports or product behavior contracts. |
+| Find an app-owned composition or adapter | §4.1; [ledger exceptions](../../design/CLEAR-0.14.3-RECONCILIATION-LEDGER.md#app-owned-exceptions-exc); [app gallery registry](../../../src/dev/gallery-registry.tsx); `/dev/gallery/app`; [project map](../../../PROJECT_MAP.md) | Reuse the existing `src/ui/` composition and its recorded exception before inventing a wrapper. The gallery is dev-only; its presence is not production evidence. |
+| Find route, state and behavior requirements | Current issue and owner decisions; [IA](../IA.md) and its screen-specific references | Visual kits illustrate composition on older content. They do not define routes, persistence, guards or logging behavior. Preserve frozen requirements as historical evidence. |
+
+**Package reading caveats:** the README's "What the export actually contains" describes an older
+bundle-only delivery; this import contains the declarations, components, docs and specimens listed
+above. Follow the actual public entry. Its claim that the declaration header agrees on version is
+also stale, as §1.1 records. Keep both vendor copies unchanged; package documentation corrections
+belong to the design-system maintainer in a separately versioned release.
+
+**Product scope:** CLEAR-specific UI/compositions are mobile-only under the owner's 2026-10-22
+decision. Earlier package guidance about tablet/desktop consumers and wider evidence is not a
+request to expand CLEAR. Preserve earlier evidence. The package remains a cross-product system;
+future wider-device work belongs to its separately approved scope.
 
 ---
 
@@ -168,7 +213,8 @@ These are system rules, not suggestions for individual screens.
 - Content clips at a hard rule. There is no fade at the edge.
 - The 2px drawn scrollbar and edge streaks appear only while actively scrolling and settle after.
 - Use `headRule={false}` when the pinned head already ends with a TabBar underline.
-- Verify safe-area insets, software keyboard resizing, short and tall phones, tablet, and desktop.
+- For CLEAR, verify safe-area insets, software keyboard resizing, and normal and short/narrow
+  phone viewports when UI verification is authorized (§1.3).
 
 `OverflowRail` remains the public horizontal equivalent. Do not wrap TabBar in another horizontal
 scroller.
@@ -236,9 +282,10 @@ accessibility or runtime need; stale README prose never justifies one.
 | Signal | yellow-green | magenta | maximum tension |
 | Mono | grey | grey | enhanced contrast |
 
-`skin.js` owns persistence. Precedence is explicit user choice, then
-`prefers-contrast: more`, then the app default. Mono is a preference, not “the accessible skin”;
-accessibility is the baseline for all four.
+The package's `skin.js` offers persistence and OS-contrast fallback. CLEAR's app-owned
+`src/state/appearance.ts` and `index.html` instead use explicit saved choice, then the product
+default (`clear`), without consulting OS contrast (U24). See the project map's SET-01 boundary.
+Mono is a preference, not “the accessible skin”; accessibility is the baseline for all four.
 
 ### 5.2 Atmosphere
 
@@ -354,7 +401,8 @@ These names are gone from the package. They must not appear in production code.
 - package/API/version tests;
 - gallery inventory tests;
 - this document, IA visual sections and the reconciliation ledger;
-- rendered narrow and wide browser evidence.
+- rendered phone evidence for CLEAR within the authorized scope (§1.3); wider consumer evidence
+  only in separately approved work.
 
 Passing lint proves vocabulary compliance, not visual fidelity. Route work still requires rendered
 comparison against the 0.14.3 package (`docs/design/evidence-0143/`).

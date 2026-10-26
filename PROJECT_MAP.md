@@ -1,6 +1,13 @@
 # Project map
 
-This is the honest ENV-01 scaffold. Update it only when a directory boundary or data flow changes.
+This maps the implemented product in this revision. Update it when a directory boundary or data
+flow changes; scaffold-era copies in older checkouts describe only those revisions.
+
+**Design-system entry:** [ATOMIC.md](docs/specs/design/ATOMIC.md) governs CLEAR 0.14.3 and links
+the existing API, manifest, token, pattern, specimen and app-composition indexes. Read its source
+precedence before package prose. Historical exports and frozen requirements do not set today's
+visual contract. A local branch name or cached `origin/main` is not proof of the live remote
+revision or the deployed build; verify the revision before using this map for comparison work.
 
 | Path | Boundary | New files belong here when… |
 |---|---|---|
