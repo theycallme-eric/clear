@@ -1,0 +1,56 @@
+/* =============================================================================
+   SET-LOGGING HALF-SHEET — REQ-009. The one surface where a set is entered or
+   corrected, docked in the workout's pinned foot (src/ui/set-logging-sheet.tsx).
+
+   The frame is the normal structural element frame; the collapse chevron is a
+   normal secondary IconButton, so its border is the action colour; a running
+   rest is the shared timer card inside it. None of those recolours the sheet.
+
+   The sheet holds at most about half the viewport and scrolls inside itself,
+   so a short phone or an open keyboard never pushes the navigation below it
+   out of reach.
+   ============================================================================= */
+
+.clr-set-sheet {
+  display: flex;
+  flex-direction: column;
+}
+
+.clr-set-sheet > .clr-bleed {
+  display: flex;
+  flex-direction: column;
+}
+
+.clr-set-sheet__frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  max-height: 60dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--spacing-300);
+}
+
+.clr-set-sheet__head {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.clr-set-sheet__title {
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-md-size);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+}
+
+/* Weight / Unit / Reps on one compact row: equal columns that may shrink
+   below their content, each with its label above its own frame, so the
+   labels and frames line up whatever the phone width. */
+.clr-set-sheet__measures {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--spacing-200);
+  align-items: end;
+}

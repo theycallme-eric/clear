@@ -27,7 +27,7 @@
  * own, a coaching wait beside it yields the view's one loop, and reduced motion
  * keeps every word, digit and colour.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -123,6 +123,23 @@ function mountWorkout(options: WorkoutDoubleOptions = {}): Mounted {
 }
 
 /** The shell, once the session has hydrated. */
+/**
+ * A movement's set entry, in the shell's one half-sheet: opened from that
+ * movement's Log set unless it is already the sheet on screen.
+ */
+function logForm(name: string, setNumber: number) {
+  if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
+    const log = screen
+      .getAllByRole('heading', { name: new RegExp(`${name}$`) })
+      .map((heading) => heading.closest('section'))
+      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Log set' })))
+      .find((button) => button !== null)
+    if (log === null || log === undefined) throw new Error(`no Log set for ${name}`)
+    fireEvent.click(log)
+  }
+  return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
+}
+
 async function shell(options: WorkoutDoubleOptions = {}): Promise<Mounted> {
   const mounted = mountWorkout(options)
   await screen.findByRole('heading', { level: 1, name: 'Workout' })
@@ -756,7 +773,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(log).toHaveBeenCalled())
@@ -783,7 +801,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     const forward = screen.getByRole('button', { name: 'Next section' })
@@ -814,7 +833,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await user.click(screen.getByRole('button', { name: 'Next section' }))
@@ -1263,7 +1283,8 @@ describe('Workout — coaching and notes', () => {
     // The failure is the panel's: the shell raised no dialog over the set form.
     expect(screen.queryByRole('dialog')).toBeNull()
 
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
 
@@ -1372,9 +1393,7 @@ describe('Workout — the session’s one rest', () => {
 
   async function logSet(name: string, setNumber: number) {
     const user = userEvent.setup()
-    const form = within(
-      screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }),
-    )
+    const form = logForm(name, setNumber)
     await user.click(form.getByRole('button', { name: `Log set ${setNumber}` }))
   }
 

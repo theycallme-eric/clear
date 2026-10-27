@@ -26,7 +26,7 @@
  * progression, the in-flight and refused-entry disabled states and the
  * save/retry path stay exactly the shell's.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi, type Mock } from 'vitest'
 
@@ -195,7 +195,7 @@ async function logSet(
   setNumber: number,
 ) {
   const form = formFor(name, setNumber)
-  const weight = form.getByLabelText('Weight (kg)')
+  const weight = form.getByLabelText('Weight')
   const reps = form.getByLabelText('Reps')
   await user.clear(weight)
   await user.type(weight, '60')
@@ -211,8 +211,15 @@ function movementHeadings(): string[] {
     .map((heading) => heading.textContent ?? '')
 }
 
-/** The one movement's form, so two movements' fields never collide. */
+/**
+ * The one movement's form, so two movements' fields never collide. It is in
+ * the movement's half-sheet, opened from the card's Log set.
+ */
 function formFor(name: string, setNumber = 1) {
+  if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
+    const movement = screen.getByRole('heading', { name: new RegExp(`${name}$`) }).closest('section')!
+    fireEvent.click(within(movement).getByRole('button', { name: 'Log set' }))
+  }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
 }
 
@@ -280,7 +287,8 @@ describe('every set persists its unit and its exercise and block attribution', (
     // A2 — the movement whose row is *first* in the snapshot and second on the
     // screen. Logging against it is what a positional bug would get wrong.
     const form = formFor('back squat')
-    await user.type(form.getByLabelText('Weight (kg)'), '60')
+    await user.type(form.getByLabelText('Weight'), '60')
+    await user.clear(form.getByLabelText('Reps'))
     await user.type(form.getByLabelText('Reps'), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
 
@@ -305,7 +313,8 @@ describe('every set persists its unit and its exercise and block attribution', (
     const { workout } = mount({ weightUnit: 'lb' })
 
     const form = formFor('romanian deadlift')
-    await user.type(form.getByLabelText('Weight (lb)'), '135')
+    await user.type(form.getByLabelText('Weight'), '135')
+    await user.clear(form.getByLabelText('Reps'))
     await user.type(form.getByLabelText('Reps'), '10')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
 
@@ -484,29 +493,29 @@ describe('the superset draws with the shared block frame', () => {
     for (const row of movementRows()) expect(row.style.borderLeft).toBe('')
   })
 
-  it('sets each movement’s fields in one wrapping row of current element frames', () => {
+  it('sets each movement’s fields in one compact row of current element frames', () => {
     mount()
 
     for (const name of ['romanian deadlift', 'back squat']) {
       const form = formFor(name)
-      const row = form.getByLabelText('Weight (kg)').closest('.clr-row')
+      const row = form.getByLabelText('Weight').closest('.clr-set-sheet__measures')
       expect(row).not.toBeNull()
       // The row adds no frame: the fields are the only chamfers in it.
       expect(row).not.toHaveClass('clr-chamfer')
 
       // Weight and reps only: no effort field and no warmup checkbox (U36).
       expect(form.getAllByRole('spinbutton')).toHaveLength(2)
-      for (const label of ['Weight (kg)', 'Reps']) {
+      for (const label of ['Weight', 'Reps']) {
         const field = form.getByLabelText(label)
         expect(field).toHaveClass('clr-input')
-        expect(field.closest('.clr-row')).toBe(row)
+        expect(field.closest('.clr-set-sheet__measures')).toBe(row)
         expect(field.closest('.clr-field')).not.toBeNull()
       }
       expect(form.queryByLabelText(/RPE/i)).not.toBeInTheDocument()
       expect(form.queryByRole('checkbox')).not.toBeInTheDocument()
       const unit = form.getByRole('combobox', { name: 'Unit' })
       expect(unit).toHaveClass('clr-input')
-      expect(unit.closest('.clr-row')).toBe(row)
+      expect(unit.closest('.clr-set-sheet__measures')).toBe(row)
       expect(unit.closest('.clr-field')).not.toBeNull()
     }
   })
@@ -515,9 +524,9 @@ describe('the superset draws with the shared block frame', () => {
     const { completion } = mount()
 
     expect(
-      rowFor('A1 romanian deadlift').getAllByRole('button', { name: 'Log set 1' }),
+      rowFor('A1 romanian deadlift').getAllByRole('button', { name: 'Log set' }),
     ).toHaveLength(1)
-    expect(rowFor('A2 back squat').getAllByRole('button', { name: 'Log set 1' })).toHaveLength(1)
+    expect(rowFor('A2 back squat').getAllByRole('button', { name: 'Log set' })).toHaveLength(1)
 
     // The report is the block's, with nothing a superset did not observe.
     expect(completion.reportOutcome).toHaveBeenLastCalledWith(expect.any(String), {})
@@ -535,15 +544,15 @@ describe('set progression stays each movement’s own', () => {
     const next = within(
       await screen.findByRole('form', { name: 'Log set 2 of romanian deadlift' }),
     )
-    expect(next.getByText(/^Set 2 of 3/)).toBeInTheDocument()
-    expect(next.getByLabelText('Weight (kg)')).toHaveValue(60)
+    expect(rowFor('A1 romanian deadlift').getByText('Set 2/3')).toBeInTheDocument()
+    expect(next.getByLabelText('Weight')).toHaveValue(60)
     expect(next.getByLabelText('Reps')).toHaveValue(8)
-    expect(formFor('back squat').getByText(/^Set 1 of 3/)).toBeInTheDocument()
+    expect(rowFor('A2 back squat').getByText('Set 1/3')).toBeInTheDocument()
 
     const a1 = rowFor('A1 romanian deadlift')
     expect(a1.getByText('Set 1 · 8 reps · 60 kg')).toBeInTheDocument()
     await waitFor(() => expect(a1.getByText('Saved')).toBeInTheDocument())
-    expect(rowFor('A2 back squat').getByText('No sets logged yet.')).toBeInTheDocument()
+    expect(rowFor('A2 back squat').queryByRole('list', { name: 'Logged sets' })).toBeNull()
     expect(workout.loggedSets()).toHaveLength(1)
   })
 
@@ -594,8 +603,10 @@ describe('set progression stays each movement’s own', () => {
     })
 
     // A1 has done everything prescribed and is offered an extra; A2 is on two.
-    expect(formFor('romanian deadlift', 4).getByText(/^Extra set 4/)).toBeInTheDocument()
-    expect(formFor('back squat', 2).getByText(/^Set 2 of 3/)).toBeInTheDocument()
+    expect(formFor('romanian deadlift', 4).getByRole('button', { name: 'Log set 4' })).toBeInTheDocument()
+    expect(rowFor('A1 romanian deadlift').getByText('Extra set 4')).toBeInTheDocument()
+    expect(formFor('back squat', 2).getByRole('button', { name: 'Log set 2' })).toBeInTheDocument()
+    expect(rowFor('A2 back squat').getByText('Set 2/3')).toBeInTheDocument()
   })
 })
 
@@ -642,15 +653,15 @@ describe('saving, refusing and retrying a set', () => {
     const { attempts } = mount()
 
     const form = formFor('back squat')
-    await user.type(form.getByLabelText('Weight (kg)'), '-5')
+    await user.type(form.getByLabelText('Weight'), '-5')
 
     expect(form.getByRole('button', { name: 'Log set 1' })).toBeDisabled()
-    expect(form.getByLabelText('Weight (kg)')).toBeInvalid()
+    expect(form.getByLabelText('Weight')).toBeInvalid()
     expect(form.getByText('Enter a weight of zero or more')).toBeInTheDocument()
     // Only this movement's: its partner's action is its own.
     expect(formFor('romanian deadlift').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
 
-    await user.clear(form.getByLabelText('Weight (kg)'))
+    await user.clear(form.getByLabelText('Weight'))
     expect(form.getByRole('button', { name: 'Log set 1' })).toBeEnabled()
     expect(attempts).toEqual([])
   })
@@ -704,6 +715,7 @@ describe('saving, refusing and retrying a set', () => {
 
     const form = formFor('back squat')
     await user.type(form.getByLabelText('Weight'), '60')
+    await user.clear(form.getByLabelText('Reps'))
     await user.type(form.getByLabelText('Reps'), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
 
@@ -712,6 +724,7 @@ describe('saving, refusing and retrying a set', () => {
     expect(attempts).toEqual([])
     // Nothing was recorded, so the movement is still on set one, as typed.
     expect(form.getByLabelText('Weight')).toHaveValue(60)
-    expect(form.getByText(/^Set 1 of 3/)).toBeInTheDocument()
+    expect(form.getByRole('button', { name: 'Log set 1' })).toBeInTheDocument()
+    expect(rowFor('A2 back squat').getByText('Set 1/3')).toBeInTheDocument()
   })
 })
