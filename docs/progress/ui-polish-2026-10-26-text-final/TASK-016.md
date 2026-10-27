@@ -167,3 +167,11 @@ The intended existing dialog case was not selected because the anchored grep did
 Playwright full titles. The next command uses its explicit dialog title and must select eight
 cases. Initial failure log/screenshots/traces are retained. No unit/model attempt or Runner
 policy was changed; actual corrected-source proof is pending.
+
+Corrected-source browser53109 selected all8 intended cases and exited1: all7 circuit/footer/menu
+geometry/retention cases passed, including320px. The existing native-dialog case passed its
+modal, animation, focus, action-layout and destructive-backdrop assertions, then read close
+count0 from the first mounted dialog rather than the Abandon question it had just dismissed.
+Instrumentation now identifies that native question by its exact heading even after it leaves
+the accessibility tree; it still requires exactly1 then2 close events. Original failed log,
+trace and screenshot are retained. No product behavior or close-count assertion was weakened.

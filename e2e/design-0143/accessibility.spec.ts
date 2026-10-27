@@ -1453,13 +1453,19 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   const trigger = page.locator('header').getByRole('button', { name: 'Actions', exact: true })
   const item = page.locator('header').getByRole('button', { name: 'Abandon', exact: true })
   const dialog = page.getByRole('dialog', { name: 'Abandon workout?' })
-  await page.locator('dialog.clr-dialog').evaluateAll((elements) => elements.forEach((element) => {
+  // Keep the native node identified after it closes and leaves the accessibility
+  // tree; another mounted hidden dialog is not this question's close counter.
+  const trackedQuestion = page.locator('dialog.clr-dialog').filter({
+    has: page.locator('h2').filter({ hasText: /^Abandon workout\?$/ }),
+  })
+  await expect(trackedQuestion).toHaveCount(1)
+  await trackedQuestion.evaluate((element) => {
     (element as HTMLElement).dataset.closes = '0'
     element.addEventListener('close', () => {
       const host = element as HTMLElement
       host.dataset.closes = String(Number(host.dataset.closes) + 1)
     })
-  }))
+  })
 
   // By keyboard, from the trigger. A press that lands while the route is still
   // committing a prior state is pressed again rather than waited out.
@@ -1524,7 +1530,7 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   await expect(page.locator('dialog.clr-dialog--closing')).toHaveCount(1)
   await expect(page.locator('dialog.clr-dialog--closing')).toHaveCount(0)
   await expect(dialog).toBeHidden()
-  const closes = () => page.locator('dialog.clr-dialog').first().getAttribute('data-closes')
+  const closes = () => trackedQuestion.getAttribute('data-closes')
   await expect.poll(closes).toBe('1')
   await expect(trigger).toBeFocused()
   await expect(page).toHaveURL((url) => url.pathname === '/workout')
