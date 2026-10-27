@@ -112,3 +112,13 @@ The rehearsal refusal diagnostics now name the violated boundary without echoing
 argument or Docker endpoint, which might contain private connection data. Both argument and
 nonlocal-endpoint refusals are checked before any Docker or database command. Exit semantics,
 actual SQL/RLS checks and normal local rehearsal remain unchanged.
+
+## Actual operator recapture
+
+The existing mobile command passed all4 cases/eight phone-short captures against the owned
+local backend with the actual new migration, no generation or preview writes. New group:
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task007/`; actual captured source `59f0635c54e13c4f1515074110c4ebf6c1fff707`.
+Audit identities were derived from actual records. Earlier groups remain unchanged, and native
+source-only lineage names the actual task/run/attempt1/base. A receipt is not fabricated here;
+normal repaired native recovery must independently rerun all approved checks and emit it.
+Remote migration remains unapplied and separately gated.
