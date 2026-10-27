@@ -60,7 +60,7 @@ This is the task's own progress record. It stands in for the shared daily journa
 | `npm run gen:types -- --check` | pass, types current |
 | `python3 scripts/gen-issues.py --check` | pass (71 requirements, 136 edges) |
 
-## Blocker: runtime-source-bound audit evidence
+## Initial blocker: runtime-source-bound audit evidence (resolved by recapture below)
 
 This is the same blocker TASK-006, TASK-007 and TASK-011 hit. The one-line runtime fix in
 `set-logger.tsx` changes the runtime-source hash (`hashTree(['index.html','src'])`). The TASK-034
@@ -85,3 +85,14 @@ acceptance gap. A test title now describes the real state precisely: the sheet i
 the shared rest card runs in the footer; there is no separate Rest-collapse control. The existing
 native same-attempt recovery will rerun all approved checks after genuine mobile recapture.
 No Runner, generation/distance policy, circuit runtime, workflow or hosted schema change is included.
+
+The operator genuinely executed the existing four-skin mobile format-preview collector on committed
+source `9ed77488f2a2dd4a5922106f7f02badbab9faa74`: four cases/eight phone screenshots passed. Runtime
+source `ff6192ec8555e9a3d3e31d1805c6e7f1092965c405d7a044c38f977b4faeac08`, driver
+`d2b3773b1e35c21bf5602ab7285149e17ce438f0662fab87ab437a86410f206e`, actual payload
+`c826a47468fa34601e20573c38bbcaf50de7330043e2fd4f7c33af553efd9c52`. Input provenance identifies
+this run's actual attempt1/a1 and base `f3c35a2792f9d97415f82810451e74a578e0b954`; earlier groups are
+unchanged. Every skin recorded zero generation requests and writes. The local backend used current
+migrations/synthetic seeds and was stopped after capture. This source-bound route evidence does not
+claim deployed or physical-iPhone proof. No implementation finding remains open; native exact-head
+verification and protected delivery remain mandatory.
