@@ -117,7 +117,8 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
     expect(timer()).toHaveTextContent('00:00')
     expect(button('Start')).toBeDisabled()
     expect(double.loggedSets()).toEqual([])
-    expect(screen.getByRole('button', { name: 'Finish round 1' })).toBeInTheDocument()
+    // A movement's countdown is not the round clock: round 1 is still unstarted.
+    expect(screen.getByRole('button', { name: 'Start round 1' })).toBeInTheDocument()
     expect(screen.queryByRole('form', { name: /^Log set/ })).toBeNull()
   })
 

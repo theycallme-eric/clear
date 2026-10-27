@@ -4,8 +4,9 @@
  *   · the complete ordered circuit — every movement with its per-round
  *     target, the total rounds and the shared rest — is on the card from the
  *     start, and no movement is singled out as the one to do now;
- *   · nothing is compulsory: there is no per-movement step, and recording a
- *     round is one optional tap that starts the shared rest;
+ *   · nothing is compulsory: there is no per-movement step, and the round
+ *     clock — Start round 1, then Finish round, which starts the shared rest —
+ *     is optional (REQ-017; its own journey is `circuit-rounds.test.tsx`);
  *   · optional load entry is compact — one quiet action per movement, the set
  *     form only for the movement opened — and still saves, refuses and retries
  *     through the shell's one set path;
@@ -172,6 +173,12 @@ function roundRecord(): HTMLElement {
 
 const finishRound = (round: number) =>
   screen.getByRole('button', { name: `Finish round ${round}` })
+
+/** The circuit's initial Start: the first round's clock (REQ-017). */
+const startRound1 = () => screen.getByRole('button', { name: 'Start round 1' })
+
+/** The shared rest's countdown — not a round's elapsed clock. */
+const restTimer = () => screen.queryByRole('timer', { name: 'Time remaining' })
 
 /** The nth set id minted: no two sets share one. */
 function mintedId(index: number): string {
@@ -372,10 +379,16 @@ describe('nothing is compulsory', () => {
     }
   })
 
-  it('offers round recording as one optional, secondary tap', () => {
+  it('offers the round clock as optional, secondary taps: Start, then Finish', async () => {
+    const user = userEvent.setup()
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
+    expect(startRound1()).toBeEnabled()
+    expect(startRound1()).not.toHaveClass('clr-btn--primary')
+    expect(screen.queryByRole('button', { name: /finish round/i })).toBeNull()
+
+    await user.click(startRound1())
     expect(finishRound(1)).toBeEnabled()
     expect(finishRound(1)).not.toHaveClass('clr-btn--primary')
   })
@@ -416,11 +429,12 @@ describe('rounds are observations, never inferred', () => {
     const block = circuitBlock({ roundRestSeconds: 30 })
     renderCircuit(block, fakeStorage(), api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     clock = START + 10 * 60_000
     await vi.advanceTimersByTimeAsync(2000)
 
-    expect(screen.queryByRole('timer')).toBeNull()
+    expect(restTimer()).toBeNull()
     expect(roundRecord()).toHaveTextContent('1 of 3 rounds recorded')
     expect(finishRound(2)).toBeInTheDocument()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
@@ -432,6 +446,7 @@ describe('rounds are observations, never inferred', () => {
     const block = circuitBlock({ roundRestSeconds: 0 })
     renderCircuit(block, fakeStorage(), api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, { roundsCompleted: 1 })
     await user.click(finishRound(2))
@@ -449,13 +464,14 @@ describe('rounds are observations, never inferred', () => {
     const block = circuitBlock()
     renderCircuit(block, fakeStorage(), api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Take back a round' }))
 
     // The rest the tap started goes with it.
-    expect(screen.queryByRole('timer')).toBeNull()
+    expect(restTimer()).toBeNull()
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
     expect(finishRound(1)).toBeInTheDocument()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
@@ -467,6 +483,7 @@ describe('rounds are observations, never inferred', () => {
     const block = circuitBlock({ rounds: null, roundRestSeconds: 0 })
     renderCircuit(block, fakeStorage(), api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     expect(roundRecord()).toHaveTextContent('1 round recorded')
     await user.click(finishRound(2))
@@ -489,7 +506,10 @@ describe('the shared rest', () => {
     const user = userEvent.setup()
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
-    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(restTimer()).not.toBeInTheDocument()
+    await user.click(startRound1())
+    // Starting the round's clock is not a round boundary: no rest yet.
+    expect(restTimer()).not.toBeInTheDocument()
     await user.click(finishRound(1))
 
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('01:00')
@@ -501,6 +521,7 @@ describe('the shared rest', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderCircuit(circuitBlock({ roundRestSeconds: 30 }), fakeStorage(), completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     expect(screen.getByRole('timer', { name: 'Time remaining' })).toHaveTextContent('00:30')
 
@@ -508,7 +529,7 @@ describe('the shared rest', () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     // No tap ended it: the clock did.
-    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(restTimer()).not.toBeInTheDocument()
     expect(finishRound(2)).toBeInTheDocument()
   })
 
@@ -516,13 +537,14 @@ describe('the shared rest', () => {
     const user = userEvent.setup()
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     const inside = within(blockCard())
     expect(inside.getAllByRole('button', { name: 'Start round 2' })).toHaveLength(1)
     expect(screen.queryByRole('button', { name: /finish round/i })).toBeNull()
 
     await user.click(inside.getByRole('button', { name: 'Start round 2' }))
-    expect(screen.queryByRole('timer')).toBeNull()
+    expect(restTimer()).toBeNull()
     expect(finishRound(2)).toBeInTheDocument()
   })
 
@@ -536,6 +558,7 @@ describe('the shared rest', () => {
       const block = circuitBlock({ roundRestSeconds: 30 })
       let mounted = renderCircuit(block, storage, completionDouble().api)
 
+      await user.click(startRound1())
       await user.click(finishRound(1))
 
       if (restoreAfterExpiry) mounted.unmount()
@@ -546,7 +569,7 @@ describe('the shared rest', () => {
         await vi.advanceTimersByTimeAsync(1000)
       }
 
-      expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+      expect(restTimer()).not.toBeInTheDocument()
       await user.click(finishRound(2))
 
       expect(roundRecord()).toHaveTextContent('2 of 3 rounds recorded')
@@ -563,6 +586,7 @@ describe('surviving a refresh', () => {
     const block = circuitBlock({ roundRestSeconds: 0 })
     const first = renderCircuit(block, storage, completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     await user.click(finishRound(2))
     first.unmount()
@@ -580,6 +604,7 @@ describe('surviving a refresh', () => {
     const block = circuitBlock()
     const first = renderCircuit(block, storage, completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     first.unmount()
     clock = START + 20_000
@@ -608,6 +633,7 @@ describe('surviving a refresh', () => {
     const block = circuitBlock({ roundRestSeconds: 0 })
     const first = renderCircuit(block, storage, completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
     first.unmount()
 
@@ -647,13 +673,14 @@ describe('the circuit draws with the shared block frame', () => {
     // Announced as it changes: the count is a live status line.
     expect(roundRecord()).toHaveAttribute('role', 'status')
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
-    expect(inside.getByRole('button', { name: 'Finish round 1' })).toBeInTheDocument()
+    expect(inside.getByRole('button', { name: 'Start round 1' })).toBeInTheDocument()
   })
 
   it('draws the rest countdown beside the card, never inside it', async () => {
     const user = userEvent.setup()
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
+    await user.click(startRound1())
     await user.click(finishRound(1))
 
     const timer = screen.getByRole('timer', { name: 'Time remaining' })
@@ -713,7 +740,7 @@ describe('optional, compact load entry', () => {
     // A set is not a round: nothing was recorded for it, and no rest raised.
     expect(roundRecord()).toHaveTextContent('No rounds recorded')
     expect(readCircuitState(storage, block.blockId)).toBeNull()
-    expect(screen.queryByRole('timer')).not.toBeInTheDocument()
+    expect(restTimer()).not.toBeInTheDocument()
     expect(reportOutcome).toHaveBeenLastCalledWith(block.blockId, {})
 
     // Closed again, the row still says a set is behind it.
@@ -739,7 +766,7 @@ describe('optional, compact load entry', () => {
     // The other movement and the round stay the athlete's to press.
     await user.click(screen.getByRole('button', { name: 'Log load and reps for romanian deadlift' }))
     expect(formFor('romanian deadlift').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
-    expect(finishRound(1)).toBeEnabled()
+    expect(startRound1()).toBeEnabled()
 
     await user.click(busy)
     expect(attempts).toHaveLength(1)
@@ -769,6 +796,7 @@ describe('optional, compact load entry', () => {
     expect(workout.loggedSets()).toEqual([])
 
     // Offline does not hold the circuit: the round still records and persists.
+    await user.click(startRound1())
     await user.click(finishRound(1))
     expect(readCircuitState(storage, block.blockId)).toMatchObject({ round: 2 })
 

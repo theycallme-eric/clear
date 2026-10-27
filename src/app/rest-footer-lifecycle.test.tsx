@@ -292,10 +292,11 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     const user = userEvent.setup()
     const double = await shell()
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    await screen.findByRole('button', { name: 'Finish round 1' })
+    await screen.findByRole('button', { name: 'Start round 1' })
     const afterAdvance = double.loggedSets().length
 
     // An explicit round record starts the circuit's shared rest.
+    await user.click(screen.getByRole('button', { name: 'Start round 1' }))
     await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
     expect(screen.getByText('1 of 3 rounds recorded')).toBeInTheDocument()
 
@@ -321,7 +322,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     expect(double.loggedSets()).toHaveLength(1)
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    await screen.findByRole('button', { name: 'Finish round 1' })
+    await screen.findByRole('button', { name: 'Start round 1' })
     // The shared rest follows the athlete across the section boundary.
     expect(restBars()).toHaveLength(1)
 

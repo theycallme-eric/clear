@@ -38,7 +38,7 @@
  * the durable queue is drawn — the user performed it — but never as though the
  * database had it, and the difference is a word and a glyph before it is a hue.
  */
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import type { Enums } from '../data/database.types'
 
@@ -129,6 +129,11 @@ export interface ExerciseSetLoggerProps {
    * Edit control is drawn: a control that saved nothing would be a lie.
    */
   onCorrectSet?: (exerciseId: string, corrected: PerformedSet) => void
+  /**
+   * Opens the new-set sheet as the logger mounts. A circuit row is opened for
+   * logging by one deliberate tap, and that tap is the sheet's (REQ-017).
+   */
+  openSheetOnMount?: boolean
 }
 
 export function ExerciseSetLogger({
@@ -140,6 +145,7 @@ export function ExerciseSetLogger({
   logging = 'self',
   onReturnToRound,
   onCorrectSet,
+  openSheetOnMount = false,
 }: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
   const correctable = onCorrectSet !== undefined || correctSet !== undefined
@@ -147,6 +153,15 @@ export function ExerciseSetLogger({
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
   const logButton = useRef<HTMLButtonElement>(null)
   const editButton = useRef<HTMLButtonElement>(null)
+
+  // On mount only (the setter is stable): a later collapse is the athlete's
+  // and is kept. Not one-shot, so a strict remount — whose cleanup closes the
+  // sheet — opens it again.
+  const openOnMount = useRef(openSheetOnMount)
+  const openSheet = sheet.setOpen
+  useEffect(() => {
+    if (openOnMount.current) openSheet(true)
+  }, [openSheet])
 
   const prescription = exercise.prescription
   const logged = loggedSets(exercise.exerciseId)
