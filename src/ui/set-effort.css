@@ -1,0 +1,48 @@
+/* =============================================================================
+   SET EFFORT — REQ-011, one set's optional three-choice effort, in the sheet.
+
+   Three equal face chips on one row that never wraps, with the compact Clear
+   beside them once an answer exists. The row is `ChoiceGroup`'s radiogroup;
+   the overrides below only divide it evenly, as the feeling row does, so the
+   radio keyboard pattern, chip surface and selection tick stay the
+   component's own. Tokens only; no corner radius.
+   ============================================================================= */
+
+.clr-set-effort {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-200);
+  min-width: 0;
+}
+
+.clr-set-effort__choices {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clr-set-effort__choices [role="radiogroup"] {
+  flex-wrap: nowrap !important;
+}
+
+.clr-set-effort__choices [role="radiogroup"] > * {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.clr-set-effort__choices [role="radio"] {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 0;
+  padding-inline: var(--spacing-100);
+}
+
+.clr-set-effort__clear {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.clr-set-effort__reading {
+  display: inline-flex;
+  align-items: center;
+}

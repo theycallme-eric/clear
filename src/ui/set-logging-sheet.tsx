@@ -10,7 +10,8 @@
  *     sheet's one minimise control;
  *   · the movement's context, then the running rest if there is one, drawn
  *     with the shared timer card rather than by recolouring the sheet;
- *   · the measurement row and the effort slot, which the caller fills;
+ *   · the measurement row and the set's optional effort (`set-effort.tsx`),
+ *     both supplied by the logger that owns the draft;
  *   · one full-width Log set, or Cancel / Save correction as a pair.
  *
  * It owns no draft and writes nothing. The logger that opens it keeps the
@@ -76,15 +77,6 @@ export function SetLoggingSheetSlot() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export type SetSheetMode = 'new' | 'edit'
-
-/**
- * What a descendant inserts into the sheet. Effort (TASK-008) and correction
- * (TASK-011) fill these; the sheet only guarantees where they are drawn.
- */
-export interface SetSheetInsertionContext {
-  readonly mode: SetSheetMode
-  readonly setNumber: number
-}
 
 export interface SetLoggingSheetProps {
   mode: SetSheetMode

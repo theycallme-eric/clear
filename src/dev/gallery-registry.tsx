@@ -77,6 +77,7 @@ import {
 } from '../ui/load-suggestion'
 import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
 import { FeelingRow } from '../ui/feeling-row'
+import { SetEffortChoice, SetEffortReading, type SetEffort } from '../ui/set-effort'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
@@ -817,6 +818,24 @@ function FeelingRowUnanswered() {
 function FeelingRowChosen() {
   const [value, setValue] = useState<number | null>(4)
   return <FeelingRow value={value} onChange={setValue} />
+}
+
+function SetEffortUnanswered() {
+  const [value, setValue] = useState<SetEffort | null>(null)
+  return <SetEffortChoice setNumber={2} value={value} onChange={setValue} />
+}
+
+function SetEffortChosen() {
+  const [value, setValue] = useState<SetEffort | null>('too_hard')
+  return <SetEffortChoice setNumber={2} value={value} onChange={setValue} />
+}
+
+function SetEffortReadingAnswered() {
+  return <SetEffortReading value="about_right" />
+}
+
+function SetEffortReadingUnanswered() {
+  return <SetEffortReading value={null} />
 }
 
 const SAMPLE_CONDITIONING_SCORE: ConditioningScore = {
@@ -1842,6 +1861,43 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'chosen',
         note: 'The selection carries a tick; Clear returns it to no answer.',
         Render: FeelingRowChosen,
+      },
+    ],
+  },
+  {
+    component: 'SetEffortChoice',
+    requirement: 'REQ-011',
+    module: 'src/ui/set-effort.tsx',
+    summary:
+      'Asks one set’s optional effort as Frown / Meh / Smile — too hard, about right, too easy — with the words in each option’s accessible name only.',
+    specimens: [
+      {
+        state: 'unanswered',
+        note: 'No face is chosen: unanswered is null, never the middle face.',
+        Render: SetEffortUnanswered,
+      },
+      {
+        state: 'chosen',
+        note: 'The selection carries a tick; the compact Clear returns it to unanswered.',
+        Render: SetEffortChosen,
+      },
+    ],
+  },
+  {
+    component: 'SetEffortReading',
+    requirement: 'REQ-011',
+    module: 'src/ui/set-effort.tsx',
+    summary: 'Reads a saved set’s effort back beside its result as the face, named for a screen reader.',
+    specimens: [
+      {
+        state: 'answered',
+        note: 'The face the set was saved with.',
+        Render: SetEffortReadingAnswered,
+      },
+      {
+        state: 'unanswered',
+        note: 'An unanswered or older set draws nothing; no face stands in for it.',
+        Render: SetEffortReadingUnanswered,
       },
     ],
   },
