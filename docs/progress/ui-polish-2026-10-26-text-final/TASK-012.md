@@ -79,7 +79,7 @@ reduced motion, with no new flashing. Expiry records no result.
 | `npm run gen:types -- --check` | pass, types current |
 | `python3 scripts/gen-issues.py --check` | pass (71 requirements, 136 edges) |
 
-## Blocker: runtime-source-bound audit evidence
+## Initial blocker: runtime-source-bound audit evidence (resolved by genuine recapture below)
 
 TASK-006, TASK-007, TASK-009 and TASK-011 hit this same blocker. Any runtime change in `src/` changes
 the runtime-source hash, which is now `03cefd21…`. The TASK-034 format-preview AFTER records and
@@ -120,3 +120,17 @@ Typecheck, design-system lint and diff checks passed. Independent root review co
 React child position and the real same-DOM-node/deadline assertions. No implementation finding remains
 open; genuine source capture and native exact-head verification/delivery are next. This is TASK-012
 clock ownership, not a circuit-round engine change.
+
+## Genuine source-bound recapture
+
+The existing four-skin mobile collector passed four cases/eight phone screenshots against committed
+source `4abb019efaea3a5f02bb36dcc3628ec047c8082a`. The owned local backend used current migrations and
+synthetic seeds. Every skin recorded zero generation requests and writes; no hosted schema changed.
+Runtime source `4a08ee3eba2998493b5e8e8be9fc1edf51a87f92f09ecdf88d1743215047cf09`, driver
+`b40dbdaa3314ed7ecc6d31c10299df7e1cbc994eb0feddb94fb44c94ca5ef1f4`, actual manifest/record/PNG
+payload `67e9d493d30ae8b64ee02ca5b32931cf7e9d04712e84d54f88d811d9c981e5a8`.
+Provenance records actual attempt1/a1, run `48195f8e-fd87-4aa4-8be4-1c5094808b60` and base
+`cabb0d20d9891a60f2c4b9cfd1387c76d365a18c`. All earlier evidence groups remain unchanged.
+This proves the current format-preview source, while the focused clock/circuit tests prove its
+feature behavior. Native exact-head verification and protected build-branch delivery remain required;
+deployed and physical-iPhone success are not inferred.
