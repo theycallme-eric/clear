@@ -60,6 +60,7 @@ function row(overrides: Partial<ExerciseSetLogRow> = {}): ExerciseSetLogRow {
     rpe: null,
     is_warmup_set: false,
     created_at: '2026-09-24T09:10:00+00:00',
+    effort: null,
     ...overrides,
   }
 }
@@ -246,6 +247,8 @@ describe('a stored row, read back', () => {
       // A historical RPE stays on the row; the execution surface reads only the
       // warmup classification.
       isWarmup: true,
+      // And no effort category is derived from it (REQ-012).
+      effort: null,
       // A row exists, so the database has this set: `logged` and nothing else.
       status: 'logged',
     })
@@ -274,6 +277,7 @@ describe('a stored row, read back', () => {
       weight: null,
       weightUnit: 'kg',
       isWarmup: false,
+      effort: null,
       status: 'syncing',
     })
   })

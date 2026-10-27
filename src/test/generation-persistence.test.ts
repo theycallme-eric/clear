@@ -1155,6 +1155,7 @@ describe('the migration that carries it is additive', () => {
     expect(files.slice(files.indexOf(LADDER_MIGRATION.split('/').at(-1)!))).toEqual([
       '20261021000025_ladder_timing_persistence.sql',
       '20261024000026_v3_hinge_warmup.sql',
+      '20261027000027_set_effort.sql',
     ])
   })
 

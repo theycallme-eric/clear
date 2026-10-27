@@ -36,6 +36,7 @@ function loggedSet(overrides: Partial<LoggedSet> & { setNumber: number }): Logge
     weight: 60,
     weightUnit: 'kg',
     isWarmup: false,
+    effort: null,
     status: 'logged',
     ...overrides,
   }

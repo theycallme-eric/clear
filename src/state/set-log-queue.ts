@@ -35,7 +35,7 @@
  */
 import { Constants } from '../data/database.types'
 import { ErrorCode, type AppError } from './errors'
-import type { PerformedSet, SetLogEntry } from './set-logging'
+import { isRecordedEffort, type PerformedSet, type SetLogEntry } from './set-logging'
 
 /** One key, one queue: the app writes sets for one session at a time. */
 export const SET_LOG_QUEUE_STORAGE_KEY = 'clear.set-log-queue'
@@ -237,6 +237,10 @@ function isPerformedSet(value: unknown): value is PerformedSet {
     // carry `rpe`. It is tolerated so the set itself is never dropped; the
     // writer no longer sends it.
     isOptionalNumber(record.rpe) &&
+    // REQ-012: an entry queued before effort existed has no key and decodes as
+    // unanswered. A present value must be a category or `null` — a number
+    // here is not effort, and guessing which category it meant would invent one.
+    isRecordedEffort(record.effort) &&
     (record.isWarmup === undefined || typeof record.isWarmup === 'boolean')
   )
 }
