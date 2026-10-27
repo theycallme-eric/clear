@@ -62,3 +62,15 @@ That would fabricate evidence.
 The owner or a credentialed lane commits this diff, re-runs the TASK-034 mobile capture on that
 commit, and re-derives the audit's runtime hash and lineage the way `c02e16f` did. After that,
 re-run `npm test`.
+
+## Operator recovery: local proof preparation
+
+Both configured coding attempts are retained; no extra coding invocation is granted. The existing
+Runner supports successful-worker/verification-failed recovery after a same-workspace correction.
+Prepared a separate disposable local PostgreSQL 17 / Supabase backend from committed migrations
+and synthetic catalog seeds, on distinct ports; existing local and production services unchanged.
+Generated credentials belong only to that disposable backend and remain outside the product tree.
+The unchanged TASK-034 capture driver/record schema/validators will write a new evidence group;
+all previous groups remain preserved. No pass is claimed before the actual browser run and native
+full recovery verification. Implementation candidate was committed locally at 7b1edbb for truthful
+capture source identity, with no push or PR.
