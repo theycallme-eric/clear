@@ -104,3 +104,16 @@ two stale source-bound audit checks, after the worker succeeded and16 native tas
 that history and attempt1/max2 remain intact. Next: commit this corrected source, execute genuine
 mobile browser proof against the owned disposable local backend, then native full recovery and
 protected build-branch delivery. No success is claimed until those actual outcomes.
+
+## Actual operator browser proof
+
+Foreground63900 returned exit0: five existing mobile cases passed (27.5s), comprising the four-skin
+format-preview collector/eight phone-short captures plus the current-version REQ-011 grouped Review
+to Workout journey. Actual source `b1c15ee580008b99c2e98f8a9c5552cf497696ef`, runtime `68a768f5944d3fe39312fbe61a5e1d62aad0a384ad37ba6527a6294868e31455`.
+New group `docs/design/evidence-0143/task034-format-preview-ui-polish-task005` holds actual records/PNGs and unchanged-format native input provenance;
+payload SHA256 `9477316b4f19c4d51d65cd4a0b2d6686d8738c64e8d95a71f9d033043f845107`. Preview walk made zero generation/preview writes. Review fixture
+setup and normal Start/session writes were confined to the owned disposable local database; model
+forwarding stayed blocked. Historical captures remain intact. Native recovery and delivery still
+pending; no task completion is claimed here.
+
+The actual existing audit consumer passed all38 checks on the genuine new group, and its independently computed payload digest matches provenance. Owned backend stop94793 returned exit0. Native full recovery is next.
