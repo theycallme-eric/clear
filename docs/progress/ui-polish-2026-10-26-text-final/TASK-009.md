@@ -76,3 +76,12 @@ recoverable") would then be false for corrections, so the fix is kept.
 
 Controller: commit this tree, re-capture the format-preview group the way TASK-011 did, update the
 audit from those artifacts, then rerun the full verification set.
+
+## Operator review checkpoint
+
+The original native invocation is terminal: worker succeeded, the eight required cases passed,
+and only the two source-bound audit checks failed. Independent final review found no blocking
+acceptance gap. A test title now describes the real state precisely: the sheet is minimized while
+the shared rest card runs in the footer; there is no separate Rest-collapse control. The existing
+native same-attempt recovery will rerun all approved checks after genuine mobile recapture.
+No Runner, generation/distance policy, circuit runtime, workflow or hosted schema change is included.

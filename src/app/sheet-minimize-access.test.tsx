@@ -180,7 +180,7 @@ describe('Set-logging sheet — the top chevron is the only minimise control (AC
 })
 
 describe('Logging access is independent of rest (AC-037)', () => {
-  it('reopens Log set and Edit from the card while the rest runs collapsed in the footer', async () => {
+  it('reopens Log set and Edit from the card while rest runs in the footer after minimizing the sheet', async () => {
     const user = userEvent.setup()
     await shell()
     await logAndMinimise(user)
