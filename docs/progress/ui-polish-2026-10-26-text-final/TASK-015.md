@@ -71,7 +71,7 @@ flow semantics do not change.
 - First full run: 5 failures. Three were old `Workout.test.tsx` assertions about the header bar and
   the `clr-actions` class, and they were updated. The other two are the known audit blocker below.
 
-## Worker verification
+## Initial worker verification
 
 | Command | Result |
 | --- | --- |
@@ -97,8 +97,23 @@ Fixing them means committing the tree and re-capturing the four-skin mobile form
 against a disposable authenticated backend. This worker cannot do that. No record, hash or audit
 text was edited, because that would fabricate evidence.
 
-## Next safe action
+## Controller verification recovery — in progress
 
-Controller: commit, then do the source-bound mobile capture and record the audit evidence. Run
-native verification on the exact head. Physical-iPhone safe-area behavior is not inferred from
-jsdom.
+- Native initial command reached terminal verification-failed after the worker succeeded. The
+  initial six-file candidate is retained in commit `d805717`; this remains attempt 1 of 2. No new
+  model invocation, attempt reset, or Runner change is involved.
+- Controller read the live issue #535 and its comments (zero), completing the issue-context step
+  the worker could not perform. Independent runtime review found no concrete acceptance blocker.
+- The existing circuit browser spec now includes actual 320×568 and 390×844 footer geometry
+  coverage, including shared rest, expanded load-entry sheet, and last-section Finish label. The
+  original two substantive circuit journeys are unchanged. These cases are pending execution.
+- Current-source format-preview binding names actual task TASK-015, native run
+  `c7bb59aa-9d02-481d-8610-e02189508e65`, attempt 1, and tested base
+  `9c941f8c3ca0ca3e8f45b6e04e9a264afc4fa05e`; evidence will be genuinely collected after commit.
+- The owned disposable local backend started/reset successfully with the actual migrations. A
+  transient desktop disconnect preserved all saved work; connectivity and backend status were
+  rechecked successfully, with no coding-worker restart. No hosted schema was changed.
+
+Next: commit the proof-ready tree, execute the circuit and footer cases, collect actual format
+proof, then use native same-attempt verification and protected build-branch delivery. Physical
+iPhone safe-area behavior is not inferred from jsdom or local Chromium.

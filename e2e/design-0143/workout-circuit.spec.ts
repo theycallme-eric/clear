@@ -409,6 +409,89 @@ async function failFirstBlockSave(page: Page) {
   return { failed: () => failed, dispose: () => page.unroute(pattern, handler) }
 }
 
+/** Actual rendered phone geometry; no simulated notch or physical-device claim. */
+async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finish workout') {
+  const navigation = page.getByRole('navigation', { name: 'Workout sections', exact: true })
+  const progress = navigation.getByRole('progressbar', { name: /^Section / })
+  const previous = navigation.getByRole('button', { name: 'Previous', exact: true })
+  const forward = navigation.getByRole('button', { name: forwardName, exact: true })
+  await expect(navigation).toBeVisible()
+  await expect(progress).toBeVisible()
+  await page.evaluate(() => document.fonts.ready)
+
+  const viewport = page.viewportSize()
+  if (viewport === null) throw new Error('Footer geometry needs a configured phone viewport')
+  const boxes: Array<{ left: number; right: number; top: number; bottom: number }> = []
+  for (const action of [previous, forward]) {
+    await expect(action).toBeVisible()
+    const metrics = await action.evaluate((button) => {
+      const box = button.getBoundingClientRect()
+      const labels: Array<{ left: number; right: number; top: number; bottom: number }> = []
+      const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT)
+      for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+        if (!node.textContent?.trim()) continue
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        labels.push(...Array.from(range.getClientRects(), (rect) => ({
+          left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+        })))
+      }
+      return {
+        left: box.left, right: box.right, top: box.top, bottom: box.bottom,
+        height: box.height,
+        minimumHeight: Number.parseFloat(getComputedStyle(button).minHeight),
+        scrollWidth: button.scrollWidth, clientWidth: button.clientWidth,
+        scrollHeight: button.scrollHeight, clientHeight: button.clientHeight,
+        labels,
+      }
+    })
+    expect(metrics.left).toBeGreaterThanOrEqual(0)
+    expect(metrics.top).toBeGreaterThanOrEqual(0)
+    expect(metrics.right).toBeLessThanOrEqual(viewport.width)
+    expect(metrics.bottom).toBeLessThanOrEqual(viewport.height)
+    // Read the public control's computed sizing rather than inventing a tap-height gate.
+    expect(metrics.minimumHeight).toBeGreaterThan(0)
+    expect(metrics.height + 1).toBeGreaterThanOrEqual(metrics.minimumHeight)
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth + 1)
+    expect(metrics.scrollHeight).toBeLessThanOrEqual(metrics.clientHeight + 1)
+    expect(metrics.labels.length).toBeGreaterThan(0)
+    for (const label of metrics.labels) {
+      expect(label.left).toBeGreaterThanOrEqual(metrics.left - 1)
+      expect(label.right).toBeLessThanOrEqual(metrics.right + 1)
+      expect(label.top).toBeGreaterThanOrEqual(metrics.top - 1)
+      expect(label.bottom).toBeLessThanOrEqual(metrics.bottom + 1)
+    }
+    boxes.push(metrics)
+    // A visible rectangle is insufficient if another pinned layer covers the action.
+    if (await action.isEnabled()) await action.click({ trial: true })
+  }
+  expect(boxes[0].right).toBeLessThanOrEqual(boxes[1].left)
+  expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThanOrEqual(1)
+  expect(Math.abs(boxes[0].bottom - boxes[1].bottom)).toBeLessThanOrEqual(1)
+
+  const adjacency = await navigation.evaluate((nav) => {
+    const bar = nav.querySelector('[role="progressbar"]')
+    const children = Array.from(nav.children)
+    const barFrame = children.find((child) => bar !== null && child.contains(bar))
+    const pair = children.find((child) => child.querySelectorAll('button').length === 2)
+    if (barFrame === undefined || pair === undefined) return null
+    const barBox = barFrame.getBoundingClientRect()
+    const pairBox = pair.getBoundingClientRect()
+    return {
+      adjacent: barFrame.nextElementSibling === pair,
+      barBottom: barBox.bottom,
+      pairTop: pairBox.top,
+      gap: (Number.parseFloat(getComputedStyle(nav).rowGap) || 0) +
+        (Number.parseFloat(getComputedStyle(barFrame).marginBottom) || 0) +
+        (Number.parseFloat(getComputedStyle(pair).marginTop) || 0),
+    }
+  })
+  if (adjacency === null) throw new Error('Footer progress and paired actions were not found')
+  expect(adjacency.adjacent).toBe(true)
+  expect(adjacency.barBottom).toBeLessThanOrEqual(adjacency.pairTop)
+  expect(adjacency.pairTop - adjacency.barBottom).toBeLessThanOrEqual(adjacency.gap + 1)
+}
+
 // ── The journey ──────────────────────────────────────────────────────────
 
 test('JOURNEY-025: the full ordered circuit runs hands-off, records only observed rounds, survives background and refresh, and saves to Summary', async ({ page, visit, checkA11y, world, modelPosts }) => {
@@ -582,3 +665,43 @@ test('JOURNEY-025: an untouched circuit saves with no inferred rounds and skippi
   expect(await world.circuitSetLogs()).toEqual([])
   expect(modelPosts()).toBe(0)
 })
+
+for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }]) {
+  test(`JOURNEY-014: paired footer stays readable and reachable at ${viewport.width}x${viewport.height}, including rest and the shared sheet`, async ({ page, visit, world, modelPosts }) => {
+    test.setTimeout(120_000)
+    await page.setViewportSize(viewport)
+    await page.clock.install({ time: Date.now() })
+    await visit('/workout')
+    await expect(page.getByRole('list', { name: 'Movements in this circuit', exact: true })).toBeVisible()
+    // Freeze only time: no new observation is produced by the geometry checks.
+    const opened = await page.evaluate(() => Date.now())
+    await page.clock.pauseAt(opened + 30_000)
+    await expectFooterPair(page, 'Next section')
+
+    // Explicit round recording supplies a real shared rest; optional logging stays unsubmitted.
+    await page.getByRole('button', { name: 'Start round 1', exact: true }).click()
+    const started = await page.evaluate(() => Date.now())
+    await page.clock.pauseAt(started + 1_000)
+    await page.getByRole('button', { name: 'Finish round 1', exact: true }).click()
+    const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
+    await expect(timer).toBeVisible()
+    const exercise = display(world.catalog[1].id)
+    await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
+    const sheet = page.locator('[data-set-sheet-slot]')
+    await expect(sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })).toBeVisible()
+    await expect(sheet.getByRole('timer', { name: 'Time remaining', exact: true })).toBeVisible()
+    await expectFooterPair(page, 'Next section')
+    await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+    await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
+    await expectHandsOff(page)
+
+    // The same real fixture supplies the last-section label, without changing its finish semantics.
+    await page.clock.resume()
+    await page.getByRole('button', { name: 'Next section', exact: true }).click()
+    await expect(page.getByRole('navigation', { name: 'Workout sections', exact: true })
+      .getByRole('button', { name: 'Finish workout', exact: true })).toBeVisible()
+    await expectFooterPair(page, 'Finish workout')
+    expect(await world.circuitSetLogs()).toEqual([])
+    expect(modelPosts()).toBe(0)
+  })
+}
