@@ -58,6 +58,7 @@ import {
   type CircuitView,
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
+import { movementCountdownSeconds } from '../state/movement-countdown'
 import { useSetLogging } from '../state/set-logging'
 import { useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -69,6 +70,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
+import { MovementCountdown } from './movement-countdown'
 import { useInterfaceLoop } from './motion'
 
 export interface CircuitBlockProps extends BlockRendererProps {
@@ -270,11 +272,16 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
-  const logged = loggedSets(exercise.exerciseId).length
+  const sets = loggedSets(exercise.exerciseId)
+  const logged = sets.length
+  const taken = new Set(sets.map((set) => set.setNumber))
+  let nextSet = 1
+  while (taken.has(nextSet)) nextSet += 1
+  const countdownSeconds = movementCountdownSeconds(prescription, nextSet)
 
-  if (open) {
-    return (
-      <>
+  return (
+    <>
+      {open ? (
         <ExerciseSetLogger
           exercise={exercise}
           ordinal={`${exercise.position}.`}
@@ -282,7 +289,47 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // round, and that countdown is the round boundary's (EXE-05).
           statesRest={false}
           restSeconds={null}
+          // The circuit movement owns this clock independently of optional
+          // load entry. Opening the logger must not create a second one.
+          showCountdown={false}
         />
+      ) : (
+        <BlockPanel.Movement
+          title={`${exercise.position}. ${name}`}
+          detail={targetText(prescription)}
+        >
+          {prescription.tempo === null ? null : (
+            <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
+          )}
+          {logged === 0 ? null : (
+            <BlockPanel.Note>
+              {logged} {logged === 1 ? 'set' : 'sets'} logged
+            </BlockPanel.Note>
+          )}
+          <div>
+            <TextAction
+              aria-expanded="false"
+              aria-label={`Log load and reps for ${name}`}
+              onClick={() => setOpen(true)}
+            >
+              Log load and reps
+            </TextAction>
+          </div>
+          <ExerciseCoaching exercise={exercise} />
+        </BlockPanel.Movement>
+      )}
+
+      {/* A fixed child of this movement's row: load entry can mount/unmount
+          beside it without replacing the clock or losing its deadline. */}
+      {countdownSeconds === null ? null : (
+        <MovementCountdown
+          key={`${nextSet}:${countdownSeconds}`}
+          seconds={countdownSeconds}
+          movement={name}
+        />
+      )}
+
+      {open ? (
         <div>
           <TextAction
             aria-expanded="true"
@@ -292,33 +339,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
             Hide load entry
           </TextAction>
         </div>
-      </>
-    )
-  }
-
-  return (
-    <BlockPanel.Movement
-      title={`${exercise.position}. ${name}`}
-      detail={targetText(prescription)}
-    >
-      {prescription.tempo === null ? null : (
-        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
-      )}
-      {logged === 0 ? null : (
-        <BlockPanel.Note>
-          {logged} {logged === 1 ? 'set' : 'sets'} logged
-        </BlockPanel.Note>
-      )}
-      <div>
-        <TextAction
-          aria-expanded="false"
-          aria-label={`Log load and reps for ${name}`}
-          onClick={() => setOpen(true)}
-        >
-          Log load and reps
-        </TextAction>
-      </div>
-      <ExerciseCoaching exercise={exercise} />
-    </BlockPanel.Movement>
+      ) : null}
+    </>
   )
 }

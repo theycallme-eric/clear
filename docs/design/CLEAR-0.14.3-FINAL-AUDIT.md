@@ -1,8 +1,33 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-009 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-012 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task012/`: four mobile skin cases/eight normal-short
+phone captures passed the existing authenticated journey, Axe, route, layout, network and
+record/PNG/source checks. Captured source `4abb019efaea3a5f02bb36dcc3628ec047c8082a`, runtime source
+`4a08ee3eba2998493b5e8e8be9fc1edf51a87f92f09ecdf88d1743215047cf09`, driver
+`b40dbdaa3314ed7ecc6d31c10299df7e1cbc994eb0feddb94fb44c94ca5ef1f4`.
+The committed source ran against the owned disposable Supabase/PostgreSQL17 backend reset with
+actual current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. No hosted schema or other local stack was changed.
+
+This proves the current source-bound format-preview route. TASK-012's clock and real-route tests
+separately cover countdown controls, low-time/reduced-motion treatment, no automatic recording and
+stable circuit ownership through load-entry show/hide. The combined countdown/circuit/sheet check
+passed 82 tests. This route capture does not infer broader deployed or physical-iPhone proof.
+TASK-018 retains surrounding mobile browser integration; known hosted-schema and inherited circuit
+entry-test limitations remain explicitly tracked for their existing owners.
+
+Input provenance names actual native attempt 1/a1, run `48195f8e-fd87-4aa4-8be4-1c5094808b60`, retained
+branch `agent-runner/task-012-a1-48195f8e` and tested base `cabb0d20d9891a60f2c4b9cfd1387c76d365a18c`.
+Actual manifest/record/PNG payload digest:
+`67e9d493d30ae8b64ee02ca5b32931cf7e9d04712e84d54f88d811d9c981e5a8`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-009 source-bound recapture — 27 October 2026
+
+Retained TASK-009 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task009/`: four mobile skin cases/eight normal-short
 phone captures passed the existing authenticated journey, Axe, route, layout, network and
 record/PNG/source checks. Captured source `9ed77488f2a2dd4a5922106f7f02badbab9faa74`, runtime source

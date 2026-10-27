@@ -1,0 +1,25 @@
+/* =============================================================================
+   MOVEMENT COUNTDOWN — REQ-014. The screen-edge urgency cue.
+
+   In the final five seconds of a running movement countdown, the viewport's
+   edge takes the timer's low role: a hard inset rule in --border-timer-low and
+   the low surface fading in from it. It is the countdown's alone — it exists
+   only while that countdown runs in its final stretch, never as a general
+   alarm — and it is decorative: the digits, the low frame and the "Final 5
+   seconds" announcement already carry the meaning.
+
+   Its motion is the shipped low-state pulse (.clr-pulse-micro), claimed as
+   the view's one urgent loop, so it never adds a keyframe or a flash of its
+   own. Under reduced motion the pulse is still and the edge stays drawn: the
+   static alternative is the same edge, unmoving.
+   ============================================================================= */
+
+.clr-countdown-edge {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow:
+    inset 0 0 0 var(--border-width) var(--border-timer-low),
+    inset 0 0 var(--spacing-600) var(--surface-timer-low);
+}

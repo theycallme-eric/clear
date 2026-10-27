@@ -83,6 +83,7 @@ import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
 import { MoodReading } from '../ui/mood'
+import { MovementCountdown } from '../ui/movement-countdown'
 import { Select } from '../ui/select'
 import {
   LoggedSetTable,
@@ -1611,6 +1612,18 @@ const LONG_LADDER: readonly LadderRung[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 ].map((target, index) => ({ number: index + 1, targets: [target] }))
 
+function MovementCountdownReady() {
+  return <MovementCountdown seconds={30} movement="hollow body hold" />
+}
+
+function MovementCountdownInCard() {
+  return (
+    <Card>
+      <MovementCountdown seconds={45} movement="side plank" />
+    </Card>
+  )
+}
+
 function LadderRungsReadOnly() {
   return <LadderRungs rungs={SAMPLE_RUNGS} unit="reps" label="Ladder" />
 }
@@ -2297,6 +2310,25 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'interactive, 11 rungs',
         note: 'Wider than a phone: the rail contains the scroll and cues the edges rather than overflowing the page.',
         Render: LadderRungsOverflowing,
+      },
+    ],
+  },
+  {
+    component: 'MovementCountdown',
+    requirement: 'REQ-014',
+    module: 'src/ui/movement-countdown.tsx',
+    summary:
+      'A timed prescription’s own countdown, on its movement’s card: Start, Pause and Reset over the session clock’s timer frame. The final five seconds take the low state and light the screen edge; running out records nothing.',
+    specimens: [
+      {
+        state: 'ready',
+        note: 'Press Start. The final five seconds turn the frame to the low role and draw the edge cue; under reduced motion both are still.',
+        Render: MovementCountdownReady,
+      },
+      {
+        state: 'ready, on a movement card',
+        note: 'Where it actually sits. The frame is the card’s element frame: same timer role, no bar of its own, never a card in a card.',
+        Render: MovementCountdownInCard,
       },
     ],
   },

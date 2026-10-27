@@ -204,7 +204,7 @@ describe('the production app speaks one dialect per component', () => {
    */
   const HAND_ASSEMBLED_CARD: Record<string, string> = {
     'src/ui/workout-chrome.tsx':
-      'EXC-03 GlobalTimer: TimerDisplay always draws its own card and counts down into the low state, so a count-up session clock inside a card mirrors its markup',
+      'EXC-03 TimerFrame (GlobalTimer, MovementCountdown): TimerDisplay always draws its own card and counts down into the low state, so a count-up session clock, or any timer inside a card, mirrors its markup',
   }
 
   const cardClass = /(?:^|\s)clr-card(?:__(?:bar|body))?(?=\s|$)/
