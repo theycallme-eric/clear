@@ -21,7 +21,7 @@ stored start and end timestamps are kept but not shown.
 - PRE-001: `git merge-base --is-ancestor 7f0a367… HEAD` passed. PRE-002: the design system
   declares 0.14.3, and `git diff 7f0a367 HEAD -- src/design-system` is empty. It is still untouched.
 - `gh issue view` needed approval in this worker, so the approved task body was the contract. Issue
-  comments were not read.
+  comments were not read by the worker. The controller read the existing issue and verified zero comments.
 
 ## What changed (local, unpublished)
 
@@ -35,7 +35,8 @@ stored start and end timestamps are kept but not shown.
     rest, and never after the last round. `endRest` starts it from the tap instead.
   - Take back reopens the round on the clock it was finished on and removes that round's
     history entry.
-  - `clampCircuitState` carries both new fields through unchanged.
+  - `clampCircuitState` retains the stored history and known clock metadata; controller recovery
+    also restores missing legacy clock metadata from a known rest deadline without inventing history.
 - `src/state/workout-persistence.ts`: the stored-record guard accepts and validates the new
   optional fields.
 - `src/ui/circuit-block.tsx`:
@@ -64,8 +65,9 @@ stored start and end timestamps are kept but not shown.
 - **Next-round clock after rest:** it starts when the rest ends on its own or when the athlete
   ends it early, with no extra tap. With no rest prescribed, Finish starts the next round's clock
   at once.
-- **Legacy records** (stored before this change) have no clock. They resume at **Start round N**,
-  and rounds already counted have no duration.
+- **Legacy records** without a known clock/rest origin resume at **Start round N**, and rounds
+  already counted gain no invented duration. A legacy rest stamp supplies the accepted next-round
+  clock deadline; after expiry its elapsed time is retained across reload.
 - **Take back** removes the taken-back round's history entry and resumes its clock from the
   stored start. This is the existing correction path, not a display change.
 
@@ -81,7 +83,7 @@ stored start and end timestamps are kept but not shown.
 - Discrimination check: starting the next round's clock at Finish, ignoring the rest, failed 3 of
   the 12 named cases. Reverted, and all 12 pass again.
 
-## Worker verification
+## Initial worker verification
 
 | Command | Result |
 | --- | --- |
@@ -94,7 +96,7 @@ stored start and end timestamps are kept but not shown.
 | `npm run gen:types -- --check` | pass, types current |
 | `python3 scripts/gen-issues.py --check` | pass (71 requirements, 136 edges) |
 
-## Verification stop: runtime-source-bound audit evidence
+## Initial verification stop: runtime-source-bound audit evidence
 
 This is the same blocker as TASK-006/007/009/011/012/013. Any runtime change in `src/` changes
 the runtime-source hash, so two checks in `design-0143-final-audit.test.ts` fail:
@@ -106,12 +108,30 @@ Fixing them means committing the tree and re-capturing the four-skin mobile form
 against a disposable authenticated backend. This worker cannot do that. No record, hash or audit
 text was edited, because that would fabricate evidence.
 
-## Next safe action
+## Controller review and bounded recovery
 
-The controller or a credentialed lane does three things, as for TASK-013:
+Initial candidate `886a823` preserves the worker outcome. Native run
+`4eb44af3-53f9-4b4f-82ba-fa89cd434e5b` remains on attempt 1 of 2; no coding-model retry,
+state reset or Runner change was used.
 
-1. Commit this diff.
-2. Re-capture the TASK-034 mobile format-preview group on that commit.
-3. Re-derive the audit's runtime hash.
+Independent state review found a legacy in-rest cache with no new roundStartedAt. It restored the
+round count and rest stamp but lost elapsed time after the known rest deadline. Recovery derives
+only the next clock origin from that deadline, retaining the raw legacy cache and timestamps and
+creating no past round history. Two real-route regressions failed before repair and pass afterward;
+pure tests also cover early-rest override and unreadable legacy timestamps. The relevant focused set
+passed **133 tests across six files**, plus typecheck, design-system lint and diff checks.
 
-Then rerun `npm test`. Deployed and physical-iPhone behaviour are not inferred.
+The existing JOURNEY-025 browser spec is adapted to the actual pinned half-sheet, with no inline
+form, and the initial Start action. It also verifies elapsed time alone records nothing and the
+explicit Finish creates one elapsed-history entry. Ordered work, optional logging, background/rest,
+reload, save-failure/retry, exact Summary and zero-model-request assertions are retained.
+Actual browser execution is still required before this task is declared complete.
+
+Root review confirmed the narrow state repair and browser assertions; UI review found no additional
+runtime blocker, including StrictMode sheet ownership and stable movement countdown placement.
+Timing history uses the existing active-session circuit cache and survives remount/reload; hiding
+wall-clock labels retains the stored startedAt/endedAt fields.
+
+Next is actual browser execution from committed repaired source, followed by genuine mobile
+format-preview capture and same-attempt native verification. Deployed and physical-iPhone behavior
+are not inferred.

@@ -331,4 +331,29 @@ describe('restoring a record', () => {
     // Twenty seconds of it had already passed before the refresh.
     expect(circuitView(restored, circuit, 20).restRemaining).toBe(40)
   })
+
+  it('restores a legacy rest’s next clock from its known deadline without inventing history', () => {
+    const circuit = shape()
+    const stored: CircuitState = { round: 2, position: 1, restStartedAt: REST_AT_ISO }
+    const restored = clampCircuitState(stored, circuit)
+
+    expect(restored.roundStartedAt).toBe(new Date(REST_AT + 60_000).toISOString())
+    expect(restored.restStartedAt).toBe(REST_AT_ISO)
+    expect(restored.history).toBeUndefined()
+    expect(completedRounds(restored, circuit)).toBe(1)
+    expect(circuitView(restored, circuit, 45).phase).toBe('rest')
+    expect(circuitView(restored, circuit, 60).phase).toBe('work')
+    expect(circuitView(restored, circuit, 75).roundsCompleted).toBe(1)
+    expect(endRest(restored, circuit, REST_AT + 10_000).roundStartedAt).toBe(
+      new Date(REST_AT + 10_000).toISOString(),
+    )
+    expect(stored).toEqual({ round: 2, position: 1, restStartedAt: REST_AT_ISO })
+  })
+
+  it('does not invent a round clock from an unreadable legacy rest timestamp', () => {
+    const stored: CircuitState = { round: 2, position: 1, restStartedAt: 'unreadable' }
+
+    expect(clampCircuitState(stored, shape())).toEqual(stored)
+    expect(clampCircuitState(CIRCUIT_START, shape()).roundStartedAt).toBeUndefined()
+  })
 })

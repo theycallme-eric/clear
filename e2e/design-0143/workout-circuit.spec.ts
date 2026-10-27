@@ -31,9 +31,10 @@ import { installDeterministicCapture } from './fixtures'
  *   · the complete ordered circuit — every movement with its reps, the total
  *     rounds and the shared rest — is on the card, with no set form, no
  *     per-movement step and no movement singled out;
- *   · load entry is optional and compact: one quiet action per movement, one
- *     form only for the movement opened;
- *   · twenty minutes on the clock record no round; one recorded round starts
+ *   · load entry is optional and compact: one quiet action per movement opens
+ *     that movement's form in the shared pinned sheet, without logging it;
+ *   · twenty minutes on the session clock record no round; Start round starts
+ *     only its elapsed clock, and Finish round records one duration and starts
  *     the shared rest, which the wall clock carries through a background and a
  *     refresh;
  *   · a failed save keeps the athlete on the circuit with its record intact,
@@ -447,23 +448,43 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
   await expect(sessionTime).not.toHaveText(sessionAtStart)
   await expectHandsOff(page)
 
-  // Optional load entry is compact: one quiet action per movement, and one
-  // form only for the movement opened — closed again, nothing was logged.
+  // Optional load entry is compact: one quiet action per movement opens its
+  // one form in the actual pinned sheet, rather than inside the movement row.
+  // Minimize and hide the entry again; no result was submitted.
   const second = display(world.catalog[1].id)
   for (const exercise of world.catalog) {
     await expect(page.getByRole('button', { name: `Log load and reps for ${display(exercise.id)}`, exact: true }))
       .toHaveAttribute('aria-expanded', 'false')
   }
   await page.getByRole('button', { name: `Log load and reps for ${second}`, exact: true }).click()
+  const sheet = page.locator('[data-set-sheet-slot]')
   await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(1)
-  await expect(rows[1].getByRole('form', { name: `Log set 1 of ${second}`, exact: true })).toBeVisible()
+  await expect(sheet.getByRole('form', { name: `Log set 1 of ${second}`, exact: true })).toBeVisible()
+  await expect(rows[1].getByRole('form')).toHaveCount(0)
+  await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+  await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(0)
   await page.getByRole('button', { name: `Hide load entry for ${second}`, exact: true }).click()
   await expectHandsOff(page)
 
-  // One optional tap records the round the athlete finished and starts the
-  // shared rest — once, at the boundary, read from the stored start.
+  // Starting the optional round clock records no work. Finish records the
+  // round the athlete completed and starts the shared rest once, separately
+  // from movement-result logging. The history displays the elapsed duration.
   await page.clock.resume()
+  await page.getByRole('button', { name: 'Start round 1', exact: true }).click()
+  const roundStart = await page.waitForFunction((blockId) => {
+    const records = JSON.parse(localStorage.getItem('clear.workout-circuits') ?? '{}') as
+      Record<string, { roundStartedAt: string | null } | undefined>
+    const startedAt = records[blockId]?.roundStartedAt
+    return startedAt == null ? null : Date.parse(startedAt)
+  }, world.circuitBlockId).then((handle) => handle.jsonValue() as Promise<number>)
+  await page.clock.pauseAt(roundStart + 15_000)
+  await expect(page.getByRole('timer', { name: 'Round 1 time', exact: true })).toContainText('00:15')
+  await expect(record).toHaveText('No rounds recorded')
   await page.getByRole('button', { name: 'Finish round 1', exact: true }).click()
+  const roundTimes = page.getByRole('list', { name: 'Round times', exact: true })
+  await expect(roundTimes.getByRole('listitem')).toHaveCount(1)
+  await expect(roundTimes.getByText('Round 1', { exact: true })).toBeVisible()
+  await expect(roundTimes.getByText('00:15', { exact: true })).toBeVisible()
   const restStart = await page.waitForFunction((blockId) => {
     const records = JSON.parse(localStorage.getItem('clear.workout-circuits') ?? '{}') as
       Record<string, { restStartedAt: string | null } | undefined>

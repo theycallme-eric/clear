@@ -20,7 +20,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { readCircuitState } from '../state/workout-persistence'
+import { readCircuitState, writeCircuitState } from '../state/workout-persistence'
 import { AppProviders, signedIn } from '../test/render'
 import {
   createWorkoutDouble,
@@ -101,6 +101,25 @@ function circuitBlockId(double: WorkoutDouble): string {
   const block = double.stored()?.sections[0]?.blocks[0]?.block
   if (block === undefined) throw new Error('the double holds no circuit')
   return block.id
+}
+
+/** A pre-clock cache contains the rest stamp and observed count, not invented past timings. */
+async function legacyRest(ageSeconds: number) {
+  const double = createWorkoutDouble({
+    session: snapshotFixture({
+      sections: SECTIONS,
+      startedAt: new Date(clock - 600_000).toISOString(),
+    }),
+  })
+  const restStartedAt = new Date(clock - ageSeconds * 1000).toISOString()
+  writeCircuitState(window.localStorage, circuitBlockId(double), {
+    round: 2,
+    position: 1,
+    restStartedAt,
+  })
+  const rendered = mount(double)
+  await screen.findByRole('list', { name: 'Movements in this circuit' })
+  return { double, rendered, restStartedAt }
 }
 
 const rows = () =>
@@ -244,6 +263,62 @@ describe('AC-062 — Start, Finish, elapsed round clock, shared rest and the nex
     expect(roundTimer(2)).toHaveTextContent('00:00')
     advance(5)
     await waitFor(() => expect(roundTimer(2)).toHaveTextContent('00:05'))
+  })
+
+  it('lets a legacy cached rest expire into its clock and retains elapsed time through reload', async () => {
+    const user = userEvent.setup()
+    const { double, rendered, restStartedAt } = await legacyRest(10)
+
+    expect(restTimer()).toHaveTextContent('00:20')
+    expect(screen.queryByRole('timer', { name: /^Round \d time$/ })).toBeNull()
+    expect(screen.queryByRole('list', { name: 'Round times' })).toBeNull()
+    expect(readCircuitState(window.localStorage, circuitBlockId(double))).toEqual({
+      round: 2,
+      position: 1,
+      restStartedAt,
+    })
+
+    advance(20)
+    await waitFor(() => expect(roundTimer(2)).toHaveTextContent('00:00'))
+    advance(15)
+    await waitFor(() => expect(roundTimer(2)).toHaveTextContent('00:15'))
+    expect(within(roundClock()).getByRole('status')).toHaveTextContent('1 of 3 rounds recorded')
+    expect(double.loggedSets()).toEqual([])
+
+    rendered.unmount()
+    mount(double)
+    await screen.findByRole('list', { name: 'Movements in this circuit' })
+    expect(roundTimer(2)).toHaveTextContent('00:15')
+    expect(button('Finish round 2')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: 'Round times' })).toBeNull()
+
+    // Only the subsequently finished round gains a timing: no round 1 start/end is inferred.
+    await user.click(button('Finish round 2'))
+    expect(readCircuitState(window.localStorage, circuitBlockId(double))?.history).toEqual([
+      {
+        round: 2,
+        startedAt: new Date(Date.parse(restStartedAt) + 30_000).toISOString(),
+        endedAt: new Date(clock).toISOString(),
+      },
+    ])
+    expect(double.loggedSets()).toEqual([])
+  })
+
+  it('restores a legacy cache after its rest deadline with the elapsed round time intact', async () => {
+    const { double, restStartedAt } = await legacyRest(45)
+
+    expect(restTimer()).toBeNull()
+    expect(roundTimer(2)).toHaveTextContent('00:15')
+    expect(button('Finish round 2')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Start round 2' })).toBeNull()
+    expect(within(roundClock()).getByRole('status')).toHaveTextContent('1 of 3 rounds recorded')
+    expect(screen.queryByRole('list', { name: 'Round times' })).toBeNull()
+    expect(double.loggedSets()).toEqual([])
+    expect(readCircuitState(window.localStorage, circuitBlockId(double))).toEqual({
+      round: 2,
+      position: 1,
+      restStartedAt,
+    })
   })
 
   it('stops the clock after the last round', async () => {

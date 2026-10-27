@@ -185,19 +185,27 @@ export function clampCircuitState(
   )
 
   const finished = shape.rounds !== null && round > shape.rounds
+  const restStartedAt = shape.restSeconds === 0 || finished ? null : state.restStartedAt
+  // An older cache has no round clock, but its rest stamp gives the exact
+  // next-round deadline. Restore that clock without inventing past timings.
+  const legacyRestDeadline = state.roundStartedAt === undefined && restStartedAt !== null
+    ? new Date(Date.parse(restStartedAt) + shape.restSeconds * 1000)
+    : null
+  const roundStartedAt = legacyRestDeadline !== null && Number.isFinite(legacyRestDeadline.getTime())
+    ? legacyRestDeadline.toISOString()
+    : state.roundStartedAt
 
   return {
     round,
     position,
     // A finished circuit is not resting, and neither is one whose block no
     // longer prescribes any rest to be in the middle of.
-    restStartedAt: shape.restSeconds === 0 || finished ? null : state.restStartedAt,
+    restStartedAt,
     // A finished circuit has no round running. The history is carried whole:
-    // a shortened block changes what is left to do, not what was done. A
-    // record written before the round clock existed stays without them.
-    ...(state.roundStartedAt === undefined
+    // a shortened block changes what is left to do, not what was done.
+    ...(roundStartedAt === undefined
       ? {}
-      : { roundStartedAt: finished ? null : state.roundStartedAt }),
+      : { roundStartedAt: finished ? null : roundStartedAt }),
     ...(state.history === undefined ? {} : { history: state.history }),
   }
 }
