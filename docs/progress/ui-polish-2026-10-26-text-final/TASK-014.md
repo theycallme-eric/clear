@@ -125,7 +125,7 @@ The existing JOURNEY-025 browser spec is adapted to the actual pinned half-sheet
 form, and the initial Start action. It also verifies elapsed time alone records nothing and the
 explicit Finish creates one elapsed-history entry. Ordered work, optional logging, background/rest,
 reload, save-failure/retry, exact Summary and zero-model-request assertions are retained.
-Actual browser execution is still required before this task is declared complete.
+Actual controller browser execution passed both mobile cases on the committed source, as recorded below.
 
 Root review confirmed the narrow state repair and browser assertions; UI review found no additional
 runtime blocker, including StrictMode sheet ownership and stable movement countdown placement.
@@ -135,3 +135,23 @@ wall-clock labels retains the stored startedAt/endedAt fields.
 Next is actual browser execution from committed repaired source, followed by genuine mobile
 format-preview capture and same-attempt native verification. Deployed and physical-iPhone behavior
 are not inferred.
+
+## Actual browser and source-bound capture
+
+Repaired source `7b5e6cccd8f4da0e575558b37b3142b0d7021a40` passed both existing mobile circuit browser cases
+(8.0 seconds, one worker, retries 0). JOURNEY-025 retained the actual shared-sheet, Start/elapsed
+history, observed-round, rest/background/reload, save-failure/retry and exact Summary assertions.
+The untouched/skipped case retained no inferred rounds or blocked progression. This resolves the
+tracked local circuit interaction mismatch; TASK-018 still replays the surrounding integration.
+
+The same source produced four passed format-preview skin cases/eight normal-short phone PNGs in
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task014`. Runtime source
+`de9965ed44f4c3f6b246637bf56a10d764185a886e833123e4ba67c517387d3b`; driver
+`5a1071014317cc8fdd9a6c847a53f9a6c9bb644d462734cb80d042d27a225ae7`; actual payload
+`8a1495c195099fed863cefaf2a36618c74e4e781495420e3631ecde2e9c5f023`. Each capture record reports zero generation requests,
+attempted writes and forwarded writes. Exact native run/a1/base input provenance is recorded.
+Old evidence groups remain unchanged. The owned disposable backend was stopped after proof.
+These are genuine local results; deployed/physical-iPhone behavior is not inferred. Exact-head
+native receipt and protected required CI govern delivery.
+
+The existing evidence consumer passed all **38** audit tests on the actual records and payload.
