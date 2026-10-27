@@ -1,8 +1,30 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-001 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-005 source-bound recapture — 27 October 2026
 
-Current format-preview evidence is the newly executed group at
+Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task005/`: four mobile skin cases/eight normal-short phone captures,
+all passing the existing real authenticated journey, Axe, route, layout, network and record/PNG/source
+checks. Captured source `b1c15ee580008b99c2e98f8a9c5552cf497696ef`, runtime source
+`68a768f5944d3fe39312fbe61a5e1d62aad0a384ad37ba6527a6294868e31455`, driver `31a3d6246e368c0a53b41cd54fbab88482fbc92b3914fd648724e7962655b58a`.
+The committed TASK-005 source ran on the owned disposable Supabase/PostgreSQL17 backend with the
+actual current migrations and synthetic seeds; no remote schema or production credentials. The
+format-preview walk recorded zero generation requests, attempted writes and forwarded writes.
+
+The same browser invocation also passed the existing current-version REQ-011 Review-to-Workout
+journey: real owned local actor, catalog-backed supersets/circuits, prescribed order and round
+counts, shared rest, optional tempo and Start transition. Its normal fixture writes stayed in the
+disposable local backend, with model forwarding blocked. This post-import behavior case cannot
+write historical BEFORE captures. Total actual browser outcome: five passed, no skipped cases.
+
+Existing note instructions are preserved; only the explicit redundant repeat sentence is removed.
+All earlier evidence groups remain unchanged. Existing evidence fields and validators remain
+authoritative. This is local source-bound proof; deployed and physical-iPhone proof, native full
+verification and exact-head protected delivery remain separate.
+
+## Historical UI-polish TASK-001 source-bound recapture — 27 October 2026
+
+Retained TASK-001 format-preview evidence is the executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task001/`: four mobile skin cases and eight normal/short phone PNG cells,
 all passed through the real authenticated-session journey, unchanged Axe/network/route/overflow checks
 and record/PNG/source acceptance consumer. Captured source `649c02d3652529810d3481c09d82f9845e45518c`, runtime source

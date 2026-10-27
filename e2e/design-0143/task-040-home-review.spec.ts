@@ -760,10 +760,10 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     // Groups are named with their round count; members are numbered in order.
     const superset = main.getByRole('list', { name: 'superset, 3 rounds', exact: true })
     await expect(superset.getByRole('listitem')).toHaveText([
-      new RegExp(`^1\\. ${name(first)}`, 'i'), new RegExp(`^2\\. ${name(second)}`, 'i')])
+      new RegExp(`^01 ${name(first)}`, 'i'), new RegExp(`^02 ${name(second)}`, 'i')])
     const circuit = main.getByRole('list', { name: 'circuit, 4 rounds', exact: true })
     await expect(circuit.getByRole('listitem')).toHaveText([
-      new RegExp(`^1\\. ${name(second)}`, 'i'), new RegExp(`^2\\. ${name(first)}`, 'i')])
+      new RegExp(`^01 ${name(second)}`, 'i'), new RegExp(`^02 ${name(first)}`, 'i')])
     // Shared rest sits with its own group, once each.
     const supersetGroup = superset.locator('xpath=..')
     await expect(supersetGroup).toContainText('SUPERSET · 3 ROUNDS')
