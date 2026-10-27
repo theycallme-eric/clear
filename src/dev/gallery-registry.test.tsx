@@ -65,6 +65,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // through the shell's set-logging path, so a specimen would have to invent a
   // session and a client before it could draw anything.
   ExerciseSetLogger: 'EXE-02 — one prescription of a live session, with its logged sets',
+  SupersetRoundSheet:
+    'REQ-016 — a live superset’s Log round, opened from its block and writing each movement through the shell',
   SetLoggingSheet:
     'REQ-009 — the set-logging half-sheet, opened from a live movement’s Log set and fed its draft',
   SetLoggingSheetHost: 'REQ-009 — structural: which movement’s sheet the workout shell has open',

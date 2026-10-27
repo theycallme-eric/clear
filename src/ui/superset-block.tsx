@@ -24,8 +24,13 @@
  *     alternation is stated in words above them, because a line is a colour cue
  *     and colour is never the only cue.
  *
+ *   · **The round is logged once** (REQ-016). One Log round opens one sheet
+ *     with each movement's own fields and effort (`SupersetRoundSheet`); only
+ *     the movements the athlete identifies are logged, and the rest starts
+ *     once, for the round.
+ *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
- * the structured prescription and writes each set through the shell's one path,
+ * the structured prescription and corrects each saved set through the shell's one path,
  * and completion is the frame's own with an empty outcome — a superset runs no
  * clock, and a zero it never watched would be a measurement (DATA_MODEL §8).
  *
@@ -33,11 +38,20 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import type { CSSProperties } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 
+import { Button } from '../design-system/index'
+import { useSetLogging } from '../state/set-logging'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
-import { ExerciseSetLogger } from './set-logger'
+import { ActionGroup } from './composition'
+import {
+  ExerciseSetLogger,
+  SupersetRoundSheet,
+  supersetRound,
+  type RoundDraft,
+} from './set-logger'
+import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
 
 /**
  * The label for one member of the pair: `A1`, `A2`, `A3`.
@@ -70,58 +84,100 @@ function afterPhrase(movements: number): string {
 }
 
 export function SupersetBlock({ block }: BlockRendererProps) {
-  const movements = block.exercises
-  const rest = supersetRestText(block.roundRestSeconds, movements.length)
-
   return (
     <BlockPanel block={block}>
-      {movements.length === 0 ? (
-        <BlockPanel.EmptyNote />
-      ) : (
-        <>
-          {/*
-            The alternation in words. Two movements are the pair the spec
-            describes; one is what is left of it after a swap, and saying
-            "alternate" of a single movement would be a lie.
-          */}
-          {movements.length > 1 && (
-            <BlockPanel.Label>
-              Alternate{' '}
-              {movements.map((exercise) => supersetOrdinal(exercise.position)).join(' → ')}{' '}
-              — no rest between movements
-            </BlockPanel.Label>
-          )}
-
-          {/*
-            The connector: one rule down the left of the pair, so A1 and A2
-            read as one linked unit. Inset from the card's own accent bar
-            rather than replacing it, and it shifts no text — the padding it
-            sits in is the component's, not the card's.
-          */}
-          <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
-            <BlockPanel.MovementList label="Movements in this superset">
-              {movements.map((exercise, index) => (
-                <BlockPanel.MovementItem key={exercise.exerciseId}>
-                  <ExerciseSetLogger
-                    exercise={exercise}
-                    ordinal={supersetOrdinal(exercise.position)}
-                    // Rest here is the block's, stated once below the pair.
-                    statesRest={false}
-                    // And taken once, after the movement that closes the pair:
-                    // A1 → A2 has no rest by definition (EXE-05).
-                    restSeconds={
-                      index === movements.length - 1 ? block.roundRestSeconds : null
-                    }
-                  />
-                </BlockPanel.MovementItem>
-              ))}
-            </BlockPanel.MovementList>
-          </div>
-
-          {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
-        </>
-      )}
+      {block.exercises.length === 0 ? <BlockPanel.EmptyNote /> : <SupersetRound block={block} />}
     </BlockPanel>
+  )
+}
+
+/**
+ * The pair and its one Log round. Only a block with movements to perform
+ * reaches the shell's set logging, so an emptied block asks it for nothing.
+ */
+function SupersetRound({ block }: BlockRendererProps) {
+  const movements = block.exercises
+  const rest = supersetRestText(block.roundRestSeconds, movements.length)
+  const { loggedSets } = useSetLogging()
+  const sheet = useSetLoggingSheetPlacement(`round:${block.blockId}`)
+  const logButton = useRef<HTMLButtonElement>(null)
+  // The round being entered, kept here so a collapsed sheet loses nothing.
+  const [entry, setEntry] = useState<RoundDraft | null>(null)
+  const round = supersetRound(movements.map((exercise) => loggedSets(exercise.exerciseId)))
+
+  const collapse = () => {
+    sheet.setOpen(false)
+    logButton.current?.focus()
+  }
+
+  return (
+    <>
+      {/*
+        The alternation in words. Two movements are the pair the spec
+        describes; one is what is left of it after a swap, and saying
+        "alternate" of a single movement would be a lie.
+      */}
+      {movements.length > 1 && (
+        <BlockPanel.Label>
+          Alternate{' '}
+          {movements.map((exercise) => supersetOrdinal(exercise.position)).join(' → ')}{' '}
+          — no rest between movements
+        </BlockPanel.Label>
+      )}
+
+      {/*
+        The connector: one rule down the left of the pair, so A1 and A2
+        read as one linked unit. Inset from the card's own accent bar
+        rather than replacing it, and it shifts no text — the padding it
+        sits in is the component's, not the card's.
+      */}
+      <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
+        <BlockPanel.MovementList label="Movements in this superset">
+          {movements.map((exercise) => (
+            <BlockPanel.MovementItem key={exercise.exerciseId}>
+              <ExerciseSetLogger
+                exercise={exercise}
+                ordinal={supersetOrdinal(exercise.position)}
+                // Rest here is the block's, stated once below the pair,
+                // and taken once per round, by Log round (EXE-05).
+                statesRest={false}
+                restSeconds={null}
+                // REQ-016: entered together, by the block's one action.
+                logging={{ round }}
+                onReturnToRound={() => logButton.current?.focus()}
+              />
+            </BlockPanel.MovementItem>
+          ))}
+        </BlockPanel.MovementList>
+      </div>
+
+      {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
+
+      <ActionGroup>
+        <Button
+          buttonRef={logButton}
+          variant="secondary"
+          aria-expanded={sheet.open}
+          onClick={() => sheet.setOpen(true)}
+        >
+          Log round
+        </Button>
+      </ActionGroup>
+
+      {sheet.place(
+        <SupersetRoundSheet
+          movements={movements.map((exercise) => ({
+            exercise,
+            ordinal: supersetOrdinal(exercise.position),
+          }))}
+          round={round}
+          roundRestSeconds={block.roundRestSeconds}
+          held={entry}
+          onHeld={setEntry}
+          onCollapse={collapse}
+        />,
+      )}
+    </>
   )
 }
 
