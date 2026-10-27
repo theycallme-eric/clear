@@ -109,3 +109,16 @@ heading visibility separately from the actual inner-scroller zero offset, retain
 network, overflow and source/PNG checks. Evidence schema and acceptance consumer are unchanged.
 83 focused evidence/harness tests, typecheck and diff checks passed. The vendored design-system
 diff is empty. The actual browser recapture and all native recovery checks remain pending here.
+
+## Actual operator browser proof
+
+Foreground capture65087 returned exit0: all four mobile skin cases/eight phone-short captures
+passed on committed source `649c02d3652529810d3481c09d82f9845e45518c`, runtime `02fe8910c509f8256c165b0fb7b031483137019e08fe0e73ee3bae6508156f52`. The new
+group `docs/design/evidence-0143/task034-format-preview-ui-polish-task001` retains actual records/PNGs and unchanged-format input provenance. Its payload
+SHA256 is `ca5b1b370b43a8166b536accbb283024a542530bcb3b65fb32d37e18c543b641`; the existing consumer will verify it independently. Prior groups remain
+unchanged. Clear phone and mono short images were visually inspected: the title is in the fixed
+header, page/card edges align at the 16px gutter, and the inner scroll view remains usable. Zero
+generation or preview writes were observed; no deployed/device claim. Full native recovery remains
+pending; the source issue and PR are not delivered yet.
+
+The unchanged actual audit consumer independently passed all38 checks on the new group; its actual payload digest matches provenance. Owned local backend stop30113 returned exit0. Native full recovery remains the next gate.

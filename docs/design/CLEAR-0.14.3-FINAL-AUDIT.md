@@ -1,8 +1,27 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-007 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-001 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the newly executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task001/`: four mobile skin cases and eight normal/short phone PNG cells,
+all passed through the real authenticated-session journey, unchanged Axe/network/route/overflow checks
+and record/PNG/source acceptance consumer. Captured source `649c02d3652529810d3481c09d82f9845e45518c`, runtime source
+`02fe8910c509f8256c165b0fb7b031483137019e08fe0e73ee3bae6508156f52`, driver `eae2e09b76d9fba27051e76d76019518a1c7b7ba7e7819b4db815f8af43467b7`.
+The committed TASK-001 source was served locally against the owned disposable Supabase/PostgreSQL17
+backend with the actual current migrations and synthetic catalog seeds. No remote schema or
+production credentials were used. The walk recorded zero generation requests, attempted writes and
+forwarded writes. Fixture accounts were synthetic and cleaned up.
+
+The approved page title now lives in the fixed header; browser selectors follow the sole semantic
+level-1 heading. Capture geometry proves that header heading fully visible inside its header and
+viewport, independently from the actual inner scroller's zero offset. Existing evidence fields and
+acceptance consumer remain unchanged. All earlier groups remain intact as historical evidence of
+their respective sources. This is local source-bound proof; deployed and physical-iPhone proof
+remain separate. Native full verification and exact-head protected delivery are still required.
+
+## Historical UI-polish TASK-007 source-bound recapture — 27 October 2026
+
+Retained TASK-007 format-preview evidence is the executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task007/`: four mobile skin cases, eight normal/short phone PNG cells,
 all passed with the unchanged real authenticated-session fixture and record/PNG/source validators.
 Captured source `59f0635c54e13c4f1515074110c4ebf6c1fff707`, runtime source `88eca9cd45b11fbb488ab87aa89f9b8d38f8193f4ae6659bb682769925434a5d`,
