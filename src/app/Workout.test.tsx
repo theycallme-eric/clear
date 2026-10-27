@@ -1397,6 +1397,19 @@ describe('Workout — the session’s one rest', () => {
     await user.click(form.getByRole('button', { name: `Log set ${setNumber}` }))
   }
 
+  /** The superset's one Log round, with both movements ticked as performed (REQ-016). */
+  async function logRound(round: number) {
+    const user = userEvent.setup()
+    if (screen.queryByRole('form', { name: /^Log round \d+ of / }) === null) {
+      await user.click(screen.getByRole('button', { name: 'Log round' }))
+    }
+    const form = within(screen.getByRole('form', { name: `Log round ${round} of bench press and barbell row` }))
+    for (const performed of form.getAllByRole('checkbox', { name: 'Performed' })) {
+      await user.click(performed)
+    }
+    await user.click(form.getByRole('button', { name: `Log round ${round}` }))
+  }
+
   function restBars(): HTMLElement[] {
     return screen.queryAllByRole('region', { name: 'Rest' })
   }
@@ -1449,13 +1462,11 @@ describe('Workout — the session’s one rest', () => {
   it('rests a superset once, after the pair, for the block’s own number', async () => {
     await restShell()
 
-    await logSet('bench press', 1)
-    // A1 → A2 has no rest by definition, whatever A1's own column says.
-    expect(restBars()).toEqual([])
-
-    await logSet('barbell row', 1)
+    // A1 → A2 has no rest by definition, whatever A1's own column says: the
+    // pair is logged as one round, and the round earns the block's rest.
+    await logRound(1)
     expect(restBars()).toHaveLength(1)
-    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(screen.getByText('Rest after round 1')).toBeInTheDocument()
     expect(restTimer()).toHaveTextContent('01:00')
   })
 
@@ -1467,10 +1478,10 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     expect(restTimer()).toHaveTextContent('00:50')
 
-    await logSet('barbell row', 1)
+    await logRound(1)
 
     expect(restBars()).toHaveLength(1)
-    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(screen.getByText('Rest after round 1')).toBeInTheDocument()
     expect(screen.queryByText('Rest after back squat')).not.toBeInTheDocument()
     expect(restTimer()).toHaveTextContent('01:00')
 
@@ -1673,8 +1684,7 @@ describe('Workout — the session’s one rest', () => {
     advance(420)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
-    await logSet('bench press', 1)
-    await logSet('barbell row', 1)
+    await logRound(1)
     advance(52)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
@@ -1715,8 +1725,7 @@ describe('Workout — the session’s one rest', () => {
     advance(30)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
-    await logSet('bench press', 1)
-    await logSet('barbell row', 1)
+    await logRound(1)
     advance(52)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))

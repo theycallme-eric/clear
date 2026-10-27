@@ -6,8 +6,9 @@
  * in one sheet docked in the pinned foot, beside the rest that is running.
  * New-entry and edit are the same sheet in two modes:
  *
- *   · a `Log set N` / `Edit set N` title with the top collapse chevron — the
- *     sheet's one minimise control;
+ *   · a `Log set N` / `Edit set N` title — `Log round N` for a superset's
+ *     round (REQ-016) — with the top collapse chevron, the sheet's one
+ *     minimise control;
  *   · the movement's context, then the running rest if there is one, drawn
  *     with the shared timer card rather than by recolouring the sheet;
  *   · the measurement row and the set's optional effort (`set-effort.tsx`),
@@ -82,6 +83,11 @@ export type SetSheetMode = 'new' | 'edit'
 export interface SetLoggingSheetProps {
   mode: SetSheetMode
   setNumber: number
+  /**
+   * What the entry is called in the title and on its action, where it is not
+   * one set — a superset's `round 2` (REQ-016). Omitted, it is `set N`.
+   */
+  entryName?: string
   /** The form's accessible name — `Log set 2 of back squat`. */
   formLabel: string
   /** The movement, its prescription and its equipment, in one line. */
@@ -126,6 +132,7 @@ const CONTEXT_STYLE: CSSProperties = {
 export function SetLoggingSheet({
   mode,
   setNumber,
+  entryName = `set ${setNumber}`,
   formLabel,
   context,
   measures,
@@ -162,7 +169,7 @@ export function SetLoggingSheet({
           <div className="clr-row clr-set-sheet__head">
             <HeadingLevelProvider level={2}>
               <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {mode === 'edit' ? 'Edit' : 'Log'} set {setNumber}
+                {mode === 'edit' ? 'Edit' : 'Log'} {entryName}
               </Heading>
             </HeadingLevelProvider>
             <IconButton
@@ -205,7 +212,7 @@ export function SetLoggingSheet({
             {mode === 'edit' ? null : (
               <ActionGroup>
                 <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
-                  Log set {setNumber}
+                  Log {entryName}
                 </Button>
               </ActionGroup>
             )}
