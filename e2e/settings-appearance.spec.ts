@@ -149,7 +149,7 @@ test.describe('Settings to appearance', () => {
     // Home → Settings, the way a user gets there.
     await page.locator('header').getByRole('button', { name: 'Settings', exact: true }).click()
     await expect(page).toHaveURL(/\/settings$/)
-    await expect(page.locator('main h1')).toHaveText(/settings/i)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/settings/i)
     await checkA11y()
 
     // 0.14.3 containment: every section is one card with its heading inside,
@@ -224,7 +224,7 @@ test.describe('Settings to appearance', () => {
     // no skin either — a reload resolves both to the default, not to the OS.
     await page.evaluate((key) => window.localStorage.setItem(key, 'system'), SKIN_KEY)
     await page.reload()
-    await expect(page.locator('main h1')).toHaveText(/settings/i)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/settings/i)
     expect(await appliedSkin(page), 'a legacy System preference followed the OS').toBe(
       DEFAULT_SKIN,
     )
@@ -271,7 +271,7 @@ test.describe('Settings to appearance', () => {
     )
 
     await page.reload()
-    await expect(page.locator('main h1')).toHaveText(/settings/i)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/settings/i)
     await expect(
       sectionCard(page, 'Training').getByRole('radio', { name: level, exact: true }),
       'the saved preference did not survive the reload',
@@ -293,7 +293,7 @@ test.describe('Settings to appearance', () => {
     await expect(page.locator('html')).toHaveAttribute('data-skin', 'mono')
 
     await page.reload()
-    await expect(page.locator('main h1')).toHaveText(/settings/i)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/settings/i)
     expect(await appliedSkin(page)).toBe('mono')
     await expect(page.getByRole('radio', { name: skinLabel('mono') })).toHaveAttribute(
       'aria-checked',

@@ -30,7 +30,7 @@
 import type { CSSProperties } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { AppHeader, ArrowLeft, Button, ClearLogo } from '../design-system/index'
+import { ArrowLeft, Button } from '../design-system/index'
 import type { Enums } from '../data/database.types'
 import type { LadderRung } from '../state/ladder'
 import {
@@ -401,16 +401,16 @@ export function FormatPreview() {
 
   return (
     <>
-      <AppHeader
-        actions={
-          <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={backToSettings}>
-            Settings
-          </Button>
-        }
+      <Screen
+        title={FORMAT_PREVIEW_TITLE}
+        header={{
+          actions: (
+            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={backToSettings}>
+              Settings
+            </Button>
+          ),
+        }}
       >
-        <ClearLogo size="md" />
-      </AppHeader>
-      <Screen title={FORMAT_PREVIEW_TITLE}>
         <div className="clr-stack" data-format-preview="">
           <Card heading="Read-only preview">
             <p style={TEXT_STYLE}>{FORMAT_PREVIEW_NOTE}</p>

@@ -37,12 +37,10 @@ import { useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
-  AppHeader,
   ArrowLeft,
   Button,
   Checkbox,
   ChoiceGroup,
-  ClearLogo,
   EmptyState,
   Input,
   LogOut,
@@ -135,17 +133,15 @@ export function Settings() {
 
   return (
     <>
-      <AppHeader
-        actions={
-          <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
-            {SETTINGS_BACK_LABEL}
-          </Button>
-        }
-      >
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title="Settings"
+        header={{
+          actions: (
+            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
+              {SETTINGS_BACK_LABEL}
+            </Button>
+          ),
+        }}
         pinnedFoot={
           state.status === 'error' ? (
             <PhoneFooter>

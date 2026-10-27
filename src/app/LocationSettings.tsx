@@ -25,12 +25,10 @@ import { useLocation, useNavigate } from 'react-router-dom'
 
 import {
   AlertCircle,
-  AppHeader,
   ArrowLeft,
   Button,
   Check,
   Checkbox,
-  ClearLogo,
   EmptyState,
   Input,
   Pencil,
@@ -159,21 +157,19 @@ export function LocationSettings() {
 
   return (
     <>
-      <AppHeader
-        actions={
-          <Button
-            variant="quiet"
-            icon={<ArrowLeft size={20} />}
-            onClick={backToSettings}
-          >
-            Settings
-          </Button>
-        }
-      >
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title="Places and equipment"
+        header={{
+          actions: (
+            <Button
+              variant="quiet"
+              icon={<ArrowLeft size={20} />}
+              onClick={backToSettings}
+            >
+              Settings
+            </Button>
+          ),
+        }}
         pinnedFoot={
           query.state.status === 'error' ? (
             <PhoneFooter>

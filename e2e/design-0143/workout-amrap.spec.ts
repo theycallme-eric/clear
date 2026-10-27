@@ -455,7 +455,7 @@ async function finishToSummary(page: Page) {
   await expect(page.getByRole('list', { name: 'Movements in this AMRAP', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/summary', { timeout: 30_000 })
-  await expect(page.locator('main h1')).toHaveAccessibleName('Nice work', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work', { timeout: 30_000 })
   await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
 }
 
@@ -507,7 +507,7 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
   // Refreshed mid-window: restored from the stored start, not restarted.
   await page.clock.resume()
   await page.reload()
-  await expect(page.locator('main h1')).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await page.clock.pauseAt(amrapStart + 200_000)
   await expect(page.getByRole('button', { name: 'Start AMRAP', exact: true })).toHaveCount(0)
   await expect(timer).toContainText('01:40')
@@ -557,7 +557,7 @@ test('JOURNEY-024: the AMRAP window is hands-off, the optional result is compare
 
   // The edit survives a refresh.
   await page.reload()
-  await expect(page.locator('main h1')).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await expect(roundsShown(page)).toHaveText('2')
   await expect(page.getByRole('group', { name: 'Reps into the next round', exact: true }).getByRole('status')).toHaveText('0')
 

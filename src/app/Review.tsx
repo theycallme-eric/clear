@@ -47,9 +47,7 @@ import { useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
-  AppHeader,
   Button,
-  ClearLogo,
   Clock,
   Crosshair,
   Gauge,
@@ -267,12 +265,10 @@ export function Review({
 
   return (
     <>
-      <AppHeader>
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title={REVIEW_TITLE}
         heading={briefing.title}
+        header={{}}
         pinnedFoot={
           <PhoneFooter>
             {/* U03: equivalent actions share one size; priority is the

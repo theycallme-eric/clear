@@ -470,7 +470,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // The boot runs on a live clock; the reading is then pinned to an exact second.
   await page.clock.resume()
   await page.reload()
-  await expect(page.locator('main h1')).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await page.clock.pauseAt(emomStart + 280_000)
   await expect(page.getByText('MIN 5 OF 6', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Start EMOM', exact: true })).toHaveCount(0)
@@ -519,7 +519,7 @@ test('JOURNEY-023: hands-off EMOM targets follow the scheduled minute, survive b
   // Last section, then Summary.
   await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/summary', { timeout: 30_000 })
-  await expect(page.locator('main h1')).toHaveAccessibleName('Nice work', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work', { timeout: 30_000 })
   await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
   await checkA11y()
 

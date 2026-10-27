@@ -297,7 +297,7 @@ test('Generate loading and failure remain honest at every supported width', asyn
   await anchor.getByRole('button', { name: 'Upper body', exact: true }).click()
   await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
 
-  await expect(page.locator('main h1')).toHaveAccessibleName('Generating session')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Generating session')
   await expect(page).toHaveURL((url) => url.pathname === '/generate')
   // The held request is one truthfully busy card — the loader's own, not a
   // card wrapped around it — with the way out pinned in the footer.

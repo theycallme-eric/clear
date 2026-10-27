@@ -47,7 +47,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
-import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
+import { Button, LogOut } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { useSectionCompletion } from '../state/block-completion'
 import { useFlushSetLogs } from '../state/set-logging'
@@ -418,23 +418,20 @@ function WorkoutShell({
         */}
         <RestTimerProvider>
           <SetLoggingSheetHost>
-          <AppHeader
-            meta={<GlobalTimer seconds={seconds} />}
-            actions={
-              <Button
-                variant="quiet"
-                icon={<LogOut />}
-                onClick={() => setAskedToExit(true)}
-              >
-                Abandon
-              </Button>
-            }
-          >
-            <ClearLogo size="sm" />
-          </AppHeader>
-
           <Screen
             title={SCREEN_TITLE}
+            header={{
+              meta: <GlobalTimer seconds={seconds} />,
+              actions: (
+                <Button
+                  variant="quiet"
+                  icon={<LogOut />}
+                  onClick={() => setAskedToExit(true)}
+                >
+                  Abandon
+                </Button>
+              ),
+            }}
             pinnedFoot={
               <PhoneFooter>
                 <div className="clr-stack clr-stack--tight">

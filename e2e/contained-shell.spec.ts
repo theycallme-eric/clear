@@ -420,7 +420,7 @@ for (const skin of ['clear', 'vapour', 'signal', 'mono'] as const) {
       const root = getComputedStyle(document.documentElement)
       const token = (name: string) => root.getPropertyValue(name).trim()
       const px = (name: string) => parseFloat(token(name))
-      const heading = document.querySelector<HTMLElement>('main h1')
+      const heading = document.querySelector<HTMLElement>('h1')
       const primary = document.querySelector<HTMLElement>('.clr-bleed.clr-glow')
       const quiet = document.querySelector<HTMLElement>('.clr-bleed:not(.clr-glow)')
       if (!heading || !primary || !quiet) {

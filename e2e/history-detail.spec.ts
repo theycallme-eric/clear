@@ -384,7 +384,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await viewHistory.click()
 
     await expect(page).toHaveURL(/\/history$/)
-    await expect(page.locator('main h1')).toHaveText('History')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('History')
 
     const list = page.getByRole('list', { name: HISTORY_LIST })
     await expect(list).toHaveClass(/clr-list/)
@@ -429,14 +429,14 @@ test.describe('history-detail — History list to Review or Session Detail on th
     // enters Review directly. It does not need a generation call or a detail
     // detour.
     await expect(page).toHaveURL(/\/review$/)
-    await expect(page.locator('main h1')).toHaveText(TITLES.completed)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(TITLES.completed)
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     await checkA11y()
     await page.screenshot({ path: testInfo.outputPath('vibe-d-history-review.png') })
 
     await page.goBack()
     await expect(page).toHaveURL(/\/history$/)
-    await expect(page.locator('main h1')).toHaveText('History')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('History')
 
     // A never-started record is history, but it is not a workout that can be
     // restarted. Its durable information view remains Session Detail.
@@ -447,7 +447,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await unstartedAfterBack.click()
 
     await expect(page).toHaveURL(new RegExp(`/history/${seeded.unstartedId}$`))
-    await expect(page.locator('main h1')).toHaveText(TITLES.unstarted)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(TITLES.unstarted)
     const sections = page.getByRole('region', { name: 'Sections' })
     await expect(sections).toBeVisible()
     // One overview card heads the facts, the provenance and the debrief; each
@@ -488,12 +488,12 @@ test.describe('history-detail — History list to Review or Session Detail on th
     })
 
     await visit(`/history/${seeded.completedId}`)
-    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(TITLES.completed)
 
     await page.getByRole('button', { name: 'Restart', exact: true }).click()
 
     await expect(page).toHaveURL(/\/review$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(TITLES.completed)
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     expect(generationRequests, 'Restart called the model-backed generation endpoint').toEqual([])
     await checkA11y()
@@ -534,7 +534,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await favorites.getByRole('button', { name: 'Start', exact: true }).click()
 
     await expect(page).toHaveURL(/\/review$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(TITLES.completed)
     await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeVisible()
     expect(generationRequests, 'Favorite Start called the model-backed endpoint').toEqual([])
     await checkA11y()
@@ -554,7 +554,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await page.getByRole('button', { name: 'Restart', exact: true }).click()
 
     await expect(page).toHaveURL(/\/review$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName(TITLES.completed)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(TITLES.completed)
     await expectPinnedAction(page, 'Start workout')
     await reachByKeyboard(page, 'Start workout')
     await checkA11y()
@@ -562,14 +562,14 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await page.getByRole('button', { name: 'Start workout', exact: true }).click()
 
     await expect(page).toHaveURL(/\/workout$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName('Workout')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout')
     await expectPinnedAction(page, 'Finish workout')
     await checkA11y()
     await page.screenshot({ path: testInfo.outputPath('vibe-c-workout.png') })
     await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
 
     await expect(page).toHaveURL(/\/summary$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName('Nice work')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work')
     await expect(page.getByText(`${TITLES.completed}, done.`)).toBeVisible()
     await page.getByRole('radio', { name: /Ready/ }).click()
     await expectPinnedAction(page, 'Save and close')
@@ -579,7 +579,7 @@ test.describe('history-detail — History list to Review or Session Detail on th
     await page.getByRole('button', { name: 'Save and close', exact: true }).click()
 
     await expect(page).toHaveURL(/\/$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName('Today')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Today')
   })
 
   test("another user's session id renders the error state, not their workout", async ({

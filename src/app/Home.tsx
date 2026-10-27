@@ -6,7 +6,7 @@
  * (`src/design-system/templates/app-shell/AppShell.dc.html`) read through the
  * IA's own line — `AppLayout › PageHeader + Card(Train Today/active) +
  * Card(This Week/rest) + TabbedPanel` — so the shell and its atmosphere are
- * `RootLayout`'s, `PageHeader` is `AppHeader` with the wordmark, semantic daily
+ * `RootLayout`'s, `PageHeader` is `AppHeader` with the page title, semantic daily
  * regions use Cards, and collections use the system tab band and list frame.
  *
  * **One read answers three questions.** The week strip, the recent three and
@@ -69,9 +69,7 @@ import {
 
 import {
   AlertCircle,
-  AppHeader,
   Button,
-  ClearLogo,
   IconButton,
   Pencil,
   Play,
@@ -252,24 +250,22 @@ export function Home() {
 
   return (
     <>
-      {/* U18: the header is the wordmark and one framed icon-only control.
+      {/* U18: the header is the page title and one framed icon-only control.
           `IconButton` requires the accessible name and brings the package's
           focus ring and 40px target; the route change stays in-app, so the
           installed PWA never hands Settings to the browser. */}
-      <AppHeader
-        actions={
-          <IconButton
-            label={SETTINGS_CONTROL_LABEL}
-            icon={<Sliders size={20} />}
-            onClick={() => void navigate(SETTINGS_ROUTE)}
-          />
-        }
-      >
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title="CLEAR"
         heading={HOME_HEADING}
+        header={{
+          actions: (
+            <IconButton
+              label={SETTINGS_CONTROL_LABEL}
+              icon={<Sliders size={20} />}
+              onClick={() => void navigate(SETTINGS_ROUTE)}
+            />
+          ),
+        }}
         pinnedFoot={
           <PhoneFooter>
             <ActionRow>

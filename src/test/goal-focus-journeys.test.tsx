@@ -20,6 +20,7 @@ import userEvent from '@testing-library/user-event'
 import { RouterProvider } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { WORKOUT_ROUTE } from '../app/ActiveSessionPrompt'
 import {
   CHANGE_FOCUS_LABEL,
   FIRST_WORKOUT_MESSAGE,
@@ -193,9 +194,13 @@ const focusLine = () => screen.getByText(/^Focus:/)
 const recovery = () => screen.getByRole('button', { name: RECOVERY_LABEL })
 
 /** Start on Review: the session is accepted, then begun. */
-async function startWorkout({ user, accepted }: Visit, expected: number) {
+async function startWorkout({ user, accepted, router }: Visit, expected: number) {
   await user.click(await screen.findByRole('button', { name: START_LABEL }))
   await waitFor(() => expect(accepted).toHaveLength(expected))
+  // Acceptance precedes start and Review's final navigation. Wait for that
+  // handoff before another journey navigation can race the late Workout one.
+  await waitFor(() => expect(router.state.location.pathname).toBe(WORKOUT_ROUTE))
+  await screen.findByRole('heading', { level: 1, name: 'Workout' })
 }
 
 async function regenerate({ user }: Visit) {
@@ -285,6 +290,12 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     // And Settings still shows the Goal it showed before.
     await goTo(journey, '/settings')
+    // A running Workout correctly holds in-app navigation until it is ended.
+    // Honor that existing guard instead of racing its mount after acceptance.
+    const abandon = await screen.findByRole('dialog', { name: 'Abandon workout?' })
+    expect(journey.router.state.location.pathname).toBe(WORKOUT_ROUTE)
+    await user.click(within(abandon).getByRole('button', { name: 'Abandon' }))
+    await waitFor(() => expect(journey.router.state.location.pathname).toBe('/settings'))
     expect(await screen.findByRole('radio', { name: 'Strength' })).toBeChecked()
     expectNoProfileWrite(journey, 'strength')
   })

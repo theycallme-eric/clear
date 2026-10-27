@@ -76,7 +76,7 @@ function session(athlete: Athlete) {
 }
 
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 
 test.describe('REQ-016 all formats, one session (TASK-030)', () => {
   test.describe.configure({ retries: 0 })

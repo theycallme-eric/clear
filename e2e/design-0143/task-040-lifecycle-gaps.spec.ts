@@ -151,7 +151,7 @@ function recorder(page: Page, info: TestInfo, skin: CaptureSkin, counts: () => C
     oracle: Oracle, variant = 'default', transition?: Transition) {
     expect(baselineEntry(inventory, key.screen, key.route)?.states).toContain(key.state)
     await expect(page).toHaveURL((url) => url.pathname === pathname)
-    await expect(page.locator('main h1')).toHaveAccessibleName(heading)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(heading)
     await oracle()
     await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
     const dimensions = page.viewportSize()
@@ -190,7 +190,7 @@ function recorder(page: Page, info: TestInfo, skin: CaptureSkin, counts: () => C
       // Both endpoints are observed. Auto-redirect tests hold the real null/empty
       // read so their origin heading is never manufactured from source text.
       await expect(page).toHaveURL((url) => url.pathname === fromPath)
-      await expect(page.locator('main h1')).toHaveAccessibleName(fromHeading)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(fromHeading)
       await before()
       await action()
       await take(key, toPath, toHeading, rationale, after, variant,
@@ -324,7 +324,7 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
     screen, route: screen === 'Session Detail' ? '/history/:id' : `/${screen.toLowerCase()}`, state,
   })
   const readyWorkout = async (page: Page) => {
-    await expect(page.locator('main h1')).toHaveAccessibleName('Workout')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout')
     await expect(page.getByRole('form', { name: /^Log set 1 of/ })).toBeVisible()
   }
 

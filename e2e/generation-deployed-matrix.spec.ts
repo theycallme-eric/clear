@@ -126,7 +126,7 @@ async function expectScreen(page: Page, screen: string, heading: string) {
   await expect(page, `${screen} is served at ${path}`).toHaveURL((url) => url.pathname === path, {
     timeout: 30_000,
   })
-  await expect(page.locator('main h1'), `${screen}'s heading`).toHaveAccessibleName(heading, {
+  await expect(page.getByRole('heading', { level: 1 }), `${screen}'s heading`).toHaveAccessibleName(heading, {
     timeout: 30_000,
   })
 }
@@ -504,7 +504,7 @@ test.describe('deployed UAT matrix: nine entries to Review, model-free (REQ-028)
 
         // ── Loading (transient, in place of Generate) ────────────────────────
         step = 'loading'
-        await expect(page.locator('main h1'), 'the Loading screen').toHaveAccessibleName(
+        await expect(page.getByRole('heading', { level: 1 }), 'the Loading screen').toHaveAccessibleName(
           'Generating session',
         )
         await expect(page).toHaveURL((url) => url.pathname === routeOf('Generate'))

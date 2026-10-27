@@ -45,7 +45,7 @@ const REST = '**/rest/v1/**'
 const SKIN_KEY = 'clear.skin'
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 const pathname = (page: Page) => new URL(page.url()).pathname
 const visibleText = (page: Page, text: string | RegExp) =>
   expect(page.getByText(text, { exact: typeof text === 'string' }).first()).toBeVisible()
@@ -515,7 +515,7 @@ test('welcome-auth: Welcome, credentials, code errors, busy and disabled states'
       const placed = await tagline.evaluate((el) => ({
         carded: el.closest('.clr-card') !== null,
         belowLogo: el.getBoundingClientRect().top >=
-          document.querySelector('main h1')!.getBoundingClientRect().bottom - 1,
+          document.querySelector('h1')!.getBoundingClientRect().bottom - 1,
       }))
       expect(placed).toEqual({ carded: true, belowLogo: true })
       // No kit placeholder health checks, and no progress for a ready anonymous boot.
@@ -1238,7 +1238,7 @@ backendTest('boot: authenticated checking, failed read, retry and reduced-motion
       // Status sits below the logo that names the screen, inside the screen's own column.
       const placed = await status.first().evaluate((el) => {
         const box = el.getBoundingClientRect()
-        const logo = document.querySelector('main h1')!.getBoundingClientRect()
+        const logo = document.querySelector('h1')!.getBoundingClientRect()
         return { below: box.top >= logo.bottom - 1, contained: box.left >= 0 && box.right <= window.innerWidth + 1 }
       })
       expect(placed).toEqual({ below: true, contained: true })
@@ -1250,7 +1250,7 @@ backendTest('boot: authenticated checking, failed read, retry and reduced-motion
         expect(probe.sized).toBe(false)
         evidence.note('contract', 'Boot progress is discrete segments, each lit or not.', probe)
       }
-    }, { skins: true, short: page.locator('main h1') })
+    }, { skins: true, short: page.getByRole('heading', { level: 1 }) })
     hold.release()
     await evidence.shot('BootSequence', null, 'failed-retry', at, 'CLEAR', async () => {
       const alert = page.getByRole('alert')
@@ -1258,7 +1258,7 @@ backendTest('boot: authenticated checking, failed read, retry and reduced-motion
       await expect(alert).toContainText('Your data is intact.')
       await expect(retry).toBeEnabled()
       expect(await alert.first().evaluate((el) => el.closest('.clr-card') !== null &&
-        el.getBoundingClientRect().top >= document.querySelector('main h1')!.getBoundingClientRect().bottom - 1),
+        el.getBoundingClientRect().top >= document.querySelector('h1')!.getBoundingClientRect().bottom - 1),
       'the failure is not in a card below the logo').toBe(true)
       // The real lifecycle only: no kit sample action or placeholder health check.
       await expect(page.getByRole('button', { name: /enter|continue|skip/i })).toHaveCount(0)

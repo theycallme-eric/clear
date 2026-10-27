@@ -72,7 +72,7 @@ async function expectScreen(page: Page, path: string, heading: string) {
   await expect(page, `expected the route ${path}`).toHaveURL((url) => url.pathname === path, {
     timeout: 30_000,
   })
-  await expect(page.locator('main h1'), `expected the heading "${heading}"`).toHaveAccessibleName(
+  await expect(page.getByRole('heading', { level: 1 }), `expected the heading "${heading}"`).toHaveAccessibleName(
     heading,
     { timeout: 30_000 },
   )

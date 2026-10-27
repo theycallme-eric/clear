@@ -222,7 +222,7 @@ function recorder(page: Page, testInfo: TestInfo, skin: CaptureSkin, counts: () 
   ) {
     expect(baselineEntry(inventory, key.screen, key.route)?.states).toContain(key.state)
     await expect(page).toHaveURL((url) => url.pathname === pathname)
-    await expect(page.locator('main h1')).toHaveAccessibleName(heading)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(heading)
     await oracle()
     const v = viewport()
     const reached = { pathname: new URL(page.url()).pathname, heading, stateVisible: true as const }
@@ -258,7 +258,7 @@ function recorder(page: Page, testInfo: TestInfo, skin: CaptureSkin, counts: () 
     async transition(key: CoverageKey, fromPath: string, fromHeading: string, before: Oracle, action: Oracle,
       toPath: string, toHeading: string, after: Oracle, variant = 'default') {
       await expect(page).toHaveURL((url) => url.pathname === fromPath)
-      await expect(page.locator('main h1')).toHaveAccessibleName(fromHeading)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(fromHeading)
       await before()
       await action()
       return take(key, toPath, toHeading, 'Source precondition and actual destination asserted around the real interaction.', after, variant,

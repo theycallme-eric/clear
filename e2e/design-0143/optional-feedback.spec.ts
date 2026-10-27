@@ -60,7 +60,7 @@ const SECTIONS = [
 ] as const
 
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 
 /** The contract workout the stub answers with; the primary lift carries a prescribed RIR. */
 function stubWorkout(title: string, [one, two]: Catalogued[]) {

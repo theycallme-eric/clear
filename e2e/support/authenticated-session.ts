@@ -161,7 +161,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
               (url) => url.pathname === path,
               { timeout: 30_000 },
             )
-            await expect(page.locator('main h1'), `${screen}'s heading`).toHaveAccessibleName(
+            await expect(page.getByRole('heading', { level: 1 }), `${screen}'s heading`).toHaveAccessibleName(
               heading,
               { timeout: 30_000 },
             )

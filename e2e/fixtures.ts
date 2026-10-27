@@ -49,7 +49,7 @@ export const test = base.extend<Fixtures>({
       await page.goto(path)
       // The heading is the screen: `Screen` renders it, so waiting for it is
       // waiting for the route to have resolved rather than for a fixed delay.
-      await expect(page.locator('main h1')).toBeVisible()
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
       await checkA11y()
     })
   },
