@@ -51,10 +51,36 @@ export const SUSTAINED_SET_LOG_ATTEMPTS = 2
 export const SET_LOG_RETRY_BASE_MS = 2_000
 export const SET_LOG_RETRY_MAX_MS = 30_000
 
+/**
+ * What a queued mutation does to its row (REQ-013). `correct` writes the
+ * entry's values over the stored row with that id; `clear` deletes that row.
+ * An insert carries no kind, which is also how every entry queued before
+ * corrections existed decodes.
+ */
+export type SetLogMutationKind = 'correct' | 'clear'
+
 /** One set, written locally and not yet confirmed by the database. */
 export interface QueuedSetLog {
-  /** The row the flush will insert. Its `id` is this entry's identity too. */
+  /**
+   * The row the flush will write. Its `id` is the row's identity, and an
+   * insert's own identity too; a correction or a clear addresses the row by it.
+   */
   readonly entry: SetLogEntry
+  /** Absent for an insert. */
+  readonly kind?: SetLogMutationKind
+  /**
+   * A correction's or a clear's own identity, distinct from the row's, so two
+   * corrections of one row are two mutations and the answer to one is never
+   * taken for the other. Absent for an insert, whose identity is `entry.id`.
+   */
+  readonly mutationId?: string
+  /**
+   * Set, on disk, before the request goes out. A mutation that may have
+   * reached the database can no longer be withdrawn or rewritten in place —
+   * its answer may simply not have arrived — so what follows it is queued
+   * behind it instead.
+   */
+  readonly dispatched?: boolean
   /** The session it was performed in, so a resume can reconcile it. */
   readonly sessionId: string
   /** When the user logged it — the 6:02 a set is still expected at 6:40. */
@@ -111,9 +137,50 @@ export function retryable(queue: readonly QueuedSetLog[]): readonly QueuedSetLog
   return queue.filter((queued) => !isStalled(queued))
 }
 
+/**
+ * The entries a flush pass may send now, in order. Retryable, and with nothing
+ * queued ahead of them for the same row or the same set slot: a correction
+ * waits for its row's insert, a clear for the correction before it, and a set
+ * re-entered into a cleared slot for the clear — so the database sees each
+ * row's mutations in the order the user made them, and a re-entry can never
+ * collide with the row it replaces and be mistaken for that row's success.
+ */
+export function sendable(queue: readonly QueuedSetLog[]): readonly QueuedSetLog[] {
+  const waiting = new Set<string>()
+  const ready: QueuedSetLog[] = []
+
+  for (const item of queue) {
+    const row = `row:${item.entry.id}`
+    const slot = slotOf(item)
+    if (!waiting.has(row) && !waiting.has(slot) && !isStalled(item)) ready.push(item)
+    waiting.add(row)
+    waiting.add(slot)
+  }
+
+  return ready
+}
+
+/** A mutation's identity: its own id, or for an insert the row it creates. */
+export function mutationKey(queued: QueuedSetLog): string {
+  return queued.mutationId ?? queued.entry.id
+}
+
+export function isInsert(queued: QueuedSetLog): boolean {
+  return queued.kind === undefined
+}
+
+function slotOf(queued: QueuedSetLog): string {
+  return `slot:${queued.entry.exerciseId}#${queued.entry.performed.setNumber}`
+}
+
+/** Never sent, and so still this device's alone to rewrite or withdraw. */
+function unsent(queued: QueuedSetLog, inFlight: string | null): boolean {
+  return queued.dispatched !== true && queued.attempts === 0 && mutationKey(queued) !== inFlight
+}
+
 /** How long to wait before the next pass, from the fewest attempts pending. */
 export function retryDelayMs(queue: readonly QueuedSetLog[]): number {
-  const pending = retryable(queue)
+  const pending = sendable(queue)
   if (pending.length === 0) return SET_LOG_RETRY_MAX_MS
 
   const attempts = Math.min(...pending.map((queued) => queued.attempts))
@@ -144,29 +211,90 @@ export function enqueued(
   queue: readonly QueuedSetLog[],
   queued: QueuedSetLog,
 ): readonly QueuedSetLog[] {
-  const without = queue.filter((item) => item.entry.id !== queued.entry.id)
+  const without = queue.filter((item) => mutationKey(item) !== mutationKey(queued))
   return [...without, queued]
 }
 
-/** Drops one entry by set-log id — what a stored row means. */
+/** Drops one mutation by its key — what a stored row, or a stored change, means. */
 export function settled(
   queue: readonly QueuedSetLog[],
-  id: string,
+  key: string,
 ): readonly QueuedSetLog[] {
-  return queue.filter((item) => item.entry.id !== id)
+  return queue.filter((item) => mutationKey(item) !== key)
 }
 
-/** Records a refusal against one entry, leaving it queued. */
+/** Records a refusal against one mutation, leaving it queued. */
 export function attempted(
   queue: readonly QueuedSetLog[],
-  id: string,
+  key: string,
   error: AppError,
 ): readonly QueuedSetLog[] {
   return queue.map((item) =>
-    item.entry.id === id
+    mutationKey(item) === key
       ? { ...item, attempts: item.attempts + 1, lastErrorCode: error.code }
       : item,
   )
+}
+
+/** Marks one mutation as possibly reaching the database, before it is sent. */
+export function dispatched(
+  queue: readonly QueuedSetLog[],
+  key: string,
+): readonly QueuedSetLog[] {
+  return queue.map((item) => (mutationKey(item) === key ? { ...item, dispatched: true } : item))
+}
+
+/**
+ * The queue after a correction of the row `correction.entry.id` (REQ-013).
+ *
+ * An insert this device has never sent is rewritten in place: the row does
+ * not exist anywhere else, so there is nothing to correct but the entry. Once
+ * the insert may have landed — dispatched, refused, or in flight — the
+ * correction is queued behind it instead, because a delayed answer to that
+ * insert (a collision on its id) proves the database holds the values it
+ * sent, not the corrected ones. A correction nothing has sent yet is
+ * superseded: a correction states the whole observation, so the latest one is
+ * the only one worth writing.
+ */
+export function corrected(
+  queue: readonly QueuedSetLog[],
+  correction: QueuedSetLog,
+  inFlight: string | null,
+): readonly QueuedSetLog[] {
+  const row = correction.entry.id
+  const insert = queue.find((item) => isInsert(item) && item.entry.id === row && unsent(item, inFlight))
+  if (insert !== undefined) {
+    return queue.map((item) => (item === insert ? { ...item, entry: correction.entry } : item))
+  }
+
+  const without = queue.filter(
+    (item) => !(item.kind === 'correct' && item.entry.id === row && mutationKey(item) !== inFlight),
+  )
+  return [...without, { ...correction, kind: 'correct' }]
+}
+
+/**
+ * The queue after a confirmed clear of the row `clear.entry.id` (REQ-013).
+ *
+ * Whatever is still queued for that row and not in flight is withdrawn. If the
+ * row's insert had never been sent, that is the whole clear: no request can
+ * have created the row. Otherwise a delete is queued behind anything in
+ * flight, so neither a late insert nor a late correction can bring the result
+ * back. Nothing else in the queue — another movement's set, the set that will
+ * be re-entered into this slot — is touched.
+ */
+export function cleared(
+  queue: readonly QueuedSetLog[],
+  clear: QueuedSetLog,
+  inFlight: string | null,
+): readonly QueuedSetLog[] {
+  const row = clear.entry.id
+  const neverSent = queue.some(
+    (item) => isInsert(item) && item.entry.id === row && unsent(item, inFlight),
+  )
+  const without = queue.filter((item) => !(item.entry.id === row && mutationKey(item) !== inFlight))
+
+  return neverSent ? without : [...without, { ...clear, kind: 'clear' }]
 }
 
 /**
@@ -179,18 +307,27 @@ export function attempted(
  * or the set number may already be recorded against that prescription, which
  * is the same set by the table's own uniqueness rule. Either way the user has
  * the set they performed and is asked for nothing.
+ *
+ * Only inserts are accounted for this way (REQ-013). A stored row is exactly
+ * what a queued correction or clear is still owed against, so those stay; and
+ * a slot whose row is queued to be cleared is not "already recorded" for the
+ * set re-entered into it.
  */
 export function reconciled(
   queue: readonly QueuedSetLog[],
   stored: readonly { readonly id: string; readonly exerciseId: string; readonly setNumber: number }[],
 ): readonly QueuedSetLog[] {
+  const clearing = new Set(queue.filter((item) => item.kind === 'clear').map((item) => item.entry.id))
   const ids = new Set(stored.map((row) => row.id))
-  const numbers = new Set(stored.map((row) => `${row.exerciseId}#${row.setNumber}`))
+  const numbers = new Set(
+    stored.filter((row) => !clearing.has(row.id)).map((row) => `${row.exerciseId}#${row.setNumber}`),
+  )
 
   return queue.filter(
     (item) =>
-      !ids.has(item.entry.id) &&
-      !numbers.has(`${item.entry.exerciseId}#${item.entry.performed.setNumber}`),
+      !isInsert(item) ||
+      (!ids.has(item.entry.id) &&
+        !numbers.has(`${item.entry.exerciseId}#${item.entry.performed.setNumber}`)),
   )
 }
 
@@ -270,6 +407,10 @@ function isQueuedSetLog(value: unknown): value is QueuedSetLog {
 
   return (
     isSetLogEntry(record.entry) &&
+    // An insert has neither; a correction or a clear has both.
+    ((record.kind === undefined && record.mutationId === undefined) ||
+      ((record.kind === 'correct' || record.kind === 'clear') && isId(record.mutationId))) &&
+    (record.dispatched === undefined || typeof record.dispatched === 'boolean') &&
     isId(record.sessionId) &&
     typeof record.queuedAt === 'string' &&
     typeof record.attempts === 'number' &&

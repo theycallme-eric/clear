@@ -90,6 +90,7 @@ function mount(options: MountOptions = {}): Mounted {
     clients: {
       ...base.clients,
       setLogs: {
+        ...base.clients.setLogs,
         async log(entry) {
           attempts.push(entry)
           return options.refuse?.(attempts.length)

@@ -72,6 +72,7 @@ import {
   type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { AppDialog } from './app-dialog'
 import { BlockPanel } from './block-renderers-frame'
 import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
@@ -123,7 +124,8 @@ export function ExerciseSetLogger({
   restSeconds,
   onCorrectSet,
 }: ExerciseSetLoggerProps) {
-  const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
+  const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
+  const correctable = onCorrectSet !== undefined || correctSet !== undefined
   const restTimer = useRestTimer()
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
   const logButton = useRef<HTMLButtonElement>(null)
@@ -149,12 +151,15 @@ export function ExerciseSetLogger({
   const [draft, setDraft] = useState<SetDraft>(fresh)
   const entry = draft.key === fresh.key ? draft : fresh
 
-  // A correction in progress, when the caller can save one.
+  // A correction in progress, when the caller can save one. It names the row
+  // it was opened on by id, so it can only ever save over that observation.
   const [correction, setCorrection] = useState<SetDraft | null>(null)
   const correctedSet =
-    correction === null || onCorrectSet === undefined
+    correction === null || !correctable
       ? undefined
-      : logged.find((set) => `edit:${set.setNumber}` === correction.key)
+      : logged.find((set) => editKey(set) === correction.key)
+  // The wrong-movement recovery, armed: the set a confirmed clear removes.
+  const [clearing, setClearing] = useState<LoggedSet | null>(null)
   const edit =
     correction === null || correctedSet === undefined
       ? null
@@ -200,7 +205,7 @@ export function ExerciseSetLogger({
       <LoggedSetList
         sets={logged}
         onEdit={
-          onCorrectSet === undefined
+          !correctable
             ? undefined
             : (set) => {
               setCorrection(editDraft(set, prescription.modality))
@@ -242,17 +247,51 @@ export function ExerciseSetLogger({
           }
           saving={edit === null && isSaving(exercise.exerciseId)}
           onSubmit={(performed) => {
-            if (edit !== null && onCorrectSet !== undefined) {
-              onCorrectSet(exercise.exerciseId, performed)
+            if (edit !== null) {
+              if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, performed)
+              else correctSet?.(exercise.exerciseId, edit.set.id, performed)
               setCorrection(null)
               return
             }
             log(performed)
           }}
           onCancel={() => setCorrection(null)}
+          onClear={edit === null || clearSet === undefined ? undefined : () => setClearing(edit.set)}
           onCollapse={collapse}
         />,
       )}
+
+      {/*
+        REQ-013: a set logged against the wrong movement is cleared here, after
+        confirmation, and logged again on the right one with its own Log set.
+        Nothing is moved: the result is removed, and only this one.
+      */}
+      <AppDialog
+        open={clearing !== null}
+        critical
+        title={clearing === null ? undefined : `Clear set ${clearing.setNumber} of ${name}?`}
+        onClose={() => setClearing(null)}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setClearing(null)}>
+              Keep set
+            </Button>
+            <Button
+              variant="critical"
+              onClick={() => {
+                if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
+                setClearing(null)
+                setCorrection(null)
+                collapse()
+              }}
+            >
+              Clear set
+            </Button>
+          </>
+        }
+      >
+        {clearing === null ? null : <p style={{ margin: 0, fontFamily: 'var(--font-data)' }}>{loggedSetText(clearing)}</p>}
+      </AppDialog>
 
       {/*
         No swap control here (U37): a movement is swapped in Review, before the
@@ -303,7 +342,7 @@ function LoggedSetList({
         .sort((left, right) => left.setNumber - right.setNumber)
         .map((set) => (
           <li
-            key={set.setNumber}
+            key={set.id}
             style={{
               fontFamily: 'var(--font-data)',
               display: 'flex',
@@ -428,10 +467,15 @@ function newDraft(
   }
 }
 
+/** A correction's key: the row it was opened on, never just its set number. */
+function editKey(set: LoggedSet): string {
+  return `edit:${set.id}`
+}
+
 /** A saved set, back in the fields, in the unit and values it was saved with. */
 function editDraft(set: LoggedSet, modality: PrescribedModality): SetDraft {
   return {
-    key: `edit:${set.setNumber}`,
+    key: editKey(set),
     weight: numberField(set.weight),
     measure: numberField(measurePrefill(set, modality)),
     chosenUnit: set.weightUnit,
@@ -476,6 +520,8 @@ interface SetSheetFormProps {
   saving: boolean
   onSubmit: (performed: PerformedSet) => void
   onCancel: () => void
+  /** Edit mode, where the shell can clear a saved set: arms the confirmation. */
+  onClear?: () => void
   onCollapse: () => void
 }
 
@@ -504,6 +550,7 @@ function SetSheetForm({
   saving,
   onSubmit,
   onCancel,
+  onClear,
   onCollapse,
 }: SetSheetFormProps) {
   // Zero is an observation too. A row with no observed weight supplies no
@@ -602,6 +649,7 @@ function SetSheetForm({
       blocked={blocked}
       onSubmit={submit}
       onCancel={onCancel}
+      onClear={onClear}
       onCollapse={onCollapse}
     />
   )

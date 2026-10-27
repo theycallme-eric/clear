@@ -257,6 +257,14 @@ snapshot proves it already was. The idempotency it depends on is DATA-01d's clie
 key — a retried insert collides with its own first write instead of inventing a second set — and
 its key is the one local record `clearWorkoutShellState` must never drop.
 
+TASK-011 (REQ-013) puts corrections and clears of a saved set through that same queue rather than
+beside it. A queued entry is an insert, a `correct` or a `clear`. The last two have their own
+mutation id and address the row by its id, never by set number. `sendable` sends each row's and
+each set slot's mutations in the order they were made, and a mutation marked `dispatched` is never
+rewritten or withdrawn in place. `SetLogsClient.correct` / `.clear` are a PATCH and a DELETE filtered
+by row id and prescription, under the existing owner RLS. Only the active `Workout` shell turns them on
+(`SetLoggingProvider corrections`).
+
 The database is a second, independent flow: `supabase/migrations/` → the reused Supabase project.
 DATA-01a adds the catalog domain — exercise definitions, the component→pattern map, muscle
 mappings, the authored pattern weighting, and the three derived views. Catalog tables are readable

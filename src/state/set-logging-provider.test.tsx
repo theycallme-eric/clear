@@ -194,6 +194,7 @@ function refusing(
       clients: {
         ...base.clients,
         setLogs: {
+          ...base.clients.setLogs,
           async log(entry) {
             attempts.push(entry)
             const refusal = policy(entry, attempts.length)
@@ -497,6 +498,7 @@ describe('a set is durable before it is sent', () => {
       clients: {
         ...base.clients,
         setLogs: {
+          ...base.clients.setLogs,
           async log(entry) {
             await held
             return base.clients.setLogs.log(entry)

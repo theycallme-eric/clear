@@ -44,15 +44,20 @@ import type { Enums } from '../data/database.types'
 import { createError, ErrorCode, isErr, err, ok, type AppError } from './errors'
 import {
   attempted,
+  cleared,
+  corrected,
   defaultQueueStorage,
+  dispatched,
   enqueued,
   hasSustainedFailure,
   isAlreadyStored,
+  isInsert,
+  mutationKey,
   queuedSetLog,
   readSetLogQueue,
   reconciled,
-  retryable,
   retryDelayMs,
+  sendable,
   settled,
   writeSetLogQueue,
   type QueuedSetLog,
@@ -61,9 +66,11 @@ import {
 import {
   loggedSetFromEntry,
   loggedSetFromRow,
+  setLogViolation,
   SetLoggingContext,
   SetLogFlushContext,
   type LoggedSet,
+  type PerformedSet,
   type SetLoggingApi,
   type SetLogEntry,
 } from './set-logging'
@@ -102,6 +109,13 @@ export interface SetLoggingProviderProps {
   now?: () => number
   /** Backoff between flush passes, injectable so a test does not wait for one. */
   retryDelay?: (queue: readonly QueuedSetLog[]) => number
+  /**
+   * Whether saved sets can be corrected or cleared (REQ-013). The active
+   * workout passes it; nothing else does, so no other screen gains an editor.
+   */
+  corrections?: boolean
+  /** A correction's or a clear's own id, injectable so a test can name it. */
+  newMutationId?: () => string
   children: ReactNode
 }
 
@@ -114,6 +128,8 @@ export function SetLoggingProvider({
   storage,
   now = Date.now,
   retryDelay = retryDelayMs,
+  corrections = false,
+  newMutationId,
   children,
 }: SetLoggingProviderProps) {
   const { setLogs } = useWorkoutClients()
@@ -136,6 +152,9 @@ export function SetLoggingProvider({
 
   const [inFlight, setInFlight] = useState<string | null>(null)
   const [syncing, setSyncing] = useState(false)
+  // The mutation in flight, read synchronously by a correction or a clear made
+  // while its request is out: that one can no longer be rewritten or withdrawn.
+  const inFlightRef = useRef<string | null>(null)
 
   // The queue is read inside an async pass and written inside a tap handler,
   // so the ref is the live copy and the state is the render's view of it.
@@ -171,6 +190,22 @@ export function SetLoggingProvider({
     })
   }, [])
 
+  /** A corrected row, as the database now holds it, in place of the one it was. */
+  const replace = useCallback((exerciseId: string, set: LoggedSet) => {
+    setConfirmed((current) => {
+      const existing = (current[exerciseId] ?? []).filter((candidate) => candidate.id !== set.id)
+      return { ...current, [exerciseId]: [...existing, set] }
+    })
+  }, [])
+
+  /** A cleared row: gone from the screen once, and only once, the database says so. */
+  const remove = useCallback((exerciseId: string, id: string) => {
+    setConfirmed((current) => ({
+      ...current,
+      [exerciseId]: (current[exerciseId] ?? []).filter((candidate) => candidate.id !== id),
+    }))
+  }, [])
+
   const flushing = useRef<Promise<void> | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scheduleRef = useRef<() => void>(() => {})
@@ -191,12 +226,45 @@ export function SetLoggingProvider({
       const sent = new Set<string>()
       try {
         for (;;) {
-          const next = retryable(queueRef.current).find((item) => !sent.has(item.entry.id))
+          const next = sendable(queueRef.current).find((item) => !sent.has(mutationKey(item)))
           if (next === undefined) break
-          sent.add(next.entry.id)
+          const key = mutationKey(next)
+          sent.add(key)
 
-          setInFlight(next.entry.id)
+          // Marked on disk before the request exists: from here on the
+          // mutation may land whatever happens to its answer (REQ-013).
+          inFlightRef.current = key
+          setInFlight(key)
+          applyQueue((current) => dispatched(current, key))
+
+          if (next.kind === 'correct') {
+            const result = await setLogs.correct(next.entry)
+            inFlightRef.current = null
+            setInFlight(null)
+            if (isErr(result)) {
+              applyQueue((current) => attempted(current, key, result.error))
+              continue
+            }
+            applyQueue((current) => settled(current, key))
+            replace(next.entry.exerciseId, loggedSetFromRow(result.value))
+            continue
+          }
+
+          if (next.kind === 'clear') {
+            const result = await setLogs.clear(next.entry)
+            inFlightRef.current = null
+            setInFlight(null)
+            if (isErr(result)) {
+              applyQueue((current) => attempted(current, key, result.error))
+              continue
+            }
+            applyQueue((current) => settled(current, key))
+            remove(next.entry.exerciseId, next.entry.id)
+            continue
+          }
+
           const result = await setLogs.log(next.entry)
+          inFlightRef.current = null
           setInFlight(null)
 
           if (isErr(result)) {
@@ -206,7 +274,7 @@ export function SetLoggingProvider({
               // idempotent one the client-generated id exists to make possible.
               // What is stored is what this entry sent, so there is nothing to
               // read back.
-              applyQueue((current) => settled(current, next.entry.id))
+              applyQueue((current) => settled(current, key))
               confirm(next.entry.exerciseId, loggedSetFromEntry(next.entry, 'logged'))
               continue
             }
@@ -214,14 +282,15 @@ export function SetLoggingProvider({
             // It stays queued either way: a refusal a retry cannot fix stops
             // being sent (`isStalled`) but is never discarded, because a set
             // that silently disappeared is the defect this module closes.
-            applyQueue((current) => attempted(current, next.entry.id, result.error))
+            applyQueue((current) => attempted(current, key, result.error))
             continue
           }
 
-          applyQueue((current) => settled(current, next.entry.id))
+          applyQueue((current) => settled(current, key))
           confirm(next.entry.exerciseId, loggedSetFromRow(result.value))
         }
       } finally {
+        inFlightRef.current = null
         setInFlight(null)
         setSyncing(false)
         scheduleRef.current()
@@ -234,7 +303,7 @@ export function SetLoggingProvider({
     }
     void pending.then(settlePass, settlePass)
     return pending
-  }, [applyQueue, confirm, setLogs])
+  }, [applyQueue, confirm, remove, replace, setLogs])
 
   const flushBeforeContinue = useCallback(async () => {
     // Join an existing pass rather than starting a duplicate write. A failed
@@ -253,7 +322,7 @@ export function SetLoggingProvider({
   const schedule = useCallback(() => {
     if (timer.current !== null) clearTimeout(timer.current)
     timer.current = null
-    if (retryable(queueRef.current).length === 0) return
+    if (sendable(queueRef.current).length === 0) return
 
     timer.current = setTimeout(() => {
       timer.current = null
@@ -292,27 +361,107 @@ export function SetLoggingProvider({
     }
   }, [flush])
 
-  /** The queued sets as the screen reads them, keyed by prescription. */
+  /**
+   * What the queue says each row now is, keyed by prescription then row id:
+   * the set its latest mutation states, or `null` for a row being cleared.
+   * Every row with something queued is drawn unconfirmed — a correction that
+   * has not landed is not a saved correction (REQ-013).
+   */
   const pending = useMemo(() => {
-    const byExercise: Record<string, LoggedSet[]> = {}
+    const byExercise: Record<string, Map<string, LoggedSet | null>> = {}
+    const refused = new Set<string>()
 
     for (const item of queue) {
       // One refused attempt is enough to stop calling it "syncing": the user
       // is entitled to know the set is only on this device.
-      const status = item.attempts === 0 ? 'syncing' : 'failed'
-      const sets = byExercise[item.entry.exerciseId] ?? []
-      sets.push(loggedSetFromEntry(item.entry, status))
-      byExercise[item.entry.exerciseId] = sets
+      if (item.attempts > 0) refused.add(item.entry.id)
+      const status = refused.has(item.entry.id) ? 'failed' : 'syncing'
+      const rows = byExercise[item.entry.exerciseId] ?? new Map<string, LoggedSet | null>()
+      rows.set(item.entry.id, item.kind === 'clear' ? null : loggedSetFromEntry(item.entry, status))
+      byExercise[item.entry.exerciseId] = rows
     }
 
     return byExercise
   }, [queue])
 
   const api = useMemo<SetLoggingApi>(() => {
-    const setsFor = (exerciseId: string): readonly LoggedSet[] =>
-      [...(confirmed[exerciseId] ?? []), ...(pending[exerciseId] ?? [])].sort(
-        (left, right) => left.setNumber - right.setNumber,
-      )
+    const setsFor = (exerciseId: string): readonly LoggedSet[] => {
+      const rows = new Map((confirmed[exerciseId] ?? []).map((set) => [set.id, set]))
+      for (const [id, set] of pending[exerciseId] ?? []) {
+        if (set === null) rows.delete(id)
+        else rows.set(id, set)
+      }
+      return [...rows.values()].sort((left, right) => left.setNumber - right.setNumber)
+    }
+
+    /** A correction or a clear, stamped and given its own identity. */
+    const mutation = (entry: SetLogEntry): QueuedSetLog => ({
+      ...queuedSetLog(entry, sessionId, new Date(now()).toISOString()),
+      mutationId: newMutationId === undefined ? crypto.randomUUID() : newMutationId(),
+    })
+
+    /** The saved set a correction or clear addresses, by the id it was read under. */
+    const target = (exerciseId: string, setId: string) => {
+      const exercise = exercises.find((candidate) => candidate.exerciseId === exerciseId)
+      const set = setsFor(exerciseId).find((candidate) => candidate.id === setId)
+      return exercise === undefined || set === undefined ? null : { exercise, set }
+    }
+
+    const correctSet = (exerciseId: string, setId: string, performed: PerformedSet) => {
+      const found = target(exerciseId, setId)
+      if (found === null) return
+      const { exercise, set } = found
+
+      const { weightUnit: override, ...measurements } = performed
+      if (override !== undefined && override !== 'kg' && override !== 'lb') {
+        onFailure(createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+          details: { field: 'weight_unit' },
+        }))
+        return
+      }
+
+      // The set keeps its own identity: its number, its classification and
+      // — absent an explicit choice — the unit it was recorded in, never the
+      // profile's current one.
+      const entry: SetLogEntry = {
+        id: set.id,
+        exerciseId,
+        blockId: exercise.blockId,
+        distanceUnit: exercise.prescription.distance_unit,
+        weightUnit: override ?? set.weightUnit,
+        performed: {
+          ...measurements,
+          setNumber: set.setNumber,
+          ...(set.isWarmup ? { isWarmup: true } : {}),
+        },
+      }
+      const violation = setLogViolation(entry)
+      if (violation !== null) {
+        onFailure(createError(ErrorCode.VALIDATION_OUT_OF_RANGE, { details: { ...violation } }))
+        return
+      }
+
+      applyQueue((current) => corrected(current, mutation(entry), inFlightRef.current))
+      void flush()
+    }
+
+    const clearSet = (exerciseId: string, setId: string) => {
+      const found = target(exerciseId, setId)
+      if (found === null) return
+      const { exercise, set } = found
+
+      const entry: SetLogEntry = {
+        id: set.id,
+        exerciseId,
+        blockId: exercise.blockId,
+        distanceUnit: exercise.prescription.distance_unit,
+        weightUnit: set.weightUnit,
+        performed: { setNumber: set.setNumber },
+      }
+
+      applyQueue((current) => cleared(current, mutation(entry), inFlightRef.current))
+      void flush()
+    }
 
     return {
       weightUnit,
@@ -364,9 +513,11 @@ export function SetLoggingProvider({
         void flush()
       },
       loggedSets: setsFor,
+      ...(corrections ? { correctSet, clearSet } : {}),
       isSaving(exerciseId) {
         return queue.some(
-          (item) => item.entry.id === inFlight && item.entry.exerciseId === exerciseId,
+          (item) =>
+            isInsert(item) && mutationKey(item) === inFlight && item.entry.exerciseId === exerciseId,
         )
       },
       sync: {
@@ -381,10 +532,12 @@ export function SetLoggingProvider({
   }, [
     applyQueue,
     confirmed,
+    corrections,
     exercises,
     flush,
     inFlight,
     newId,
+    newMutationId,
     now,
     onFailure,
     pending,

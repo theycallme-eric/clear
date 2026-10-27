@@ -35,6 +35,7 @@ function mount({ correctable = false }: { correctable?: boolean } = {}) {
   const clients = {
     ...base.clients,
     setLogs: {
+      ...base.clients.setLogs,
       async log(entry: SetLogEntry) {
         attempts.push(entry)
         return base.clients.setLogs.log(entry)

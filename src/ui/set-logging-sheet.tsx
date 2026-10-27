@@ -12,7 +12,8 @@
  *     with the shared timer card rather than by recolouring the sheet;
  *   · the measurement row and the set's optional effort (`set-effort.tsx`),
  *     both supplied by the logger that owns the draft;
- *   · one full-width Log set, or Cancel / Save correction as a pair.
+ *   · one full-width Log set, or Cancel / Save correction as a pair — and,
+ *     where the shell can clear a saved set, a quiet Clear set beneath it.
  *
  * It owns no draft and writes nothing. The logger that opens it keeps the
  * entry and decides what a submit means, so collapsing the sheet loses
@@ -103,6 +104,11 @@ export interface SetLoggingSheetProps {
   onSubmit(): boolean
   /** Edit mode only: leave the stored result as it is. */
   onCancel?(): void
+  /**
+   * Edit mode only: ask to clear this saved result — the wrong-movement
+   * recovery (REQ-013). The caller confirms before anything is removed.
+   */
+  onClear?(): void
   onCollapse(): void
 }
 
@@ -129,6 +135,7 @@ export function SetLoggingSheet({
   blocked = false,
   onSubmit,
   onCancel,
+  onClear,
   onCollapse,
 }: SetLoggingSheetProps) {
   const titleId = useId()
@@ -187,7 +194,15 @@ export function SetLoggingSheet({
                   Save correction
                 </Button>
               </ActionGroup>
-            ) : (
+            ) : null}
+            {mode === 'edit' && onClear !== undefined ? (
+              <ActionGroup>
+                <Button variant="quiet" size="sm" aria-label={`Clear set ${setNumber}`} onClick={onClear}>
+                  Clear set
+                </Button>
+              </ActionGroup>
+            ) : null}
+            {mode === 'edit' ? null : (
               <ActionGroup>
                 <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
                   Log set {setNumber}

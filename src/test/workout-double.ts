@@ -461,6 +461,10 @@ export interface WorkoutDouble {
   recorded(): BlockCompletion[]
   /** Every `exercise_set_logs` write the shell made, in order. */
   loggedSets(): SetLogEntry[]
+  /** Every correction written over a stored set, in order (REQ-013). */
+  correctedSets(): SetLogEntry[]
+  /** Every stored set cleared, in order (REQ-013). */
+  clearedSets(): SetLogEntry[]
   /** Session ids passed to `abandon` and `complete`. */
   abandoned(): string[]
   completed(): { sessionId: string; minutes?: number }[]
@@ -542,6 +546,8 @@ function storedSetLog(entry: SetLogEntry): ExerciseSetLogRow {
 export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): WorkoutDouble {
   const recorded: BlockCompletion[] = []
   const loggedSets: SetLogEntry[] = []
+  const correctedSets: SetLogEntry[] = []
+  const clearedSets: SetLogEntry[] = []
   const abandoned: string[] = []
   const completed: { sessionId: string; minutes?: number }[] = []
   const savedNotes: { exerciseId: string; notes: string | null }[] = []
@@ -742,6 +748,14 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       loggedSets.push(entry)
       return ok(storedSetLog(entry))
     },
+    async correct(entry) {
+      correctedSets.push(entry)
+      return ok(storedSetLog(entry))
+    },
+    async clear(entry) {
+      clearedSets.push(entry)
+      return ok(undefined)
+    },
     ...options.setLogs,
   }
 
@@ -912,6 +926,8 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     attempts: () => attempts.map((entry) => ({ ...entry })),
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
+    correctedSets: () => [...correctedSets],
+    clearedSets: () => [...clearedSets],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
     savedNotes: () => [...savedNotes],
