@@ -141,3 +141,22 @@ AppHeader className prop is forwarded by Screen so only the workout header can w
 existing slots to another line. No vendored styles or components changed. Browser cases also
 scroll the entry to its submit action and recheck that the pager remains in the viewport.
 Actual verification of this correction is pending; previous failures remain preserved.
+
+## Actual corrected mobile proof
+
+Foreground39463 exited0: all four actual circuit/footer browser cases passed (12.4 s), including
+both320×568 and390×844 with rest/shared-sheet entry, entry scroll to final action, and last
+section. Both original circuit journeys remain passing. Independent final source review found
+no further blocker. Nine focused footer tests and lint:ds passed after the correction.
+
+Capture27431 exited0: four skin cases/eight PNGs (24.1 s) from the SAME clean committed source
+`d66240cd88e66493fd01795869f32fd647b56cb6`. Runtime `a60849329519c38b695b1a3f12fb1354a9680a66684fd9cc583b91af87230ad6`;
+driver `015a69418c6a639de81d8195f03d2bbef70b90b999951acd08fd4b13e1af12b3`; actual payload
+`db2b0570830230531a25967edd7117ee75028579423ae4ecbd1f0d7f871c1451`. Real input provenance uses the actual run/a1/base.
+Every skin recorded zero generations/attempted writes/forwarded writes. Owned backend stop80277
+collected exit0. Existing evidence groups are retained unchanged; native verification and
+protected delivery have not yet run on the final evidence commit.
+
+Existing actual audit consumer32999 exited0: all38 checks passed. Diff checks confirm byte-identical
+vendor/workflows/migrations and all prior tracked evidence groups. Next is native same-attempt
+full verification against the final committed candidate, followed by protected delivery.
