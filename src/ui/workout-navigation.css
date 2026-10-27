@@ -83,14 +83,18 @@
   position: relative;
 }
 
-.clr-workout-menu__panel {
+.clr-workout-menu > .clr-workout-menu__panel {
   position: absolute;
   top: calc(100% + var(--spacing-200));
   right: 0;
   z-index: 1;
   display: grid;
-  padding: var(--spacing-200);
   white-space: nowrap;
+}
+
+.clr-workout-menu__frame {
+  display: grid;
+  padding: var(--spacing-200);
 }
 
 .clr-workout-menu__panel[hidden] {

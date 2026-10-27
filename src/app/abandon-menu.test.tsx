@@ -134,7 +134,8 @@ describe('AC-066: Abandon lives in the framed top menu', () => {
     const panel = await openMenu(user)
     expect(trigger()).toHaveAttribute('aria-expanded', 'true')
     expect(trigger()).toHaveAttribute('aria-controls', panel.id)
-    expect(panel).toHaveClass('clr-chamfer')
+    expect(panel).toHaveClass('clr-bleed')
+    expect(panel.querySelector('.clr-workout-menu__frame')).toHaveClass('clr-chamfer', 'clr-chamfer--sm')
     expect(within(panel).getByRole('button', { name: 'Abandon' })).toBeInTheDocument()
     // The panel overlays the content below the header instead of pushing it.
     expect(NAV_CSS).toMatch(/\.clr-workout-menu\s*\{[^}]*position:\s*relative/)
@@ -193,7 +194,7 @@ describe('AC-066: Abandon lives in the framed top menu', () => {
     await waitFor(() => expect(openDialog(ABANDON_CONFIRM)).toBeDefined())
     await user.click(within(confirmDialog()).getByRole('button', { name: 'Abandon' }))
 
-    // The existing post-abandon destination: Home, where the session resumes.
+    // The existing post-abandon destination is Home; this session is not resumable.
     expect(await screen.findByRole('heading', { name: HOME_HEADING })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/')
     // Abandoned is a state, not a delete, and it is not a completion.

@@ -82,7 +82,7 @@ Abandon/save semantics do not change.
   `react-refresh/only-export-components` warning that every gallery specimen function already
   produces. There are 0 errors.
 
-## Worker verification
+## Initial worker verification
 
 | Command | Result |
 | --- | --- |
@@ -110,3 +110,46 @@ text was edited, because that would fabricate evidence.
 Next safe action: the controller reads issue #536's comments, runs the four updated e2e specs, and
 re-captures the format-preview evidence against the committed tree. Then it runs native
 verification.
+
+## Controller verification recovery — in progress
+
+- Native initial97448 reached terminal verification-failed after the worker succeeded. Both
+  independent criterion/task runs passed8cases; full suite stopped on the two source-bound audit
+  checks. Initial complete candidate78feb39 is retained; attempt1/max2 is unchanged.
+- Root read live issue #536/comments0. Existing confirmation/retention/save/blocker handlers remain
+  unchanged. Reviewer found two concrete corrections, now applied before new proof: the plain
+  menu frame uses the required public bleed wrapper; three added Actions clicks were removed
+  from historical0.9.7 BEFORE collectors, which remain byte-identical to the base. Current
+  browser menu adaptations retain substantive assertions. Home resumption-card Abandon is unchanged.
+- The focused frame assertion now checks the actual emission wrapper and contained chamfer. An
+  inaccurate test comment was corrected: abandoned sessions return Home and cannot resume.
+- Actual320×568 and390×844 menu geometry/focus/cancel cases are being added to the existing
+  circuit fixture; its four original circuit/footer cases remain intact. Root will execute these
+  with existing current dialog/abandon-recovery browser journeys on the owned local backend.
+- The local backend started successfully with migrations verified byte-identical to actual
+  TASK-016 source. No hosted mutation, Runner repair, extra model invocation or counter reset.
+
+Next: focused tests, commit clean source, actual browser proof and current-source format capture,
+then native same-attempt verification and protected build-branch delivery. No browser success or
+physical-iPhone/hosted proof is inferred before execution.
+
+## Proof selection and current progress
+
+Focused correction12181 passed8tests; design lint53462 passed. Backend status also passed after
+start75404/reset61396. A focused JOURNEY-015 browser case will explicitly log a set, exercise
+one controlled failed abandon then retry, and verify actual retained row values. Public preview
+uses a narrowly schema-shaped intercepted fixture; the local trusted run uses the real disposable
+backend. Neither fixture mode is represented as the other.
+
+The wider old workout-lifecycle recovery case still assumes pre-sheet forms and raw set-log POSTs.
+It is not selected as proof for this menu change. The new focused current entry/recovery path
+proves the same menu retention requirement directly, while the existing current accessibility
+dialog case exercises native confirmation safety and focus. No historical BEFORE collectors run.
+Approved TASK-018 explicitly selects its own bounded synthetic integrated spec, not the older
+wide backend matrix. No existing required Runner command or acceptance criterion is changed.
+
+Final independent runtime review found no concrete blocker. Browser driver now includes two
+phone geometry/keyboard/dismissal/focus cases and one explicit logged-set abandon failure/retry
+retention case. Its trusted fixture reads full actual rows; public preview implements only the
+needed schema-shaped insert/replay and abandon responses and makes no database-proof claim.
+The four original circuit/footer case bodies are unchanged. Actual browser execution is next.

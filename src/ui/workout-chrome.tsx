@@ -639,12 +639,15 @@ export function WorkoutMenu({ onAbandon, defaultOpen = false }: WorkoutMenuProps
         id={panelId}
         role="group"
         aria-label={WORKOUT_MENU_LABEL}
-        className="clr-workout-menu__panel clr-chamfer clr-chamfer--sm"
+        className="clr-workout-menu__panel clr-bleed"
+        style={STRUCTURE_BLEED_STYLE}
         hidden={!open}
       >
-        <Button variant="quiet" icon={<LogOut />} onClick={abandon}>
-          Abandon
-        </Button>
+        <div className="clr-workout-menu__frame clr-chamfer clr-chamfer--sm clr-chamfer--structure">
+          <Button variant="quiet" icon={<LogOut />} onClick={abandon}>
+            Abandon
+          </Button>
+        </div>
       </div>
     </div>
   )

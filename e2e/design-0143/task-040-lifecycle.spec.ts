@@ -611,7 +611,6 @@ test.describe('TASK-040 — isolated saved-workout lifecycle before-state artifa
       })
     }, 'ladder-short')
     await page.setViewportSize(previousViewport)
-    await page.getByRole('button', { name: 'Actions', exact: true }).click()
     await page.getByRole('button', { name: 'Abandon', exact: true }).click()
     await save.take({ screen: 'Workout', route: '/workout', state: 'abandon-confirmation' }, '/workout', 'Workout', 'Real abandon question keeps the session until confirmed.', async () => {
       await expect(page.getByRole('dialog', { name: 'Abandon workout?' })).toBeVisible()
