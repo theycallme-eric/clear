@@ -20,7 +20,9 @@
  * saved results with their Edit controls, the explicit Log set action, then the
  * coaching disclosure. The fields are not on the card at all: Log set opens
  * the shared half-sheet (`set-logging-sheet.tsx`, REQ-009), and the draft it
- * edits lives here, so collapsing the sheet loses nothing.
+ * edits lives here, so collapsing the sheet loses nothing. The draft includes
+ * the set's optional effort (`set-effort.tsx`, REQ-011), which starts every
+ * new set unanswered and is recorded only by Log set.
  *
  * It is drawn with the shared block frame's parts (`block-renderers-frame.tsx`)
  * and with no frame of its own: the block it sits in is the card, so composing
@@ -74,11 +76,8 @@ import { BlockPanel } from './block-renderers-frame'
 import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
 import { Select } from './select'
-import {
-  SetLoggingSheet,
-  SetMeasurementRow,
-  type SetSheetInsertionContext,
-} from './set-logging-sheet'
+import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
+import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
 
 type WeightUnit = Enums<'weight_unit'>
@@ -115,11 +114,6 @@ export interface ExerciseSetLoggerProps {
    * Edit control is drawn: a control that saved nothing would be a lie.
    */
   onCorrectSet?: (exerciseId: string, corrected: PerformedSet) => void
-  /**
-   * Insertion interface for the per-set effort (TASK-008 supplies it), drawn
-   * in the sheet between the measurement row and its action.
-   */
-  renderEffort?: (context: SetSheetInsertionContext) => ReactNode
 }
 
 export function ExerciseSetLogger({
@@ -128,7 +122,6 @@ export function ExerciseSetLogger({
   statesRest = true,
   restSeconds,
   onCorrectSet,
-  renderEffort,
 }: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
   const restTimer = useRestTimer()
@@ -248,7 +241,6 @@ export function ExerciseSetLogger({
             !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
           }
           saving={edit === null && isSaving(exercise.exerciseId)}
-          effort={renderEffort?.({ mode, setNumber: sheetSetNumber })}
           onSubmit={(performed) => {
             if (edit !== null && onCorrectSet !== undefined) {
               onCorrectSet(exercise.exerciseId, performed)
@@ -321,6 +313,7 @@ function LoggedSetList({
             }}
           >
             <span>{loggedSetText(set)}</span>
+            <SetEffortReading value={set.effort} />
             <SyncBadge status={set.status} />
             {onEdit === undefined ? null : (
               <Button
@@ -407,6 +400,8 @@ interface SetDraft {
   readonly measure: string
   /** A unit the athlete chose or committed to by typing; never converted. */
   readonly chosenUnit?: WeightUnit
+  /** This set's own effort answer; `null` is unanswered, never a middle choice. */
+  readonly effort: SetEffort | null
 }
 
 /**
@@ -428,6 +423,8 @@ function newDraft(
     measure: numberField(
       suggestedMeasure(prescription, setNumber) ?? measurePrefill(prefill, prescription.modality),
     ),
+    // Each set is asked afresh: the last set's answer is not this one's.
+    effort: null,
   }
 }
 
@@ -438,6 +435,7 @@ function editDraft(set: LoggedSet, modality: PrescribedModality): SetDraft {
     weight: numberField(set.weight),
     measure: numberField(measurePrefill(set, modality)),
     chosenUnit: set.weightUnit,
+    effort: set.effort,
   }
 }
 
@@ -476,7 +474,6 @@ interface SetSheetFormProps {
   /** False for an unloaded movement with no load to carry forward. */
   showLoad: boolean
   saving: boolean
-  effort: ReactNode
   onSubmit: (performed: PerformedSet) => void
   onCancel: () => void
   onCollapse: () => void
@@ -505,7 +502,6 @@ function SetSheetForm({
   modality,
   showLoad,
   saving,
-  effort,
   onSubmit,
   onCancel,
   onCollapse,
@@ -531,6 +527,9 @@ function SetSheetForm({
         ? { weightUnit: selectedUnit } : {}),
       ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
       ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
+      // A new set states an effort only when one was chosen. A correction
+      // states it either way, so a cleared answer is handed over as null.
+      ...(mode === 'edit' || draft.effort !== null ? { effort: draft.effort } : {}),
     })
     return true
   }
@@ -592,7 +591,13 @@ function SetSheetForm({
       formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
       context={context}
       measures={measures}
-      effort={effort}
+      effort={
+        <SetEffortChoice
+          setNumber={setNumber}
+          value={draft.effort}
+          onChange={(effort) => onDraft({ ...draft, effort })}
+        />
+      }
       saving={saving}
       blocked={blocked}
       onSubmit={submit}

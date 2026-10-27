@@ -5,10 +5,11 @@
  * Mounted the way the workout shell mounts them: the real set-logging
  * provider, the session's one rest, the sheet host with its slot in a pinned
  * foot, and the open section's label around the block. What is pinned here is
- * the foundation — the card's hierarchy, the sheet's new-entry layout, the
- * existing saving and error retention, and the insertion interfaces effort
- * (TASK-008) and correction (TASK-011) will fill. Neither of those behaviours
- * is claimed: the interfaces are exercised with test doubles only.
+ * the card's hierarchy, the sheet's layout, the existing saving and error
+ * retention, and — since TASK-008 — the complete effort-enabled sheet: the
+ * per-set effort and its Clear between the measurement row and the action, in
+ * both modes. Durable correction (TASK-011) is still exercised through its
+ * interface with a test double only.
  */
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -224,9 +225,12 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     const chevron = sheet.getByRole('button', { name: 'Minimize' })
     const context = sheet.getByText('back squat · 3 × 8 reps · barbell')
     const weight = sheet.getByLabelText('Weight')
+    const effort = sheet.getByRole('radiogroup')
     const submit = sheet.getByRole('button', { name: 'Log set 1' })
 
-    for (const [before, after] of [[title, chevron], [chevron, context], [context, weight], [weight, submit]]) {
+    for (const [before, after] of [
+      [title, chevron], [chevron, context], [context, weight], [weight, effort], [effort, submit],
+    ]) {
       expect(before.compareDocumentPosition(after)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
     }
     // One action only, and it fills its row.
@@ -464,34 +468,88 @@ describe('AC-035: borders and the countdown', () => {
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Foundation: insertion interfaces, without the behaviour descendants own
+// AC-028 / AC-029 / AC-030 — the complete effort-enabled sheet (TASK-008)
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe('insertion interfaces for effort and edit mode', () => {
-  it('draws no Edit control and no effort when nothing is inserted', async () => {
+describe('AC-028: existing roles and variants, aligned', () => {
+  it('draws effort with the system choice group and Clear with the quiet small button', async () => {
+    const user = userEvent.setup()
+    mount()
+    const sheet = within(await openSheet(user))
+
+    // The legend is ChoiceGroup's own fieldset legend, like any field label.
+    const group = sheet.getByRole('group', { name: 'Effort' })
+    expect(group.tagName).toBe('FIELDSET')
+    expect(group.querySelector('legend')).toHaveTextContent('Effort')
+    for (const radio of sheet.getAllByRole('radio')) expect(radio).toHaveClass('clr-chip')
+
+    await user.click(sheet.getByRole('radio', { name: 'About right' }))
+    const clear = sheet.getByRole('button', { name: 'Clear effort for set 1' })
+    expect(clear).toHaveClass('clr-btn--quiet')
+    expect(clear).toHaveClass('clr-chamfer--sm')
+    // Choices and Clear share one row; the row adds no frame or type of its own.
+    const row = group.closest('.clr-set-effort')
+    expect(clear.closest('.clr-set-effort')).toBe(row)
+    expect(row).not.toHaveClass('clr-chamfer')
+    expect(row?.getAttribute('style')).toBeNull()
+  })
+})
+
+describe('AC-029 / AC-030: one sheet for new entry and edit, effort in both', () => {
+  it('draws no Edit control when no correction can be saved, and still asks effort', async () => {
     const user = userEvent.setup()
     mount({ bare: true })
     await openSheet(user)
+    expect(form(1).getAllByRole('radio')).toHaveLength(3)
     await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
     await main().findByRole('list', { name: 'Logged sets' })
 
     expect(screen.queryByRole('button', { name: /^Edit set/ })).toBeNull()
-    expect(screen.queryByText(/effort/i)).toBeNull()
   })
 
-  it('places inserted effort between the measurement row and the action', async () => {
+  it('places effort between the measurement row and the action, inside the same form', async () => {
     const user = userEvent.setup()
-    const renderEffort = vi.fn(({ mode, setNumber }: { mode: string; setNumber: number }) => (
-      <p>Effort slot {mode} {setNumber}</p>
-    ))
-    mount({ bare: true, logger: { renderEffort } })
+    mount({ bare: true })
     await openSheet(user)
 
-    const slot = form(1).getByText('Effort slot new 1')
-    expect(form(1).getByLabelText('Reps').compareDocumentPosition(slot))
+    const effort = form(1).getByRole('radiogroup')
+    expect(form(1).getByLabelText('Reps').compareDocumentPosition(effort))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
-    expect(slot.compareDocumentPosition(form(1).getByRole('button', { name: 'Log set 1' })))
+    expect(effort.compareDocumentPosition(form(1).getByRole('button', { name: 'Log set 1' })))
       .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+    // The measures and effort are the sheet's only entry; the card has none.
+    expect(main().queryByRole('radiogroup')).toBeNull()
+  })
+
+  it('records effort only on Log set, and the logged row reads it back', async () => {
+    const user = userEvent.setup()
+    const { attempts } = mount()
+    await openSheet(user)
+    await user.click(form(1).getByRole('radio', { name: 'Too hard' }))
+    expect(attempts).toEqual([])
+
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await waitFor(() => expect(attempts).toHaveLength(1))
+    expect(attempts[0].performed.effort).toBe('too_hard')
+
+    const row = within(await main().findByRole('list', { name: 'Logged sets' })).getByRole('listitem')
+    await waitFor(() => expect(within(row).getByText('Saved')).toBeInTheDocument())
+    expect(within(row).getByRole('img', { name: 'Effort: too hard' })).toBeInTheDocument()
+    // The next set starts unanswered.
+    expect(form(2).getAllByRole('radio').every((radio) => radio.getAttribute('aria-checked') === 'false'))
+      .toBe(true)
+  })
+
+  it('keeps a chosen effort through collapse and reopen', async () => {
+    const user = userEvent.setup()
+    const { attempts } = mount()
+    await openSheet(user)
+    await user.click(form(1).getByRole('radio', { name: 'Too easy' }))
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    await openSheet(user)
+
+    expect(form(1).getByRole('radio', { name: 'Too easy' })).toHaveAttribute('aria-checked', 'true')
+    expect(attempts).toEqual([])
   })
 
   it('opens a saved row in the same sheet as Edit set N, ending in Cancel / Save correction', async () => {
@@ -510,6 +568,9 @@ describe('insertion interfaces for effort and edit mode', () => {
     expect(edit.getByRole('combobox', { name: 'Unit' })).toHaveValue('kg')
     expect(edit.getByLabelText('Reps')).toHaveValue(8)
     expect(sheet.getByRole('button', { name: 'Minimize' })).toBeInTheDocument()
+    // Edit mode asks effort in the same place, after the measures.
+    expect(edit.getByLabelText('Reps').compareDocumentPosition(edit.getByRole('radiogroup')))
+      .toBe(Node.DOCUMENT_POSITION_FOLLOWING)
 
     const cancel = edit.getByRole('button', { name: 'Cancel' })
     const save = edit.getByRole('button', { name: 'Save correction' })
@@ -527,8 +588,9 @@ describe('insertion interfaces for effort and edit mode', () => {
     await user.clear(again.getByLabelText('Reps'))
     await user.type(again.getByLabelText('Reps'), '7')
     await user.click(again.getByRole('button', { name: 'Save correction' }))
+    // An unanswered set's correction states its effort as null, never a guess.
     expect(onCorrectSet).toHaveBeenCalledExactlyOnceWith(expect.any(String), {
-      setNumber: 1, reps: 7, weight: 60, weightUnit: 'kg',
+      setNumber: 1, reps: 7, weight: 60, weightUnit: 'kg', effort: null,
     })
     // The logging path itself wrote nothing more.
     expect(attempts).toHaveLength(1)

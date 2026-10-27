@@ -162,12 +162,14 @@ describe('the logger is drawn with the shared frame, and frames nothing itself',
     expect(row).not.toHaveClass('clr-chamfer')
   })
 
-  it('asks for no effort and offers no warmup checkbox', () => {
+  it('asks effort only as three optional choices, never a number, and offers no warmup checkbox', () => {
     mount()
 
     expect(screen.queryByLabelText(/RPE/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/exertion|effort/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/exertion/i)).not.toBeInTheDocument()
     expect(screen.queryByRole('slider')).not.toBeInTheDocument()
+    // REQ-011: the per-set effort is a three-choice group (set-effort.test.tsx).
+    expect(form(1).getAllByRole('radio')).toHaveLength(3)
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
   })
 })
