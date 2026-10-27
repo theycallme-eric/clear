@@ -67,6 +67,7 @@ import {
   sessionProgress,
   startingSectionIndex,
   type SectionProgress,
+  type SessionProgress,
 } from '../state/workout-progress'
 import { elapsedMinutes, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -447,6 +448,8 @@ function WorkoutShell({
                   <SetLoggingSheetSlot />
                   <SectionNavigation
                     section={current}
+                    progress={progress}
+                    currentIndex={index}
                     canGoBack={canGoBack}
                     canGoForward={canGoForward}
                     onPrevious={() => goTo(index - 1)}
@@ -482,6 +485,7 @@ function WorkoutShell({
                       position={index + 1}
                       total={progress.total}
                       progress={progress}
+                      bar={false}
                       onSelect={advancing || ending ? undefined : goTo}
                     />
                   </div>
@@ -529,6 +533,9 @@ function FooterRest() {
 interface SectionNavigationProps {
   /** The open section, whose blocks the forward action completes. */
   section: SectionProgress | undefined
+  /** The session's progress, drawn directly above the paired actions (REQ-018). */
+  progress: SessionProgress
+  currentIndex: number
   canGoBack: boolean
   canGoForward: boolean
   onPrevious: () => void
@@ -551,6 +558,8 @@ interface SectionNavigationProps {
  */
 function SectionNavigation({
   section,
+  progress,
+  currentIndex,
   canGoBack,
   canGoForward,
   onPrevious,
@@ -597,6 +606,8 @@ function SectionNavigation({
         onNext={() => void forward()}
         onFinish={() => void forward()}
         busy={ending || saving || advancing}
+        progress={progress}
+        currentIndex={currentIndex}
       />
       {failure !== null && (
         <ErrorDialog
