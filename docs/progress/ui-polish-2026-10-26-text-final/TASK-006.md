@@ -74,3 +74,19 @@ The unchanged TASK-034 capture driver/record schema/validators will write a new 
 all previous groups remain preserved. No pass is claimed before the actual browser run and native
 full recovery verification. Implementation candidate was committed locally at 7b1edbb for truthful
 capture source identity, with no push or PR.
+
+## Actual local recapture result
+
+The existing mobile format-preview browser command passed all four skin cases (eight normal/short
+phone captures) against the isolated disposable backend, with real local authenticated sessions
+and zero generation requests or preview writes. New group:
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task006/`. Captured source:
+`23c21500a4e3e754394d15c63f9e9beb567d04da`. Earlier evidence remains untouched; audit now derives
+the current runtime/driver identities from these actual records. No terminal proof format changed.
+Full native recovery verification and delivery are still pending; the task is not complete.
+
+The existing source-lineage consumer now binds the selected new group to this actual native run,
+reviewed graph and tested base. Its retained input branch originated at attempt 1 and was reused
+by native attempt 2; provenance names that real a1 branch without claiming attempt-1 success.
+The actual capture occurred during operator recovery after both attempts. This source-only
+provenance grants no delivery/completion credit, and preserves the original failure ledger.

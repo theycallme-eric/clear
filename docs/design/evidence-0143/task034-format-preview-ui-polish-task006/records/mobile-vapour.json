@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 469,
+  "consumer": "task034-format-preview-mobile",
+  "scope": "mobile-only-2026-10-22",
+  "sourceFile": "e2e/design-0143/format-preview.spec.ts",
+  "status": "passed",
+  "project": "mobile",
+  "skin": "vapour",
+  "caseTitle": "vapour: Settings entry, read-only formats, Back and direct-entry Back",
+  "observedAt": "2026-10-27T14:57:36.334Z",
+  "captureProcessId": 60649,
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "7855ffc47dd6e240e8d25ad3b7514a94dff5ab354ca6f42030d54c88849725e6",
+    "applicationCommit": "23c21500a4e3e754394d15c63f9e9beb567d04da",
+    "testedDeployment": "http://localhost:5173"
+  },
+  "sourceCheckout": {
+    "dirty": true,
+    "statusSha256": "f5793d880d986ef2933e85878d1a84fdd8f3b8d0abb6a3b95f8d116d4b1eea56"
+  },
+  "driverSourceHash": "efb61ecf98f3597ab62bc325820fb1501be3fafcbd20953d96ef9c5f17ad43ca",
+  "baselineAbsence": {
+    "kind": "route-introduced-after-baseline",
+    "commit": "c31ef865f60811df076db396a40f90517701380e",
+    "route": "/settings/formats",
+    "sources": [
+      {
+        "path": "src/app/router.tsx",
+        "sha256": "4e862af4cba382d372628bee2b5232b49fc8fb231489063ece78be259d45fbba"
+      },
+      {
+        "path": "e2e/required-routes.ts",
+        "sha256": "d172f7c08236ead7078e14b9ffdc74d1358653c68031dce0f3d9f49d91b9554a"
+      }
+    ],
+    "before": null
+  },
+  "session": {
+    "fixture": "authenticatedSession",
+    "realSession": true,
+    "codeRequests": 1,
+    "verificationRequests": 1,
+    "generationRequests": 0,
+    "screens": [
+      "Welcome",
+      "OTP Login",
+      "Home",
+      "Generate"
+    ]
+  },
+  "observations": {
+    "settingsEntry": true,
+    "settingsBack": true,
+    "directEntryBack": true,
+    "allDisclosures": true,
+    "formatsAndStates": true,
+    "accessibility": true,
+    "storageUnchanged": true
+  },
+  "network": {
+    "generationRequests": 0,
+    "blockedGenerations": 0,
+    "attemptedWrites": 0,
+    "forwardedWrites": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "captures": [
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "vapour",
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 844,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-phone-vapour.png",
+        "sha256": "13e3098f58153923aee4b234cda00075f21094811b01bb6363d192adaba071f9",
+        "bytes": 195168,
+        "width": 390,
+        "height": 844,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    },
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "vapour",
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 320,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-short-vapour.png",
+        "sha256": "ba86a5c1737958769c949692d633503851b0d7f0e7c4acc79e54ccf327ee2be8",
+        "bytes": 80383,
+        "width": 390,
+        "height": 320,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    }
+  ]
+}
