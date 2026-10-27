@@ -1,8 +1,37 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-014 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-015 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task015/`: four mobile skin cases/eight normal-short
+phone captures passed the existing authenticated journey, Axe, route, layout, network and
+record/PNG/source checks. Captured source `d66240cd88e66493fd01795869f32fd647b56cb6`, runtime source
+`a60849329519c38b695b1a3f12fb1354a9680a66684fd9cc583b91af87230ad6`, driver
+`015a69418c6a639de81d8195f03d2bbef70b90b999951acd08fd4b13e1af12b3`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend, reset with
+actual current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. The owned backend was stopped after capture; no hosted
+schema or other local stack was changed.
+
+This proves the current source-bound format-preview route. The same committed source separately
+passed all four actual mobile circuit/footer browser cases (12.4 s): both original JOURNEY-025
+flows and JOURNEY-014 geometry at320×568 and390×844. The latter proves aligned readable labels,
+viewport containment, default control height, progress adjacency and hit testing before entry,
+during circuit rest with the shared sheet open, after scrolling that entry to its final action,
+and with the last-section Finish label. The browser-discovered scroll-fold defect was repaired
+through workout-only composition; public vendor files and navigation/save semantics are unchanged.
+Nine focused footer cases and lint:ds also passed. TASK-018 retains surrounding integration. No
+deployed, physical-iPhone, virtual-keyboard or hosted-schema/RLS success is inferred.
+
+Input provenance names actual native attempt 1/a1, run `c7bb59aa-9d02-481d-8610-e02189508e65`, retained
+branch `agent-runner/task-015-a1-c7bb59aa` and tested base `9c941f8c3ca0ca3e8f45b6e04e9a264afc4fa05e`.
+Actual manifest/record/PNG payload digest:
+`db2b0570830230531a25967edd7117ee75028579423ae4ecbd1f0d7f871c1451`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-014 source-bound recapture — 27 October 2026
+
+Retained TASK-014 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task014/`: four mobile skin cases/eight normal-short
 phone captures passed the existing authenticated journey, Axe, route, layout, network and
 record/PNG/source checks. Captured source `7b5e6cccd8f4da0e575558b37b3142b0d7021a40`, runtime source

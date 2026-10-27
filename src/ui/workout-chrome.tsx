@@ -64,9 +64,9 @@ import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
-import { ActionRow } from './composition'
 import { useInterfaceLoop, type InterfaceLoop } from './motion'
 import './rest-timer-bar.css'
+import './workout-navigation.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Global timer
@@ -376,6 +376,11 @@ export interface SectionHeaderProps {
    * in a second card restating the same position.
    */
   progress?: SessionProgress
+  /**
+   * False when the bar is drawn elsewhere — the active workout puts it above
+   * its footer navigation (REQ-018) — leaving the jump list here.
+   */
+  bar?: boolean
   /** Jump straight to a section. Omit to render the jump list read-only. */
   onSelect?: (index: number) => void
   children?: ReactNode
@@ -399,6 +404,7 @@ export function SectionHeader({
   position,
   total,
   progress,
+  bar = true,
   onSelect,
   children,
 }: SectionHeaderProps) {
@@ -422,7 +428,7 @@ export function SectionHeader({
       heading={section.title}
       meta={`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}
     >
-      {progress === undefined ? null : (
+      {progress === undefined || !bar ? null : (
         <SectionProgressBar progress={progress} currentIndex={section.index} />
       )}
       <ul
@@ -677,12 +683,25 @@ export interface WorkoutNavigationProps {
   onFinish: () => void
   /** True while a lifecycle call is in flight. */
   busy?: boolean
+  /**
+   * The whole session's progress. When given, its bar sits directly above the
+   * paired actions (REQ-018), so where the user is and where they go next are
+   * read in one place.
+   */
+  progress?: SessionProgress
+  /** The section the shell currently has open, for the bar's name. */
+  currentIndex?: number
 }
 
 /**
  * Previous, and then either Next or Finish. Two exits, and the destructive one
  * is not among them — abandoning lives in the header, away from the control the
  * user presses between every section.
+ *
+ * REQ-018: one compact paired row — Previous on the left, the forward action
+ * on the right — at every width, with the session's progress immediately above
+ * it. Only the arrangement is this component's; what each action does is the
+ * caller's, unchanged.
  */
 export function WorkoutNavigation({
   canGoBack,
@@ -691,35 +710,37 @@ export function WorkoutNavigation({
   onNext,
   onFinish,
   busy = false,
+  progress,
+  currentIndex = 0,
 }: WorkoutNavigationProps) {
   // Finishing is a real wait and its button scans, so it takes its turn with
   // every other loop in view; the button stays busy either way.
   const loop = useInterfaceLoop('busy', busy && !canGoForward)
 
   return (
-    <ActionRow
-      as="nav"
-      aria-label="Workout sections"
-      {...loop}
-    >
-      <Button
-        variant="secondary"
-        size="lg"
-        icon={<ChevronLeft />}
-        disabled={!canGoBack || busy}
-        onClick={onPrevious}
-      >
-        Previous
-      </Button>
-      {canGoForward ? (
-        <Button variant="primary" size="lg" icon={<ChevronRight />} disabled={busy} onClick={onNext}>
-          Next section
-        </Button>
-      ) : (
-        <Button variant="primary" size="lg" icon={<Check />} loading={busy} onClick={onFinish}>
-          Finish workout
-        </Button>
+    <nav aria-label="Workout sections" className="clr-workout-nav" {...loop}>
+      {progress === undefined ? null : (
+        <SectionProgressBar progress={progress} currentIndex={currentIndex} />
       )}
-    </ActionRow>
+      <div className="clr-workout-nav__pair">
+        <Button
+          variant="secondary"
+          icon={<ChevronLeft />}
+          disabled={!canGoBack || busy}
+          onClick={onPrevious}
+        >
+          Previous
+        </Button>
+        {canGoForward ? (
+          <Button variant="primary" icon={<ChevronRight />} disabled={busy} onClick={onNext}>
+            Next section
+          </Button>
+        ) : (
+          <Button variant="primary" icon={<Check />} loading={busy} onClick={onFinish}>
+            Finish workout
+          </Button>
+        )}
+      </div>
+    </nav>
   )
 }

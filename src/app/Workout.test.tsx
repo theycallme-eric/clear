@@ -357,7 +357,8 @@ describe('Workout — navigation and progress', () => {
     await shell()
 
     const navigation = screen.getByRole('navigation', { name: 'Workout sections' })
-    expect(navigation).toHaveClass('clr-actions')
+    // REQ-018: a paired row that does not stack, not the shipped action row.
+    expect(navigation).toHaveClass('clr-workout-nav')
     expect(navigation.closest('.clr-scroll-region__foot')).toBeInTheDocument()
   })
 
@@ -398,15 +399,19 @@ describe('Workout — the active section header', () => {
 
   const jumpToggle = () => screen.getByRole('button', { name: 'All sections' })
 
-  it('consolidates status, section count, progress and structure identity into one header', async () => {
+  it('consolidates status, section count and structure identity into one header, with progress above the footer navigation', async () => {
     await shell()
 
     const header = within(activeHeader('Primary lift'))
     expect(header.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
-    expect(header.getByRole('progressbar', { name: 'Section 2 of 3' })).toHaveAttribute(
-      'aria-valuenow',
-      '1',
-    )
+    // REQ-018: the bar sits immediately above the paired footer actions.
+    expect(header.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByRole('navigation', { name: 'Workout sections' })).getByRole(
+        'progressbar',
+        { name: 'Section 2 of 3' },
+      ),
+    ).toHaveAttribute('aria-valuenow', '1')
     expect(
       within(header.getByRole('list', { name: 'Structures in this section' })).getByText(
         'EMOM · 10 MIN',
@@ -508,7 +513,7 @@ describe('Workout — the active section header', () => {
 
     const header = within(activeHeader('Conditioning'))
     expect(header.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
-    expect(header.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
+    expect(screen.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
       'aria-valuenow',
       '1',
     )
