@@ -137,3 +137,8 @@ behavior, timeouts and checks are unchanged; this strengthens the real journey. 
 journey tests passed in10546. The change is test-only and excluded by the existing runtime source
 hash/capture driver fingerprint, so genuine source649c02d captures remain current. Another native
 recovery is justified by this concrete test-flow correction; no model/attempt reset.
+
+Native recovery93402 passed focused17, full npmtest and lint:ds, then correctly rejected the
+test helper's unsupported Testing Library option `exact` during build/TypeScript checking. That
+operator error is corrected by using Testing Library's already-exact string name match; the
+assertion is retained. Independent typecheck87160 passed. Final native recovery is still required.

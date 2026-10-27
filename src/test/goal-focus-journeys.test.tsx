@@ -294,7 +294,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
     // Honor that existing guard instead of racing its mount after acceptance.
     const abandon = await screen.findByRole('dialog', { name: 'Abandon workout?' })
     expect(journey.router.state.location.pathname).toBe(WORKOUT_ROUTE)
-    await user.click(within(abandon).getByRole('button', { name: 'Abandon', exact: true }))
+    await user.click(within(abandon).getByRole('button', { name: 'Abandon' }))
     await waitFor(() => expect(journey.router.state.location.pathname).toBe('/settings'))
     expect(await screen.findByRole('radio', { name: 'Strength' })).toBeChecked()
     expectNoProfileWrite(journey, 'strength')
