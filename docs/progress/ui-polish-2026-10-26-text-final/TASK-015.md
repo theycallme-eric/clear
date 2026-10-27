@@ -126,3 +126,18 @@ DOM and source confirm circuit rest is owned by the block independently of set r
 assertion now checks the single active circuit countdown without changing its owner or any
 product behavior. Failure traces/screenshots/log are preserved externally. Footer geometry in
 the expanded-sheet state remains pending actual execution.
+
+## Browser-discovered reachability correction
+
+The corrected mobile run52700 exited1: the original two circuit journeys passed, while both
+new phone cases proved the expanded sheet put navigation below the viewport (button bottom
+872.703 at height568, and914.5 at height844). The public pinned foot is capped at45% and
+scrolls all of its contents; its sheet plus navigation exceeded that internal fold. At320px,
+the unshrinkable timer/action header cluster also squeezed the title into one letter per line.
+
+The workout now composes that foot as a shrinkable column, keeps progress/navigation outside
+the independently scrollable entry/rest area, and preserves the public45% cap. The public
+AppHeader className prop is forwarded by Screen so only the workout header can wrap its
+existing slots to another line. No vendored styles or components changed. Browser cases also
+scroll the entry to its submit action and recheck that the pager remains in the viewport.
+Actual verification of this correction is pending; previous failures remain preserved.

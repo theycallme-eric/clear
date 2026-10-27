@@ -39,3 +39,39 @@
   width: 100%;
   text-align: center;
 }
+
+/* The public pinned foot caps its height and scrolls by default. In this
+   workout composition only the optional entry/rest area may scroll: the
+   navigation must never be hidden below that internal scroll fold. */
+.clr-scroll-region__foot:has(> .clr-workout-footer) {
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.clr-workout-footer,
+.clr-workout-footer__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.clr-workout-footer__content {
+  gap: var(--spacing-200);
+}
+
+.clr-workout-footer__entry {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.clr-workout-footer__content > .clr-workout-nav {
+  flex: 0 0 auto;
+}
+
+/* The elapsed clock and Abandon keep their public header slots. When those
+   slots do not fit beside the title, let the cluster take the next line. */
+.clr-workout-header {
+  flex-wrap: wrap;
+}

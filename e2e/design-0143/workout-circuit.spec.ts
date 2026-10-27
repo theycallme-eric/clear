@@ -693,6 +693,9 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     await expect(timer).toHaveCount(1)
     await expect(timer).toContainText('00:30')
     await expectFooterPair(page, 'Next section')
+    // Scrolling the entry to its final action must not scroll the pager away.
+    await sheet.getByRole('button', { name: 'Log set 1', exact: true }).scrollIntoViewIfNeeded()
+    await expectFooterPair(page, 'Next section')
     await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
     await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
     await expectHandsOff(page)

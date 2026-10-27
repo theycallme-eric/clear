@@ -425,6 +425,7 @@ function WorkoutShell({
           <Screen
             title={SCREEN_TITLE}
             header={{
+              className: 'clr-workout-header',
               meta: <GlobalTimer seconds={seconds} />,
               actions: (
                 <Button
@@ -437,15 +438,17 @@ function WorkoutShell({
               ),
             }}
             pinnedFoot={
-              <PhoneFooter>
-                <div className="clr-stack clr-stack--tight">
-                  {/*
-                    REQ-009: one set-logging half-sheet for the whole screen.
-                    While it is open it draws the running rest itself, so the
-                    footer's copy steps aside rather than drawing a second.
-                  */}
-                  <FooterRest />
-                  <SetLoggingSheetSlot />
+              <PhoneFooter className="clr-workout-footer">
+                <div className="clr-workout-footer__content">
+                  <div className="clr-workout-footer__entry">
+                    {/*
+                      REQ-009: one set-logging half-sheet for the whole screen.
+                      While it is open it draws the running rest itself, so the
+                      footer's copy steps aside rather than drawing a second.
+                    */}
+                    <FooterRest />
+                    <SetLoggingSheetSlot />
+                  </div>
                   <SectionNavigation
                     section={current}
                     progress={progress}

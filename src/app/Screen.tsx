@@ -19,7 +19,7 @@ import { useScreenRegistry } from './screen-registry'
 const APP_NAME = 'CLEAR'
 
 /** The fixed header's slots; its title is always the screen's own heading. */
-export type ScreenHeader = Pick<AppHeaderProps, 'left' | 'meta' | 'actions'>
+export type ScreenHeader = Pick<AppHeaderProps, 'left' | 'meta' | 'actions' | 'className'>
 
 export interface ScreenProps {
   /** Screen name: document title and what a route change announces. */
