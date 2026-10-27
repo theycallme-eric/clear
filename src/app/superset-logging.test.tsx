@@ -30,6 +30,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { BlockCompletionContext } from '../state/block-completion'
 import { RestTimerContext, type RestTimerApi } from '../state/rest'
 import { SetLoggingProvider } from '../state/set-logging-provider'
+import type { WorkoutExerciseRow } from '../state/schemas'
 import { sessionProgress } from '../state/workout-progress'
 import { AppProviders, signedIn } from '../test/render'
 import {
@@ -104,10 +105,19 @@ function advance(seconds: number) {
   })
 }
 
-async function shell(): Promise<WorkoutDouble> {
+async function shell(timedPrescription: Partial<WorkoutExerciseRow> = {}): Promise<WorkoutDouble> {
+  const sections = SECTIONS.map((section) => ({
+    ...section,
+    blocks: section.blocks?.map((block) => ({
+      ...block,
+      exercises: block.exercises?.map((exercise) => typeof exercise === 'object' && exercise.prescription?.exercise_id === 'plank'
+        ? { ...exercise, prescription: { ...exercise.prescription, ...timedPrescription } }
+        : exercise),
+    })),
+  }))
   const double = createWorkoutDouble({
     session: snapshotFixture({
-      sections: SECTIONS,
+      sections,
       startedAt: new Date(Date.now() - 600_000).toISOString(),
     }),
   })
@@ -321,6 +331,103 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     expect(double.loggedSets()).toEqual([])
   })
 
+  it('saves the selected partner independently of an excluded invalid entry', async () => {
+    const user = userEvent.setup()
+    const double = await shell()
+    const form = await openRound(user, 1)
+    const a1 = movement(form, 'A1 bench press, set 1')
+    const a2 = movement(form, 'A2 plank, set 1')
+    const weight = a1.getByLabelText('Weight') as HTMLInputElement
+    const reps = a1.getByLabelText('Reps') as HTMLInputElement
+    expect(weight.form).toBeNull()
+    expect(reps.form).toBeNull()
+    expect(weight).toBeEnabled()
+    await user.type(a1.getByLabelText('Weight'), '-5')
+    await retype(user, a2.getByLabelText('Seconds'), '24')
+    // A selected invalid result is still refused, including with a valid partner.
+    expect(weight.form).toBe(form)
+    expect(reps.form).toBe(form)
+    expect(a1.getByLabelText('Weight')).toBeInvalid()
+    expect(submit(form, 1)).toBeDisabled()
+    await user.click(submit(form, 1))
+    expect(double.loggedSets()).toEqual([])
+
+    // Excluding it retains the draft but removes its constraint on the partner.
+    await user.click(a1.getByRole('checkbox', { name: 'Performed' }))
+    expect(a1.getByLabelText('Weight')).toHaveValue(-5)
+    expect(weight.form).toBeNull()
+    expect(reps.form).toBeNull()
+    expect((a2.getByLabelText('Seconds') as HTMLInputElement).form).toBe(form)
+    expect((form as HTMLFormElement).checkValidity()).toBe(true)
+    expect(submit(form, 1)).toBeEnabled()
+    await user.click(submit(form, 1))
+
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    expect(double.loggedSets()[0]).toMatchObject({
+      exerciseId: exerciseIdOf(double, 'plank'),
+      performed: { setNumber: 1, durationSeconds: 24 },
+    })
+  })
+
+  it('clearing a suggestion does not identify an unmeasured partner', async () => {
+    const user = userEvent.setup()
+    const double = await shell()
+    const form = await openRound(user, 1)
+    const a1 = movement(form, 'A1 bench press, set 1')
+    const a2 = movement(form, 'A2 plank, set 1')
+
+    await user.clear(a1.getByLabelText('Reps'))
+    expect(a1.getByRole('checkbox', { name: 'Performed' })).not.toBeChecked()
+    expect(submit(form, 1)).toBeDisabled()
+    await retype(user, a2.getByLabelText('Seconds'), '24')
+    await user.click(submit(form, 1))
+
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    expect(double.loggedSets()[0]).toMatchObject({
+      exerciseId: exerciseIdOf(double, 'plank'),
+      performed: { setNumber: 1, durationSeconds: 24 },
+    })
+  })
+
+  it('clearing the last entered result or effort requires a deliberate unmeasured tick', async () => {
+    const user = userEvent.setup()
+    const double = await shell()
+    const form = await openRound(user, 1)
+    const a1 = movement(form, 'A1 bench press, set 1')
+    const performed = a1.getByRole('checkbox', { name: 'Performed' })
+
+    // An untouched prescription remains a suggestion even after a weight was entered.
+    await user.type(a1.getByLabelText('Weight'), '60')
+    expect(performed).toBeChecked()
+    await user.clear(a1.getByLabelText('Weight'))
+    expect(performed).not.toBeChecked()
+    await retype(user, a1.getByLabelText('Reps'), '9')
+    expect(performed).toBeChecked()
+    await user.clear(a1.getByLabelText('Reps'))
+    expect(performed).not.toBeChecked()
+
+    await user.click(a1.getByRole('radio', { name: 'Too hard' }))
+    expect(performed).toBeChecked()
+    await user.click(a1.getByRole('button', { name: 'Clear effort for set 1' }))
+    expect(performed).not.toBeChecked()
+    expect(submit(form, 1)).toBeDisabled()
+
+    // Clearing effort after explicitly excluding the movement cannot re-include it.
+    await user.click(a1.getByRole('radio', { name: 'Too easy' }))
+    await user.click(performed)
+    await user.click(a1.getByRole('button', { name: 'Clear effort for set 1' }))
+    expect(performed).not.toBeChecked()
+
+    // The explicit Performed control still permits a wholly unmeasured set.
+    await user.click(performed)
+    await user.click(a1.getByRole('radio', { name: 'About right' }))
+    await user.click(a1.getByRole('button', { name: 'Clear effort for set 1' }))
+    expect(performed).toBeChecked()
+    await user.click(submit(form, 1))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    expect(double.loggedSets()[0].performed).toEqual({ setNumber: 1 })
+  })
+
   it('keeps the entry through minimise and reopen', async () => {
     const user = userEvent.setup()
     await shell()
@@ -334,6 +441,96 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     const a2 = movement(again, 'A2 plank, set 1')
     expect(a2.getByLabelText('Seconds')).toHaveValue(41)
     expect(a2.getByRole('checkbox', { name: 'Performed' })).toBeChecked()
+  })
+})
+
+describe('movement countdown ownership through partial rounds', () => {
+  const region = () => screen.getByRole('region', { name: 'plank countdown' })
+  const timer = () => within(region()).getByRole('timer', { name: 'Countdown' })
+
+  it('rearms an owning first log at its next prescribed time-sequence rung', async () => {
+    const user = userEvent.setup()
+    const double = await shell({ target_kind: 'sequence', target_value: null, target_sequence: [30, 20] })
+    const original = timer()
+    await user.click(within(region()).getByRole('button', { name: 'Start' }))
+    advance(5)
+    const form = await openRound(user, 1)
+    await retype(user, movement(form, 'A2 plank, set 1').getByLabelText('Seconds'), '25')
+    await user.click(submit(form, 1))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+
+    expect(timer()).not.toBe(original)
+    expect(timer()).toHaveTextContent('00:20')
+    expect(within(region()).getByRole('button', { name: 'Start' })).toBeEnabled()
+    expect(screen.getAllByRole('region', { name: 'plank countdown' })).toHaveLength(1)
+  })
+
+  it('keeps a running unlogged partner clock, then advances its own gapped log by set number', async () => {
+    const user = userEvent.setup()
+    const double = await shell({ target_kind: 'sequence', target_value: null, target_sequence: [30, 20, 10] })
+    const original = timer()
+    await user.click(within(region()).getByRole('button', { name: 'Start' }))
+    advance(5)
+    const form = await openRound(user, 1)
+    await retype(user, movement(form, 'A1 bench press, set 1').getByLabelText('Reps'), '7')
+    await user.click(submit(form, 1))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+
+    expect(timer()).toBe(original)
+    expect(timer()).toHaveTextContent('00:25')
+    advance(5)
+    expect(timer()).toHaveTextContent('00:20')
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    const next = await openRound(user, 2)
+    expect(timer()).toBe(original)
+    expect(screen.getAllByRole('region', { name: 'plank countdown' })).toHaveLength(1)
+    await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '18')
+    await user.click(submit(next, 2))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(2))
+
+    expect(timer()).not.toBe(original)
+    expect(timer()).toHaveTextContent('00:10')
+    expect(double.loggedSets().find((entry) => entry.exerciseId === exerciseIdOf(double, 'plank'))?.performed.setNumber).toBe(2)
+  })
+})
+
+describe('a grouped correction returns keyboard focus to an available control', () => {
+  it('returns Minimize, Cancel and Save to Edit, and a cleared row to Log round', async () => {
+    const user = userEvent.setup()
+    const double = await shell()
+    const form = await openRound(user, 1)
+    await retype(user, movement(form, 'A1 bench press, set 1').getByLabelText('Reps'), '7')
+    await user.click(submit(form, 1))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    const row = within(screen.getByRole('heading', { name: 'A1 bench press' }).closest('section')!)
+    await row.findByText('Saved')
+    const edit = row.getByRole('button', { name: 'Edit set 1' })
+    const editForm = () => screen.getByRole('form', { name: 'Edit set 1 of bench press' })
+    const openEdit = async () => {
+      edit.focus()
+      await user.keyboard('{Enter}')
+      return within(await screen.findByRole('form', { name: 'Edit set 1 of bench press' }))
+    }
+
+    await openEdit()
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    expect(edit).toHaveFocus()
+    await openEdit()
+    await user.click(within(editForm()).getByRole('button', { name: 'Cancel' }))
+    expect(edit).toHaveFocus()
+    const correction = await openEdit()
+    await retype(user, correction.getByLabelText('Reps'), '6')
+    await user.click(correction.getByRole('button', { name: 'Save correction' }))
+    expect(edit).toHaveFocus()
+    await waitFor(() => expect(double.correctedSets()[0]?.performed.reps).toBe(6))
+
+    const clear = await openEdit()
+    await user.click(clear.getByRole('button', { name: 'Clear set 1' }))
+    const confirmation = await screen.findByRole('dialog', { name: 'Clear set 1 of bench press?' })
+    await user.click(within(confirmation).getByRole('button', { name: 'Clear set' }))
+    await waitFor(() => expect(double.clearedSets()).toHaveLength(1))
+    expect(row.queryByRole('list', { name: 'Logged sets' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Log round' })).toHaveFocus()
   })
 })
 

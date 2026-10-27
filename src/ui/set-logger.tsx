@@ -120,6 +120,8 @@ export interface ExerciseSetLoggerProps {
    * Saved rows keep their own Edit either way.
    */
   logging?: 'self' | { readonly round: number }
+  /** The grouped logger's available fallback after its edited row is removed. */
+  onReturnToRound?: () => void
   /**
    * Insertion interface for correcting a saved set (TASK-011 supplies it).
    * Given, each saved row carries an Edit control that opens the same sheet in
@@ -136,6 +138,7 @@ export function ExerciseSetLogger({
   showCountdown = true,
   restSeconds,
   logging = 'self',
+  onReturnToRound,
   onCorrectSet,
 }: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
@@ -143,6 +146,7 @@ export function ExerciseSetLogger({
   const restTimer = useRestTimer()
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
   const logButton = useRef<HTMLButtonElement>(null)
+  const editButton = useRef<HTMLButtonElement>(null)
 
   const prescription = exercise.prescription
   const logged = loggedSets(exercise.exerciseId)
@@ -157,7 +161,15 @@ export function ExerciseSetLogger({
   const restAfterSet = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
-  const countdownSeconds = showCountdown ? movementCountdownSeconds(prescription, setNumber) : null
+  // A partner's partial round does not log this movement or rearm its clock.
+  // Keep prescription indexing by the owning movement's recorded set number,
+  // including intentional round gaps, rather than by the pair's next round.
+  const countdownSetNumber = logsSelf
+    ? setNumber
+    : logged.reduce((highest, set) => Math.max(highest, set.setNumber), 0) + 1
+  const countdownSeconds = showCountdown
+    ? movementCountdownSeconds(prescription, countdownSetNumber)
+    : null
 
   // The entry being made. It outlives the sheet, so a collapse and a reopen
   // hand back exactly what was typed; it starts over only when the shell's set
@@ -201,9 +213,11 @@ export function ExerciseSetLogger({
     sheet.setOpen(true)
   }
 
-  const collapse = () => {
+  const collapse = (rowRemoved = false) => {
     sheet.setOpen(false)
-    logButton.current?.focus()
+    if (logsSelf) logButton.current?.focus()
+    else if (!rowRemoved && editButton.current?.isConnected) editButton.current.focus()
+    else onReturnToRound?.()
   }
 
   return (
@@ -226,7 +240,7 @@ export function ExerciseSetLogger({
       */}
       {countdownSeconds === null ? null : (
         <MovementCountdown
-          key={`${setNumber}:${countdownSeconds}`}
+          key={`${countdownSetNumber}:${countdownSeconds}`}
           seconds={countdownSeconds}
           movement={name}
         />
@@ -237,7 +251,8 @@ export function ExerciseSetLogger({
         onEdit={
           !correctable
             ? undefined
-            : (set) => {
+            : (set, trigger) => {
+              editButton.current = trigger
               // Reopening the row a minimised correction was opened on hands
               // that correction back; any other row starts from its result.
               setCorrection((current) =>
@@ -306,7 +321,7 @@ export function ExerciseSetLogger({
             if (!logsSelf) collapse()
           }}
           onClear={edit === null || clearSet === undefined ? undefined : () => setClearing(edit.set)}
-          onCollapse={collapse}
+          onCollapse={() => collapse()}
         />,
       )}
 
@@ -331,7 +346,7 @@ export function ExerciseSetLogger({
                 if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
                 setClearing(null)
                 setCorrection(null)
-                collapse()
+                collapse(true)
               }}
             >
               Clear set
@@ -378,7 +393,7 @@ function LoggedSetList({
   onEdit,
 }: {
   sets: readonly LoggedSet[]
-  onEdit?: (set: LoggedSet) => void
+  onEdit?: (set: LoggedSet, trigger: HTMLButtonElement) => void
 }) {
   if (sets.length === 0) return null
 
@@ -409,7 +424,7 @@ function LoggedSetList({
                 size="sm"
                 icon={<Pencil size={16} />}
                 aria-label={`Edit set ${set.setNumber}`}
-                onClick={() => onEdit(set)}
+                onClick={(event) => onEdit(set, event.currentTarget)}
                 style={{ marginInlineStart: 'auto' }}
               >
                 Edit
@@ -736,6 +751,7 @@ function SetMeasureFields({
   measureLabel,
   modality,
   showLoad,
+  validating = true,
 }: {
   entry: SetEntryReading
   draft: SetDraft
@@ -743,6 +759,8 @@ function SetMeasureFields({
   measureLabel: string
   modality: PrescribedModality
   showLoad: boolean
+  /** Excluded grouped drafts remain editable without constraining a partner's form. */
+  validating?: boolean
 }) {
   const { selectedUnit, weightInvalid, measureInvalid } = entry
 
@@ -753,7 +771,10 @@ function SetMeasureFields({
           label="Weight"
           type="number"
           inputMode="decimal"
-          min={0}
+          // Native badInput validity survives removal of min. An excluded
+          // editable draft must not participate in its partner's form at all.
+          form={validating ? undefined : ''}
+          min={validating ? 0 : undefined}
           step="any"
           value={draft.weight}
           onChange={(value) => {
@@ -765,8 +786,8 @@ function SetMeasureFields({
               ...(selectedUnit !== null ? { chosenUnit: selectedUnit } : {}),
             })
           }}
-          invalid={weightInvalid}
-          errorText={weightInvalid ? 'Enter a weight of zero or more' : undefined}
+          invalid={validating && weightInvalid}
+          errorText={validating && weightInvalid ? 'Enter a weight of zero or more' : undefined}
         />
       ) : null}
       {showLoad ? (
@@ -786,12 +807,13 @@ function SetMeasureFields({
         label={measureLabel}
         type="number"
         inputMode={modality === 'distance' ? 'decimal' : 'numeric'}
-        min={0}
+        form={validating ? undefined : ''}
+        min={validating ? 0 : undefined}
         step="any"
         value={draft.measure}
         onChange={(value) => onDraft({ ...draft, measure: value })}
-        invalid={measureInvalid}
-        errorText={measureInvalid ? 'Enter zero or more' : undefined}
+        invalid={validating && measureInvalid}
+        errorText={validating && measureInvalid ? 'Enter zero or more' : undefined}
       />
     </SetMeasurementRow>
   )
@@ -901,6 +923,11 @@ interface MovementEntry {
   readonly draft: SetDraft
   /** Set only by the athlete — the tick, a typed result or an effort answer. */
   readonly performed: boolean
+  /** A deliberate tick permits an observation with no entered measurement or effort. */
+  readonly explicitlyPerformed: boolean
+  /** Suggestions are not entered results; track only the athlete's fields. */
+  readonly enteredWeight: boolean
+  readonly enteredMeasure: boolean
 }
 
 /**
@@ -958,7 +985,13 @@ export function SupersetRoundSheet({
     setHeld({ round, entries: { ...draft.entries, [exerciseId]: entry } })
 
   const readings = parts.map((part) => {
-    const entry = draft.entries[part.exercise.exerciseId] ?? { draft: part.fresh, performed: false }
+    const entry = draft.entries[part.exercise.exerciseId] ?? {
+      draft: part.fresh,
+      performed: false,
+      explicitlyPerformed: false,
+      enteredWeight: false,
+      enteredMeasure: false,
+    }
     return {
       part,
       entry,
@@ -1003,9 +1036,28 @@ export function SupersetRoundSheet({
       formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
       context="Tick each movement you performed. A blank field is saved as not recorded."
       measures={readings.map(({ part, entry, reading }) => {
-        // Any explicit entry for this movement identifies it as performed.
-        const enter = (next: SetDraft) =>
-          update(part.exercise.exerciseId, { draft: next, performed: true })
+        // Entering a result identifies this movement. Clearing a suggestion or
+        // the last entered result does not identify a performance with no
+        // measurement or effort; that needs an explicit Performed tick. An unticked movement
+        // stays excluded through clearing, while its text remains recoverable.
+        const enter = (next: SetDraft) => {
+          const weightChanged = next.weight !== entry.draft.weight
+          const measureChanged = next.measure !== entry.draft.measure
+          const enteredWeight = weightChanged ? next.weight.trim() !== '' : entry.enteredWeight
+          const enteredMeasure = measureChanged ? next.measure.trim() !== '' : entry.enteredMeasure
+          const enteredResult = enteredWeight || enteredMeasure || next.effort !== null
+          const addedResult =
+            (weightChanged && enteredWeight) ||
+            (measureChanged && enteredMeasure) ||
+            (next.effort !== null && next.effort !== entry.draft.effort)
+          update(part.exercise.exerciseId, {
+            draft: next,
+            performed: entry.explicitlyPerformed || ((entry.performed || addedResult) && enteredResult),
+            explicitlyPerformed: entry.explicitlyPerformed,
+            enteredWeight,
+            enteredMeasure,
+          })
+        }
         const prescription = part.exercise.prescription
 
         return (
@@ -1021,7 +1073,11 @@ export function SupersetRoundSheet({
             <Checkbox
               label="Performed"
               checked={entry.performed}
-              onChange={(performed) => update(part.exercise.exerciseId, { ...entry, performed })}
+              onChange={(performed) => update(part.exercise.exerciseId, {
+                ...entry,
+                performed,
+                explicitlyPerformed: performed,
+              })}
             />
             <SetMeasureFields
               entry={reading}
@@ -1030,6 +1086,7 @@ export function SupersetRoundSheet({
               measureLabel={modalityLabel(prescription)}
               modality={prescription.modality}
               showLoad={part.showLoad}
+              validating={entry.performed}
             />
             <SetEffortChoice
               setNumber={round}

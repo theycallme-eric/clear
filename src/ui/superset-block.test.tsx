@@ -680,6 +680,11 @@ describe('saving, refusing and retrying a set', () => {
     expect(formFor('romanian deadlift').getByLabelText('Weight')).toBeValid()
 
     await user.clear(form.getByLabelText('Weight'))
+    expect(form.getByLabelText('Weight')).toBeValid()
+    // Clearing the only entered result leaves an untouched prescription, not
+    // an observation. A deliberate tick may still accept the suggested reps.
+    expect(logRoundButton(1)).toBeDisabled()
+    await user.click(form.getByRole('checkbox', { name: 'Performed' }))
     expect(logRoundButton(1)).toBeEnabled()
     expect(attempts).toEqual([])
   })

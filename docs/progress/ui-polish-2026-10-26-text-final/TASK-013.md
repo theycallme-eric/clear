@@ -83,7 +83,7 @@ null. Shared rest and the global session clock are kept.
   - Defaulting every movement to performed failed 5 of 11 focused cases.
   - Starting rest only when both movements logged failed 1 of 11.
 
-## Verification
+## Initial worker verification
 
 | Command | Result |
 | --- | --- |
@@ -96,22 +96,46 @@ null. Shared rest and the global session clock are kept.
 | `npm run gen:types -- --check` | pass, types current |
 | `python3 scripts/gen-issues.py --check` | pass (71 requirements, 136 edges) |
 
-## Blocker: runtime-source-bound audit evidence
+## Initial verification stop: runtime-source-bound audit evidence
 
 This is the same blocker as TASK-006/007/009/011/012. Any runtime change in `src/` changes the
-runtime-source hash, which is now `4148cde3a3523e30be43bd10921980ecf43198cd807f86dd3d86b107354ba1cf` for this uncommitted tree.
+runtime-source hash, which was `4148cde3a3523e30be43bd10921980ecf43198cd807f86dd3d86b107354ba1cf` for the initial candidate.
 The TASK-034 format-preview AFTER records and `docs/design/CLEAR-0.14.3-FINAL-AUDIT.md` must name
 that hash. Refreshing them requires committing the tree and genuinely re-capturing the four-skin
 mobile format-preview group against a disposable authenticated backend. This worker cannot do that.
 No record, hash or audit text was edited, because that would fabricate evidence.
 
-## Next safe action
+## Controller review and recovery
 
-Controller:
-1. Review the decisions above.
-2. Commit the tree.
-3. Re-capture the format-preview group the way TASK-009/011/012 did, and update the audit from
-   those artifacts.
-4. Rerun the full verification set.
+The initial candidate is preserved in `5fea95442574c387b49bd8ef35d73f0ba0351edc`.
+Native run `cab8b212-f843-4c94-8030-16cc4c46e43e`, attempt 1 of 2, retains its history.
+No new coding-model attempt, Runner change or counter reset was used.
+
+Independent review found and corrected four concrete defects before publication:
+
+- Clearing a suggestion, the last entered measurement or an effort answer could implicitly
+  identify an unmeasured movement. Entry intent now distinguishes supplied results from an
+  explicit Performed tick. Clearing alone never creates an observation; deliberate unmeasured
+  logging still works, and unticking excludes a movement without losing its draft.
+- Advancing the pair after only one result reset the untouched partner's countdown. Clock identity
+  now follows the owning movement's highest explicitly recorded set number plus one. Missing round
+  gaps remain missing, and prescription sequence indexing remains by set number rather than
+  observation count. Real-route tests cover both ordinary progression and a gapped three-rung case.
+- Grouped correction Minimize, Cancel and Save lost keyboard focus after removing the individual
+  Log set button. They now return to the real Edit trigger; clearing that row returns to Log round.
+- An excluded invalid numeric draft could block its selected partner through native form
+  validation. Excluded grouped fields remain editable but are detached from the round form.
+  Selected fields and ordinary set/correction forms retain native and custom validation.
+  A disposable Chromium check reproduced native badInput blocking even after min was removed;
+  form ownership fixes that case too. Route tests verify ownership and actual independent saving.
+
+The final focused repair set passed **141 tests across 10 files**, including all **17**
+`superset-logging` cases. Typecheck, design-system lint and diff checks passed.
+Initial failed regression runs were corrected without weakening selected-entry validation.
+
+The root controller reviewed the source changes and retained the existing ownership guard and
+design-system/vendor/workflow/schema boundaries. The live-session form gallery exemption follows
+the existing SetLoggingSheet/ExerciseSetLogger exemptions; the gallery check itself is unchanged.
+Next is a genuine capture of the committed repaired source and same-attempt native verification.
 
 Deployed and physical-iPhone behaviour are not inferred.

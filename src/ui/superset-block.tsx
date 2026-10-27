@@ -144,6 +144,7 @@ function SupersetRound({ block }: BlockRendererProps) {
                 restSeconds={null}
                 // REQ-016: entered together, by the block's one action.
                 logging={{ round }}
+                onReturnToRound={() => logButton.current?.focus()}
               />
             </BlockPanel.MovementItem>
           ))}
