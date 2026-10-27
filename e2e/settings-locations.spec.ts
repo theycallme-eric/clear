@@ -223,7 +223,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
     const back = header.getByRole('button', { name: 'Back', exact: true })
     const at = async (path: string, heading: string) => {
       await expect(page).toHaveURL((url) => url.pathname === path)
-      await expect(page.locator('main h1')).toHaveAccessibleName(heading)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(heading)
     }
 
     // ENTRY-017, U18: Home's header is the wordmark and one framed glyph that
@@ -315,10 +315,10 @@ test.describe('settings locations — live CRUD and generation default', () => {
       )
       const pwa = await context.newPage()
       await pwa.goto('/settings')
-      await expect(pwa.locator('main h1')).toHaveAccessibleName('Settings')
+      await expect(pwa.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
       await pwa.locator('header').getByRole('button', { name: 'Back', exact: true }).click()
       await expect(pwa).toHaveURL((url) => url.pathname === '/')
-      await expect(pwa.locator('main h1')).toHaveAccessibleName('Today')
+      await expect(pwa.getByRole('heading', { level: 1 })).toHaveAccessibleName('Today')
 
       // Home replaced Settings rather than stacking on it: the window's own
       // back has nowhere in the app to go and nothing re-opens Settings.
@@ -338,13 +338,13 @@ test.describe('settings locations — live CRUD and generation default', () => {
     await visit('/')
     await page.getByRole('button', { name: 'Settings', exact: true }).click()
     await expect(page).toHaveURL(/\/settings$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
 
     // Settings offers this as a TextAction, whose drawn chevron is part of the
     // name a browser computes, so the name is matched rather than equalled.
     await page.getByRole('button', { name: 'Manage places' }).click()
     await expect(page).toHaveURL(/\/settings\/locations$/)
-    await expect(page.locator('main h1')).toHaveAccessibleName('Places and equipment')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Places and equipment')
     await expect(page.getByRole('heading', { name: originalName })).toBeVisible()
     await checkA11y()
     await expectCards(page, [originalName])
@@ -459,7 +459,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
 
     // A fresh document proves these are database answers, not optimistic cache.
     await page.reload()
-    await expect(page.locator('main h1')).toHaveAccessibleName('Places and equipment')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Places and equipment')
     const reloaded = page.locator('.clr-card').filter({
       has: page.getByRole('heading', { name: renamedName, exact: true }),
     })
@@ -583,7 +583,7 @@ test.describe('settings locations — live CRUD and generation default', () => {
 
     // A fresh document reads the equipment that was never replaced.
     await page.reload()
-    await expect(page.locator('main h1')).toHaveAccessibleName('Places and equipment')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Places and equipment')
     await card.getByRole('button', { name: 'Edit', exact: true }).click()
     await expect(page.getByRole('checkbox', { name: 'Dumbbells', exact: true })).toBeChecked()
     await checkA11y()
@@ -788,7 +788,7 @@ test.describe('U09 — checkbox activation on the phone', () => {
     await expect(page.getByRole('button', { name: 'Save place', exact: true })).toHaveCount(0)
 
     await page.reload()
-    await expect(page.locator('main h1')).toHaveAccessibleName('Places and equipment')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Places and equipment')
     expect(await checkedNames(await editPlace()), 'the reload reads the saved set').toEqual(expected)
   })
 
@@ -825,7 +825,7 @@ test.describe('U09 — checkbox activation on the phone', () => {
     )
 
     await page.reload()
-    await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
     await expect(group.getByRole('checkbox', { name: 'Pulling', exact: true })).toBeChecked()
     expect(await checkedNames(group), 'the reload reads the saved set').toEqual(expected)
   })

@@ -48,9 +48,9 @@ async function settingsReadiness(page: Page) {
 }
 
 async function waitForSettingsLayout(page: Page) {
-  // visit() first sees any visible main heading, including BootSequence's.
+  // visit() first sees any visible page heading, including BootSequence's.
   // Wait for the actual route before measuring it or invoking the Axe scan.
-  await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
   await page.evaluate(async () => { await document.fonts.ready })
   await expect.poll(async () => {
     const before = await settingsReadiness(page)
@@ -86,7 +86,7 @@ const test = base.extend<{ recordEvidence: (evidence: PendingEvidence) => void }
     await use((evidence) => { pending = evidence })
     // Failed/skipped/aborted cases never become passing committed evidence.
     if (info.status !== 'passed' || pending === undefined) return
-    await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
     await info.attach('task034-format-preview-evidence.json', { body: JSON.stringify(pending.record, null, 2), contentType: 'application/json' })
     // Recording is an explicit one-time operator action, not a side effect of
     // every future trusted E2E run. All browser assertions/captures still run.
@@ -136,7 +136,7 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       expect(authenticatedSession.journey.verificationRequests).toBe(1)
       expect(authenticatedSession.journey.generationRequests).toBe(0)
       await visit('/settings')
-      await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
       // TextAction's CSS-generated chevron is included in Chromium's name.
       const previewEntry = page.getByRole('button', { name: /^Preview formats(?:\s*›)?$/ })
       await expect(previewEntry).toHaveCount(1)
@@ -151,7 +151,7 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       const storageBefore = await storageHash()
       await previewEntry.click()
       await expect(page).toHaveURL((url) => url.pathname === FORMAT_ROUTE)
-      await expect(page.locator('main h1')).toHaveAccessibleName(FORMAT_TITLE)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(FORMAT_TITLE)
       await expect(page.getByText(FORMAT_NOTE, { exact: true })).toBeVisible()
       await checkA11y()
       const preview = page.locator('[data-format-preview]')
@@ -194,7 +194,10 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
         await scroller.evaluate((element) => element.scrollTo({ top: 0, left: 0, behavior: 'instant' }))
         await expect.poll(() => scroller.evaluate((element) => [element.scrollTop, element.scrollLeft])).toEqual([0, 0])
         await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
-        await expect(page.locator('main h1')).toBeInViewport({ ratio: 1 })
+        const pageHeading = page.getByRole('heading', { level: 1 })
+        await expect(pageHeading).toHaveCount(1)
+        await expect(pageHeading).toHaveAccessibleName(FORMAT_TITLE)
+        await expect(pageHeading).toBeInViewport({ ratio: 1 })
         const reached = await driver.observe(target)
         verifyReached(target, reached)
         await expect.poll(async () => (await driver.motion()).settled).toBe(true)
@@ -202,13 +205,20 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
         expect(motion).toEqual({ reducedMotion: true, running: [], settled: true })
         const layout = await page.evaluate(() => {
           const surface = document.querySelector<HTMLElement>('main .clr-scroll-region__scroller')!
-          const heading = document.querySelector('main h1')!.getBoundingClientRect()
-          const region = surface.getBoundingClientRect()
+          // REQ-001 pins the page title in the sibling header. Its visibility
+          // is independent of the inner scroller's proven zero offset above.
+          const headingElement = document.querySelector('h1')!
+          const heading = headingElement.getBoundingClientRect()
+          const header = headingElement.closest('header')!.getBoundingClientRect()
           return {
             noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
             documentHeight: Math.max(window.innerHeight, document.documentElement.scrollHeight, document.body.scrollHeight),
             scrollTop: surface.scrollTop, scrollLeft: surface.scrollLeft,
-            headingVisibleAtCapture: heading.top >= region.top && heading.bottom <= Math.min(region.bottom, window.innerHeight),
+            headingVisibleAtCapture: heading.width > 0 && heading.height > 0
+              && heading.left >= Math.max(header.left, 0)
+              && heading.right <= Math.min(header.right, window.innerWidth)
+              && heading.top >= Math.max(header.top, 0)
+              && heading.bottom <= Math.min(header.bottom, window.innerHeight),
           }
         })
         expect(layout.noHorizontalOverflow).toBe(true)
@@ -226,14 +236,14 @@ test.describe('TASK-034 introduced format-preview route — real AFTER evidence'
       }
       await page.getByRole('button', { name: 'Settings', exact: true }).click()
       await expect(page).toHaveURL((url) => url.pathname === '/settings')
-      await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
       await checkA11y()
       // Real direct navigation clears React Router's arrival state; Back must replace with Settings.
       await visit(FORMAT_ROUTE)
-      await expect(page.locator('main h1')).toHaveAccessibleName(FORMAT_TITLE)
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(FORMAT_TITLE)
       await page.getByRole('button', { name: 'Settings', exact: true }).click()
       await expect(page).toHaveURL((url) => url.pathname === '/settings')
-      await expect(page.locator('main h1')).toHaveAccessibleName('Settings')
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')
       await checkA11y()
       expect(await storageHash(), 'preview controls and both Back paths leave athlete storage unchanged').toBe(storageBefore)
       expect(generationRequests).toBe(0)

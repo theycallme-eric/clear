@@ -51,9 +51,7 @@ import type { OtpError } from '../data/otp'
 import { isCodeLike, isEmailLike, otpError } from '../data/otp'
 import {
   AlertCircle,
-  AppHeader,
   Button,
-  ClearLogo,
   Input,
   TextAction,
 } from '../design-system/index'
@@ -202,11 +200,9 @@ function LoginScreen() {
 
   return (
     <>
-      <AppHeader>
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title={LOGIN_TITLE}
+        header={{}}
         pinnedFoot={
           <PhoneFooter>
             <ActionRow>

@@ -589,7 +589,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // Refreshed inside round 4: restored from the stored start, not restarted.
   await page.clock.resume()
   await page.reload()
-  await expect(page.locator('main h1')).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await page.clock.pauseAt(scheduleStart + 240_000)
   await expect(page.getByText('ROUND 4 OF 4', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Start schedule', exact: true })).toHaveCount(0)
@@ -650,7 +650,7 @@ test('JOURNEY-029: timed ladders show precomputed rounds, keep free-paced progre
   // JOURNEY-029's destination: the next section, then Summary.
   await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/summary', { timeout: 30_000 })
-  await expect(page.locator('main h1')).toHaveAccessibleName('Nice work', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work', { timeout: 30_000 })
   await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
   await checkA11y()
 

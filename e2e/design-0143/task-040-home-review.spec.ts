@@ -44,7 +44,7 @@ const loading = (state: string): Key => ({ screen: 'Loading', route: null, state
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const pathname = (page: Page) => new URL(page.url()).pathname
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 const text = (page: Page, value: string | RegExp) =>
   expect(page.locator('main').getByText(value, { exact: typeof value === 'string' }).first()).toBeVisible()
 const alert = (page: Page, title: string) => page.locator('main').getByRole('alert').filter({ hasText: title })
@@ -692,7 +692,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       await save.transition(review('regenerating-cancel'), '/review', '/review', 'Nothing to review', async () => {
         await expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeEnabled()
         await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toHaveCount(0)
-        await expect(page.locator('main h1')).not.toHaveAccessibleName(original)
+        await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName(original)
       })
       held = deferred()
       await enter()
@@ -706,7 +706,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       await save.transition(loading('success-review'), '/review', '/review', replacement, async () => {
         await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeEnabled()
         await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0)
-        await expect(page.locator('main h1')).not.toHaveAccessibleName(original)
+        await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName(original)
       })
       expect(localPosts).toBe(2)
       save.disposition(loading('success-review'),

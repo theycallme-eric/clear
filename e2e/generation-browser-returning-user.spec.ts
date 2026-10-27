@@ -299,7 +299,7 @@ test.describe('critical browser lane: a returning user with the owner’s saved 
         (url) => url.pathname === path,
         { timeout: 30_000 },
       )
-      await expect(page.locator('main h1'), `${screen}'s heading`).toHaveAccessibleName(heading, {
+      await expect(page.getByRole('heading', { level: 1 }), `${screen}'s heading`).toHaveAccessibleName(heading, {
         timeout: 30_000,
       })
       await checkA11y()
@@ -401,7 +401,7 @@ test.describe('critical browser lane: a returning user with the owner’s saved 
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
 
     // ── Loading (transient, in place of Generate) ──────────────────────────
-    await expect(page.locator('main h1'), 'the Loading screen').toHaveAccessibleName(
+    await expect(page.getByRole('heading', { level: 1 }), 'the Loading screen').toHaveAccessibleName(
       'Generating session',
     )
     await expect(page).toHaveURL((url) => url.pathname === routeOf('Generate'))

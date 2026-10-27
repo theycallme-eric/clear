@@ -33,7 +33,7 @@ const CORS = {
 const REST = '**/rest/v1/**'
 const SESSION_KEY = 'clear.auth.session'
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-const heading = (page: Page, name: string) => expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+const heading = (page: Page, name: string) => expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 const pathname = (page: Page) => new URL(page.url()).pathname
 const visibleText = (page: Page, text: string | RegExp) =>
   expect(page.getByText(text, { exact: typeof text === 'string' }).first()).toBeVisible()

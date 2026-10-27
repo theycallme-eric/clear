@@ -99,7 +99,7 @@ export function playwrightCaptureDriver(
 
   return {
     async observe(target) {
-      const heading = page.locator('main h1')
+      const heading = page.getByRole('heading', { level: 1 })
       await settled(expect(page).toHaveURL((url) => url.pathname === target.path, { timeout: options.timeoutMs ?? 30_000 }))
       const named = await settled(
         expect(heading).toHaveAccessibleName(target.heading, { timeout: options.timeoutMs ?? 30_000 }),

@@ -53,7 +53,7 @@ const SESSION_KEY = 'clear.auth.session'
 const TITLE = 'TASK-036 lifecycle spectrum'
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 
 function deferred() {
   let release!: () => void

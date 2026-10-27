@@ -23,7 +23,7 @@ test.use({ reducedMotion: 'reduce' })
 
 /** Elements that carry the screen's content, and are therefore never blank. */
 const CONTENT =
-  'main h1, main p, main a, main form, main button, main input, main .clr-boot > *'
+  'h1, main p, main a, main form, main button, main input, main .clr-boot > *'
 
 for (const screen of SCREENS) {
   test(`${screen.path} renders its final state immediately`, async ({

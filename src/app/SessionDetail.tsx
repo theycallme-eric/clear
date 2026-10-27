@@ -31,10 +31,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import {
   AlertCircle,
-  AppHeader,
   ArrowLeft,
   Button,
-  ClearLogo,
   Info,
   Play,
 } from '../design-system/index'
@@ -130,18 +128,16 @@ export function SessionDetail() {
 
   return (
     <>
-      <AppHeader
-        actions={
-          <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
-            {SESSION_DETAIL_BACK_LABEL}
-          </Button>
-        }
-      >
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title={SESSION_DETAIL_TITLE}
         heading={view?.title}
+        header={{
+          actions: (
+            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
+              {SESSION_DETAIL_BACK_LABEL}
+            </Button>
+          ),
+        }}
         pinnedFoot={
           query.state.status === 'error' ? (
             <SessionDetailErrorAction

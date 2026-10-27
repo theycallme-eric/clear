@@ -60,11 +60,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   AlertCircle,
-  AppHeader,
   ArrowLeft,
   Button,
   Chip,
-  ClearLogo,
   EmptyState,
   FormField,
   Input,
@@ -132,7 +130,7 @@ import { DeloadBanner } from '../ui/deload-banner'
 import { Select } from '../ui/select'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
-import { Screen } from './Screen'
+import { Screen, type ScreenHeader } from './Screen'
 
 type Places = readonly Location[]
 
@@ -289,24 +287,24 @@ export function Generate() {
   // GEN-05's screen has no route of its own: while a run this screen started is
   // in flight — or has failed and is being answered — the shared host makes it
   // the screen, and cancelling puts the form back where the user left it.
+  const header: ScreenHeader = {
+    actions: (
+      <Button
+        variant="quiet"
+        icon={<ArrowLeft size={20} />}
+        onClick={() => void navigate('/')}
+      >
+        Home
+      </Button>
+    ),
+  }
+
   return (
     <GenerationLoadingHost generation={generation} cancelTo={cancelTo}>
-      <AppHeader
-        actions={
-          <Button
-            variant="quiet"
-            icon={<ArrowLeft size={20} />}
-            onClick={() => void navigate('/')}
-          >
-            Home
-          </Button>
-        }
-      >
-        <ClearLogo size="md" />
-      </AppHeader>
       {needsSettings ? (
         <Screen
           title="Generate workout"
+          header={header}
           pinnedFoot={
             <PhoneFooter>
               <ActionRow>
@@ -327,7 +325,7 @@ export function Generate() {
           />
         </Screen>
       ) : state.status === 'loading' ? (
-        <Screen title="Generate workout">
+        <Screen title="Generate workout" header={header}>
           <LoadingView
             label={profileSettled ? 'Reading your places' : 'Reading your profile'}
           />
@@ -335,6 +333,7 @@ export function Generate() {
       ) : state.status === 'error' ? (
         <Screen
           title="Generate workout"
+          header={header}
           pinnedFoot={
             <PhoneFooter>
               <ActionRow>
@@ -356,6 +355,7 @@ export function Generate() {
       ) : state.status === 'empty' ? (
         <Screen
           title="Generate workout"
+          header={header}
           pinnedFoot={
             <PhoneFooter>
               <ActionRow>
@@ -374,6 +374,7 @@ export function Generate() {
         </Screen>
       ) : (
         <GenerateForm
+          header={header}
           goalPreset={state.data.goalPreset}
           places={state.data.places}
           generation={generation}
@@ -386,12 +387,14 @@ export function Generate() {
 }
 
 function GenerateForm({
+  header,
   goalPreset,
   places,
   generation,
   composition,
   onCompose,
 }: {
+  header: ScreenHeader
   goalPreset: GoalPreset | null
   places: Places
   generation: GenerationMutation
@@ -557,6 +560,7 @@ function GenerateForm({
     <>
       <Screen
         title="Generate workout"
+        header={header}
         pinnedFoot={
           <PhoneFooter>
             <ActionRow>

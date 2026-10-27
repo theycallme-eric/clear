@@ -484,7 +484,7 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
   // recorded round is still the only one.
   await page.clock.resume()
   await page.reload()
-  await expect(page.locator('main h1')).toHaveAccessibleName('Workout', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout', { timeout: 30_000 })
   await page.clock.pauseAt(restStart + 20_000)
   await expect(record).toHaveText('1 of 3 rounds recorded')
   await expect(timer).toContainText('00:10')
@@ -517,7 +517,7 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
   // Last section, then Summary.
   await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/summary', { timeout: 30_000 })
-  await expect(page.locator('main h1')).toHaveAccessibleName('Nice work', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work', { timeout: 30_000 })
   await expect(page.getByText(`${TITLE}, done.`, { exact: true })).toBeVisible()
   await checkA11y()
 
@@ -550,7 +550,7 @@ test('JOURNEY-025: an untouched circuit saves with no inferred rounds and skippi
   await expect(page.getByRole('list', { name: 'Movements in this circuit', exact: true })).toHaveCount(0)
   await page.getByRole('button', { name: 'Finish workout', exact: true }).click()
   await expect(page).toHaveURL((url) => url.pathname === '/summary', { timeout: 30_000 })
-  await expect(page.locator('main h1')).toHaveAccessibleName('Nice work', { timeout: 30_000 })
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Nice work', { timeout: 30_000 })
 
   const circuitRows = (await world.blockResults()).filter((row) => row.block_id === world.circuitBlockId)
   expect(circuitRows).toHaveLength(1)

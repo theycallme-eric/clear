@@ -19,7 +19,7 @@ for (const screen of SCREENS) {
 
     await expect(page).toHaveTitle(screen.title)
 
-    // CORE-05: exactly one `<h1>`, inside the one `<main>`, and it names the
+    // CORE-05: exactly one `<h1>`, in the page header or main, and it names the
     // screen. The outline cannot be checked by axe — it has no opinion about
     // how many `<h1>`s is right — so it is checked here. The name rather than
     // the text, because a wordmark heading's visible glyphs are decoration and
@@ -76,7 +76,7 @@ test('welcome groups one card under the wordmark, holds its one entry, and auth 
       document.querySelector(selector)?.getBoundingClientRect().top ?? -1
     const action = document.querySelector('main .clr-card button')
     return {
-      heading: top('main h1'),
+      heading: top('h1'),
       card: top('main .clr-card'),
       actionBottom: action?.getBoundingClientRect().bottom ?? -1,
       viewport: window.innerHeight,

@@ -51,7 +51,9 @@ src/app/router.tsx → RootLayout → AppChrome → screens`. The CORE-04 bounda
 the DS-06 atmosphere once and sets `data-atmosphere` from `src/app/atmosphere.ts`; a screen never
 mounts an atmosphere of its own. `AppChrome` owns the skip link, route-change focus, and polite route
 announcer. Every screen renders inside the `Screen` primitive, which owns the `<main>` landmark, the
-single `<h1>`, and the document title (CORE-05). Data-driven views use the shared four-state contract
+single `<h1>`, and the document title (CORE-05). A screen with a fixed header passes its slots as
+`Screen`'s `header`; the `<h1>` is then that header's title in place of a logo (REQ-001), and the page
+gutter in `src/styles/shell.css` is the header's own inset. Data-driven views use the shared four-state contract
 (`src/state/view-state.ts` + `src/ui/view-state.tsx`, documented in
 `docs/conventions/state-contract.md`). Every database call in `src/` now goes through one place:
 `src/data/supabase.ts` (DATA-03) holds the PostgREST transport and is typed entirely by
