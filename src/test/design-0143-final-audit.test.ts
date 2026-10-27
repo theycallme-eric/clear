@@ -309,12 +309,12 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
     // This is source continuity only; it never certifies merge approval or ACK.
     assertCaptureSourceLineage(root, {
       repository: 'theycallme-eric/clear',
-      taskId: 'TASK-001',
-      taskRevision: 'e5be584cb84251a6a4cc8af316a82e6cfd65636d6b51525cd2076aa6d55f3be0:TASK-001',
-      runId: '583168ae-c383-4e0f-9633-ef21cdfc9f13',
+      taskId: 'TASK-005',
+      taskRevision: 'e5be584cb84251a6a4cc8af316a82e6cfd65636d6b51525cd2076aa6d55f3be0:TASK-005',
+      runId: 'dbb410b7-c75b-4517-8c0d-23eefbfc941a',
       // Source-only native retained input; delivery remains independently gated.
       attempt: 1,
-      testedBase: 'a0e2374f91f0250fa343aa373f079b0eaa2b8c63',
+      testedBase: '3a4c28168a834cb6f252d57239e39cd88969a18c',
       groupPath: FORMAT_EVIDENCE_DIR,
       capturedSourceCommits: records.map((record) => record.identity.applicationCommit!),
     })

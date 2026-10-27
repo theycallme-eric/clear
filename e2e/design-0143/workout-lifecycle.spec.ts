@@ -922,7 +922,7 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
     // The primary action is pinned below the scroller, not inside it.
     expect(await start.evaluate((el) => el.closest('.clr-scroll-region__foot') !== null &&
       el.closest('.clr-scroll-region__scroller') === null)).toBe(true)
-    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start and Regenerate pinned in the footer.', probe)
+    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', probe)
   }, { skins: true, short: start })
 
   // The quiet action: public TextAction, chevron, 40px, button semantics, keyboard focus.

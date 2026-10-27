@@ -234,14 +234,19 @@ describe('all generated content renders', () => {
       expect(card.querySelector('.clr-collapsible__trigger')).not.toBeNull()
     }
     expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
-    // Nothing but the title is left on the atmosphere.
+    // Nothing but the title is left on the atmosphere — and, after the last
+    // section, the Regenerate action that closes the content (REQ-006).
     const stack = cards[0].closest('.clr-stack')!
-    expect([...stack.children].every((child) => child.querySelector('.clr-card') !== null)).toBe(
+    const children = [...stack.children]
+    const closing = children.pop()!
+    expect(closing).toHaveClass('clr-actions')
+    expect(within(closing as HTMLElement).getByRole('button', { name: REGENERATE_LABEL })).toBeInTheDocument()
+    expect(children.every((child) => child.querySelector('.clr-card') !== null)).toBe(
       true,
     )
   })
 
-  it('keeps both decisions at the measured edge, primary over secondary', async () => {
+  it('pins Start at the measured edge and closes the content with Regenerate', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
@@ -250,18 +255,21 @@ describe('all generated content renders', () => {
     expect(footer.closest('.clr-card')).toBeNull()
 
     const start = within(footer).getByRole('button', { name: START_LABEL })
-    const regenerate = within(footer).getByRole('button', { name: REGENERATE_LABEL })
     expect(start).toHaveClass('clr-btn--primary')
+    // REQ-006: the footer holds Start alone; Regenerate is read after the
+    // workout, at the end of the scrolling content.
+    expect(within(footer).getAllByRole('button')).toEqual([start])
+    const regenerate = within(screen.getByRole('region', { name: 'Review content' })).getByRole(
+      'button',
+      { name: REGENERATE_LABEL },
+    )
     // Secondary is the framed button with no variant modifier.
     expect(regenerate).toHaveClass('clr-btn', 'clr-chamfer')
     expect(regenerate).not.toHaveClass('clr-btn--primary')
     expect(regenerate).not.toHaveClass('clr-btn--quiet')
-    // Discarding is confirmed and irreversible, so it is never a text action,
-    // and the footer holds exactly these two.
+    // Discarding is confirmed and irreversible, so it is never a text action.
     expect(regenerate).not.toHaveClass('clr-text-action')
-    expect(within(footer).getAllByRole('button')).toHaveLength(2)
-    expect(footer.querySelectorAll('.clr-btn--primary')).toHaveLength(1)
-    expect(start.closest('.clr-actions')).toBe(regenerate.closest('.clr-actions'))
+    expect(regenerate.closest('.clr-card')).toBeNull()
   })
 
   it('renders every section, in the order it will be performed, under its type’s label', async () => {
@@ -317,8 +325,8 @@ describe('all generated content renders', () => {
     const superset = screen.getByRole('list', { name: 'superset, 4 rounds' })
     const members = within(superset).getAllByRole('listitem')
     expect(members.map((item) => item.textContent)).toEqual([
-      expect.stringMatching(/^1\. bench press/),
-      expect.stringMatching(/^2\. bent over row/),
+      expect.stringMatching(/^01 bench press/),
+      expect.stringMatching(/^02 bent over row/),
     ])
     expect(screen.getByRole('list', { name: 'circuit, 3 rounds' })).toBeInTheDocument()
     for (const timed of ['emom', 'amrap', 'for time']) {
@@ -326,14 +334,15 @@ describe('all generated content renders', () => {
     }
   })
 
-  it('states the round count in the badge and the shared rest directly beside it', async () => {
+  it('states the round count in the badge, the one-round sequence, and the shared rest after it', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const group = screen.getByRole('list', { name: 'superset, 4 rounds' }).parentElement!
-    const [badge, rest] = [...group.children]
+    const [badge, sequence] = [...group.children]
     expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
-    expect(rest).toHaveTextContent('Rest 90s between rounds')
+    expect(sequence).toHaveTextContent('One round: 01 → 02')
+    expect(group.lastElementChild).toHaveTextContent('Rest 90s between rounds')
     expect(group.textContent?.match(/between rounds/g)).toHaveLength(1)
   })
 
@@ -459,11 +468,31 @@ describe('all generated content renders', () => {
     expect(briefingText()).toContain('2 × 45 sec each side')
   })
 
-  it('renders the block notes the composition carries', async () => {
-    renderReview()
+  it('preserves execution notes in standard, timed and grouped blocks', async () => {
+    const SPECTRUM = ACCEPTANCE.workout
+    const noted = makeSessionAcceptance({
+      ...ACCEPTANCE,
+      workout: {
+        ...SPECTRUM,
+        sections: SPECTRUM.sections.map((section) => ({
+          ...section,
+          blocks: section.blocks.map((block) =>
+            block.structure_type === 'emom'
+              ? { ...block, block_notes: 'Hips through on every rep.' }
+              : block.structure_type === 'standard' && block.rep_scheme === 'ladder_up'
+                ? { ...block, block_notes: 'Strict, no kip.' }
+                : block,
+          ),
+        })),
+      },
+    })
+    renderReview({ acceptance: noted })
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    expect(briefingText()).toContain('Build then come back down.')
+    const text = briefingText()
+    expect(text).toContain('Hips through on every rep.')
+    expect(text).toContain('Strict, no kip.')
+    expect(text).toContain('Build then come back down.')
   })
 
   it('keeps a collapsed section in the document, so nothing is removed by closing it', async () => {
@@ -519,6 +548,7 @@ describe('no generated overview or section introduction (REQ-010)', () => {
     expect(text).toContain('75% 1RM')
     expect(text).toContain('Rest 180s')
     expect(text).toContain('90s between rounds')
+    expect(text).toContain('One round: 01 → 02')
     expect(text).toContain('Build then come back down.')
   })
 
