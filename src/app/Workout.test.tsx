@@ -1721,6 +1721,7 @@ describe('Workout — the session’s one rest', () => {
       ]),
     })
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
+    await user.click(screen.getByRole('button', { name: 'Start round 1' }))
     await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
     advance(30)
     returnToForeground()

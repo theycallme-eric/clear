@@ -45,7 +45,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { AmrapState } from './amrap'
-import type { CircuitState } from './circuit'
+import type { CircuitState, RoundTiming } from './circuit'
 import type { EmomState } from './emom'
 import type { ForTimeState } from './for-time'
 
@@ -328,7 +328,25 @@ function isCircuitState(value: unknown): value is CircuitState {
     typeof record.position === 'number' &&
     Number.isInteger(record.position) &&
     record.position >= 1 &&
-    (record.restStartedAt === null || typeof record.restStartedAt === 'string')
+    (record.restStartedAt === null || typeof record.restStartedAt === 'string') &&
+    // REQ-017's round clock and history: absent in a record written before them.
+    (record.roundStartedAt === undefined ||
+      record.roundStartedAt === null ||
+      typeof record.roundStartedAt === 'string') &&
+    (record.history === undefined ||
+      (Array.isArray(record.history) && record.history.every(isRoundTiming)))
+  )
+}
+
+function isRoundTiming(value: unknown): value is RoundTiming {
+  if (typeof value !== 'object' || value === null) return false
+  const timing = value as Record<string, unknown>
+  return (
+    typeof timing.round === 'number' &&
+    Number.isInteger(timing.round) &&
+    timing.round >= 1 &&
+    typeof timing.startedAt === 'string' &&
+    typeof timing.endedAt === 'string'
   )
 }
 

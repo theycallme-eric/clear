@@ -12,7 +12,12 @@ import {
   circuitView,
   clampCircuitState,
   completedRounds,
+  endRest,
+  finishRound,
   isCircuitFinished,
+  roundDuration,
+  startRound,
+  takeBackRound,
   CIRCUIT_START,
   type CircuitShape,
   type CircuitState,
@@ -232,6 +237,53 @@ describe('the view the renderer draws', () => {
     expect(view.phase).toBe('finished')
     expect(view.round).toBe(2)
     expect(view.roundsCompleted).toBe(2)
+  })
+})
+
+describe('the round clock (REQ-017)', () => {
+  const at = (seconds: number) => REST_AT + seconds * 1000
+  const iso = (seconds: number) => new Date(at(seconds)).toISOString()
+
+  it('starts the first round’s clock on Start, once', () => {
+    const started = startRound(CIRCUIT_START, shape(), at(0))
+    expect(started.roundStartedAt).toBe(iso(0))
+    expect(startRound(started, shape(), at(9))).toBe(started)
+  })
+
+  it('keeps each finished round’s start and end, and starts the next clock when the rest ends', () => {
+    const one = finishRound(startRound(CIRCUIT_START, shape(), at(0)), shape(), at(75))
+    expect(one).toMatchObject({ round: 2, restStartedAt: iso(75), roundStartedAt: iso(135) })
+    expect(one.history).toEqual([{ round: 1, startedAt: iso(0), endedAt: iso(75) }])
+    expect(roundDuration(one.history![0]!)).toBe(75)
+
+    // Ended early, the next round's clock starts from that tap instead.
+    expect(endRest(one, shape(), at(90))).toMatchObject({ restStartedAt: null, roundStartedAt: iso(90) })
+  })
+
+  it('starts the next clock at once with no rest, and runs none after the last round', () => {
+    const noRest = shape({ rounds: 2, restSeconds: 0 })
+    const one = finishRound(startRound(CIRCUIT_START, noRest, at(0)), noRest, at(30))
+    expect(one.roundStartedAt).toBe(iso(30))
+    const done = finishRound(one, noRest, at(50))
+    expect(isCircuitFinished(done, noRest)).toBe(true)
+    expect(done.roundStartedAt).toBeNull()
+    expect(done.history?.map(roundDuration)).toEqual([30, 20])
+  })
+
+  it('takes a round back to the clock it was finished on', () => {
+    const one = finishRound(startRound(CIRCUIT_START, shape(), at(0)), shape(), at(75))
+    expect(takeBackRound(one, shape())).toEqual({
+      round: 1,
+      position: 1,
+      restStartedAt: null,
+      roundStartedAt: iso(0),
+      history: [],
+    })
+  })
+
+  it('carries the stored history and clock through a restore', () => {
+    const one = finishRound(startRound(CIRCUIT_START, shape(), at(0)), shape(), at(75))
+    expect(clampCircuitState(one, shape({ size: 1 }))).toEqual({ ...one, position: 1 })
   })
 })
 

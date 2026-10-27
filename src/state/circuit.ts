@@ -58,6 +58,25 @@ export interface CircuitState {
   readonly position: number
   /** When this round's shared rest began, ISO. Null when it is not resting. */
   readonly restStartedAt: string | null
+  /**
+   * When the current round's elapsed clock started, ISO (REQ-017). Null or
+   * absent when it has not been started. While a shared rest runs this is the
+   * moment the rest ends, so the next round's clock starts after the rest
+   * without a tap — and from the tap, if the rest is ended early.
+   */
+  readonly roundStartedAt?: string | null
+  /**
+   * Every finished round's own timing, in order. Kept whole: the screen shows
+   * only each round's elapsed duration, never the wall-clock times stored here.
+   */
+  readonly history?: readonly RoundTiming[]
+}
+
+/** One finished round: when its clock started and when it was finished, ISO. */
+export interface RoundTiming {
+  readonly round: number
+  readonly startedAt: string
+  readonly endedAt: string
 }
 
 export type CircuitPhase = 'work' | 'rest' | 'finished'
@@ -165,16 +184,115 @@ export function clampCircuitState(
     Math.max(1, shape.size),
   )
 
+  const finished = shape.rounds !== null && round > shape.rounds
+
   return {
     round,
     position,
     // A finished circuit is not resting, and neither is one whose block no
     // longer prescribes any rest to be in the middle of.
-    restStartedAt:
-      shape.restSeconds === 0 || (shape.rounds !== null && round > shape.rounds)
-        ? null
-        : state.restStartedAt,
+    restStartedAt: shape.restSeconds === 0 || finished ? null : state.restStartedAt,
+    // A finished circuit has no round running. The history is carried whole:
+    // a shortened block changes what is left to do, not what was done. A
+    // record written before the round clock existed stays without them.
+    ...(state.roundStartedAt === undefined
+      ? {}
+      : { roundStartedAt: finished ? null : state.roundStartedAt }),
+    ...(state.history === undefined ? {} : { history: state.history }),
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The round clock (REQ-017)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Starts the current round's elapsed clock: the circuit's initial Start, and
+ * the start of a round whose clock was never running. A clock already running
+ * is left alone, and so is a finished circuit.
+ */
+export function startRound(
+  state: CircuitState,
+  shape: CircuitShape,
+  now: number,
+): CircuitState {
+  if (shape.size === 0 || isCircuitFinished(state, shape)) return state
+  if ((state.roundStartedAt ?? null) !== null) return state
+  // Only offered once any rest is over; a spent rest is cleared with it.
+  return { ...state, restStartedAt: null, roundStartedAt: new Date(now).toISOString() }
+}
+
+/**
+ * Finishes the round the athlete is in, from wherever they are in it: the
+ * round is counted, its timing is kept in the history, and the shared rest is
+ * stamped if the block prescribes any. The next round's clock is set to start
+ * when that rest ends — at once when there is none, never after the last round.
+ */
+export function finishRound(
+  state: CircuitState,
+  shape: CircuitShape,
+  now: number,
+): CircuitState {
+  if (shape.size === 0 || isCircuitFinished(state, shape)) return state
+
+  const next = advanceCircuit(
+    { round: state.round, position: shape.size, restStartedAt: null },
+    shape,
+    now,
+  )
+  const startedAt = state.roundStartedAt ?? null
+  const history = state.history ?? []
+  const nextStart = isCircuitFinished(next, shape)
+    ? null
+    : new Date(now + (next.restStartedAt === null ? 0 : shape.restSeconds * 1000)).toISOString()
+
+  return {
+    ...next,
+    roundStartedAt: nextStart,
+    // A round whose clock never ran has no duration to keep, only its count.
+    history:
+      startedAt === null
+        ? history
+        : [...history, { round: state.round, startedAt, endedAt: new Date(now).toISOString() }],
+  }
+}
+
+/**
+ * Ends the shared rest early. The next round's clock starts from this tap
+ * rather than from the moment the rest would have run out.
+ */
+export function endRest(state: CircuitState, shape: CircuitShape, now: number): CircuitState {
+  if (state.restStartedAt === null || isCircuitFinished(state, shape)) return state
+  return { ...state, restStartedAt: null, roundStartedAt: new Date(now).toISOString() }
+}
+
+/**
+ * The last recorded round, un-recorded: a mistaken tap is corrected back to
+ * what was actually observed, and the rest it started goes with it. The round
+ * it re-opens resumes the clock it was finished on.
+ */
+export function takeBackRound(state: CircuitState, shape: CircuitShape): CircuitState {
+  const last = shape.rounds === null ? state.round : Math.min(state.round, shape.rounds + 1)
+  const round = Math.max(1, last - 1)
+  const history = state.history ?? []
+  const reopened = history.at(-1)
+  const resumed = reopened !== undefined && reopened.round === round ? reopened : null
+
+  return {
+    round,
+    position: 1,
+    restStartedAt: null,
+    roundStartedAt: resumed === null ? null : resumed.startedAt,
+    history: resumed === null ? history : history.slice(0, -1),
+  }
+}
+
+/** A finished round's elapsed duration, in whole seconds, never negative. */
+export function roundDuration(timing: RoundTiming): number {
+  const started = Date.parse(timing.startedAt)
+  const ended = Date.parse(timing.endedAt)
+  if (Number.isNaN(started) || Number.isNaN(ended)) return 0
+  return Math.max(0, Math.floor((ended - started) / 1000))
 }
 
 /** Everything the renderer draws, derived rather than stored. */
