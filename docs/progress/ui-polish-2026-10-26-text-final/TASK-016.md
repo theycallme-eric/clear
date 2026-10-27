@@ -153,3 +153,17 @@ phone geometry/keyboard/dismissal/focus cases and one explicit logged-set abando
 retention case. Its trusted fixture reads full actual rows; public preview implements only the
 needed schema-shaped insert/replay and abandon responses and makes no database-proof claim.
 The four original circuit/footer case bodies are unchanged. Actual browser execution is next.
+
+## First actual browser execution and correction
+
+Foreground44270 exited1 from clean source9e8757c: six of seven selected cases passed, including
+actual logged-set retention through an abandon failure and successful retry, both prior circuit
+journeys, both footer sizes, and the390×844 menu case. The320×568 menu panel extended2.078px
+past the left viewport edge: after the public header wrapped, its meta/action cluster started
+at the left rather than the right. A workout-scoped auto inline margin now aligns that cluster
+at the line end, preserving the safe side inset and right-aligned dropdown.
+
+The intended existing dialog case was not selected because the anchored grep did not match
+Playwright full titles. The next command uses its explicit dialog title and must select eight
+cases. Initial failure log/screenshots/traces are retained. No unit/model attempt or Runner
+policy was changed; actual corrected-source proof is pending.

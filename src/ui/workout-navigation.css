@@ -76,6 +76,12 @@
   flex-wrap: wrap;
 }
 
+/* Keep the public meta/action cluster at the end of its line after wrapping,
+   so the right-aligned menu panel stays inside the shell's safe side inset. */
+.clr-workout-header > :last-child {
+  margin-inline-start: auto;
+}
+
 /* REQ-019: the header's framed menu. The panel drops from the trigger's right
    edge over the content below it; `.clr-chamfer` paints an opaque ground, so
    nothing beneath shows through. */
