@@ -168,15 +168,38 @@ describe('one writer for exercise_set_logs (EXE-02)', () => {
     ])
   })
 
-  it('builds the row from one mapping, called from that same place', () => {
-    // Declared in `set-logging.ts`; *called* by the writer and by nobody else.
-    expect(filesMatching(/(?<!function )\bsetLogInsert\(/)).toEqual(['src/data/workout.ts'])
+  it('shares one row mapping between the legacy insert adapter and canonical mutation serializer', () => {
+    // The serializer constructs the exact durable payload. The legacy initial
+    // insert adapter remains for compatibility; neither is a second provider.
+    expect(filesMatching(/(?<!function )\bsetLogInsert\(/)).toEqual([
+      'src/data/workout.ts',
+      'src/state/set-observation-mutation.ts',
+    ])
   })
 
-  it('writes a set from one path', () => {
-    expect(filesMatching(/setLogs\.log\(/)).toEqual([
+  it('dispatches ordered mutations from only the durable provider', () => {
+    expect(filesMatching(/setLogs\.mutate\(/)).toEqual([
       'src/state/set-logging-provider.tsx',
     ])
+    // No renderer or runtime caller may bypass its persisted identity/order
+    // through the retained legacy initial-insert API or former raw mutators.
+    expect(filesMatching(/setLogs\.(?:log|correct|clear)\(/)).toEqual([])
+  })
+
+  it('calls the atomic mutation RPC from only the data adapter', () => {
+    expect(filesMatching(/\.rpc\(\s*['"]mutate_set_observation['"]/)).toEqual([
+      'src/data/workout.ts',
+    ])
+  })
+
+  it('retains only the legacy initial insert, with no direct correction/delete escape', () => {
+    const writer = read('src/data/workout.ts')
+    const tableAccess = /\.from\(\s*['"]exercise_set_logs['"]\s*\)/g
+    // Also rejects an aliased table client used later for UPDATE or DELETE:
+    // the sole direct table access must immediately perform this exact insert.
+    expect(writer.match(tableAccess)).toHaveLength(1)
+    expect(writer).toMatch(/\.from\(\s*['"]exercise_set_logs['"]\s*\)\s*\.insert\(setLogInsert\(entry\)\)/)
+    expect(filesMatching(/\.from\(\s*['"]exercise_set_logs['"]\s*\)\s*\.\s*(?:update|delete|upsert)\(/)).toEqual([])
   })
 
   it('provides the renderers’ seam from that same path', () => {

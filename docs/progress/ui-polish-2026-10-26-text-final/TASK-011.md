@@ -43,6 +43,12 @@ The five new value-retention UI cases passed; new-entry behavior is unchanged.
 | `npm run gen:types -- --check` | passed; 20 tables, 27 enums, 38 callable functions |
 | Schema/type/standing-RLS/lifecycle boundary check | 4 files, 45 tests passed |
 | Actual disposable PostgreSQL 17 mutation rehearsal | 43 checks passed; owned container and volume removed |
+| `npm run lint:ds` / `npm run lint` | passed; lint retained the existing 138 warnings, zero errors |
+| `npm run build` | passed; existing chunk-size advisory |
+| `python3 scripts/gen-issues.py --check` | passed; 71 requirements, 136 edges |
+| Fresh mobile format-preview capture | 4 cases / 8 phone screenshots passed, zero generation/writes |
+| `npm test -- design-0143-final-audit` | 38 passed against the genuinely collected current source |
+| Final integrated `npm test` | 223 files, 5,663 tests passed |
 
 The actual SQL rehearsal used the current additive migration
 `20261027000028_set_observation_mutations.sql`, SHA-256
@@ -65,6 +71,21 @@ after newer corrections or clear/re-entry. Generic conflicts and exercise/set sl
 confirm a save. Exact mutation IDs/payloads/revisions are persisted before dispatch and checked on
 acknowledgement; current heads are monotonic. Old queue entries retain numeric RPE/classification,
 including a never-sent rewrite and an already-dispatched lost-response replay.
+
+The first integrated full run found six compatibility failures: the old ownership guard expected
+`.log` rather than the new sole provider `.mutate` path; two historical migration allowlists needed
+migration28; the generated legal-state matrix and configuration dispositions needed its source entry.
+The ownership tests now assert the exact canonical serializer/data adapter callers, sole provider
+dispatch, sole RPC adapter and absence of raw correction/delete escapes. Existing generators changed
+only source inventories, with generation decisions/rules unchanged. The corrected full suite passed.
+
+Fresh source-bound evidence uses committed source `16d0bcc1bcbe5fab01b7cd2bac355946345682ec`, runtime
+`7dd41e99738b02542baf6d5e72ca3bb15a3e4a909f0ef50b3d0e6e2ccd2d100c`, and the real manifest/record/PNG
+payload `ca6fba1e470ddf04f7ea99c82a46b4e1d1f5e4f85c6579114698c92e56e326dc` in
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task011/`. It proves that route on the
+current source, without extending the claim to deployed or physical-iPhone behavior. Earlier groups
+remain unchanged. No implementation finding remains open; native exact-head checks and protected
+GitHub delivery are the next mandatory workflow steps.
 
 ## Historical initial worker implementation
 
@@ -131,7 +152,7 @@ The vendored design system is untouched.
 | `python3 scripts/gen-issues.py --check` | pass (71 requirements, 136 edges) |
 | `npm test` | **fail**: 2 of 5644, both in `src/test/design-0143-final-audit.test.ts` (blocker below) |
 
-## Blocker: runtime-source-bound audit evidence
+## Historical initial blocker: runtime-source-bound audit evidence (resolved above)
 
 This is the same blocker TASK-006 and TASK-007 hit. Any non-test `src/` change alters the runtime-source
 hash, and the format-preview AFTER records and the final audit must name the current hash. Refreshing
