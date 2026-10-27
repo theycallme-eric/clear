@@ -122,3 +122,18 @@ generation or preview writes were observed; no deployed/device claim. Full nativ
 pending; the source issue and PR are not delivered yet.
 
 The unchanged actual audit consumer independently passed all38 checks on the new group; its actual payload digest matches provenance. Owned local backend stop30113 returned exit0. Native full recovery remains the next gate.
+
+## Journey-test recovery correction
+
+First native recovery97465 failed only journey2; all source-bound audit failures were resolved.
+The test navigated Settings after waiting only for acceptance, before the asynchronous Start
+handoff/Workout navigation and focus-mode blocker had settled. The same helper and Review.start
+sequence exist at tested basea0e2374. The first focused correction (await complete Workout arrival)
+exposed the existing intentional blocker deterministically; it still failed rather than masking it.
+The final test now waits for actual Workout route/title, attempts Settings, asserts the existing
+Abandon workout? confirmation while still on Workout, confirms the synthetic session's abandon,
+and only then checks Settings Strength and all original no-profile-write assertions. Product
+behavior, timeouts and checks are unchanged; this strengthens the real journey. All7 focused
+journey tests passed in10546. The change is test-only and excluded by the existing runtime source
+hash/capture driver fingerprint, so genuine source649c02d captures remain current. Another native
+recovery is justified by this concrete test-flow correction; no model/attempt reset.
