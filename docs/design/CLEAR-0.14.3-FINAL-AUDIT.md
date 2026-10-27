@@ -1,8 +1,38 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-015 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-016 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task016/`: four mobile skin cases/eight normal-short
+phone captures passed the existing authenticated journey, Axe, route, layout, network and
+record/PNG/source checks. Captured source `858148b53c196cee83d3c8829a8472f67c2cf399`, runtime source
+`65f1fb93da00664a4b68ae76e6a8ae4566f73d833110a0800111cab276a7ceb4`, driver
+`c9fe10b47c8ae1178c2f867d0fe6ef805ab07ee8ddd1607441645753a791ac54`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend, reset with
+actual current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. The owned backend was stopped after capture; no hosted
+schema or other local stack was changed.
+
+This proves the current source-bound format-preview route. The same committed source separately
+passed all eight actual current mobile browser cases (22.4 s): both original circuit journeys,
+paired footer geometry on320×568 and390×844, menu geometry and keyboard/outside/Escape/cancel
+focus on both sizes, explicit logged-set retention through one failed abandon then confirmed
+retry to Home, and native dialog modal safety, animation, one-close counts and action layout.
+The logged observation retained its actual row values after the session became abandoned.
+Public preview's narrow intercepted fixture is labelled hermetic, never database proof; this
+local run used the actual owned backend. Eight focused unit cases and design lint also passed.
+TASK-018 retains its approved bounded synthetic integration smoke. No physical-iPhone, hosted
+schema/RLS, skipped-lane or deployed exact-head proof is inferred.
+
+Input provenance names actual native attempt1/a1, run `8df3e659-ac3b-4866-92d0-5900aaff949a`, retained
+branch `agent-runner/task-016-a1-8df3e659` and tested base `0724a4461c11cbd4481d5c90484fdec7a65f7f7e`.
+Actual manifest/record/PNG payload digest:
+`42426ba423d40dfe4e695275fd94ae2225cdd92545e46567831ef68836f09e7d`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-015 source-bound recapture — 27 October 2026
+
+Retained TASK-015 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task015/`: four mobile skin cases/eight normal-short
 phone captures passed the existing authenticated journey, Axe, route, layout, network and
 record/PNG/source checks. Captured source `d66240cd88e66493fd01795869f32fd647b56cb6`, runtime source

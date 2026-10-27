@@ -175,3 +175,20 @@ count0 from the first mounted dialog rather than the Abandon question it had jus
 Instrumentation now identifies that native question by its exact heading even after it leaves
 the accessibility tree; it still requires exactly1 then2 close events. Original failed log,
 trace and screenshot are retained. No product behavior or close-count assertion was weakened.
+
+## Actual final mobile proof
+
+Foreground55484 exited0: all8 selected current browser cases passed (22.4 s), with both phone
+menu/footer sizes, focus/cancel, actual explicit logged-set retention through failed abandon
+and confirmed retry, original circuit journeys, and native dialog close-count/safety behavior.
+Capture40135 exited0: four skin cases/eight PNGs (23.6 s) from the SAME clean source
+`858148b53c196cee83d3c8829a8472f67c2cf399`. Runtime `65f1fb93da00664a4b68ae76e6a8ae4566f73d833110a0800111cab276a7ceb4`;
+driver `c9fe10b47c8ae1178c2f867d0fe6ef805ab07ee8ddd1607441645753a791ac54`; actual payload
+`42426ba423d40dfe4e695275fd94ae2225cdd92545e46567831ef68836f09e7d`. Actual run/a1/base lineage provenance is retained.
+Format capture recorded zero generations/attempted writes/forwarded writes. Owned backend
+stop87442 collected exit0. All prior evidence groups and historical BEFORE collectors remain
+unchanged. Native full verification and protected delivery are pending the final evidence commit.
+
+Existing audit consumer12334 collected exit0: all38 checks passed. Diff checks confirm vendor,
+workflows, migrations, historical BEFORE collectors and prior tracked evidence groups unchanged.
+Next is native same-attempt full verification on the final evidence commit and protected delivery.
