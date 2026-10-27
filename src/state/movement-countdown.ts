@@ -17,6 +17,18 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { targetForSet, type PrescribedColumns } from './prescription'
+
+/** Timed targets keep the same fixed/range/sequence meaning in every renderer. */
+export function movementCountdownSeconds(prescription: PrescribedColumns, setNumber: number): number | null {
+  if (prescription.modality !== 'time') return null
+  const target = targetForSet(prescription, setNumber)
+  if (target === null) return null
+  if (target.kind === 'fixed') return target.value
+  if (target.kind === 'range') return target.min
+  return null
+}
+
 /** The final stretch, where the countdown crosses into the timer's low state. */
 export const COUNTDOWN_LOW_SECONDS = 5
 

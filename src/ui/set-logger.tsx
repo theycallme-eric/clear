@@ -61,6 +61,7 @@ import {
   targetForSet,
 } from '../state/prescription'
 import { incrementFor } from '../state/progression'
+import { movementCountdownSeconds } from '../state/movement-countdown'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import { equipmentName } from '../state/review'
 import {
@@ -100,6 +101,8 @@ export interface ExerciseSetLoggerProps {
    * untouched either way; this decides only who says it.
    */
   statesRest?: boolean
+  /** False when the containing movement already owns a stable countdown. */
+  showCountdown?: boolean
   /**
    * The rest a logged set of this movement is followed by (EXE-05), in
    * seconds. Omitted, it is the rest the movement states — its own
@@ -122,6 +125,7 @@ export function ExerciseSetLogger({
   exercise,
   ordinal,
   statesRest = true,
+  showCountdown = true,
   restSeconds,
   onCorrectSet,
 }: ExerciseSetLoggerProps) {
@@ -143,8 +147,7 @@ export function ExerciseSetLogger({
   const restAfterSet = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
-  const countdownSeconds =
-    prescription.modality === 'time' ? suggestedMeasure(prescription, setNumber) : null
+  const countdownSeconds = showCountdown ? movementCountdownSeconds(prescription, setNumber) : null
 
   // The entry being made. It outlives the sheet, so a collapse and a reopen
   // hand back exactly what was typed; it starts over only when the shell's set

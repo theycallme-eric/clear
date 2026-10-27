@@ -43,16 +43,18 @@ reduced motion, with no new flashing. Expiry records no result.
   - When paused, the frame keeps the low colour but shows no edge and no pulse. At expiry it shows
     `00:00`, "Countdown done" and a disabled Start. Nothing is logged.
 - `src/ui/set-logger.tsx`: when `modality === 'time'` with a fixed or range target, the card draws
-  `MovementCountdown`, after the rest note and before the saved rows. This applies in standard,
-  superset and circuit blocks. It is keyed by set number, so after Log set the next set gets its own
-  prescribed seconds. It lives on the card, not in the sheet, so opening or minimizing the sheet does
-  not move it.
+  `MovementCountdown`, after the rest note and before the saved rows in standard/superset blocks.
+  It is keyed by set number, so after Log set the next set gets its own prescribed seconds. It lives
+  on the card, not in the sheet. Circuit rows now own a stable countdown outside the optional logger
+  branch and suppress the logger's duplicate, so opening/hiding load entry cannot unmount that clock.
+  Both callers share the pure `movementCountdownSeconds` target resolver.
 - Gallery: `MovementCountdown` is framed in two states: standalone, and on a card.
   `TimerFrame` is exempted with its reason recorded.
 - EXC-03 bookkeeping: the ledger row and the production guard's reason now name `TimerFrame`
   (GlobalTimer + MovementCountdown). The guard is still pinned to the same single file.
-- Tests (new): `src/state/movement-countdown.test.ts` (5) and `src/app/movement-countdown.test.tsx`
-  (11). Both run through the real route tree on a synthetic double: no personal data, no backend.
+- Tests (new): `src/state/movement-countdown.test.ts` (5 pure clock checks) and
+  `src/app/movement-countdown.test.tsx` (11 real-route cases on a synthetic double). No personal
+  data or backend is used.
 - Nothing changed in GitHub or any external service. `src/design-system/` is untouched (empty diff).
 
 ## Failures and corrections
@@ -87,12 +89,14 @@ authenticated backend. This worker cannot do that. No record, hash or audit text
 that would fabricate evidence. Reverting the feature would turn the suite green but leave every
 acceptance criterion unmet.
 
-## Assumptions / open points
+## Baseline and lifecycle choices
 
 - "Preserve the screen-edge urgency cue": no such cue existed on the base. It is implemented as
   described above, narrowly scoped, with no new keyframe.
 - A per-movement countdown is drawn for every time-modality prescription that has a fixed or range
-  target. That includes circuit and superset movements. Sequence (ladder) targets get none.
+  target, including circuit and superset movements. `targetForSet` already resolves a valid sequence
+  rung to a fixed target, so time sequences are supported too. The initial statement excluding them
+  was a prose error; the real-route sequence regression confirms rearming only after explicit Log set.
 - The countdown is component state. Leaving the section or reloading resets it to ready. Nothing
   persists, and nothing is recorded.
 
@@ -100,3 +104,19 @@ acceptance criterion unmet.
 
 Controller: commit this tree, re-capture the format-preview group the way TASK-009/011 did, update
 the audit from those artifacts, then rerun the full verification set.
+
+## Operator ownership correction
+
+The initial native command is terminal: worker succeeded, 16 focused cases passed, and full
+verification failed the two source-bound audit checks. Candidate `14cab5d` preserves that original
+submission. Final review found a genuine gap in its circuit claim: `CircuitMovement` mounted the
+logger only while optional load entry was shown, so the countdown inside that logger was unavailable
+before opening logging and reset when logging was hidden. The clock is now at a fixed child position
+in its owning movement row independently of that toggle. Four new real-route circuit regressions
+passed: presence before load entry, same DOM timer/deadline through show/hide and sheet opening,
+pause/reset with no automatic result/round write, and valid time-sequence rearm after explicit Log set.
+Combined `npm test -- movement-countdown circuit-block set-logging-sheet` passed 82 tests in six files.
+Typecheck, design-system lint and diff checks passed. Independent root review confirmed the fixed
+React child position and the real same-DOM-node/deadline assertions. No implementation finding remains
+open; genuine source capture and native exact-head verification/delivery are next. This is TASK-012
+clock ownership, not a circuit-round engine change.
