@@ -209,7 +209,13 @@ export function ExerciseSetLogger({
           !correctable
             ? undefined
             : (set) => {
-              setCorrection(editDraft(set, prescription.modality))
+              // Reopening the row a minimised correction was opened on hands
+              // that correction back; any other row starts from its result.
+              setCorrection((current) =>
+                current !== null && current.key === editKey(set)
+                  ? current
+                  : editDraft(set, prescription.modality),
+              )
               sheet.setOpen(true)
             }
         }
