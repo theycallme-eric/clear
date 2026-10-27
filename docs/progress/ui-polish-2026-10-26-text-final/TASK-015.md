@@ -117,3 +117,12 @@ text was edited, because that would fabricate evidence.
 Next: commit the proof-ready tree, execute the circuit and footer cases, collect actual format
 proof, then use native same-attempt verification and protected build-branch delivery. Physical
 iPhone safe-area behavior is not inferred from jsdom or local Chromium.
+
+## Actual mobile verification — first execution
+
+Foreground47736 exited1: both original circuit journeys passed, both new viewport cases stopped
+on an incorrect assertion expecting the circuit countdown inside the set-rest sheet. Actual
+DOM and source confirm circuit rest is owned by the block independently of set rest. The new
+assertion now checks the single active circuit countdown without changing its owner or any
+product behavior. Failure traces/screenshots/log are preserved externally. Footer geometry in
+the expanded-sheet state remains pending actual execution.

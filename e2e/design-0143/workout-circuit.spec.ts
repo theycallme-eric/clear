@@ -689,7 +689,9 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
     const sheet = page.locator('[data-set-sheet-slot]')
     await expect(sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })).toBeVisible()
-    await expect(sheet.getByRole('timer', { name: 'Time remaining', exact: true })).toBeVisible()
+    // Circuit rest belongs to the block, independently of the set-rest sheet.
+    await expect(timer).toHaveCount(1)
+    await expect(timer).toContainText('00:30')
     await expectFooterPair(page, 'Next section')
     await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
     await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
