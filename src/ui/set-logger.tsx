@@ -15,9 +15,16 @@
  * fills in is reps, seconds or a distance in its own unit. No string is parsed
  * anywhere in this file, because there is no string to parse.
  *
+ * The card's hierarchy is fixed (REQ-008): the movement heading with its
+ * subordinate `Set X/Y` counter, the prescription and equipment, the compact
+ * saved results with their Edit controls, the explicit Log set action, then the
+ * coaching disclosure. The fields are not on the card at all: Log set opens
+ * the shared half-sheet (`set-logging-sheet.tsx`, REQ-009), and the draft it
+ * edits lives here, so collapsing the sheet loses nothing.
+ *
  * It is drawn with the shared block frame's parts (`block-renderers-frame.tsx`)
- * — a movement, its notes and a field row — and with no frame of its own: the
- * block it sits in is the card, so composing it can never nest one.
+ * and with no frame of its own: the block it sits in is the card, so composing
+ * it can never nest one.
  *
  * Two smaller rules the spec is explicit about, both visible here:
  *   · rest is never rendered as `Rest: 0s` — no rest is no line
@@ -29,7 +36,7 @@
  * the durable queue is drawn — the user performed it — but never as though the
  * database had it, and the difference is a word and a glyph before it is a hue.
  */
-import { useState, type ReactNode } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 
 import type { Enums } from '../data/database.types'
 
@@ -38,19 +45,22 @@ import {
   Button,
   CircleCheck,
   Input,
+  Pencil,
   RefreshCw,
 } from '../design-system/index'
 import {
   exerciseName,
   modalityLabel,
+  type PrescribedColumns,
   type PrescribedModality,
   prescribedSetCount,
   prescriptionText,
   restText,
   targetForSet,
-  targetText,
 } from '../state/prescription'
+import { incrementFor } from '../state/progression'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
+import { equipmentName } from '../state/review'
 import {
   prefillFrom,
   useSetLogging,
@@ -61,9 +71,17 @@ import {
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
 import { BlockPanel } from './block-renderers-frame'
+import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
-import { useInvalidFocus } from './formFocus'
 import { Select } from './select'
+import {
+  SetLoggingSheet,
+  SetMeasurementRow,
+  type SetSheetInsertionContext,
+} from './set-logging-sheet'
+import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
+
+type WeightUnit = Enums<'weight_unit'>
 
 export interface ExerciseSetLoggerProps {
   exercise: ExerciseProgress
@@ -90,6 +108,18 @@ export interface ExerciseSetLoggerProps {
    * nothing to the one before it.
    */
   restSeconds?: number | null
+  /**
+   * Insertion interface for correcting a saved set (TASK-011 supplies it).
+   * Given, each saved row carries an Edit control that opens the same sheet in
+   * edit mode, and Save correction hands the corrected set here. Omitted, no
+   * Edit control is drawn: a control that saved nothing would be a lie.
+   */
+  onCorrectSet?: (exerciseId: string, corrected: PerformedSet) => void
+  /**
+   * Insertion interface for the per-set effort (TASK-008 supplies it), drawn
+   * in the sheet between the measurement row and its action.
+   */
+  renderEffort?: (context: SetSheetInsertionContext) => ReactNode
 }
 
 export function ExerciseSetLogger({
@@ -97,20 +127,47 @@ export function ExerciseSetLogger({
   ordinal,
   statesRest = true,
   restSeconds,
+  onCorrectSet,
+  renderEffort,
 }: ExerciseSetLoggerProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
   const restTimer = useRestTimer()
+  const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
+  const logButton = useRef<HTMLButtonElement>(null)
 
   const prescription = exercise.prescription
   const logged = loggedSets(exercise.exerciseId)
   const prescribed = prescribedSetCount(prescription)
   const setNumber = nextSetNumber(logged)
-  const target = targetForSet(prescription, setNumber)
   const rest = statesRest ? restText(prescription.rest_seconds) : null
   const name = exerciseName(prescription.exercise_id)
+  const title = ordinal === undefined ? name : `${ordinal} ${name}`
+  const equipment = equipmentName(prescription.equipment_used)
+  const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restAfterSet = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
+
+  // The entry being made. It outlives the sheet, so a collapse and a reopen
+  // hand back exactly what was typed; it starts over only when the shell's set
+  // list moves the set number on.
+  const prefill = prefillFrom(logged)
+  const fresh = newDraft(setNumber, prefill, prescription)
+  const [draft, setDraft] = useState<SetDraft>(fresh)
+  const entry = draft.key === fresh.key ? draft : fresh
+
+  // A correction in progress, when the caller can save one.
+  const [correction, setCorrection] = useState<SetDraft | null>(null)
+  const correctedSet =
+    correction === null || onCorrectSet === undefined
+      ? undefined
+      : logged.find((set) => `edit:${set.setNumber}` === correction.key)
+  const edit =
+    correction === null || correctedSet === undefined
+      ? null
+      : { set: correctedSet, draft: correction }
+  const mode = edit === null ? 'new' : 'edit'
+  const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
 
   /**
    * The set, then the rest it earns. The rest starts only for a set the shell
@@ -124,31 +181,86 @@ export function ExerciseSetLogger({
     restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restAfterSet })
   }
 
+  const openNew = () => {
+    setCorrection(null)
+    sheet.setOpen(true)
+  }
+
+  const collapse = () => {
+    sheet.setOpen(false)
+    logButton.current?.focus()
+  }
+
   return (
     <BlockPanel.Movement
-      title={ordinal === undefined ? name : `${ordinal} ${name}`}
+      title={title}
+      counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
       detail={prescriptionText(prescription)}
+      context={`Equipment · ${equipment}`}
     >
-      {prescription.tempo === null ? null : (
-        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
-      )}
+      {/*
+        Tempo stays in the prescription's structured columns; it is not
+        printed here (REQ-009). No rest is no line.
+      */}
       {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
 
-      <LoggedSetList sets={logged} />
-
-      <SetEntryForm
-        key={setNumber}
-        setNumber={setNumber}
-        prescribed={prescribed}
-        targetLabel={target === null ? null : targetText(prescription, target)}
-        measureLabel={modalityLabel(prescription)}
-        weightUnit={weightUnit}
-        prefill={prefillFrom(logged)}
-        modality={prescription.modality}
-        exerciseName={name}
-        saving={isSaving(exercise.exerciseId)}
-        onLog={log}
+      <LoggedSetList
+        sets={logged}
+        onEdit={
+          onCorrectSet === undefined
+            ? undefined
+            : (set) => {
+              setCorrection(editDraft(set, prescription.modality))
+              sheet.setOpen(true)
+            }
+        }
       />
+
+      <ActionGroup>
+        <Button
+          buttonRef={logButton}
+          variant="secondary"
+          aria-expanded={sheet.open}
+          onClick={openNew}
+        >
+          Log set
+        </Button>
+      </ActionGroup>
+
+      {sheet.place(
+        <SetSheetForm
+          key={mode}
+          mode={mode}
+          setNumber={sheetSetNumber}
+          exerciseName={name}
+          context={[title, prescriptionText(prescription), equipment].join(' · ')}
+          draft={edit === null ? entry : edit.draft}
+          onDraft={edit === null ? setDraft : setCorrection}
+          referenceUnit={
+            edit !== null
+              ? edit.set.weightUnit
+              : prefill !== null && prefill.weight !== null ? prefill.weightUnit : undefined
+          }
+          weightUnit={weightUnit}
+          measureLabel={modalityLabel(prescription)}
+          modality={prescription.modality}
+          showLoad={
+            !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
+          }
+          saving={edit === null && isSaving(exercise.exerciseId)}
+          effort={renderEffort?.({ mode, setNumber: sheetSetNumber })}
+          onSubmit={(performed) => {
+            if (edit !== null && onCorrectSet !== undefined) {
+              onCorrectSet(exercise.exerciseId, performed)
+              setCorrection(null)
+              return
+            }
+            log(performed)
+          }}
+          onCancel={() => setCorrection(null)}
+          onCollapse={collapse}
+        />,
+      )}
 
       {/*
         No swap control here (U37): a movement is swapped in Review, before the
@@ -177,14 +289,18 @@ function nextSetNumber(logged: readonly LoggedSet[]): number {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The sets behind the user. The empty case says so rather than rendering
- * nothing: "no sets logged" and "this movement has no set list" look identical
- * on a blank card, and only one of them is true.
+ * The sets behind the user, compact, each with its Edit control where a
+ * correction can be saved. An untouched movement draws no list and no
+ * placeholder sentence: its counter already says `Set 1/3`.
  */
-function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
-  if (sets.length === 0) {
-    return <BlockPanel.Note>No sets logged yet.</BlockPanel.Note>
-  }
+function LoggedSetList({
+  sets,
+  onEdit,
+}: {
+  sets: readonly LoggedSet[]
+  onEdit?: (set: LoggedSet) => void
+}) {
+  if (sets.length === 0) return null
 
   return (
     <ol
@@ -200,11 +316,24 @@ function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
               fontFamily: 'var(--font-data)',
               display: 'flex',
               alignItems: 'center',
+              flexWrap: 'wrap',
               gap: 'var(--spacing-100)',
             }}
           >
             <span>{loggedSetText(set)}</span>
             <SyncBadge status={set.status} />
+            {onEdit === undefined ? null : (
+              <Button
+                variant="quiet"
+                size="sm"
+                icon={<Pencil size={16} />}
+                aria-label={`Edit set ${set.setNumber}`}
+                onClick={() => onEdit(set)}
+                style={{ marginInlineStart: 'auto' }}
+              >
+                Edit
+              </Button>
+            )}
           </li>
         ))}
     </ol>
@@ -265,147 +394,211 @@ export function loggedSetText(set: LoggedSet): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Logging the next set
+// The entry
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface SetEntryFormProps {
+/**
+ * What the fields hold, as typed. `key` names the set the entry is for —
+ * `new:2` or `edit:1` — so an entry for a set already logged is never reused.
+ */
+interface SetDraft {
+  readonly key: string
+  readonly weight: string
+  readonly measure: string
+  /** A unit the athlete chose or committed to by typing; never converted. */
+  readonly chosenUnit?: WeightUnit
+}
+
+/**
+ * The next set's starting entry. The weight is the last set actually
+ * performed — the next set is usually the same weight, and retyping it is the
+ * friction this screen exists to remove. The measure is the prescription's
+ * reps or seconds for this set, as an editable suggestion; with no prescribed
+ * number it is the last set performed. Neither is an observation until the
+ * athlete presses Log set.
+ */
+function newDraft(
+  setNumber: number,
+  prefill: SetPrefill | null,
+  prescription: PrescribedColumns,
+): SetDraft {
+  return {
+    key: `new:${setNumber}`,
+    weight: numberField(prefill?.weight),
+    measure: numberField(
+      suggestedMeasure(prescription, setNumber) ?? measurePrefill(prefill, prescription.modality),
+    ),
+  }
+}
+
+/** A saved set, back in the fields, in the unit and values it was saved with. */
+function editDraft(set: LoggedSet, modality: PrescribedModality): SetDraft {
+  return {
+    key: `edit:${set.setNumber}`,
+    weight: numberField(set.weight),
+    measure: numberField(measurePrefill(set, modality)),
+    chosenUnit: set.weightUnit,
+  }
+}
+
+/**
+ * The prescribed number for this set, where the prescription states reps or
+ * seconds: a fixed target or this set's ladder rung, and the bottom of a range
+ * — the least the prescription asks for, never more than it asked.
+ */
+function suggestedMeasure(prescription: PrescribedColumns, setNumber: number): number | null {
+  if (prescription.modality === 'distance') return null
+  const target = targetForSet(prescription, setNumber)
+  if (target === null) return null
+
+  switch (target.kind) {
+    case 'fixed':
+      return target.value
+    case 'range':
+      return target.min
+    case 'sequence':
+      return null
+  }
+}
+
+interface SetSheetFormProps {
+  mode: 'new' | 'edit'
   setNumber: number
-  prescribed: number
-  /** `8 reps`, `8–10 reps`, `400 m` — null when the row carries no target. */
-  targetLabel: string | null
-  measureLabel: string
-  weightUnit: Enums<'weight_unit'> | null
-  prefill: SetPrefill | null
-  modality: PrescribedModality
   exerciseName: string
+  context: string
+  draft: SetDraft
+  onDraft: (draft: SetDraft) => void
+  /** The observed number's own unit, where the entry started from one. */
+  referenceUnit: WeightUnit | undefined
+  weightUnit: WeightUnit | null
+  measureLabel: string
+  modality: PrescribedModality
+  /** False for an unloaded movement with no load to carry forward. */
+  showLoad: boolean
   saving: boolean
-  onLog: (performed: PerformedSet) => void
+  effort: ReactNode
+  onSubmit: (performed: PerformedSet) => void
+  onCancel: () => void
+  onCollapse: () => void
 }
 
 /**
  * The set the user is in, and the two things they can say about it — the
  * weight and the measure. Both are optional: a set logged with neither is a
  * set performed and not measured, and nothing here blocks the workout on it.
- * There is no effort field and no warmup checkbox (REQ-015, U36); restoring
- * either is described in `docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`.
  *
- * Prefilled from the last set actually performed, which is the requirement's
- * "previous weight/reps when history exists": on a resumed session that is the
- * set before this one, and within a session it is the set they just did. The
- * fields stay filled afterwards, because the next set is usually the same
- * weight and retyping it is the friction this screen exists to remove. The
- * prescription's target is never a prefill — it is printed as the target, and
- * an observed rep count is only ever one the user typed.
+ * Weight, Unit and the measure sit on one row. Changing the unit relabels the
+ * number and never converts it; an unloaded movement omits both load fields.
+ * A write that the shell refuses leaves every field exactly as typed, because
+ * the entry is only replaced once the shell's list moves the set number on.
  */
-function SetEntryForm({
+function SetSheetForm({
+  mode,
   setNumber,
-  prescribed,
-  targetLabel,
-  measureLabel,
-  weightUnit,
-  prefill,
-  modality,
   exerciseName: name,
+  context,
+  draft,
+  onDraft,
+  referenceUnit,
+  weightUnit,
+  measureLabel,
+  modality,
+  showLoad,
   saving,
-  onLog,
-}: SetEntryFormProps) {
-  const [weight, setWeight] = useState(() => numberField(prefill?.weight))
-  const [measure, setMeasure] = useState(() => numberField(measurePrefill(prefill, modality)))
-  const [chosenUnit, setChosenUnit] = useState<Enums<'weight_unit'> | undefined>()
+  effort,
+  onSubmit,
+  onCancel,
+  onCollapse,
+}: SetSheetFormProps) {
   // Zero is an observation too. A row with no observed weight supplies no
   // reference unit; an untouched empty form can follow the profile as it loads.
-  const referenceUnit = prefill !== null && prefill.weight !== null
-    ? prefill.weightUnit
-    : undefined
-  const selectedUnit = chosenUnit ?? referenceUnit ?? weightUnit
-  const weightValue = parsed(weight)
-  const measureValue = parsed(measure)
+  const selectedUnit = draft.chosenUnit ?? referenceUnit ?? weightUnit
+  const weightValue = showLoad ? parsed(draft.weight) : null
+  const measureValue = parsed(draft.measure)
 
   const weightInvalid = weightValue === 'invalid' || isNegative(weightValue)
   const measureInvalid = measureValue === 'invalid' || isNegative(measureValue)
   const blocked = weightInvalid || measureInvalid
 
-  // The shared submit helper (CORE-05): this form says only whether the set
-  // was accepted, and where the caret goes on a refusal is its decision.
-  const onSubmit = useInvalidFocus()
-
+  // The sheet submits through the shared helper (CORE-05): this says only
+  // whether the set was accepted, and the caret follows a refusal.
   const submit = (): boolean => {
     if (blocked || saving) return false
 
-    onLog({
+    onSubmit({
       setNumber,
-      ...(selectedUnit !== null && selectedUnit !== weightUnit
+      ...(showLoad && selectedUnit !== null && (mode === 'edit' || selectedUnit !== weightUnit)
         ? { weightUnit: selectedUnit } : {}),
       ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
       ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
     })
-
-    // Nothing is cleared here: once the row comes back the form remounts on
-    // the new set number, prefilled from the set just logged. A write that
-    // failed leaves every field exactly as the user typed it.
     return true
   }
 
-  return (
-    <form
-      onSubmit={onSubmit(submit)}
-      aria-label={`Log set ${setNumber} of ${name}`}
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      <BlockPanel.Note>
-        {setNumber > prescribed
-          ? `Extra set ${setNumber}`
-          : `Set ${setNumber} of ${prescribed}`}
-        {targetLabel === null ? '' : ` · Target ${targetLabel}`}
-      </BlockPanel.Note>
-
-      <BlockPanel.FieldRow>
+  const measures = (
+    <SetMeasurementRow>
+      {showLoad ? (
         <Input
-          label={selectedUnit === null ? 'Weight' : `Weight (${selectedUnit})`}
+          label="Weight"
           type="number"
           inputMode="decimal"
           min={0}
           step="any"
-          value={weight}
+          value={draft.weight}
           onChange={(value) => {
             // Once the athlete types, a later profile refresh must not relabel
             // their number. Explicit Unit changes below never convert the text.
-            if (selectedUnit !== null) setChosenUnit(selectedUnit)
-            setWeight(value)
+            onDraft({
+              ...draft,
+              weight: value,
+              ...(selectedUnit !== null ? { chosenUnit: selectedUnit } : {}),
+            })
           }}
           invalid={weightInvalid}
           errorText={weightInvalid ? 'Enter a weight of zero or more' : undefined}
         />
-        <Input
-          label={measureLabel}
-          type="number"
-          inputMode="numeric"
-          min={0}
-          step="any"
-          value={measure}
-          onChange={setMeasure}
-          invalid={measureInvalid}
-          errorText={measureInvalid ? 'Enter zero or more' : undefined}
-        />
+      ) : null}
+      {showLoad ? (
         <Select
           label="Unit"
           value={selectedUnit ?? ''}
           onChange={(value) => {
-            if (value === 'kg' || value === 'lb') setChosenUnit(value)
+            if (value === 'kg' || value === 'lb') onDraft({ ...draft, chosenUnit: value })
           }}
-          helperText="Changing units keeps the number. Enter the weight in the selected unit."
         >
-          {selectedUnit === null ? <option value="" disabled>Choose unit</option> : null}
+          {selectedUnit === null ? <option value="" disabled>Choose</option> : null}
           <option value="kg">kg</option>
           <option value="lb">lb</option>
         </Select>
-      </BlockPanel.FieldRow>
+      ) : null}
+      <Input
+        label={measureLabel}
+        type="number"
+        inputMode={modality === 'distance' ? 'decimal' : 'numeric'}
+        min={0}
+        step="any"
+        value={draft.measure}
+        onChange={(value) => onDraft({ ...draft, measure: value })}
+        invalid={measureInvalid}
+        errorText={measureInvalid ? 'Enter zero or more' : undefined}
+      />
+    </SetMeasurementRow>
+  )
 
-      <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
-        Log set {setNumber}
-      </Button>
-    </form>
+  return (
+    <SetLoggingSheet
+      mode={mode}
+      setNumber={setNumber}
+      formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
+      context={context}
+      measures={measures}
+      effort={effort}
+      saving={saving}
+      blocked={blocked}
+      onSubmit={submit}
+      onCancel={onCancel}
+      onCollapse={onCollapse}
+    />
   )
 }
 
@@ -432,7 +625,7 @@ function isNegative(value: number | null | 'invalid'): boolean {
 
 /** The prefill for whichever measurement this prescription actually asks for. */
 function measurePrefill(
-  prefill: SetPrefill | null,
+  prefill: Pick<SetPrefill, 'reps' | 'durationSeconds' | 'distance'> | null,
   modality: PrescribedModality,
 ): number | null {
   if (prefill === null) return null

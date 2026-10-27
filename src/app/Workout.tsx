@@ -83,6 +83,9 @@ import {
 import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
 import { PhoneFooter } from '../ui/composition'
+import { SectionLabelContext } from '../ui/section-label-context'
+import { SetLoggingSheetHost, SetLoggingSheetSlot } from '../ui/set-logging-sheet'
+import { useSetLoggingSheetOpen } from '../ui/set-logging-sheet-context'
 import { SetSyncNotice } from '../ui/set-sync-notice'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
@@ -414,6 +417,7 @@ function WorkoutShell({
           recorded.
         */}
         <RestTimerProvider>
+          <SetLoggingSheetHost>
           <AppHeader
             meta={<GlobalTimer seconds={seconds} />}
             actions={
@@ -434,7 +438,13 @@ function WorkoutShell({
             pinnedFoot={
               <PhoneFooter>
                 <div className="clr-stack clr-stack--tight">
-                  <RestTimerBar />
+                  {/*
+                    REQ-009: one set-logging half-sheet for the whole screen.
+                    While it is open it draws the running rest itself, so the
+                    footer's copy steps aside rather than drawing a second.
+                  */}
+                  <FooterRest />
+                  <SetLoggingSheetSlot />
                   <SectionNavigation
                     section={current}
                     canGoBack={canGoBack}
@@ -475,9 +485,11 @@ function WorkoutShell({
                       onSelect={advancing || ending ? undefined : goTo}
                     />
                   </div>
-                  {current.blocks.map((block) => (
-                    <BlockSlot key={block.blockId} block={block} />
-                  ))}
+                  <SectionLabelContext value={current.title}>
+                    {current.blocks.map((block) => (
+                      <BlockSlot key={block.blockId} block={block} />
+                    ))}
+                  </SectionLabelContext>
                 </>
               )}
 
@@ -498,10 +510,16 @@ function WorkoutShell({
               onDismiss={() => setFailure(null)}
             />
           )}
+          </SetLoggingSheetHost>
         </RestTimerProvider>
       </SetLoggingProvider>
     </BlockCompletionProvider>
   )
+}
+
+/** The footer's rest, unless the open set-logging sheet is drawing it. */
+function FooterRest() {
+  return useSetLoggingSheetOpen() ? null : <RestTimerBar />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

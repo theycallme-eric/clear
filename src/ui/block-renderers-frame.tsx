@@ -35,6 +35,7 @@ import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
 import { Heading, HeadingSection } from './Heading'
+import { useSectionLabel } from './section-label-context'
 import { StructureBadge } from './workout-chrome'
 
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
@@ -110,14 +111,24 @@ export function BlockPanel({
   completion = NOTHING_OBSERVED,
   children,
 }: BlockPanelProps) {
+  const sectionLabel = useSectionLabel()
   const card = (
     <Card role={role}>
       <div className="clr-stack" style={STACK_STYLE}>
-        <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <StructureBadge identity={block.identity} />
+        {/*
+          REQ-008: a secondary label on the left and the compact structure
+          badge on the right, so the badge never competes with the movement
+          heading below it.
+        */}
+        <div className="clr-row" data-block-top-row="" style={{ justifyContent: 'space-between' }}>
           <span style={LABEL_STYLE}>
-            {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+            {sectionLabel ?? (
+              <>
+                {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+              </>
+            )}
           </span>
+          <StructureBadge identity={block.identity} />
         </div>
         {children}
         <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
@@ -233,17 +244,35 @@ export interface BlockMovementProps {
   title: ReactNode
   /** The prescription as read from its columns — `3 × 8 reps`. */
   detail?: ReactNode
+  /**
+   * A subordinate readout beside the heading — the logger's `Set 2/3`. A
+   * label, never a second heading.
+   */
+  counter?: ReactNode
+  /** Equipment context, under the prescription. */
+  context?: ReactNode
   children?: ReactNode
 }
 
 /**
- * One movement that is read rather than logged: its name as a heading one
- * level below the block, and its prescription in the data face.
+ * One movement: its name as a heading one level below the block, any counter
+ * beside it in the label face, then its prescription in the data face and its
+ * equipment context.
  */
-function Movement({ title, detail, children }: BlockMovementProps) {
+function Movement({ title, detail, counter, context, children }: BlockMovementProps) {
+  const heading = <Heading style={{ margin: 0, textTransform: 'uppercase' }}>{title}</Heading>
+
   return (
     <HeadingSection className="clr-stack--tight" style={STACK_STYLE}>
-      <Heading style={{ margin: 0, textTransform: 'uppercase' }}>{title}</Heading>
+      {counter === undefined || counter === null ? heading : (
+        <div
+          className="clr-row"
+          style={{ justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}
+        >
+          {heading}
+          <span style={LABEL_STYLE}>{counter}</span>
+        </div>
+      )}
       {detail === undefined || detail === null ? null : (
         <p
           style={{
@@ -255,6 +284,7 @@ function Movement({ title, detail, children }: BlockMovementProps) {
           {detail}
         </p>
       )}
+      {context === undefined || context === null ? null : <Label>{context}</Label>}
       {children}
     </HeadingSection>
   )

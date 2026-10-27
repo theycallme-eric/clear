@@ -1,8 +1,28 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## V3 source-bound recapture — 24 October 2026
+## Current UI-polish TASK-006 source-bound recapture — 27 October 2026
 
-Current format-preview evidence is a fresh group at
+Current format-preview evidence is the newly executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task006/`: four mobile skin cases, eight normal/short phone PNG cells,
+all passed with the unchanged real authenticated-session fixture and capture/PNG/source validators.
+Captured source `23c21500a4e3e754394d15c63f9e9beb567d04da`, runtime source `7855ffc47dd6e240e8d25ad3b7514a94dff5ab354ca6f42030d54c88849725e6`,
+driver `efb61ecf98f3597ab62bc325820fb1501be3fafcbd20953d96ef9c5f17ad43ca`. The group was captured from the committed implementation
+on the isolated TASK-006 branch against the local Vite application and a separate disposable
+local Supabase/PostgreSQL 17 backend seeded from the product's committed migrations and
+synthetic catalog. No production credential or production database was used. The preview walk
+recorded zero generation requests, zero attempted writes and zero forwarded writes; its fixture
+created and cleaned only synthetic local test accounts. No live generation, deployed equivalence
+or physical-device acceptance is claimed.
+
+All earlier capture groups, including V3, remain unchanged as historical proof of their own source.
+Only the selected evidence directory changed to this new group; no record schema, acceptance
+validator, browser coverage or required test was weakened. This recapture resolves the stale-source
+audit failure after the half-sheet implementation; normal full verification and protected delivery
+remain required.
+
+## Historical V3 source-bound recapture — 24 October 2026
+
+The retained V3 format-preview evidence is at
 `docs/design/evidence-0143/task034-format-preview-mobile-v3-verified/`:
 four actually executed mobile skin cases and eight phone/short PNG cells, all passed.
 Captured source `5e4e2de810df8016a804ca3dc8060925b53f170b`, runtime source `319d101b86b00af31588cfa328b4184b98801a8386dceef798aee408644e73d8`, driver `1917f877ec24b6f5fa87c5ec4f845ad9c7b46f7c06617c8457a12d26c4bd0589`.

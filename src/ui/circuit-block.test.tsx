@@ -18,7 +18,7 @@
  * movements as rows of one list, the rest countdown beside the card rather
  * than inside it, and exactly one completion.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -148,8 +148,20 @@ function blockCard(): HTMLElement {
   return card
 }
 
-/** One movement's set form, so two movements' fields never collide. */
+/**
+ * One movement's set form, so two movements' fields never collide. It is in
+ * the movement's half-sheet, opened from its opened entry's Log set.
+ */
 function formFor(name: string, setNumber = 1) {
+  if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
+    const log = screen
+      .getAllByRole('heading', { name: new RegExp(`${name}$`) })
+      .map((heading) => heading.closest('section'))
+      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Log set' })))
+      .find((button) => button !== null)
+    if (log === null || log === undefined) throw new Error(`no Log set for ${name}`)
+    fireEvent.click(log)
+  }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
 }
 
@@ -259,7 +271,7 @@ async function logSet(
   const open = screen.queryByRole('button', { name: `Log load and reps for ${name}` })
   if (open !== null) await user.click(open)
   const form = formFor(name, setNumber)
-  const weight = form.getByLabelText('Weight (kg)')
+  const weight = form.getByLabelText('Weight')
   const reps = form.getByLabelText('Reps')
   await user.clear(weight)
   await user.type(weight, '60')
@@ -664,12 +676,12 @@ describe('optional, compact load entry', () => {
 
     await user.click(screen.getByRole('button', { name: 'Log load and reps for back squat' }))
 
-    expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
     const form = formFor('back squat')
-    for (const label of ['Weight (kg)', 'Reps']) {
+    expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
+    for (const label of ['Weight', 'Reps']) {
       const field = form.getByLabelText(label)
       expect(field).toHaveClass('clr-input')
-      expect(field.closest('.clr-row')).not.toHaveClass('clr-chamfer')
+      expect(field.closest('.clr-set-sheet__measures')).not.toHaveClass('clr-chamfer')
     }
     // Still in the row for its movement, and the order is unchanged.
     expect(within(movementRows()[0]!).getByRole('form')).toBeInTheDocument()

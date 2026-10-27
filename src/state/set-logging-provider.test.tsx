@@ -318,11 +318,15 @@ describe('the unit is the profile’s, stamped per row at write time', () => {
         set_number: 1, weight: priorWeight, weight_unit: 'lb', actual_reps: 5 }] }],
     })
     const unit = priorWeight === null ? 'kg' : 'lb'
-    expect(screen.getByLabelText(`Weight (${unit})`)).toHaveValue(priorWeight)
+    // The entry is in the half-sheet the card's Log set opens; its reps start
+    // at the prescription's 8 as a suggestion.
+    await user.click(screen.getByRole('button', { name: 'Log set' }))
+    expect(screen.getByLabelText('Weight')).toHaveValue(priorWeight)
+    expect(screen.getByRole('combobox', { name: 'Unit' })).toHaveValue(unit)
     await user.click(screen.getByRole('button', { name: 'Log set 2' }))
     await waitFor(() => expect(attempts).toHaveLength(1))
     const [queued] = readSetLogQueue(first.storage)
-    expect(queued.entry).toMatchObject({ weightUnit: unit, performed: { setNumber: 2, reps: 5 } })
+    expect(queued.entry).toMatchObject({ weightUnit: unit, performed: { setNumber: 2, reps: 8 } })
     expect(queued.entry.performed).not.toHaveProperty('weightUnit')
     expect(setLogInsert(queued.entry).weight).toBe(priorWeight)
 
@@ -331,15 +335,17 @@ describe('the unit is the profile’s, stamped per row at write time', () => {
     await waitFor(() => expect(second.workout.loggedSets()).toHaveLength(1))
     const [written] = second.workout.loggedSets()
     expect(written.id).toBe(queued.entry.id)
-    expect(setLogInsert(written)).toMatchObject({ weight_unit: unit, weight: priorWeight, actual_reps: 5 })
+    expect(setLogInsert(written)).toMatchObject({ weight_unit: unit, weight: priorWeight, actual_reps: 8 })
     await waitFor(() => expect(readSetLogQueue(second.storage)).toEqual([]))
   })
 
   it('writes the real logger’s explicitly selected unit without converting its number', async () => {
     const user = userEvent.setup()
     const { workout } = mount({ realLogger: true, weightUnit: 'kg' })
-    await user.type(screen.getByLabelText('Weight (kg)'), '135')
+    await user.click(screen.getByRole('button', { name: 'Log set' }))
+    await user.type(screen.getByLabelText('Weight'), '135')
     await user.selectOptions(screen.getByRole('combobox', { name: 'Unit' }), 'lb')
+    await user.clear(screen.getByLabelText('Reps'))
     await user.click(screen.getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(workout.loggedSets()).toHaveLength(1))
     expect(setLogInsert(workout.loggedSets()[0])).toMatchObject({ weight: 135, weight_unit: 'lb', actual_reps: null })
