@@ -726,6 +726,7 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
         rpe: null,
         is_warmup_set: false,
         created_at: now(),
+        effort: null,
         ...log,
       })
     },

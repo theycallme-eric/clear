@@ -34,6 +34,7 @@
  *   supabase/migrations/20261002000024_location_viability.sql
  *   supabase/migrations/20261021000025_ladder_timing_persistence.sql
  *   supabase/migrations/20261024000026_v3_hinge_warmup.sql
+ *   supabase/migrations/20261027000027_set_effort.sql
  */
 
 export type Json =
@@ -201,6 +202,7 @@ export type Database = {
           rpe: number | null
           is_warmup_set: boolean
           created_at: string
+          effort: Database['public']['Enums']['set_effort'] | null
         }
         Insert: {
           id: string
@@ -216,6 +218,7 @@ export type Database = {
           rpe?: number | null
           is_warmup_set?: boolean
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
         }
         Update: {
           id?: string
@@ -231,6 +234,7 @@ export type Database = {
           rpe?: number | null
           is_warmup_set?: boolean
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
         }
       }
       focus_pattern_map: {
@@ -1062,6 +1066,7 @@ export type Database = {
       section_type: 'warmup' | 'mobility' | 'primary_lift' | 'accessory' | 'skill_power' | 'carries' | 'core' | 'stability_balance' | 'conditioning' | 'cooldown'
       session_focus: 'upper_body' | 'lower_body' | 'full_body' | 'power'
       session_state: 'prescribed' | 'active' | 'completed' | 'abandoned'
+      set_effort: 'too_hard' | 'about_right' | 'too_easy'
       structure_type: 'standard' | 'superset' | 'circuit' | 'emom' | 'amrap' | 'for_time'
       target_kind: 'fixed' | 'range' | 'sequence'
       timer_contract: 'none' | 'count_up' | 'countdown' | 'interval' | 'per_minute'
@@ -1121,6 +1126,7 @@ export const Constants = {
       section_type: ['warmup', 'mobility', 'primary_lift', 'accessory', 'skill_power', 'carries', 'core', 'stability_balance', 'conditioning', 'cooldown'],
       session_focus: ['upper_body', 'lower_body', 'full_body', 'power'],
       session_state: ['prescribed', 'active', 'completed', 'abandoned'],
+      set_effort: ['too_hard', 'about_right', 'too_easy'],
       structure_type: ['standard', 'superset', 'circuit', 'emom', 'amrap', 'for_time'],
       target_kind: ['fixed', 'range', 'sequence'],
       timer_contract: ['none', 'count_up', 'countdown', 'interval', 'per_minute'],

@@ -100,6 +100,12 @@ export const executionStatusSchema = z.enum(Constants.public.Enums.execution_sta
 export const sessionStateSchema = z.enum(Constants.public.Enums.session_state)
 export const constraintActionSchema = z.enum(Constants.public.Enums.constraint_action)
 export const constraintPersistenceSchema = z.enum(Constants.public.Enums.constraint_persistence)
+/**
+ * `set_effort` (REQ-012). One logged set's effort category. Categories, not a
+ * scale: nothing converts them to or from `rpe`, and unanswered is `null`
+ * rather than a fourth value.
+ */
+export const setEffortSchema = z.enum(Constants.public.Enums.set_effort)
 
 /**
  * `reps | time | distance`. `rounds` is not one of them and never was: an
@@ -1015,6 +1021,10 @@ export const exerciseSetLogRowSchema = z.object({
   rpe: z.number().min(1).max(10).nullable(),
   is_warmup_set: z.boolean(),
   created_at: timestamp,
+  // REQ-012. A row with no `effort` key at all — read from a schema the
+  // additive migration has not reached yet — is a set nobody was asked about,
+  // which is exactly what `null` says. An unknown category is still refused.
+  effort: setEffortSchema.nullable().default(null),
 })
 
 /**

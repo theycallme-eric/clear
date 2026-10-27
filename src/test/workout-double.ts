@@ -177,6 +177,7 @@ function setLogRow(
     rpe: null,
     is_warmup_set: false,
     created_at: '2026-09-24T09:10:00+00:00',
+    effort: null,
     ...overrides,
   }
 }
@@ -532,6 +533,8 @@ function storedSetLog(entry: SetLogEntry): ExerciseSetLogRow {
     rpe: insert.rpe ?? null,
     is_warmup_set: insert.is_warmup_set ?? false,
     created_at: '2026-09-24T09:20:00+00:00',
+    // An omitted column has no default, so the database stores NULL.
+    effort: insert.effort ?? null,
   }
 }
 

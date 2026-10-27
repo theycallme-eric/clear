@@ -1,8 +1,26 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-006 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-007 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the newly executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task007/`: four mobile skin cases, eight normal/short phone PNG cells,
+all passed with the unchanged real authenticated-session fixture and record/PNG/source validators.
+Captured source `59f0635c54e13c4f1515074110c4ebf6c1fff707`, runtime source `88eca9cd45b11fbb488ab87aa89f9b8d38f8193f4ae6659bb682769925434a5d`,
+driver `06bef10d3e0ed3bc54ff9c2a81001641d16ed2ae2230fa6ff8d975df2ceccfd9`. The committed TASK-007 source was served locally against a
+separate disposable Supabase/PostgreSQL17 backend reset with the actual current migrations,
+including the additive categorical-effort migration, and synthetic catalog seeds. No remote
+schema or production credential was used. The preview walk recorded zero generation requests,
+zero attempted writes and zero forwarded writes; its fixture created and cleaned synthetic
+local test accounts only. This is local source-bound proof, not deployed or physical-device proof.
+
+All prior groups remain unchanged as evidence of their respective sources. The selected directory
+and native retained-input lineage identity now name this genuine group/run. Receipt schemas,
+validators, required test coverage and merge authority remain unchanged. Full native verification
+and exact-head protected delivery remain separate requirements.
+
+## Historical UI-polish TASK-006 source-bound recapture — 27 October 2026
+
+The retained TASK-006 format-preview evidence is the executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task006/`: four mobile skin cases, eight normal/short phone PNG cells,
 all passed with the unchanged real authenticated-session fixture and capture/PNG/source validators.
 Captured source `23c21500a4e3e754394d15c63f9e9beb567d04da`, runtime source `7855ffc47dd6e240e8d25ad3b7514a94dff5ab354ca6f42030d54c88849725e6`,

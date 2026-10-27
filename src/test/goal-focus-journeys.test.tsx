@@ -532,6 +532,7 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
       '20261002000024_location_viability.sql',
       '20261021000025_ladder_timing_persistence.sql',
       '20261024000026_v3_hinge_warmup.sql',
+      '20261027000027_set_effort.sql',
     ])
   })
 })
