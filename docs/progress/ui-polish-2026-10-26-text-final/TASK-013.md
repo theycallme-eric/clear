@@ -139,3 +139,18 @@ the existing SetLoggingSheet/ExerciseSetLogger exemptions; the gallery check its
 Next is a genuine capture of the committed repaired source and same-attempt native verification.
 
 Deployed and physical-iPhone behaviour are not inferred.
+
+## Genuine source-bound capture
+
+Repaired source `be1e57b5e1fe3a9198d5602f0d171edb50387929` produced four passed mobile skin cases and eight
+normal/short phone screenshots in `docs/design/evidence-0143/task034-format-preview-ui-polish-task013`.
+Runtime source `2b4b2d59fbe2b3f43b75924187df9e6460085cf7b498235c14fe62e35cdc1c73`; driver
+`ae47f8320f2a0a8df7f0046893adeaaace8fc4e9648bfdcd38cc01fb596f77e2`; actual payload
+`0828be43acde27e577c606652f05bd53ab5f8c46fc0755b93b1cfbaeeb6ebc5b`. Every record reports zero generation
+requests, attempted writes and forwarded writes. Native attempt 1/a1 and the actual tested base
+are recorded in input provenance. Earlier evidence groups remain untouched. The owned local
+backend was stopped after capture. This proves this local route and source; broader mobile
+integration, hosted behavior and physical-iPhone UAT are not inferred. Native exact-head receipt
+and protected required CI govern task delivery.
+
+The existing source-bound evidence consumer passed all **38** audit tests on these actual records.
