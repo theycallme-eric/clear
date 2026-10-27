@@ -31,6 +31,7 @@ import {
   type BlockCompletion,
 } from '../state/block-completion'
 import { setLogInsert, setLogViolation, type SetLogEntry } from '../state/set-logging'
+import { parseSetObservationAck, type SetObservationMutation, type SetObservationAck } from '../state/set-observation-mutation'
 import {
   blockResultRowSchema,
   exerciseSetLogRowSchema,
@@ -65,6 +66,8 @@ export interface SetLogsClient {
    * is sent.
    */
   log(entry: SetLogEntry): Promise<Result<ExerciseSetLogRow>>
+  /** Executes one exact durable request; only its validated receipt settles it. */
+  mutate(mutation: SetObservationMutation): Promise<Result<SetObservationAck>>
 }
 
 export interface WorkoutClients {
@@ -369,6 +372,22 @@ export function createWorkoutClients({
         code: ErrorCode.PERSISTENCE_READ_FAILED,
       })
     },
+    async mutate(mutation) {
+      const accessToken = await token()
+      if (isErr(accessToken)) return accessToken
+      const db = createSupabaseClient({ ...supabase, accessToken: accessToken.value })
+      const result = await db.rpc('mutate_set_observation', {
+        p_observation_id: mutation.observation_id,
+        p_mutation_id: mutation.mutation_id,
+        p_revision: mutation.revision,
+        p_expected_revision: mutation.expected_revision,
+        p_operation: mutation.operation,
+        p_exercise_id: mutation.exercise_id,
+        p_set_number: mutation.set_number,
+        p_values: mutation.values,
+      })
+      return isErr(result) ? result : parseSetObservationAck(result.value, mutation)
+    },
   }
 
   const exercises: ExercisesClient = {
@@ -448,7 +467,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     },
     blockResults: { record: refusal },
     history: { page: refusal },
-    setLogs: { log: refusal },
+    setLogs: { log: refusal, mutate: refusal },
     exercises: { definition: refusal, saveNotes: refusal },
     conditioning: { history: refusal },
     candidates: { retrieve: refusal },

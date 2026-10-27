@@ -1156,6 +1156,7 @@ describe('the migration that carries it is additive', () => {
       '20261021000025_ladder_timing_persistence.sql',
       '20261024000026_v3_hinge_warmup.sql',
       '20261027000027_set_effort.sql',
+      '20261027000028_set_observation_mutations.sql',
     ])
   })
 

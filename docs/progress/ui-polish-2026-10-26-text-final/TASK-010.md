@@ -60,11 +60,16 @@ only. It makes no runtime change, so the TASK-034 runtime-source hash is untouch
 - Discrimination check: I temporarily changed `RestTimerBar` to stay drawn at 0 s, and 6 of 10
   tests failed. The source was restored, and the runtime diff is empty.
 
-## Open question for the owner
+## Already-approved Edit allocation
 
-The brief also says saved-row **Edit** must stay reachable once the countdown is gone. On this
-base, Edit is not exposed at the workout shell at all, which is TASK-011's scope. That is not a
-rest-lifecycle concern, so this task does not widen to cover it.
+On the recorded baseline, saved-row **Edit** was not exposed at the workout shell. Production
+correction wiring is already allocated to TASK-011, and rest-independent Edit reachability is
+allocated to TASK-009. No new owner decision is needed. This task retains its own rest-lifecycle
+and independent Log set boundary; its baseline findings above remain historical facts.
+
+During TASK-011 integration, the test's stale Edit description was corrected and its finished-rest
+assertion was scoped to the Rest control/caption. Legitimate movement or elapsed timers may show
+`00:00`; all absence, continuity, reachability and no-auto-recording checks remain in force.
 
 ## Verification
 

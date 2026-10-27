@@ -123,6 +123,13 @@ export const TABLE_DISPOSITIONS = [
     why: 'inherits ownership through its seeded workout exercise',
   },
   {
+    table: 'set_observation_mutations',
+    standing: 'cross-user',
+    ownerColumn: 'user_id',
+    seeded: true,
+    why: 'private exact-mutation receipts and clear tombstones, owned by the observation author',
+  },
+  {
     table: 'load_anchors',
     standing: 'cross-user',
     ownerColumn: 'user_id',

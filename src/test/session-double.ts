@@ -716,6 +716,8 @@ export function createSessionDouble(options: SessionDoubleOptions): SessionDoubl
     logSet(log) {
       setLogs.push({
         id: id('a'),
+        mutation_revision: 0,
+        last_mutation_id: null,
         prescription_revision_status: 'active',
         actual_reps: null,
         actual_duration_seconds: null,

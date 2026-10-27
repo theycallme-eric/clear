@@ -38,6 +38,11 @@ import type { ExercisesClient } from '../data/exercises'
 import { HISTORY_PAGE_SIZE, type HistoryClient } from '../data/history'
 import { CONTRACT_VERSION } from '../state/schemas'
 import { setLogInsert, type SetLogEntry } from '../state/set-logging'
+import {
+  sameSetMutation,
+  type SetObservationAck,
+  type SetObservationMutation,
+} from '../state/set-observation-mutation'
 import type { BlockResultsClient, SetLogsClient, WorkoutClients } from '../data/workout'
 import type { SessionsClient, SwapResult } from '../data/sessions'
 import { makeSessionAcceptance } from './factories'
@@ -178,6 +183,8 @@ function setLogRow(
     is_warmup_set: false,
     created_at: '2026-09-24T09:10:00+00:00',
     effort: null,
+    mutation_revision: 0,
+    last_mutation_id: null,
     ...overrides,
   }
 }
@@ -461,6 +468,10 @@ export interface WorkoutDouble {
   recorded(): BlockCompletion[]
   /** Every `exercise_set_logs` write the shell made, in order. */
   loggedSets(): SetLogEntry[]
+  /** Every correction written over a stored set, in order (REQ-013). */
+  correctedSets(): SetLogEntry[]
+  /** Every stored set cleared, in order (REQ-013). */
+  clearedSets(): SetLogEntry[]
   /** Session ids passed to `abandon` and `complete`. */
   abandoned(): string[]
   completed(): { sessionId: string; minutes?: number }[]
@@ -535,6 +546,36 @@ function storedSetLog(entry: SetLogEntry): ExerciseSetLogRow {
     created_at: '2026-09-24T09:20:00+00:00',
     // An omitted column has no default, so the database stores NULL.
     effort: insert.effort ?? null,
+    mutation_revision: insert.mutation_revision ?? 0,
+    last_mutation_id: insert.last_mutation_id ?? null,
+  }
+}
+
+/** Translate a canonical RPC request for the existing call-observation seam. */
+function mutationEntry(
+  mutation: SetObservationMutation,
+  prescription: WorkoutExerciseRow | undefined,
+  current?: ExerciseSetLogRow,
+): SetLogEntry {
+  const values = mutation.values
+  return {
+    id: mutation.observation_id,
+    exerciseId: mutation.exercise_id,
+    blockId: prescription?.block_id ?? ZERO_UUID,
+    distanceUnit: values.actual_distance_unit === undefined ? (prescription?.distance_unit ?? null) : values.actual_distance_unit,
+    weightUnit: values.weight_unit ?? current?.weight_unit ?? 'kg',
+    performed: {
+      setNumber: mutation.set_number,
+      ...(typeof values.actual_reps === 'number' ? { reps: values.actual_reps } : {}),
+      ...(typeof values.actual_duration_seconds === 'number'
+        ? { durationSeconds: values.actual_duration_seconds } : {}),
+      ...(typeof values.actual_distance === 'number' ? { distance: values.actual_distance } : {}),
+      ...(typeof values.weight === 'number' ? { weight: values.weight } : {}),
+      ...(values.effort === undefined || (values.effort === null && mutation.operation === 'insert')
+        ? {} : { effort: values.effort }),
+      ...(typeof values.rpe === 'number' ? { rpe: values.rpe } : {}),
+      ...(values.is_warmup_set === true || current?.is_warmup_set === true ? { isWarmup: true } : {}),
+    },
   }
 }
 
@@ -542,6 +583,8 @@ function storedSetLog(entry: SetLogEntry): ExerciseSetLogRow {
 export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): WorkoutDouble {
   const recorded: BlockCompletion[] = []
   const loggedSets: SetLogEntry[] = []
+  const correctedSets: SetLogEntry[] = []
+  const clearedSets: SetLogEntry[] = []
   const abandoned: string[] = []
   const completed: { sessionId: string; minutes?: number }[] = []
   const savedNotes: { exerciseId: string; notes: string | null }[] = []
@@ -556,6 +599,13 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
    */
   let stored = session
   let revisions = 0
+  const observations = new Map(
+    (session?.sections ?? []).flatMap((section) => section.blocks)
+      .flatMap((block) => block.exercises)
+      .flatMap((exercise) => exercise.set_logs.map((row) => [row.id, row] as const)),
+  )
+  const mutationReceipts = new Map<string, SetObservationAck>()
+  const observationHeads = new Map<string, SetObservationAck['head']>()
 
   const unsupported = <T>(name: string): Promise<Result<T>> => {
     throw new Error(`The workout double was asked for ${name}, which no test wired`)
@@ -742,6 +792,67 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
       loggedSets.push(entry)
       return ok(storedSetLog(entry))
     },
+    async mutate(mutation) {
+      const previous = mutationReceipts.get(mutation.mutation_id)
+      if (previous !== undefined) {
+        if (!sameSetMutation(previous.mutation, mutation)) {
+          return err(createError(ErrorCode.PERSISTENCE_CONFLICT))
+        }
+        return ok({ ...previous, outcome: 'replayed',
+          head: observationHeads.get(mutation.observation_id) ?? previous.head })
+      }
+      const current = observations.get(mutation.observation_id)
+      const head = observationHeads.get(mutation.observation_id)
+      const revision = head?.revision ?? current?.mutation_revision ?? 0
+      if (revision !== mutation.expected_revision
+        || (current !== undefined && (current.workout_exercise_id !== mutation.exercise_id
+          || current.set_number !== mutation.set_number))) {
+        return err(createError(ErrorCode.PERSISTENCE_CONFLICT))
+      }
+      const entry = mutationEntry(mutation, prescriptionIn(stored, mutation.exercise_id), current)
+      let row: ExerciseSetLogRow | null = null
+      if (mutation.operation === 'insert') {
+        if (head !== undefined || [...observations.values()].some((candidate) =>
+          candidate.id !== mutation.observation_id
+          && candidate.workout_exercise_id === mutation.exercise_id
+          && candidate.set_number === mutation.set_number)) {
+          return err(createError(ErrorCode.PERSISTENCE_CONFLICT))
+        }
+        if (current !== undefined) {
+          if (!Object.entries(mutation.values).every(([key, value]) =>
+            (current as unknown as Record<string, unknown>)[key] === value)) {
+            return err(createError(ErrorCode.PERSISTENCE_CONFLICT))
+          }
+          row = { ...current, mutation_revision: mutation.revision,
+            last_mutation_id: mutation.mutation_id }
+        } else {
+          // Keep test-specific transport holds/refusals observable. A spread
+          // wrapper's `log` override is deliberately dispatched through `this`.
+          const result = await this.log(entry)
+          if (!result.ok) return result
+          row = { ...result.value, rpe: mutation.values.rpe ?? null,
+            mutation_revision: mutation.revision, last_mutation_id: mutation.mutation_id }
+        }
+      } else if (mutation.operation === 'correct') {
+        if (current === undefined) return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+        correctedSets.push(entry)
+        row = { ...storedSetLog(entry), rpe: current.rpe,
+          is_warmup_set: current.is_warmup_set, created_at: current.created_at,
+          mutation_revision: mutation.revision, last_mutation_id: mutation.mutation_id }
+      } else {
+        clearedSets.push(entry)
+      }
+      if (row === null) observations.delete(mutation.observation_id)
+      else observations.set(mutation.observation_id, row)
+      const ack: SetObservationAck = {
+        outcome: 'applied', mutation,
+        head: { revision: mutation.revision, mutation_id: mutation.mutation_id,
+          cleared: row === null, row },
+      }
+      mutationReceipts.set(mutation.mutation_id, ack)
+      observationHeads.set(mutation.observation_id, ack.head)
+      return ok(ack)
+    },
     ...options.setLogs,
   }
 
@@ -912,6 +1023,8 @@ export function createWorkoutDouble(options: WorkoutDoubleOptions = {}): Workout
     attempts: () => attempts.map((entry) => ({ ...entry })),
     recorded: () => [...recorded],
     loggedSets: () => [...loggedSets],
+    correctedSets: () => [...correctedSets],
+    clearedSets: () => [...clearedSets],
     abandoned: () => [...abandoned],
     completed: () => [...completed],
     savedNotes: () => [...savedNotes],

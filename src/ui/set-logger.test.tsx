@@ -29,6 +29,7 @@ import { ExerciseSetLogger, loggedSetText, type ExerciseSetLoggerProps } from '.
 /** One recorded set, as the shell hands it to the logger. */
 function loggedSet(overrides: Partial<LoggedSet> & { setNumber: number }): LoggedSet {
   return {
+    id: `set-${overrides.setNumber}`,
     reps: 8,
     durationSeconds: null,
     distance: null,

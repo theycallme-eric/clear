@@ -99,6 +99,12 @@ export type SetSyncStatus = 'logged' | 'syncing' | 'failed'
  * moment ago. Nullable throughout, because the row is.
  */
 export interface LoggedSet {
+  /**
+   * The row's client-minted id — what a correction or a clear is addressed to
+   * (REQ-013). Never the set number: a set number names a slot, and after a
+   * clear and a re-entry two different observations have held it.
+   */
+  readonly id: string
   readonly setNumber: number
   readonly reps: number | null
   readonly durationSeconds: number | null
@@ -174,6 +180,29 @@ export function setLogEffortUpdate(
   return { effort }
 }
 
+/**
+ * The `exercise_set_logs` update that corrects one stored set (REQ-013): every
+ * measurement, the unit and the effort, as the corrected entry states them.
+ * The row is addressed by its id, so `set_number` — the set's identity — is
+ * never rewritten, and neither is `rpe` (historical) or the warmup
+ * classification, which no correction control sets. An omitted measurement is
+ * written as `null`: a correction states the whole observation.
+ */
+export function setLogCorrection(entry: SetLogEntry): TablesUpdate<'exercise_set_logs'> {
+  const { performed } = entry
+
+  return {
+    actual_reps: recorded(performed.reps),
+    actual_duration_seconds: recorded(performed.durationSeconds),
+    actual_distance: recorded(performed.distance),
+    // As on insert: a unit only where there is a distance to measure with it.
+    actual_distance_unit: performed.distance === undefined ? null : entry.distanceUnit,
+    weight: recorded(performed.weight),
+    weight_unit: entry.weightUnit,
+    ...setLogEffortUpdate(performed.effort ?? null),
+  }
+}
+
 /** The field an entry would be refused on, in the database's own vocabulary. */
 export interface SetLogViolation {
   readonly field: string
@@ -227,6 +256,7 @@ function isNonNegativeInteger(value: number | undefined): boolean {
 /** A stored row, as the screen reads it back: the database has this one. */
 export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
   return {
+    id: row.id,
     setNumber: row.set_number,
     reps: row.actual_reps,
     durationSeconds: row.actual_duration_seconds,
@@ -258,6 +288,7 @@ export function loggedSetFromEntry(
   const { performed } = entry
 
   return {
+    id: entry.id,
     setNumber: performed.setNumber,
     reps: recorded(performed.reps),
     durationSeconds: recorded(performed.durationSeconds),
@@ -362,6 +393,21 @@ export interface SetLoggingApi {
    * status that says which it is.
    */
   loggedSets(exerciseId: string): readonly LoggedSet[]
+  /**
+   * Corrects one saved set during the current workout (REQ-013), addressed by
+   * the row id the screen read it under. The set number, the warmup
+   * classification and the prescription stay the stored set's own, and the
+   * correction goes through the same durable queue the set did, after
+   * anything already sent for that row. Absent where the shell offers no
+   * correction, and a renderer then draws no Edit control.
+   */
+  correctSet?(exerciseId: string, setId: string, corrected: PerformedSet): void
+  /**
+   * Clears one saved set: the wrong-movement recovery (REQ-013). Only the
+   * addressed row is removed. Nothing is moved, zeroed or re-attributed; the
+   * right movement's set is logged afresh, explicitly, by the user.
+   */
+  clearSet?(exerciseId: string, setId: string): void
   /** True while this exercise has a set in flight. */
   isSaving(exerciseId: string): boolean
   /** What this session still owes the database. */

@@ -61,6 +61,8 @@ function row(overrides: Partial<ExerciseSetLogRow> = {}): ExerciseSetLogRow {
     is_warmup_set: false,
     created_at: '2026-09-24T09:10:00+00:00',
     effort: null,
+    mutation_revision: 0,
+    last_mutation_id: null,
     ...overrides,
   }
 }
@@ -237,6 +239,8 @@ describe('a stored row, read back', () => {
         }),
       ),
     ).toEqual({
+      // The row's own id: what a correction or a clear addresses (REQ-013).
+      id: expect.any(String),
       setNumber: 3,
       reps: 8,
       durationSeconds: null,
@@ -268,6 +272,7 @@ describe('a stored row, read back', () => {
         'syncing',
       ),
     ).toEqual({
+      id: 'a0000001-0000-4000-8000-000000000000',
       setNumber: 2,
       reps: null,
       durationSeconds: null,

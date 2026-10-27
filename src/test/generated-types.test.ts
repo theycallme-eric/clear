@@ -73,6 +73,7 @@ describe('the generated types are current (DATA-03)', () => {
       'rest_days',
       'saved_workout_completions',
       'saved_workouts',
+      'set_observation_mutations',
       'user_constraints',
       'workout_blocks',
       'workout_exercises',
@@ -181,6 +182,7 @@ describe('the SQL reader fails loudly rather than quietly (DATA-03)', () => {
       '20261021000025_ladder_timing_persistence.sql',
       '20261024000026_v3_hinge_warmup.sql',
       '20261027000027_set_effort.sql',
+      '20261027000028_set_observation_mutations.sql',
     ])
   })
 

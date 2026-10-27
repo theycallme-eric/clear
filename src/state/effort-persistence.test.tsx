@@ -40,6 +40,7 @@ import { SetLoggingProvider } from './set-logging-provider'
 import {
   loggedSetFromEntry,
   loggedSetFromRow,
+  setLogCorrection,
   setLogEffortUpdate,
   setLogInsert,
   setLogViolation,
@@ -323,7 +324,7 @@ function offlineDouble(): WorkoutDouble {
     ...base,
     clients: {
       ...base.clients,
-      setLogs: { log: async () => err(createError(ErrorCode.NETWORK_OFFLINE)) },
+      setLogs: { ...base.clients.setLogs, log: async () => err(createError(ErrorCode.NETWORK_OFFLINE)) },
     },
   }
 }
@@ -379,6 +380,30 @@ describe('a stored answer can be corrected or cleared, and nothing else moves', 
       expect(row.actual_reps).toBe(8)
     }
   })
+
+  // TASK-011: the whole-set correction carries the same lossless effort.
+  it.each(ANSWERS)('states %s in a set correction, and never touches rpe, set number or warmup', (effort) => {
+    const correction = setLogCorrection(entry({ setNumber: 1, reps: 7, ...(effort === null ? {} : { effort }) }))
+
+    expect(correction.effort).toBe(effort)
+    expect(correction).not.toHaveProperty('rpe')
+    expect(correction).not.toHaveProperty('set_number')
+    expect(correction).not.toHaveProperty('is_warmup_set')
+    expect(correction.actual_reps).toBe(7)
+
+    const stored = exerciseSetLogRowSchema.parse({ ...storedRow('too_hard', 6.5), ...correction })
+    expect(stored.effort).toBe(effort)
+    expect(stored.rpe).toBe(6.5)
+  })
+
+  it('maps a corrected set back to its row with the effort it was saved with', () => {
+    const corrected = loggedSetFromRow(exerciseSetLogRowSchema.parse({
+      ...storedRow(null),
+      ...setLogCorrection(entry({ setNumber: 1, reps: 8, effort: 'too_easy' })),
+    }))
+
+    expect(corrected).toMatchObject({ id: SET_LOG_ID, setNumber: 1, effort: 'too_easy', status: 'logged' })
+  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -428,12 +453,17 @@ describe('the additive migration', () => {
     expect(sql).not.toMatch(/\banon\b/)
   })
 
-  it('is the only migration that knows the categories exist', () => {
+  it('is the only migration that defines or interprets the effort categories', () => {
     const others = filesUnder('supabase/migrations').filter(
       (path) => path.endsWith('.sql') && !path.endsWith('20261027000027_set_effort.sql'),
     )
     for (const path of others) {
-      expect(code(read(path)), path).not.toMatch(/set_effort|too_hard|about_right|too_easy/)
+      // TASK-011's ordered mutation RPC casts the value to this existing
+      // enum. That preserves categories; it must not redefine, translate or
+      // use a category as a numerical training signal.
+      expect(code(read(path)), path).not.toMatch(
+        /create\s+type\s+public\.set_effort|['"](?:too_hard|about_right|too_easy)['"]/i,
+      )
     }
   })
 })

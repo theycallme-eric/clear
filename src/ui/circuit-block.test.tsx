@@ -226,6 +226,7 @@ function renderLoggingCircuit(
     clients: {
       ...base.clients,
       setLogs: {
+        ...base.clients.setLogs,
         async log(entry) {
           attempts.push(entry)
           await options.held

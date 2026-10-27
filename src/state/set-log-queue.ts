@@ -14,16 +14,12 @@
  *   · **Local first.** A set is serialised into `localStorage` synchronously,
  *     inside the same tick as the tap, before any request exists. A tab killed
  *     one millisecond later still has the set.
- *   · **Client-minted identity.** `SetLogEntry.id` is already the row's primary
- *     key (EXE-02), so a retried flush of the same entry is the *same* insert.
- *     The database refuses the second one — `PERSISTENCE_CONFLICT` — and that
- *     refusal is proof the set landed, not a failure. No server sequence, no
- *     duplicate set.
- *   · **Nothing is dropped.** An entry leaves the queue when the row is stored,
- *     or when the session snapshot shows it already stored, and for no other
- *     reason. An entry the database will never accept stops being *retried*
- *     (`isPermanent`) but stays queued and stays counted, because a set that
- *     silently vanished is the defect, not the fix.
+ *   · **Exact mutation identity.** Stable observation and mutation ids plus a
+ *     predecessor revision are persisted before dispatch. A durable server
+ *     receipt, not a uniqueness conflict or a matching set slot, confirms it.
+ *   · **Nothing dispatched is dropped.** Possibly applied work survives reload
+ *     and is replayed with the same request. Only unsent work can be superseded
+ *     or withdrawn; permanent failures remain visible and counted.
  *   · **One notice.** The queue counts what is unsynced; the shell states that
  *     count once. Nothing here raises anything per set.
  *
@@ -35,6 +31,7 @@
  */
 import { Constants } from '../data/database.types'
 import { ErrorCode, type AppError } from './errors'
+import { isSetObservationMutation, setObservationMutation, type SetObservationMutation } from './set-observation-mutation'
 import { isRecordedEffort, type PerformedSet, type SetLogEntry } from './set-logging'
 
 /** One key, one queue: the app writes sets for one session at a time. */
@@ -51,10 +48,40 @@ export const SUSTAINED_SET_LOG_ATTEMPTS = 2
 export const SET_LOG_RETRY_BASE_MS = 2_000
 export const SET_LOG_RETRY_MAX_MS = 30_000
 
+/**
+ * What a queued mutation does to its row (REQ-013). `correct` writes the
+ * entry's values over the stored row with that id; `clear` deletes that row.
+ * An insert carries no kind, which is also how every entry queued before
+ * corrections existed decodes.
+ */
+export type SetLogMutationKind = 'correct' | 'clear'
+
 /** One set, written locally and not yet confirmed by the database. */
 export interface QueuedSetLog {
-  /** The row the flush will insert. Its `id` is this entry's identity too. */
+  /**
+   * The row the flush will write. Its `id` is the row's identity, and an
+   * insert's own identity too; a correction or a clear addresses the row by it.
+   */
   readonly entry: SetLogEntry
+  /** Absent for an insert. */
+  readonly kind?: SetLogMutationKind
+  /**
+   * A correction's or a clear's own identity, distinct from the row's, so two
+   * corrections of one row are two mutations and the answer to one is never
+   * taken for the other. Absent for an insert, whose identity is `entry.id`.
+   */
+  readonly mutationId?: string
+  /**
+   * Set, on disk, before the request goes out. A mutation that may have
+   * reached the database can no longer be withdrawn or rewritten in place —
+   * its answer may simply not have arrived — so what follows it is queued
+   * behind it instead.
+   */
+  readonly dispatched?: boolean
+  /** Exact request, persisted before dispatch and immutable thereafter. */
+  readonly request?: SetObservationMutation
+  /** Server revision read when this mutation was first authored. */
+  readonly baseRevision?: number
   /** The session it was performed in, so a resume can reconcile it. */
   readonly sessionId: string
   /** When the user logged it — the 6:02 a set is still expected at 6:40. */
@@ -69,13 +96,10 @@ export interface QueuedSetLog {
 // What a retry is worth
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Whether the database has already stored this exact row. A client-minted
- * primary key makes a unique-violation the *success* case of a retry: the id
- * can only collide with the write this queue itself made.
- */
+/** A generic uniqueness error never proves which observation was stored. */
 export function isAlreadyStored(error: AppError): boolean {
-  return error.code === ErrorCode.PERSISTENCE_CONFLICT
+  void error
+  return false
 }
 
 /**
@@ -92,6 +116,7 @@ export function isPermanent(error: AppError): boolean {
     case ErrorCode.VALIDATION_OUT_OF_RANGE:
     case ErrorCode.VALIDATION_CONSTRAINT:
     case ErrorCode.PERSISTENCE_NOT_FOUND:
+    case ErrorCode.PERSISTENCE_CONFLICT:
       return true
     default:
       return false
@@ -111,9 +136,50 @@ export function retryable(queue: readonly QueuedSetLog[]): readonly QueuedSetLog
   return queue.filter((queued) => !isStalled(queued))
 }
 
+/**
+ * The entries a flush pass may send now, in order. Retryable, and with nothing
+ * queued ahead of them for the same row or the same set slot: a correction
+ * waits for its row's insert, a clear for the correction before it, and a set
+ * re-entered into a cleared slot for the clear — so the database sees each
+ * row's mutations in the order the user made them, and a re-entry can never
+ * collide with the row it replaces and be mistaken for that row's success.
+ */
+export function sendable(queue: readonly QueuedSetLog[]): readonly QueuedSetLog[] {
+  const waiting = new Set<string>()
+  const ready: QueuedSetLog[] = []
+
+  for (const item of queue) {
+    const row = `row:${item.entry.id}`
+    const slot = slotOf(item)
+    if (!waiting.has(row) && !waiting.has(slot) && !isStalled(item)) ready.push(item)
+    waiting.add(row)
+    waiting.add(slot)
+  }
+
+  return ready
+}
+
+/** A mutation's identity: its own id, or for an insert the row it creates. */
+export function mutationKey(queued: QueuedSetLog): string {
+  return queued.mutationId ?? queued.entry.id
+}
+
+export function isInsert(queued: QueuedSetLog): boolean {
+  return queued.kind === undefined
+}
+
+function slotOf(queued: QueuedSetLog): string {
+  return `slot:${queued.entry.exerciseId}#${queued.entry.performed.setNumber}`
+}
+
+/** Never sent, and so still this device's alone to rewrite or withdraw. */
+function unsent(queued: QueuedSetLog, inFlight: string | null): boolean {
+  return queued.dispatched !== true && queued.attempts === 0 && mutationKey(queued) !== inFlight
+}
+
 /** How long to wait before the next pass, from the fewest attempts pending. */
 export function retryDelayMs(queue: readonly QueuedSetLog[]): number {
-  const pending = retryable(queue)
+  const pending = sendable(queue)
   if (pending.length === 0) return SET_LOG_RETRY_MAX_MS
 
   const attempts = Math.min(...pending.map((queued) => queued.attempts))
@@ -144,54 +210,107 @@ export function enqueued(
   queue: readonly QueuedSetLog[],
   queued: QueuedSetLog,
 ): readonly QueuedSetLog[] {
-  const without = queue.filter((item) => item.entry.id !== queued.entry.id)
+  const without = queue.filter((item) => mutationKey(item) !== mutationKey(queued))
   return [...without, queued]
 }
 
-/** Drops one entry by set-log id — what a stored row means. */
+/** Drops one mutation by its key — what a stored row, or a stored change, means. */
 export function settled(
   queue: readonly QueuedSetLog[],
-  id: string,
+  key: string,
 ): readonly QueuedSetLog[] {
-  return queue.filter((item) => item.entry.id !== id)
+  return queue.filter((item) => mutationKey(item) !== key)
 }
 
-/** Records a refusal against one entry, leaving it queued. */
+/** Records a refusal against one mutation, leaving it queued. */
 export function attempted(
   queue: readonly QueuedSetLog[],
-  id: string,
+  key: string,
   error: AppError,
 ): readonly QueuedSetLog[] {
   return queue.map((item) =>
-    item.entry.id === id
+    mutationKey(item) === key
       ? { ...item, attempts: item.attempts + 1, lastErrorCode: error.code }
       : item,
   )
 }
 
+/** Marks one mutation as possibly reaching the database, before it is sent. */
+export function dispatched(
+  queue: readonly QueuedSetLog[],
+  key: string,
+): readonly QueuedSetLog[] {
+  return queue.map((item) => (mutationKey(item) === key ? { ...item, dispatched: true } : item))
+}
+
 /**
- * The queue after a session snapshot has been read: every entry the server can
- * already account for is dropped, and the rest stay exactly as they were.
+ * The queue after a correction of the row `correction.entry.id` (REQ-013).
  *
- * Two things count as accounted for, because two things can have happened to a
- * write whose answer never arrived. The row may be there under the id this
- * queue minted — the ordinary case, and the reason the id is minted at all —
- * or the set number may already be recorded against that prescription, which
- * is the same set by the table's own uniqueness rule. Either way the user has
- * the set they performed and is asked for nothing.
+ * An insert this device has never sent is rewritten in place: the row does
+ * not exist anywhere else, so there is nothing to correct but the entry. Once
+ * the insert may have landed — dispatched, refused, or in flight — the
+ * correction is queued behind it instead, because a delayed answer to that
+ * insert (a collision on its id) proves the database holds the values it
+ * sent, not the corrected ones. A correction nothing has sent yet is
+ * superseded: a correction states the whole observation, so the latest one is
+ * the only one worth writing.
+ */
+export function corrected(
+  queue: readonly QueuedSetLog[],
+  correction: QueuedSetLog,
+  inFlight: string | null,
+): readonly QueuedSetLog[] {
+  const row = correction.entry.id
+  const insert = queue.find((item) => isInsert(item) && item.entry.id === row && unsent(item, inFlight))
+  if (insert !== undefined) {
+    const legacyRpe = (insert.entry.performed as { readonly rpe?: number }).rpe
+    const entry: SetLogEntry = { ...correction.entry, performed: {
+      ...correction.entry.performed,
+      ...(insert.entry.performed.isWarmup === undefined ? {} : { isWarmup: insert.entry.performed.isWarmup }),
+      ...(legacyRpe === undefined ? {} : { rpe: legacyRpe }),
+    } }
+    return queue.map((item) => (item === insert ? { ...item, entry, request: undefined } : item))
+  }
+
+  const without = queue.filter(
+    (item) => !(item.kind === 'correct' && item.entry.id === row && unsent(item, inFlight)),
+  )
+  return [...without, { ...correction, kind: 'correct' }]
+}
+
+/**
+ * The queue after a confirmed clear of the row `clear.entry.id` (REQ-013).
+ *
+ * Only mutations never sent can be withdrawn. Possibly dispatched work stays
+ * ahead of the clear across reloads; its exact replay settles before the clear
+ * and any explicit re-entry into the slot. Other observations stay untouched.
+ */
+export function cleared(
+  queue: readonly QueuedSetLog[],
+  clear: QueuedSetLog,
+  inFlight: string | null,
+): readonly QueuedSetLog[] {
+  const row = clear.entry.id
+  const neverSent = queue.some(
+    (item) => isInsert(item) && item.entry.id === row && unsent(item, inFlight),
+  )
+  const without = queue.filter((item) => !(item.entry.id === row && unsent(item, inFlight)))
+
+  return neverSent ? without : [...without, { ...clear, kind: 'clear' }]
+}
+
+/**
+ * A snapshot does not establish an exact mutation receipt. Keep the outbox
+ * intact for idempotent replay, even when an id or slot appears in the read.
  */
 export function reconciled(
   queue: readonly QueuedSetLog[],
   stored: readonly { readonly id: string; readonly exerciseId: string; readonly setNumber: number }[],
 ): readonly QueuedSetLog[] {
-  const ids = new Set(stored.map((row) => row.id))
-  const numbers = new Set(stored.map((row) => `${row.exerciseId}#${row.setNumber}`))
-
-  return queue.filter(
-    (item) =>
-      !ids.has(item.entry.id) &&
-      !numbers.has(`${item.entry.exerciseId}#${item.entry.performed.setNumber}`),
-  )
+  // A snapshot can name the same slot, or even an older version of this row.
+  // Neither proves an exact mutation. Replay obtains its durable receipt.
+  void stored
+  return queue
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -234,8 +353,8 @@ function isPerformedSet(value: unknown): value is PerformedSet {
     // one canonical unit, on the outer entry; never accept conflicting copies.
     record.weightUnit === undefined &&
     // An entry queued before effort collection was removed (REQ-015) may still
-    // carry `rpe`. It is tolerated so the set itself is never dropped; the
-    // writer no longer sends it.
+    // carry `rpe`. Exact legacy bootstrap preserves it rather than silently
+    // changing that historical observation.
     isOptionalNumber(record.rpe) &&
     // REQ-012: an entry queued before effort existed has no key and decodes as
     // unanswered. A present value must be a category or `null` — a number
@@ -270,6 +389,17 @@ function isQueuedSetLog(value: unknown): value is QueuedSetLog {
 
   return (
     isSetLogEntry(record.entry) &&
+    // An insert has neither; a correction or a clear has both.
+    ((record.kind === undefined && record.mutationId === undefined) ||
+      ((record.kind === 'correct' || record.kind === 'clear') && isId(record.mutationId))) &&
+    (record.dispatched === undefined || typeof record.dispatched === 'boolean') &&
+    (record.baseRevision === undefined || (Number.isSafeInteger(record.baseRevision) && Number(record.baseRevision) >= 0)) &&
+    (record.request === undefined || (isSetObservationMutation(record.request)
+      && record.request.observation_id === (record.entry as SetLogEntry).id
+      && record.request.mutation_id === (record.mutationId ?? (record.entry as SetLogEntry).id)
+      && record.request.exercise_id === (record.entry as SetLogEntry).exerciseId
+      && record.request.set_number === (record.entry as SetLogEntry).performed.setNumber
+      && record.request.operation === (record.kind ?? 'insert'))) &&
     isId(record.sessionId) &&
     typeof record.queuedAt === 'string' &&
     typeof record.attempts === 'number' &&
@@ -352,4 +482,21 @@ export function queuedSetLog(
   queuedAt: string,
 ): QueuedSetLog {
   return { entry, sessionId, queuedAt, attempts: 0, lastErrorCode: null }
+}
+
+/** Freeze a canonical request on disk before network dispatch. Legacy queues
+ * acquire it once, retaining their old observation and mutation identities. */
+export function prepared(
+  queue: readonly QueuedSetLog[], key: string, currentRevision: number,
+): readonly QueuedSetLog[] {
+  const target = queue.find((item) => mutationKey(item) === key)
+  if (target === undefined || target.request !== undefined) return queue
+  let revision = Math.max(target.baseRevision ?? 0, currentRevision)
+  for (const item of queue) {
+    if (item === target) break
+    if (item.entry.id === target.entry.id && item.request !== undefined) revision = item.request.revision
+  }
+  const request = setObservationMutation(target.entry, target.kind ?? 'insert', mutationKey(target),
+    isInsert(target) ? 0 : revision)
+  return queue.map((item) => item === target ? { ...item, request } : item)
 }

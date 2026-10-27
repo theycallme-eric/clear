@@ -111,8 +111,8 @@ describe('what a queue holds', () => {
 })
 
 describe('what a refusal is worth', () => {
-  it('reads a conflict on a client-minted id as the set already being stored', () => {
-    expect(isAlreadyStored(createError(ErrorCode.PERSISTENCE_CONFLICT))).toBe(true)
+  it('never reads a generic conflict as proof of the exact mutation being stored', () => {
+    expect(isAlreadyStored(createError(ErrorCode.PERSISTENCE_CONFLICT))).toBe(false)
     expect(isAlreadyStored(createError(ErrorCode.NETWORK_OFFLINE))).toBe(false)
   })
 
@@ -132,6 +132,7 @@ describe('what a refusal is worth', () => {
     ErrorCode.VALIDATION_OUT_OF_RANGE,
     ErrorCode.VALIDATION_REQUIRED_FIELD,
     ErrorCode.PERSISTENCE_NOT_FOUND,
+    ErrorCode.PERSISTENCE_CONFLICT,
   ])('stops retrying %s, which is about the row', (code) => {
     expect(isPermanent(createError(code))).toBe(true)
   })
@@ -191,7 +192,7 @@ describe('when to try again, and when to say so', () => {
 })
 
 describe('reconciling against what the server already has', () => {
-  it('drops an entry whose row is in the snapshot under the same id', () => {
+  it('retains an entry whose row is in the snapshot until its exact RPC receipt is replayed', () => {
     const item = queued()
 
     expect(
@@ -199,15 +200,14 @@ describe('reconciling against what the server already has', () => {
         [item],
         [{ id: item.entry.id, exerciseId: item.entry.exerciseId, setNumber: 1 }],
       ),
-    ).toEqual([])
+    ).toEqual([item])
   })
 
-  it('drops an entry whose set number is already recorded against that prescription', () => {
+  it('retains an entry when a different observation occupies its prescription and set slot', () => {
     const item = queued()
 
-    // The write landed and the answer was lost. `(exercise, set_number)` is
-    // unique, so this is the same set — re-sending it would be refused, and
-    // asking the user to re-enter it would be the app arguing with itself.
+    // A slot is not the observation's identity. This snapshot cannot prove
+    // the queued measurement ever landed or that the values are the same.
     expect(
       reconciled(
         [item],
@@ -219,7 +219,7 @@ describe('reconciling against what the server already has', () => {
           },
         ],
       ),
-    ).toEqual([])
+    ).toEqual([item])
   })
 
   it('keeps an entry the snapshot knows nothing about', () => {

@@ -407,6 +407,9 @@ function WorkoutShell({
         weightUnit={weightUnit}
         onFailure={setFailure}
         storage={storage}
+        // REQ-013: saved sets are corrected or cleared here, during the
+        // workout they were performed in, and nowhere after it.
+        corrections
       >
         {/*
           EXE-05: the session's one rest. Inside the set path because a

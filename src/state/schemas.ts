@@ -1025,6 +1025,10 @@ export const exerciseSetLogRowSchema = z.object({
   // additive migration has not reached yet — is a set nobody was asked about,
   // which is exactly what `null` says. An unknown category is still refused.
   effort: setEffortSchema.nullable().default(null),
+  // Ordered mutation metadata is absent in pre-migration snapshots. Zero/null
+  // identifies an untouched legacy observation; no history is fabricated.
+  mutation_revision: z.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0),
+  last_mutation_id: z.uuid().nullable().default(null),
 })
 
 /**
