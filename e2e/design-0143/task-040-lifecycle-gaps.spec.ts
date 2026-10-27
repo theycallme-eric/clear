@@ -446,6 +446,7 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
     await readyWorkout(page)
     const failedWrite = await boundary(page, { tail: 'rpc/abandon_session', method: 'POST' }, 'failure')
     try {
+      await page.getByRole('button', { name: 'Actions', exact: true }).click()
       await page.getByRole('button', { name: 'Abandon', exact: true }).click()
       await page.getByRole('dialog', { name: 'Abandon workout?' }).getByRole('button', { name: 'Abandon', exact: true }).click()
       await save!.take(key('Workout', 'abandon-error-retry'), '/workout', 'Workout',
@@ -457,6 +458,7 @@ test.describe('TASK-040 — additive lifecycle gaps, not a replacement baseline'
         })
     } finally { await failedWrite.dispose() }
     await page.getByRole('dialog', { name: 'That didn’t save' }).getByRole('button', { name: 'Close', exact: true }).click()
+    await page.getByRole('button', { name: 'Actions', exact: true }).click()
     await page.getByRole('button', { name: 'Abandon', exact: true }).click()
     await save!.transition(key('Workout', 'abandon-home'), '/workout', 'Workout', async () => {
       await expect(page.getByRole('dialog', { name: 'Abandon workout?' })).toBeVisible()

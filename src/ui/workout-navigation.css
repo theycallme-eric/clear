@@ -70,8 +70,29 @@
   flex: 0 0 auto;
 }
 
-/* The elapsed clock and Abandon keep their public header slots. When those
+/* The elapsed clock and the menu keep their public header slots. When those
    slots do not fit beside the title, let the cluster take the next line. */
 .clr-workout-header {
   flex-wrap: wrap;
+}
+
+/* REQ-019: the header's framed menu. The panel drops from the trigger's right
+   edge over the content below it; `.clr-chamfer` paints an opaque ground, so
+   nothing beneath shows through. */
+.clr-workout-menu {
+  position: relative;
+}
+
+.clr-workout-menu__panel {
+  position: absolute;
+  top: calc(100% + var(--spacing-200));
+  right: 0;
+  z-index: 1;
+  display: grid;
+  padding: var(--spacing-200);
+  white-space: nowrap;
+}
+
+.clr-workout-menu__panel[hidden] {
+  display: none;
 }

@@ -576,10 +576,11 @@ describe('Workout — the focus mode', () => {
     expect(router.state.location.pathname).toBe('/workout')
   })
 
-  it('abandons through the header control, and lands where the session is resumable', async () => {
+  it('abandons through the header menu, and lands where the session is resumable', async () => {
     const user = userEvent.setup()
     const { double, router } = await shell()
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
@@ -599,6 +600,7 @@ describe('Workout — the focus mode', () => {
       sessions: { abandon: async () => err(createError(ErrorCode.NETWORK_OFFLINE)) },
     })
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
 
@@ -1837,6 +1839,7 @@ describe('Workout — the session’s one rest', () => {
     advance(85)
     returnToForeground()
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))

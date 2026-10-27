@@ -47,7 +47,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
-import { Button, LogOut } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { useSectionCompletion } from '../state/block-completion'
 import { useFlushSetLogs } from '../state/set-logging'
@@ -94,6 +93,7 @@ import {
   GlobalTimer,
   RestTimerBar,
   SectionHeader,
+  WorkoutMenu,
   WorkoutNavigation,
 } from '../ui/workout-chrome'
 import { AUTHENTICATED_HOME } from './guards'
@@ -309,7 +309,7 @@ function WorkoutShell({
 
   /**
    * The confirm is open for two reasons and they are asked the same way: the
-   * header's Abandon control, and a navigation the blocker is holding — a
+   * header menu's Abandon item, and a navigation the blocker is holding — a
    * link, a redirect, or browser Back. The second is derived rather than
    * copied into state by an effect, so a blocked navigation and the dialog it
    * raises can never disagree about whether there is a question outstanding.
@@ -427,15 +427,9 @@ function WorkoutShell({
             header={{
               className: 'clr-workout-header',
               meta: <GlobalTimer seconds={seconds} />,
-              actions: (
-                <Button
-                  variant="quiet"
-                  icon={<LogOut />}
-                  onClick={() => setAskedToExit(true)}
-                >
-                  Abandon
-                </Button>
-              ),
+              // REQ-019: Abandon sits in the framed top menu and asks the
+              // same confirm it always did.
+              actions: <WorkoutMenu onAbandon={() => setAskedToExit(true)} />,
             }}
             pinnedFoot={
               <PhoneFooter className="clr-workout-footer">

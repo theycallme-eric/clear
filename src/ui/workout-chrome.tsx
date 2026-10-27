@@ -31,9 +31,10 @@
  *   · status is never colour alone — a finished section carries a tick and the
  *     word, a current one carries `aria-current`;
  *   · the destructive action does not sit beside the frequently-pressed one,
- *     which is why Abandon belongs to the header and Next to the footer.
+ *     which is why Abandon belongs to the header's menu (`WorkoutMenu`,
+ *     REQ-019) and Next to the footer.
  */
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import {
   Check,
@@ -41,7 +42,10 @@ import {
   ChevronRight,
   Circuit,
   Dumbbell,
+  IconButton,
   Ladder,
+  LogOut,
+  Menu,
   Plus,
   Progress,
   Pulse,
@@ -564,6 +568,85 @@ export function AbandonConfirmDialog({
       Everything logged so far is kept. The workout stops here: it cannot be
       picked back up, and it does not count towards your streak.
     </ConfirmDialog>
+  )
+}
+
+export interface WorkoutMenuProps {
+  /** Asks the abandon question. The menu has already closed when it runs. */
+  onAbandon: () => void
+  /** Starts with the panel open. The workout never passes it; the gallery does. */
+  defaultOpen?: boolean
+}
+
+/** The trigger's accessible name; the header shows only its glyph. */
+export const WORKOUT_MENU_LABEL = 'Actions'
+
+/**
+ * REQ-019: the header's framed menu, which is where Abandon lives.
+ *
+ * The trigger is the shipped `IconButton` — framed, icon only, and named
+ * "Actions" for assistive technology without printing the word. It discloses
+ * one framed panel (`aria-expanded`/`aria-controls`) rather than an ARIA
+ * `menu`, so it asks for no roving-focus contract it would only half keep.
+ *
+ * Choosing Abandon closes the panel and hands focus back to the trigger
+ * *before* the confirm opens, so dismissing the confirm returns the athlete to
+ * the menu button on an unchanged workout. Nothing here abandons: the confirm
+ * and its retention behaviour are `AbandonConfirmDialog`'s, unchanged. Esc and
+ * a press outside close the panel without acting.
+ */
+export function WorkoutMenu({ onAbandon, defaultOpen = false }: WorkoutMenuProps) {
+  const [open, setOpen] = useState(defaultOpen)
+  const panelId = useId()
+  const root = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      trigger.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  const abandon = () => {
+    setOpen(false)
+    trigger.current?.focus()
+    onAbandon()
+  }
+
+  return (
+    <div ref={root} className="clr-workout-menu">
+      <IconButton
+        label={WORKOUT_MENU_LABEL}
+        icon={<Menu />}
+        buttonRef={trigger}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((was) => !was)}
+      />
+      <div
+        id={panelId}
+        role="group"
+        aria-label={WORKOUT_MENU_LABEL}
+        className="clr-workout-menu__panel clr-chamfer clr-chamfer--sm"
+        hidden={!open}
+      >
+        <Button variant="quiet" icon={<LogOut />} onClick={abandon}>
+          Abandon
+        </Button>
+      </div>
+    </div>
   )
 }
 

@@ -84,6 +84,7 @@ import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
 import { MoodReading } from '../ui/mood'
 import { MovementCountdown } from '../ui/movement-countdown'
+import { WorkoutMenu } from '../ui/workout-chrome'
 import { Select } from '../ui/select'
 import {
   LoggedSetTable,
@@ -1616,6 +1617,14 @@ function MovementCountdownReady() {
   return <MovementCountdown seconds={30} movement="hollow body hold" />
 }
 
+function WorkoutMenuClosed() {
+  return <WorkoutMenu onAbandon={() => undefined} />
+}
+
+function WorkoutMenuOpen() {
+  return <WorkoutMenu onAbandon={() => undefined} defaultOpen />
+}
+
 function MovementCountdownInCard() {
   return (
     <Card>
@@ -2329,6 +2338,25 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'ready, on a movement card',
         note: 'Where it actually sits. The frame is the card’s element frame: same timer role, no bar of its own, never a card in a card.',
         Render: MovementCountdownInCard,
+      },
+    ],
+  },
+  {
+    component: 'WorkoutMenu',
+    requirement: 'REQ-019',
+    module: 'src/ui/workout-chrome.tsx',
+    summary:
+      'The active workout’s framed header menu: an icon-only framed trigger named “Actions” for assistive technology, disclosing one framed panel that holds Abandon. Abandon closes the panel and asks the shared abandon confirm.',
+    specimens: [
+      {
+        state: 'closed',
+        note: 'Press the menu glyph to open the panel; Esc or a press outside closes it. Abandon here does nothing but close it.',
+        Render: WorkoutMenuClosed,
+      },
+      {
+        state: 'open',
+        note: 'The framed panel drops from the trigger’s right edge over the content below; it holds Abandon.',
+        Render: WorkoutMenuOpen,
       },
     ],
   },

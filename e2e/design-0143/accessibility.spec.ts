@@ -1448,7 +1448,10 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   await reached(page, '/review', TITLE)
   await startWorkout(page)
   await settled(page)
-  const trigger = page.locator('header').getByRole('button', { name: 'Abandon', exact: true })
+  // REQ-019: Abandon is an item in the header's framed menu; the menu button is
+  // where focus returns once the question is dismissed.
+  const trigger = page.locator('header').getByRole('button', { name: 'Actions', exact: true })
+  const item = page.locator('header').getByRole('button', { name: 'Abandon', exact: true })
   const dialog = page.getByRole('dialog', { name: 'Abandon workout?' })
   await page.locator('dialog.clr-dialog').evaluateAll((elements) => elements.forEach((element) => {
     (element as HTMLElement).dataset.closes = '0'
@@ -1462,7 +1465,10 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   // committing a prior state is pressed again rather than waited out.
   const open = async () => {
     await expect(async () => {
-      if (!(await dialog.isVisible())) await trigger.press('Enter')
+      if (!(await dialog.isVisible())) {
+        if (!(await item.isVisible())) await trigger.press('Enter')
+        await item.press('Enter')
+      }
       await expect(dialog).toBeVisible({ timeout: 1_000 })
     }).toPass({ timeout: 10_000 })
   }
