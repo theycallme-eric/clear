@@ -75,7 +75,7 @@ function dockerEnv() {
 function refuseTargets(argv) {
   if (argv.length > 0) {
     throw new Refusal(
-      `takes no arguments (got ${argv.join(' ')}). It provisions its own disposable ` +
+      'takes no arguments. It provisions its own disposable ' +
         'container and will not be pointed at any other database.',
     )
   }
@@ -84,7 +84,7 @@ function refuseTargets(argv) {
 function refuseRemoteDocker() {
   const host = process.env.DOCKER_HOST
   if (host !== undefined && host !== '' && !/^(unix|npipe):\/\//.test(host)) {
-    throw new Refusal(`DOCKER_HOST=${host} is not a local socket; refusing a remote Docker engine.`)
+    throw new Refusal('DOCKER_HOST is not a local socket; refusing a remote Docker engine.')
   }
 
   const endpoint = docker(['context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], {
@@ -92,7 +92,7 @@ function refuseRemoteDocker() {
   })
   const resolved = host !== undefined && host !== '' ? host : endpoint.stdout.trim()
   if (!/^(unix|npipe):\/\//.test(resolved)) {
-    throw new Refusal(`the Docker endpoint (${resolved || 'unknown'}) is not a local socket.`)
+    throw new Refusal('the Docker endpoint is missing or is not a local socket.')
   }
 }
 

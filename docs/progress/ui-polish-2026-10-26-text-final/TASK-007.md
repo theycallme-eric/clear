@@ -107,3 +107,8 @@ a genuine new local browser capture group on the committed current source, witho
 any record schema, validator, task requirement or required check. Old groups remain untouched.
 The separate owned local proof backend will use this task's actual additive migration; remote
 schema application is still outside authority. No further coding invocation is needed for this proof.
+
+The rehearsal refusal diagnostics now name the violated boundary without echoing a caller-supplied
+argument or Docker endpoint, which might contain private connection data. Both argument and
+nonlocal-endpoint refusals are checked before any Docker or database command. Exit semantics,
+actual SQL/RLS checks and normal local rehearsal remain unchanged.
