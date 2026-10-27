@@ -20,10 +20,10 @@
  * a read, reads fail, and a swap panel that renders nothing while it loads is
  * indistinguishable from one that found nothing.
  */
-import type { CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { AppDialog } from './app-dialog'
-import { Button, EmptyState, RefreshCw, TextAction } from '../design-system/index'
+import { Button, EmptyState, RefreshCw, ScrollRegion, TextAction } from '../design-system/index'
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
@@ -191,9 +191,55 @@ function SwapOptionsView({
       )
 
     case 'ready':
-      return (
-        <ul aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
-          {options.options.map((option) => (
+      return <SwapOptionList options={options.options} busy={busy} onChoose={onChoose} />
+  }
+}
+
+/**
+ * The list's frame: as tall as the list, and never taller than the viewport
+ * leaves once the dialog's title, padding and Keep action are drawn. The
+ * dialog element itself does not scroll (0.14.3 clears its max-height), so a
+ * long list that grew the panel past the screen had no way to reach its last
+ * choice — the reported installed-iPhone defect (REQ-020). Containing it here
+ * keeps the title and the safe action on screen while the list scrolls.
+ */
+const LIST_FRAME_MAX_HEIGHT =
+  'max(calc(var(--control-height) * 2), calc(100dvh - var(--spacing-600) * 10))'
+
+/**
+ * The alternatives, inside the public `ScrollRegion` — the one vertical
+ * scrolling contract (ATOMIC §3.3), never a local overflow box. The region
+ * fills a parent of definite height, so the frame takes the list's measured
+ * height and the cap above clamps it; a short list leaves no empty band.
+ */
+function SwapOptionList({
+  options,
+  busy,
+  onChoose,
+}: {
+  options: readonly SwapOption[]
+  busy: boolean
+  onChoose: (option: SwapOption) => void
+}) {
+  const listRef = useRef<HTMLUListElement>(null)
+  const [listHeight, setListHeight] = useState<number | undefined>(undefined)
+
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (list === null) return
+    const measure = () => setListHeight(list.getBoundingClientRect().height)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(list)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div data-swap-list-frame style={{ height: listHeight, maxHeight: LIST_FRAME_MAX_HEIGHT }}>
+      <ScrollRegion>
+        <ul ref={listRef} aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
+          {options.map((option) => (
             <li key={option.exerciseId}>
               <Button
                 variant="secondary"
@@ -208,8 +254,9 @@ function SwapOptionsView({
             </li>
           ))}
         </ul>
-      )
-  }
+      </ScrollRegion>
+    </div>
+  )
 }
 
 /** The equipment a replacement would be performed with, said plainly. */
