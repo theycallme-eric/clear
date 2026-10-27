@@ -1,8 +1,30 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-005 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-008 source-bound recapture — 27 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task008/`: all four mobile skin cases/eight normal-short phone captures
+passed through the existing authenticated journey, Axe, route, layout, network and record/PNG/source
+checks. Captured source `099429b7a8f6253a886ccd7607e17ad77ca619fe`, runtime source
+`8a4536f8517976bd6a3e8b5e9885b2fc0b185d98995d19a6cf525db687f66d90`, driver `2e44c5ac5ca6624dc66d775da2e32286be6c4d0a6bc535c8165548a68cea3244`.
+The committed source ran on the owned disposable Supabase/PostgreSQL17 backend reset with the
+actual current migrations and synthetic seeds; no remote schema or production credentials. The
+preview walk recorded zero generation requests, attempted writes or forwarded writes.
+
+This capture proves the current source-bound format-preview route. Effort-enabled sheet composition
+is separately covered by the approved 12 effort and 29 sheet tests; integrated surrounding mobile
+smoke belongs to TASK-018, durable corrections to TASK-011. No broader browser, deployed or
+physical-iPhone result is inferred from this preview.
+
+Input provenance names actual native attempt 2/a2, run `41bbb142-94cf-4dfc-a691-26d7831e8d85` and
+base `b38987fa73cbaae77b4f1b4130b7a53223a5a818`. Interrupted a1 remains inactive with unknown terminal
+result/usage; it is neither copied nor called successful. All earlier evidence groups remain
+unchanged. Existing evidence fields/validators, full native verification and protected delivery
+remain mandatory.
+
+## Historical UI-polish TASK-005 source-bound recapture — 27 October 2026
+
+Retained TASK-005 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task005/`: four mobile skin cases/eight normal-short phone captures,
 all passing the existing real authenticated journey, Axe, route, layout, network and record/PNG/source
 checks. Captured source `b1c15ee580008b99c2e98f8a9c5552cf497696ef`, runtime source

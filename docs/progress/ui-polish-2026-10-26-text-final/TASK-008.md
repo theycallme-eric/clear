@@ -16,9 +16,9 @@ remain TASK-011. Browser regression across the surrounding surfaces remains TASK
 
 Attempt 1 was interrupted when its command session disappeared. Its controller and worker were
 confirmed gone; no terminal worker or verification result was recorded, and its usage is unknown.
-The existing lease expired at17:29:20.218UTC; one normal targeted run-once reclaimed configured
-attempt2 in this fresh a2 workspace at `b38987f`. The a1 partial workspace remains inactive and
-was not copied or reset. Attempt2 rebuilt from the unchanged approved body; max2/history retained.
+The existing lease expired at 17:29:20.218 UTC; one normal targeted run-once reclaimed configured
+attempt 2 in this fresh a2 workspace at `b38987f`. The a1 partial workspace remains inactive and
+was not copied or reset. Attempt 2 rebuilt from the unchanged approved body; max 2/history retained.
 
 ## What changed (local, uncommitted)
 
@@ -107,11 +107,11 @@ After that, every acceptance criterion and repository check above should be gree
 
 ## Operator recovery checkpoint
 
-Native invocation21461 returned exit1: worker succeeded, native12 effort and29 sheet tests passed;
+Native invocation 21461 returned exit1: worker succeeded, native 12 effort and 29 sheet tests passed;
 full suite failed only two stale source-bound audit tests. No additional coding attempt is needed.
 The operator will commit source and collect genuine mobile records against the owned disposable
 local backend, then use the existing native same-attempt recovery to rerun every check and emit
-its own receipt. Capture lineage must use this actual attempt2/a2 input and baseb38987f, never the
+its own receipt. Capture lineage must use this actual attempt 2/a2 input and base b38987f, never the
 interrupted a1 or the previous TASK-005 binding. Physical-iPhone and broad surrounding smoke remain
 outside this task, as explicitly allocated by the approved handoff.
 
@@ -120,3 +120,16 @@ per-set drafts, correct glyph order/accessibility/answered-only Clear, collapse 
 controlled edit boundaries match the approved task. Numeric RPE, five-choice overall feeling,
 persistence and vendored DS remain unchanged. Active format-preview collector needs no selector
 adaptation. DS and diff checks passed; genuine recapture/native full recovery remain pending.
+
+## Actual source-bound browser proof
+
+Foreground 96791 returned exit0: four mobile skin cases/eight phone-short captures passed (25.3s)
+on committed source `099429b7a8f6253a886ccd7607e17ad77ca619fe`, runtime `8a4536f8517976bd6a3e8b5e9885b2fc0b185d98995d19a6cf525db687f66d90`.
+New group `docs/design/evidence-0143/task034-format-preview-ui-polish-task008` retains actual records/PNGs and input provenance for this real a2/attempt 2
+branch, not interrupted a1. Payload SHA256 `82f09d6aec6795dd58ee9b0f04f9934286cab9c587952b5e39b7221a4480f251` is derived from actual files and will be
+checked by the existing consumer. Preview walk made zero generation/preview writes; local fixture
+accounts only. This is current format-preview proof; it does not claim completed TASK-018 smoke,
+durable TASK-011 corrections, deployed or physical-iPhone proof. Native full recovery/delivery
+still pending.
+
+The actual audit consumer passed all 38 checks and its actual payload digest matches provenance. Owned proof backend stop 13010 returned exit 0. The final native same-attempt recovery is next.
