@@ -21,7 +21,7 @@ import { routes } from '../app/router'
 import { BlockCompletionContext, type BlockCompletionApi } from '../state/block-completion'
 import { createError, err, ErrorCode } from '../state/errors'
 import { RestTimerProvider } from '../state/rest-provider'
-import type { SetLogEntry } from '../state/set-logging'
+import type { SetObservationMutation } from '../state/set-observation-mutation'
 import { SetLoggingProvider } from '../state/set-logging-provider'
 import { sessionProgress } from '../state/workout-progress'
 import { AppProviders, signedIn } from '../test/render'
@@ -63,10 +63,12 @@ function mount(options: { corrections?: boolean; correct?: Behaviour } = {}) {
     ...base.clients,
     setLogs: {
       ...base.clients.setLogs,
-      async correct(entry: SetLogEntry) {
-        if (options.correct === 'refuse') return err(createError(ErrorCode.NETWORK_OFFLINE))
-        if (options.correct === 'hold') await new Promise<void>((resolve) => { release = resolve })
-        return base.clients.setLogs.correct(entry)
+      async mutate(mutation: SetObservationMutation) {
+        if (mutation.operation === 'correct') {
+          if (options.correct === 'refuse') return err(createError(ErrorCode.NETWORK_OFFLINE))
+          if (options.correct === 'hold') await new Promise<void>((resolve) => { release = resolve })
+        }
+        return base.clients.setLogs.mutate(mutation)
       },
     },
   }

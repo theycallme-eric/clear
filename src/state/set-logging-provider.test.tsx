@@ -642,7 +642,7 @@ describe('a retried write does not create a duplicate set', () => {
     await waitFor(() => expect(readSetLogQueue(storage)).toEqual([]))
   })
 
-  it('treats a conflict on its own id as proof the set is already stored', async () => {
+  it('keeps a generic conflict unconfirmed and queued instead of claiming a saved set', async () => {
     const snapshot = snapshotFixture({
       sections: [
         {
@@ -658,16 +658,16 @@ describe('a retried write does not create a duplicate set', () => {
 
     await logSet(1)
 
-    // The primary key is this queue's own, so the collision is with the write
-    // it already made: the set is stored, and it stops being owed.
-    await waitFor(() => expect(screen.getByText('status 1:logged')).toBeInTheDocument())
-    await waitFor(() => expect(readSetLogQueue(storage)).toEqual([]))
+    await waitFor(() => expect(screen.getByText('status 1:failed')).toBeInTheDocument())
+    expect(screen.queryByText('status 1:logged')).not.toBeInTheDocument()
+    expect(readSetLogQueue(storage)).toHaveLength(1)
+    expect(readSetLogQueue(storage)[0].lastErrorCode).toBe(ErrorCode.PERSISTENCE_CONFLICT)
     expect(attempts).toHaveLength(1)
   })
 })
 
 describe('an unflushed set reconciles against the server on resume', () => {
-  it('drops a queued set the snapshot already carries, without re-sending it', async () => {
+  it('replays the exact queued mutation receipt before confirming a row the snapshot carries', async () => {
     // The set landed; the answer never arrived. The row is in the snapshot and
     // the entry is still on disk under the same id.
     const stored: QueuedSetLog = queuedSetLog(
@@ -690,9 +690,10 @@ describe('an unflushed set reconciles against the server on resume', () => {
       exercises: [{ setLogs: [{ set_number: 1, actual_reps: 8, weight: 60 }] }],
     })
 
-    // One set, drawn as stored, and the user is asked for nothing.
+    // The snapshot alone does not settle it. Exact RPC acknowledgement can
+    // bootstrap this matching legacy observation without another insertion.
     expect(screen.getByText('1 logged')).toBeInTheDocument()
-    expect(screen.getByText('status 1:logged')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('status 1:logged')).toBeInTheDocument())
     await waitFor(() => expect(readSetLogQueue(storage)).toEqual([]))
     expect(workout.loggedSets()).toEqual([])
   })

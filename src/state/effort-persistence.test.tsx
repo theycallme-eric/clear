@@ -453,12 +453,17 @@ describe('the additive migration', () => {
     expect(sql).not.toMatch(/\banon\b/)
   })
 
-  it('is the only migration that knows the categories exist', () => {
+  it('is the only migration that defines or interprets the effort categories', () => {
     const others = filesUnder('supabase/migrations').filter(
       (path) => path.endsWith('.sql') && !path.endsWith('20261027000027_set_effort.sql'),
     )
     for (const path of others) {
-      expect(code(read(path)), path).not.toMatch(/set_effort|too_hard|about_right|too_easy/)
+      // TASK-011's ordered mutation RPC casts the value to this existing
+      // enum. That preserves categories; it must not redefine, translate or
+      // use a category as a numerical training signal.
+      expect(code(read(path)), path).not.toMatch(
+        /create\s+type\s+public\.set_effort|['"](?:too_hard|about_right|too_easy)['"]/i,
+      )
     }
   })
 })

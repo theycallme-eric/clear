@@ -251,19 +251,24 @@ logged set is serialised into `localStorage` under `clear.set-log-queue` inside 
 and flushed from there — retried on a backoff, on `online`, and when the tab returns — rather than
 written and hoped for. `SetLoggingProvider` owns that flush, reconciles the restored queue against
 the session snapshot on mount, and is what the screen reads a set's `logged` / `syncing` / `failed`
-status from. This is not the start of offline support: nothing is cached for reading, the queue
-holds only work the user physically did, and an entry leaves it only when the row is stored or the
-snapshot proves it already was. The idempotency it depends on is DATA-01d's client-minted primary
-key — a retried insert collides with its own first write instead of inventing a second set — and
-its key is the one local record `clearWorkoutShellState` must never drop.
+status from. Nothing is cached for offline reading; the queue holds only work the user physically
+did. Its key is the one local record `clearWorkoutShellState` must never drop. A slot match or generic
+insert conflict does not prove that the intended observation was saved.
 
 TASK-011 (REQ-013) puts corrections and clears of a saved set through that same queue rather than
 beside it. A queued entry is an insert, a `correct` or a `clear`. The last two have their own
 mutation id and address the row by its id, never by set number. `sendable` sends each row's and
-each set slot's mutations in the order they were made, and a mutation marked `dispatched` is never
-rewritten or withdrawn in place. `SetLogsClient.correct` / `.clear` are a PATCH and a DELETE filtered
-by row id and prescription, under the existing owner RLS. Only the active `Workout` shell turns them on
-(`SetLoggingProvider corrections`).
+each set slot's mutations in order; possibly dispatched requests survive errors and reload without
+being rewritten. `src/state/set-observation-mutation.ts` defines the canonical request and validates
+the exact acknowledgement/current head. `SetLogsClient.mutate` sends it through the shared typed
+transport to `mutate_set_observation`. The database locks the owning session and observation, checks
+owner and predecessor revision, and records the immutable request receipt in
+`set_observation_mutations`. Clear receipts survive row deletion and fence delayed legacy writes;
+an exact replay returns the current head without repeating a write. Only the active `Workout` shell
+enables corrections, and the RPC checks active state for new corrections and clears. Older queued
+inserts keep their existing replay permission. The provider ignores replies after unmount and never
+draws newer pending or failed work as Saved. Historical numeric RPE and warmup classification are
+preserved by correction rather than rewritten.
 
 The database is a second, independent flow: `supabase/migrations/` → the reused Supabase project.
 DATA-01a adds the catalog domain — exercise definitions, the component→pattern map, muscle

@@ -58,6 +58,7 @@ const PARENT: Record<string, [string, string]> = {
   workout_blocks: ['workout_sections', 'section_id'],
   workout_exercises: ['workout_blocks', 'block_id'],
   exercise_set_logs: ['workout_exercises', 'workout_exercise_id'],
+  set_observation_mutations: ['workout_exercises', 'workout_exercise_id'],
   block_results: ['workout_blocks', 'block_id'],
   saved_workout_completions: ['saved_workouts', 'saved_workout_id'],
 }
@@ -75,6 +76,8 @@ export function createSupabaseDouble(options: SupabaseDoubleOptions = {}) {
       ? `${String(row.location_id)}:${String(row.equipment_id)}`
       : table === 'load_anchors'
         ? `${String(row.user_id)}:${String(row.exercise_id)}:${String(row.equipment_used)}`
+      : table === 'set_observation_mutations'
+        ? String(row.mutation_id)
       : String(row.id)
 
   /**

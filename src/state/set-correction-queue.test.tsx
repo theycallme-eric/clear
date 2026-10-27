@@ -40,13 +40,13 @@ import {
   type QueueStorage,
 } from './set-log-queue'
 import {
-  setLogCorrection,
   setLogInsert,
   useSetLogging,
   type SetLoggingApi,
   type SetLogEntry,
 } from './set-logging'
 import { SetLoggingProvider } from './set-logging-provider'
+import { setObservationMutation, sameSetMutation, parseSetObservationAck, type SetObservationMutation, type SetObservationAck } from './set-observation-mutation'
 import { sessionProgress } from './workout-progress'
 
 afterEach(cleanup)
@@ -79,7 +79,9 @@ function createServer(owned: readonly string[]): Server {
   const visible = (exerciseId: string) => owned.includes(exerciseId)
 
   async function request<T>(name: string, write: () => T): Promise<T | ReturnType<typeof offline>> {
-    if (gate !== null) await gate
+    const held = gate
+    gate = null
+    if (held !== null) await held
     const behaviour = plan.shift() ?? 'store'
     if (behaviour === 'offline') return offline()
     log.push(name)
@@ -89,38 +91,53 @@ function createServer(owned: readonly string[]): Server {
 
   const offline = () => err(createError(ErrorCode.NETWORK_OFFLINE))
 
+  const receipts = new Map<string, SetObservationMutation>()
+  const heads = new Map<string, SetObservationMutation>()
+  const conflict = () => err(createError(ErrorCode.PERSISTENCE_CONFLICT))
+  const answer = (mutation: SetObservationMutation, outcome: 'applied' | 'replayed') => {
+    const head = heads.get(mutation.observation_id)!
+    return ok<SetObservationAck>({ outcome, mutation, head: {
+      revision: head.revision, mutation_id: head.mutation_id,
+      cleared: head.operation === 'clear', row: rows.get(mutation.observation_id) ?? null,
+    } })
+  }
   const client: SetLogsClient = {
-    log: (entry) =>
-      request(`insert ${entry.id}`, () => {
-        const clash = [...rows.values()].some(
-          (row) =>
-            row.id === entry.id ||
-            (row.workout_exercise_id === entry.exerciseId && row.set_number === entry.performed.setNumber),
-        )
-        if (clash || !visible(entry.exerciseId)) return err(createError(ErrorCode.PERSISTENCE_CONFLICT))
-        const row = stored(entry)
-        rows.set(row.id, row)
-        return ok(row)
-      }),
-    correct: (entry) =>
-      request(`correct ${entry.id}`, () => {
-        const row = rows.get(entry.id)
-        // RLS: a row that is not the caller's matches nothing, like a missing one.
-        if (row === undefined || row.workout_exercise_id !== entry.exerciseId || !visible(row.workout_exercise_id)) {
-          return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+    log: async () => conflict(),
+    mutate: (mutation) => request(`${mutation.operation} ${mutation.observation_id}`, () => {
+      if (!visible(mutation.exercise_id)) return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+      const previous = receipts.get(mutation.mutation_id)
+      if (previous !== undefined) return sameSetMutation(previous, mutation)
+        ? answer(previous, 'replayed') : conflict()
+      const head = heads.get(mutation.observation_id)
+      const row = rows.get(mutation.observation_id)
+      if (mutation.expected_revision !== (head?.revision ?? 0)) return conflict()
+      if (row !== undefined && (row.workout_exercise_id !== mutation.exercise_id
+        || row.set_number !== mutation.set_number)) return conflict()
+      if (mutation.operation === 'insert') {
+        if (head !== undefined) return conflict()
+        const clash = [...rows.values()].some((candidate) => candidate.id !== mutation.observation_id
+          && candidate.workout_exercise_id === mutation.exercise_id && candidate.set_number === mutation.set_number)
+        if (clash) return conflict()
+        if (row !== undefined) {
+          if (!Object.entries(mutation.values).every(([key, value]) => (row as unknown as Record<string, unknown>)[key] === value)) return conflict()
+        } else {
+          rows.set(mutation.observation_id, {
+            id: mutation.observation_id, workout_exercise_id: mutation.exercise_id,
+            prescription_revision_status: 'active', set_number: mutation.set_number,
+            created_at: '2026-10-27T09:00:00+00:00', ...mutation.values,
+          } as ExerciseSetLogRow)
         }
-        const next = { ...row, ...setLogCorrection(entry) } as ExerciseSetLogRow
-        rows.set(row.id, next)
-        return ok(next)
-      }),
-    clear: (entry) =>
-      request(`clear ${entry.id}`, () => {
-        const row = rows.get(entry.id)
-        if (row !== undefined && row.workout_exercise_id === entry.exerciseId && visible(row.workout_exercise_id)) {
-          rows.delete(entry.id)
-        }
-        return ok(undefined)
-      }),
+      } else if (mutation.operation === 'correct') {
+        if (row === undefined) return err(createError(ErrorCode.PERSISTENCE_NOT_FOUND))
+        rows.set(row.id, { ...row, ...mutation.values } as ExerciseSetLogRow)
+      } else rows.delete(mutation.observation_id)
+      const current = rows.get(mutation.observation_id)
+      if (current !== undefined) rows.set(current.id, { ...current,
+        mutation_revision: mutation.revision, last_mutation_id: mutation.mutation_id } as ExerciseSetLogRow)
+      receipts.set(mutation.mutation_id, mutation)
+      heads.set(mutation.observation_id, mutation)
+      return answer(mutation, 'applied')
+    }),
   }
 
   return {
@@ -162,6 +179,7 @@ function stored(entry: SetLogEntry): ExerciseSetLogRow {
     is_warmup_set: insert.is_warmup_set ?? false,
     created_at: '2026-10-27T09:00:00+00:00',
     effort: insert.effort ?? null,
+    mutation_revision: 0, last_mutation_id: null,
   }
 }
 
@@ -331,6 +349,13 @@ describe('the queue rules a correction and a clear follow (AC-072)', () => {
     }
   })
 
+  it('keeps historical numeric RPE and classification when correcting an unsent legacy insert', () => {
+    const original = { ...entry(ROW_IDS[0], WRONG, 1, 8), performed: { setNumber: 1, reps: 8, rpe: 7, isWarmup: true } }
+    const result = corrected([insertOf(original)], mutationOf(entry(ROW_IDS[0], WRONG, 1, 7), 'm1'), null)
+    expect(result[0].entry.performed).toMatchObject({ reps: 7, rpe: 7, isWarmup: true })
+    expect(setObservationMutation(result[0].entry).values).toMatchObject({ rpe: 7, is_warmup_set: true })
+  })
+
   it('supersedes an unsent correction but never the one in flight', () => {
     const first = { ...mutationOf(entry(ROW_IDS[0], WRONG, 1, 7), 'm1'), kind: 'correct' as const }
     const second = mutationOf(entry(ROW_IDS[0], WRONG, 1, 6), 'm2')
@@ -347,6 +372,7 @@ describe('the queue rules a correction and a clear follow (AC-072)', () => {
 
     const sent = cleared([{ ...insertOf(set), attempts: 1 }, partner], mutationOf(set, 'c1'), null)
     expect(sent.map((item) => [item.entry.id, item.kind ?? 'insert'])).toEqual([
+      [ROW_IDS[0], 'insert'],
       [ROW_IDS[1], 'insert'],
       [ROW_IDS[0], 'clear'],
     ])
@@ -370,7 +396,7 @@ describe('the queue rules a correction and a clear follow (AC-072)', () => {
 
     expect(reconciled([correction], stored)).toEqual([correction])
     expect(reconciled([clear, reentry], stored)).toEqual([clear, reentry])
-    expect(reconciled([landed], stored)).toEqual([])
+    expect(reconciled([landed], stored)).toEqual([landed])
   })
 
   it('decodes a legacy insert, and refuses a mutation with no identity of its own', () => {
@@ -663,81 +689,61 @@ describe('a canceled clear, a missing target and owner isolation (AC-072)', () =
   })
 })
 
-describe('the wire: a correction and a clear name exactly one row (AC-072)', () => {
-  function wire(answer: unknown[] | null) {
+describe('the wire: exact durable mutation receipts (AC-072)', () => {
+  function wire(answer: unknown) {
     const sent: { method: string; url: URL; body: unknown }[] = []
     const clients = createWorkoutClients({
-      auth: {
-        getSession: () =>
-          Promise.resolve(ok({
-            accessToken: 'token',
-            refreshToken: 'refresh',
-            expiresAt: Date.now() + 60_000,
-            user: { id: 'a0000001-0000-4000-8000-000000000000', email: null },
-          })),
-      },
-      supabase: {
-        url: 'https://project.supabase.co',
-        anonKey: 'anon',
-        fetch: async (input, init) => {
-          sent.push({
-            method: init?.method ?? 'GET',
-            url: new URL(String(input)),
-            body: init?.body === undefined ? undefined : JSON.parse(String(init.body)),
-          })
-          return answer === null
-            ? new Response(null, { status: 204 })
-            : new Response(JSON.stringify(answer), { status: 200, headers: { 'Content-Type': 'application/json' } })
-        },
-      },
+      auth: { getSession: () => Promise.resolve(ok({ accessToken: 'token', refreshToken: 'refresh',
+        expiresAt: Date.now() + 60_000, user: { id: 'owner', email: null } })) },
+      supabase: { url: 'https://project.supabase.co', anonKey: 'anon', fetch: async (input, init) => {
+        sent.push({ method: init?.method ?? 'GET', url: new URL(String(input)),
+          body: init?.body === undefined ? undefined : JSON.parse(String(init.body)) })
+        return new Response(JSON.stringify(answer), { status: 200, headers: { 'Content-Type': 'application/json' } })
+      } },
     })
     return { setLogs: clients.setLogs, sent }
   }
-
-  it('patches by id and prescription, with no set number, rpe or warmup in the body', async () => {
-    const correction = { ...entry(ROW_IDS[0], WRONG, 1, 7), performed: { setNumber: 1, reps: 7, effort: 'too_hard' as const } }
-    const { setLogs, sent } = wire([stored(correction)])
-
-    const result = await setLogs.correct(correction)
-
-    expect(result.ok).toBe(true)
+  it('posts the canonical ID, predecessor and payload to one atomic RPC', async () => {
+    const mutation = setObservationMutation(entry(ROW_IDS[0], WRONG, 1, 7), 'correct', 'mutation-id', 3)
+    const { setLogs, sent } = wire({ outcome: 'conflict' })
+    const result = await setLogs.mutate(mutation)
+    expect(result.ok || result.error.code).toBe(ErrorCode.PERSISTENCE_CONFLICT)
     expect(sent).toHaveLength(1)
-    expect(sent[0].method).toBe('PATCH')
-    expect(sent[0].url.pathname).toBe('/rest/v1/exercise_set_logs')
-    expect(sent[0].url.searchParams.get('id')).toBe(`eq.${ROW_IDS[0]}`)
-    expect(sent[0].url.searchParams.get('workout_exercise_id')).toBe(`eq.${WRONG}`)
-    expect(sent[0].body).toEqual({
-      actual_reps: 7,
-      actual_duration_seconds: null,
-      actual_distance: null,
-      actual_distance_unit: null,
-      weight: null,
-      weight_unit: 'kg',
-      effort: 'too_hard',
-    })
+    expect(sent[0].method).toBe('POST')
+    expect(sent[0].url.pathname).toBe('/rest/v1/rpc/mutate_set_observation')
+    expect(sent[0].body).toEqual({ p_observation_id: ROW_IDS[0], p_mutation_id: 'mutation-id',
+      p_revision: 4, p_expected_revision: 3, p_operation: 'correct', p_exercise_id: WRONG,
+      p_set_number: 1, p_values: mutation.values })
+    expect(mutation.values).not.toHaveProperty('rpe')
+    expect(mutation.values).not.toHaveProperty('is_warmup_set')
   })
-
-  it('refuses a correction RLS matched to nothing instead of calling it saved', async () => {
-    const { setLogs } = wire([])
-    const result = await setLogs.correct(entry(ROW_IDS[0], WRONG, 1, 7))
-    expect(result.ok || result.error.code).toBe(ErrorCode.PERSISTENCE_NOT_FOUND)
+  it('never accepts a missing, mismatched or generic-conflict answer as saved', async () => {
+    const request = setObservationMutation(entry(ROW_IDS[0], WRONG, 1, 7))
+    for (const value of [null, [], {}, { outcome: 'conflict' }, { outcome: 'applied', mutation: { ...request, mutation_id: 'other' }, head: {} }]) {
+      expect(parseSetObservationAck(value, request).ok).toBe(false)
+    }
   })
-
-  it('refuses an impossible correction before anything is sent', async () => {
-    const { setLogs, sent } = wire([])
-    const result = await setLogs.correct({ ...entry(ROW_IDS[0], WRONG, 1, 7), performed: { setNumber: 1, reps: -1 } })
-    expect(result.ok || result.error.code).toBe(ErrorCode.VALIDATION_OUT_OF_RANGE)
-    expect(sent).toEqual([])
+  it('rejects reused mutation identity with changed payload on the server', async () => {
+    const server = createServer([WRONG])
+    const request = setObservationMutation(entry(ROW_IDS[0], WRONG, 1, 7))
+    expect((await server.client.mutate(request)).ok).toBe(true)
+    const result = await server.client.mutate({ ...request, values: { ...request.values, actual_reps: 99 } })
+    expect(result.ok || result.error.code).toBe(ErrorCode.PERSISTENCE_CONFLICT)
+    expect(server.rows.get(ROW_IDS[0])?.actual_reps).toBe(7)
   })
+})
 
-  it('deletes by id and prescription only', async () => {
-    const { setLogs, sent } = wire(null)
-    const result = await setLogs.clear(entry(ROW_IDS[0], WRONG, 1, 8))
-
-    expect(result.ok).toBe(true)
-    expect(sent.map((request) => [request.method, request.url.search])).toEqual([
-      ['DELETE', `?id=eq.${ROW_IDS[0]}&workout_exercise_id=eq.${WRONG}`],
-    ])
+describe('saved observation units', () => {
+  it('retains the actual distance unit when it differs from the prescription on no-op Save', async () => {
+    const server = createServer([WRONG])
+    const legacy = { ...stored(entry(ROW_IDS[0], WRONG, 1, 8)), actual_reps: null,
+      actual_distance: 2, actual_distance_unit: 'km' as const }
+    server.rows.set(legacy.id, legacy)
+    const shell = await start(server)
+    act(() => shell.api().correctSet?.(WRONG, ROW_IDS[0], { setNumber: 1, distance: 2 }))
+    await settle(shell)
+    expect(server.rows.get(ROW_IDS[0])).toMatchObject({ actual_distance: 2, actual_distance_unit: 'km' })
+    expect(shell.api().loggedSets(WRONG)).toMatchObject([{ distance: 2, distanceUnit: 'km', status: 'logged' }])
   })
 })
 
@@ -759,6 +765,25 @@ describe('effort through correction and clear (AC-045)', () => {
     expect(shell.api().loggedSets(WRONG)).toMatchObject([{ effort: null, status: 'logged' }])
   })
 
+  it('keeps dispatched legacy RPE through exact bootstrap and a lost-response replay', async () => {
+    const server = createServer([WRONG])
+    const original = { ...entry(ROW_IDS[0], WRONG, 1, 8), performed: {
+      setNumber: 1, reps: 8, rpe: 7, isWarmup: true,
+    } }
+    const historical = { ...stored(original), rpe: 7 }
+    server.rows.set(historical.id, historical)
+    const storage = memoryStorage()
+    storage.setItem(SET_LOG_QUEUE_STORAGE_KEY, JSON.stringify([{ ...insertOf(original), dispatched: true, attempts: 1 }]))
+    server.plan.push('lost')
+    let shell = await start(server, storage)
+    expect(shell.queue()[0].request?.values).toMatchObject({ rpe: 7, is_warmup_set: true })
+    expect(shell.api().loggedSets(WRONG)).toMatchObject([{ status: 'failed' }])
+    shell = await shell.reload()
+    expect(shell.queue()).toEqual([])
+    expect(server.rows.get(ROW_IDS[0])).toMatchObject({ rpe: 7, is_warmup_set: true, mutation_revision: 1 })
+    expect(shell.api().loggedSets(WRONG)).toMatchObject([{ status: 'logged', isWarmup: true }])
+  })
+
   it('reads an older row with no effort as unanswered, and keeps its historical rpe through a correction', async () => {
     const server = createServer([WRONG])
     const legacy = { ...stored(entry(ROW_IDS[0], WRONG, 1, 8)), rpe: 7, effort: null }
@@ -770,5 +795,59 @@ describe('effort through correction and clear (AC-045)', () => {
     await settle(shell)
 
     expect(server.rows.get(ROW_IDS[0])).toMatchObject({ actual_reps: 9, rpe: 7, effort: null })
+  })
+})
+
+describe('server requests that outlive their provider (AC-072)', () => {
+  it('keeps a delayed pre-reload insert fenced after clear and explicit re-entry', async () => {
+    const server = createServer([WRONG])
+    let shell = await start(server)
+    server.hold()
+    act(() => shell.api().logSet(WRONG, { setNumber: 1, reps: 8 }))
+    expect(shell.queue()[0]).toMatchObject({ dispatched: true, request: { revision: 1 } })
+    // Original request is still outstanding. The new provider replays its
+    // exact durable request, then owns all subsequent storage writes.
+    shell = await shell.reload()
+    act(() => shell.api().clearSet?.(WRONG, ROW_IDS[0]))
+    await settle(shell)
+    act(() => shell.api().logSet(WRONG, { setNumber: 1, reps: 9 }))
+    await settle(shell)
+    const before = shell.storage.getItem(SET_LOG_QUEUE_STORAGE_KEY)
+    await server.release()
+    expect(shell.storage.getItem(SET_LOG_QUEUE_STORAGE_KEY)).toBe(before)
+    expect([...server.rows.keys()]).toEqual([ROW_IDS[1]])
+    expect(shell.api().loggedSets(WRONG)).toMatchObject([{ id: ROW_IDS[1], reps: 9, status: 'logged' }])
+  })
+
+  it('cannot let an old correction response overwrite a newer post-reload correction', async () => {
+    const server = createServer([WRONG])
+    let shell = await start(server)
+    act(() => shell.api().logSet(WRONG, { setNumber: 1, reps: 8 }))
+    await settle(shell)
+    server.hold()
+    act(() => shell.api().correctSet?.(WRONG, ROW_IDS[0], { setNumber: 1, reps: 7 }))
+    const oldRequest = shell.queue()[0].request
+    shell = await shell.reload()
+    act(() => shell.api().correctSet?.(WRONG, ROW_IDS[0], { setNumber: 1, reps: 6 }))
+    await settle(shell)
+    const before = shell.storage.getItem(SET_LOG_QUEUE_STORAGE_KEY)
+    await server.release()
+    expect(shell.storage.getItem(SET_LOG_QUEUE_STORAGE_KEY)).toBe(before)
+    expect(server.rows.get(ROW_IDS[0])?.actual_reps).toBe(6)
+    expect(shell.api().loggedSets(WRONG)).toMatchObject([{ reps: 6, status: 'logged' }])
+    const replay = await server.client.mutate(oldRequest!)
+    expect(replay.ok && replay.value.head.row?.actual_reps).toBe(6)
+  })
+
+  it('never confirms another observation occupying the same exercise/set slot', async () => {
+    const server = createServer([WRONG])
+    const other = stored(entry(ROW_IDS[3], WRONG, 1, 100))
+    server.rows.set(other.id, other)
+    const storage = memoryStorage()
+    storage.setItem(SET_LOG_QUEUE_STORAGE_KEY, JSON.stringify([insertOf(entry(ROW_IDS[0], WRONG, 1, 8))]))
+    const shell = await start(server, storage)
+    expect(server.rows.get(other.id)?.actual_reps).toBe(100)
+    expect(shell.queue()).toHaveLength(1)
+    expect(shell.api().loggedSets(WRONG).find((row) => row.id === ROW_IDS[0])?.status).toBe('failed')
   })
 })

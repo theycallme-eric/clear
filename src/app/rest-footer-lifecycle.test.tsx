@@ -14,7 +14,7 @@
  *     with Add 30s and Skip rest;
  *   · once there is no countdown — run out or skipped — the footer's temporary
  *     Rest control is gone, never `Rest complete · 00:00`, and the movement's
- *     own Log set and saved-row Edit still open the sheet;
+ *     own Log set still opens the sheet (saved-row Edit is covered by TASK-011);
  *   · expiry, the next round's clock, the prefilled sheet and section
  *     navigation write no movement result — only an explicit Log set does;
  *   · the countdown is read from when the set was logged, not from a clock the
@@ -138,14 +138,16 @@ async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
 function expectNoFinishedRest() {
   expect(restBars()).toEqual([])
   expect(screen.queryByText(/Rest complete/i)).not.toBeInTheDocument()
-  expect(screen.queryByText('00:00')).not.toBeInTheDocument()
+  // Only the finished-rest control is forbidden; an unrelated movement or
+  // elapsed clock may legitimately show 00:00.
+  expect(screen.queryByRole('button', { name: /^Rest complete.*00:00$/i })).not.toBeInTheDocument()
 }
 
 /**
  * Logging is reachable from the card itself, without any rest control: the
- * saved row stays on the card and its Log set opens the sheet. (The saved
- * row's Edit is not wired at the shell on this base — persisted correction is
- * TASK-011's — so it is not asserted here.)
+ * saved row stays on the card and its Log set opens the sheet. Saved-row Edit
+ * and durable correction belong to TASK-011; TASK-009 also owns that control's
+ * rest-independent reachability. This suite retains its own Log set boundary.
  */
 async function expectLoggingReachable(user: ReturnType<typeof userEvent.setup>) {
   const card = within(movementCard())

@@ -12,7 +12,61 @@ explicitly on the right movement. There is no move-to-target, no logged-row Remo
 post-finish editor and no new explanatory prose. A correction or clear owns its mutation identity
 and order from UI through provider, transport and the durable queue.
 
-## Seams and changes (local, unpublished)
+## Operator recovery checkpoint (local, unpublished)
+
+The initial worker's focused checks passed, but independent review found that its client-only
+mutation IDs and direct PATCH/DELETE could not prevent a delayed request from undoing a newer
+correction or clear after reload. The candidate was preserved in checkpoint `e4d7291`; it was never
+published or called complete. The original native run remains attempt 1 of 2, with its failed
+verification and usage intact. The connection interruption started no replacement worker.
+
+The product repair adds exact mutation requests/revisions, durable database receipts and tombstones,
+and acknowledgement validation. Possibly dispatched work survives reload; old provider callbacks
+cannot write stale storage. Database owner/active-workout checks and delayed-request tests have passed
+the integrated checks below. Native full verification and delivery are still pending. No Runner change,
+remote migration or new distance-tracking feature
+is included. Existing observed distance values/units, categorical effort and historical numeric RPE
+must survive correction unchanged unless the athlete explicitly edits the applicable value.
+
+Quiet Clear now precedes the final aligned Cancel / Save correction pair. Its independent action-order
+and submit regression passed (1/1). The three TASK-010 test/documentation cleanups are integrated here;
+all ten rest lifecycle tests passed in the combined check. Edit selects the actual recorded measurement,
+uses its actual unit label, and preserves other recorded measurements when the compact field changes.
+The five new value-retention UI cases passed; new-entry behavior is unchanged.
+
+### Current repair verification
+
+| Check | Actual result |
+| --- | --- |
+| `npm test -- set-correction set-correction-queue effort-persistence rest-footer-lifecycle set-logging-sheet` | 7 files, 165 tests passed |
+| `npm run typecheck` | passed |
+| `npm run gen:types -- --check` | passed; 20 tables, 27 enums, 38 callable functions |
+| Schema/type/standing-RLS/lifecycle boundary check | 4 files, 45 tests passed |
+| Actual disposable PostgreSQL 17 mutation rehearsal | 43 checks passed; owned container and volume removed |
+
+The actual SQL rehearsal used the current additive migration
+`20261027000028_set_observation_mutations.sql`, SHA-256
+`f9fc00fb79985aac5891cf5d771ea7359b1a6936509e42892a8361b29b0b7d27`.
+It covered independently delayed older RPC/PATCH and legacy INSERT requests, clear/re-entry without
+resurrection or duplicates, exact lost-response replay/current-head acknowledgement, changed-payload
+UUID reuse and slot conflicts, owner/RLS and foreign-owner lock refusal, completed-workout refusal,
+legacy numeric RPE/bootstrap, migration replay, prescription supersede, parent-delete cascade and
+privileged cleanup. The first rehearsal failed because its synthetic supersede fixture omitted the
+required `superseded_at`; the fixture was corrected and both failure and successful logs retained.
+Independent SQL review then caught a receipt replay that unnecessarily failed after prescription
+supersede. Exact replay now remains harmless; every new mutation still requires an active prescription.
+
+The controller retains the executable rehearsal, logs and hashes outside the product at
+`runner/reports/task-011-sql-proof*` in the clean build body. These are operator test artifacts, not a
+native completion receipt. The hosted schema and other local Supabase stack were untouched.
+
+The new queue tests hold requests independently across provider teardown/reload, then release them
+after newer corrections or clear/re-entry. Generic conflicts and exercise/set slot matches cannot
+confirm a save. Exact mutation IDs/payloads/revisions are persisted before dispatch and checked on
+acknowledgement; current heads are monotonic. Old queue entries retain numeric RPE/classification,
+including a never-sent rewrite and an already-dispatched lost-response replay.
+
+## Historical initial worker implementation
 
 | Seam | Change |
 | --- | --- |
@@ -28,9 +82,11 @@ and order from UI through provider, transport and the durable queue.
 | `set-logger.tsx`, `set-logging-sheet.tsx` | Edit uses the provider seam by row id. Edit mode gains a quiet **Clear set** under Cancel / Save correction, which opens a critical `AppDialog`: title "Clear set N of movement?", body is the result itself, actions Keep set / Clear set |
 | `Workout.tsx` | passes `corrections`, the only place in runtime source that does |
 
-No migration was needed. The existing owner-scoped update/delete policies and column grants (`update`
-on the measurement columns and `effort`, plus `delete`) already cover the writes. Nothing changed in
-GitHub or any external service. The vendored design system is untouched.
+The initial worker assumed no migration was needed because the existing owner-scoped policies and
+column grants permitted direct writes. Independent review disproved the sufficiency of that approach:
+owner isolation alone does not establish mutation ordering or prevent stale resurrection. The additive
+mutation migration and RPC supersede that assumption. No remote schema application is authorized.
+The vendored design system is untouched.
 
 ## Decisions
 
@@ -60,7 +116,7 @@ GitHub or any external service. The vendored design system is untouched.
 - Discrimination: I weakened the "never sent" guard to only check in-flight, and 5 of 27 queue tests
   failed (lost-answer resurrection, lost correction across reload, rule tests). The source is restored.
 
-## Verification (2026-10-27)
+## Historical initial worker verification (2026-10-27)
 
 | Command | Result |
 | --- | --- |
@@ -85,6 +141,9 @@ audit text, because that would fabricate evidence.
 
 ## Next safe action
 
-The controller or an operator commits this diff, re-captures the TASK-034 mobile format-preview group
-on that commit the way TASK-007's recovery did, re-derives the audit's runtime hash and lineage, then
-re-runs `npm test`. After that, integrate current `origin/main` and re-verify.
+Finish and review the product durability repair, run actual disposable PostgreSQL and delayed-request
+checks, then commit the complete source and genuinely re-capture the mobile format-preview group.
+Derive hashes/lineage from those artifacts and use native same-attempt recovery for every approved
+criterion/task/project check. Normal native publication, required CI and protected merge target only
+`build/ui-polish-clean-2026-10-27`. The frozen build base is authoritative; integrating unrelated main
+is not part of this run.

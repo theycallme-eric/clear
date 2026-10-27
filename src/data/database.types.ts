@@ -35,6 +35,7 @@
  *   supabase/migrations/20261021000025_ladder_timing_persistence.sql
  *   supabase/migrations/20261024000026_v3_hinge_warmup.sql
  *   supabase/migrations/20261027000027_set_effort.sql
+ *   supabase/migrations/20261027000028_set_observation_mutations.sql
  */
 
 export type Json =
@@ -203,6 +204,8 @@ export type Database = {
           is_warmup_set: boolean
           created_at: string
           effort: Database['public']['Enums']['set_effort'] | null
+          mutation_revision: number
+          last_mutation_id: string | null
         }
         Insert: {
           id: string
@@ -219,6 +222,8 @@ export type Database = {
           is_warmup_set?: boolean
           created_at?: string
           effort?: Database['public']['Enums']['set_effort'] | null
+          mutation_revision?: number
+          last_mutation_id?: string | null
         }
         Update: {
           id?: string
@@ -235,6 +240,8 @@ export type Database = {
           is_warmup_set?: boolean
           created_at?: string
           effort?: Database['public']['Enums']['set_effort'] | null
+          mutation_revision?: number
+          last_mutation_id?: string | null
         }
       }
       focus_pattern_map: {
@@ -461,6 +468,44 @@ export type Database = {
           last_completed_at?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      set_observation_mutations: {
+        Row: {
+          mutation_id: string
+          observation_id: string
+          revision: number
+          expected_revision: number
+          operation: string
+          workout_exercise_id: string
+          set_number: number
+          user_id: string
+          request_values: Json
+          created_at: string
+        }
+        Insert: {
+          mutation_id: string
+          observation_id: string
+          revision: number
+          expected_revision: number
+          operation: string
+          workout_exercise_id: string
+          set_number: number
+          user_id: string
+          request_values: Json
+          created_at?: string
+        }
+        Update: {
+          mutation_id?: string
+          observation_id?: string
+          revision?: number
+          expected_revision?: number
+          operation?: string
+          workout_exercise_id?: string
+          set_number?: number
+          user_id?: string
+          request_values?: Json
+          created_at?: string
         }
       }
       user_constraints: {
@@ -908,6 +953,19 @@ export type Database = {
           p_note?: string | null
         }
         Returns: Database['public']['Tables']['rest_days']['Row']
+      }
+      mutate_set_observation: {
+        Args: {
+          p_observation_id: string
+          p_mutation_id: string
+          p_revision: number
+          p_expected_revision: number
+          p_operation: string
+          p_exercise_id: string
+          p_set_number: number
+          p_values: Json
+        }
+        Returns: Json
       }
       persist_session: {
         Args: {

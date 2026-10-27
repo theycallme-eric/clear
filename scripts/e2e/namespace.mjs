@@ -121,6 +121,8 @@ export function fixtureIds(namespace = NAMESPACE) {
     blockResult: { a: id(6, 'a', namespace), b: id(6, 'b', namespace) },
     workoutExercise: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
     setLog: { a: id(9, 'a', namespace), b: id(9, 'b', namespace) },
+    setObservationMutation: { a: id(0, 'a', namespace), b: id(0, 'b', namespace) },
+    forgedSetObservationMutation: { a: id(6, 'a', namespace), b: id(6, 'b', namespace) },
     savedWorkout: { a: id(7, 'a', namespace), b: id(7, 'b', namespace) },
     savedCompletion: { a: id(8, 'a', namespace), b: id(8, 'b', namespace) },
     forgedWorkoutExercise: { a: id(9, 'a', namespace), b: id(9, 'b', namespace) },
@@ -193,6 +195,8 @@ export function rowSelector(table, slot, userId) {
       return { id: `eq.${FIXTURE_IDS.workoutExercise[slot]}` }
     case 'exercise_set_logs':
       return { id: `eq.${FIXTURE_IDS.setLog[slot]}` }
+    case 'set_observation_mutations':
+      return { mutation_id: `eq.${FIXTURE_IDS.setObservationMutation[slot]}` }
     case 'load_anchors':
       return { user_id: `eq.${userId}` }
     case 'saved_workouts':
@@ -282,6 +286,17 @@ export function forgedRow(table, slot, userId) {
       workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
       set_number: 2,
       weight_unit: 'lb',
+    },
+    set_observation_mutations: {
+      mutation_id: FIXTURE_IDS.forgedSetObservationMutation[slot],
+      observation_id: FIXTURE_IDS.forgedSetObservationMutation[slot],
+      user_id: userId,
+      workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+      set_number: 2,
+      revision: 1,
+      expected_revision: 0,
+      operation: 'clear',
+      request_values: {},
     },
     load_anchors: {
       user_id: userId,

@@ -328,6 +328,7 @@ describe('the RLS namespace covers the owner-scoped schema (ENV-07)', () => {
       'block_results',
       'workout_exercises',
       'exercise_set_logs',
+      'set_observation_mutations',
       'load_anchors',
       'saved_workouts',
       'saved_workout_completions',

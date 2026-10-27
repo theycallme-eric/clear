@@ -166,6 +166,7 @@ export function ExerciseSetLogger({
       : { set: correctedSet, draft: correction }
   const mode = edit === null ? 'new' : 'edit'
   const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
+  const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
   /**
    * The set, then the rest it earns. The rest starts only for a set the shell
@@ -240,16 +241,21 @@ export function ExerciseSetLogger({
               : prefill !== null && prefill.weight !== null ? prefill.weightUnit : undefined
           }
           weightUnit={weightUnit}
-          measureLabel={modalityLabel(prescription)}
-          modality={prescription.modality}
+          measureLabel={modalityLabel(edit === null ? prescription : {
+            ...prescription,
+            modality: sheetModality,
+            distance_unit: edit.set.distanceUnit,
+          })}
+          modality={sheetModality}
           showLoad={
             !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
           }
           saving={edit === null && isSaving(exercise.exerciseId)}
           onSubmit={(performed) => {
             if (edit !== null) {
-              if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, performed)
-              else correctSet?.(exercise.exerciseId, edit.set.id, performed)
+              const corrected = { ...unshownMeasurements(edit.set, sheetModality), ...performed }
+              if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, corrected)
+              else correctSet?.(exercise.exerciseId, edit.set.id, corrected)
               setCorrection(null)
               return
             }
@@ -435,6 +441,8 @@ export function loggedSetText(set: LoggedSet): string {
  */
 interface SetDraft {
   readonly key: string
+  /** Edit retains the measurement being changed even if its prescription differs. */
+  readonly modality: PrescribedModality
   readonly weight: string
   readonly measure: string
   /** A unit the athlete chose or committed to by typing; never converted. */
@@ -458,6 +466,7 @@ function newDraft(
 ): SetDraft {
   return {
     key: `new:${setNumber}`,
+    modality: prescription.modality,
     weight: numberField(prefill?.weight),
     measure: numberField(
       suggestedMeasure(prescription, setNumber) ?? measurePrefill(prefill, prescription.modality),
@@ -473,13 +482,33 @@ function editKey(set: LoggedSet): string {
 }
 
 /** A saved set, back in the fields, in the unit and values it was saved with. */
-function editDraft(set: LoggedSet, modality: PrescribedModality): SetDraft {
+function editDraft(set: LoggedSet, prescribedModality: PrescribedModality): SetDraft {
+  const modality = observedModality(set, prescribedModality)
   return {
     key: editKey(set),
+    modality,
     weight: numberField(set.weight),
     measure: numberField(measurePrefill(set, modality)),
     chosenUnit: set.weightUnit,
     effort: set.effort,
+  }
+}
+
+/** A correction opens an actual measurement, never an unrelated prescribed value. */
+function observedModality(set: LoggedSet, prescribed: PrescribedModality): PrescribedModality {
+  if (measurePrefill(set, prescribed) !== null) return prescribed
+  if (set.reps !== null) return 'reps'
+  if (set.durationSeconds !== null) return 'time'
+  if (set.distance !== null) return 'distance'
+  return prescribed
+}
+
+/** The compact field changes one measurement; other recorded values stay intact. */
+function unshownMeasurements(set: LoggedSet, shown: PrescribedModality): Partial<PerformedSet> {
+  return {
+    ...(shown !== 'reps' && set.reps !== null ? { reps: set.reps } : {}),
+    ...(shown !== 'time' && set.durationSeconds !== null ? { durationSeconds: set.durationSeconds } : {}),
+    ...(shown !== 'distance' && set.distance !== null ? { distance: set.distance } : {}),
   }
 }
 

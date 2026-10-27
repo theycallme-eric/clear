@@ -50,10 +50,10 @@ import {
   dispatched,
   enqueued,
   hasSustainedFailure,
-  isAlreadyStored,
   isInsert,
   mutationKey,
   queuedSetLog,
+  prepared,
   readSetLogQueue,
   reconciled,
   retryDelayMs,
@@ -74,6 +74,7 @@ import {
   type SetLoggingApi,
   type SetLogEntry,
 } from './set-logging'
+import { observationRevision, type SetObservationHead } from './set-observation-mutation'
 import type { ExerciseProgress } from './workout-progress'
 import { useWorkoutClients } from './workout-queries'
 
@@ -139,11 +140,8 @@ export function SetLoggingProvider({
   // has — and prefills the next one from the last one actually performed.
   const [confirmed, setConfirmed] = useState<ConfirmedSets>(() => seedFrom(exercises))
 
-  // Seeded from disk, reconciled against that same snapshot: a set whose write
-  // landed but whose answer never arrived is already in the rows, and asking
-  // the user about it — or sending it again — would be the app arguing with
-  // itself. The reconciliation is written back immediately, so the durable
-  // copy and the screen agree from the first render.
+  // Restore the durable requests intact. A snapshot is a read of current rows,
+  // not proof of a particular mutation: exact idempotent replay settles each.
   const [queue, setQueue] = useState<readonly QueuedSetLog[]>(() => {
     const restored = reconciled(readSetLogQueue(queueStorage), storedSets(exercises))
     writeSetLogQueue(queueStorage, restored)
@@ -158,6 +156,10 @@ export function SetLoggingProvider({
 
   // The queue is read inside an async pass and written inside a tap handler,
   // so the ref is the live copy and the state is the render's view of it.
+  const mounted = useRef(true)
+  const generation = useRef(0)
+  const revisions = useRef(new Map(exercises.flatMap((exercise) =>
+    exercise.setLogs.map((row) => [row.id, observationRevision(row)] as const))))
   const queueRef = useRef(queue)
   const storageRef = useRef(queueStorage)
   useEffect(() => {
@@ -171,6 +173,7 @@ export function SetLoggingProvider({
    */
   const applyQueue = useCallback(
     (change: (current: readonly QueuedSetLog[]) => readonly QueuedSetLog[]) => {
+      if (!mounted.current) return
       const next = change(queueRef.current)
       queueRef.current = next
       writeSetLogQueue(storageRef.current, next)
@@ -179,31 +182,14 @@ export function SetLoggingProvider({
     [],
   )
 
-  /** A set the database now holds. Never added twice: the set number is its identity. */
-  const confirm = useCallback((exerciseId: string, set: LoggedSet) => {
+  /** Apply only the latest server head; an old response cannot redraw old data. */
+  const acceptHead = useCallback((exerciseId: string, id: string, head: SetObservationHead) => {
+    if (head.revision < (revisions.current.get(id) ?? 0)) return
+    revisions.current.set(id, head.revision)
     setConfirmed((current) => {
-      const existing = current[exerciseId] ?? []
-      if (existing.some((candidate) => candidate.setNumber === set.setNumber)) {
-        return current
-      }
-      return { ...current, [exerciseId]: [...existing, set] }
+      const existing = (current[exerciseId] ?? []).filter((candidate) => candidate.id !== id)
+      return { ...current, [exerciseId]: head.row === null ? existing : [...existing, loggedSetFromRow(head.row)] }
     })
-  }, [])
-
-  /** A corrected row, as the database now holds it, in place of the one it was. */
-  const replace = useCallback((exerciseId: string, set: LoggedSet) => {
-    setConfirmed((current) => {
-      const existing = (current[exerciseId] ?? []).filter((candidate) => candidate.id !== set.id)
-      return { ...current, [exerciseId]: [...existing, set] }
-    })
-  }, [])
-
-  /** A cleared row: gone from the screen once, and only once, the database says so. */
-  const remove = useCallback((exerciseId: string, id: string) => {
-    setConfirmed((current) => ({
-      ...current,
-      [exerciseId]: (current[exerciseId] ?? []).filter((candidate) => candidate.id !== id),
-    }))
   }, [])
 
   const flushing = useRef<Promise<void> | null>(null)
@@ -220,80 +206,47 @@ export function SetLoggingProvider({
    */
   const flush = useCallback((): Promise<void> => {
     if (flushing.current !== null) return flushing.current
+    const owner = generation.current
+    const current = () => mounted.current && generation.current === owner
     const pass = async () => {
+      if (!current()) return
       setSyncing(true)
 
       const sent = new Set<string>()
       try {
-        for (;;) {
+        for (; current();) {
           const next = sendable(queueRef.current).find((item) => !sent.has(mutationKey(item)))
           if (next === undefined) break
           const key = mutationKey(next)
           sent.add(key)
 
-          // Marked on disk before the request exists: from here on the
-          // mutation may land whatever happens to its answer (REQ-013).
+          // Freeze exact identity/revision/payload durably before the request.
+          applyQueue((items) => prepared(items, key, revisions.current.get(next.entry.id) ?? 0))
+          const request = queueRef.current.find((item) => mutationKey(item) === key)?.request
+          if (request === undefined) break
           inFlightRef.current = key
           setInFlight(key)
-          applyQueue((current) => dispatched(current, key))
-
-          if (next.kind === 'correct') {
-            const result = await setLogs.correct(next.entry)
-            inFlightRef.current = null
-            setInFlight(null)
-            if (isErr(result)) {
-              applyQueue((current) => attempted(current, key, result.error))
-              continue
-            }
-            applyQueue((current) => settled(current, key))
-            replace(next.entry.exerciseId, loggedSetFromRow(result.value))
-            continue
-          }
-
-          if (next.kind === 'clear') {
-            const result = await setLogs.clear(next.entry)
-            inFlightRef.current = null
-            setInFlight(null)
-            if (isErr(result)) {
-              applyQueue((current) => attempted(current, key, result.error))
-              continue
-            }
-            applyQueue((current) => settled(current, key))
-            remove(next.entry.exerciseId, next.entry.id)
-            continue
-          }
-
-          const result = await setLogs.log(next.entry)
+          applyQueue((items) => dispatched(items, key))
+          const result = await setLogs.mutate(request)
+          // A request may finish after its provider was torn down. It must
+          // never overwrite a newer provider's queue, storage or row state.
+          if (!current()) return
           inFlightRef.current = null
           setInFlight(null)
-
           if (isErr(result)) {
-            if (isAlreadyStored(result.error)) {
-              // The id is this queue's own, so a collision can only be the write
-              // this entry already made. The set is stored; the retry was the
-              // idempotent one the client-generated id exists to make possible.
-              // What is stored is what this entry sent, so there is nothing to
-              // read back.
-              applyQueue((current) => settled(current, key))
-              confirm(next.entry.exerciseId, loggedSetFromEntry(next.entry, 'logged'))
-              continue
-            }
-
-            // It stays queued either way: a refusal a retry cannot fix stops
-            // being sent (`isStalled`) but is never discarded, because a set
-            // that silently disappeared is the defect this module closes.
-            applyQueue((current) => attempted(current, key, result.error))
+            applyQueue((items) => attempted(items, key, result.error))
             continue
           }
-
-          applyQueue((current) => settled(current, key))
-          confirm(next.entry.exerciseId, loggedSetFromRow(result.value))
+          acceptHead(next.entry.exerciseId, next.entry.id, result.value.head)
+          applyQueue((items) => settled(items, key))
         }
       } finally {
-        inFlightRef.current = null
-        setInFlight(null)
-        setSyncing(false)
-        scheduleRef.current()
+        if (current()) {
+          inFlightRef.current = null
+          setInFlight(null)
+          setSyncing(false)
+          scheduleRef.current()
+        }
       }
     }
     const pending = pass()
@@ -303,7 +256,7 @@ export function SetLoggingProvider({
     }
     void pending.then(settlePass, settlePass)
     return pending
-  }, [applyQueue, confirm, remove, replace, setLogs])
+  }, [acceptHead, applyQueue, setLogs])
 
   const flushBeforeContinue = useCallback(async () => {
     // Join an existing pass rather than starting a duplicate write. A failed
@@ -322,6 +275,7 @@ export function SetLoggingProvider({
   const schedule = useCallback(() => {
     if (timer.current !== null) clearTimeout(timer.current)
     timer.current = null
+    if (!mounted.current) return
     if (sendable(queueRef.current).length === 0) return
 
     timer.current = setTimeout(() => {
@@ -341,6 +295,7 @@ export function SetLoggingProvider({
    * pocket between sets runs no timers worth trusting.
    */
   useEffect(() => {
+    mounted.current = true
     void flush()
 
     const resume = () => {
@@ -354,6 +309,9 @@ export function SetLoggingProvider({
     globalThis.addEventListener?.('visibilitychange', onVisible)
 
     return () => {
+      mounted.current = false
+      generation.current += 1
+      flushing.current = null
       globalThis.removeEventListener?.('online', resume)
       globalThis.removeEventListener?.('visibilitychange', onVisible)
       if (timer.current !== null) clearTimeout(timer.current)
@@ -398,6 +356,7 @@ export function SetLoggingProvider({
     const mutation = (entry: SetLogEntry): QueuedSetLog => ({
       ...queuedSetLog(entry, sessionId, new Date(now()).toISOString()),
       mutationId: newMutationId === undefined ? crypto.randomUUID() : newMutationId(),
+      baseRevision: revisions.current.get(entry.id) ?? 0,
     })
 
     /** The saved set a correction or clear addresses, by the id it was read under. */
@@ -427,7 +386,7 @@ export function SetLoggingProvider({
         id: set.id,
         exerciseId,
         blockId: exercise.blockId,
-        distanceUnit: exercise.prescription.distance_unit,
+        distanceUnit: set.distanceUnit ?? exercise.prescription.distance_unit,
         weightUnit: override ?? set.weightUnit,
         performed: {
           ...measurements,

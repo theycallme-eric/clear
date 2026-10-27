@@ -228,6 +228,19 @@ export async function seed(client) {
       },
     ])
 
+    // A cleared observation's durable receipt survives without a set-log row.
+    await client.insertRows('set_observation_mutations', [{
+      mutation_id: FIXTURE_IDS.setObservationMutation[slot],
+      observation_id: FIXTURE_IDS.setObservationMutation[slot],
+      user_id: user.id,
+      workout_exercise_id: FIXTURE_IDS.workoutExercise[slot],
+      set_number: 2,
+      revision: 1,
+      expected_revision: 0,
+      operation: 'clear',
+      request_values: {},
+    }])
+
     await client.insertRows('load_anchors', [
       {
         user_id: user.id,

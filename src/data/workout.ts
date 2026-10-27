@@ -30,7 +30,8 @@ import {
   PERCEIVED_EFFORT_MIN,
   type BlockCompletion,
 } from '../state/block-completion'
-import { setLogCorrection, setLogInsert, setLogViolation, type SetLogEntry } from '../state/set-logging'
+import { setLogInsert, setLogViolation, type SetLogEntry } from '../state/set-logging'
+import { parseSetObservationAck, type SetObservationMutation, type SetObservationAck } from '../state/set-observation-mutation'
 import {
   blockResultRowSchema,
   exerciseSetLogRowSchema,
@@ -65,19 +66,8 @@ export interface SetLogsClient {
    * is sent.
    */
   log(entry: SetLogEntry): Promise<Result<ExerciseSetLogRow>>
-  /**
-   * Writes a correction over the stored row with `entry.id`, and answers the
-   * row as the database now holds it (REQ-013). Addressed by id and
-   * prescription, never by set number, so it can only reach the one
-   * observation it names; a row that is gone or not the caller's matches
-   * nothing under RLS and is refused as not found rather than drawn as saved.
-   */
-  correct(entry: SetLogEntry): Promise<Result<ExerciseSetLogRow>>
-  /**
-   * Deletes the stored row with `entry.id` (REQ-013). A row already gone is
-   * not an error, so a retried clear is idempotent.
-   */
-  clear(entry: SetLogEntry): Promise<Result<void>>
+  /** Executes one exact durable request; only its validated receipt settles it. */
+  mutate(mutation: SetObservationMutation): Promise<Result<SetObservationAck>>
 }
 
 export interface WorkoutClients {
@@ -382,48 +372,21 @@ export function createWorkoutClients({
         code: ErrorCode.PERSISTENCE_READ_FAILED,
       })
     },
-    async correct(entry) {
-      const violation = setLogViolation(entry)
-      if (violation !== null) {
-        return err(
-          createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
-            details: { ...violation, exerciseId: entry.exerciseId },
-          }),
-        )
-      }
-
+    async mutate(mutation) {
       const accessToken = await token()
       if (isErr(accessToken)) return accessToken
-
       const db = createSupabaseClient({ ...supabase, accessToken: accessToken.value })
-      const rows = await db
-        .from('exercise_set_logs')
-        .update(setLogCorrection(entry), { id: entry.id, workout_exercise_id: entry.exerciseId })
-      if (isErr(rows)) return rows
-
-      const [row] = rows.value
-      if (row === undefined) {
-        // Matched nothing: the row is gone, or RLS does not show it to this
-        // caller. Either way no observation was corrected.
-        return err(
-          createError(ErrorCode.PERSISTENCE_NOT_FOUND, {
-            details: { table: 'exercise_set_logs', exerciseId: entry.exerciseId },
-          }),
-        )
-      }
-
-      return parseBoundary(exerciseSetLogRowSchema, row, {
-        code: ErrorCode.PERSISTENCE_READ_FAILED,
+      const result = await db.rpc('mutate_set_observation', {
+        p_observation_id: mutation.observation_id,
+        p_mutation_id: mutation.mutation_id,
+        p_revision: mutation.revision,
+        p_expected_revision: mutation.expected_revision,
+        p_operation: mutation.operation,
+        p_exercise_id: mutation.exercise_id,
+        p_set_number: mutation.set_number,
+        p_values: mutation.values,
       })
-    },
-    async clear(entry) {
-      const accessToken = await token()
-      if (isErr(accessToken)) return accessToken
-
-      const db = createSupabaseClient({ ...supabase, accessToken: accessToken.value })
-      return db
-        .from('exercise_set_logs')
-        .delete({ id: entry.id, workout_exercise_id: entry.exerciseId })
+      return isErr(result) ? result : parseSetObservationAck(result.value, mutation)
     },
   }
 
@@ -504,7 +467,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
     },
     blockResults: { record: refusal },
     history: { page: refusal },
-    setLogs: { log: refusal, correct: refusal, clear: refusal },
+    setLogs: { log: refusal, mutate: refusal },
     exercises: { definition: refusal, saveNotes: refusal },
     conditioning: { history: refusal },
     candidates: { retrieve: refusal },

@@ -61,6 +61,8 @@ function row(overrides: Partial<ExerciseSetLogRow> = {}): ExerciseSetLogRow {
     is_warmup_set: false,
     created_at: '2026-09-24T09:10:00+00:00',
     effort: null,
+    mutation_revision: 0,
+    last_mutation_id: null,
     ...overrides,
   }
 }

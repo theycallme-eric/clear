@@ -13,7 +13,7 @@
  *   · the measurement row and the set's optional effort (`set-effort.tsx`),
  *     both supplied by the logger that owns the draft;
  *   · one full-width Log set, or Cancel / Save correction as a pair — and,
- *     where the shell can clear a saved set, a quiet Clear set beneath it.
+ *     where the shell can clear a saved set, a quiet Clear set above the pair.
  *
  * It owns no draft and writes nothing. The logger that opens it keeps the
  * entry and decides what a submit means, so collapsing the sheet loses
@@ -185,20 +185,20 @@ export function SetLoggingSheet({
           >
             {measures}
             {effort}
+            {mode === 'edit' && onClear !== undefined ? (
+              <ActionGroup>
+                <Button type="button" variant="quiet" size="sm" aria-label={`Clear set ${setNumber}`} onClick={onClear}>
+                  Clear set
+                </Button>
+              </ActionGroup>
+            ) : null}
             {mode === 'edit' ? (
               <ActionGroup className="clr-action-group--paired">
-                <Button variant="secondary" size="lg" onClick={onCancel}>
+                <Button type="button" variant="secondary" size="lg" onClick={onCancel}>
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
                   Save correction
-                </Button>
-              </ActionGroup>
-            ) : null}
-            {mode === 'edit' && onClear !== undefined ? (
-              <ActionGroup>
-                <Button variant="quiet" size="sm" aria-label={`Clear set ${setNumber}`} onClick={onClear}>
-                  Clear set
                 </Button>
               </ActionGroup>
             ) : null}
