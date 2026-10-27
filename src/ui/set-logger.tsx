@@ -76,6 +76,7 @@ import { AppDialog } from './app-dialog'
 import { BlockPanel } from './block-renderers-frame'
 import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
+import { MovementCountdown } from './movement-countdown'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
 import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
@@ -142,6 +143,8 @@ export function ExerciseSetLogger({
   const restAfterSet = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
+  const countdownSeconds =
+    prescription.modality === 'time' ? suggestedMeasure(prescription, setNumber) : null
 
   // The entry being made. It outlives the sheet, so a collapse and a reopen
   // hand back exactly what was typed; it starts over only when the shell's set
@@ -202,6 +205,19 @@ export function ExerciseSetLogger({
         printed here (REQ-009). No rest is no line.
       */}
       {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
+
+      {/*
+        REQ-014: a timed set counts down here, on the movement, whatever the
+        sheet is doing. Keyed to the set it times, so the next set starts from
+        its own prescribed seconds; running out records nothing.
+      */}
+      {countdownSeconds === null ? null : (
+        <MovementCountdown
+          key={`${setNumber}:${countdownSeconds}`}
+          seconds={countdownSeconds}
+          movement={name}
+        />
+      )}
 
       <LoggedSetList
         sets={logged}

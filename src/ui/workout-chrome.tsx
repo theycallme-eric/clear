@@ -9,7 +9,9 @@
  * state is time pressure. The session timer counts up and has no deadline, so
  * it composes the same shipped timer card and the same timer tokens rather than
  * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
- * is the one that composes `TimerDisplay`, exactly as the IA says.
+ * is the one that composes `TimerDisplay`, exactly as the IA says. The frame
+ * itself is `TimerFrame` (EXC-03), shared with a movement's own countdown
+ * (`movement-countdown.tsx`, REQ-014) so both clocks speak one vocabulary.
  *
  * Containment, from 0.14.3: a timer is its own card — one accent bar, the timer
  * role on bar, body and emission — and is never put inside another. The rest
@@ -63,7 +65,7 @@ import { Card } from './card'
 import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
 import { ActionRow } from './composition'
-import { useInterfaceLoop } from './motion'
+import { useInterfaceLoop, type InterfaceLoop } from './motion'
 import './rest-timer-bar.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,34 +84,95 @@ export interface GlobalTimerProps {
  * `role="timer"` here is labelled, not live.
  */
 export function GlobalTimer({ seconds }: GlobalTimerProps) {
+  return (
+    <TimerFrame
+      label="Session time"
+      text={formatElapsed(seconds)}
+      spoken={spokenElapsed(seconds)}
+      size="var(--label-lg-size)"
+    />
+  )
+}
+
+export interface TimerFrameProps {
+  /** The timer's accessible name, said once — "Session time", "Countdown". */
+  label: string
+  /** The digits, `mm:ss`. Decorative. */
+  text: string
+  /** The accessible value, in words. */
+  spoken: string
+  /** The digit size, a label-size token. */
+  size: string
+  /** A short caption drawn inside the frame, before the digits. */
+  caption?: string
+  /** The shipped low state: bar, body, emission and digits take timer-low. */
+  low?: boolean
+  /**
+   * The low state's 80% pulse, as a claim on the view's one loop. Given, the
+   * frame pulses while that claim runs and is still otherwise.
+   */
+  pulse?: InterfaceLoop
+}
+
+/**
+ * EXC-03's adapter: the shipped timer frame, as `TimerDisplay` builds it, for
+ * the timers `TimerDisplay` cannot be — a count-up clock, or any timer that has
+ * to sit inside a card. One vocabulary, so the session clock and a movement's
+ * countdown share border, surface, chamfer and accent bar.
+ *
+ * Outside a card it is the timer card: the emission, the accent bar and the
+ * body all take the timer role, and no frame goes around it. Inside a card it
+ * is that card's element frame instead — the same role, without a bar of its
+ * own, so there is never a second bar or a frame in a frame.
+ */
+export function TimerFrame({
+  label,
+  text,
+  spoken,
+  size,
+  caption,
+  low = false,
+  pulse,
+}: TimerFrameProps) {
   const insideCard = useInsideCard()
+  const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
 
   const readout = (
     <div
       role="timer"
-      aria-label="Session time"
+      aria-label={label}
       className={
         insideCard
-          ? 'clr-chamfer clr-chamfer--md clr-chamfer--timer'
-          : 'clr-chamfer clr-chamfer--md clr-card__body clr-chamfer--timer'
+          ? `clr-chamfer clr-chamfer--md ${role}`
+          : `clr-chamfer clr-chamfer--md clr-card__body ${role}`
       }
       style={{
         display: 'inline-flex',
+        alignItems: 'baseline',
         justifyContent: 'center',
+        gap: 'var(--spacing-200)',
         padding: 'var(--spacing-100) var(--spacing-300)',
       }}
     >
-      <TimerDigits text={formatElapsed(seconds)} size="var(--label-lg-size)" />
-      <span className="a11y-hidden">{spokenElapsed(seconds)}</span>
+      {caption === undefined ? null : (
+        <span
+          aria-hidden="true"
+          style={{ ...labelStyle, color: low ? 'var(--text-timer-low)' : 'var(--text-timer)' }}
+        >
+          {caption}
+        </span>
+      )}
+      <TimerDigits text={text} size={size} low={low} />
+      <span className="a11y-hidden">{spoken}</span>
     </div>
   )
 
   return (
-    // The shipped timer card, as `TimerDisplay` builds it: the emission, the
-    // accent bar and the body all take the timer role, and no frame goes
-    // around it. Inside a card it is that card's element frame instead — the
-    // same timer role, without a bar of its own.
-    <span className="clr-bleed" style={TIMER_BLEED_STYLE}>
+    <span
+      className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
+      style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
+      {...pulse}
+    >
       {insideCard ? (
         readout
       ) : (
@@ -123,6 +186,7 @@ export function GlobalTimer({ seconds }: GlobalTimerProps) {
 }
 
 const TIMER_BLEED_STYLE = { '--bleed': 'var(--border-timer)' } as CSSProperties
+const TIMER_LOW_BLEED_STYLE = { '--bleed': 'var(--border-timer-low)' } as CSSProperties
 
 /**
  * A timer's digits, drawn the way `TimerDisplay` draws them: each one tumbles
