@@ -70,8 +70,39 @@
   flex: 0 0 auto;
 }
 
-/* The elapsed clock and Abandon keep their public header slots. When those
+/* The elapsed clock and the menu keep their public header slots. When those
    slots do not fit beside the title, let the cluster take the next line. */
 .clr-workout-header {
   flex-wrap: wrap;
+}
+
+/* Keep the public meta/action cluster at the end of its line after wrapping,
+   so the right-aligned menu panel stays inside the shell's safe side inset. */
+.clr-workout-header > :last-child {
+  margin-inline-start: auto;
+}
+
+/* REQ-019: the header's framed menu. The panel drops from the trigger's right
+   edge over the content below it; `.clr-chamfer` paints an opaque ground, so
+   nothing beneath shows through. */
+.clr-workout-menu {
+  position: relative;
+}
+
+.clr-workout-menu > .clr-workout-menu__panel {
+  position: absolute;
+  top: calc(100% + var(--spacing-200));
+  right: 0;
+  z-index: 1;
+  display: grid;
+  white-space: nowrap;
+}
+
+.clr-workout-menu__frame {
+  display: grid;
+  padding: var(--spacing-200);
+}
+
+.clr-workout-menu__panel[hidden] {
+  display: none;
 }

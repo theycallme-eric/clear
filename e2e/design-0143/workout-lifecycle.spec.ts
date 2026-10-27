@@ -1274,6 +1274,7 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   }, { variant: 'ladder-selected', short: finish })
   evidence.note('containment', 'Finish workout stays inside the 390x320 short viewport on the last section (TASK-040\'s recorded overflow condition, now executed).')
 
+  await page.getByRole('button', { name: 'Actions', exact: true }).click()
   await page.getByRole('button', { name: 'Abandon', exact: true }).click()
   await evidence.shot(...key('abandon-confirmation'), at, 'Workout', async () => {
     await expect(page.getByRole('dialog', { name: 'Abandon workout?' })).toBeVisible()
@@ -1395,6 +1396,7 @@ backendTest('recovery: active read, set-sync failure and retry, re-entry, abando
 
   const abandon = await boundary(page, { tail: 'rpc/abandon_session', method: 'POST' }, 'failure')
   try {
+    await page.getByRole('button', { name: 'Actions', exact: true }).click()
     await page.getByRole('button', { name: 'Abandon', exact: true }).click()
     await page.getByRole('dialog', { name: 'Abandon workout?' }).getByRole('button', { name: 'Abandon', exact: true }).click()
     await evidence.shot('Workout', '/workout', 'abandon-error-retry', at, 'Workout', async () => {
@@ -1403,6 +1405,7 @@ backendTest('recovery: active read, set-sync failure and retry, re-entry, abando
     })
   } finally { await abandon.dispose() }
   await page.getByRole('dialog', { name: 'That didn’t save' }).getByRole('button', { name: 'Close', exact: true }).click()
+  await page.getByRole('button', { name: 'Actions', exact: true }).click()
   await page.getByRole('button', { name: 'Abandon', exact: true }).click()
   await page.getByRole('dialog', { name: 'Abandon workout?' }).getByRole('button', { name: 'Abandon', exact: true }).click()
   await evidence.shot('Workout', '/workout', 'abandon-home', '/', 'Today', async () => {
