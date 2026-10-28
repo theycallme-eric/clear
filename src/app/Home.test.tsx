@@ -867,16 +867,9 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
   })
 
   it('first workout: clear guidance, and Generate opens on its own defaults', async () => {
-    const { user, generation } = renderHome([
-      completed(1, 0, { title: 'Prescribed only', started_at: null, completed_at: null }),
-      completed(2, 1, {
-        title: 'Abandoned only',
-        completed_at: null,
-        abandoned_at: `${daysAgo(1)}T09:30:00.000Z`,
-      }),
-    ])
+    const { user, generation } = renderHome([])
 
-    await screen.findByRole('link', { name: /Abandoned only/i })
+    await screen.findByText(RECENT_EMPTY_TITLE)
     const card = within(trainToday())
     expect(card.getByText(FIRST_WORKOUT_GUIDANCE)).toBeInTheDocument()
     expect(card.queryByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))).not.toBeInTheDocument()

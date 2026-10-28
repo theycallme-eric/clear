@@ -17,10 +17,10 @@ word and no link underline, and completed and abandoned rows stay distinct.
 
 - `RestDayControl` in `src/app/Home.tsx` printed `REST_DAY_PROMPT` ("Not training today?")
   above Mark Rest Day on an unmarked day, and printed "Today: <reason>." on a marked day.
-- The returning-user entry and the trained-today rule were already in place.
-  - `NextWorkoutEntry` plus the pinned Generate show for any history.
-  - `RestDayControl` returns null when today's strip state is `workout`.
-  - AC-010 therefore needed proof, not a behaviour change.
+- The returning-user entry already worked for completed history; the pinned Generate action was
+  present. `NextWorkoutEntry` still showed first-use guidance for abandoned-only history with no
+  eligible prior completed request. That presentation gap is covered by controller recovery below.
+  `RestDayControl` already returns null when today's strip state is `workout`.
 - Home's recents used the shared `HistoryList`/`SessionItem` (U44). Its head group was an h5-size
   title link with the status beside it, then a "date · focus" line, then metrics in 12px data
   labels. The underline is the global `a { border-bottom }` rule in the vendored foundation CSS.
@@ -30,7 +30,7 @@ word and no link underline, and completed and abandoned rows stay distinct.
   audit test's package-hash assertion still passes (below), which checks the vendored tree's bytes.
 - Issue comments were not read; the approved task body was the contract.
 
-## Changes (local only; nothing changed in GitHub or any external service)
+## Initial worker candidate (retained at `cb39d3e`)
 
 - `src/app/Home.tsx`:
   - `REST_DAY_PROMPT` is removed. An unmarked day renders no statement above Mark Rest Day.
@@ -103,3 +103,39 @@ audit text was edited. jsdom checks structure and token styles only. No browser 
 
 Next safe action: the controller commits this tree and re-captures the format-preview evidence
 against it. It then runs the Home e2e review spec and native verification.
+
+## Controller verification recovery — in progress
+
+Native40021 collected terminalexit1: worker succeeded, focused criterion/task checks each passed
+11 cases; full suite stopped only on two source-bound audit checks. Complete initial6-file
+candidatecb39d3e is retained. Root read issue523/comments0; attempt1/max2 and all limits remain.
+
+Read-only review confirmed Home-only recent layout preserves default History hierarchy/activation.
+Trailing Session cleanup is a generated-title display assumption: actual title provenance is model
+generation with one-tap Favorites copying the same snapshot, and no current naming/rename flow.
+Stored titles, Review, Favorites and History remain unchanged; internal title words are preserved.
+An initial concern about user-authored title conflict was not supported by the current app paths.
+
+Review also confirmed abandoned-only history was still presented as first use because eligible
+prior completed request was null. A bounded presentation correction/regression is in progress;
+recommendation eligibility, streak/rest/pause logic and explicit Generate defaults are preserved.
+Actual Home browser geometry/entry proof is being added, and the existing six PWA cases will run
+unchanged before delivery. No source-bound evidence is fabricated, model attempt reset or Runner
+change is involved. Actual TASK003/run e5110ade/a1/basee230 source binding is recorded for genuine
+capture. Owned backend start30819/reset36939/status collected exit0 with29matching migrations.
+
+The abandoned-only correction is complete. Before-fix5305 failed the two new partial/unstarted
+returning cases (2failed/12passed). After-fix2637 passed178 cases/seven files, covering Home,
+home-screen, History, home/streak/rest-days/session-suggestion; typecheck10623, designlint18681 and
+diffcheck all passed. Generate still defaults45min rather than using an unfinished20min request,
+remains editable and sends no model call. Empty history remains first use; no algorithm changed.
+Root independently reviewed the exact diff. The active post-import REQ-007 rest-day browser assertions
+are updated for absent copy; historical BEFORE cases remain unchanged.
+
+Four new production-route browser cases are ready for actual execution at390×844 and320×568:
+recent-row geometry/type/metrics, three status cues, display-only Session suffix cleanup versus
+unchanged History titles, explicit editable Generate, trained-today rule, abandoned-only returning
+presentation with no fabricated request/recommendation and preserved deferred empty-week text.
+All API traffic is synthetic/intercepted, with no forwarded mutations or generation calls. Existing
+six PWA cases will also run unchanged. Browser results are pending; no geometry is inferred from
+jsdom. Root will commit clean source before browser proof and same-source capture.

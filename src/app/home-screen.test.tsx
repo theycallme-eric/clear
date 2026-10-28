@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { ok } from '../state/errors'
 import { REST_DAY_REASON_EFFECTS } from '../state/rest-days'
 import type { WorkoutSessionRow } from '../state/schemas'
-import { suggestionDay } from '../state/session-suggestion'
+import { FIRST_WORKOUT_GUIDANCE, suggestionDay } from '../state/session-suggestion'
 import { makeSessionRow } from '../test/factories'
 import { createFakeGenerationClient } from '../test/generation-double'
 import { renderApp, signedIn } from '../test/render'
@@ -129,6 +129,51 @@ describe('Home actions and copy (REQ-003)', () => {
       await within(cardOf('This week')).findByRole('button', { name: 'Mark Rest Day' }),
     ).toBeInTheDocument()
     expect(todayCell()).not.toHaveAttribute('data-day-state', 'workout')
+  })
+
+  for (const { label, row } of [
+    { label: 'abandoned partway', row: abandonedPartway },
+    { label: 'abandoned before starting', row: abandonedUnstarted },
+  ]) {
+    it(`AC-010: ${label} history returns to Generate without inventing a completed request`, async () => {
+      const stored = row(1, 1, { title: 'Earlier attempt', requested_duration_mins: 20 })
+      const { user, generation } = renderHome([stored])
+      await screen.findByRole('link', { name: stored.title })
+
+      const train = within(cardOf('Train today'))
+      expect(await train.findByText('Choose a focus and the rest is filled in.')).toBeInTheDocument()
+      expect(train.queryByText(FIRST_WORKOUT_GUIDANCE)).toBeNull()
+      expect(train.queryByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))).toBeNull()
+      expect(train.queryByText(new RegExp(`^${SUGGESTION_LABEL}:`))).toBeNull()
+      expect(train.queryAllByRole('button')).toHaveLength(0)
+      expect(train.queryAllByRole('link')).toHaveLength(0)
+      expect(screen.getByRole('button', { name: GENERATE_ACTION_LABEL })).toBeEnabled()
+      expect(await screen.findByRole('button', { name: 'Mark Rest Day' })).toBeEnabled()
+      expect(todayCell()).not.toHaveAttribute('data-day-state', 'workout')
+      expect(generation.calls).toEqual([])
+
+      await user.click(screen.getByRole('button', { name: GENERATE_ACTION_LABEL }))
+      await screen.findByRole('heading', { level: 1, name: 'Generate workout' })
+      const minutes = screen.getByLabelText(/Time available/i)
+      // An unfinished request is history, but not a completed prior to prefill.
+      expect(minutes).toHaveValue(45)
+      expect(screen.getByRole('group', { name: 'Anchor' })).toBeInTheDocument()
+      await user.clear(minutes)
+      await user.type(minutes, '30')
+      expect(minutes).toHaveValue(30)
+      expect(generation.calls).toEqual([])
+    })
+  }
+
+  it('AC-010: genuinely empty history retains first-workout guidance', async () => {
+    const { generation } = renderHome([])
+    const train = within(cardOf('Train today'))
+    expect(await train.findByText(FIRST_WORKOUT_GUIDANCE)).toBeInTheDocument()
+    expect(train.queryByText('Choose a focus and the rest is filled in.')).toBeNull()
+    expect(train.queryByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))).toBeNull()
+    expect(train.queryByText(new RegExp(`^${SUGGESTION_LABEL}:`))).toBeNull()
+    expect(screen.getByRole('button', { name: GENERATE_ACTION_LABEL })).toBeEnabled()
+    expect(generation.calls).toEqual([])
   })
 
   it('AC-010: trained today keeps the existing rule — no rest-day affordance, same action', async () => {
