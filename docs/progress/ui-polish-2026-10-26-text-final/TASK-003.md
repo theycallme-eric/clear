@@ -139,3 +139,11 @@ presentation with no fabricated request/recommendation and preserved deferred em
 All API traffic is synthetic/intercepted, with no forwarded mutations or generation calls. Existing
 six PWA cases will also run unchanged. Browser results are pending; no geometry is inferred from
 jsdom. Root will commit clean source before browser proof and same-source capture.
+
+First actual browser96003 on clean d2e97f3 passed8/10: both abandoned-only cases and all six
+unchanged PWA cases. The two mixed-history cases stopped on the decorated row's scrollWidth.
+Screenshot/source review confirmed the second-row divider intentionally extends through the card
+padding (existing shell.css in-card rule); that is not text clipping. The driver now retains full
+row viewport/scroll-owner bounds and measures horizontal fit on undecorated title/status-date/metrics,
+including each existing nowrap count-unit check. No product layout or assertion requirement changed.
+Original log/trace/screenshots are preserved externally. Corrected execution remains pending.

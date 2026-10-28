@@ -152,7 +152,7 @@ async function visibleInOwner(target: Locator, owner: Locator, viewport: Viewpor
   expect(targetBox.x + targetBox.width).toBeLessThanOrEqual(viewport.width + 1)
   expect(targetBox.y).toBeGreaterThanOrEqual(Math.max(0, ownerBox.y) - 1)
   expect(targetBox.y + targetBox.height).toBeLessThanOrEqual(Math.min(viewport.height, ownerBox.y + ownerBox.height) + 1)
-  expect(await target.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+  return targetBox
 }
 
 /** Expected date text from the supplied calendar day, independent of app formatters. */
@@ -181,7 +181,16 @@ async function inspectRecentRow(row: Locator, source: WorkoutSessionRow, status:
   await expect(metrics).toContainText(`Intensity ${source.effective_intensity}/10`)
   if (source.actual_duration_mins === null) await expect(metrics).not.toContainText('Actual')
   else await expect(metrics).toContainText(`Actual ${source.actual_duration_mins} min`)
-  await visibleInOwner(row, scroller, viewport)
+  const rowBox = await visibleInOwner(row, scroller, viewport)
+  // Adjacent rows deliberately draw their divider through the card padding.
+  // Measure the undecorated content, keeping full row/owner bounds above.
+  for (const content of [title, statusDate, metrics]) {
+    const box = await content.boundingBox()
+    if (box === null) throw new Error('Recent row content is missing')
+    expect(box.x).toBeGreaterThanOrEqual(rowBox.x - 1)
+    expect(box.x + box.width).toBeLessThanOrEqual(rowBox.x + rowBox.width + 1)
+    expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+  }
   await link.focus()
   await expect(link).toBeFocused()
   await expect(link).toHaveCSS('text-decoration-line', 'none')
