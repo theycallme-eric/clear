@@ -38,6 +38,9 @@ export function AtmosphereLayer() {
     <div
       aria-hidden="true"
       className="clr-atmosphere clr-atmosphere--fixed"
+      // App-owned viewport attachment: the package's later base rule otherwise
+      // overrides its fixed modifier. Its gradients, sizing and motion stay public.
+      style={{ position: 'fixed' }}
       data-static={prefersReducedMotion ? 'true' : undefined}
     >
       <span className="clr-atmosphere__blob clr-atmosphere__blob--structure" />

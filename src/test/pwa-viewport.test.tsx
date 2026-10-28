@@ -2,8 +2,9 @@
  * REQ-002 — installed-PWA atmosphere behind the status icons, content safe.
  *
  * What this file proves is the markup and CSS boundary only: the document asks
- * iOS to draw the page edge to edge, the atmosphere is the layer that fills
- * that edge, and every control sits inside the safe-area padding. jsdom has no
+ * an edge-to-edge viewport, the atmosphere's app-owned attachment is fixed,
+ * and the shell declares safe-area padding. Actual geometry belongs to the
+ * focused browser checks, including controls outside the shell. jsdom has no
  * notch and resolves no `env()`, so this is not device proof — the installed
  * iPhone's status area, keyboard and launch/resume behaviour stay with the
  * owner's post-launch manual UAT and are not claimed here.
@@ -50,8 +51,8 @@ describe('viewport extends under the status icons (AC-008)', () => {
   })
 
   it('asks the installed app for a translucent status bar over its own page', () => {
-    // `default` and `black` paint an opaque bar above the page; only
-    // `black-translucent` lets the page draw beneath the status icons.
+    // Preserve the requested translucent installed-app metadata. This assertion
+    // does not establish how a particular installed iOS build renders it.
     const style = html.match(
       /name="apple-mobile-web-app-status-bar-style"\s+content="([^"]*)"/,
     )?.[1]
@@ -73,8 +74,9 @@ describe('the atmosphere, not a tint, fills that area (AC-007)', () => {
     expect(layer?.querySelector('.clr-atmosphere__scan')).not.toBeNull()
   })
 
-  it('pins that layer to the full viewport, safe areas included', () => {
-    expect(rule(foundation, '.clr-atmosphere--fixed')).toMatch(/position:\s*fixed/)
+  it('attaches the app-owned atmosphere to the viewport without relying on a shadowed modifier', () => {
+    const { container } = render(<AtmosphereLayer />)
+    expect(container.querySelector('.clr-atmosphere')).toHaveStyle({ position: 'fixed' })
     const base = rule(foundation, '.clr-atmosphere')
     expect(base).toMatch(/inset:\s*0/)
     // The scanlines are a repeating gradient across the whole layer.
@@ -101,7 +103,7 @@ describe('the atmosphere, not a tint, fills that area (AC-007)', () => {
   })
 })
 
-describe('content and controls stay inside the safe areas (AC-075)', () => {
+describe('shell safe-area declarations (AC-075; browser geometry checked separately)', () => {
   const content = rule(shell, '.clr-shell--contained > .clr-shell__content')
 
   it('pads the shell content by every safe-area inset', () => {
@@ -111,7 +113,7 @@ describe('content and controls stay inside the safe areas (AC-075)', () => {
     expect(content).toMatch(/--shell-inset-right:\s*max\(var\(--spacing-\d+\),\s*env\(safe-area-inset-right\)\)/)
   })
 
-  it('keeps the header inside that padding, so no control sits under the status icons', () => {
+  it('declares an in-flow header without a negative top offset', () => {
     const header = rule(shell, '.clr-shell--contained > .clr-shell__content > header')
 
     expect(header).toBeDefined()
@@ -119,12 +121,12 @@ describe('content and controls stay inside the safe areas (AC-075)', () => {
     expect(header).not.toMatch(/margin-top:\s*-/)
   })
 
-  it('follows the visual viewport on resize (keyboard, toolbar) rather than overshooting it', () => {
+  it('declares dynamic viewport height and document clipping for resize', () => {
     expect(rule(foundation, '.clr-shell--fixed')).toMatch(/height:\s*100dvh/)
     const root = rule(shell, 'html,\nbody,\n#root')
     expect(root).toMatch(/height:\s*100%/)
-    // The document is never a second scroll owner, so a resize cannot strand
-    // content above the status area.
+    // This checks the declared clipping boundary, not computed scrolling or
+    // actual keyboard behavior on an installed device.
     expect(root).toMatch(/overflow:\s*hidden/)
   })
 })

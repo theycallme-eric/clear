@@ -7,19 +7,19 @@ This is the task's own progress record. It replaces the shared daily journal for
 
 In the installed iOS PWA, the CLEAR atmosphere (gradient blobs, dim overlay and scanlines) should
 draw behind the system status icons. It must not be replaced by a solid `theme-color` bar. All
-content and controls must stay inside the safe areas. Only the markup and safe-area CSS boundary
-is checked automatically. **Installed-iPhone status-area, keyboard, launch/resume and safe-area
+content and controls must stay inside the safe areas. Automated checks cover markup/CSS boundaries plus local simulated mobile layout; they do not
+establish installed-device behavior. **Installed-iPhone status-area, keyboard, launch/resume and safe-area
 behaviour is not proven on a device.** It is deferred to owner UAT outside the DAG
 (POST-LAUNCH-MANUAL-UAT.md).
 
 ## Baseline, as found (HEAD `c082f3b`, contains `7f0a367`)
 
 - `index.html` had `width=device-width, initial-scale=1.0` with no `viewport-fit`. That means
-  iOS letterboxes the page below the status bar, even with `black-translucent` set.
+  edge-to-edge layout was not requested. Actual installed-device behavior was not observed.
 - `apple-mobile-web-app-status-bar-style` was already `black-translucent`.
 - `AtmosphereLayer` (`src/ui/atmosphere.tsx`) already renders the package's
-  `.clr-atmosphere.clr-atmosphere--fixed` at `position: fixed; inset: 0`, with no safe-area
-  offset.
+  `.clr-atmosphere.clr-atmosphere--fixed`, with no safe-area offset. The later vendor base rule
+  overrides the fixed modifier with `position: absolute`; the class alone was not computed proof.
 - `src/styles/shell.css` already pads the contained shell content by
   `max(token, env(safe-area-inset-*))` on all four sides. The shell is `100dvh`, and
   `html, body, #root` use `overflow: hidden`.
@@ -27,7 +27,7 @@ behaviour is not proven on a device.** It is deferred to owner UAT outside the D
   declares 0.14.3, and `git diff 7f0a367 HEAD -- src/design-system` is empty.
 - `gh issue view` was not used, so the approved task body was the contract.
 
-## What changed (local, unpublished)
+## Initial worker candidate (retained at `7487f82`)
 
 - `index.html`: added `viewport-fit=cover` to the viewport meta, kept on one line so the existing
   `document-shell` and `pwa-manifest` matchers still apply. The zoom policy is unchanged.
@@ -42,8 +42,8 @@ behaviour is not proven on a device.** It is deferred to owner UAT outside the D
   - AC-075: the shell content pads all four `env(safe-area-inset-*)`. The header is in normal
     flow inside that padding. The shell follows `100dvh`, and the document is never a second
     scroll owner.
-- No CSS change was needed: the safe-area padding and the full-bleed fixed atmosphere were
-  already correct and only waited on `viewport-fit=cover`.
+- The worker initially inferred fixed coverage from the modifier declaration. Controller review
+  found that inference insufficient; the correction and actual browser proof are recorded below.
 - Nothing changed in GitHub or any external service.
 
 ## Failures and corrections
@@ -84,3 +84,29 @@ edited, because that would fabricate evidence.
   proof. Owner UAT, outside the DAG.
 - Next: the controller reads issue #522's comments, commits the tree, re-captures the
   source-bound evidence, then runs native verification.
+
+## Controller verification recovery — in progress
+
+Native61261 collected terminal exit1: worker succeeded, focused criterion/task checks each passed
+10 cases; full suite stopped only on two source-bound audit checks. The complete initial candidate
+is retained at7487f82. Root read live issue522/comments0; attempt1/max2 and all limits are unchanged.
+
+The fixed-atmosphere CSS-string assertion was a false-positive: a later vendor base rule wins.
+The app-owned AtmosphereLayer now explicitly sets its viewport attachment to position:fixed; the
+public gradients, scanlines, sizing and motion are unchanged and vendor files remain byte-identical.
+The unit test checks that actual rendered inline attachment and labels its remaining shell/viewport
+assertions as declaration-only. Markup comments and baseline notes no longer promise an observed
+iPhone outcome. Actual local browser bounds, safe-area env simulation, scroll and viewport-resize
+checks are being added, including relevant controls outside the shell. No device success is claimed.
+
+Root will commit clean source before browser execution/capture, preserve any real failures, collect
+genuine current-source format evidence, and use native same-attempt full verification/protected
+build-only delivery. No extra model/native attempt, Runner repair or hosted mutation is involved.
+
+The additive browser driver is ready: four Home sizes with actual CDP CSS env inset overrides,
+actual atmosphere/scanline and control bounds, real touch scrolling, focused Reason selection
+through resize/cancel, and zero-inset fallback. Separate cases cover a real Generate Notes draft
+through viewport resizing without generation and the shared swap toast/dismiss outside the shell.
+All API calls are intercepted; no service-role key or real-account write is used. Browser outcomes
+are pending. Focused controller66292 passed54 cases/two files plus design lint. Owned backend
+start63633/reset58988/status collected exit0 with matching29migrations; status values remain private.
