@@ -154,3 +154,27 @@ exact View history accessible name. Actual snapshot says "View history ›": the
 adds a CSS chevron. The driver now accepts that documented chevron and explicitly verifies the
 history href before clicking, retaining the real navigation/History-preservation assertions. Product
 code is unchanged. This original log/trace/screenshots are also preserved; fresh execution follows.
+
+## Controller browser/capture result
+
+Final clean source af2c027659e001fb09a683242ab1442996e6f9ad passed all10 Home+unchangedPWA
+browser cases in27.6s (foreground93269 collected exit0). All four new Home cases passed, including
+both actual mixed-row navigation journeys and abandoned-only entry at390×844/320×568. No model
+call or API mutation was forwarded. Both earlier test-driver failures remain retained externally.
+Independent final review found no concrete product blockers; no state/data/vendor/workflow/schema
+files changed. No distance change is included.
+
+The same clean committed source then passed all four actual authenticated format-preview skin
+cases/eight PNGs in25.1s, terminal command exec-a7e9d237-456d-4de5-b172-90066f6a9f46 completed exit0.
+First capture was clean; all records have the actual af2c027 source and zero network write/model
+counters. Runtime4b4434427fd1f7ced05e504db346d3b90c7c7ced9938562997c4a8e822a58ff3,
+driverb63b0b5f8a5ca3bc7600f51b4a5428d8e14f85440fb84f71d7e08f730cc57d2f,
+payload2516b0d44b0e458f6c1c6ffff383a151b261f982e4cb26f4798e5a5ae9513654.
+Genuine v1 input provenance records TASK003/run e5110ade/a1/basee230 and the retained task branch;
+no capture fact was rewritten. Owned disposable backend stop1044 collected exit0; other local and
+hosted stacks remain untouched. Existing audit consumer and native same-attempt recovery follow.
+No physical-iPhone, skipped/paid/hosted lane or protected delivery success is inferred.
+
+Existing audit consumer28580 collected exit0: all38 checks passed. Diff check passed; vendor,
+workflow and migration paths have no change from the actual build base. Earlier tracked evidence
+groups are unchanged. Native full verification is the next delivery gate.
