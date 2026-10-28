@@ -199,9 +199,10 @@ function SwapOptionsView({
  * The list's frame: as tall as the list, and never taller than the viewport
  * leaves once the dialog's title, padding and Keep action are drawn. The
  * dialog element itself does not scroll (0.14.3 clears its max-height), so a
- * long list that grew the panel past the screen had no way to reach its last
- * choice — the reported installed-iPhone defect (REQ-020). Containing it here
- * keeps the title and the safe action on screen while the list scrolls.
+ * long list can place its final choice outside the visible panel. This is a
+ * possible local overflow mechanism; the exact reported installed-iPhone cause
+ * remains unknown (REQ-020). Containment keeps the title and safe action on
+ * screen while the list scrolls.
  */
 const LIST_FRAME_MAX_HEIGHT =
   'max(calc(var(--control-height) * 2), calc(100dvh - var(--spacing-600) * 10))'

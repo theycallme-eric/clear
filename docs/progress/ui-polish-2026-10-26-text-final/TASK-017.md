@@ -16,8 +16,8 @@ queue and `ToastHost`, not a bespoke notice.
   body, with no height bound.
 - 0.14.3's `.clr-dialog` sets `max-height: none`, so a long list made the panel taller than the
   viewport. The fixed top-layer dialog does not scroll as a page, so the end of the list was out of
-  reach. This is the likely mechanism behind the reported installed-iPhone defect, inferred from
-  code. **The exact device reproduction is unknown:** the sources give no iOS version, list length
+  reach. This is a possible local overflow mechanism inferred from code; it does not identify the
+  installed-iPhone cause. **The exact device reproduction is unknown:** the sources give no iOS version, list length
   or gesture, and none is invented here.
 - A swap gave no feedback beyond the row changing.
 - PRE-001: `git merge-base --is-ancestor 7f0a367… HEAD` exit 0. PRE-002: `package.json` declares
@@ -27,7 +27,7 @@ queue and `ToastHost`, not a bespoke notice.
 - `gh issue view` was not used. The approved task body was the contract, and issue comments were
   not read by the worker.
 
-## What changed (local, uncommitted)
+## Initial worker candidate (retained at `97f5117`)
 
 - `src/ui/exercise-swap.tsx`: new internal `SwapOptionList`.
   - The list sits inside the public `ScrollRegion`, the shared vertical scrolling contract in
@@ -61,16 +61,17 @@ queue and `ToastHost`, not a bespoke notice.
   title, gaps and Keep action. The `--control-height * 2` floor keeps the list usable in short
   landscape windows.
 
-## Limits of the proof
+## Limits of the initial worker proof
 
 - `npm test` runs in jsdom, which does no layout, so the test sets the scroller's geometry by hand.
-  It proves structure, scroll wiring, reachability and the return path. It does not prove pixels.
+  It proves structure, event wiring, enabled semantic choices and the return path. Actual scroll
+  reachability, layout and hit testing remain unproved until browser execution.
   No Playwright/Chromium run was made for this task.
 - **The installed-iPhone fix is not proven on device.** It stays pending in post-launch manual UAT
   (`POST-LAUNCH-MANUAL-UAT.md`, outside the DAG), on the actual installed iOS build. Neither jsdom
   nor local Chromium is that proof.
 
-## Worker verification
+## Initial worker verification
 
 | Command | Result |
 | --- | --- |
@@ -98,3 +99,29 @@ record, hash or audit text was edited.
 
 Next safe action: the controller reads issue #537's comments, commits the tree, re-captures the
 format-preview evidence against it, then runs native verification.
+
+## Controller verification recovery — in progress
+
+Native initial29741 collected terminal exit1: worker succeeded, focused criterion/task commands
+each passed5cases, full suite stopped only on two stale source-bound audit checks. Initial
+four-file candidate97f5117 remains in history; attempt1/max2 is unchanged. Root read live
+issue #537/comments0. No additional model attempt or Runner change is involved.
+
+The source comment and baseline wording now identify overflow only as a possible local mechanism;
+the reported installed-iPhone cause remains unknown. The jsdom test records DOM/event behavior,
+not actual geometry or touch hit testing. A focused production /review browser spec is being
+added with synthetic long-list route fixtures, real Chromium touch/scroll and last-row selection,
+safe Keep, Review return and existing toast feedback at normal/narrow/short phone sizes. It will
+not forward model/API mutations or claim real-user, backend or physical-device verification.
+
+Source binding names actual TASK-017, run209dc3f3-1046-4dd6-8adc-e8023caf547c, attempt1 and
+base0f967fd9ab2196e21ffa41f9bbe6f3783a9030f1. Root will commit before executing proof, then
+collect genuine current-source format evidence and use native same-attempt full verification.
+
+The additive browser driver is ready for execution. It checks actual rendered dialog/list/action
+bounds, uses Chromium touch gestures to reach the final wrapped alternative, verifies its hit
+target and selects it with a touch tap. It also checks Keep and Escape focus return, unchanged
+Review ownership and Start availability, the existing toast host and dismissal, and zero forwarded
+API writes/model calls at 390×844, 320×568 and 390×320. Independent source review found no concrete
+selection or observer-cleanup blocker. Browser results remain pending; synthetic route/API fixtures
+do not prove persistence, the deployed backend or the installed-iPhone symptom.
