@@ -147,3 +147,10 @@ padding (existing shell.css in-card rule); that is not text clipping. The driver
 row viewport/scroll-owner bounds and measures horizontal fit on undecorated title/status-date/metrics,
 including each existing nowrap count-unit check. No product layout or assertion requirement changed.
 Original log/trace/screenshots are preserved externally. Corrected execution remains pending.
+
+Second actual browser57559 on d7dbe12 again passed both abandoned-only and all six PWA cases.
+All mixed-row content/geometry checks passed; the two mixed cases then timed out waiting for an
+exact View history accessible name. Actual snapshot says "View history ›": the shipped TextAction
+adds a CSS chevron. The driver now accepts that documented chevron and explicitly verifies the
+history href before clicking, retaining the real navigation/History-preservation assertions. Product
+code is unchanged. This original log/trace/screenshots are also preserved; fresh execution follows.

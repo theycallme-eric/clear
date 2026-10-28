@@ -274,7 +274,9 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }
 
     // The display-only cleanup belongs to Home. The ordinary chronology still
     // renders the original persisted title, link treatment and larger heading.
-    await page.getByRole('link', { name: 'View history', exact: true }).click()
+    const viewHistory = page.getByRole('link', { name: /^View history(?:\s*›)?$/ })
+    await expect(viewHistory).toHaveAttribute('href', '/history')
+    await viewHistory.click()
     await expect(page).toHaveURL((url) => url.pathname === '/history')
     const original = page.getByRole('link', { name: MIXED[0].title, exact: true })
     await expect(original).toBeVisible()
