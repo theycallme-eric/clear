@@ -66,6 +66,15 @@
   overscroll-behavior: contain;
 }
 
+/* Docked here, the entry is the sheet's one scroller. The frame's own capped,
+   contained scroll box sat under the finger without overflowing, so on a short
+   phone a touch swipe stopped at it and the fields below stayed out of reach. */
+.clr-workout-footer__entry .clr-set-sheet__frame {
+  max-height: none;
+  overflow-y: visible;
+  overscroll-behavior: auto;
+}
+
 .clr-workout-footer__content > .clr-workout-nav {
   flex: 0 0 auto;
 }
