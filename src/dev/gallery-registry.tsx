@@ -50,6 +50,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
 import { AtmosphereLayer } from '../ui/atmosphere'
@@ -2052,6 +2053,18 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'two short actions', Render: ActionGroupPaired },
       { state: 'long labels wrap to rows', Render: ActionGroupLongLabels },
+    ],
+  },
+  {
+    component: 'ActionGlow',
+    requirement: 'REQ-005',
+    module: 'src/ui/action-glow.tsx',
+    summary:
+      'The Generate button’s glow on another actionable control. It goes out when the control is disabled or loading.',
+    specimens: [
+      { state: 'resting', Render: () => <ActionGlow><Button variant="secondary">Mark Rest Day</Button></ActionGlow> },
+      { state: 'loading', Render: () => <ActionGlow><Button variant="secondary" loading>Mark Rest Day</Button></ActionGlow> },
+      { state: 'disabled', Render: () => <ActionGlow><Button variant="secondary" disabled>Mark Rest Day</Button></ActionGlow> },
     ],
   },
   {

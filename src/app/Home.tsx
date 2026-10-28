@@ -133,6 +133,7 @@ import {
   useActiveSessionQuery,
   useWorkoutClients,
 } from '../state/workout-queries'
+import { ActionGlow } from '../ui/action-glow'
 import { Card } from '../ui/card'
 import {
   ActionGroup,
@@ -258,17 +259,20 @@ export function Home() {
       {/* U18: the header is the page title and one framed icon-only control.
           `IconButton` requires the accessible name and brings the package's
           focus ring and 40px target; the route change stays in-app, so the
-          installed PWA never hands Settings to the browser. */}
+          installed PWA never hands Settings to the browser. REQ-005: it
+          carries Generate's glow. */}
       <Screen
         title="CLEAR"
         heading={HOME_HEADING}
         header={{
           actions: (
-            <IconButton
-              label={SETTINGS_CONTROL_LABEL}
-              icon={<Sliders size={20} />}
-              onClick={() => void navigate(SETTINGS_ROUTE)}
-            />
+            <ActionGlow>
+              <IconButton
+                label={SETTINGS_CONTROL_LABEL}
+                icon={<Sliders size={20} />}
+                onClick={() => void navigate(SETTINGS_ROUTE)}
+              />
+            </ActionGlow>
           ),
         }}
         pinnedFoot={
@@ -515,18 +519,21 @@ function RestDayControl({
             </p>
           )}
 
+          {/* REQ-005: the trigger carries Generate's glow; the card does not. */}
           {!editing ? (
             <ActionGroup>
-              <Button
-                variant="secondary"
-                icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
-                aria-expanded={false}
-                aria-controls={editorId}
-                buttonRef={trigger}
-                onClick={begin}
-              >
-                {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
-              </Button>
+              <ActionGlow>
+                <Button
+                  variant="secondary"
+                  icon={today.reason === null ? <Rest size={20} /> : <Pencil size={20} />}
+                  aria-expanded={false}
+                  aria-controls={editorId}
+                  buttonRef={trigger}
+                  onClick={begin}
+                >
+                  {today.reason === null ? 'Mark Rest Day' : 'Change reason'}
+                </Button>
+              </ActionGlow>
             </ActionGroup>
           ) : (
             // Escape is Cancel from anywhere in the editor; the native picker
