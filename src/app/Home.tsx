@@ -185,6 +185,9 @@ export const RECENT_WORKOUTS_LABEL = 'Recent workouts'
 export const LAST_REQUEST_LABEL = 'Last time'
 export const SUGGESTION_LABEL = 'Suggested next'
 
+/** Existing history without a completed request still has the ordinary form entry. */
+const RETURNING_WORKOUT_GUIDANCE = 'Choose a focus and the rest is filled in.'
+
 /** The pinned primary: it opens Generate, prefilled, and sends nothing. */
 export const GENERATE_ACTION_LABEL = 'Generate workout'
 
@@ -206,8 +209,10 @@ export const FAVORITES_TAB_VALUE = 'favorites'
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
-/** U25: the question only; the chosen reason's effect is the picker's helper. */
-export const REST_DAY_PROMPT = 'Not training today?'
+/**
+ * REQ-003: an unmarked day carries no prompt above Mark Rest Day — the
+ * action names itself. The chosen reason's effect is the picker's helper.
+ */
 export const REST_DAY_SAVED = 'Rest day saved.'
 
 export function Home() {
@@ -496,11 +501,12 @@ function RestDayControl({
       <Card heading={REST_DAY_LABEL}>
         {/* U05: the statement, then the control group, one rhythm step apart. */}
         <div className="clr-stack">
-          <p style={{ margin: 0 }}>
-            {today.reason === null
-              ? REST_DAY_PROMPT
-              : `Today: ${REST_DAY_REASON_LABELS[today.reason]}.`}
-          </p>
+          {/* An unmarked day asks nothing: the action is the whole offer. A
+              saved mark is still stated, because the strip's glyph is not a
+              reason. */}
+          {today.reason !== null && (
+            <p style={{ margin: 0 }}>{`Today: ${REST_DAY_REASON_LABELS[today.reason]}.`}</p>
+          )}
 
           {saved && <p role="status" style={{ margin: 0 }}>{REST_DAY_SAVED}</p>}
           {failure && (
@@ -606,9 +612,10 @@ function StreakCount() {
  * A data-driven view with all four states. Loading and a failed read are said
  * here, with Retry; the pinned action still opens Generate on its defaults
  * meanwhile, because a history that did not load must never cost the athlete
- * their workout. Nothing completed is the first-use guidance. Stale history
- * still states its last request and says to choose a focus, which is what
- * Generate then asks for.
+ * their workout. Truly empty history gets first-use guidance; unfinished
+ * history gets the ordinary returning entry without inventing a completed
+ * request or recommendation. Stale completed history still states its last
+ * request and says to choose a focus, which Generate then asks for.
  */
 function NextWorkoutEntry({
   query,
@@ -622,7 +629,7 @@ function NextWorkoutEntry({
       ? viewLoading()
       : query.state.status === 'error'
         ? viewError(query.state.error)
-        : next === null || next.prior === null
+        : next === null || query.state.data.sessions.length === 0
           ? viewEmpty()
           : viewReady(next)
 
@@ -643,9 +650,11 @@ function NextWorkoutEntry({
               </p>
             )}
             <p style={{ margin: 0 }}>
-              {entry.status === 'recommended'
-                ? `${SUGGESTION_LABEL}: ${entry.guidance}`
-                : entry.guidance}
+              {entry.prior === null
+                ? RETURNING_WORKOUT_GUIDANCE
+                : entry.status === 'recommended'
+                  ? `${SUGGESTION_LABEL}: ${entry.guidance}`
+                  : entry.guidance}
             </p>
           </div>
         )}
@@ -755,6 +764,7 @@ function RecentWorkouts({
           <HistoryList
             entries={recents}
             label={RECENT_WORKOUTS_LABEL}
+            layout="recent"
             linkTo={(entry) => sessionDetailPath(entry.id)}
             onOpen={(entry) => void session.open(entry)}
             openingId={session.openingId}

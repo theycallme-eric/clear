@@ -34,7 +34,6 @@ import {
   HISTORY_ROUTE,
   LAST_REQUEST_LABEL,
   RECENT_EMPTY_TITLE,
-  REST_DAY_PROMPT,
   STREAK_EMPTY,
   SUGGESTION_LABEL,
   VIEW_HISTORY_LABEL,
@@ -281,7 +280,9 @@ describe('Home', () => {
     })
   })
 
-  it('U44: a recent workout groups title and status, then context, then both durations', async () => {
+  // REQ-004 supersedes U44's head group on Home: title alone, then status and
+  // date together, then the metrics (with the focus) and both durations.
+  it('REQ-004: a recent workout puts its title first, then status and date, then metrics', async () => {
     const workout = createWorkoutDouble({
       session: null,
       historyRows: [
@@ -300,10 +301,11 @@ describe('Home', () => {
     const list = await screen.findByRole('list', { name: 'Recent workouts' })
     const row = list.querySelector(':scope > li') as HTMLElement
     expect([...row.querySelectorAll('[data-part]')].map((node) => node.getAttribute('data-part')))
-      .toEqual(['head', 'status', 'context', 'metrics'])
+      .toEqual(['title', 'status-date', 'status', 'date', 'metrics'])
     expect(row.querySelector('[data-part="status"]')).toHaveTextContent('Completed')
+    expect(row.querySelector('[data-part="date"]')).toHaveTextContent(/^Thu 24 Sept? 2026$/)
     expect(row.querySelector('[data-part="metrics"]')).toHaveTextContent(
-      /Requested 40 min.*Actual 33 min.*Intensity 7\/10/,
+      /Lower body.*Requested 40 min.*Actual 33 min.*Intensity 7\/10/,
     )
   })
 
@@ -365,9 +367,9 @@ describe('Home', () => {
     renderApp(['/'], signedIn({ restDays: createFakeRestDayClient() }))
 
     const rest = await screen.findByRole('region', { name: 'Rest day' })
-    expect(within(rest).getByText(REST_DAY_PROMPT)).toBeInTheDocument()
+    // REQ-003: no prompt above the trigger.
+    expect(rest).not.toHaveTextContent('Not training today?')
     expect(rest).not.toHaveTextContent(/keep your streak\..*keep your streak/i)
-    expect(REST_DAY_PROMPT).toBe('Not training today?')
 
     const trigger = within(rest).getByRole('button', { name: 'Mark Rest Day' })
     expect(trigger).toHaveAttribute('aria-expanded', 'false')
@@ -405,7 +407,7 @@ describe('Home', () => {
 
     expect(screen.queryByLabelText('Reason')).toBeNull()
     expect(screen.getByRole('button', { name: 'Mark Rest Day' })).toHaveFocus()
-    expect(screen.getByText(REST_DAY_PROMPT)).toBeInTheDocument()
+    expect(screen.queryByText('Today:', { exact: false })).toBeNull()
 
     // Keyboard only: open, Escape, and the reason reopens at its saved value.
     await user.keyboard('{Enter}')
@@ -865,16 +867,9 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
   })
 
   it('first workout: clear guidance, and Generate opens on its own defaults', async () => {
-    const { user, generation } = renderHome([
-      completed(1, 0, { title: 'Prescribed only', started_at: null, completed_at: null }),
-      completed(2, 1, {
-        title: 'Abandoned only',
-        completed_at: null,
-        abandoned_at: `${daysAgo(1)}T09:30:00.000Z`,
-      }),
-    ])
+    const { user, generation } = renderHome([])
 
-    await screen.findByRole('link', { name: /Abandoned only/i })
+    await screen.findByText(RECENT_EMPTY_TITLE)
     const card = within(trainToday())
     expect(card.getByText(FIRST_WORKOUT_GUIDANCE)).toBeInTheDocument()
     expect(card.queryByText(new RegExp(`^${LAST_REQUEST_LABEL}:`))).not.toBeInTheDocument()

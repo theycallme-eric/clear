@@ -1,8 +1,43 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-002 source-bound recapture — 28 October 2026
+## Current UI-polish TASK-003 source-bound recapture — 28 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task003/`: four mobile skin cases/eight
+normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
+and record/PNG/source checks (25.1 s). Captured source `af2c027659e001fb09a683242ab1442996e6f9ad`, runtime source
+`4b4434427fd1f7ced05e504db346d3b90c7c7ced9938562997c4a8e822a58ff3`, driver
+`b63b0b5f8a5ca3bc7600f51b4a5428d8e14f85440fb84f71d7e08f730cc57d2f`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend reset with
+29 matching current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. The capture command completed exit0, as confirmed by its
+terminal execution record; owned backend stop1044 also completed exit0. No hosted schema or other
+local stack changed.
+
+The same committed source separately passed all ten synthetic browser cases (27.6 s): four new
+Home cases at390×844 and320×568 plus the six unchanged PWA cases. Production-route fixtures verify
+recent title/status/date/metric containment and hierarchy, all three status cues, display-only
+Session suffix cleanup versus unchanged History titles, explicit editable Generate, trained-today
+rest visibility, abandoned-only returning guidance without a fabricated prior request/recommendation,
+and retained deferred empty-week text. The new Home cases intercept all API traffic, with no
+forwarded writes or model calls. Actual child-content bounds retain the existing decorative row
+divider; the navigation locator accepts the shipped TextAction chevron and verifies its History href.
+Both earlier driver failures and their logs/traces/screenshots are retained. No product assertion
+was removed. The abandoned-only presentation regression failed before its fix; afterward178 focused
+cases/seven files, typecheck and design lint passed. Recommendation eligibility, rest/streak logic,
+stored titles and default History rendering remain unchanged. Independent final review found no
+concrete blocker. This is browser proof, not installed-iPhone or hosted persistence proof; TASK-018
+retains bounded final integration and physical UAT stays outside the DAG.
+
+Input provenance names actual native attempt1/a1, run `e5110ade-f8a1-4416-93b6-0ad25e8a3d4d`, retained
+branch `agent-runner/task-003-a1-e5110ade` and tested base `e2301d930741d66fb856bcc88d334acd837975d0`.
+Actual manifest/record/PNG payload digest:
+`2516b0d44b0e458f6c1c6ffff383a151b261f982e4cb26f4798e5a5ae9513654`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-002 source-bound recapture — 28 October 2026
+
+Retained TASK-002 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task002/`: four mobile skin cases/eight
 normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
 and record/PNG/source checks. Captured source `3b0fdbd5ac8f69766ac334a21d14f7f23b9c2b68`, runtime source
