@@ -153,3 +153,20 @@ checkout; subsequent dirty records truthfully reflect collector-created evidence
 relabeled. Owned backend start52012/reset54475/status/stop71196 all collected exit0. Separate
 clear-app stack and all hosted schemas remain untouched. Existing consumer and native full
 verification follow; publication and merge are not yet claimed.
+
+## Preview touch-input correction
+
+Native recovery71357 passed all nine approved executions with the exact-head AC-068/069/076
+receipt on `7ea82f5`. Publication57905 created PR #552 targeting only the clean build branch;
+required GitHub CI passed. Existing preview40606776765 then failed only the three new swap cases
+(102 other cases passed, 220 skipped): the first high-level CDP synthesized swipe left actual
+scrollTop at zero on Linux Chromium. The cause is not established. Actual logs, screenshots and
+traces are preserved externally; the dialog was visibly contained at the start of the failed swipe.
+
+The test driver now dispatches a stable finger's touchStart/move/end sequence, wholly within the
+observed scroller bounds, with a frame between moves and touchCancel on failure. Its bounded swipe
+count accommodates the short viewport. It still requires actual scroll progress after every swipe,
+the final complete option and labels inside the scroller, actual hit testing/tap, Review ownership
+and zero API/model side effects. No scroll geometry or position is assigned and no assertion is
+removed. Product runtime, format driver and retained format evidence are unchanged. Fresh browser
+and native verification, current-head CI and preview are required before delivery is claimed.

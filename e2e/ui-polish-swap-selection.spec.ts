@@ -134,18 +134,40 @@ async function touchToEnd(page: Page, cdp: CDPSession, scroller: Locator) {
   expect(initial.full).toBeGreaterThan(initial.height)
   expect(initial.overflow).toBe('auto')
   let gestures = 0
-  for (; gestures < 12; gestures += 1) {
+  for (; gestures < 64; gestures += 1) {
     const before = await scroller.evaluate((element) => ({
       top: element.scrollTop, remaining: element.scrollHeight - element.clientHeight - element.scrollTop,
     }))
     if (before.remaining <= 1) break
     const box = await scroller.boundingBox()
     if (box === null) throw new Error('Swap list disappeared during the touch gesture')
-    await cdp.send('Input.synthesizeScrollGesture', {
-      x: box.x + box.width / 2, y: box.y + box.height / 2,
-      yDistance: -Math.min(600, before.remaining + 1),
-      gestureSourceType: 'touch', preventFling: true, speed: 1500,
-    })
+    const x = box.x + box.width / 2
+    const startY = box.y + box.height * 0.9
+    const distance = Math.min(400, box.height * 0.8)
+    expect(await scroller.evaluate((element, point) => {
+      const hit = document.elementFromPoint(point.x, point.y)
+      return hit !== null && element.contains(hit)
+    }, { x, y: startY })).toBe(true)
+    // Dispatch an explicit finger path in CSS viewport pixels. The high-level
+    // synthesized scroll moved on local macOS but not preview Linux Chromium;
+    // the cause is unknown. Every move stays in the observed list bounds and
+    // still asks Chromium itself to perform the scroll, including touch slop.
+    const point = (y: number) => [{ x, y, id: 1, radiusX: 1, radiusY: 1, force: 1 }]
+    let touching = false
+    try {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: point(startY) })
+      touching = true
+      for (let step = 1; step <= 12; step += 1) {
+        await cdp.send('Input.dispatchTouchEvent', {
+          type: 'touchMove', touchPoints: point(startY - distance * step / 12),
+        })
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())))
+      }
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+      touching = false
+    } finally {
+      if (touching) await cdp.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] })
+    }
     await expect.poll(() => scroller.evaluate((element) => element.scrollTop)).toBeGreaterThan(before.top)
   }
   expect(gestures).toBeGreaterThan(0)
