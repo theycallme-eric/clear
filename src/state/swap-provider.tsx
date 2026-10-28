@@ -47,6 +47,7 @@ import {
   type ExerciseSwapApi,
   type SwapOptionsState,
 } from './swap-context'
+import { toastQueue } from './toasts'
 import { useWorkoutClients } from './workout-queries'
 import { SwapDialog } from '../ui/exercise-swap'
 
@@ -159,6 +160,9 @@ export function ReviewSwapProvider({
         const site = openFor
         setRead(null)
         onSwapped(swapInComposition(composition, site, option), site)
+        // REQ-020: the pick is confirmed through the app's one toast queue —
+        // the dialog has closed, and Review is where the user now reads it.
+        toastQueue.show({ variant: 'positive', message: `Swapped in ${option.name}.` })
       },
       undoTarget(site) {
         return undoTarget(site)?.exercise_id ?? null

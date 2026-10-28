@@ -1,8 +1,45 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-016 source-bound recapture — 27 October 2026
+## Current UI-polish TASK-017 source-bound recapture — 28 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task017/`: four mobile skin cases/eight
+normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
+and record/PNG/source checks. Captured source `625d335553e2e6441b9365cd2cd80a25fc03899b`, runtime source
+`ded95dba6df2675c2c24fd600e1a296081d36a6ed95ad9f3ae7ffa5141a28b4b`, driver
+`19334c73cd90ccdb1a831e25c789ddf5ece5bd90d80625d7ba05ccbf57d9857a`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend, reset with
+actual current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. The owned backend was stopped after capture; no hosted
+schema or other local stack was changed.
+
+The captured committed source separately passed all three actual synthetic mobile swap cases
+(15.3 s) at 390×844, 320×568 and 390×320. Production Review route state and intercepted API fixtures exercised
+Keep/Escape focus return, actual touch scrolling to the last wrapped alternative, complete item
+and label containment, touch hit testing/selection, owning Review return, existing toast dismissal
+and enabled Start, with no forwarded API writes/model calls. Initial short-screen clipping was
+observed and corrected without weakening those assertions. This is local/preview UI contract proof;
+it does not prove persistence, the hosted backend or the unknown installed-iPhone symptom. Five
+focused unit cases and design lint passed. TASK-018 retains surrounding bounded synthetic
+integration. Physical-iPhone UAT remains outside the DAG; no skipped lane is claimed passed.
+
+The first preview failed all three new cases because its high-level synthesized swipe left actual
+scrollTop at zero; 102 other cases passed. The test driver was corrected to explicit in-bounds
+finger touch events, retaining every actual progress/containment/hit/selection assertion. Revised
+local browser22958 passed all three cases (37.7 s) on `f3e176cfb7b02a1df9c459277cf4573ba651104f`.
+Only the swap test driver and notes changed: product runtime and format-driver hashes remain the
+identities above, and captured input ancestry is preserved. Current-head native/CI/preview results
+must be observed before delivery; the earlier failed preview is not reported as passed.
+
+Input provenance names actual native attempt1/a1, run `209dc3f3-1046-4dd6-8adc-e8023caf547c`, retained
+branch `agent-runner/task-017-a1-209dc3f3` and tested base `0f967fd9ab2196e21ffa41f9bbe6f3783a9030f1`.
+Actual manifest/record/PNG payload digest:
+`a14f5cef2988cc6ac83ca33fac6013b1131ef0d894df61c48a6f436190bea248`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-016 source-bound recapture — 27 October 2026
+
+Retained TASK-016 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task016/`: four mobile skin cases/eight normal-short
 phone captures passed the existing authenticated journey, Axe, route, layout, network and
 record/PNG/source checks. Captured source `858148b53c196cee83d3c8829a8472f67c2cf399`, runtime source

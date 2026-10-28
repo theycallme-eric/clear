@@ -20,10 +20,10 @@
  * a read, reads fail, and a swap panel that renders nothing while it loads is
  * indistinguishable from one that found nothing.
  */
-import type { CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { AppDialog } from './app-dialog'
-import { Button, EmptyState, RefreshCw, TextAction } from '../design-system/index'
+import { Button, EmptyState, RefreshCw, ScrollRegion, TextAction } from '../design-system/index'
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
@@ -44,14 +44,23 @@ const OPTION_LIST_STYLE: CSSProperties = {
 }
 
 /** One alternative: a full-width framed choice, read from its leading edge. */
-const OPTION_STYLE: CSSProperties = { width: '100%', justifyContent: 'flex-start' }
+const OPTION_STYLE: CSSProperties = {
+  width: '100%',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-100)',
+  textAlign: 'start',
+}
+
+const OPTION_LABEL_STYLE: CSSProperties = { width: '100%', overflowWrap: 'anywhere' }
 
 /** The equipment, in the terse data-face label every block caption uses. */
 const EQUIPMENT_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
   letterSpacing: 'var(--tracking-data)',
-  marginInlineStart: 'var(--spacing-200)',
+  maxWidth: '100%',
+  overflowWrap: 'anywhere',
 }
 
 export interface ExerciseSwapControlsProps {
@@ -191,9 +200,56 @@ function SwapOptionsView({
       )
 
     case 'ready':
-      return (
-        <ul aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
-          {options.options.map((option) => (
+      return <SwapOptionList options={options.options} busy={busy} onChoose={onChoose} />
+  }
+}
+
+/**
+ * The list's frame: as tall as the list, and never taller than the viewport
+ * leaves once the dialog's title, padding and Keep action are drawn. The
+ * dialog element itself does not scroll (0.14.3 clears its max-height), so a
+ * long list can place its final choice outside the visible panel. This is a
+ * possible local overflow mechanism; the exact reported installed-iPhone cause
+ * remains unknown (REQ-020). Containment keeps the title and safe action on
+ * screen while the list scrolls.
+ */
+const LIST_FRAME_MAX_HEIGHT =
+  'max(calc(var(--control-height) * 3), calc(100dvh - var(--spacing-600) * 10))'
+
+/**
+ * The alternatives, inside the public `ScrollRegion` — the one vertical
+ * scrolling contract (ATOMIC §3.3), never a local overflow box. The region
+ * fills a parent of definite height, so the frame takes the list's measured
+ * height and the cap above clamps it; a short list leaves no empty band.
+ */
+function SwapOptionList({
+  options,
+  busy,
+  onChoose,
+}: {
+  options: readonly SwapOption[]
+  busy: boolean
+  onChoose: (option: SwapOption) => void
+}) {
+  const listRef = useRef<HTMLUListElement>(null)
+  const [listHeight, setListHeight] = useState<number | undefined>(undefined)
+
+  useLayoutEffect(() => {
+    const list = listRef.current
+    if (list === null) return
+    const measure = () => setListHeight(list.getBoundingClientRect().height)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(list)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div data-swap-list-frame style={{ height: listHeight, maxHeight: LIST_FRAME_MAX_HEIGHT }}>
+      <ScrollRegion>
+        <ul ref={listRef} aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
+          {options.map((option) => (
             <li key={option.exerciseId}>
               <Button
                 variant="secondary"
@@ -202,14 +258,15 @@ function SwapOptionsView({
                 onClick={() => onChoose(option)}
                 style={OPTION_STYLE}
               >
-                {option.name}
+                <span data-swap-option-label style={OPTION_LABEL_STYLE}>{option.name}</span>
                 <span style={EQUIPMENT_STYLE}>{equipmentText(option.equipment)}</span>
               </Button>
             </li>
           ))}
         </ul>
-      )
-  }
+      </ScrollRegion>
+    </div>
+  )
 }
 
 /** The equipment a replacement would be performed with, said plainly. */
