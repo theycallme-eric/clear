@@ -315,7 +315,8 @@ for (const skin of SKINS) {
       await expect(save).toBeDisabled()
       await expect(save).toHaveAttribute('aria-busy', 'true')
       await expect(cancel).toBeDisabled()
-      expect((await glowOf(save)).filter).toBe('none')
+      // Wait for the actual computed disabled state, as for other UI state.
+      await expect.poll(async () => (await glowOf(save)).filter).toBe('none')
       await expect(page.getByText('Rest day saved.', { exact: true })).toHaveCount(0)
       fixture.releaseSave()
 

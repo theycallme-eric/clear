@@ -116,3 +116,15 @@ format-preview group for genuine capture; all earlier groups remain unchanged.
 Lint after cleanup confirms Home1 and gallery121 warnings, both back to actual baseline; no errors.
 Owned backend start2471/reset35676/status completed exit0, READY on API55431;29 SQL migrations
 (30 files including README) byte-match actual source. Other stacks and hosted schema untouched.
+
+First actual browser4964 on4017947 completed exit1:10 unchanged Home/PWA cases passed; all4 new
+skin cases passed rendered glow/token/card/focus/navigation/narrow bounds through the held Save
+response and disabled/busy checks, then failed immediate computed Save filter expectation. Actual
+filter was one shipped6px glow. Vendor Button and both direct disabled CSS selectors, Save branch,
+shell/focus styles are unchanged from build base; new ActionGlow off-rule cannot select Save.
+Trace confirms actual disabled/busy/disabled bleed. The finally release explains saved-state
+failure screenshots and is not evidence of premature success. Original log/trace/PNGs are retained.
+Root will preserve the exact none assertion and await computed-state convergence with bounded
+expect.poll before deciding whether this expectation is supported in the actual browser. No product,
+vendor, loading-state or global-glow change is made. Only the four affected cases need rerun;
+existing10 cases are already actual passes on the unchanged runtime.
