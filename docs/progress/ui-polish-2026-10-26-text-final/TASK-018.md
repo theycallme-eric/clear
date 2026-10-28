@@ -5,7 +5,7 @@ This task-owned note satisfies the approved exception to a shared daily journal.
 
 ## Current state
 
-Controller correction is ready for actual five-case execution; completion is not claimed.
+Corrected five-case execution and genuine capture passed; native/delivery completion is pending.
 Actual run `14d05a39-d835-4d97-9860-af04fcd4b39d`, attempt1/max2, base
 `bae4f848d73f4e45b9ecdbefbe20789c54a3788c`, retained branch
 `agent-runner/task-018-a1-14d05a39`. Requirements/approval/issue identities are unchanged.
@@ -123,3 +123,17 @@ No tests found before browser navigation. The selector composes with CLI grep ra
 external selection; no beforeEach runtime proof is inferred from these zero-selected failures.
 All five positive cases will now rerun on the corrected clean source. No new native worker/model
 attempt, Runner change, requirement change or relaxed focus assertion occurred.
+
+## Final actual local proof and source capture
+
+Clean459c870 full exact approved command3242 completed exit0: all5 cases passed1.5min, zero skips.
+Both standard Workout cases now pass actual clear/nativefocusreturn and subsequent timed navigation;
+both swaps and grouped replay pass too. No assertion or scenario was omitted. Capture79970 on the
+same clean commit passed4skins/8images25.2s, all network0/firstclean. Runtime820201e00d5c68f5f4b979a6b6c63794f01eec6b83e158bc72cf6432f841a71d,
+driver2b706d9bb756b0ae2796195f976548953576932ad0930008931236de1aae556b, payloada8f2189e5fdf0973902d0326aee2279e1751179291997c41f31fa47625af25eb.
+Genuine v1 provenance names actualTask018/run/a1/base/retainedbranch; records/hashes were not rewritten.
+Ownedstart27978/reset82587/status/stop16635 all exit0,29SQL migrations match. Backend stayed stopped
+during synthetic smoke and is stopped again. Existing evidence consumer/native recovery follow.
+
+Existing evidence consumer25689 completed exit0:38checks passed; diff check passed. Native
+same-attempt verification is next, with original failures/limits/approval preserved.

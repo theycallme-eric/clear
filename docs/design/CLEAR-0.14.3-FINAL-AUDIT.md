@@ -1,8 +1,43 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-004 source-bound recapture — 28 October 2026
+## Current UI-polish TASK-018 source-bound recapture — 28 October 2026
 
-Current format-preview evidence is the genuinely executed group at
+Current genuinely executed format-preview group: `docs/design/evidence-0143/task034-format-preview-ui-polish-task018/`.
+Four authenticated mobile skin cases/eight normal-short PNGs passed25.2s on clean committed
+source `459c8703b90d4263d9acab9e47eae799b57ff62c`, runtime
+`820201e00d5c68f5f4b979a6b6c63794f01eec6b83e158bc72cf6432f841a71d`, driver
+`2b706d9bb756b0ae2796195f976548953576932ad0930008931236de1aae556b`. First capture was clean; all recorded model/write counters0.
+Capture79970 and owned backendstop16635 completed exit0. The disposable PostgreSQL17 backend was
+reset with29 matching SQL migrations/synthetic seeds; no hosted schema or other local stack changed.
+
+The same clean source passed all five actual integrated mobile cases in1.5min (3242 exit0), with
+backend stopped: two Workout and two Review cases at390×844/320×568, plus one narrow mixedsuperset/
+circuit case. Strict touch/full clipping-owner bounds include390×465/320×312 focused-draft resizing,
+new-entry/effort, refused save/stable retry, rest skip/expiry and logging access, actual set clear
+with another saved row retained, native-close focus return, independent clocks/no time-inferred
+observations, paired navigation, timed bodyweight entry, grouped round/optional-sheet replay and
+24-option swap/focus/toast return. Known-state ACK identity/revision/clearrow:null validation and
+strict unmatched-request rejection keep all API writes synthetic; no model or forwarded user write.
+No partial-control concession, assigned scroll offset, fake geometry or physical-device claim.
+
+Original candidate dee935b and all failed executions remain retained. The corrected baseline
+reproduced only53% visible navigation at320×312; scoped app-owned footer/short-window allowances
+fixed it without smaller controls/labels/vendor changes. A genuine native clear-dialog focus-order
+bug was fixed through the app adapter's typed optional actual-close callback, retaining original
+controlled/user closure semantics.85 focused cases, typecheck and design lint passed. An earlier
+unsupported onCloseCapture prop was replaced rather than cast.16 target-selection cases passed;
+external-target commands fail NoTestsfound before navigation, no skipped case is counted passed.
+The local-only integrated file is excluded from normal external preview discovery through existing
+selection, preserving other preview cases. Installed-iPhone and hosted schema/RLS remain separate.
+
+Actual native run `14d05a39-d835-4d97-9860-af04fcd4b39d`, a1, retained branch `agent-runner/task-018-a1-14d05a39`,
+tested base `bae4f848d73f4e45b9ecdbefbe20789c54a3788c`; task revision/provenance and genuine payload digest
+`a8f2189e5fdf0973902d0326aee2279e1751179291997c41f31fa47625af25eb` are recorded. Earlier groups remain byte-unchanged.
+Existing audit consumer, native verification and protected delivery still apply.
+
+## Historical UI-polish TASK-004 source-bound recapture — 28 October 2026
+
+Retained TASK-004 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task004/`: four mobile skin cases/eight
 normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
 and record/PNG/source checks (25.0 s). Captured source `1d778c29641b8f8ae2a004a3df617e5c47130040`, runtime source
