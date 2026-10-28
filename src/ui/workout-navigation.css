@@ -44,6 +44,9 @@
    workout composition only the optional entry/rest area may scroll: the
    navigation must never be hidden below that internal scroll fold. */
 .clr-scroll-region__foot:has(> .clr-workout-footer) {
+  /* The docked sheet and its separate navigation share this allowance. The
+     generic 45% cap left too little scrolling room for a complete control. */
+  max-height: 60%;
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
@@ -66,8 +69,37 @@
   overscroll-behavior: contain;
 }
 
+/* Docked here, the entry is the sheet's one scroller. The frame's own capped,
+   contained scroll box sat under the finger without overflowing, so on a short
+   phone a touch swipe stopped at it and the fields below stayed out of reach. */
+.clr-workout-footer__entry .clr-set-sheet__frame {
+  max-height: none;
+  overflow-y: visible;
+  overscroll-behavior: auto;
+}
+
 .clr-workout-footer__content > .clr-workout-nav {
   flex: 0 0 auto;
+}
+
+/* A short window may be a keyboard-like resize. Keep full-size controls and
+   the navigation, giving focused entry the remaining Screen rather than
+   clipping it against the normal half-sheet allowance. Only this workout
+   composition reclaims vertical chrome; side gutters and safe areas remain. */
+@media (max-height: 30rem) {
+  .clr-scroll-region__foot:has(> .clr-workout-footer) {
+    max-height: 100%;
+  }
+
+  .clr-shell--contained > .clr-shell__content:has(> .clr-workout-header) {
+    padding-top: max(var(--spacing-200), env(safe-area-inset-top));
+    padding-bottom: max(var(--spacing-200), env(safe-area-inset-bottom));
+  }
+
+  .clr-scroll-region__foot > .clr-workout-footer {
+    padding-top: var(--spacing-200);
+    padding-bottom: var(--spacing-200);
+  }
 }
 
 /* The elapsed clock and the menu keep their public header slots. When those

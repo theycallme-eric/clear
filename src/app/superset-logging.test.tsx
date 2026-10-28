@@ -527,10 +527,19 @@ describe('a grouped correction returns keyboard focus to an available control', 
     const clear = await openEdit()
     await user.click(clear.getByRole('button', { name: 'Clear set 1' }))
     const confirmation = await screen.findByRole('dialog', { name: 'Clear set 1 of bench press?' })
+    // Hold the native close event: requesting a controlled close still leaves
+    // the background inert in a browser until the dialog actually closes.
+    const nativeClose = HTMLDialogElement.prototype.close
+    const close = vi.spyOn(HTMLDialogElement.prototype, 'close').mockImplementation(() => {})
     await user.click(within(confirmation).getByRole('button', { name: 'Clear set' }))
     await waitFor(() => expect(double.clearedSets()).toHaveLength(1))
     expect(row.queryByRole('list', { name: 'Logged sets' })).toBeNull()
-    expect(screen.getByRole('button', { name: 'Log round' })).toHaveFocus()
+    const logRound = screen.getByRole('button', { name: 'Log round' })
+    expect(logRound).not.toHaveFocus()
+    await waitFor(() => expect(close).toHaveBeenCalledOnce())
+    expect(confirmation).toHaveAttribute('open')
+    act(() => nativeClose.call(confirmation as HTMLDialogElement))
+    expect(logRound).toHaveFocus()
   })
 })
 

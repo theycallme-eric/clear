@@ -87,16 +87,19 @@ describe('dismissal — one vendor exit before the platform close', () => {
   it('holds a controlled close open for exactly the vendor exit, without reporting it', () => {
     vi.useFakeTimers()
     const onClose = vi.fn()
-    const view = renderWithProviders(<AppDialog open onClose={onClose}>Body</AppDialog>)
-    view.rerender(<AppDialog open={false} onClose={onClose}>Body</AppDialog>)
+    const onAfterClose = vi.fn()
+    const view = renderWithProviders(<AppDialog open onClose={onClose} onAfterClose={onAfterClose}>Body</AppDialog>)
+    view.rerender(<AppDialog open={false} onClose={onClose} onAfterClose={onAfterClose}>Body</AppDialog>)
     const dialog = getDialog()
     expect(dialog.open).toBe(true)
     expect(dialog).toHaveClass('clr-dialog--closing')
     act(() => vi.advanceTimersByTime(199))
     expect(dialog.open).toBe(true)
+    expect(onAfterClose).not.toHaveBeenCalled()
     act(() => vi.advanceTimersByTime(1))
     expect(dialog.open).toBe(false)
     expect(onClose).not.toHaveBeenCalled()
+    expect(onAfterClose).toHaveBeenCalledTimes(1)
   })
 
   it('Esc reports exactly one dismissal only after the real delayed close', () => {
@@ -127,18 +130,21 @@ describe('dismissal — one vendor exit before the platform close', () => {
   it('reopening cancels a controlled exit and does not suppress a later user dismissal', () => {
     vi.useFakeTimers()
     const onClose = vi.fn()
-    const view = renderWithProviders(<AppDialog open onClose={onClose}>Body</AppDialog>)
-    view.rerender(<AppDialog open={false} onClose={onClose}>Body</AppDialog>)
+    const onAfterClose = vi.fn()
+    const view = renderWithProviders(<AppDialog open onClose={onClose} onAfterClose={onAfterClose}>Body</AppDialog>)
+    view.rerender(<AppDialog open={false} onClose={onClose} onAfterClose={onAfterClose}>Body</AppDialog>)
     act(() => vi.advanceTimersByTime(100))
-    view.rerender(<AppDialog open onClose={onClose}>Body</AppDialog>)
+    view.rerender(<AppDialog open onClose={onClose} onAfterClose={onAfterClose}>Body</AppDialog>)
     act(() => vi.advanceTimersByTime(200))
     expect(getDialog().open).toBe(true)
     expect(getDialog()).not.toHaveClass('clr-dialog--closing')
     expect(onClose).not.toHaveBeenCalled()
+    expect(onAfterClose).not.toHaveBeenCalled()
     fireEvent(getDialog(), new Event('cancel', { cancelable: true }))
     act(() => vi.advanceTimersByTime(200))
     expect(getDialog().open).toBe(false)
     expect(onClose).toHaveBeenCalledTimes(1)
+    expect(onAfterClose).toHaveBeenCalledTimes(1)
   })
 
   it('a controlled close during a user exit ends it silently, and reopening starts clean', () => {
@@ -221,8 +227,9 @@ describe('reduced motion — the end state, immediately', () => {
     reduceMotion()
     vi.useFakeTimers()
     const onClose = vi.fn()
+    const onAfterClose = vi.fn()
     const view = renderWithProviders(
-      <AppDialog open onClose={onClose} title="Why this number" actions={<button>Close</button>}>
+      <AppDialog open onClose={onClose} onAfterClose={onAfterClose} title="Why this number" actions={<button>Close</button>}>
         Body copy
       </AppDialog>,
     )
@@ -230,10 +237,12 @@ describe('reduced motion — the end state, immediately', () => {
     expect(screen.getByText('Body copy')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
     expect(vi.getTimerCount()).toBe(0)
-    view.rerender(<AppDialog open={false} onClose={onClose}>Body copy</AppDialog>)
+    expect(onAfterClose).not.toHaveBeenCalled()
+    view.rerender(<AppDialog open={false} onClose={onClose} onAfterClose={onAfterClose}>Body copy</AppDialog>)
     expect(getDialog().open).toBe(false)
     expect(vi.getTimerCount()).toBe(0)
     expect(onClose).not.toHaveBeenCalled()
+    expect(onAfterClose).toHaveBeenCalledTimes(1)
   })
 })
 
