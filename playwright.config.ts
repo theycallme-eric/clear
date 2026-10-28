@@ -60,6 +60,11 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
   if (hostname === 'localhost' || hostname.endsWith('.localhost') ||
       /^127(?:\.\d{1,3}){3}$/.test(hostname) || hostname === '[::1]') {
     exclusions.push(String.raw`generation-deployed-matrix\.spec\.ts`)
+  } else {
+    // TASK-018 is an explicitly local synthetic proof. Keep ordinary preview
+    // discovery on its existing cases; directly selecting only this file on
+    // an external target finds no cases and retains Playwright's failure.
+    exclusions.push(String.raw`(?:^|[\\/\s])ui-polish-integrated\.spec\.ts(?:$|[\s:])`)
   }
   return exclusions.length ? new RegExp(`^(?!.*(?:${exclusions.join('|')})).*$`) : /.*/
 }
