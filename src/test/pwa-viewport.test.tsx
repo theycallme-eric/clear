@@ -2,7 +2,7 @@
  * REQ-002 — installed-PWA atmosphere behind the status icons, content safe.
  *
  * What this file proves is the markup and CSS boundary only: the document asks
- * an edge-to-edge viewport, the atmosphere's app-owned attachment is fixed,
+ * an edge-to-edge viewport, the atmosphere declares its viewport attachment,
  * and the shell declares safe-area padding. Actual geometry belongs to the
  * focused browser checks, including controls outside the shell. jsdom has no
  * notch and resolves no `env()`, so this is not device proof — the installed
@@ -74,9 +74,16 @@ describe('the atmosphere, not a tint, fills that area (AC-007)', () => {
     expect(layer?.querySelector('.clr-atmosphere__scan')).not.toBeNull()
   })
 
-  it('attaches the app-owned atmosphere to the viewport without relying on a shadowed modifier', () => {
+  it('declares viewport attachment after vendor CSS without defeating the gallery frame', () => {
     const { container } = render(<AtmosphereLayer />)
-    expect(container.querySelector('.clr-atmosphere')).toHaveStyle({ position: 'fixed' })
+    expect(container.querySelector('.clr-atmosphere')?.getAttribute('style')).toBeNull()
+    expect(rule(atmosphereCss, '.clr-atmosphere--fixed')).toMatch(/position:\s*fixed/)
+    const main = read('src/main.tsx')
+    expect(main.indexOf("import './styles/atmosphere.css'")).toBeGreaterThan(
+      main.indexOf("import './design-system/styles.css'"),
+    )
+    expect(rule(read('src/dev/gallery.css'), '.clr-dev-gallery__atmosphere .clr-atmosphere--fixed'))
+      .toMatch(/position:\s*absolute/)
     const base = rule(foundation, '.clr-atmosphere')
     expect(base).toMatch(/inset:\s*0/)
     // The scanlines are a repeating gradient across the whole layer.

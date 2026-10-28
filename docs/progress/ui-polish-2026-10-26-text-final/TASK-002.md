@@ -92,10 +92,10 @@ Native61261 collected terminal exit1: worker succeeded, focused criterion/task c
 is retained at7487f82. Root read live issue522/comments0; attempt1/max2 and all limits are unchanged.
 
 The fixed-atmosphere CSS-string assertion was a false-positive: a later vendor base rule wins.
-The app-owned AtmosphereLayer now explicitly sets its viewport attachment to position:fixed; the
-public gradients, scanlines, sizing and motion are unchanged and vendor files remain byte-identical.
-The unit test checks that actual rendered inline attachment and labels its remaining shell/viewport
-assertions as declaration-only. Markup comments and baseline notes no longer promise an observed
+The app-owned atmosphere stylesheet now explicitly restores its viewport attachment to
+position:fixed after the vendor CSS; public gradients, scanlines, sizing and motion are unchanged
+and vendor files remain byte-identical. The unit test checks that declaration/load order without
+an inline override, and labels its shell/viewport assertions as declaration-only. Markup comments and baseline notes no longer promise an observed
 iPhone outcome. Actual local browser bounds, safe-area env simulation, scroll and viewport-resize
 checks are being added, including relevant controls outside the shell. No device success is claimed.
 
@@ -110,3 +110,25 @@ through viewport resizing without generation and the shared swap toast/dismiss o
 All API calls are intercepted; no service-role key or real-account write is used. Browser outcomes
 are pending. Focused controller66292 passed54 cases/two files plus design lint. Owned backend
 start63633/reset58988/status collected exit0 with matching29migrations; status values remain private.
+
+First actual browser5728 (clean source97e1b8d) passed five cases: all four Home sizes and focused
+Generate draft resize. The shared-toast case failed: its frame began at x16 while the simulated
+left safe inset was28. Original log/trace/screenshot are preserved externally. ToastHost sits outside
+the padded shell, so its existing ordinary spacing did not honor that inset. Its app-owned fixed
+placement now uses max(token, env safe-area) at both sides and bottom, retaining auto centering and
+the existing440px maximum. It still reserves no footer space and keeps the same queue, animation,
+dismissal and focus semantics; no vendor change is involved. Existing placement assertions were
+updated while preserving the no-footer-measurement contract. The original actual geometry assertion
+remains unchanged. Corrected browser verification follows; no success is assumed.
+
+The first correction's75 focused cases passed, while design lint rejected literal0px env fallbacks.
+Those fallbacks now use the shipped --spacing-0 token. Independent review also found that an inline
+fixed attachment would defeat the gallery's existing bounded-specimen override. The attachment
+therefore lives in the already-post-vendor app-owned atmosphere stylesheet, preserving the more
+specific gallery rule and unchanged package bytes. Unit declarations check this precedence without
+claiming computed geometry; the six browser cases retain actual fixed-position/bounds assertions.
+These corrections remain local until fresh verification; no gate or assertion was weakened.
+
+Final controller-focused3233 passed75 cases/three files and design lint. Independent final source
+review found no remaining concrete blocker. The six browser assertions are unchanged; corrected
+execution and genuine same-source format capture remain pending.
