@@ -132,3 +132,26 @@ These corrections remain local until fresh verification; no gate or assertion wa
 Final controller-focused3233 passed75 cases/three files and design lint. Independent final source
 review found no remaining concrete blocker. The six browser assertions are unchanged; corrected
 execution and genuine same-source format capture remain pending.
+
+## Observed controller proof
+
+Corrected browser43458 on3b0fdbd passed four Home cases and the corrected shared-toast case.
+Generate failed before interaction, during initial Home/Axe scan, with destroyed execution context.
+The retained trace shows two same-frame Home document GETs about0.57s apart; its cause remains
+unknown. Original log/trace/screenshot are preserved externally. One bounded confirmation62447 on
+UNCHANGED source `3b0fdbd5ac8f69766ac334a21d14f7f23b9c2b68` passed all six cases (17.8s), with no app,
+assertion or harness workaround. The existing API interception prevented forwarded writes/model calls.
+
+Same clean source capture57906 passed four skin cases/eight PNGs (24.6s). Runtime
+`47667b8d5b41dcccc923d91983da9415ef6c33ffc16f93e45196be379c75c7b6`, driver
+`9248941bff595baf34804ba725ec31412064e21f7f2625dc9273e1ad6109089b`, actual payload
+`b892cf24c424b2880f02d6bd3e7ee4cd6437784862746bab32bfff895810e823`. Actual run/a1/base input provenance is retained;
+prior groups are unchanged. The first record truthfully reports a clean checkout; later dirty
+records reflect collector-created evidence. Owned backend start63633/reset58988/status/stop23471
+all collected exit0; separate clear-app and hosted schemas are untouched. Existing evidence consumer
+and native exact-head verification follow. Publication/merge are not yet claimed; installed-iPhone
+status/keyboard/launch/resume/scroll outcomes remain unproven outside-DAG post-launch UAT.
+
+Existing source/record/PNG consumer33054 passed all38 cases. Diff checks passed; vendored design
+system, workflows, migrations and prior tracked evidence groups are unchanged. Native same-attempt
+full verification is next.

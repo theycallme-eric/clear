@@ -1,8 +1,40 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-017 source-bound recapture — 28 October 2026
+## Current UI-polish TASK-002 source-bound recapture — 28 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task002/`: four mobile skin cases/eight
+normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
+and record/PNG/source checks. Captured source `3b0fdbd5ac8f69766ac334a21d14f7f23b9c2b68`, runtime source
+`47667b8d5b41dcccc923d91983da9415ef6c33ffc16f93e45196be379c75c7b6`, driver
+`9248941bff595baf34804ba725ec31412064e21f7f2625dc9273e1ad6109089b`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend, reset with
+actual current migrations and synthetic seeds. Every skin recorded zero generation requests,
+attempted writes and forwarded writes. The owned backend was stopped after capture; no hosted
+schema or other local stack was changed.
+
+The same committed source passed six actual synthetic PWA browser cases (17.8s): four Home sizes
+with Chromium CSS env safe-area overrides, actual fixed atmosphere/scanline coverage, control and
+inner-scroll bounds, real touch scrolling, focused Reason choice through reduced viewport/cancel,
+and zero-inset fallback; Generate text-draft retention through resize; shared swap-toast geometry
+and touch dismissal outside the shell. This is local simulated layout proof, never actual installed
+iPhone status/keyboard/launch-resume verification. The first browser found the toast safe-inset
+placement gap and it was corrected without changing queue or footer-clearance semantics. The
+app-owned post-vendor attachment preserves the gallery's more specific bounded-frame override.
+An initial scan-context navigation failure on this same source remains retained; one unchanged
+bounded confirmation passed all six cases without a code/assertion/harness workaround. Seventy-five
+focused cases and design lint passed. TASK-018 retains final bounded integration; physical UAT stays
+outside the DAG, and no skipped/paid/hosted lane is claimed passed.
+
+Input provenance names actual native attempt1/a1, run `1f8e5cd2-c973-45a0-b568-8fc6e0f1e5db`, retained
+branch `agent-runner/task-002-a1-1f8e5cd2` and tested base `c082f3be7e42f06b3502d862920952a965594ab5`.
+Actual manifest/record/PNG payload digest:
+`b892cf24c424b2880f02d6bd3e7ee4cd6437784862746bab32bfff895810e823`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-017 source-bound recapture — 28 October 2026
+
+Retained TASK-017 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task017/`: four mobile skin cases/eight
 normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
 and record/PNG/source checks. Captured source `625d335553e2e6441b9365cd2cd80a25fc03899b`, runtime source
