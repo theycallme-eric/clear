@@ -285,7 +285,7 @@ describe('0.14.3 overlay placement', () => {
     )
   })
 
-  it('sits at one token offset whatever the screen has pinned beneath it', () => {
+  it('uses token or safe-area offsets without measuring the pinned footer', () => {
     const queue = createToastQueue()
     const { container } = renderOverPinnedAction(queue)
 
@@ -296,13 +296,15 @@ describe('0.14.3 overlay placement', () => {
     const host = container.querySelector<HTMLElement>('[data-clear-toast-host]')
     expect(host).toHaveStyle({ position: 'fixed', zIndex: '3' })
     // No measured footer inset: the retired clearance wrote a pixel calc here.
-    expect(host?.style.bottom).toBe('var(--spacing-500)')
+    expect(host?.style.bottom).toBe('max(var(--spacing-500), env(safe-area-inset-bottom, var(--spacing-0)))')
+    expect(host?.style.left).toBe('max(var(--spacing-400), env(safe-area-inset-left, var(--spacing-0)))')
+    expect(host?.style.right).toBe('max(var(--spacing-400), env(safe-area-inset-right, var(--spacing-0)))')
 
     // A resize does not re-measure the footer either.
     act(() => {
       window.dispatchEvent(new Event('resize'))
     })
-    expect(host?.style.bottom).toBe('var(--spacing-500)')
+    expect(host?.style.bottom).toBe('max(var(--spacing-500), env(safe-area-inset-bottom, var(--spacing-0)))')
   })
 
   it('adds no permanent obstruction: nothing stays mounted once the toast is gone', () => {

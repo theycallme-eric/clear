@@ -50,6 +50,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
 import { AtmosphereLayer } from '../ui/atmosphere'
@@ -77,11 +78,14 @@ import {
 } from '../ui/load-suggestion'
 import { FavoriteList, FavoriteListItem } from '../ui/favorite-list'
 import { FeelingRow } from '../ui/feeling-row'
+import { SetEffortChoice, SetEffortReading, type SetEffort } from '../ui/set-effort'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { HistoryList, WorkoutListItem } from '../ui/history-list'
 import { LadderRungs } from '../ui/ladder-rungs'
 import { MoodReading } from '../ui/mood'
+import { MovementCountdown } from '../ui/movement-countdown'
+import { WorkoutMenu } from '../ui/workout-chrome'
 import { Select } from '../ui/select'
 import {
   LoggedSetTable,
@@ -817,6 +821,24 @@ function FeelingRowUnanswered() {
 function FeelingRowChosen() {
   const [value, setValue] = useState<number | null>(4)
   return <FeelingRow value={value} onChange={setValue} />
+}
+
+function SetEffortUnanswered() {
+  const [value, setValue] = useState<SetEffort | null>(null)
+  return <SetEffortChoice setNumber={2} value={value} onChange={setValue} />
+}
+
+function SetEffortChosen() {
+  const [value, setValue] = useState<SetEffort | null>('too_hard')
+  return <SetEffortChoice setNumber={2} value={value} onChange={setValue} />
+}
+
+function SetEffortReadingAnswered() {
+  return <SetEffortReading value="about_right" />
+}
+
+function SetEffortReadingUnanswered() {
+  return <SetEffortReading value={null} />
 }
 
 const SAMPLE_CONDITIONING_SCORE: ConditioningScore = {
@@ -1592,6 +1614,26 @@ const LONG_LADDER: readonly LadderRung[] = [
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 ].map((target, index) => ({ number: index + 1, targets: [target] }))
 
+function MovementCountdownReady() {
+  return <MovementCountdown seconds={30} movement="hollow body hold" />
+}
+
+function WorkoutMenuClosed() {
+  return <WorkoutMenu onAbandon={() => undefined} />
+}
+
+function WorkoutMenuOpen() {
+  return <WorkoutMenu onAbandon={() => undefined} defaultOpen />
+}
+
+function MovementCountdownInCard() {
+  return (
+    <Card>
+      <MovementCountdown seconds={45} movement="side plank" />
+    </Card>
+  )
+}
+
 function LadderRungsReadOnly() {
   return <LadderRungs rungs={SAMPLE_RUNGS} unit="reps" label="Ladder" />
 }
@@ -1846,6 +1888,43 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     ],
   },
   {
+    component: 'SetEffortChoice',
+    requirement: 'REQ-011',
+    module: 'src/ui/set-effort.tsx',
+    summary:
+      'Asks one set’s optional effort as Frown / Meh / Smile — too hard, about right, too easy — with the words in each option’s accessible name only.',
+    specimens: [
+      {
+        state: 'unanswered',
+        note: 'No face is chosen: unanswered is null, never the middle face.',
+        Render: SetEffortUnanswered,
+      },
+      {
+        state: 'chosen',
+        note: 'The selection carries a tick; the compact Clear returns it to unanswered.',
+        Render: SetEffortChosen,
+      },
+    ],
+  },
+  {
+    component: 'SetEffortReading',
+    requirement: 'REQ-011',
+    module: 'src/ui/set-effort.tsx',
+    summary: 'Reads a saved set’s effort back beside its result as the face, named for a screen reader.',
+    specimens: [
+      {
+        state: 'answered',
+        note: 'The face the set was saved with.',
+        Render: SetEffortReadingAnswered,
+      },
+      {
+        state: 'unanswered',
+        note: 'An unanswered or older set draws nothing; no face stands in for it.',
+        Render: SetEffortReadingUnanswered,
+      },
+    ],
+  },
+  {
     component: 'ConditioningScoreLine',
     requirement: 'OVR-03',
     module: 'src/ui/conditioning-score.tsx',
@@ -1974,6 +2053,18 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'two short actions', Render: ActionGroupPaired },
       { state: 'long labels wrap to rows', Render: ActionGroupLongLabels },
+    ],
+  },
+  {
+    component: 'ActionGlow',
+    requirement: 'REQ-005',
+    module: 'src/ui/action-glow.tsx',
+    summary:
+      'The Generate button’s glow on another actionable control. It goes out when the control is disabled or loading.',
+    specimens: [
+      { state: 'resting', Render: () => <ActionGlow><Button variant="secondary">Mark Rest Day</Button></ActionGlow> },
+      { state: 'loading', Render: () => <ActionGlow><Button variant="secondary" loading>Mark Rest Day</Button></ActionGlow> },
+      { state: 'disabled', Render: () => <ActionGlow><Button variant="secondary" disabled>Mark Rest Day</Button></ActionGlow> },
     ],
   },
   {
@@ -2241,6 +2332,44 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'interactive, 11 rungs',
         note: 'Wider than a phone: the rail contains the scroll and cues the edges rather than overflowing the page.',
         Render: LadderRungsOverflowing,
+      },
+    ],
+  },
+  {
+    component: 'MovementCountdown',
+    requirement: 'REQ-014',
+    module: 'src/ui/movement-countdown.tsx',
+    summary:
+      'A timed prescription’s own countdown, on its movement’s card: Start, Pause and Reset over the session clock’s timer frame. The final five seconds take the low state and light the screen edge; running out records nothing.',
+    specimens: [
+      {
+        state: 'ready',
+        note: 'Press Start. The final five seconds turn the frame to the low role and draw the edge cue; under reduced motion both are still.',
+        Render: MovementCountdownReady,
+      },
+      {
+        state: 'ready, on a movement card',
+        note: 'Where it actually sits. The frame is the card’s element frame: same timer role, no bar of its own, never a card in a card.',
+        Render: MovementCountdownInCard,
+      },
+    ],
+  },
+  {
+    component: 'WorkoutMenu',
+    requirement: 'REQ-019',
+    module: 'src/ui/workout-chrome.tsx',
+    summary:
+      'The active workout’s framed header menu: an icon-only framed trigger named “Actions” for assistive technology, disclosing one framed panel that holds Abandon. Abandon closes the panel and asks the shared abandon confirm.',
+    specimens: [
+      {
+        state: 'closed',
+        note: 'Press the menu glyph to open the panel; Esc or a press outside closes it. Abandon here does nothing but close it.',
+        Render: WorkoutMenuClosed,
+      },
+      {
+        state: 'open',
+        note: 'The framed panel drops from the trigger’s right edge over the content below; it holds Abandon.',
+        Render: WorkoutMenuOpen,
       },
     ],
   },

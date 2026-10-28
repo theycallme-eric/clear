@@ -51,7 +51,7 @@ const UNSTARTED_TITLE = 'TASK-035 not-started session'
 const PLACE = 'TASK-035 capture gym'
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 const pathname = (page: Page) => new URL(page.url()).pathname
 const visibleText = (page: Page, text: string | RegExp) =>
   expect(page.getByText(text, { exact: typeof text === 'string' }).first()).toBeVisible()
@@ -408,7 +408,7 @@ async function expectCurrentCards(page: Page, where: string, headings: string[])
 
 /** The outline of `main`: no level is skipped on the way down. */
 function headingOutline(page: Page) {
-  return page.evaluate(() => Array.from(document.querySelectorAll('main h1, main h2, main h3, main h4, main h5'))
+  return page.evaluate(() => Array.from(document.querySelectorAll('h1, main h2, main h3, main h4, main h5'))
     .map((el) => ({ level: Number(el.tagName.slice(1)), text: el.textContent?.trim() ?? '' })))
 }
 async function expectCoherentOutline(page: Page, where: string) {

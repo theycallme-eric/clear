@@ -124,7 +124,7 @@ test.describe('sign-in and create-account screen (REQ-016)', () => {
       (url) => url.pathname === path,
       { timeout: 30_000 },
     )
-    await expect(page.locator('main h1'), `${screen}'s heading`).toHaveAccessibleName(heading, {
+    await expect(page.getByRole('heading', { level: 1 }), `${screen}'s heading`).toHaveAccessibleName(heading, {
       timeout: 30_000,
     })
     await checkA11y()

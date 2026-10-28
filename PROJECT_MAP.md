@@ -25,6 +25,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `scripts/gen-types/` | DATA-03's generator (`npm run gen:types`): reads `supabase/migrations/`, writes `src/data/database.types.ts`, and fails on drift under `--check`. Offline — it opens no connection and reads no credential | changing what the generated types contain or which SQL the reader understands; never by editing the generated file |
 | `scripts/generate-pwa-icons.mjs` | The PWA-01 icon renderer and its Vite plugin: the chamfered mark drawn to PNG at build time, served from memory in dev | changing the installed-app icon; it sits outside `src/` because the two skin hexes a PNG cannot read as tokens would fail the DS-08 gate there |
 | `scripts/dev-preflight/` | ENV-04's gate on `npm run dev`: the checks (`env.mjs`, `ping.mjs`), the sentences they print (`messages.mjs`), and the entry point Vite runs behind (`preflight.mjs`) | changing what must be true before the dev server starts, or how that failure reads; never app runtime code — it runs in Node before Vite exists |
+| `scripts/ui-polish/` | Verification-only schema rehearsals for the UI-polish body. `rehearse-effort-schema.mjs` (TASK-007, REQ-012) applies the real migrations to a new `--network none` container from a locally present Supabase PostgreSQL 17 image, proves the set-effort contract on synthetic rows under RLS, and removes only that container. Takes no target, never pulls, forwards no credential | adding a disposable local rehearsal for a candidate migration; never a remote or shared database, and never part of the dev flow |
 | `scripts/backend-audit/` | Read-only inventory and snapshot tooling for the reused Supabase project (`npm run backend:prereqs` / `backend:inventory` / `backend:snapshot`) | adding audit/snapshot capture steps; never mutation |
 | `scripts/generation-reliability/` | Generation-reliability release checks (`npm run gr:*`). `auth-email-template.mjs` checks the committed sign-in email renders a numeric code and, given `SUPABASE_ACCESS_TOKEN`, compares it read-only with the hosted template; the manual steps live in `docs/process/generation-reliability/release-checklist.md`. `release-lanes.mjs` (`npm run gr:lanes`) runs the fast contract, composition and critical browser lanes and records each pass per commit under the git-ignored `release-evidence/`; `release-gate.mjs` is what `e2e/core-loop.spec.ts` asks before the one paid generation, and what writes that journey's allow-listed evidence artifact. `release-exit.mjs` (`npm run gr:exit`) records only owner-reported UAT outcomes in a closed, privacy-checked record and refuses release exit when any criterion lacks linked passing evidence | adding a read-only release check or local evidence recorder for the generation-reliability recovery; never hosted mutation, never sending mail |
 | `scripts/generation-reliability/dispositions.mjs` | GR-02's configuration dispositions (`npm run gr:dispositions`): the legal-state matrix rebuilt from the seed *plus the ledger* (`projectCatalog`) in, `docs/process/generation-reliability/configuration-dispositions.json` out — every legal configuration as supported, or prevented at the preference boundary with the incompatible choice and reason. A projection only; `--check` fails when the file is stale or a configuration has neither disposition | changing how a configuration's disposition is decided; never by editing the generated JSON, and never to apply the ledger |
@@ -50,7 +51,9 @@ src/app/router.tsx → RootLayout → AppChrome → screens`. The CORE-04 bounda
 the DS-06 atmosphere once and sets `data-atmosphere` from `src/app/atmosphere.ts`; a screen never
 mounts an atmosphere of its own. `AppChrome` owns the skip link, route-change focus, and polite route
 announcer. Every screen renders inside the `Screen` primitive, which owns the `<main>` landmark, the
-single `<h1>`, and the document title (CORE-05). Data-driven views use the shared four-state contract
+single `<h1>`, and the document title (CORE-05). A screen with a fixed header passes its slots as
+`Screen`'s `header`; the `<h1>` is then that header's title in place of a logo (REQ-001), and the page
+gutter in `src/styles/shell.css` is the header's own inset. Data-driven views use the shared four-state contract
 (`src/state/view-state.ts` + `src/ui/view-state.tsx`, documented in
 `docs/conventions/state-contract.md`). Every database call in `src/` now goes through one place:
 `src/data/supabase.ts` (DATA-03) holds the PostgREST transport and is typed entirely by
@@ -248,11 +251,24 @@ logged set is serialised into `localStorage` under `clear.set-log-queue` inside 
 and flushed from there — retried on a backoff, on `online`, and when the tab returns — rather than
 written and hoped for. `SetLoggingProvider` owns that flush, reconciles the restored queue against
 the session snapshot on mount, and is what the screen reads a set's `logged` / `syncing` / `failed`
-status from. This is not the start of offline support: nothing is cached for reading, the queue
-holds only work the user physically did, and an entry leaves it only when the row is stored or the
-snapshot proves it already was. The idempotency it depends on is DATA-01d's client-minted primary
-key — a retried insert collides with its own first write instead of inventing a second set — and
-its key is the one local record `clearWorkoutShellState` must never drop.
+status from. Nothing is cached for offline reading; the queue holds only work the user physically
+did. Its key is the one local record `clearWorkoutShellState` must never drop. A slot match or generic
+insert conflict does not prove that the intended observation was saved.
+
+TASK-011 (REQ-013) puts corrections and clears of a saved set through that same queue rather than
+beside it. A queued entry is an insert, a `correct` or a `clear`. The last two have their own
+mutation id and address the row by its id, never by set number. `sendable` sends each row's and
+each set slot's mutations in order; possibly dispatched requests survive errors and reload without
+being rewritten. `src/state/set-observation-mutation.ts` defines the canonical request and validates
+the exact acknowledgement/current head. `SetLogsClient.mutate` sends it through the shared typed
+transport to `mutate_set_observation`. The database locks the owning session and observation, checks
+owner and predecessor revision, and records the immutable request receipt in
+`set_observation_mutations`. Clear receipts survive row deletion and fence delayed legacy writes;
+an exact replay returns the current head without repeating a write. Only the active `Workout` shell
+enables corrections, and the RPC checks active state for new corrections and clears. Older queued
+inserts keep their existing replay permission. The provider ignores replies after unmount and never
+draws newer pending or failed work as Saved. Historical numeric RPE and warmup classification are
+preserved by correction rather than rewritten.
 
 The database is a second, independent flow: `supabase/migrations/` → the reused Supabase project.
 DATA-01a adds the catalog domain — exercise definitions, the component→pattern map, muscle

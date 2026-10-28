@@ -43,7 +43,7 @@
 import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { AppHeader, Button, ClearLogo, EmptyState, Zap } from '../design-system/index'
+import { Button, EmptyState, Zap } from '../design-system/index'
 import {
   deloadInEffect,
   favoriteProgression,
@@ -103,12 +103,10 @@ export function ReviewRoute() {
     <GenerationLoadingHost generation={generation} cancelTo={REVIEW_PATH}>
       {handoff === null ? (
         <>
-          <AppHeader>
-            <ClearLogo size="md" />
-          </AppHeader>
           <Screen
             title={REVIEW_TITLE}
             heading={NO_REVIEW_TITLE}
+            header={{}}
             pinnedFoot={
               <PhoneFooter>
                 <ActionRow>

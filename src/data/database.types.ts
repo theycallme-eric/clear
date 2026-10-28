@@ -34,6 +34,8 @@
  *   supabase/migrations/20261002000024_location_viability.sql
  *   supabase/migrations/20261021000025_ladder_timing_persistence.sql
  *   supabase/migrations/20261024000026_v3_hinge_warmup.sql
+ *   supabase/migrations/20261027000027_set_effort.sql
+ *   supabase/migrations/20261027000028_set_observation_mutations.sql
  */
 
 export type Json =
@@ -201,6 +203,9 @@ export type Database = {
           rpe: number | null
           is_warmup_set: boolean
           created_at: string
+          effort: Database['public']['Enums']['set_effort'] | null
+          mutation_revision: number
+          last_mutation_id: string | null
         }
         Insert: {
           id: string
@@ -216,6 +221,9 @@ export type Database = {
           rpe?: number | null
           is_warmup_set?: boolean
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
+          mutation_revision?: number
+          last_mutation_id?: string | null
         }
         Update: {
           id?: string
@@ -231,6 +239,9 @@ export type Database = {
           rpe?: number | null
           is_warmup_set?: boolean
           created_at?: string
+          effort?: Database['public']['Enums']['set_effort'] | null
+          mutation_revision?: number
+          last_mutation_id?: string | null
         }
       }
       focus_pattern_map: {
@@ -457,6 +468,44 @@ export type Database = {
           last_completed_at?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      set_observation_mutations: {
+        Row: {
+          mutation_id: string
+          observation_id: string
+          revision: number
+          expected_revision: number
+          operation: string
+          workout_exercise_id: string
+          set_number: number
+          user_id: string
+          request_values: Json
+          created_at: string
+        }
+        Insert: {
+          mutation_id: string
+          observation_id: string
+          revision: number
+          expected_revision: number
+          operation: string
+          workout_exercise_id: string
+          set_number: number
+          user_id: string
+          request_values: Json
+          created_at?: string
+        }
+        Update: {
+          mutation_id?: string
+          observation_id?: string
+          revision?: number
+          expected_revision?: number
+          operation?: string
+          workout_exercise_id?: string
+          set_number?: number
+          user_id?: string
+          request_values?: Json
+          created_at?: string
         }
       }
       user_constraints: {
@@ -905,6 +954,19 @@ export type Database = {
         }
         Returns: Database['public']['Tables']['rest_days']['Row']
       }
+      mutate_set_observation: {
+        Args: {
+          p_observation_id: string
+          p_mutation_id: string
+          p_revision: number
+          p_expected_revision: number
+          p_operation: string
+          p_exercise_id: string
+          p_set_number: number
+          p_values: Json
+        }
+        Returns: Json
+      }
       persist_session: {
         Args: {
           p_user_id: string
@@ -1062,6 +1124,7 @@ export type Database = {
       section_type: 'warmup' | 'mobility' | 'primary_lift' | 'accessory' | 'skill_power' | 'carries' | 'core' | 'stability_balance' | 'conditioning' | 'cooldown'
       session_focus: 'upper_body' | 'lower_body' | 'full_body' | 'power'
       session_state: 'prescribed' | 'active' | 'completed' | 'abandoned'
+      set_effort: 'too_hard' | 'about_right' | 'too_easy'
       structure_type: 'standard' | 'superset' | 'circuit' | 'emom' | 'amrap' | 'for_time'
       target_kind: 'fixed' | 'range' | 'sequence'
       timer_contract: 'none' | 'count_up' | 'countdown' | 'interval' | 'per_minute'
@@ -1121,6 +1184,7 @@ export const Constants = {
       section_type: ['warmup', 'mobility', 'primary_lift', 'accessory', 'skill_power', 'carries', 'core', 'stability_balance', 'conditioning', 'cooldown'],
       session_focus: ['upper_body', 'lower_body', 'full_body', 'power'],
       session_state: ['prescribed', 'active', 'completed', 'abandoned'],
+      set_effort: ['too_hard', 'about_right', 'too_easy'],
       structure_type: ['standard', 'superset', 'circuit', 'emom', 'amrap', 'for_time'],
       target_kind: ['fixed', 'range', 'sequence'],
       timer_contract: ['none', 'count_up', 'countdown', 'interval', 'per_minute'],

@@ -1,0 +1,140 @@
+/* =============================================================================
+   WORKOUT NAVIGATION — REQ-018. The active workout's footer (IA.md §3, layer 4).
+
+   The session's progress sits directly above one paired row: Previous on the
+   left, Next section or Finish workout on the right. The shipped `.clr-actions`
+   row stacks on a phone with the main action on top, which is right for a
+   dialog's choice but wrong for a pager the athlete presses between every
+   section, so this row stays paired at every width. The cells are equal so the
+   two actions line up under the bar's two ends, and a long label wraps inside
+   its cell rather than pushing its neighbour off the screen.
+
+   Safe areas are the shell's: the pinned footer takes the side inset and the
+   shell's bottom padding takes the home indicator (src/styles/shell.css), so
+   nothing here restates them.
+   ============================================================================= */
+
+.clr-workout-nav {
+  display: grid;
+  gap: var(--spacing-200);
+}
+
+.clr-workout-nav__pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--spacing-200);
+  align-items: stretch;
+}
+
+.clr-workout-nav__pair > * {
+  min-width: 0;
+}
+
+.clr-workout-nav__pair > .clr-bleed {
+  display: flex;
+}
+
+.clr-workout-nav__pair > .clr-bleed > .clr-btn,
+.clr-workout-nav__pair > .clr-btn {
+  width: 100%;
+  text-align: center;
+}
+
+/* The public pinned foot caps its height and scrolls by default. In this
+   workout composition only the optional entry/rest area may scroll: the
+   navigation must never be hidden below that internal scroll fold. */
+.clr-scroll-region__foot:has(> .clr-workout-footer) {
+  /* The docked sheet and its separate navigation share this allowance. The
+     generic 45% cap left too little scrolling room for a complete control. */
+  max-height: 60%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.clr-workout-footer,
+.clr-workout-footer__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.clr-workout-footer__content {
+  gap: var(--spacing-200);
+}
+
+.clr-workout-footer__entry {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Docked here, the entry is the sheet's one scroller. The frame's own capped,
+   contained scroll box sat under the finger without overflowing, so on a short
+   phone a touch swipe stopped at it and the fields below stayed out of reach. */
+.clr-workout-footer__entry .clr-set-sheet__frame {
+  max-height: none;
+  overflow-y: visible;
+  overscroll-behavior: auto;
+}
+
+.clr-workout-footer__content > .clr-workout-nav {
+  flex: 0 0 auto;
+}
+
+/* A short window may be a keyboard-like resize. Keep full-size controls and
+   the navigation, giving focused entry the remaining Screen rather than
+   clipping it against the normal half-sheet allowance. Only this workout
+   composition reclaims vertical chrome; side gutters and safe areas remain. */
+@media (max-height: 30rem) {
+  .clr-scroll-region__foot:has(> .clr-workout-footer) {
+    max-height: 100%;
+  }
+
+  .clr-shell--contained > .clr-shell__content:has(> .clr-workout-header) {
+    padding-top: max(var(--spacing-200), env(safe-area-inset-top));
+    padding-bottom: max(var(--spacing-200), env(safe-area-inset-bottom));
+  }
+
+  .clr-scroll-region__foot > .clr-workout-footer {
+    padding-top: var(--spacing-200);
+    padding-bottom: var(--spacing-200);
+  }
+}
+
+/* The elapsed clock and the menu keep their public header slots. When those
+   slots do not fit beside the title, let the cluster take the next line. */
+.clr-workout-header {
+  flex-wrap: wrap;
+}
+
+/* Keep the public meta/action cluster at the end of its line after wrapping,
+   so the right-aligned menu panel stays inside the shell's safe side inset. */
+.clr-workout-header > :last-child {
+  margin-inline-start: auto;
+}
+
+/* REQ-019: the header's framed menu. The panel drops from the trigger's right
+   edge over the content below it; `.clr-chamfer` paints an opaque ground, so
+   nothing beneath shows through. */
+.clr-workout-menu {
+  position: relative;
+}
+
+.clr-workout-menu > .clr-workout-menu__panel {
+  position: absolute;
+  top: calc(100% + var(--spacing-200));
+  right: 0;
+  z-index: 1;
+  display: grid;
+  white-space: nowrap;
+}
+
+.clr-workout-menu__frame {
+  display: grid;
+  padding: var(--spacing-200);
+}
+
+.clr-workout-menu__panel[hidden] {
+  display: none;
+}

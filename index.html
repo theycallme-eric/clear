@@ -4,7 +4,11 @@
 <html lang="en" data-atmosphere="full">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- REQ-002 — request an edge-to-edge installed viewport for the existing
+         gradient/scanline atmosphere. Content uses the safe-area insets in
+         src/styles/shell.css. Local checks cover markup and layout; actual
+         installed-iPhone status/keyboard behavior remains post-launch UAT. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="CLEAR workout generator" />
     <title>CLEAR</title>
 

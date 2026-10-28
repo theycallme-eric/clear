@@ -2,8 +2,9 @@
  * Review — REV-01. The pre-workout briefing, and the handoff into SES-01.
  *
  * IA.md §4 gives this screen the composition it has: an overview card of the
- * facts the workout was composed under, one card per section, and two actions
- * in the pinned footer. Nothing but the title sits on the atmosphere.
+ * facts the workout was composed under and the equipment it needs, one card
+ * per section, Start pinned in the footer and Regenerate at the end of the
+ * scrolling content (REQ-006). Nothing but the title sits on the atmosphere.
  * Everything it renders comes from `reviewBriefing`, which is where the
  * decisions about *words* live; this file is the markup and the two things the
  * markup cannot be — starting, and discarding.
@@ -43,19 +44,18 @@
  * already in `SCREEN_ATMOSPHERE`, so `RootLayout` resolves it from the pathname
  * the day the journey that owns this screen routes it.
  */
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useId, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import {
-  AppHeader,
   Button,
-  ClearLogo,
   Clock,
   Crosshair,
   Gauge,
   Info,
   Play,
   RefreshCw,
+  Rest,
   Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
@@ -67,6 +67,7 @@ import {
   GOAL_LABEL,
   INTENSITY_LABEL,
   reviewBriefing,
+  sequenceOrdinal,
   type ReviewBlockView,
   type ReviewCadence,
   type ReviewExerciseView,
@@ -267,26 +268,15 @@ export function Review({
 
   return (
     <>
-      <AppHeader>
-        <ClearLogo size="md" />
-      </AppHeader>
       <Screen
         title={REVIEW_TITLE}
         heading={briefing.title}
+        header={{}}
         pinnedFoot={
           <PhoneFooter>
-            {/* U03: equivalent actions share one size; priority is the
-                primary styling and its place first in the stack. */}
+            {/* REQ-006: Start is the one pinned decision. Regenerate is read
+                after the workout, at the end of the scrolling content. */}
             <ActionRow>
-              <Button
-                variant="secondary"
-                size="lg"
-                icon={<RefreshCw />}
-                disabled={starting}
-                onClick={() => setConfirmingRegenerate(true)}
-              >
-                {REGENERATE_LABEL}
-              </Button>
               <Button
                 variant="primary"
                 size="lg"
@@ -319,6 +309,7 @@ export function Review({
           facts={briefing.facts}
           adjustment={briefing.adjustment}
           movementCount={briefing.movementCount}
+          equipment={briefing.equipment}
         />
 
         {/* Above the sections, because it is context for the workout rather
@@ -348,6 +339,21 @@ export function Review({
             onExplain={setExplaining}
           />
         ))}
+
+        {/* REQ-006: the way out of this composition, once it has been read.
+            Discarding is confirmed and irreversible, so it is a framed button
+            rather than a text action. */}
+        <ActionRow>
+          <Button
+            variant="secondary"
+            size="lg"
+            icon={<RefreshCw />}
+            disabled={starting}
+            onClick={() => setConfirmingRegenerate(true)}
+          >
+            {REGENERATE_LABEL}
+          </Button>
+        </ActionRow>
       </div>
       </ReviewSwapProvider>
 
@@ -454,10 +460,12 @@ function BriefingOverview({
   facts,
   adjustment,
   movementCount,
+  equipment,
 }: {
   facts: readonly ReviewFact[]
   adjustment: string | null
   movementCount: number
+  equipment: readonly string[]
 }) {
   return (
     <Card heading={OVERVIEW_LABEL}>
@@ -477,6 +485,8 @@ function BriefingOverview({
         </MetricFrame>
       </MetricGrid>
 
+      <RequiredEquipment equipment={equipment} />
+
       {/* A clamp that moved the session says so in words and with a glyph. */}
       {adjustment !== null && (
         <p style={{ ...DATA_STYLE, display: 'flex', gap: 'var(--spacing-200)' }}>
@@ -485,6 +495,49 @@ function BriefingOverview({
         </p>
       )}
     </Card>
+  )
+}
+
+/** The equipment readout's label, and the list it names. */
+export const EQUIPMENT_LABEL = 'Required equipment'
+/** An all-bodyweight workout, said rather than shown as an empty list. */
+export const NO_EQUIPMENT_LABEL = 'None — bodyweight only'
+
+const EQUIPMENT_LIST_STYLE: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 'var(--spacing-100) var(--spacing-300)',
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+}
+
+/**
+ * What to have to hand before Start (REQ-006), in the overview so it is read
+ * before the first section. Names only: no glyph per kind of equipment yet,
+ * and no prose — this is a list of things, not an introduction to them.
+ */
+function RequiredEquipment({ equipment }: { equipment: readonly string[] }) {
+  const labelId = useId()
+  return (
+    <div className="clr-stack--tight" style={STACK_STYLE}>
+      {/* A label and a value rather than paragraphs: the overview carries no
+          prose (REQ-010), and this is a reading, not a sentence. */}
+      <span id={labelId} style={LABEL_STYLE}>
+        {EQUIPMENT_LABEL}
+      </span>
+      {equipment.length === 0 ? (
+        <span style={VALUE_STYLE}>{NO_EQUIPMENT_LABEL}</span>
+      ) : (
+        <ul aria-labelledby={labelId} style={EQUIPMENT_LIST_STYLE}>
+          {equipment.map((name) => (
+            <li key={name} style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
+              {name}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -583,12 +636,38 @@ const ORDERED_LIST_STYLE: CSSProperties = {
   padding: 0,
 }
 
+/** A rule between two movements of a group. The last one has nothing below it. */
+const MEMBER_RULE_STYLE: CSSProperties = {
+  borderBlockEnd: 'var(--border-width) solid var(--border-region-rule)',
+  paddingBlockEnd: 'var(--spacing-200)',
+}
+
+/**
+ * The group's shared rest, in the interaction blue the timer it starts will
+ * wear, and with the rest glyph so the colour is never the only cue.
+ */
+const ROUND_REST_STYLE: CSSProperties = {
+  ...DATA_STYLE,
+  color: 'var(--text-card-header)',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 'var(--spacing-100)',
+}
+
 /**
  * One block. A superset, circuit or timed structure is one group: framed,
- * named by its badge (which carries the round count or clock once), its shared
- * rest directly under that badge, and its movements numbered in the order they
- * are performed. A standard block is a movement done set by set, so it gets
- * no frame and no `STANDARD` badge — that badge on every row was metadata that
+ * named by its badge (which carries the structure glyph and the round count or
+ * clock once), and its movements numbered `01`, `02` in the order they are
+ * performed. A superset or circuit is performed as rounds — each movement
+ * once, back to back, then again — so its badge is followed by the one-round
+ * sequence line and each row states what one round asks of it, never the
+ * `4 × 8` that reads as all four sets before the next movement. Its shared rest
+ * closes the group, after the round it follows.
+ *
+ * Necessary `block_notes` stay visible; the derivation removes only the known
+ * redundant repeat sentence that the numbered sequence already states.
+ * A standard block is a movement done set by set, so it gets no
+ * frame and no `STANDARD` badge — that badge on every row was metadata that
  * said nothing — unless its rep scheme is one the user needs told.
  */
 function ReviewBlockRows({
@@ -627,26 +706,43 @@ function ReviewBlockRows({
     .filter(Boolean)
     .join(', ')
 
+  const inRounds = block.roundSequence !== null
+  const last = block.exercises.length - 1
+
   return (
     <div className="clr-stack--tight" style={GROUP_STYLE}>
       <StructureBadge identity={block.identity} />
-      {block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>}
+      {inRounds ? (
+        <p style={DATA_STYLE}>{block.roundSequence}</p>
+      ) : (
+        block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>
+      )}
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
       <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
         {block.exercises.map((exercise, index) => (
-          <li key={exercise.key}>{row(exercise, `${index + 1}.`)}</li>
+          <li key={exercise.key} style={index === last ? undefined : MEMBER_RULE_STYLE}>
+            {row(exercise, sequenceOrdinal(index))}
+          </li>
         ))}
       </ol>
+      {inRounds && block.roundRest !== null && (
+        <p style={ROUND_REST_STYLE}>
+          <Rest size={16} />
+          {block.roundRest}
+        </p>
+      )}
     </div>
   )
 }
 
 /**
- * One prescription. Every reading is a separate element rather than one
- * assembled sentence: `prescriptionText` already refuses to produce a string
- * anything would want to parse back, and the load and the rest are different
- * facts that a screen reader should be able to stop between. Tempo is not on
- * the row; the section's tempo detail carries it.
+ * One prescription, in three tiers: the movement, then what it asks (one
+ * round's target inside a counted superset or circuit, the whole prescription
+ * otherwise), then the equipment. Every reading is a separate element rather
+ * than one assembled sentence: `prescriptionText` already refuses to produce a
+ * string anything would want to parse back, and the load and the rest are
+ * different facts that a screen reader should be able to stop between. Tempo
+ * is not on the row; the section's tempo detail carries it.
  */
 function ReviewExerciseRow({
   ordinal,
@@ -655,7 +751,7 @@ function ReviewExerciseRow({
   override,
   onExplain,
 }: {
-  /** `1.`, `2.` — the movement's place in its group, or null outside one. */
+  /** `01`, `02` — the movement's place in its group, or null outside one. */
   ordinal: string | null
   exercise: ReviewExerciseView
   /** Null where there is no anchor — a state, and it renders nothing. */
@@ -665,20 +761,18 @@ function ReviewExerciseRow({
 }) {
   return (
     <div style={STACK_STYLE}>
+      <p style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
+        {ordinal !== null && <span style={DATA_STYLE}>{ordinal} </span>}
+        {exercise.name}
+      </p>
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
-        <p style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
-          {ordinal !== null && <span style={DATA_STYLE}>{ordinal} </span>}
-          {exercise.name}
-        </p>
-        <span style={DATA_STYLE}>{exercise.prescription}</span>
-      </div>
-      <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
-        <span style={{ ...DATA_STYLE, textTransform: 'capitalize' }}>
-          {exercise.equipment}
-        </span>
+        <span style={DATA_STYLE}>{exercise.roundTarget ?? exercise.prescription}</span>
         {exercise.load !== null && <span style={DATA_STYLE}>{exercise.load}</span>}
         {exercise.rest !== null && <span style={DATA_STYLE}>{exercise.rest}</span>}
       </div>
+      <span style={{ ...DATA_STYLE, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
+        {exercise.equipment}
+      </span>
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}

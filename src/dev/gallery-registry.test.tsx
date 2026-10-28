@@ -49,6 +49,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   WorkoutNavigation: 'EXE-01 — prev/next/finish over a session’s sections',
   RestTimerBar:
     'EXE-05 — the session’s one rest, read from the shell’s provider against the wall clock; it draws nothing until a set is logged',
+  TimerFrame:
+    'EXC-03 — the timer frame GlobalTimer and MovementCountdown draw with; it is framed through MovementCountdown’s specimen',
   BlockEffortDialog: 'EXE-01 — the perceived-effort capture, opened at block completion',
   AbandonConfirmDialog:
     'EXE-01 — `ConfirmDialog critical` with fixed copy; the surface is framed under ConfirmDialog, and what is new here is the wording, reviewed where it is asked',
@@ -63,6 +65,13 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // through the shell's set-logging path, so a specimen would have to invent a
   // session and a client before it could draw anything.
   ExerciseSetLogger: 'EXE-02 — one prescription of a live session, with its logged sets',
+  SupersetRoundSheet:
+    'REQ-016 — a live superset’s Log round, opened from its block and writing each movement through the shell',
+  SetLoggingSheet:
+    'REQ-009 — the set-logging half-sheet, opened from a live movement’s Log set and fed its draft',
+  SetLoggingSheetHost: 'REQ-009 — structural: which movement’s sheet the workout shell has open',
+  SetLoggingSheetSlot: 'REQ-009 — structural: the pinned-foot slot the open sheet is drawn into',
+  SetMeasurementRow: 'REQ-009 — the sheet’s Weight / Unit / measure row, drawn only inside it',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
   SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
   // EXE-04a. The block is a live For Time section; the rung row it composes is

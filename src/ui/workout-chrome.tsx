@@ -9,7 +9,9 @@
  * state is time pressure. The session timer counts up and has no deadline, so
  * it composes the same shipped timer card and the same timer tokens rather than
  * borrowing a component whose meaning is the opposite. `SectionTimer` (EXE-03)
- * is the one that composes `TimerDisplay`, exactly as the IA says.
+ * is the one that composes `TimerDisplay`, exactly as the IA says. The frame
+ * itself is `TimerFrame` (EXC-03), shared with a movement's own countdown
+ * (`movement-countdown.tsx`, REQ-014) so both clocks speak one vocabulary.
  *
  * Containment, from 0.14.3: a timer is its own card — one accent bar, the timer
  * role on bar, body and emission — and is never put inside another. The rest
@@ -29,9 +31,10 @@
  *   · status is never colour alone — a finished section carries a tick and the
  *     word, a current one carries `aria-current`;
  *   · the destructive action does not sit beside the frequently-pressed one,
- *     which is why Abandon belongs to the header and Next to the footer.
+ *     which is why Abandon belongs to the header's menu (`WorkoutMenu`,
+ *     REQ-019) and Next to the footer.
  */
-import { useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import {
   Check,
@@ -39,7 +42,10 @@ import {
   ChevronRight,
   Circuit,
   Dumbbell,
+  IconButton,
   Ladder,
+  LogOut,
+  Menu,
   Plus,
   Progress,
   Pulse,
@@ -62,9 +68,9 @@ import { ConfirmDialog } from './blocking-dialog'
 import { Card } from './card'
 import { useInsideCard } from './card-context'
 import { CollapsibleSection } from './collapsible-section'
-import { ActionRow } from './composition'
-import { useInterfaceLoop } from './motion'
+import { useInterfaceLoop, type InterfaceLoop } from './motion'
 import './rest-timer-bar.css'
+import './workout-navigation.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Global timer
@@ -82,34 +88,95 @@ export interface GlobalTimerProps {
  * `role="timer"` here is labelled, not live.
  */
 export function GlobalTimer({ seconds }: GlobalTimerProps) {
+  return (
+    <TimerFrame
+      label="Session time"
+      text={formatElapsed(seconds)}
+      spoken={spokenElapsed(seconds)}
+      size="var(--label-lg-size)"
+    />
+  )
+}
+
+export interface TimerFrameProps {
+  /** The timer's accessible name, said once — "Session time", "Countdown". */
+  label: string
+  /** The digits, `mm:ss`. Decorative. */
+  text: string
+  /** The accessible value, in words. */
+  spoken: string
+  /** The digit size, a label-size token. */
+  size: string
+  /** A short caption drawn inside the frame, before the digits. */
+  caption?: string
+  /** The shipped low state: bar, body, emission and digits take timer-low. */
+  low?: boolean
+  /**
+   * The low state's 80% pulse, as a claim on the view's one loop. Given, the
+   * frame pulses while that claim runs and is still otherwise.
+   */
+  pulse?: InterfaceLoop
+}
+
+/**
+ * EXC-03's adapter: the shipped timer frame, as `TimerDisplay` builds it, for
+ * the timers `TimerDisplay` cannot be — a count-up clock, or any timer that has
+ * to sit inside a card. One vocabulary, so the session clock and a movement's
+ * countdown share border, surface, chamfer and accent bar.
+ *
+ * Outside a card it is the timer card: the emission, the accent bar and the
+ * body all take the timer role, and no frame goes around it. Inside a card it
+ * is that card's element frame instead — the same role, without a bar of its
+ * own, so there is never a second bar or a frame in a frame.
+ */
+export function TimerFrame({
+  label,
+  text,
+  spoken,
+  size,
+  caption,
+  low = false,
+  pulse,
+}: TimerFrameProps) {
   const insideCard = useInsideCard()
+  const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
 
   const readout = (
     <div
       role="timer"
-      aria-label="Session time"
+      aria-label={label}
       className={
         insideCard
-          ? 'clr-chamfer clr-chamfer--md clr-chamfer--timer'
-          : 'clr-chamfer clr-chamfer--md clr-card__body clr-chamfer--timer'
+          ? `clr-chamfer clr-chamfer--md ${role}`
+          : `clr-chamfer clr-chamfer--md clr-card__body ${role}`
       }
       style={{
         display: 'inline-flex',
+        alignItems: 'baseline',
         justifyContent: 'center',
+        gap: 'var(--spacing-200)',
         padding: 'var(--spacing-100) var(--spacing-300)',
       }}
     >
-      <TimerDigits text={formatElapsed(seconds)} size="var(--label-lg-size)" />
-      <span className="a11y-hidden">{spokenElapsed(seconds)}</span>
+      {caption === undefined ? null : (
+        <span
+          aria-hidden="true"
+          style={{ ...labelStyle, color: low ? 'var(--text-timer-low)' : 'var(--text-timer)' }}
+        >
+          {caption}
+        </span>
+      )}
+      <TimerDigits text={text} size={size} low={low} />
+      <span className="a11y-hidden">{spoken}</span>
     </div>
   )
 
   return (
-    // The shipped timer card, as `TimerDisplay` builds it: the emission, the
-    // accent bar and the body all take the timer role, and no frame goes
-    // around it. Inside a card it is that card's element frame instead — the
-    // same timer role, without a bar of its own.
-    <span className="clr-bleed" style={TIMER_BLEED_STYLE}>
+    <span
+      className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
+      style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
+      {...pulse}
+    >
       {insideCard ? (
         readout
       ) : (
@@ -123,6 +190,7 @@ export function GlobalTimer({ seconds }: GlobalTimerProps) {
 }
 
 const TIMER_BLEED_STYLE = { '--bleed': 'var(--border-timer)' } as CSSProperties
+const TIMER_LOW_BLEED_STYLE = { '--bleed': 'var(--border-timer-low)' } as CSSProperties
 
 /**
  * A timer's digits, drawn the way `TimerDisplay` draws them: each one tumbles
@@ -312,6 +380,11 @@ export interface SectionHeaderProps {
    * in a second card restating the same position.
    */
   progress?: SessionProgress
+  /**
+   * False when the bar is drawn elsewhere — the active workout puts it above
+   * its footer navigation (REQ-018) — leaving the jump list here.
+   */
+  bar?: boolean
   /** Jump straight to a section. Omit to render the jump list read-only. */
   onSelect?: (index: number) => void
   children?: ReactNode
@@ -335,6 +408,7 @@ export function SectionHeader({
   position,
   total,
   progress,
+  bar = true,
   onSelect,
   children,
 }: SectionHeaderProps) {
@@ -358,7 +432,7 @@ export function SectionHeader({
       heading={section.title}
       meta={`Section ${position} / ${total} · ${STATUS_WORDS[section.status]}`}
     >
-      {progress === undefined ? null : (
+      {progress === undefined || !bar ? null : (
         <SectionProgressBar progress={progress} currentIndex={section.index} />
       )}
       <ul
@@ -497,6 +571,88 @@ export function AbandonConfirmDialog({
   )
 }
 
+export interface WorkoutMenuProps {
+  /** Asks the abandon question. The menu has already closed when it runs. */
+  onAbandon: () => void
+  /** Starts with the panel open. The workout never passes it; the gallery does. */
+  defaultOpen?: boolean
+}
+
+/** The trigger's accessible name; the header shows only its glyph. */
+export const WORKOUT_MENU_LABEL = 'Actions'
+
+/**
+ * REQ-019: the header's framed menu, which is where Abandon lives.
+ *
+ * The trigger is the shipped `IconButton` — framed, icon only, and named
+ * "Actions" for assistive technology without printing the word. It discloses
+ * one framed panel (`aria-expanded`/`aria-controls`) rather than an ARIA
+ * `menu`, so it asks for no roving-focus contract it would only half keep.
+ *
+ * Choosing Abandon closes the panel and hands focus back to the trigger
+ * *before* the confirm opens, so dismissing the confirm returns the athlete to
+ * the menu button on an unchanged workout. Nothing here abandons: the confirm
+ * and its retention behaviour are `AbandonConfirmDialog`'s, unchanged. Esc and
+ * a press outside close the panel without acting.
+ */
+export function WorkoutMenu({ onAbandon, defaultOpen = false }: WorkoutMenuProps) {
+  const [open, setOpen] = useState(defaultOpen)
+  const panelId = useId()
+  const root = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return
+      setOpen(false)
+      trigger.current?.focus()
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  const abandon = () => {
+    setOpen(false)
+    trigger.current?.focus()
+    onAbandon()
+  }
+
+  return (
+    <div ref={root} className="clr-workout-menu">
+      <IconButton
+        label={WORKOUT_MENU_LABEL}
+        icon={<Menu />}
+        buttonRef={trigger}
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((was) => !was)}
+      />
+      <div
+        id={panelId}
+        role="group"
+        aria-label={WORKOUT_MENU_LABEL}
+        className="clr-workout-menu__panel clr-bleed"
+        style={STRUCTURE_BLEED_STYLE}
+        hidden={!open}
+      >
+        <div className="clr-workout-menu__frame clr-chamfer clr-chamfer--sm clr-chamfer--structure">
+          <Button variant="quiet" icon={<LogOut />} onClick={abandon}>
+            Abandon
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Rest
 // ─────────────────────────────────────────────────────────────────────────────
@@ -613,12 +769,25 @@ export interface WorkoutNavigationProps {
   onFinish: () => void
   /** True while a lifecycle call is in flight. */
   busy?: boolean
+  /**
+   * The whole session's progress. When given, its bar sits directly above the
+   * paired actions (REQ-018), so where the user is and where they go next are
+   * read in one place.
+   */
+  progress?: SessionProgress
+  /** The section the shell currently has open, for the bar's name. */
+  currentIndex?: number
 }
 
 /**
  * Previous, and then either Next or Finish. Two exits, and the destructive one
  * is not among them — abandoning lives in the header, away from the control the
  * user presses between every section.
+ *
+ * REQ-018: one compact paired row — Previous on the left, the forward action
+ * on the right — at every width, with the session's progress immediately above
+ * it. Only the arrangement is this component's; what each action does is the
+ * caller's, unchanged.
  */
 export function WorkoutNavigation({
   canGoBack,
@@ -627,35 +796,37 @@ export function WorkoutNavigation({
   onNext,
   onFinish,
   busy = false,
+  progress,
+  currentIndex = 0,
 }: WorkoutNavigationProps) {
   // Finishing is a real wait and its button scans, so it takes its turn with
   // every other loop in view; the button stays busy either way.
   const loop = useInterfaceLoop('busy', busy && !canGoForward)
 
   return (
-    <ActionRow
-      as="nav"
-      aria-label="Workout sections"
-      {...loop}
-    >
-      <Button
-        variant="secondary"
-        size="lg"
-        icon={<ChevronLeft />}
-        disabled={!canGoBack || busy}
-        onClick={onPrevious}
-      >
-        Previous
-      </Button>
-      {canGoForward ? (
-        <Button variant="primary" size="lg" icon={<ChevronRight />} disabled={busy} onClick={onNext}>
-          Next section
-        </Button>
-      ) : (
-        <Button variant="primary" size="lg" icon={<Check />} loading={busy} onClick={onFinish}>
-          Finish workout
-        </Button>
+    <nav aria-label="Workout sections" className="clr-workout-nav" {...loop}>
+      {progress === undefined ? null : (
+        <SectionProgressBar progress={progress} currentIndex={currentIndex} />
       )}
-    </ActionRow>
+      <div className="clr-workout-nav__pair">
+        <Button
+          variant="secondary"
+          icon={<ChevronLeft />}
+          disabled={!canGoBack || busy}
+          onClick={onPrevious}
+        >
+          Previous
+        </Button>
+        {canGoForward ? (
+          <Button variant="primary" icon={<ChevronRight />} disabled={busy} onClick={onNext}>
+            Next section
+          </Button>
+        ) : (
+          <Button variant="primary" icon={<Check />} loading={busy} onClick={onFinish}>
+            Finish workout
+          </Button>
+        )}
+      </div>
+    </nav>
   )
 }

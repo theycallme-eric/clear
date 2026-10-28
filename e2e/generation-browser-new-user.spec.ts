@@ -66,7 +66,7 @@ async function expectScreen(page: Page, screen: string, heading: string, timeout
   await expect(page, `${screen} is served at ${path}`).toHaveURL((url) => url.pathname === path, {
     timeout,
   })
-  await expect(page.locator('main h1'), `${screen}'s heading`).toHaveAccessibleName(heading, {
+  await expect(page.getByRole('heading', { level: 1 }), `${screen}'s heading`).toHaveAccessibleName(heading, {
     timeout,
   })
 }
@@ -241,7 +241,7 @@ async function pressGenerate(page: Page) {
 
 /** Loading is transient and rendered in place of Generate, at its route. */
 async function expectLoading(page: Page) {
-  await expect(page.locator('main h1'), 'the Loading screen').toHaveAccessibleName(
+  await expect(page.getByRole('heading', { level: 1 }), 'the Loading screen').toHaveAccessibleName(
     'Generating session',
   )
   await expect(page).toHaveURL((url) => url.pathname === routeOf('Generate'))

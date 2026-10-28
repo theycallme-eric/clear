@@ -45,10 +45,8 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import type { CompletedSession } from '../data/summary'
 import {
   AlertCircle,
-  AppHeader,
   Button,
   Check,
-  ClearLogo,
   Input,
 } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
@@ -124,15 +122,12 @@ export function Summary() {
 
   return (
     <>
-      <AppHeader>
-        <ClearLogo size="md" />
-      </AppHeader>
       {query.state.status === 'loading' ? (
-        <Screen title="Summary" heading="Nice work">
+        <Screen title="Summary" heading="Nice work" header={{}}>
           <LoadingView label="Reading your session" />
         </Screen>
       ) : query.state.status === 'error' ? (
-        <Screen title="Summary" heading="Nice work">
+        <Screen title="Summary" heading="Nice work" header={{}}>
           <ErrorView
             error={query.state.error}
             title="That session didn’t load"
@@ -211,6 +206,7 @@ function Debrief({ completed }: { completed: CompletedSession }) {
     <Screen
       title="Summary"
       heading="Nice work"
+      header={{}}
       pinnedFoot={
         <PhoneFooter>
           <ActionRow>

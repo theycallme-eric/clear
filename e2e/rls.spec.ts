@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 import { auditSchema, readSchema } from '../scripts/e2e/dispositions.mjs'
 import { reset, seed } from '../scripts/e2e/lifecycle.mjs'
 import {
@@ -7,9 +9,11 @@ import {
   forgedRow,
   rowSelector,
 } from '../scripts/e2e/namespace.mjs'
+import { parseSetObservationAck } from '../src/state/set-observation-mutation'
 
 import { expect, test } from './fixtures'
 import { backend } from './support/backend'
+import { observationProbe } from './support/rls-observation'
 
 /**
  * ENV-07 — row-level security as a standing check.
@@ -29,8 +33,9 @@ import { backend } from './support/backend'
  *     the matrix one table short.
  *   * **The seed is symmetric.** A policy that denied everybody would pass
  *     every "expect zero rows" assertion here, so each table is also read and
- *     written by its own owner, who must see exactly one row and be allowed to
- *     write it. Zero-for-A only means something next to one-for-B.
+ *     written through its supported owner interface. Private receipts remain
+ *     read-only; their owner can read them and the observation RPC creates
+ *     them. Zero-for-A only means something next to one-for-B.
  *   * **Denial is checked at the row, not only in the response.** After every
  *     refused write, B's row is read back with the service role and compared
  *     against what it was. A 403 over a mutation that happened anyway is the
@@ -135,7 +140,22 @@ test.describe('row-level security', () => {
     return { created_at: value }
   }
 
-  for (const { table, seeded } of USER_TABLES) {
+  const expectDirectOwnerWritesDenied = async (
+    table: string,
+    before: Record<string, unknown>,
+  ) => {
+    const query = rowSelector(table, 'b', users.b.id)
+    const patch = timestampPatch(table,
+      table === 'exercise_set_logs' ? before.actual_reps : before.created_at)
+    expectDenied(await client.updateAs(table, query, patch, tokens.b),
+      `${table}: owner bypassed the supported write interface`)
+    expect(await ownedRow(table), `${table}: denied owner PATCH changed the row`).toEqual([before])
+    expectDenied(await client.deleteAs(table, query, tokens.b),
+      `${table}: owner bypassed the supported clear interface`)
+    expect(await ownedRow(table), `${table}: denied owner DELETE changed the row`).toEqual([before])
+  }
+
+  for (const { table, seeded, ownerWrite } of USER_TABLES) {
     test.describe(table, () => {
       test('its owner can read their own row', async () => {
         test.skip(!seeded, 'needs a catalog exercise id to seed a row')
@@ -152,10 +172,52 @@ test.describe('row-level security', () => {
         )
       })
 
-      test('its owner can write to their own row', async () => {
+      test(ownerWrite === 'read-only'
+        ? 'its owner can read but cannot directly rewrite or delete its receipt'
+        : 'its owner can write through the supported interface', async () => {
         test.skip(!seeded, 'needs a catalog exercise id to seed a row')
 
         const [before] = await ownedRow(table)
+
+        if (ownerWrite === 'read-only') {
+          await expectDirectOwnerWritesDenied(table, before)
+          return
+        }
+
+        if (ownerWrite === 'observation-rpc') {
+          // The fixture is a pending workout's legacy observation. Exact
+          // insert/bootstrap is supported without pretending it is active.
+          const { mutation, args } = observationProbe(before, randomUUID())
+          expect(mutation.expected_revision).toBe(0)
+          const response = await client.rpcAs('mutate_set_observation', args, tokens.b)
+          expect(response.status, 'owner observation RPC').toBe(200)
+          const applied = parseSetObservationAck(response.body, mutation)
+          expect(applied.ok, 'owner RPC returned an exact applied acknowledgement').toBe(true)
+          if (!applied.ok) throw new Error('Owner observation acknowledgement was invalid')
+          expect(applied.value.outcome).toBe('applied')
+          const after = { ...before, mutation_revision: 1, last_mutation_id: mutation.mutation_id }
+          expect(await ownedRow(table), 'bootstrap preserves every observed value').toEqual([after])
+
+          const replay = await client.rpcAs('mutate_set_observation', args, tokens.b)
+          expect(replay.status, 'owner lost-response replay').toBe(200)
+          const replayed = parseSetObservationAck(replay.body, mutation)
+          expect(replayed.ok, 'replay acknowledges the same identity and current head').toBe(true)
+          if (!replayed.ok) throw new Error('Owner observation replay acknowledgement was invalid')
+          expect(replayed.value.outcome).toBe('replayed')
+          expect(replayed.value.head).toEqual(applied.value.head)
+          expect(await ownedRow(table), 'replay cannot change or duplicate the observation').toEqual([after])
+
+          const receipt = await client.selectAs('set_observation_mutations',
+            { mutation_id: `eq.${mutation.mutation_id}` }, tokens.b)
+          expect(receipt.status, 'owner reads its RPC-created private receipt').toBe(200)
+          expect(receipt.body).toEqual([expect.objectContaining({
+            mutation_id: mutation.mutation_id, observation_id: mutation.observation_id,
+            revision: 1, expected_revision: 0, operation: 'insert', user_id: users.b.id,
+            request_values: mutation.values,
+          })])
+          await expectDirectOwnerWritesDenied(table, after)
+          return
+        }
 
         // A patch that sets `created_at` to the value it already holds. It is
         // a real UPDATE — the policy is evaluated exactly as it would be for a
@@ -183,6 +245,25 @@ test.describe('row-level security', () => {
           `${table}: the owner was denied their own row`,
         ).toHaveLength(1)
       })
+
+      if (ownerWrite === 'observation-rpc') {
+        test('another user cannot insert, correct or clear through the observation RPC', async () => {
+          const [before] = await ownedRow(table)
+          const receiptQuery = { observation_id: `eq.${before.id}` }
+          const receipts = await client.selectAsService('set_observation_mutations', receiptQuery)
+          expect(receipts.ok, 'privileged receipt baseline').toBe(true)
+          for (const operation of ['insert', 'correct', 'clear'] as const) {
+            const { args } = observationProbe(before, randomUUID(), operation)
+            const response = await client.rpcAs('mutate_set_observation', args, tokens.a)
+            expect(response.status, `${operation}: RPC refused foreign ownership`).toBe(200)
+            expect(response.body).toEqual({ outcome: 'not_found' })
+            expect(await ownedRow(table), `${operation}: foreign RPC changed B's row`).toEqual([before])
+            const after = await client.selectAsService('set_observation_mutations', receiptQuery)
+            expect(after.ok, 'privileged receipt verification').toBe(true)
+            expect(after.body, `${operation}: foreign RPC wrote a receipt`).toEqual(receipts.body)
+          }
+        })
+      }
 
       test('another user reads none of it', async () => {
         const response = await client.selectAs(

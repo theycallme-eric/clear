@@ -31,7 +31,7 @@
  */
 import { createContext, use } from 'react'
 
-import type { Enums, TablesInsert } from '../data/database.types'
+import { Constants, type Enums, type TablesInsert, type TablesUpdate } from '../data/database.types'
 import type { Result } from './errors'
 import type { ExerciseSetLogRow } from './schemas'
 
@@ -62,6 +62,12 @@ export interface PerformedSet {
    * entry written before the checkbox went — keeps its classification.
    */
   readonly isWarmup?: boolean
+  /**
+   * How the set felt, as one of three categories (REQ-012). Omitted or `null`
+   * is unanswered — never the middle category, never a number on the RPE
+   * scale. An entry queued before this field existed simply has no key.
+   */
+  readonly effort?: Enums<'set_effort'> | null
 }
 
 /** A performed set, plus everything the row needs that the renderer is not told. */
@@ -93,6 +99,12 @@ export type SetSyncStatus = 'logged' | 'syncing' | 'failed'
  * moment ago. Nullable throughout, because the row is.
  */
 export interface LoggedSet {
+  /**
+   * The row's client-minted id — what a correction or a clear is addressed to
+   * (REQ-013). Never the set number: a set number names a slot, and after a
+   * clear and a re-entry two different observations have held it.
+   */
+  readonly id: string
   readonly setNumber: number
   readonly reps: number | null
   readonly durationSeconds: number | null
@@ -101,6 +113,8 @@ export interface LoggedSet {
   readonly weight: number | null
   readonly weightUnit: Enums<'weight_unit'>
   readonly isWarmup: boolean
+  /** The effort category, or `null` for unanswered — including every older set. */
+  readonly effort: Enums<'set_effort'> | null
   /** Whether the database has this set, or only this device does (EXE-07). */
   readonly status: SetSyncStatus
 }
@@ -144,6 +158,48 @@ export function setLogInsert(entry: SetLogEntry): TablesInsert<'exercise_set_log
     // Restoration: docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md.
     rpe: null,
     is_warmup_set: performed.isWarmup ?? false,
+    // REQ-012: the category, in its own column and never in `rpe`. Unanswered
+    // is written by omission — the column has no default, so the row stores
+    // NULL — which keeps an unanswered set writable against a database the
+    // additive migration has not reached yet.
+    ...(performed.effort === undefined || performed.effort === null
+      ? {}
+      : { effort: performed.effort }),
+  }
+}
+
+/**
+ * The `exercise_set_logs` update that corrects one stored set's effort
+ * (REQ-012): another category, or `null` to clear it back to unanswered. Only
+ * the one column, so a correction cannot disturb the measurements or `rpe`.
+ * Correction orchestration is TASK-011's; this is the row it writes.
+ */
+export function setLogEffortUpdate(
+  effort: Enums<'set_effort'> | null,
+): TablesUpdate<'exercise_set_logs'> {
+  return { effort }
+}
+
+/**
+ * The `exercise_set_logs` update that corrects one stored set (REQ-013): every
+ * measurement, the unit and the effort, as the corrected entry states them.
+ * The row is addressed by its id, so `set_number` — the set's identity — is
+ * never rewritten, and neither is `rpe` (historical) or the warmup
+ * classification, which no correction control sets. An omitted measurement is
+ * written as `null`: a correction states the whole observation.
+ */
+export function setLogCorrection(entry: SetLogEntry): TablesUpdate<'exercise_set_logs'> {
+  const { performed } = entry
+
+  return {
+    actual_reps: recorded(performed.reps),
+    actual_duration_seconds: recorded(performed.durationSeconds),
+    actual_distance: recorded(performed.distance),
+    // As on insert: a unit only where there is a distance to measure with it.
+    actual_distance_unit: performed.distance === undefined ? null : entry.distanceUnit,
+    weight: recorded(performed.weight),
+    weight_unit: entry.weightUnit,
+    ...setLogEffortUpdate(performed.effort ?? null),
   }
 }
 
@@ -174,8 +230,19 @@ export function setLogViolation(entry: SetLogEntry): SetLogViolation | null {
     return { field: 'actual_distance_unit' }
   }
   if (!isNonNegative(performed.weight)) return { field: 'weight', min: 0 }
+  if (!isRecordedEffort(performed.effort)) return { field: 'effort' }
 
   return null
+}
+
+/** Unanswered, or exactly one of the enum's categories — never a number. */
+export function isRecordedEffort(value: unknown): value is Enums<'set_effort'> | null | undefined {
+  return (
+    value === undefined ||
+    value === null ||
+    (typeof value === 'string' &&
+      (Constants.public.Enums.set_effort as readonly string[]).includes(value))
+  )
 }
 
 function isNonNegative(value: number | undefined): boolean {
@@ -189,6 +256,7 @@ function isNonNegativeInteger(value: number | undefined): boolean {
 /** A stored row, as the screen reads it back: the database has this one. */
 export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
   return {
+    id: row.id,
     setNumber: row.set_number,
     reps: row.actual_reps,
     durationSeconds: row.actual_duration_seconds,
@@ -197,6 +265,7 @@ export function loggedSetFromRow(row: ExerciseSetLogRow): LoggedSet {
     weight: row.weight,
     weightUnit: row.weight_unit,
     isWarmup: row.is_warmup_set,
+    effort: row.effort,
     status: 'logged',
   }
 }
@@ -219,6 +288,7 @@ export function loggedSetFromEntry(
   const { performed } = entry
 
   return {
+    id: entry.id,
     setNumber: performed.setNumber,
     reps: recorded(performed.reps),
     durationSeconds: recorded(performed.durationSeconds),
@@ -227,6 +297,7 @@ export function loggedSetFromEntry(
     weight: recorded(performed.weight),
     weightUnit: entry.weightUnit,
     isWarmup: performed.isWarmup ?? false,
+    effort: recorded(performed.effort),
     status,
   }
 }
@@ -322,6 +393,21 @@ export interface SetLoggingApi {
    * status that says which it is.
    */
   loggedSets(exerciseId: string): readonly LoggedSet[]
+  /**
+   * Corrects one saved set during the current workout (REQ-013), addressed by
+   * the row id the screen read it under. The set number, the warmup
+   * classification and the prescription stay the stored set's own, and the
+   * correction goes through the same durable queue the set did, after
+   * anything already sent for that row. Absent where the shell offers no
+   * correction, and a renderer then draws no Edit control.
+   */
+  correctSet?(exerciseId: string, setId: string, corrected: PerformedSet): void
+  /**
+   * Clears one saved set: the wrong-movement recovery (REQ-013). Only the
+   * addressed row is removed. Nothing is moved, zeroed or re-attributed; the
+   * right movement's set is logged afresh, explicitly, by the user.
+   */
+  clearSet?(exerciseId: string, setId: string): void
   /** True while this exercise has a set in flight. */
   isSaving(exerciseId: string): boolean
   /** What this session still owes the database. */

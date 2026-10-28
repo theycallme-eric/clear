@@ -44,7 +44,7 @@ const loading = (state: string): Key => ({ screen: 'Loading', route: null, state
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const pathname = (page: Page) => new URL(page.url()).pathname
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 const text = (page: Page, value: string | RegExp) =>
   expect(page.locator('main').getByText(value, { exact: typeof value === 'string' }).first()).toBeVisible()
 const alert = (page: Page, title: string) => page.locator('main').getByRole('alert').filter({ hasText: title })
@@ -692,7 +692,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       await save.transition(review('regenerating-cancel'), '/review', '/review', 'Nothing to review', async () => {
         await expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeEnabled()
         await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toHaveCount(0)
-        await expect(page.locator('main h1')).not.toHaveAccessibleName(original)
+        await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName(original)
       })
       held = deferred()
       await enter()
@@ -706,7 +706,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
       await save.transition(loading('success-review'), '/review', '/review', replacement, async () => {
         await expect(page.getByRole('button', { name: 'Start workout', exact: true })).toBeEnabled()
         await expect(page.getByRole('button', { name: 'Cancel', exact: true })).toHaveCount(0)
-        await expect(page.locator('main h1')).not.toHaveAccessibleName(original)
+        await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName(original)
       })
       expect(localPosts).toBe(2)
       save.disposition(loading('success-review'),
@@ -760,10 +760,10 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     // Groups are named with their round count; members are numbered in order.
     const superset = main.getByRole('list', { name: 'superset, 3 rounds', exact: true })
     await expect(superset.getByRole('listitem')).toHaveText([
-      new RegExp(`^1\\. ${name(first)}`, 'i'), new RegExp(`^2\\. ${name(second)}`, 'i')])
+      new RegExp(`^01 ${name(first)}`, 'i'), new RegExp(`^02 ${name(second)}`, 'i')])
     const circuit = main.getByRole('list', { name: 'circuit, 4 rounds', exact: true })
     await expect(circuit.getByRole('listitem')).toHaveText([
-      new RegExp(`^1\\. ${name(second)}`, 'i'), new RegExp(`^2\\. ${name(first)}`, 'i')])
+      new RegExp(`^01 ${name(second)}`, 'i'), new RegExp(`^02 ${name(first)}`, 'i')])
     // Shared rest sits with its own group, once each.
     const supersetGroup = superset.locator('xpath=..')
     await expect(supersetGroup).toContainText('SUPERSET · 3 ROUNDS')
@@ -813,8 +813,8 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     const today = page.getByRole('list', { name: 'This week', exact: true }).getByRole('listitem')
       .filter({ hasText: /\(today\)/ })
 
-    // Shorter copy and an improved trigger, inside the week card.
-    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    // No prompt above the trigger (REQ-003), and an improved trigger, inside the week card.
+    await expect(rest.getByText('Not training today?', { exact: true })).toHaveCount(0)
     await expect(rest.getByText(/Mark why to keep your streak/)).toHaveCount(0)
     await expect(trigger).toBeVisible()
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
@@ -857,7 +857,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     await cancel.click()
     await expect(picker).toHaveCount(0)
     await expect(trigger).toBeFocused()
-    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    await expect(rest.getByText('Not training today?', { exact: true })).toHaveCount(0)
     await expect(today).not.toHaveAttribute('data-day-state', 'rest')
     expect(await marks()).toEqual([])
 

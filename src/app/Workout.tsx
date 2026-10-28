@@ -47,7 +47,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
-import { AppHeader, Button, ClearLogo, LogOut } from '../design-system/index'
 import { useAuth } from '../state/auth-context'
 import { useSectionCompletion } from '../state/block-completion'
 import { useFlushSetLogs } from '../state/set-logging'
@@ -67,6 +66,7 @@ import {
   sessionProgress,
   startingSectionIndex,
   type SectionProgress,
+  type SessionProgress,
 } from '../state/workout-progress'
 import { elapsedMinutes, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -83,6 +83,9 @@ import {
 import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
 import { PhoneFooter } from '../ui/composition'
+import { SectionLabelContext } from '../ui/section-label-context'
+import { SetLoggingSheetHost, SetLoggingSheetSlot } from '../ui/set-logging-sheet'
+import { useSetLoggingSheetOpen } from '../ui/set-logging-sheet-context'
 import { SetSyncNotice } from '../ui/set-sync-notice'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import {
@@ -90,6 +93,7 @@ import {
   GlobalTimer,
   RestTimerBar,
   SectionHeader,
+  WorkoutMenu,
   WorkoutNavigation,
 } from '../ui/workout-chrome'
 import { AUTHENTICATED_HOME } from './guards'
@@ -305,7 +309,7 @@ function WorkoutShell({
 
   /**
    * The confirm is open for two reasons and they are asked the same way: the
-   * header's Abandon control, and a navigation the blocker is holding — a
+   * header menu's Abandon item, and a navigation the blocker is holding — a
    * link, a redirect, or browser Back. The second is derived rather than
    * copied into state by an effect, so a blocked navigation and the dialog it
    * raises can never disagree about whether there is a question outstanding.
@@ -404,6 +408,9 @@ function WorkoutShell({
         weightUnit={weightUnit}
         onFailure={setFailure}
         storage={storage}
+        // REQ-013: saved sets are corrected or cleared here, during the
+        // workout they were performed in, and nowhere after it.
+        corrections
       >
         {/*
           EXE-05: the session's one rest. Inside the set path because a
@@ -414,29 +421,32 @@ function WorkoutShell({
           recorded.
         */}
         <RestTimerProvider>
-          <AppHeader
-            meta={<GlobalTimer seconds={seconds} />}
-            actions={
-              <Button
-                variant="quiet"
-                icon={<LogOut />}
-                onClick={() => setAskedToExit(true)}
-              >
-                Abandon
-              </Button>
-            }
-          >
-            <ClearLogo size="sm" />
-          </AppHeader>
-
+          <SetLoggingSheetHost>
           <Screen
             title={SCREEN_TITLE}
+            header={{
+              className: 'clr-workout-header',
+              meta: <GlobalTimer seconds={seconds} />,
+              // REQ-019: Abandon sits in the framed top menu and asks the
+              // same confirm it always did.
+              actions: <WorkoutMenu onAbandon={() => setAskedToExit(true)} />,
+            }}
             pinnedFoot={
-              <PhoneFooter>
-                <div className="clr-stack clr-stack--tight">
-                  <RestTimerBar />
+              <PhoneFooter className="clr-workout-footer">
+                <div className="clr-workout-footer__content">
+                  <div className="clr-workout-footer__entry">
+                    {/*
+                      REQ-009: one set-logging half-sheet for the whole screen.
+                      While it is open it draws the running rest itself, so the
+                      footer's copy steps aside rather than drawing a second.
+                    */}
+                    <FooterRest />
+                    <SetLoggingSheetSlot />
+                  </div>
                   <SectionNavigation
                     section={current}
+                    progress={progress}
+                    currentIndex={index}
                     canGoBack={canGoBack}
                     canGoForward={canGoForward}
                     onPrevious={() => goTo(index - 1)}
@@ -472,12 +482,15 @@ function WorkoutShell({
                       position={index + 1}
                       total={progress.total}
                       progress={progress}
+                      bar={false}
                       onSelect={advancing || ending ? undefined : goTo}
                     />
                   </div>
-                  {current.blocks.map((block) => (
-                    <BlockSlot key={block.blockId} block={block} />
-                  ))}
+                  <SectionLabelContext value={current.title}>
+                    {current.blocks.map((block) => (
+                      <BlockSlot key={block.blockId} block={block} />
+                    ))}
+                  </SectionLabelContext>
                 </>
               )}
 
@@ -498,10 +511,16 @@ function WorkoutShell({
               onDismiss={() => setFailure(null)}
             />
           )}
+          </SetLoggingSheetHost>
         </RestTimerProvider>
       </SetLoggingProvider>
     </BlockCompletionProvider>
   )
+}
+
+/** The footer's rest, unless the open set-logging sheet is drawing it. */
+function FooterRest() {
+  return useSetLoggingSheetOpen() ? null : <RestTimerBar />
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -511,6 +530,9 @@ function WorkoutShell({
 interface SectionNavigationProps {
   /** The open section, whose blocks the forward action completes. */
   section: SectionProgress | undefined
+  /** The session's progress, drawn directly above the paired actions (REQ-018). */
+  progress: SessionProgress
+  currentIndex: number
   canGoBack: boolean
   canGoForward: boolean
   onPrevious: () => void
@@ -533,6 +555,8 @@ interface SectionNavigationProps {
  */
 function SectionNavigation({
   section,
+  progress,
+  currentIndex,
   canGoBack,
   canGoForward,
   onPrevious,
@@ -579,6 +603,8 @@ function SectionNavigation({
         onNext={() => void forward()}
         onFinish={() => void forward()}
         busy={ending || saving || advancing}
+        progress={progress}
+        currentIndex={currentIndex}
       />
       {failure !== null && (
         <ErrorDialog

@@ -14,6 +14,12 @@
    band's and the pinned footer's — therefore run edge to edge, and each layer
    adds the side inset (safe area included) inside itself so text and actions
    stay exactly where they were.
+
+   REQ-001: the page gutter is the shell inset itself — 16px, or the safe
+   area when that is wider — on both sides. Cards and actions therefore reach
+   the outer edge the header's controls already sit on; the header does not
+   move inward. Gutters are page geometry only: card padding and in-card row
+   rules keep their own card-internal values below.
    ============================================================================= */
 
 html,
@@ -28,8 +34,8 @@ body,
 .clr-shell--contained > .clr-shell__content {
   --shell-inset-left: max(var(--spacing-400), env(safe-area-inset-left));
   --shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));
-  --page-gutter-left: calc(var(--shell-inset-left) + var(--spacing-300));
-  --page-gutter-right: calc(var(--shell-inset-right) + var(--spacing-300));
+  --page-gutter-left: var(--shell-inset-left);
+  --page-gutter-right: var(--shell-inset-right);
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -47,6 +53,13 @@ body,
   flex: 0 0 auto;
   padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);
   border-bottom: var(--border-width) solid var(--border-region-rule);
+}
+
+/* REQ-001: the page title is the header's title, in the h1's own display
+   type. A long title wraps beside the actions instead of pushing them off. */
+.clr-shell__content > header .clr-screen__title {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .clr-screen {
@@ -67,6 +80,12 @@ body,
   gap: var(--spacing-400);
   min-height: 100%;
   padding: var(--spacing-100) var(--page-gutter-right) var(--spacing-300) var(--page-gutter-left);
+}
+
+/* With its title in the header, a screen's first card opens one group gap
+   below the header rule rather than touching it. */
+.clr-screen__content--titled-head {
+  padding-top: var(--spacing-400);
 }
 
 /* U13: a screen composed as one group sits in the middle of the visible
@@ -196,11 +215,4 @@ body,
 
 .clr-metric-frame > :last-child {
   overflow-wrap: anywhere;
-}
-
-@media (min-width: 1440px) {
-  .clr-shell--contained > .clr-shell__content {
-    --page-gutter-left: calc(var(--shell-inset-left) + var(--spacing-400));
-    --page-gutter-right: calc(var(--shell-inset-right) + var(--spacing-400));
-  }
 }

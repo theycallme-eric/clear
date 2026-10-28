@@ -290,7 +290,7 @@ test.describe('one-time code screen (REQ-016)', () => {
     await expect(entries).toHaveText([ENTRY])
     await entries.click()
     await expect(page).toHaveURL((url) => url.pathname === '/login' && url.search === '')
-    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(ENTRY)
 
     const sent = await replaceDelivery(page)
 
@@ -307,7 +307,7 @@ test.describe('one-time code screen (REQ-016)', () => {
 
     await expect(page.getByLabel('Code')).toBeFocused()
     expect(sent, 'the Login screen never asked for a code').toEqual([address])
-    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(ENTRY)
     const code = await expectCodeStep(page, address)
     await checkA11y()
     return { code, sent }
@@ -359,7 +359,7 @@ test.describe('one-time code screen (REQ-016)', () => {
 
   async function expectLanded(page: Page, path: string, heading: string) {
     await expect(page).toHaveURL((url) => url.pathname === path, { timeout: 30_000 })
-    await expect(page.locator('main h1')).toHaveAccessibleName(heading, { timeout: 30_000 })
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(heading, { timeout: 30_000 })
   }
 
   test('a new user gets started in the form card and lands Onboarding', async ({
@@ -549,7 +549,7 @@ test.describe('Welcome composition (U13)', () => {
 
     await page.getByRole('button', { name: ENTRY, exact: true }).click()
     await expect(page).toHaveURL((url) => url.pathname === '/login')
-    await expect(page.locator('main h1')).toHaveAccessibleName(ENTRY)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(ENTRY)
   })
 
   test('short height: the card scrolls instead of clipping', async ({ page, visit, checkA11y }) => {

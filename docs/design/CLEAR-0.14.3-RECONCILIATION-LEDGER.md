@@ -90,7 +90,7 @@ if EXC-03 is no longer needed.
 |---|---|---|---|---|
 | EXC-01 | `src/ui/card.tsx` | Renders the card heading as a real `Heading` at the outline level; a nested card becomes a ruled sub-group | The public heading slot is a `span`, and a card never holds a card (owner component authority) | `src/ui/card.test.tsx` |
 | EXC-02 | `src/ui/app-dialog.tsx` | Reports each user dismissal exactly once across the vendor's delayed close; a controlled close stays silent | DISC-07: the vendor schedules the close after its exit | `src/ui/app-dialog.test.tsx` |
-| EXC-03 | `src/ui/workout-chrome.tsx` | `GlobalTimer` draws the shipped timer card markup by hand | `TimerDisplay` always draws its own card and counts down into its low state. A count-up session clock that must also sit inside a card cannot use it. This is a composition gap, not a vendor defect. | `src/ui/workout-chrome.test.tsx` |
+| EXC-03 | `src/ui/workout-chrome.tsx` | `TimerFrame` draws the shipped timer card markup by hand, for `GlobalTimer` and the movement countdown (REQ-014) | `TimerDisplay` always draws its own card and counts down into its low state. A count-up session clock cannot use it, and neither timer can sit inside a card through it. This is a composition gap, not a vendor defect. | `src/ui/workout-chrome.test.tsx`; `src/app/movement-countdown.test.tsx` |
 | EXC-04 | `src/ui/select.tsx` | Native `<select>` framed with the public `.clr-field` | The export ships no Select (DS-04b) | `src/ui/select.test.tsx` |
 | EXC-05 | `src/styles/skin-clear.css` | CLEAR skin values with self-hosted fonts in place of the vendor font CDN import | DS-02 font delivery from CLEAR's own origin | `src/styles/fonts.test.ts` |
 

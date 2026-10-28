@@ -104,11 +104,12 @@ export function ToastHost({ queue = toastQueue }: ToastHostProps) {
       onBlur={handleBlur}
       style={{
         position: 'fixed',
-        bottom: 'var(--spacing-500)',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'calc(100% - var(--spacing-400) * 2)',
+        bottom: 'max(var(--spacing-500), env(safe-area-inset-bottom, var(--spacing-0)))',
+        left: 'max(var(--spacing-400), env(safe-area-inset-left, var(--spacing-0)))',
+        right: 'max(var(--spacing-400), env(safe-area-inset-right, var(--spacing-0)))',
+        width: 'auto',
         maxWidth: 440,
+        marginInline: 'auto',
         zIndex: 3,
       }}
     >

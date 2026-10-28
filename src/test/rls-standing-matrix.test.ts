@@ -91,9 +91,10 @@ describe('the standing matrix is derived from the register (ENV-07)', () => {
   })
 
   it('gives the suite what an assertion needs for every one of them', () => {
-    for (const { table, ownerColumn, seeded } of standingMatrix()) {
+    for (const { table, ownerColumn, seeded, ownerWrite } of standingMatrix()) {
       expect(typeof seeded, table).toBe('boolean')
       expect(ownerColumn === null || typeof ownerColumn === 'string').toBe(true)
+      expect(['direct', 'observation-rpc', 'read-only'], table).toContain(ownerWrite)
       // A table in the matrix that cannot be addressed or forged would skip
       // itself at runtime rather than fail; both throw instead.
       expect(Object.keys(rowSelector(table, 'b', 'user-b')), table).toHaveLength(
@@ -101,6 +102,16 @@ describe('the standing matrix is derived from the register (ENV-07)', () => {
       )
       expect(forgedRow(table, 'b', 'user-b'), table).toBeTruthy()
     }
+  })
+
+  it('keeps the observation write boundary and immutable receipts in the full cross-user matrix', () => {
+    expect(standingMatrix().filter(({ ownerWrite }) => ownerWrite !== 'direct')).toEqual([
+      { table: 'exercise_set_logs', ownerColumn: null, seeded: true, ownerWrite: 'observation-rpc' },
+      { table: 'set_observation_mutations', ownerColumn: 'user_id', seeded: true, ownerWrite: 'read-only' },
+    ])
+    expect(standingMatrix([{
+      table: 'diaries', standing: 'cross-user', seeded: true, why: 'ordinary owner-writable fixture',
+    }])).toEqual([{ table: 'diaries', ownerColumn: null, seeded: true, ownerWrite: 'direct' }])
   })
 
   it('refuses to address or forge a table nobody disposed of', () => {

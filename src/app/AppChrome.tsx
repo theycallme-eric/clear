@@ -95,7 +95,9 @@ export function AppChrome() {
     const scroller = document.querySelector('.clr-scroll-region__scroller')
     scroller?.scrollTo({ top: 0, left: 0 })
     const main = document.querySelector('main')
-    const target = main?.querySelector('h1') ?? main
+    // REQ-001: a screen with a fixed header carries its h1 in that header,
+    // the sibling just above main.
+    const target = main?.parentElement?.querySelector('h1') ?? main
     if (target instanceof HTMLElement) {
       if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1')
       target.focus()

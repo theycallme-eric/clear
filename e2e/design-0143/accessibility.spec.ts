@@ -197,7 +197,7 @@ test.use({ timezoneId: 'UTC' })
 
 // ── Probes ─────────────────────────────────────────────────────────────────
 
-const h1 = (page: Page) => page.locator('main h1')
+const h1 = (page: Page) => page.getByRole('heading', { level: 1 })
 
 /** Reached, by route and heading; a protected route that fell back to Welcome is a failure. */
 async function reached(page: Page, path: string | RegExp, heading?: string | RegExp) {
@@ -249,7 +249,7 @@ function layout(page: Page): Promise<Layout> {
       (element.getAttribute('aria-label') ?? element.textContent ?? '').trim().slice(0, 40)
 
     // The product outline: one h1, and no level skipped on the way down.
-    const headings = [...document.querySelectorAll('main :is(h1,h2,h3,h4,h5,h6)')].filter(visible)
+    const headings = [...document.querySelectorAll('h1, main :is(h2,h3,h4,h5,h6)')].filter(visible)
     const skippedLevels: string[] = []
     let previous = 0
     for (const heading of headings) {
@@ -314,7 +314,7 @@ function layout(page: Page): Promise<Layout> {
     }).map(name)
 
     // Visible text that is cut off on its own line, rather than wrapped or ellipsised by design.
-    const clippedText = [...document.querySelectorAll<HTMLElement>('main :is(h1,h2,h3,p,label,button,input,textarea)')]
+    const clippedText = [...document.querySelectorAll<HTMLElement>('h1, main :is(h2,h3,p,label,button,input,textarea)')]
       .filter(visible).filter((element) => {
         const style = getComputedStyle(element)
         if (style.textOverflow === 'ellipsis' || element.matches('input, textarea')) {
@@ -325,7 +325,7 @@ function layout(page: Page): Promise<Layout> {
 
     const root = document.scrollingElement ?? document.documentElement
     return {
-      h1s: document.querySelectorAll('main h1').length,
+      h1s: document.querySelectorAll('h1').length,
       skippedLevels,
       // The public Card's heading slot is a span: a block heading must never sit inside one.
       headingsInSpans: [...document.querySelectorAll('main .clr-card__body span.label :is(h1,h2,h3,h4,h5,h6)')].map(name),
@@ -525,7 +525,7 @@ async function expectResolvedImmediately(page: Page, where: string) {
   // edge cues are hidden whenever there is nothing further, and a native
   // checkbox or radio is always hidden behind the package's drawn mark.
   const blanked = await page.evaluate(() => [...document.querySelectorAll(
-    'main h1, main h2, main p, main button, main input, main a')]
+    'h1, main h2, main p, main button, main input, main a')]
     .filter((element) => !element.matches('.clr-rail__cue, input[type="checkbox"], input[type="radio"]'))
     .filter((element) => {
       const style = getComputedStyle(element)
@@ -1448,21 +1448,33 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   await reached(page, '/review', TITLE)
   await startWorkout(page)
   await settled(page)
-  const trigger = page.locator('header').getByRole('button', { name: 'Abandon', exact: true })
+  // REQ-019: Abandon is an item in the header's framed menu; the menu button is
+  // where focus returns once the question is dismissed.
+  const trigger = page.locator('header').getByRole('button', { name: 'Actions', exact: true })
+  const item = page.locator('header').getByRole('button', { name: 'Abandon', exact: true })
   const dialog = page.getByRole('dialog', { name: 'Abandon workout?' })
-  await page.locator('dialog.clr-dialog').evaluateAll((elements) => elements.forEach((element) => {
+  // Keep the native node identified after it closes and leaves the accessibility
+  // tree; another mounted hidden dialog is not this question's close counter.
+  const trackedQuestion = page.locator('dialog.clr-dialog').filter({
+    has: page.locator('h2').filter({ hasText: /^Abandon workout\?$/ }),
+  })
+  await expect(trackedQuestion).toHaveCount(1)
+  await trackedQuestion.evaluate((element) => {
     (element as HTMLElement).dataset.closes = '0'
     element.addEventListener('close', () => {
       const host = element as HTMLElement
       host.dataset.closes = String(Number(host.dataset.closes) + 1)
     })
-  }))
+  })
 
   // By keyboard, from the trigger. A press that lands while the route is still
   // committing a prior state is pressed again rather than waited out.
   const open = async () => {
     await expect(async () => {
-      if (!(await dialog.isVisible())) await trigger.press('Enter')
+      if (!(await dialog.isVisible())) {
+        if (!(await item.isVisible())) await trigger.press('Enter')
+        await item.press('Enter')
+      }
       await expect(dialog).toBeVisible({ timeout: 1_000 })
     }).toPass({ timeout: 10_000 })
   }
@@ -1477,7 +1489,7 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
     focused: (document.activeElement?.textContent ?? '').trim(),
     // Inert background: a point on the screen lands on the dialog, not the page.
     hit: (() => {
-      const heading = document.querySelector('main h1')!.getBoundingClientRect()
+      const heading = document.querySelector('h1')!.getBoundingClientRect()
       const at = document.elementFromPoint(heading.left + 2, heading.top + 2)
       return at === null ? 'none' : element.contains(at) || at === element ? 'dialog' : 'page'
     })(),
@@ -1518,7 +1530,7 @@ backendTest('dialog: native safety, phosphor and four-step backdrop, one callbac
   await expect(page.locator('dialog.clr-dialog--closing')).toHaveCount(1)
   await expect(page.locator('dialog.clr-dialog--closing')).toHaveCount(0)
   await expect(dialog).toBeHidden()
-  const closes = () => page.locator('dialog.clr-dialog').first().getAttribute('data-closes')
+  const closes = () => trackedQuestion.getAttribute('data-closes')
   await expect.poll(closes).toBe('1')
   await expect(trigger).toBeFocused()
   await expect(page).toHaveURL((url) => url.pathname === '/workout')

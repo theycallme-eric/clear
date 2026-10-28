@@ -53,7 +53,7 @@ const SESSION_KEY = 'clear.auth.session'
 const TITLE = 'TASK-036 lifecycle spectrum'
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
 const heading = (page: Page, name: string) =>
-  expect(page.locator('main h1')).toHaveAccessibleName(name, { timeout: 30_000 })
+  expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(name, { timeout: 30_000 })
 
 function deferred() {
   let release!: () => void
@@ -922,7 +922,7 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
     // The primary action is pinned below the scroller, not inside it.
     expect(await start.evaluate((el) => el.closest('.clr-scroll-region__foot') !== null &&
       el.closest('.clr-scroll-region__scroller') === null)).toBe(true)
-    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start and Regenerate pinned in the footer.', probe)
+    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', probe)
   }, { skins: true, short: start })
 
   // The quiet action: public TextAction, chevron, 40px, button semantics, keyboard focus.
@@ -1274,6 +1274,7 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
   }, { variant: 'ladder-selected', short: finish })
   evidence.note('containment', 'Finish workout stays inside the 390x320 short viewport on the last section (TASK-040\'s recorded overflow condition, now executed).')
 
+  await page.getByRole('button', { name: 'Actions', exact: true }).click()
   await page.getByRole('button', { name: 'Abandon', exact: true }).click()
   await evidence.shot(...key('abandon-confirmation'), at, 'Workout', async () => {
     await expect(page.getByRole('dialog', { name: 'Abandon workout?' })).toBeVisible()
@@ -1395,6 +1396,7 @@ backendTest('recovery: active read, set-sync failure and retry, re-entry, abando
 
   const abandon = await boundary(page, { tail: 'rpc/abandon_session', method: 'POST' }, 'failure')
   try {
+    await page.getByRole('button', { name: 'Actions', exact: true }).click()
     await page.getByRole('button', { name: 'Abandon', exact: true }).click()
     await page.getByRole('dialog', { name: 'Abandon workout?' }).getByRole('button', { name: 'Abandon', exact: true }).click()
     await evidence.shot('Workout', '/workout', 'abandon-error-retry', at, 'Workout', async () => {
@@ -1403,6 +1405,7 @@ backendTest('recovery: active read, set-sync failure and retry, re-entry, abando
     })
   } finally { await abandon.dispose() }
   await page.getByRole('dialog', { name: 'That didn’t save' }).getByRole('button', { name: 'Close', exact: true }).click()
+  await page.getByRole('button', { name: 'Actions', exact: true }).click()
   await page.getByRole('button', { name: 'Abandon', exact: true }).click()
   await page.getByRole('dialog', { name: 'Abandon workout?' }).getByRole('button', { name: 'Abandon', exact: true }).click()
   await evidence.shot('Workout', '/workout', 'abandon-home', '/', 'Today', async () => {

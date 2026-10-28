@@ -27,7 +27,7 @@
  * own, a coaching wait beside it yields the view's one loop, and reduced motion
  * keeps every word, digit and colour.
  */
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -123,6 +123,23 @@ function mountWorkout(options: WorkoutDoubleOptions = {}): Mounted {
 }
 
 /** The shell, once the session has hydrated. */
+/**
+ * A movement's set entry, in the shell's one half-sheet: opened from that
+ * movement's Log set unless it is already the sheet on screen.
+ */
+function logForm(name: string, setNumber: number) {
+  if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
+    const log = screen
+      .getAllByRole('heading', { name: new RegExp(`${name}$`) })
+      .map((heading) => heading.closest('section'))
+      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Log set' })))
+      .find((button) => button !== null)
+    if (log === null || log === undefined) throw new Error(`no Log set for ${name}`)
+    fireEvent.click(log)
+  }
+  return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
+}
+
 async function shell(options: WorkoutDoubleOptions = {}): Promise<Mounted> {
   const mounted = mountWorkout(options)
   await screen.findByRole('heading', { level: 1, name: 'Workout' })
@@ -340,7 +357,8 @@ describe('Workout — navigation and progress', () => {
     await shell()
 
     const navigation = screen.getByRole('navigation', { name: 'Workout sections' })
-    expect(navigation).toHaveClass('clr-actions')
+    // REQ-018: a paired row that does not stack, not the shipped action row.
+    expect(navigation).toHaveClass('clr-workout-nav')
     expect(navigation.closest('.clr-scroll-region__foot')).toBeInTheDocument()
   })
 
@@ -381,15 +399,19 @@ describe('Workout — the active section header', () => {
 
   const jumpToggle = () => screen.getByRole('button', { name: 'All sections' })
 
-  it('consolidates status, section count, progress and structure identity into one header', async () => {
+  it('consolidates status, section count and structure identity into one header, with progress above the footer navigation', async () => {
     await shell()
 
     const header = within(activeHeader('Primary lift'))
     expect(header.getByText('Section 2 / 3 · In progress')).toBeInTheDocument()
-    expect(header.getByRole('progressbar', { name: 'Section 2 of 3' })).toHaveAttribute(
-      'aria-valuenow',
-      '1',
-    )
+    // REQ-018: the bar sits immediately above the paired footer actions.
+    expect(header.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(
+      within(screen.getByRole('navigation', { name: 'Workout sections' })).getByRole(
+        'progressbar',
+        { name: 'Section 2 of 3' },
+      ),
+    ).toHaveAttribute('aria-valuenow', '1')
     expect(
       within(header.getByRole('list', { name: 'Structures in this section' })).getByText(
         'EMOM · 10 MIN',
@@ -491,7 +513,7 @@ describe('Workout — the active section header', () => {
 
     const header = within(activeHeader('Conditioning'))
     expect(header.getByText('Section 3 / 3 · Not started')).toBeInTheDocument()
-    expect(header.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
+    expect(screen.getByRole('progressbar', { name: 'Section 3 of 3' })).toHaveAttribute(
       'aria-valuenow',
       '1',
     )
@@ -554,10 +576,11 @@ describe('Workout — the focus mode', () => {
     expect(router.state.location.pathname).toBe('/workout')
   })
 
-  it('abandons through the header control, and lands where the session is resumable', async () => {
+  it('abandons through the header menu, and lands where the session is resumable', async () => {
     const user = userEvent.setup()
     const { double, router } = await shell()
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
@@ -577,6 +600,7 @@ describe('Workout — the focus mode', () => {
       sessions: { abandon: async () => err(createError(ErrorCode.NETWORK_OFFLINE)) },
     })
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))
 
@@ -756,7 +780,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(log).toHaveBeenCalled())
@@ -783,7 +808,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     const forward = screen.getByRole('button', { name: 'Next section' })
@@ -814,7 +840,8 @@ describe('Workout — one forward action saves, then continues', () => {
       ]),
       setLogs: { log },
     })
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await user.click(screen.getByRole('button', { name: 'Next section' }))
@@ -1263,7 +1290,8 @@ describe('Workout — coaching and notes', () => {
     // The failure is the panel's: the shell raised no dialog over the set form.
     expect(screen.queryByRole('dialog')).toBeNull()
 
-    const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    const form = logForm('back squat', 1)
+    await user.clear(form.getByLabelText(/^Reps/))
     await user.type(form.getByLabelText(/^Reps/), '8')
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
 
@@ -1372,10 +1400,21 @@ describe('Workout — the session’s one rest', () => {
 
   async function logSet(name: string, setNumber: number) {
     const user = userEvent.setup()
-    const form = within(
-      screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }),
-    )
+    const form = logForm(name, setNumber)
     await user.click(form.getByRole('button', { name: `Log set ${setNumber}` }))
+  }
+
+  /** The superset's one Log round, with both movements ticked as performed (REQ-016). */
+  async function logRound(round: number) {
+    const user = userEvent.setup()
+    if (screen.queryByRole('form', { name: /^Log round \d+ of / }) === null) {
+      await user.click(screen.getByRole('button', { name: 'Log round' }))
+    }
+    const form = within(screen.getByRole('form', { name: `Log round ${round} of bench press and barbell row` }))
+    for (const performed of form.getAllByRole('checkbox', { name: 'Performed' })) {
+      await user.click(performed)
+    }
+    await user.click(form.getByRole('button', { name: `Log round ${round}` }))
   }
 
   function restBars(): HTMLElement[] {
@@ -1430,13 +1469,11 @@ describe('Workout — the session’s one rest', () => {
   it('rests a superset once, after the pair, for the block’s own number', async () => {
     await restShell()
 
-    await logSet('bench press', 1)
-    // A1 → A2 has no rest by definition, whatever A1's own column says.
-    expect(restBars()).toEqual([])
-
-    await logSet('barbell row', 1)
+    // A1 → A2 has no rest by definition, whatever A1's own column says: the
+    // pair is logged as one round, and the round earns the block's rest.
+    await logRound(1)
     expect(restBars()).toHaveLength(1)
-    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(screen.getByText('Rest after round 1')).toBeInTheDocument()
     expect(restTimer()).toHaveTextContent('01:00')
   })
 
@@ -1448,10 +1485,10 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     expect(restTimer()).toHaveTextContent('00:50')
 
-    await logSet('barbell row', 1)
+    await logRound(1)
 
     expect(restBars()).toHaveLength(1)
-    expect(screen.getByText('Rest after barbell row')).toBeInTheDocument()
+    expect(screen.getByText('Rest after round 1')).toBeInTheDocument()
     expect(screen.queryByText('Rest after back squat')).not.toBeInTheDocument()
     expect(restTimer()).toHaveTextContent('01:00')
 
@@ -1654,8 +1691,7 @@ describe('Workout — the session’s one rest', () => {
     advance(420)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
-    await logSet('bench press', 1)
-    await logSet('barbell row', 1)
+    await logRound(1)
     advance(52)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
@@ -1692,12 +1728,12 @@ describe('Workout — the session’s one rest', () => {
       ]),
     })
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
+    await user.click(screen.getByRole('button', { name: 'Start round 1' }))
     await user.click(screen.getByRole('button', { name: 'Finish round 1' }))
     advance(30)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Primary lift,/ }))
-    await logSet('bench press', 1)
-    await logSet('barbell row', 1)
+    await logRound(1)
     advance(52)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: /^Conditioning,/ }))
@@ -1803,6 +1839,7 @@ describe('Workout — the session’s one rest', () => {
     advance(85)
     returnToForeground()
 
+    await user.click(screen.getByRole('button', { name: 'Actions' }))
     await user.click(screen.getByRole('button', { name: 'Abandon' }))
     await waitFor(() => expect(isDialogOpen(ABANDON_CONFIRM)).toBe(true))
     await user.click(within(dialogTitled(ABANDON_CONFIRM)).getByRole('button', { name: 'Abandon' }))

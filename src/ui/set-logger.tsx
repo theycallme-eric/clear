@@ -15,9 +15,18 @@
  * fills in is reps, seconds or a distance in its own unit. No string is parsed
  * anywhere in this file, because there is no string to parse.
  *
+ * The card's hierarchy is fixed (REQ-008): the movement heading with its
+ * subordinate `Set X/Y` counter, the prescription and equipment, the compact
+ * saved results with their Edit controls, the explicit Log set action, then the
+ * coaching disclosure. The fields are not on the card at all: Log set opens
+ * the shared half-sheet (`set-logging-sheet.tsx`, REQ-009), and the draft it
+ * edits lives here, so collapsing the sheet loses nothing. The draft includes
+ * the set's optional effort (`set-effort.tsx`, REQ-011), which starts every
+ * new set unanswered and is recorded only by Log set.
+ *
  * It is drawn with the shared block frame's parts (`block-renderers-frame.tsx`)
- * — a movement, its notes and a field row — and with no frame of its own: the
- * block it sits in is the card, so composing it can never nest one.
+ * and with no frame of its own: the block it sits in is the card, so composing
+ * it can never nest one.
  *
  * Two smaller rules the spec is explicit about, both visible here:
  *   · rest is never rendered as `Rest: 0s` — no rest is no line
@@ -29,28 +38,33 @@
  * the durable queue is drawn — the user performed it — but never as though the
  * database had it, and the difference is a word and a glyph before it is a hue.
  */
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import type { Enums } from '../data/database.types'
 
 import {
   AlertTriangle,
   Button,
+  Checkbox,
   CircleCheck,
   Input,
+  Pencil,
   RefreshCw,
 } from '../design-system/index'
 import {
   exerciseName,
   modalityLabel,
+  type PrescribedColumns,
   type PrescribedModality,
   prescribedSetCount,
   prescriptionText,
   restText,
   targetForSet,
-  targetText,
 } from '../state/prescription'
+import { incrementFor } from '../state/progression'
+import { movementCountdownSeconds } from '../state/movement-countdown'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
+import { equipmentName } from '../state/review'
 import {
   prefillFrom,
   useSetLogging,
@@ -60,10 +74,17 @@ import {
   type SetSyncStatus,
 } from '../state/set-logging'
 import type { ExerciseProgress } from '../state/workout-progress'
+import { AppDialog } from './app-dialog'
 import { BlockPanel } from './block-renderers-frame'
+import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
-import { useInvalidFocus } from './formFocus'
+import { MovementCountdown } from './movement-countdown'
 import { Select } from './select'
+import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
+import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
+import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
+
+type WeightUnit = Enums<'weight_unit'>
 
 export interface ExerciseSetLoggerProps {
   exercise: ExerciseProgress
@@ -81,6 +102,8 @@ export interface ExerciseSetLoggerProps {
    * untouched either way; this decides only who says it.
    */
   statesRest?: boolean
+  /** False when the containing movement already owns a stable countdown. */
+  showCountdown?: boolean
   /**
    * The rest a logged set of this movement is followed by (EXE-05), in
    * seconds. Omitted, it is the rest the movement states — its own
@@ -90,27 +113,104 @@ export interface ExerciseSetLoggerProps {
    * nothing to the one before it.
    */
   restSeconds?: number | null
+  /**
+   * Who logs this movement's next set. `'self'` is its own Log set; `'round'`
+   * is a superset's one Log round (REQ-016), which then also names the set
+   * number the round is entering, so the card's `Set X/Y` and the round agree.
+   * Saved rows keep their own Edit either way.
+   */
+  logging?: 'self' | { readonly round: number }
+  /** The grouped logger's available fallback after its edited row is removed. */
+  onReturnToRound?: () => void
+  /**
+   * Insertion interface for correcting a saved set (TASK-011 supplies it).
+   * Given, each saved row carries an Edit control that opens the same sheet in
+   * edit mode, and Save correction hands the corrected set here. Omitted, no
+   * Edit control is drawn: a control that saved nothing would be a lie.
+   */
+  onCorrectSet?: (exerciseId: string, corrected: PerformedSet) => void
+  /**
+   * Opens the new-set sheet as the logger mounts. A circuit row is opened for
+   * logging by one deliberate tap, and that tap is the sheet's (REQ-017).
+   */
+  openSheetOnMount?: boolean
 }
 
 export function ExerciseSetLogger({
   exercise,
   ordinal,
   statesRest = true,
+  showCountdown = true,
   restSeconds,
+  logging = 'self',
+  onReturnToRound,
+  onCorrectSet,
+  openSheetOnMount = false,
 }: ExerciseSetLoggerProps) {
-  const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
+  const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
+  const correctable = onCorrectSet !== undefined || correctSet !== undefined
   const restTimer = useRestTimer()
+  const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
+  const logButton = useRef<HTMLButtonElement>(null)
+  const editButton = useRef<HTMLButtonElement>(null)
+  const returnAfterClear = useRef(false)
+
+  // On mount only (the setter is stable): a later collapse is the athlete's
+  // and is kept. Not one-shot, so a strict remount — whose cleanup closes the
+  // sheet — opens it again.
+  const openOnMount = useRef(openSheetOnMount)
+  const openSheet = sheet.setOpen
+  useEffect(() => {
+    if (openOnMount.current) openSheet(true)
+  }, [openSheet])
 
   const prescription = exercise.prescription
   const logged = loggedSets(exercise.exerciseId)
   const prescribed = prescribedSetCount(prescription)
-  const setNumber = nextSetNumber(logged)
-  const target = targetForSet(prescription, setNumber)
+  const logsSelf = logging === 'self'
+  const setNumber = logging === 'self' ? nextSetNumber(logged) : logging.round
   const rest = statesRest ? restText(prescription.rest_seconds) : null
   const name = exerciseName(prescription.exercise_id)
+  const title = ordinal === undefined ? name : `${ordinal} ${name}`
+  const equipment = equipmentName(prescription.equipment_used)
+  const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restAfterSet = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
+  // A partner's partial round does not log this movement or rearm its clock.
+  // Keep prescription indexing by the owning movement's recorded set number,
+  // including intentional round gaps, rather than by the pair's next round.
+  const countdownSetNumber = logsSelf
+    ? setNumber
+    : logged.reduce((highest, set) => Math.max(highest, set.setNumber), 0) + 1
+  const countdownSeconds = showCountdown
+    ? movementCountdownSeconds(prescription, countdownSetNumber)
+    : null
+
+  // The entry being made. It outlives the sheet, so a collapse and a reopen
+  // hand back exactly what was typed; it starts over only when the shell's set
+  // list moves the set number on.
+  const prefill = prefillFrom(logged)
+  const fresh = newDraft(setNumber, prefill, prescription)
+  const [draft, setDraft] = useState<SetDraft>(fresh)
+  const entry = draft.key === fresh.key ? draft : fresh
+
+  // A correction in progress, when the caller can save one. It names the row
+  // it was opened on by id, so it can only ever save over that observation.
+  const [correction, setCorrection] = useState<SetDraft | null>(null)
+  const correctedSet =
+    correction === null || !correctable
+      ? undefined
+      : logged.find((set) => editKey(set) === correction.key)
+  // The wrong-movement recovery, armed: the set a confirmed clear removes.
+  const [clearing, setClearing] = useState<LoggedSet | null>(null)
+  const edit =
+    correction === null || correctedSet === undefined
+      ? null
+      : { set: correctedSet, draft: correction }
+  const mode = edit === null ? 'new' : 'edit'
+  const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
+  const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
   /**
    * The set, then the rest it earns. The rest starts only for a set the shell
@@ -124,31 +224,165 @@ export function ExerciseSetLogger({
     restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restAfterSet })
   }
 
+  const openNew = () => {
+    setCorrection(null)
+    sheet.setOpen(true)
+  }
+
+  const returnFocus = (rowRemoved = false) => {
+    if (logsSelf) logButton.current?.focus()
+    else if (!rowRemoved && editButton.current?.isConnected) editButton.current.focus()
+    else onReturnToRound?.()
+  }
+
+  const collapse = () => {
+    sheet.setOpen(false)
+    returnFocus()
+  }
+
   return (
     <BlockPanel.Movement
-      title={ordinal === undefined ? name : `${ordinal} ${name}`}
+      title={title}
+      counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
       detail={prescriptionText(prescription)}
+      context={`Equipment · ${equipment}`}
     >
-      {prescription.tempo === null ? null : (
-        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
-      )}
+      {/*
+        Tempo stays in the prescription's structured columns; it is not
+        printed here (REQ-009). No rest is no line.
+      */}
       {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
 
-      <LoggedSetList sets={logged} />
+      {/*
+        REQ-014: a timed set counts down here, on the movement, whatever the
+        sheet is doing. Keyed to the set it times, so the next set starts from
+        its own prescribed seconds; running out records nothing.
+      */}
+      {countdownSeconds === null ? null : (
+        <MovementCountdown
+          key={`${countdownSetNumber}:${countdownSeconds}`}
+          seconds={countdownSeconds}
+          movement={name}
+        />
+      )}
 
-      <SetEntryForm
-        key={setNumber}
-        setNumber={setNumber}
-        prescribed={prescribed}
-        targetLabel={target === null ? null : targetText(prescription, target)}
-        measureLabel={modalityLabel(prescription)}
-        weightUnit={weightUnit}
-        prefill={prefillFrom(logged)}
-        modality={prescription.modality}
-        exerciseName={name}
-        saving={isSaving(exercise.exerciseId)}
-        onLog={log}
+      <LoggedSetList
+        sets={logged}
+        onEdit={
+          !correctable
+            ? undefined
+            : (set, trigger) => {
+              editButton.current = trigger
+              // Reopening the row a minimised correction was opened on hands
+              // that correction back; any other row starts from its result.
+              setCorrection((current) =>
+                current !== null && current.key === editKey(set)
+                  ? current
+                  : editDraft(set, prescription.modality),
+              )
+              sheet.setOpen(true)
+            }
+        }
       />
+
+      {/* A superset's movements are entered together, by the block's Log round. */}
+      {logsSelf ? (
+        <ActionGroup>
+          <Button
+            buttonRef={logButton}
+            variant="secondary"
+            aria-expanded={sheet.open}
+            onClick={openNew}
+          >
+            Log set
+          </Button>
+        </ActionGroup>
+      ) : null}
+
+      {(logsSelf || edit !== null) && sheet.place(
+        <SetSheetForm
+          key={mode}
+          mode={mode}
+          setNumber={sheetSetNumber}
+          exerciseName={name}
+          context={[title, prescriptionText(prescription), equipment].join(' · ')}
+          draft={edit === null ? entry : edit.draft}
+          onDraft={edit === null ? setDraft : setCorrection}
+          referenceUnit={
+            edit !== null
+              ? edit.set.weightUnit
+              : prefill !== null && prefill.weight !== null ? prefill.weightUnit : undefined
+          }
+          weightUnit={weightUnit}
+          measureLabel={modalityLabel(edit === null ? prescription : {
+            ...prescription,
+            modality: sheetModality,
+            distance_unit: edit.set.distanceUnit,
+          })}
+          modality={sheetModality}
+          showLoad={
+            !unloaded || (edit === null ? (prefill?.weight ?? null) : edit.set.weight) !== null
+          }
+          saving={edit === null && isSaving(exercise.exerciseId)}
+          onSubmit={(performed) => {
+            if (edit !== null) {
+              const corrected = { ...unshownMeasurements(edit.set, sheetModality), ...performed }
+              if (onCorrectSet !== undefined) onCorrectSet(exercise.exerciseId, corrected)
+              else correctSet?.(exercise.exerciseId, edit.set.id, corrected)
+              setCorrection(null)
+              if (!logsSelf) collapse()
+              return
+            }
+            log(performed)
+          }}
+          onCancel={() => {
+            setCorrection(null)
+            // With no new-set entry of its own, a finished correction closes.
+            if (!logsSelf) collapse()
+          }}
+          onClear={edit === null || clearSet === undefined ? undefined : () => setClearing(edit.set)}
+          onCollapse={() => collapse()}
+        />,
+      )}
+
+      {/*
+        REQ-013: a set logged against the wrong movement is cleared here, after
+        confirmation, and logged again on the right one with its own Log set.
+        Nothing is moved: the result is removed, and only this one.
+      */}
+      <AppDialog
+        open={clearing !== null}
+        critical
+        title={clearing === null ? undefined : `Clear set ${clearing.setNumber} of ${name}?`}
+        onClose={() => setClearing(null)}
+        onAfterClose={() => {
+          if (!returnAfterClear.current) return
+          returnAfterClear.current = false
+          // Background controls remain inert until the native dialog closes.
+          returnFocus(true)
+        }}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setClearing(null)}>
+              Keep set
+            </Button>
+            <Button
+              variant="critical"
+              onClick={() => {
+                if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
+                returnAfterClear.current = true
+                setClearing(null)
+                setCorrection(null)
+                sheet.setOpen(false)
+              }}
+            >
+              Clear set
+            </Button>
+          </>
+        }
+      >
+        {clearing === null ? null : <p style={{ margin: 0, fontFamily: 'var(--font-data)' }}>{loggedSetText(clearing)}</p>}
+      </AppDialog>
 
       {/*
         No swap control here (U37): a movement is swapped in Review, before the
@@ -177,14 +411,18 @@ function nextSetNumber(logged: readonly LoggedSet[]): number {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * The sets behind the user. The empty case says so rather than rendering
- * nothing: "no sets logged" and "this movement has no set list" look identical
- * on a blank card, and only one of them is true.
+ * The sets behind the user, compact, each with its Edit control where a
+ * correction can be saved. An untouched movement draws no list and no
+ * placeholder sentence: its counter already says `Set 1/3`.
  */
-function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
-  if (sets.length === 0) {
-    return <BlockPanel.Note>No sets logged yet.</BlockPanel.Note>
-  }
+function LoggedSetList({
+  sets,
+  onEdit,
+}: {
+  sets: readonly LoggedSet[]
+  onEdit?: (set: LoggedSet, trigger: HTMLButtonElement) => void
+}) {
+  if (sets.length === 0) return null
 
   return (
     <ol
@@ -195,16 +433,30 @@ function LoggedSetList({ sets }: { sets: readonly LoggedSet[] }) {
         .sort((left, right) => left.setNumber - right.setNumber)
         .map((set) => (
           <li
-            key={set.setNumber}
+            key={set.id}
             style={{
               fontFamily: 'var(--font-data)',
               display: 'flex',
               alignItems: 'center',
+              flexWrap: 'wrap',
               gap: 'var(--spacing-100)',
             }}
           >
             <span>{loggedSetText(set)}</span>
+            <SetEffortReading value={set.effort} />
             <SyncBadge status={set.status} />
+            {onEdit === undefined ? null : (
+              <Button
+                variant="quiet"
+                size="sm"
+                icon={<Pencil size={16} />}
+                aria-label={`Edit set ${set.setNumber}`}
+                onClick={(event) => onEdit(set, event.currentTarget)}
+                style={{ marginInlineStart: 'auto' }}
+              >
+                Edit
+              </Button>
+            )}
           </li>
         ))}
     </ol>
@@ -265,147 +517,332 @@ export function loggedSetText(set: LoggedSet): string {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Logging the next set
+// The entry
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface SetEntryFormProps {
+/**
+ * What the fields hold, as typed. `key` names the set the entry is for —
+ * `new:2` or `edit:1` — so an entry for a set already logged is never reused.
+ */
+interface SetDraft {
+  readonly key: string
+  /** Edit retains the measurement being changed even if its prescription differs. */
+  readonly modality: PrescribedModality
+  readonly weight: string
+  readonly measure: string
+  /** A unit the athlete chose or committed to by typing; never converted. */
+  readonly chosenUnit?: WeightUnit
+  /** This set's own effort answer; `null` is unanswered, never a middle choice. */
+  readonly effort: SetEffort | null
+}
+
+/**
+ * The next set's starting entry. The weight is the last set actually
+ * performed — the next set is usually the same weight, and retyping it is the
+ * friction this screen exists to remove. The measure is the prescription's
+ * reps or seconds for this set, as an editable suggestion; with no prescribed
+ * number it is the last set performed. Neither is an observation until the
+ * athlete presses Log set.
+ */
+function newDraft(
+  setNumber: number,
+  prefill: SetPrefill | null,
+  prescription: PrescribedColumns,
+): SetDraft {
+  return {
+    key: `new:${setNumber}`,
+    modality: prescription.modality,
+    weight: numberField(prefill?.weight),
+    measure: numberField(
+      suggestedMeasure(prescription, setNumber) ?? measurePrefill(prefill, prescription.modality),
+    ),
+    // Each set is asked afresh: the last set's answer is not this one's.
+    effort: null,
+  }
+}
+
+/** A correction's key: the row it was opened on, never just its set number. */
+function editKey(set: LoggedSet): string {
+  return `edit:${set.id}`
+}
+
+/** A saved set, back in the fields, in the unit and values it was saved with. */
+function editDraft(set: LoggedSet, prescribedModality: PrescribedModality): SetDraft {
+  const modality = observedModality(set, prescribedModality)
+  return {
+    key: editKey(set),
+    modality,
+    weight: numberField(set.weight),
+    measure: numberField(measurePrefill(set, modality)),
+    chosenUnit: set.weightUnit,
+    effort: set.effort,
+  }
+}
+
+/** A correction opens an actual measurement, never an unrelated prescribed value. */
+function observedModality(set: LoggedSet, prescribed: PrescribedModality): PrescribedModality {
+  if (measurePrefill(set, prescribed) !== null) return prescribed
+  if (set.reps !== null) return 'reps'
+  if (set.durationSeconds !== null) return 'time'
+  if (set.distance !== null) return 'distance'
+  return prescribed
+}
+
+/** The compact field changes one measurement; other recorded values stay intact. */
+function unshownMeasurements(set: LoggedSet, shown: PrescribedModality): Partial<PerformedSet> {
+  return {
+    ...(shown !== 'reps' && set.reps !== null ? { reps: set.reps } : {}),
+    ...(shown !== 'time' && set.durationSeconds !== null ? { durationSeconds: set.durationSeconds } : {}),
+    ...(shown !== 'distance' && set.distance !== null ? { distance: set.distance } : {}),
+  }
+}
+
+/**
+ * The prescribed number for this set, where the prescription states reps or
+ * seconds: a fixed target or this set's ladder rung, and the bottom of a range
+ * — the least the prescription asks for, never more than it asked.
+ */
+function suggestedMeasure(prescription: PrescribedColumns, setNumber: number): number | null {
+  if (prescription.modality === 'distance') return null
+  const target = targetForSet(prescription, setNumber)
+  if (target === null) return null
+
+  switch (target.kind) {
+    case 'fixed':
+      return target.value
+    case 'range':
+      return target.min
+    case 'sequence':
+      return null
+  }
+}
+
+interface SetSheetFormProps {
+  mode: 'new' | 'edit'
   setNumber: number
-  prescribed: number
-  /** `8 reps`, `8–10 reps`, `400 m` — null when the row carries no target. */
-  targetLabel: string | null
-  measureLabel: string
-  weightUnit: Enums<'weight_unit'> | null
-  prefill: SetPrefill | null
-  modality: PrescribedModality
   exerciseName: string
+  context: string
+  draft: SetDraft
+  onDraft: (draft: SetDraft) => void
+  /** The observed number's own unit, where the entry started from one. */
+  referenceUnit: WeightUnit | undefined
+  weightUnit: WeightUnit | null
+  measureLabel: string
+  modality: PrescribedModality
+  /** False for an unloaded movement with no load to carry forward. */
+  showLoad: boolean
   saving: boolean
-  onLog: (performed: PerformedSet) => void
+  onSubmit: (performed: PerformedSet) => void
+  onCancel: () => void
+  /** Edit mode, where the shell can clear a saved set: arms the confirmation. */
+  onClear?: () => void
+  onCollapse: () => void
 }
 
 /**
  * The set the user is in, and the two things they can say about it — the
  * weight and the measure. Both are optional: a set logged with neither is a
  * set performed and not measured, and nothing here blocks the workout on it.
- * There is no effort field and no warmup checkbox (REQ-015, U36); restoring
- * either is described in `docs/specs/generation/OPTIONAL_FEEDBACK_RESTORATION.md`.
  *
- * Prefilled from the last set actually performed, which is the requirement's
- * "previous weight/reps when history exists": on a resumed session that is the
- * set before this one, and within a session it is the set they just did. The
- * fields stay filled afterwards, because the next set is usually the same
- * weight and retyping it is the friction this screen exists to remove. The
- * prescription's target is never a prefill — it is printed as the target, and
- * an observed rep count is only ever one the user typed.
+ * Weight, Unit and the measure sit on one row. Changing the unit relabels the
+ * number and never converts it; an unloaded movement omits both load fields.
+ * A write that the shell refuses leaves every field exactly as typed, because
+ * the entry is only replaced once the shell's list moves the set number on.
  */
-function SetEntryForm({
+function SetSheetForm({
+  mode,
   setNumber,
-  prescribed,
-  targetLabel,
-  measureLabel,
-  weightUnit,
-  prefill,
-  modality,
   exerciseName: name,
+  context,
+  draft,
+  onDraft,
+  referenceUnit,
+  weightUnit,
+  measureLabel,
+  modality,
+  showLoad,
   saving,
-  onLog,
-}: SetEntryFormProps) {
-  const [weight, setWeight] = useState(() => numberField(prefill?.weight))
-  const [measure, setMeasure] = useState(() => numberField(measurePrefill(prefill, modality)))
-  const [chosenUnit, setChosenUnit] = useState<Enums<'weight_unit'> | undefined>()
-  // Zero is an observation too. A row with no observed weight supplies no
-  // reference unit; an untouched empty form can follow the profile as it loads.
-  const referenceUnit = prefill !== null && prefill.weight !== null
-    ? prefill.weightUnit
-    : undefined
-  const selectedUnit = chosenUnit ?? referenceUnit ?? weightUnit
-  const weightValue = parsed(weight)
-  const measureValue = parsed(measure)
+  onSubmit,
+  onCancel,
+  onClear,
+  onCollapse,
+}: SetSheetFormProps) {
+  const entry = readEntry({ mode, setNumber, draft, referenceUnit, weightUnit, modality, showLoad })
 
-  const weightInvalid = weightValue === 'invalid' || isNegative(weightValue)
-  const measureInvalid = measureValue === 'invalid' || isNegative(measureValue)
-  const blocked = weightInvalid || measureInvalid
-
-  // The shared submit helper (CORE-05): this form says only whether the set
-  // was accepted, and where the caret goes on a refusal is its decision.
-  const onSubmit = useInvalidFocus()
-
+  // The sheet submits through the shared helper (CORE-05): this says only
+  // whether the set was accepted, and the caret follows a refusal.
   const submit = (): boolean => {
-    if (blocked || saving) return false
-
-    onLog({
-      setNumber,
-      ...(selectedUnit !== null && selectedUnit !== weightUnit
-        ? { weightUnit: selectedUnit } : {}),
-      ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
-      ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
-    })
-
-    // Nothing is cleared here: once the row comes back the form remounts on
-    // the new set number, prefilled from the set just logged. A write that
-    // failed leaves every field exactly as the user typed it.
+    if (entry.performed === null || saving) return false
+    onSubmit(entry.performed)
     return true
   }
 
   return (
-    <form
-      onSubmit={onSubmit(submit)}
-      aria-label={`Log set ${setNumber} of ${name}`}
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
-    >
-      <BlockPanel.Note>
-        {setNumber > prescribed
-          ? `Extra set ${setNumber}`
-          : `Set ${setNumber} of ${prescribed}`}
-        {targetLabel === null ? '' : ` · Target ${targetLabel}`}
-      </BlockPanel.Note>
+    <SetLoggingSheet
+      mode={mode}
+      setNumber={setNumber}
+      formLabel={`${mode === 'edit' ? 'Edit' : 'Log'} set ${setNumber} of ${name}`}
+      context={context}
+      measures={
+        <SetMeasureFields
+          entry={entry}
+          draft={draft}
+          onDraft={onDraft}
+          measureLabel={measureLabel}
+          modality={modality}
+          showLoad={showLoad}
+        />
+      }
+      effort={
+        <SetEffortChoice
+          setNumber={setNumber}
+          value={draft.effort}
+          onChange={(effort) => onDraft({ ...draft, effort })}
+        />
+      }
+      saving={saving}
+      blocked={entry.performed === null}
+      onSubmit={submit}
+      onCancel={onCancel}
+      onClear={onClear}
+      onCollapse={onCollapse}
+    />
+  )
+}
 
-      <BlockPanel.FieldRow>
+/** What a draft says once read: the unit it is in, what is wrong, the set. */
+interface SetEntryReading {
+  readonly selectedUnit: WeightUnit | null
+  readonly weightInvalid: boolean
+  readonly measureInvalid: boolean
+  /** The set the fields describe, or `null` while a field must refuse it. */
+  readonly performed: PerformedSet | null
+}
+
+/**
+ * The fields, as a set. Both measurements are optional — an empty field is
+ * `null`, never zero — and an unreadable or negative one refuses the set
+ * rather than logging it as not recorded.
+ */
+function readEntry({
+  mode,
+  setNumber,
+  draft,
+  referenceUnit,
+  weightUnit,
+  modality,
+  showLoad,
+}: {
+  mode: 'new' | 'edit'
+  setNumber: number
+  draft: SetDraft
+  referenceUnit: WeightUnit | undefined
+  weightUnit: WeightUnit | null
+  modality: PrescribedModality
+  showLoad: boolean
+}): SetEntryReading {
+  // Zero is an observation too. A row with no observed weight supplies no
+  // reference unit; an untouched empty form can follow the profile as it loads.
+  const selectedUnit = draft.chosenUnit ?? referenceUnit ?? weightUnit
+  const weightValue = showLoad ? parsed(draft.weight) : null
+  const measureValue = parsed(draft.measure)
+
+  const weightInvalid = weightValue === 'invalid' || isNegative(weightValue)
+  const measureInvalid = measureValue === 'invalid' || isNegative(measureValue)
+
+  return {
+    selectedUnit,
+    weightInvalid,
+    measureInvalid,
+    performed: weightInvalid || measureInvalid ? null : {
+      setNumber,
+      ...(showLoad && selectedUnit !== null && (mode === 'edit' || selectedUnit !== weightUnit)
+        ? { weightUnit: selectedUnit } : {}),
+      ...(typeof measureValue === 'number' ? measureField(measureValue, modality) : {}),
+      ...(typeof weightValue === 'number' ? { weight: weightValue } : {}),
+      // A new set states an effort only when one was chosen. A correction
+      // states it either way, so a cleared answer is handed over as null.
+      ...(mode === 'edit' || draft.effort !== null ? { effort: draft.effort } : {}),
+    },
+  }
+}
+
+/**
+ * Weight, Unit and the measure, on one row. Changing the unit relabels the
+ * number and never converts it; an unloaded movement omits both load fields.
+ */
+function SetMeasureFields({
+  entry,
+  draft,
+  onDraft,
+  measureLabel,
+  modality,
+  showLoad,
+  validating = true,
+}: {
+  entry: SetEntryReading
+  draft: SetDraft
+  onDraft: (draft: SetDraft) => void
+  measureLabel: string
+  modality: PrescribedModality
+  showLoad: boolean
+  /** Excluded grouped drafts remain editable without constraining a partner's form. */
+  validating?: boolean
+}) {
+  const { selectedUnit, weightInvalid, measureInvalid } = entry
+
+  return (
+    <SetMeasurementRow>
+      {showLoad ? (
         <Input
-          label={selectedUnit === null ? 'Weight' : `Weight (${selectedUnit})`}
+          label="Weight"
           type="number"
           inputMode="decimal"
-          min={0}
+          // Native badInput validity survives removal of min. An excluded
+          // editable draft must not participate in its partner's form at all.
+          form={validating ? undefined : ''}
+          min={validating ? 0 : undefined}
           step="any"
-          value={weight}
+          value={draft.weight}
           onChange={(value) => {
             // Once the athlete types, a later profile refresh must not relabel
             // their number. Explicit Unit changes below never convert the text.
-            if (selectedUnit !== null) setChosenUnit(selectedUnit)
-            setWeight(value)
+            onDraft({
+              ...draft,
+              weight: value,
+              ...(selectedUnit !== null ? { chosenUnit: selectedUnit } : {}),
+            })
           }}
-          invalid={weightInvalid}
-          errorText={weightInvalid ? 'Enter a weight of zero or more' : undefined}
+          invalid={validating && weightInvalid}
+          errorText={validating && weightInvalid ? 'Enter a weight of zero or more' : undefined}
         />
-        <Input
-          label={measureLabel}
-          type="number"
-          inputMode="numeric"
-          min={0}
-          step="any"
-          value={measure}
-          onChange={setMeasure}
-          invalid={measureInvalid}
-          errorText={measureInvalid ? 'Enter zero or more' : undefined}
-        />
+      ) : null}
+      {showLoad ? (
         <Select
           label="Unit"
           value={selectedUnit ?? ''}
           onChange={(value) => {
-            if (value === 'kg' || value === 'lb') setChosenUnit(value)
+            if (value === 'kg' || value === 'lb') onDraft({ ...draft, chosenUnit: value })
           }}
-          helperText="Changing units keeps the number. Enter the weight in the selected unit."
         >
-          {selectedUnit === null ? <option value="" disabled>Choose unit</option> : null}
+          {selectedUnit === null ? <option value="" disabled>Choose</option> : null}
           <option value="kg">kg</option>
           <option value="lb">lb</option>
         </Select>
-      </BlockPanel.FieldRow>
-
-      <Button type="submit" variant="primary" size="lg" loading={saving} disabled={blocked}>
-        Log set {setNumber}
-      </Button>
-    </form>
+      ) : null}
+      <Input
+        label={measureLabel}
+        type="number"
+        inputMode={modality === 'distance' ? 'decimal' : 'numeric'}
+        form={validating ? undefined : ''}
+        min={validating ? 0 : undefined}
+        step="any"
+        value={draft.measure}
+        onChange={(value) => onDraft({ ...draft, measure: value })}
+        invalid={validating && measureInvalid}
+        errorText={validating && measureInvalid ? 'Enter zero or more' : undefined}
+      />
+    </SetMeasurementRow>
   )
 }
 
@@ -432,7 +869,7 @@ function isNegative(value: number | null | 'invalid'): boolean {
 
 /** The prefill for whichever measurement this prescription actually asks for. */
 function measurePrefill(
-  prefill: SetPrefill | null,
+  prefill: Pick<SetPrefill, 'reps' | 'durationSeconds' | 'distance'> | null,
   modality: PrescribedModality,
 ): number | null {
   if (prefill === null) return null
@@ -460,4 +897,243 @@ function measureField(
     case 'distance':
       return { distance: value }
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// A superset's round
+// ─────────────────────────────────────────────────────────────────────────────
+
+/*
+ * REQ-016 — a superset's one Log round: the movements' results, entered
+ * separately in one half-sheet and handed to the shell together. It lives
+ * here because this file is the presentation layer's one `logSet` caller.
+ *
+ * Each movement keeps its own fields, in its own unit and modality, and its
+ * own effort answer. Nothing typed for one is ever read for another, so a
+ * result cannot be copied between partners.
+ *
+ * What a round records is what the athlete identified, never what the round
+ * implies:
+ *
+ *   · a movement is logged when its **Performed** tick is set, and typing a
+ *     result or choosing an effort for it sets that tick — an explicitly
+ *     entered result saves without a second gesture;
+ *   · a ticked movement with blank fields is performed and not measured, and
+ *     its measurements are `null`, never a zero;
+ *   · an unticked movement is not logged at all. Blank fields, a prefilled
+ *     suggestion, its partner's result and the round's own advance are none
+ *     of them evidence that it was performed, so its set stays missing;
+ *   · nothing requires both movements. The action waits only for one movement
+ *     to log, and an unreadable field refuses the round where it is.
+ *
+ * Every movement in a round logs the same set number — the round's — so a
+ * partner that missed a round keeps a gap at that number rather than having
+ * its next result slide into it.
+ *
+ * The rest is the block's and is started once, by the round (EXE-05). The
+ * session clock is the shell's, and nothing here reads or restarts it.
+ */
+
+/**
+ * The round the pair is entering: one past the highest set any of its
+ * movements has recorded. A movement that missed a round keeps the gap.
+ */
+export function supersetRound(sets: readonly (readonly LoggedSet[])[]): number {
+  return sets.reduce(
+    (highest, logged) => logged.reduce((top, set) => Math.max(top, set.setNumber), highest),
+    0,
+  ) + 1
+}
+
+/** One movement's part of the round entry. */
+interface MovementEntry {
+  readonly draft: SetDraft
+  /** Set only by the athlete — the tick, a typed result or an effort answer. */
+  readonly performed: boolean
+  /** A deliberate tick permits an observation with no entered measurement or effort. */
+  readonly explicitlyPerformed: boolean
+  /** Suggestions are not entered results; track only the athlete's fields. */
+  readonly enteredWeight: boolean
+  readonly enteredMeasure: boolean
+}
+
+/**
+ * The round's entries, by `workout_exercises.id`, for the round they are for.
+ * The block holds it, not the sheet, so collapsing the sheet loses nothing.
+ */
+export interface RoundDraft {
+  readonly round: number
+  readonly entries: Readonly<Record<string, MovementEntry>>
+}
+
+export interface SupersetRoundSheetProps {
+  /** The movements, in prescribed order, each with its block ordinal. */
+  movements: readonly { readonly exercise: ExerciseProgress; readonly ordinal: string }[]
+  round: number
+  /** The block's rest, raised once per round logged. */
+  roundRestSeconds: number | null
+  /** The entry so far, or `null` before anything was entered. */
+  held: RoundDraft | null
+  onHeld: (draft: RoundDraft) => void
+  onCollapse: () => void
+}
+
+export function SupersetRoundSheet({
+  movements,
+  round,
+  roundRestSeconds,
+  held,
+  onHeld: setHeld,
+  onCollapse,
+}: SupersetRoundSheetProps) {
+  const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
+  const restTimer = useRestTimer()
+
+  const parts = movements.map(({ exercise, ordinal }) => {
+    const prescription = exercise.prescription
+    const prefill = prefillFrom(loggedSets(exercise.exerciseId))
+    const prefilledWeight = prefill !== null && prefill.weight !== null
+    const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
+    return {
+      exercise,
+      ordinal,
+      name: exerciseName(prescription.exercise_id),
+      fresh: newDraft(round, prefill, prescription),
+      referenceUnit: prefilledWeight ? prefill.weightUnit : undefined,
+      showLoad: !unloaded || prefilledWeight,
+    }
+  })
+
+  // Collapsing and reopening hands back exactly what was typed. The entry
+  // starts over only once the round itself moves on.
+  const draft = held !== null && held.round === round ? held : { round, entries: {} }
+
+  const update = (exerciseId: string, entry: MovementEntry) =>
+    setHeld({ round, entries: { ...draft.entries, [exerciseId]: entry } })
+
+  const readings = parts.map((part) => {
+    const entry = draft.entries[part.exercise.exerciseId] ?? {
+      draft: part.fresh,
+      performed: false,
+      explicitlyPerformed: false,
+      enteredWeight: false,
+      enteredMeasure: false,
+    }
+    return {
+      part,
+      entry,
+      reading: readEntry({
+        mode: 'new',
+        setNumber: round,
+        draft: entry.draft,
+        referenceUnit: part.referenceUnit,
+        weightUnit,
+        modality: part.exercise.prescription.modality,
+        showLoad: part.showLoad,
+      }),
+    }
+  })
+
+  const chosen = readings.filter(({ entry }) => entry.performed)
+  const refused = chosen.some(({ reading }) => reading.performed === null)
+  const saving = parts.some((part) => isSaving(part.exercise.exerciseId))
+
+  const submit = (): boolean => {
+    if (chosen.length === 0 || refused || saving) return false
+
+    for (const { part, reading } of chosen) {
+      if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
+    }
+
+    // The round's one rest, after the pair. A round the shell cannot accept
+    // — no unit to stamp — earns none.
+    const rest = prescribedRestSeconds(roundRestSeconds)
+    const closing = parts[parts.length - 1]
+    if (rest !== null && weightUnit !== null && closing !== undefined) {
+      restTimer.start({ exerciseId: closing.exercise.exerciseId, label: `round ${round}`, seconds: rest })
+    }
+    return true
+  }
+
+  return (
+    <SetLoggingSheet
+      mode="new"
+      setNumber={round}
+      entryName={`round ${round}`}
+      formLabel={`Log round ${round} of ${parts.map((part) => part.name).join(' and ')}`}
+      context="Tick each movement you performed. A blank field is saved as not recorded."
+      measures={readings.map(({ part, entry, reading }) => {
+        // Entering a result identifies this movement. Clearing a suggestion or
+        // the last entered result does not identify a performance with no
+        // measurement or effort; that needs an explicit Performed tick. An unticked movement
+        // stays excluded through clearing, while its text remains recoverable.
+        const enter = (next: SetDraft) => {
+          const weightChanged = next.weight !== entry.draft.weight
+          const measureChanged = next.measure !== entry.draft.measure
+          const enteredWeight = weightChanged ? next.weight.trim() !== '' : entry.enteredWeight
+          const enteredMeasure = measureChanged ? next.measure.trim() !== '' : entry.enteredMeasure
+          const enteredResult = enteredWeight || enteredMeasure || next.effort !== null
+          const addedResult =
+            (weightChanged && enteredWeight) ||
+            (measureChanged && enteredMeasure) ||
+            (next.effort !== null && next.effort !== entry.draft.effort)
+          update(part.exercise.exerciseId, {
+            draft: next,
+            performed: entry.explicitlyPerformed || ((entry.performed || addedResult) && enteredResult),
+            explicitlyPerformed: entry.explicitlyPerformed,
+            enteredWeight,
+            enteredMeasure,
+          })
+        }
+        const prescription = part.exercise.prescription
+
+        return (
+          <div
+            key={part.exercise.exerciseId}
+            role="group"
+            aria-label={`${part.ordinal} ${part.name}, set ${round}`}
+            className="clr-stack clr-stack--tight"
+          >
+            <p style={ROUND_MOVEMENT_STYLE}>
+              {[`${part.ordinal} ${part.name}`, prescriptionText(prescription)].join(' · ')}
+            </p>
+            <Checkbox
+              label="Performed"
+              checked={entry.performed}
+              onChange={(performed) => update(part.exercise.exerciseId, {
+                ...entry,
+                performed,
+                explicitlyPerformed: performed,
+              })}
+            />
+            <SetMeasureFields
+              entry={reading}
+              draft={entry.draft}
+              onDraft={enter}
+              measureLabel={modalityLabel(prescription)}
+              modality={prescription.modality}
+              showLoad={part.showLoad}
+              validating={entry.performed}
+            />
+            <SetEffortChoice
+              setNumber={round}
+              value={entry.draft.effort}
+              onChange={(effort) => enter({ ...entry.draft, effort })}
+            />
+          </div>
+        )
+      })}
+      saving={saving}
+      blocked={chosen.length === 0 || refused}
+      onSubmit={submit}
+      onCollapse={onCollapse}
+    />
+  )
+}
+
+const ROUND_MOVEMENT_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-sm-size)',
+  letterSpacing: 'var(--tracking-data)',
 }

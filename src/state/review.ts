@@ -53,7 +53,7 @@ import type { Enums } from '../data/database.types'
 import { formatFocus } from './history'
 import { prescriptionSiteKey } from './load-suggestions'
 import { sectionTypeLabel } from './onboarding'
-import { exerciseName, prescriptionText, restText } from './prescription'
+import { exerciseName, prescriptionText, restText, targetText } from './prescription'
 import type {
   Prescription,
   SessionAcceptance,
@@ -78,6 +78,13 @@ export interface ReviewExerciseView {
   readonly name: string
   /** `3 × 8 reps`, `5 rungs · 15-12-9-6-3 reps` — the structured target. */
   readonly prescription: string
+  /**
+   * `8 reps` — what one round of a superset or circuit asks of this movement,
+   * when the group states its rounds. Null outside one, and for a group whose
+   * round count is unknown: there the set count is the only count, so the
+   * whole `prescription` stays.
+   */
+  readonly roundTarget: string | null
   /** The equipment the prescription was composed for, in the user's words. */
   readonly equipment: string
   /** `75% 1RM`, `2 RIR`, `Bodyweight` — null when the guidance says nothing. */
@@ -110,6 +117,12 @@ export interface ReviewBlockView {
   readonly notes: string | null
   /** `Rest 90s between rounds` — the group's shared rest, stated beside it. */
   readonly roundRest: string | null
+  /**
+   * `One round: 01 → 02` — a superset or circuit is its movements back to
+   * back, once each, then again; this line says so above the numbered list.
+   * Null for every other structure, which is not performed as rounds.
+   */
+  readonly roundSequence: string | null
   /** In prescribed order: the order the array holds is the order performed. */
   readonly exercises: readonly ReviewExerciseView[]
 }
@@ -159,6 +172,12 @@ export interface ReviewBriefing {
    */
   readonly adjustment: string | null
   readonly sections: readonly ReviewSectionView[]
+  /**
+   * What to have to hand before Start (REQ-006): each piece of equipment the
+   * workout uses, once, in the order it is first needed. Bodyweight is not
+   * equipment, so an all-bodyweight workout answers an empty list.
+   */
+  readonly equipment: readonly string[]
   /** Movements across the whole workout. Zero is impossible — see below. */
   readonly movementCount: number
 }
@@ -281,11 +300,48 @@ export function equipmentName(equipment: string): string {
   return equipment.replaceAll('-', ' ').replaceAll('_', ' ')
 }
 
+/** Equipment slugs that name no equipment: the body is not something to fetch. */
+const NO_EQUIPMENT: ReadonlySet<string> = new Set(['bodyweight', 'none'])
+
+/** `01`, `02` — a movement's place in its group, as the sequence line names it. */
+export function sequenceOrdinal(index: number): string {
+  return String(index + 1).padStart(2, '0')
+}
+
+/**
+ * `One round: 01 → 02`, for a superset or circuit of that many movements. The
+ * arrow is the reading — this one, then the next — and the numbers are the
+ * list's own, so the line explains the rows under it rather than renaming them.
+ */
+export function roundSequenceText(movementCount: number): string {
+  const ordinals = Array.from({ length: movementCount }, (_, index) => sequenceOrdinal(index))
+  return `One round: ${ordinals.join(' → ')}`
+}
+
 /** Whitespace is not a note. A panel with nothing in it claims one was written. */
 function blankToNull(value: string | null): string | null {
   if (value === null) return null
   const trimmed = value.trim()
   return trimmed === '' ? null : trimmed
+}
+
+/**
+ * The numbered round already says this one instruction. Remove only that
+ * complete sentence, retaining any adjacent execution instructions verbatim.
+ * Other freeform wording is not classified or discarded.
+ */
+function withoutRoundRepeat(value: string | null): string | null {
+  const note = blankToNull(value)
+  if (note === null) return null
+
+  const parts = note.split(/([.!?](?:\s+|$)|\n+)/)
+  const retained: string[] = []
+  for (let index = 0; index < parts.length; index += 2) {
+    const instruction = parts[index]
+    if (/^After the full sequence, then repeat$/i.test(instruction.trim())) continue
+    retained.push(instruction, parts[index + 1] ?? '')
+  }
+  return blankToNull(retained.join(''))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -333,6 +389,17 @@ export function reviewBriefing(
     ],
     adjustment: blankToNull(acceptance.adjustment_reason),
     sections,
+    equipment: [
+      ...new Set(
+        acceptance.workout.sections.flatMap((section) =>
+          section.blocks.flatMap((block) =>
+            block.exercises.flatMap((exercise) =>
+              NO_EQUIPMENT.has(exercise.equipment) ? [] : [equipmentName(exercise.equipment)],
+            ),
+          ),
+        ),
+      ),
+    ],
     movementCount: sections.reduce((total, section) => total + section.movementCount, 0),
   }
 }
@@ -371,6 +438,8 @@ function reviewBlock(
 ): ReviewBlockView {
   const identity = structureIdentity(block)
   const rounds = groupRounds(block)
+  const performedInRounds =
+    block.structure_type === 'superset' || block.structure_type === 'circuit'
 
   return {
     key: `section-${sectionIndex}-block-${blockIndex}`,
@@ -381,13 +450,21 @@ function reviewBlock(
         : identity,
     grouped: block.structure_type !== 'standard',
     rounds,
-    notes: blankToNull(block.block_notes),
+    notes: performedInRounds
+      ? withoutRoundRepeat(block.block_notes)
+      : blankToNull(block.block_notes),
     roundRest: roundRestText(block.round_rest_seconds),
+    roundSequence: performedInRounds ? roundSequenceText(block.exercises.length) : null,
     // The key is `prescriptionSiteKey`'s and not this file's: OVR-01c keys a
     // load suggestion by the same position, and two definitions of "which
     // prescription" is how a suggestion lands on the wrong row.
     exercises: block.exercises.map((exercise, index) =>
-      reviewExercise(exercise, prescriptionSiteKey(sectionIndex, blockIndex, index), weightUnit),
+      reviewExercise(
+        exercise,
+        prescriptionSiteKey(sectionIndex, blockIndex, index),
+        weightUnit,
+        performedInRounds && rounds !== null,
+      ),
     ),
   }
 }
@@ -396,12 +473,14 @@ function reviewExercise(
   exercise: Prescription,
   key: string,
   weightUnit: BriefingWeightUnit | null,
+  inCountedRounds: boolean,
 ): ReviewExerciseView {
   return {
     key,
     exerciseId: exercise.exercise_id,
     name: exerciseName(exercise.exercise_id),
     prescription: prescriptionText(exercise),
+    roundTarget: inCountedRounds ? targetText(exercise) : null,
     equipment: equipmentName(exercise.equipment),
     load: loadText(exercise.load_type, exercise.load_value, weightUnit),
     // `restText` rather than a second sentence about the same column: the rest

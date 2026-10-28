@@ -158,7 +158,7 @@ describe('Task034 introduced-route evidence guard — offline fixtures, not capt
   it('waits for the route-owned Settings heading before layout readiness and the unchanged Axe scan', () => {
     const source = readFileSync(resolve(root, FORMAT_EVIDENCE_SOURCE), 'utf8')
     const readiness = source.slice(source.indexOf('async function waitForSettingsLayout'), source.indexOf('type PendingEvidence'))
-    const heading = readiness.indexOf("await expect(page.locator('main h1')).toHaveAccessibleName('Settings')")
+    const heading = readiness.indexOf("await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Settings')")
     const fonts = readiness.indexOf('await page.evaluate(')
     const layout = readiness.indexOf('await expect.poll(')
     expect(heading).toBeGreaterThan(-1)

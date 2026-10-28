@@ -17,13 +17,17 @@
  *     its per-round target, the total rounds and the shared rest — no movement
  *     is hidden behind a position, and none is marked as the one to do now,
  *     because the screen does not know and must not pretend to.
- *   · **Nothing is compulsory.** There is no per-movement step. Recording a
- *     round is one optional tap, and it is what starts the shared rest; the
- *     section's forward action saves the block with or without it.
+ *   · **Nothing is compulsory.** There is no per-movement step. The round
+ *     clock is optional: Start round 1 starts it, Finish round records the
+ *     round and starts the shared rest, and the next round's clock starts when
+ *     that rest ends (REQ-017). The section's forward action saves the block
+ *     with or without any of it.
  *   · **Load entry is compact and optional.** Each movement is one read-only
- *     row with a quiet `Log load and reps` action; the set form appears only
- *     for the movement the athlete opened, and writes through the shell's one
- *     set path (`ExerciseSetLogger`).
+ *     row with a quiet `Log load and reps` action, which opens the shared
+ *     half-sheet for that movement only and writes through the shell's one
+ *     set path (`ExerciseSetLogger`). It is never the round clock's control.
+ *   · **Round times are durations.** Each finished round's elapsed time is
+ *     listed; its stored wall-clock start and end are kept but not drawn.
  *   · **Rounds are observations, never inferred.** `rounds_completed` is the
  *     count of rounds the athlete recorded. Time passing, rest expiring and the
  *     prescribed count prove nothing; an untouched circuit supplies no count,
@@ -43,23 +47,28 @@ import { useState } from 'react'
 import {
   Button,
   Check,
+  Play,
   Rest,
   TextAction,
   TimerDisplay,
 } from '../design-system/index'
 import {
-  advanceCircuit,
   circuitShape,
   circuitView,
   clampCircuitState,
   CIRCUIT_START,
-  type CircuitShape,
-  type CircuitState,
+  endRest,
+  finishRound,
+  roundDuration,
+  startRound,
+  takeBackRound,
   type CircuitView,
+  type RoundTiming,
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
+import { movementCountdownSeconds } from '../state/movement-countdown'
 import { useSetLogging } from '../state/set-logging'
-import { useElapsedSeconds } from '../state/workout-clock'
+import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedCircuit,
   type ShellStorage,
@@ -69,7 +78,9 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
+import { MovementCountdown } from './movement-countdown'
 import { useInterfaceLoop } from './motion'
+import { TimerFrame } from './workout-chrome'
 
 export interface CircuitBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -94,6 +105,11 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
   // is: a phone that locked during the rest comes back to the right number.
   const restElapsed = useElapsedSeconds(circuit.state.restStartedAt, now)
   const view = circuitView(circuit.state, shape, restElapsed)
+  // The round's own elapsed clock (REQ-017), read the same way. While a rest
+  // runs its start is the rest's end, so it is running only in the work phase.
+  const roundStartedAt = circuit.state.roundStartedAt ?? null
+  const roundSeconds = useElapsedSeconds(roundStartedAt, now)
+  const roundClock = view.phase === 'work' && roundStartedAt !== null ? roundSeconds : null
 
   const resting = shape.size > 0 && view.phase === 'rest'
   const urgent = resting && view.restRemaining <= 10
@@ -134,14 +150,16 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
           */}
           <RoundRecord
             view={view}
+            roundClock={roundClock}
+            onStartRound={() => circuit.advanceTo(startRound(circuit.state, shape, now()))}
             onFinishRound={() =>
               circuit.advanceTo(finishRound(circuit.state, shape, now()))
             }
-            onEndRest={() =>
-              circuit.advanceTo(advanceCircuit(circuit.state, shape, now()))
-            }
+            onEndRest={() => circuit.advanceTo(endRest(circuit.state, shape, now()))}
             onTakeBack={() => circuit.advanceTo(takeBackRound(circuit.state, shape))}
           />
+
+          <RoundHistory history={circuit.state.history ?? []} />
 
           <BlockPanel.Label>Each round:</BlockPanel.Label>
 
@@ -171,28 +189,6 @@ export function CircuitBlock({ block, storage, now = Date.now }: CircuitBlockPro
 // The rounds the athlete recorded
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * One round recorded, from wherever the athlete is: the boundary, with its
- * shared rest stamped if the block prescribes any. There is no movement-by-
- * movement position to walk through first.
- */
-function finishRound(state: CircuitState, shape: CircuitShape, now: number): CircuitState {
-  return advanceCircuit(
-    { round: state.round, position: shape.size, restStartedAt: null },
-    shape,
-    now,
-  )
-}
-
-/**
- * The last recorded round, un-recorded: a mistaken tap is corrected back to
- * what was actually observed, and the rest it started goes with it.
- */
-function takeBackRound(state: CircuitState, shape: CircuitShape): CircuitState {
-  const last = shape.rounds === null ? state.round : Math.min(state.round, shape.rounds + 1)
-  return { round: Math.max(1, last - 1), position: 1, restStartedAt: null }
-}
-
 /** `No rounds recorded`, `1 of 3 rounds recorded`, `2 rounds recorded`. */
 function roundsRecordedText(view: CircuitView): string {
   if (view.roundsCompleted === 0) return 'No rounds recorded'
@@ -203,23 +199,33 @@ function roundsRecordedText(view: CircuitView): string {
 }
 
 /**
- * The optional round record, in the phase the circuit is in. While the rest
- * runs, its own button ends it; otherwise one secondary tap records the round
- * the athlete just finished. Neither is needed to move on.
+ * The optional round clock, in the phase the circuit is in (REQ-017). The
+ * first round's clock is started with Start round 1; while it runs, Finish
+ * round records the round and starts the shared rest; the next round's clock
+ * starts when that rest ends, or from Start round if it is ended early. None
+ * of it is needed to move on, and none of it logs a movement: these are clock
+ * controls, kept apart from each movement's own optional logging.
  */
 function RoundRecord({
   view,
+  roundClock,
+  onStartRound,
   onFinishRound,
   onEndRest,
   onTakeBack,
 }: {
   view: CircuitView
+  /** The running round's elapsed seconds; null when no round clock runs. */
+  roundClock: number | null
+  onStartRound: () => void
   onFinishRound: () => void
   onEndRest: () => void
   onTakeBack: () => void
 }) {
   return (
     <div
+      role="group"
+      aria-label="Round clock"
       className="clr-stack--tight"
       style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
     >
@@ -234,10 +240,19 @@ function RoundRecord({
         </>
       )}
 
-      {view.phase === 'work' && (
-        <Button variant="secondary" size="lg" icon={<Check />} onClick={onFinishRound}>
-          Finish round {view.round}
+      {view.phase === 'work' && roundClock === null && (
+        <Button variant="secondary" size="lg" icon={<Play />} onClick={onStartRound}>
+          Start round {view.round}
         </Button>
+      )}
+
+      {view.phase === 'work' && roundClock !== null && (
+        <>
+          <RoundElapsed round={view.round} seconds={roundClock} />
+          <Button variant="secondary" size="lg" icon={<Check />} onClick={onFinishRound}>
+            Finish round {view.round}
+          </Button>
+        </>
       )}
 
       {view.phase === 'finished' && (
@@ -247,6 +262,49 @@ function RoundRecord({
       {view.roundsCompleted > 0 && (
         <TextAction onClick={onTakeBack}>Take back a round</TextAction>
       )}
+    </div>
+  )
+}
+
+/** The running round's elapsed time: a count-up, so the shared timer frame. */
+function RoundElapsed({ round, seconds }: { round: number; seconds: number }) {
+  return (
+    <TimerFrame
+      label={`Round ${round} time`}
+      caption={`Round ${round}`}
+      text={formatElapsed(seconds)}
+      spoken={spokenElapsed(seconds)}
+      size="var(--label-lg-size)"
+    />
+  )
+}
+
+/**
+ * Each finished round's elapsed duration, in order. Only the duration is
+ * shown: the wall-clock start and end stay in the stored history, and are not
+ * drawn (REQ-017 — the owner crossed both out).
+ */
+function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
+  if (history.length === 0) return null
+
+  return (
+    <div className="clr-stack--tight" style={{ display: 'flex', flexDirection: 'column' }}>
+      <BlockPanel.Label aria-hidden="true">Round times</BlockPanel.Label>
+      <ol aria-label="Round times" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        {history.map((timing) => (
+          <li
+            key={`${timing.round}:${timing.startedAt}`}
+            className="clr-row"
+            style={{ justifyContent: 'space-between', gap: 'var(--spacing-200)' }}
+          >
+            <BlockPanel.Label>Round {timing.round}</BlockPanel.Label>
+            <BlockPanel.Note style={{ fontFamily: 'var(--font-data)' }}>
+              <span aria-hidden="true">{formatElapsed(roundDuration(timing))}</span>
+              <span className="a11y-hidden">{spokenElapsed(roundDuration(timing))}</span>
+            </BlockPanel.Note>
+          </li>
+        ))}
+      </ol>
     </div>
   )
 }
@@ -270,11 +328,16 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
-  const logged = loggedSets(exercise.exerciseId).length
+  const sets = loggedSets(exercise.exerciseId)
+  const logged = sets.length
+  const taken = new Set(sets.map((set) => set.setNumber))
+  let nextSet = 1
+  while (taken.has(nextSet)) nextSet += 1
+  const countdownSeconds = movementCountdownSeconds(prescription, nextSet)
 
-  if (open) {
-    return (
-      <>
+  return (
+    <>
+      {open ? (
         <ExerciseSetLogger
           exercise={exercise}
           ordinal={`${exercise.position}.`}
@@ -282,7 +345,50 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // round, and that countdown is the round boundary's (EXE-05).
           statesRest={false}
           restSeconds={null}
+          // The circuit movement owns this clock independently of optional
+          // load entry. Opening the logger must not create a second one.
+          showCountdown={false}
+          // The row's one tap opens the shared half-sheet straight away
+          // (REQ-017); its Minimize and Cancel leave the movement unlogged.
+          openSheetOnMount
         />
+      ) : (
+        <BlockPanel.Movement
+          title={`${exercise.position}. ${name}`}
+          detail={targetText(prescription)}
+        >
+          {prescription.tempo === null ? null : (
+            <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
+          )}
+          {logged === 0 ? null : (
+            <BlockPanel.Note>
+              {logged} {logged === 1 ? 'set' : 'sets'} logged
+            </BlockPanel.Note>
+          )}
+          <div>
+            <TextAction
+              aria-expanded="false"
+              aria-label={`Log load and reps for ${name}`}
+              onClick={() => setOpen(true)}
+            >
+              Log load and reps
+            </TextAction>
+          </div>
+          <ExerciseCoaching exercise={exercise} />
+        </BlockPanel.Movement>
+      )}
+
+      {/* A fixed child of this movement's row: load entry can mount/unmount
+          beside it without replacing the clock or losing its deadline. */}
+      {countdownSeconds === null ? null : (
+        <MovementCountdown
+          key={`${nextSet}:${countdownSeconds}`}
+          seconds={countdownSeconds}
+          movement={name}
+        />
+      )}
+
+      {open ? (
         <div>
           <TextAction
             aria-expanded="true"
@@ -292,33 +398,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
             Hide load entry
           </TextAction>
         </div>
-      </>
-    )
-  }
-
-  return (
-    <BlockPanel.Movement
-      title={`${exercise.position}. ${name}`}
-      detail={targetText(prescription)}
-    >
-      {prescription.tempo === null ? null : (
-        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
-      )}
-      {logged === 0 ? null : (
-        <BlockPanel.Note>
-          {logged} {logged === 1 ? 'set' : 'sets'} logged
-        </BlockPanel.Note>
-      )}
-      <div>
-        <TextAction
-          aria-expanded="false"
-          aria-label={`Log load and reps for ${name}`}
-          onClick={() => setOpen(true)}
-        >
-          Log load and reps
-        </TextAction>
-      </div>
-      <ExerciseCoaching exercise={exercise} />
-    </BlockPanel.Movement>
+      ) : null}
+    </>
   )
 }

@@ -12,7 +12,7 @@
  *     off the set list: the set that was written, the set offered after it, and
  *     where a set the database refused has got to.
  */
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -90,6 +90,7 @@ function mount(options: MountOptions = {}): Mounted {
     clients: {
       ...base.clients,
       setLogs: {
+        ...base.clients.setLogs,
         async log(entry) {
           attempts.push(entry)
           return options.refuse?.(attempts.length)
@@ -130,14 +131,21 @@ function mount(options: MountOptions = {}): Mounted {
   return { container, workout, block, attempts, reportOutcome }
 }
 
+/** The movement's entry, in its half-sheet — opened from the card's Log set. */
 function formFor(name: string, setNumber = 1) {
+  if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
+    const movement = screen.getByRole('heading', { name: new RegExp(`${name}$`) }).closest('section')!
+    fireEvent.click(within(movement).getByRole('button', { name: 'Log set' }))
+  }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
 }
 
 async function logSquat(setNumber: number, weight?: string, reps?: string) {
   const user = userEvent.setup()
   const form = formFor('back squat', setNumber)
-  if (weight !== undefined) await user.type(form.getByLabelText('Weight (kg)'), weight)
+  if (weight !== undefined) await user.type(form.getByLabelText('Weight'), weight)
+  // The prescribed reps are a suggestion; an entered number replaces it.
+  if (reps !== undefined) await user.clear(form.getByLabelText('Reps'))
   if (reps !== undefined) await user.type(form.getByLabelText('Reps'), reps)
   await user.click(form.getByRole('button', { name: `Log set ${setNumber}` }))
 }
@@ -168,7 +176,9 @@ describe('a standard block is one card of the shared frame', () => {
       'romanian deadlift',
     ])
     for (const row of rows) {
-      expect(within(row).getAllByRole('form')).toHaveLength(1)
+      // Each movement has its own explicit Log set; the fields are in the sheet.
+      expect(within(row).getAllByRole('button', { name: 'Log set' })).toHaveLength(1)
+      expect(within(row).queryByRole('form')).toBeNull()
       // A row, not a frame: no movement is a card or a chamfered panel.
       expect(row).not.toHaveClass('clr-card', 'clr-chamfer')
     }
@@ -253,8 +263,8 @@ describe('set progression and persistence', () => {
     await logSquat(1, '60', '8')
 
     const next = await waitFor(() => formFor('back squat', 2))
-    expect(next.getByText('Set 2 of 3 · Target 8 reps')).toBeInTheDocument()
-    expect(next.getByLabelText('Weight (kg)')).toHaveValue(60)
+    expect(screen.getByText('Set 2/3')).toBeInTheDocument()
+    expect(next.getByLabelText('Weight')).toHaveValue(60)
     expect(next.getByLabelText('Reps')).toHaveValue(8)
 
     const row = within(screen.getByRole('list', { name: 'Logged sets' })).getByRole('listitem')
@@ -268,7 +278,7 @@ describe('set progression and persistence', () => {
     await logSquat(1, '60', '8')
     await waitFor(() => formFor('back squat', 2))
 
-    expect(formFor('romanian deadlift', 1).getByLabelText('Weight (kg)')).toHaveValue(null)
+    expect(formFor('romanian deadlift', 1).getByLabelText('Weight')).toHaveValue(null)
   })
 
   it('logs each set in turn under its own number', async () => {
@@ -307,7 +317,7 @@ describe('set progression and persistence', () => {
       'Set 1 · 8 reps · 60 kgSaved',
       'Set 2 · 8 reps · 62.5 kgSaved',
     ])
-    expect(formFor('back squat', 3).getByLabelText('Weight (kg)')).toHaveValue(62.5)
+    expect(formFor('back squat', 3).getByLabelText('Weight')).toHaveValue(62.5)
     expect(formFor('back squat', 3).getByLabelText('Reps')).toHaveValue(8)
   })
 })
