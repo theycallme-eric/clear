@@ -35,6 +35,8 @@ import { resolve } from 'node:path'
  *   the owner, or `null` when ownership is inherited through a parent chain
  * @property {boolean} [seeded] cross-user only: whether the harness can build
  *   a row of it from the schema alone, giving the denial a positive control
+ * @property {'direct' | 'observation-rpc' | 'read-only'} [ownerWrite] the
+ *   owner's supported write boundary; omitted means ordinary direct writes
  */
 
 /**
@@ -120,14 +122,16 @@ export const TABLE_DISPOSITIONS = [
     standing: 'cross-user',
     ownerColumn: null,
     seeded: true,
-    why: 'inherits ownership through its seeded workout exercise',
+    ownerWrite: 'observation-rpc',
+    why: 'inherits ownership through its seeded workout exercise; writes use the ordered mutation RPC',
   },
   {
     table: 'set_observation_mutations',
     standing: 'cross-user',
     ownerColumn: 'user_id',
     seeded: true,
-    why: 'private exact-mutation receipts and clear tombstones, owned by the observation author',
+    ownerWrite: 'read-only',
+    why: 'private exact-mutation receipts and clear tombstones; the author may read but cannot directly rewrite them',
   },
   {
     table: 'load_anchors',
@@ -183,15 +187,16 @@ export const TABLE_DISPOSITIONS = [
 /**
  * The user-owned tables, in the shape the RLS matrix drives itself from.
  *
- * @returns {{ table: string, ownerColumn: string | null, seeded: boolean }[]}
+ * @returns {{ table: string, ownerColumn: string | null, seeded: boolean, ownerWrite: 'direct' | 'observation-rpc' | 'read-only' }[]}
  */
 export function standingMatrix(dispositions = TABLE_DISPOSITIONS) {
   return dispositions
     .filter((entry) => entry.standing === 'cross-user')
-    .map(({ table, ownerColumn = null, seeded = false }) => ({
+    .map(({ table, ownerColumn = null, seeded = false, ownerWrite = 'direct' }) => ({
       table,
       ownerColumn,
       seeded,
+      ownerWrite,
     }))
 }
 
