@@ -84,3 +84,35 @@ run was made, so the rendered glow in each skin is unproven visually.
 
 Next safe action: the controller commits this tree and re-captures the format-preview evidence
 against it. It then checks the Home glow rendered in each of the four skins.
+
+## Controller review and verification recovery
+
+Native initial27564 collected terminalexit1: worker succeeded; focused criterion/task each7passed,
+full verification failed only the two source-bound audits. Original six-file candidateb13703b is
+retained. Actual runa1d9e8c6-2aaa-404c-90c2-15f103a04841, a1/max2, basecdc6e641; no new attempt,
+reset, Runner change or publication. Live issue524/comments0 was unchanged before claim.
+
+Root independently confirmed declared vendor0.14.3 and byte identity against approved7f0a367,
+and empty vendor/workflow/schema diffs against actual build base. Independent final product
+review found no concrete blocker: unclipped shipped glow owner, correct deeper disabled/loading
+off-selector, existing native labels/refs/handlers/focus and sizing chain preserved. Existing
+Generate/Save remain primary; no extra blanket action-glow requirement is introduced.
+
+Actual lint API comparison found Home warnings1→1 and gallery121→124, with three added specimen
+helpers causing the warning increase. Root retained the exact same three specimens as inline
+Render functions using the registry's existing pattern; no behavior/style/API or lint-rule change.
+Afterward focused39980 passed22cases/3files (action-glow and gallery); typecheck29740 passed with
+four-skin browser draft integrated. The original146-warning result remains recorded above.
+
+New production Home browser cases cover four skins, normal390×844 then narrow320×568 within each,
+computed filter/tokens equal to Generate, exactly one unclipped action owner, actual card/day/metric
+non-glow, action/hit/scroll-owner/focus bounds, keyboard Settings/Back and rest Cancel/Escape, and
+one declared held synthetic Save response before Change reason. All API traffic is intercepted,
+no backend write/model request forwarded. Generic ActionGlow disabled/loading specimens remain
+unit/gallery coverage; no Home state or custom browser UI is manufactured. Actual execution is
+pending; no geometry is inferred from jsdom. TASK004 actual run/base binding now names a new
+format-preview group for genuine capture; all earlier groups remain unchanged.
+
+Lint after cleanup confirms Home1 and gallery121 warnings, both back to actual baseline; no errors.
+Owned backend start2471/reset35676/status completed exit0, READY on API55431;29 SQL migrations
+(30 files including README) byte-match actual source. Other stacks and hosted schema untouched.

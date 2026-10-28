@@ -203,34 +203,6 @@ function ActionGroupLongLabels() {
   )
 }
 
-function ActionGlowResting() {
-  return (
-    <ActionGlow>
-      <Button variant="secondary">Mark Rest Day</Button>
-    </ActionGlow>
-  )
-}
-
-function ActionGlowLoading() {
-  return (
-    <ActionGlow>
-      <Button variant="secondary" loading>
-        Mark Rest Day
-      </Button>
-    </ActionGlow>
-  )
-}
-
-function ActionGlowDisabled() {
-  return (
-    <ActionGlow>
-      <Button variant="secondary" disabled>
-        Mark Rest Day
-      </Button>
-    </ActionGlow>
-  )
-}
-
 function ActionRowSingle() {
   return (
     <ActionRow>
@@ -2090,9 +2062,9 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     summary:
       'The Generate button’s own 6px glow on another actionable control. It goes out when the control is disabled or loading.',
     specimens: [
-      { state: 'resting', Render: ActionGlowResting },
-      { state: 'loading', Render: ActionGlowLoading },
-      { state: 'disabled', Render: ActionGlowDisabled },
+      { state: 'resting', Render: () => <ActionGlow><Button variant="secondary">Mark Rest Day</Button></ActionGlow> },
+      { state: 'loading', Render: () => <ActionGlow><Button variant="secondary" loading>Mark Rest Day</Button></ActionGlow> },
+      { state: 'disabled', Render: () => <ActionGlow><Button variant="secondary" disabled>Mark Rest Day</Button></ActionGlow> },
     ],
   },
   {
