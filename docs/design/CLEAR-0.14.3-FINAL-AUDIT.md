@@ -13,8 +13,8 @@ actual current migrations and synthetic seeds. Every skin recorded zero generati
 attempted writes and forwarded writes. The owned backend was stopped after capture; no hosted
 schema or other local stack was changed.
 
-The same committed source separately passed all three actual synthetic mobile swap cases (15.3 s)
-at 390×844, 320×568 and 390×320. Production Review route state and intercepted API fixtures exercised
+The captured committed source separately passed all three actual synthetic mobile swap cases
+(15.3 s) at 390×844, 320×568 and 390×320. Production Review route state and intercepted API fixtures exercised
 Keep/Escape focus return, actual touch scrolling to the last wrapped alternative, complete item
 and label containment, touch hit testing/selection, owning Review return, existing toast dismissal
 and enabled Start, with no forwarded API writes/model calls. Initial short-screen clipping was
@@ -22,6 +22,14 @@ observed and corrected without weakening those assertions. This is local/preview
 it does not prove persistence, the hosted backend or the unknown installed-iPhone symptom. Five
 focused unit cases and design lint passed. TASK-018 retains surrounding bounded synthetic
 integration. Physical-iPhone UAT remains outside the DAG; no skipped lane is claimed passed.
+
+The first preview failed all three new cases because its high-level synthesized swipe left actual
+scrollTop at zero; 102 other cases passed. The test driver was corrected to explicit in-bounds
+finger touch events, retaining every actual progress/containment/hit/selection assertion. Revised
+local browser22958 passed all three cases (37.7 s) on `f3e176cfb7b02a1df9c459277cf4573ba651104f`.
+Only the swap test driver and notes changed: product runtime and format-driver hashes remain the
+identities above, and captured input ancestry is preserved. Current-head native/CI/preview results
+must be observed before delivery; the earlier failed preview is not reported as passed.
 
 Input provenance names actual native attempt1/a1, run `209dc3f3-1046-4dd6-8adc-e8023caf547c`, retained
 branch `agent-runner/task-017-a1-209dc3f3` and tested base `0f967fd9ab2196e21ffa41f9bbe6f3783a9030f1`.

@@ -170,3 +170,11 @@ the final complete option and labels inside the scroller, actual hit testing/tap
 and zero API/model side effects. No scroll geometry or position is assigned and no assertion is
 removed. Product runtime, format driver and retained format evidence are unchanged. Fresh browser
 and native verification, current-head CI and preview are required before delivery is claimed.
+
+Revised local browser22958 collected exit0 on `f3e176cfb7b02a1df9c459277cf4573ba651104f`:
+all three cases passed (37.7 s), including short-phone full touch reachability. Independent review
+found no concrete blocker or weakened assertion. The owned backend stayed stopped; all API fixtures
+were intercepted. Runtime and format driver are unchanged, so retained same-runtime evidence and
+its actual captured source lineage remain applicable. Normal native published-workspace drift
+reconciliation and same-attempt verification will refresh the exact-head receipt before updating
+this existing PR. No new model attempt, counter reset or Runner modification is involved.
