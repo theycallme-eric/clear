@@ -150,3 +150,14 @@ paid/skipped/hosted or protected delivery success is inferred.
 
 Existing audit consumer79792 collected exit0: all38 checks passed. Diff check passed, vendor/
 workflow/schema/earlier tracked evidence groups remain unchanged. Native same-attempt verification next.
+
+Native recovery43939 collected terminalexit1 after focused and full npm test passed; lint:ds then
+flagged literal6px in gallery summary metadata now sharing an object with inline JSX. Root removed
+that unnecessary implementation detail from the description. Tokens/CSS/specimens/production UI,
+format driver/runtime fingerprints and all existing lint rules remain unchanged. Failure is retained
+in the native event history. No new attempt/model worker or Runner repair is involved; the same
+native recovery must verify the corrected commit before publication. Captured1d778c2 input remains
+genuine ancestry; only excluded dev-gallery copy and notes changed, so no fabricated recapture.
+
+Corrected description lint:ds1345 collected exit0; diff check passed. Native same-attempt
+verification reruns the corrected clean commit. Original43939 failure remains recorded.

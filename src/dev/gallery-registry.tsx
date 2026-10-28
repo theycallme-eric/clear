@@ -2060,7 +2060,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'REQ-005',
     module: 'src/ui/action-glow.tsx',
     summary:
-      'The Generate button’s own 6px glow on another actionable control. It goes out when the control is disabled or loading.',
+      'The Generate button’s glow on another actionable control. It goes out when the control is disabled or loading.',
     specimens: [
       { state: 'resting', Render: () => <ActionGlow><Button variant="secondary">Mark Rest Day</Button></ActionGlow> },
       { state: 'loading', Render: () => <ActionGlow><Button variant="secondary" loading>Mark Rest Day</Button></ActionGlow> },
