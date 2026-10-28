@@ -11,6 +11,7 @@ import { resolve } from 'node:path'
 
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { parse } from 'postcss'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
@@ -138,7 +139,13 @@ describe('AC-064: progress sits immediately above one compact paired row', () =>
     expect(pair).toMatch(/display:\s*grid/)
     expect(pair).toMatch(/grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/)
     // No breakpoint re-flows the pair, and no `order` swaps the sides.
-    expect(NAV_CSS).not.toMatch(/@media/)
+    const responsivePairRules: string[] = []
+    parse(NAV_CSS).walkAtRules('media', (media) => {
+      media.walkRules((rule) => {
+        if (rule.selector.includes('.clr-workout-nav__pair')) responsivePairRules.push(rule.toString())
+      })
+    })
+    expect(responsivePairRules).toEqual([])
     expect(NAV_CSS).not.toMatch(/\border\s*:/)
     // The row does not use the shipped stacking action row.
     expect(pairedRow()).not.toHaveClass('clr-actions')

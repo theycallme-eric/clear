@@ -137,3 +137,18 @@ during synthetic smoke and is stopped again. Existing evidence consumer/native r
 
 Existing evidence consumer25689 completed exit0:38checks passed; diff check passed. Native
 same-attempt verification is next, with original failures/limits/approval preserved.
+
+## Native full-suite assertion correction
+
+Recovery12993 collected terminalexit1: both exact five-case browser executions passed; full npm test
+failed. Existing bounded Runner output cut off the specific error, so direct diagnostic7920 collected
+complete output:5803passed/1failed, only workout-footer-nav.test's whole-file ban on @media. Its
+stated intent is no breakpoint reflow of the Previous/Next pair. New media rules only allocate
+workout footer/shell space; no pair selector changes. The assertion now parses all media rules with
+the existing PostCSS dependency and rejects any navigation-pair selector inside them. Equal-column,
+no-order and no-stacking assertions remain. This preserves the actual invariant without banning
+unrelated responsive container sizing. No product/runtime/driver/capture fact changed; genuine
+459c870 capture remains source ancestry. Full native verification reruns after this test-only fix.
+
+Focused footer assertion99139 passed9cases, exit0. All actual pair invariants remain tested;
+only test/docs changed after capture. Native same-attempt verification follows on corrected commit.
