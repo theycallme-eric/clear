@@ -98,3 +98,28 @@ resettable local backend and existing capture consumer, with real source/driver/
 No old evidence fact/hash is rewritten. Installed-iPhone status/keyboard/swap outcomes remain pending
 outside the DAG after launch. Browser and viewport simulations never establish them. Main,
 production, hosted migrations/RLS, purchases and credential changes remain outside authority.
+
+## Native dialog focus correction
+
+Full five-case96066 on clean3ce62be completed exit1: both Review cases and the grouped case passed;
+both Workout cases passed short geometry/draft/save-retry/rest/correction and actual clear/other-row
+retention/clear head:null checks, then failed the intended Log set focus return. This exposed a
+real ordering defect: collapse(true) tried focusing an inert background control before native
+confirmation closure. Original logs/traces/PNGs are retained.
+
+Logger now arms one return after confirmed clear and closes sheet/dialog without early focus. The
+app-owned AppDialog adapter adds an optional typed onAfterClose callback to its existing nativeclose
+listener; it preserves open-only onClose and forwards no new DOM/vendor prop. After actual native
+closure, the logger consumes its one-shot return and uses the same Log set/Log round owner. No fixed
+timer, vendor mutation, extra backdrop/exit or navigation/data logic change. Ordinary collapse and
+Keep/Escape retain their behavior. An initial onCloseCapture attempt passed65 focused cases but
+failed TypeScript87800 because the vendor type does not expose it; that unsupported prop was removed,
+not cast away. Actual app-owned typed callback15029 passed typecheck. Final focused96637 passed85cases/
+5files; lint:ds16382 passed. Existing grouped hold-close regression proves no early focus and correct
+return on actual nativeclose; adapter tests retain controlled, reopened-exit and reduced-motion rules.
+
+External-negative invocations (ordinary selection and explicit grep) both completed exit1 with
+No tests found before browser navigation. The selector composes with CLI grep rather than allowing
+external selection; no beforeEach runtime proof is inferred from these zero-selected failures.
+All five positive cases will now rerun on the corrected clean source. No new native worker/model
+attempt, Runner change, requirement change or relaxed focus assertion occurred.

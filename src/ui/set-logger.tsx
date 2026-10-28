@@ -153,6 +153,7 @@ export function ExerciseSetLogger({
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
   const logButton = useRef<HTMLButtonElement>(null)
   const editButton = useRef<HTMLButtonElement>(null)
+  const returnAfterClear = useRef(false)
 
   // On mount only (the setter is stable): a later collapse is the athlete's
   // and is kept. Not one-shot, so a strict remount — whose cleanup closes the
@@ -228,11 +229,15 @@ export function ExerciseSetLogger({
     sheet.setOpen(true)
   }
 
-  const collapse = (rowRemoved = false) => {
-    sheet.setOpen(false)
+  const returnFocus = (rowRemoved = false) => {
     if (logsSelf) logButton.current?.focus()
     else if (!rowRemoved && editButton.current?.isConnected) editButton.current.focus()
     else onReturnToRound?.()
+  }
+
+  const collapse = () => {
+    sheet.setOpen(false)
+    returnFocus()
   }
 
   return (
@@ -350,6 +355,12 @@ export function ExerciseSetLogger({
         critical
         title={clearing === null ? undefined : `Clear set ${clearing.setNumber} of ${name}?`}
         onClose={() => setClearing(null)}
+        onAfterClose={() => {
+          if (!returnAfterClear.current) return
+          returnAfterClear.current = false
+          // Background controls remain inert until the native dialog closes.
+          returnFocus(true)
+        }}
         actions={
           <>
             <Button variant="secondary" onClick={() => setClearing(null)}>
@@ -359,9 +370,10 @@ export function ExerciseSetLogger({
               variant="critical"
               onClick={() => {
                 if (clearing !== null) clearSet?.(exercise.exerciseId, clearing.id)
+                returnAfterClear.current = true
                 setClearing(null)
                 setCorrection(null)
-                collapse(true)
+                sheet.setOpen(false)
               }}
             >
               Clear set

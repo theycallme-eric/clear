@@ -8,8 +8,9 @@
  * and replace its fade. Do not stage a second exit around it either.
  *
  * What the adapter does own is the callback contract. Report native user
- * closure once: a controlled close is silent, including when reopened during
- * an exit.
+ * closure once through onClose: a controlled close is silent, including when
+ * reopened during an exit. onAfterClose observes actual native closure for
+ * work that needs the background to be available again.
  *
  * Action order is the caller's half of the package rule. The safe action goes
  * first in DOM order, where `showModal()` lands focus, and exactly one action
@@ -20,9 +21,12 @@ import { useLayoutEffect, useRef } from 'react'
 
 import { Dialog, type DialogProps } from '../design-system/index'
 
-export type AppDialogProps = DialogProps
+export interface AppDialogProps extends DialogProps {
+  /** Runs after native closure, including a controlled close. */
+  onAfterClose?: () => void
+}
 
-export function AppDialog({ open = false, onClose, ...props }: AppDialogProps) {
+export function AppDialog({ open = false, onClose, onAfterClose, ...props }: AppDialogProps) {
   const hostRef = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     const dialog = hostRef.current?.querySelector('dialog')
@@ -30,10 +34,13 @@ export function AppDialog({ open = false, onClose, ...props }: AppDialogProps) {
     // Refresh before the vendor's passive close effect. Programmatic closure
     // is silent; a close after reopening remains a user dismissal even if the
     // vendor's internal suppression ref was left set by the interrupted exit.
-    const reportClose = () => { if (open) onClose?.() }
+    const reportClose = () => {
+      if (open) onClose?.()
+      onAfterClose?.()
+    }
     dialog.addEventListener('close', reportClose)
     return () => dialog.removeEventListener('close', reportClose)
-  }, [open, onClose])
+  }, [open, onClose, onAfterClose])
 
   return (
     <span ref={hostRef} style={{ display: 'contents' }}>
