@@ -128,3 +128,25 @@ Root will preserve the exact none assertion and await computed-state convergence
 expect.poll before deciding whether this expectation is supported in the actual browser. No product,
 vendor, loading-state or global-glow change is made. Only the four affected cases need rerun;
 existing10 cases are already actual passes on the unchanged runtime.
+
+## Controller actual browser and capture results
+
+Computed-state rerun37741 on clean1d778c29641b8f8ae2a004a3df617e5c47130040 completed exit0:
+all4 skin cases passed11.3s. The exact pending Save filter:none requirement remains and now passes
+with bounded polling. Thus no vendor/baseline defect, requirement removal or product correction was
+needed. Native disabled/busy, no premature success, acknowledgement/Change reason/focus, card
+non-glow, all normal+narrow geometry/navigation and synthetic-only assertions also completed.
+The earlier10 unchanged Home/PWA cases passed on4017947 with the identical product runtime; only
+browser timing/notes changed afterward. Original failures remain retained.
+
+Same clean1d778c2 then passed genuine capture48677,4skin cases/8images25.0s. Actual records name
+source1d778c2, runtime960f168022f583ed74d09d273ca0617d71c8515215c9a71d067c289b5124cb3d,
+driver47384a211c8dc64f0103b7ab7d8cdf84d19598b6eb0981ea67b597e1b7e5f36d,
+payloadbf6bb644149fff3c4f4b45d6d83f3303e82f1f1cc2e48f1a6abd5a0ece79b441.
+First capture clean, all network counters0. Genuine v1 provenance names actual Task004/run/a1/base/
+retained branch; no capture fact rewritten. Owned stop74134 collected exit0; other stacks/hosted
+schema untouched. Existing consumer and native same-attempt verification follow. No device,
+paid/skipped/hosted or protected delivery success is inferred.
+
+Existing audit consumer79792 collected exit0: all38 checks passed. Diff check passed, vendor/
+workflow/schema/earlier tracked evidence groups remain unchanged. Native same-attempt verification next.

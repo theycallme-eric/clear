@@ -1,8 +1,44 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-003 source-bound recapture — 28 October 2026
+## Current UI-polish TASK-004 source-bound recapture — 28 October 2026
 
 Current format-preview evidence is the genuinely executed group at
+`docs/design/evidence-0143/task034-format-preview-ui-polish-task004/`: four mobile skin cases/eight
+normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
+and record/PNG/source checks (25.0 s). Captured source `1d778c29641b8f8ae2a004a3df617e5c47130040`, runtime source
+`960f168022f583ed74d09d273ca0617d71c8515215c9a71d067c289b5124cb3d`, driver
+`47384a211c8dc64f0103b7ab7d8cdf84d19598b6eb0981ea67b597e1b7e5f36d`.
+The clean committed source ran on the owned disposable Supabase/PostgreSQL17 backend reset with
+29 matching current SQL migrations and synthetic seeds. Every skin recorded zero generation
+requests, attempted writes and forwarded writes. Capture48677 and owned backend stop74134 completed
+exit0. No hosted schema or other local stack changed.
+
+The same committed source separately passed all four production Home glow browser cases (11.3 s):
+one per skin, each normal390×844 then narrow320×568. They compare actual computed filter/tokens to
+Generate, require exactly one unclipped owner with matching bounds, preserve secondary variants,
+verify card/day/metric non-glow and action/focus/hit/scroll-owner bounds, keyboard Settings/Back,
+rest Cancel/Escape, and one held synthetic save through disabled/busy state, actual computed glow
+off, acknowledgement and restored Change reason focus. All API responses are intercepted and the
+only declared mutation is synthetic, with no forwarded write/model call. The first immediate
+computed-filter read failed in all skins; retaining the exact none assertion with bounded computed
+state polling passed all four on unchanged product code. Original failures/traces/screenshots remain
+retained. The preceding clean4017947 also passed all ten unchanged Home/PWA cases (same runtime;
+only test/notes changed for the corrected four-case run). No fourteen-case single-run pass is claimed.
+Generic new wrapper loading/disabled specimens remain unit/gallery coverage; no browser DOM state
+or custom UI was manufactured. Twenty-two focused/gallery cases, typecheck and final product review
+passed; warning counts returned to baseline through existing inline gallery Render composition.
+Vendor0.14.3 remains byte-identical; no workflow/schema/distance change. This is synthetic browser
+proof, not hosted persistence or installed-device proof. TASK-018 retains bounded final integration.
+
+Input provenance names actual native attempt1/a1, run `a1d9e8c6-2aaa-404c-90c2-15f103a04841`, retained
+branch `agent-runner/task-004-a1-a1d9e8c6` and tested base `cdc6e64138c7c9f314fdc288d64cf44c3ce1b808`.
+Actual manifest/record/PNG payload digest:
+`bf6bb644149fff3c4f4b45d6d83f3303e82f1f1cc2e48f1a6abd5a0ece79b441`. Earlier evidence groups remain
+unchanged. Existing evidence consumers, full native verification and protected delivery apply.
+
+## Historical UI-polish TASK-003 source-bound recapture — 28 October 2026
+
+Retained TASK-003 format-preview evidence is the genuinely executed group at
 `docs/design/evidence-0143/task034-format-preview-ui-polish-task003/`: four mobile skin cases/eight
 normal-short phone captures passed the existing authenticated journey, Axe, route, layout, network
 and record/PNG/source checks (25.1 s). Captured source `af2c027659e001fb09a683242ab1442996e6f9ad`, runtime source
