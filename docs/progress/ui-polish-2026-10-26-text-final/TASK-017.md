@@ -135,3 +135,21 @@ the public button, lets their text wrap within its content width, and reserves a
 (120px at 0.14.3) minimum list frame. Browser proof now also checks both labels for horizontal
 clipping. These are local product corrections, with the original touch/containment assertions
 retained. Re-execution is pending; no model/native retry or Runner change is involved.
+
+## Observed controller proof
+
+Corrected browser37915 collected exit0: all three actual touch cases passed (15.3 s) on clean
+source `625d335553e2e6441b9365cd2cd80a25fc03899b`. This includes normal/narrow/short geometry, full last-option
+and label visibility, actual touch scrolling and hit-tested tap, Keep/Escape/focus, unchanged Review
+ownership, existing toast/host/dismissal, enabled Start, Axe, zero forwarded API writes/model calls.
+The synthetic intercepted fixture is explicitly labelled UI contract proof, never database/device proof.
+
+Same-source capture31483 collected exit0: four skins/eight PNGs (24.1 s), existing authenticated
+format-preview journey and network/layout checks. Runtime `ded95dba6df2675c2c24fd600e1a296081d36a6ed95ad9f3ae7ffa5141a28b4b`;
+driver `19334c73cd90ccdb1a831e25c789ddf5ece5bd90d80625d7ba05ccbf57d9857a`; payload
+`a14f5cef2988cc6ac83ca33fac6013b1131ef0d894df61c48a6f436190bea248`. Actual native run/a1/base input
+provenance is retained and prior groups are unchanged. The first capture records the genuinely clean
+checkout; subsequent dirty records truthfully reflect collector-created evidence. No record was
+relabeled. Owned backend start52012/reset54475/status/stop71196 all collected exit0. Separate
+clear-app stack and all hosted schemas remain untouched. Existing consumer and native full
+verification follow; publication and merge are not yet claimed.
