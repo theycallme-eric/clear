@@ -1,0 +1,25 @@
+/* =============================================================================
+   ACTION GLOW — REQ-005, the Generate glow on other actionable controls.
+
+   The glow is the package's own `.clr-glow`: the same 6px `--glow-spread` in
+   the skin's `--glow-color`, so every skin re-tints it and nothing here
+   restates a value. Only what the wrapper adds is local.
+
+   A Button already sits in its own `.clr-bleed` wrapper, so the package's
+   `.clr-glow:has(> :disabled)` cannot see the button. A disabled or loading
+   control drops the glow here, as the primary's does.
+   ============================================================================= */
+
+.clr-action-glow:has(> .clr-bleed > :disabled) {
+  filter: none;
+}
+
+/* Wherever a layout stretches the wrapper, the button's frame stretches with
+   it, as it would without the glow. */
+.clr-action-glow > .clr-bleed {
+  flex-grow: 1;
+}
+
+.clr-action-group > .clr-action-glow {
+  display: flex;
+}

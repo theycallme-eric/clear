@@ -50,6 +50,7 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
 import { AtmosphereLayer } from '../ui/atmosphere'
@@ -199,6 +200,34 @@ function ActionGroupLongLabels() {
       <Button variant="secondary">Use this suggestion for today</Button>
       <Button variant="quiet">Dismiss until tomorrow</Button>
     </ActionGroup>
+  )
+}
+
+function ActionGlowResting() {
+  return (
+    <ActionGlow>
+      <Button variant="secondary">Mark Rest Day</Button>
+    </ActionGlow>
+  )
+}
+
+function ActionGlowLoading() {
+  return (
+    <ActionGlow>
+      <Button variant="secondary" loading>
+        Mark Rest Day
+      </Button>
+    </ActionGlow>
+  )
+}
+
+function ActionGlowDisabled() {
+  return (
+    <ActionGlow>
+      <Button variant="secondary" disabled>
+        Mark Rest Day
+      </Button>
+    </ActionGlow>
   )
 }
 
@@ -2052,6 +2081,18 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'two short actions', Render: ActionGroupPaired },
       { state: 'long labels wrap to rows', Render: ActionGroupLongLabels },
+    ],
+  },
+  {
+    component: 'ActionGlow',
+    requirement: 'REQ-005',
+    module: 'src/ui/action-glow.tsx',
+    summary:
+      'The Generate button’s own 6px glow on another actionable control. It goes out when the control is disabled or loading.',
+    specimens: [
+      { state: 'resting', Render: ActionGlowResting },
+      { state: 'loading', Render: ActionGlowLoading },
+      { state: 'disabled', Render: ActionGlowDisabled },
     ],
   },
   {
