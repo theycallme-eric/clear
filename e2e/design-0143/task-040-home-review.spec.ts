@@ -813,8 +813,8 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     const today = page.getByRole('list', { name: 'This week', exact: true }).getByRole('listitem')
       .filter({ hasText: /\(today\)/ })
 
-    // Shorter copy and an improved trigger, inside the week card.
-    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    // No prompt above the trigger (REQ-003), and an improved trigger, inside the week card.
+    await expect(rest.getByText('Not training today?', { exact: true })).toHaveCount(0)
     await expect(rest.getByText(/Mark why to keep your streak/)).toHaveCount(0)
     await expect(trigger).toBeVisible()
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
@@ -857,7 +857,7 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     await cancel.click()
     await expect(picker).toHaveCount(0)
     await expect(trigger).toBeFocused()
-    await expect(rest.getByText('Not training today?', { exact: true })).toBeVisible()
+    await expect(rest.getByText('Not training today?', { exact: true })).toHaveCount(0)
     await expect(today).not.toHaveAttribute('data-day-state', 'rest')
     expect(await marks()).toEqual([])
 

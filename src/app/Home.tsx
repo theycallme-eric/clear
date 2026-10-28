@@ -206,8 +206,10 @@ export const FAVORITES_TAB_VALUE = 'favorites'
 
 /** U08: the empty recents state the fact; the pinned Generate is the next action. */
 export const RECENT_EMPTY_TITLE = 'No workouts yet'
-/** U25: the question only; the chosen reason's effect is the picker's helper. */
-export const REST_DAY_PROMPT = 'Not training today?'
+/**
+ * REQ-003: an unmarked day carries no prompt above Mark Rest Day — the
+ * action names itself. The chosen reason's effect is the picker's helper.
+ */
 export const REST_DAY_SAVED = 'Rest day saved.'
 
 export function Home() {
@@ -496,11 +498,12 @@ function RestDayControl({
       <Card heading={REST_DAY_LABEL}>
         {/* U05: the statement, then the control group, one rhythm step apart. */}
         <div className="clr-stack">
-          <p style={{ margin: 0 }}>
-            {today.reason === null
-              ? REST_DAY_PROMPT
-              : `Today: ${REST_DAY_REASON_LABELS[today.reason]}.`}
-          </p>
+          {/* An unmarked day asks nothing: the action is the whole offer. A
+              saved mark is still stated, because the strip's glyph is not a
+              reason. */}
+          {today.reason !== null && (
+            <p style={{ margin: 0 }}>{`Today: ${REST_DAY_REASON_LABELS[today.reason]}.`}</p>
+          )}
 
           {saved && <p role="status" style={{ margin: 0 }}>{REST_DAY_SAVED}</p>}
           {failure && (
@@ -755,6 +758,7 @@ function RecentWorkouts({
           <HistoryList
             entries={recents}
             label={RECENT_WORKOUTS_LABEL}
+            layout="recent"
             linkTo={(entry) => sessionDetailPath(entry.id)}
             onOpen={(entry) => void session.open(entry)}
             openingId={session.openingId}

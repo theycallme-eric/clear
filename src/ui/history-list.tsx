@@ -109,7 +109,14 @@ export interface WorkoutListItemProps {
   opening?: boolean
   /** Semantic element used by a containing real list. */
   as?: ElementType
+  /**
+   * `chronology` is History's full row; `recent` is Home's shorter one
+   * (REQ-004). Rest runs read the same in both.
+   */
+  layout?: HistoryListLayout
 }
+
+export type HistoryListLayout = 'chronology' | 'recent'
 
 /** One entry of the chronology: a workout, or the gap before it. */
 export function WorkoutListItem({
@@ -118,9 +125,12 @@ export function WorkoutListItem({
   onOpen,
   opening = false,
   as,
+  layout = 'chronology',
 }: WorkoutListItemProps) {
   return entry.kind === 'rest' ? (
     <RestItem entry={entry} as={as} />
+  ) : layout === 'recent' ? (
+    <RecentSessionItem entry={entry} to={to} onOpen={onOpen} opening={opening} as={as} />
   ) : (
     <SessionItem entry={entry} to={to} onOpen={onOpen} opening={opening} as={as} />
   )
@@ -193,6 +203,122 @@ function SessionItem({
   )
 }
 
+/** REQ-004: the recent row's title, one step under the chronology's. */
+const RECENT_TITLE_STYLE: CSSProperties = {
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--label-md-size)',
+  lineHeight: 'var(--label-md-line-height)',
+  color: 'var(--text-card-header)',
+  margin: 0,
+}
+
+/** The title link reads as the row's name: no rule under it. */
+const RECENT_LINK_STYLE: CSSProperties = {
+  borderBottom: 0,
+  color: 'inherit',
+}
+
+/** Metrics a glance can read: a step up from the data labels, in paragraph colour. */
+const RECENT_METRICS_STYLE: CSSProperties = {
+  ...ROW_STYLE,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-sm-size)',
+  lineHeight: 'var(--label-sm-line-height)',
+  color: 'var(--text-paragraph)',
+  margin: 0,
+  marginTop: 'var(--spacing-100)',
+}
+
+/**
+ * Completed takes the selection colour the week strip's trained day uses; a
+ * workout that stopped short steps back. The glyph and word still differ, so
+ * colour is never the only cue.
+ */
+const RECENT_STATUS_COLOR: Readonly<Record<HistorySessionStatus, string>> = {
+  completed: 'var(--text-selected)',
+  partial: 'var(--text-card-label)',
+  unstarted: 'var(--text-card-label)',
+}
+
+/**
+ * A generated title that ends in "session" says nothing the row does not:
+ * every recent row is one. The word is dropped only when something precedes it.
+ */
+function recentTitle(title: string): string {
+  const trimmed = title.replace(/\s+session\s*$/i, '')
+  return trimmed.length === 0 ? title : trimmed
+}
+
+/**
+ * REQ-004: Home's recent row. A smaller title first; then what became of it
+ * and when, together; then the metrics. The focus leads the metrics because
+ * it is what the workout trained.
+ */
+function RecentSessionItem({
+  entry,
+  to,
+  onOpen,
+  opening,
+  as,
+}: {
+  entry: HistorySessionEntry
+  to?: string
+  onOpen?: (entry: HistorySessionEntry) => void
+  opening: boolean
+  as?: ElementType
+}) {
+  const title = recentTitle(entry.title)
+
+  return (
+    <ListRow as={as ?? 'section'} aria-busy={opening || undefined} data-status={entry.status}>
+      <Heading data-part="title" style={{ ...RECENT_TITLE_STYLE, ...LONG_TITLE_STYLE }}>
+        {to === undefined ? (
+          title
+        ) : (
+          <Link
+            to={to}
+            style={RECENT_LINK_STYLE}
+            onClick={(event) => {
+              if (onOpen === undefined) return
+              event.preventDefault()
+              if (!opening) onOpen(entry)
+            }}
+            aria-disabled={opening || undefined}
+          >
+            {title}
+          </Link>
+        )}
+      </Heading>
+      <p
+        data-part="status-date"
+        style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-100)' }}
+      >
+        <span
+          data-part="status"
+          style={{ ...GLYPH_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
+        >
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            {STATUS_GLYPH[entry.status]}
+          </span>
+          {HISTORY_STATUS_LABELS[entry.status]}
+        </span>
+        <span data-part="date" className="clr-nowrap">
+          {formatDay(entry.day)}
+        </span>
+      </p>
+      {/* A count never wraps away from its unit. */}
+      <p data-part="metrics" style={RECENT_METRICS_STYLE}>
+        <span className="clr-nowrap">{formatFocus(entry.focus)}</span>
+        <span className="clr-nowrap">{`${REQUESTED_DURATION_LABEL} ${entry.requestedMins} min`}</span>
+        {entry.durationMins !== null && (
+          <span className="clr-nowrap">{`${ACTUAL_DURATION_LABEL} ${entry.durationMins} min`}</span>
+        )}
+        <span className="clr-nowrap">{`Intensity ${entry.intensity}/10`}</span>
+      </p>
+    </ListRow>
+  )
+}
+
 /**
  * A run of untrained days. It is a real row rather than a divider, because a
  * rest day is part of the chronology the user is reading — but its surface and
@@ -228,6 +354,8 @@ export interface HistoryListProps {
   /** Optional activation resolver used before the detail-route fallback. */
   onOpen?: (entry: HistorySessionEntry) => void
   openingId?: string | null
+  /** Which row each session renders as. History's chronology by default. */
+  layout?: HistoryListLayout
 }
 
 /** The chronology, newest first, as a real list. */
@@ -237,6 +365,7 @@ export function HistoryList({
   linkTo,
   onOpen,
   openingId = null,
+  layout,
 }: HistoryListProps) {
   return (
     <ListFrame
@@ -252,6 +381,7 @@ export function HistoryList({
           to={entry.kind === 'session' ? linkTo?.(entry) : undefined}
           onOpen={onOpen}
           opening={entry.kind === 'session' && entry.id === openingId}
+          layout={layout}
         />
       ))}
     </ListFrame>
