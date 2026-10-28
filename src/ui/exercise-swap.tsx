@@ -44,14 +44,23 @@ const OPTION_LIST_STYLE: CSSProperties = {
 }
 
 /** One alternative: a full-width framed choice, read from its leading edge. */
-const OPTION_STYLE: CSSProperties = { width: '100%', justifyContent: 'flex-start' }
+const OPTION_STYLE: CSSProperties = {
+  width: '100%',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-100)',
+  textAlign: 'start',
+}
+
+const OPTION_LABEL_STYLE: CSSProperties = { width: '100%', overflowWrap: 'anywhere' }
 
 /** The equipment, in the terse data-face label every block caption uses. */
 const EQUIPMENT_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-xs-size)',
   letterSpacing: 'var(--tracking-data)',
-  marginInlineStart: 'var(--spacing-200)',
+  maxWidth: '100%',
+  overflowWrap: 'anywhere',
 }
 
 export interface ExerciseSwapControlsProps {
@@ -205,7 +214,7 @@ function SwapOptionsView({
  * screen while the list scrolls.
  */
 const LIST_FRAME_MAX_HEIGHT =
-  'max(calc(var(--control-height) * 2), calc(100dvh - var(--spacing-600) * 10))'
+  'max(calc(var(--control-height) * 3), calc(100dvh - var(--spacing-600) * 10))'
 
 /**
  * The alternatives, inside the public `ScrollRegion` — the one vertical
@@ -249,7 +258,7 @@ function SwapOptionList({
                 onClick={() => onChoose(option)}
                 style={OPTION_STYLE}
               >
-                {option.name}
+                <span data-swap-option-label style={OPTION_LABEL_STYLE}>{option.name}</span>
                 <span style={EQUIPMENT_STYLE}>{equipmentText(option.equipment)}</span>
               </Button>
             </li>

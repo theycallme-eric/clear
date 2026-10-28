@@ -219,14 +219,19 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 320, height: 568 }
     expect(lastBox.y).toBeGreaterThanOrEqual(scrollerBox.y - 1)
     expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(scrollerBox.y + scrollerBox.height + 1)
     await boxInside(keep, viewport)
-    const labelLines = await last.evaluate((button) => {
-      const text = Array.from(button.childNodes).find((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.includes('Synthetic hinge'))
-      if (text === undefined) throw new Error('The synthetic alternative label was not found')
+    const label = last.locator('[data-swap-option-label]')
+    const labelLines = await label.evaluate((element) => {
       const range = document.createRange()
-      range.selectNodeContents(text)
+      range.selectNodeContents(element)
       return range.getClientRects().length
     })
     expect(labelLines).toBeGreaterThan(1)
+    for (const content of [label, last.getByText('BARBELL', { exact: true })]) {
+      const contentBox = await boxInside(content, viewport)
+      expect(contentBox.x).toBeGreaterThanOrEqual(lastBox.x)
+      expect(contentBox.x + contentBox.width).toBeLessThanOrEqual(lastBox.x + lastBox.width + 1)
+      expect(await content.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true)
+    }
     const touch = { x: lastBox.x + lastBox.width / 2, y: lastBox.y + lastBox.height / 2 }
     expect(await last.evaluate((button, point) => {
       const hit = document.elementFromPoint(point.x, point.y)

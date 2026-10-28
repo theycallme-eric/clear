@@ -125,3 +125,13 @@ Review ownership and Start availability, the existing toast host and dismissal, 
 API writes/model calls at 390×844, 320×568 and 390×320. Independent source review found no concrete
 selection or observer-cleanup blocker. Browser results remain pending; synthetic route/API fixtures
 do not prove persistence, the deployed backend or the installed-iPhone symptom.
+
+First actual browser proof (source `1617ad9`, foreground47221) passed normal and narrow phone
+cases, but failed at 390×320: the final wrapped button started at y99 while the scroller started
+at y111. The original 80px minimum could not contain that complete option. Its retained screenshot
+also showed the inline equipment label clipped horizontally. The original log, trace and screenshot
+are preserved outside source control. The correction stacks the option name and equipment within
+the public button, lets their text wrap within its content width, and reserves a three-control
+(120px at 0.14.3) minimum list frame. Browser proof now also checks both labels for horizontal
+clipping. These are local product corrections, with the original touch/containment assertions
+retained. Re-execution is pending; no model/native retry or Runner change is involved.
