@@ -218,6 +218,18 @@ const RECENT_LINK_STYLE: CSSProperties = {
   color: 'inherit',
 }
 
+/**
+ * B05-01.5: the status and date share one line and one baseline. The status
+ * leads with a text-less glyph, so baseline alignment would hang the date off
+ * the glyph's bottom edge; centring the two same-type items lines up their text.
+ */
+const RECENT_STATUS_DATE_STYLE: CSSProperties = {
+  ...ROW_STYLE,
+  ...META_STYLE,
+  alignItems: 'center',
+  marginTop: 'var(--spacing-100)',
+}
+
 /** Metrics a glance can read: a step up from the data labels, in paragraph colour. */
 const RECENT_METRICS_STYLE: CSSProperties = {
   ...ROW_STYLE,
@@ -289,10 +301,7 @@ function RecentSessionItem({
           </Link>
         )}
       </Heading>
-      <p
-        data-part="status-date"
-        style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-100)' }}
-      >
+      <p data-part="status-date" style={RECENT_STATUS_DATE_STYLE}>
         <span
           data-part="status"
           style={{ ...GLYPH_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
