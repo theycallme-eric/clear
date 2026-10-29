@@ -457,33 +457,71 @@ async function assertTitle(page: Page, testInfo: TestInfo, id: string) {
 async function assertTopComposition(page: Page, testInfo: TestInfo, id: string) {
   // Filling the notes scrolled the form; the card's top is measured in view.
   await card(page).evaluate((element) => element.scrollIntoView({ block: 'start' }))
-  const goal = await textGeometry(goalLine(page))
-  const focus = await textGeometry(focusLine(page))
-  const recovery = await textGeometry(recoveryAction(page))
-  const change = await textGeometry(changeFocusAction(page))
-  const selection = await recoveryAction(page).evaluate((element) => {
-    const tick = element.querySelector('svg')!
-    const rect = tick.getBoundingClientRect()
-    const style = getComputedStyle(tick)
-    return {
-      pressed: element.getAttribute('aria-pressed'), opacity: style.opacity,
-      tick: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
-    }
-  })
-  const pair = await recoveryAction(page).evaluate((element) => {
-    const group = element.closest('.clr-action-group')!
-    const rect = group.getBoundingClientRect()
-    const cells = [...group.children].map((cell) => {
-      const r = cell.getBoundingClientRect()
-      return { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width, height: r.height }
+  // The public Chip animates its tick width/margin for --dur-state even
+  // under reduced motion. Wait for those real finite transitions, then read
+  // controls, cells and text in one browser task; separate reads can straddle
+  // the tick's layout change and compare two different instants.
+  const snapshot = await card(page).evaluate(async (card) => {
+    const group = card.querySelector<HTMLElement>('.clr-action-group--paired-labels')!
+    // Flush layout before enumerating CSS transitions that a new state started.
+    group.getBoundingClientRect()
+    const finiteMotion = () => group.getAnimations({ subtree: true }).filter((animation) =>
+      (animation.playState === 'running' || animation.pending) &&
+      Number.isFinite(animation.effect?.getComputedTiming().endTime),
+    )
+    await Promise.all(finiteMotion().map((animation) => animation.finished))
+    if (finiteMotion().length !== 0) throw new Error('Generate pair motion did not settle before measurement')
+
+    const box = (rect: DOMRect) => ({
+      x: rect.x, y: rect.y, left: rect.left, top: rect.top, right: rect.right,
+      bottom: rect.bottom, width: rect.width, height: rect.height,
     })
+    const measureText = (element: Element) => {
+      const rects: DOMRect[] = []
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT)
+      for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+        const range = document.createRange()
+        range.selectNodeContents(node)
+        rects.push(...[...range.getClientRects()].filter((rect) => rect.width > 0))
+      }
+      const left = Math.min(...rects.map((rect) => rect.left))
+      const top = Math.min(...rects.map((rect) => rect.top))
+      const right = Math.max(...rects.map((rect) => rect.right))
+      const bottom = Math.max(...rects.map((rect) => rect.bottom))
+      const style = getComputedStyle(element)
+      return {
+        box: box(element.getBoundingClientRect()),
+        text: { left, top, right, bottom, width: right - left, height: bottom - top },
+        content: element.textContent,
+        lines: new Set(rects.map((rect) => Math.round(rect.bottom))).size,
+        overflow: element.scrollWidth - element.clientWidth,
+        font: { family: style.fontFamily, size: style.fontSize, weight: style.fontWeight, lineHeight: style.lineHeight, color: style.color },
+      }
+    }
+    const paragraphs = [...card.querySelectorAll('p')]
+    const goal = paragraphs.find((element) => element.textContent?.startsWith('Goal:'))!
+    const focus = paragraphs.find((element) => element.textContent?.startsWith('Focus:'))!
+    const controls = [...group.querySelectorAll('button')]
+    const recovery = controls.find((element) => element.textContent === 'Recovery session')!
+    const change = controls.find((element) => element.textContent === 'Change focus')!
+    const tick = recovery.querySelector('svg')!
+    const intensity = card.querySelector('input[type="range"], [role="slider"]')!
     return {
-      className: group.className, cells,
-      box: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
+      goal: measureText(goal), focus: measureText(focus),
+      recovery: measureText(recovery), change: measureText(change),
+      selection: {
+        pressed: recovery.getAttribute('aria-pressed'), opacity: getComputedStyle(tick).opacity,
+        tick: box(tick.getBoundingClientRect()),
+      },
+      pair: {
+        className: group.className,
+        cells: [...group.children].map((cell) => box(cell.getBoundingClientRect())),
+        box: box(group.getBoundingClientRect()),
+      },
+      cardBox: box(card.getBoundingClientRect()), intensity: box(intensity.getBoundingClientRect()),
     }
   })
-  const cardBox = (await card(page).boundingBox())!
-  const intensity = (await slider(page).boundingBox())!
+  const { goal, focus, recovery, change, selection, pair, cardBox, intensity } = snapshot
   const detail = JSON.stringify({ goal, focus, recovery, change, selection, pair, cardBox, intensity })
 
   // Goal and Focus: the first lines of the card, adjacent, in one typography.
@@ -549,8 +587,8 @@ async function assertTopComposition(page: Page, testInfo: TestInfo, id: string) 
   expect(centre(focusInk), pixelDetail).toBeGreaterThan(centre(goalInk))
   expect(centre(recoveryInk), pixelDetail).toBeGreaterThan(centre(focusInk))
   const labels = {
-    recovery: { text: await recoveryAction(page).textContent(), lines: recovery.lines, inkRows: recoveryInk.bands.length, font: recovery.font },
-    changeFocus: { text: await changeFocusAction(page).textContent(), lines: change.lines, inkRows: changeInk.bands.length, font: change.font },
+    recovery: { text: recovery.content, lines: recovery.lines, inkRows: recoveryInk.bands.length, font: recovery.font },
+    changeFocus: { text: change.content, lines: change.lines, inkRows: changeInk.bands.length, font: change.font },
   }
   return { goal, focus, recovery, change, selection, labels, pair, sideBySide, pixels: { ...pixels, labelRowDelta: rowDelta }, capture: { file: shot.file, sha256: shot.sha256 } }
 }

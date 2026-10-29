@@ -141,3 +141,22 @@ During the work, the first spec runs failed for these reasons, all corrected:
 - **Out of scope.** The empty band between the card and the pinned footer (02.8) belongs to GLOBAL-02.
 - **Integration.** `origin/main` was not fetched here; integration remains with the controller.
 - **Not a device result.** This is Chromium phone emulation. Physical-iPhone UAT remains pending.
+
+
+## Final focused browser review
+
+Controller correction passed all **16 cases in 38.3s**, one worker, zero retries, session65021.
+All 430/390/320 default/override/selected action pairs are side by side, with full labels and tick
+contained; strict short-title one-line proof and full-page populated-route Axe passed. Stock labels
+wrap naturally at390/320. Actual original0b0e3f0+dirty measurement-driver identity is retained in
+external `task007-corrected-browser-final-20261029` (130 files,84PNGs).
+
+A first corrected run passed14/16; its two selected-state geometry comparisons sampled different
+instants across the stock100ms tick transition. Trace timestamps proved the mismatch. The helper
+now awaits actual finite in-pair animations and takes one synchronous geometry snapshot. All
+frame-fill/font/tick/containment/ink assertions remain; no product patch or fixed sleep/retry/force.
+Targeted behavior3/3 and full16/16 passed. Root viewed the320selected capture: complete labels/tick,
+centered one control row.255focused unit tests across8files passed before this measurement-only fix.
+
+Before final source-bound capture/native checks, integrate the protected build after Task12 delivery.
+No receipt, PR or completion is claimed at this checkpoint. Original failures and evidence remain.
