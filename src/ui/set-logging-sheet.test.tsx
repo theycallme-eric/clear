@@ -118,7 +118,7 @@ const main = () => within(screen.getByRole('main'))
 const foot = () => within(screen.getByRole('contentinfo', { name: 'Pinned foot' }))
 
 async function openSheet(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(main().getByRole('button', { name: 'Log set' }))
+  await user.click(main().getByRole('button', { name: 'Rest' }))
   return screen.getByRole('region', { name: /^(Log|Edit) set \d+$/ })
 }
 
@@ -191,7 +191,7 @@ describe('AC-027: saved rows and Edit precede Log set, then coaching', () => {
 
     const rows = await main().findByRole('list', { name: 'Logged sets' })
     const edit = within(rows).getByRole('button', { name: 'Edit set 1' })
-    const log = main().getByRole('button', { name: 'Log set' })
+    const log = main().getByRole('button', { name: 'Rest' })
     const coaching = main().getByRole('button', { name: /coaching/i })
 
     expect(edit.compareDocumentPosition(log)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
@@ -214,7 +214,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
     const sheet = await openSheet(user)
     expect(foot().getByRole('region', { name: 'Log set 1' })).toBe(sheet)
     expect(main().queryByRole('spinbutton')).toBeNull()
-    expect(main().getByRole('button', { name: 'Log set' })).toHaveAttribute('aria-expanded', 'true')
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveAttribute('aria-expanded', 'true')
   })
 
   it('titles the sheet Log set N with the top collapse chevron, then context, fields and one full-width action', async () => {
@@ -252,7 +252,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
 
     await user.click(screen.getByRole('button', { name: 'Minimize' }))
     expect(screen.queryByRole('region', { name: 'Log set 1' })).toBeNull()
-    expect(main().getByRole('button', { name: 'Log set' })).toHaveFocus()
+    expect(main().getByRole('button', { name: 'Rest' })).toHaveFocus()
 
     await openSheet(user)
     expect(form(1).getByLabelText('Reps')).toHaveValue(6)
@@ -269,7 +269,7 @@ describe('the sheet opens from the card and keeps the main screen free of fields
       ],
     })
 
-    const [first, second] = main().getAllByRole('button', { name: 'Log set' })
+    const [first, second] = main().getAllByRole('button', { name: 'Rest' })
     await user.click(first)
     expect(screen.getByRole('form', { name: 'Log set 1 of back squat' })).toBeInTheDocument()
     await user.click(second)
@@ -620,7 +620,7 @@ describe('the sheet stays usable without the shell’s host', () => {
       </AppProviders>,
     )
 
-    await user.click(screen.getByRole('button', { name: 'Log set' }))
+    await user.click(screen.getByRole('button', { name: 'Rest' }))
     await act(async () => {
       await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
     })

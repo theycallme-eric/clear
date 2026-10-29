@@ -606,10 +606,10 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
   // Minimize and hide the entry again; no result was submitted.
   const second = display(world.catalog[1].id)
   for (const exercise of world.catalog) {
-    await expect(page.getByRole('button', { name: `Log load and reps for ${display(exercise.id)}`, exact: true }))
+    await expect(page.getByRole('button', { name: `Rest for ${display(exercise.id)}`, exact: true }))
       .toHaveAttribute('aria-expanded', 'false')
   }
-  await page.getByRole('button', { name: `Log load and reps for ${second}`, exact: true }).click()
+  await page.getByRole('button', { name: `Rest for ${second}`, exact: true }).click()
   const sheet = page.locator('[data-set-sheet-slot]')
   await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(1)
   await expect(sheet.getByRole('form', { name: `Log set 1 of ${second}`, exact: true })).toBeVisible()
@@ -756,7 +756,7 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
     await expect(timer).toBeVisible()
     const exercise = display(world.catalog[1].id)
-    await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
+    await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
     const sheet = page.locator('[data-set-sheet-slot]')
     await expect(sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })).toBeVisible()
     // Circuit rest belongs to the block, independently of the set-rest sheet.
@@ -880,7 +880,7 @@ test('JOURNEY-015: menu abandon failure preserves an explicitly logged set, and 
 
   // A real explicit submit through the shared sheet creates the observation.
   const exercise = display(world.catalog[0].id)
-  await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
+  await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
   const sheet = page.locator('[data-set-sheet-slot]')
   const form = sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })
   await expect(form).toBeVisible()

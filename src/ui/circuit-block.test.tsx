@@ -151,16 +151,16 @@ function blockCard(): HTMLElement {
 
 /**
  * One movement's set form, so two movements' fields never collide. It is in
- * the movement's half-sheet, opened from its opened entry's Log set.
+ * the movement's half-sheet, opened from its opened entry's Rest action.
  */
 function formFor(name: string, setNumber = 1) {
   if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
     const log = screen
       .getAllByRole('heading', { name: new RegExp(`${name}$`) })
       .map((heading) => heading.closest('section'))
-      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Log set' })))
+      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Rest' })))
       .find((button) => button !== null)
-    if (log === null || log === undefined) throw new Error(`no Log set for ${name}`)
+    if (log === null || log === undefined) throw new Error(`no Rest entry for ${name}`)
     fireEvent.click(log)
   }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
@@ -276,7 +276,7 @@ async function logSet(
   name: string,
   setNumber: number,
 ) {
-  const open = screen.queryByRole('button', { name: `Log load and reps for ${name}` })
+  const open = screen.queryByRole('button', { name: `Rest for ${name}` })
   if (open !== null) await user.click(open)
   const form = formFor(name, setNumber)
   const weight = form.getByLabelText('Weight')
@@ -332,7 +332,7 @@ describe('the complete ordered circuit', () => {
     expect(screen.getByText('CIRCUIT · 3 ROUNDS')).toBeInTheDocument()
     expect(screen.getAllByText('60s rest between rounds')).toHaveLength(1)
     // Rest is the block's: no movement states one of its own.
-    for (const row of movementRows()) expect(within(row).queryByText(/rest/i)).toBeNull()
+    for (const row of movementRows()) expect(within(row).queryByText(/^Rest \d|\d+s rest/i)).toBeNull()
   })
 
   it('never says a rest the block does not prescribe', () => {
@@ -374,7 +374,7 @@ describe('nothing is compulsory', () => {
     // One quiet action per movement, and nothing else to fill in.
     for (const name of ['kettlebell swing', 'push up', 'goblet squat']) {
       expect(
-        screen.getByRole('button', { name: `Log load and reps for ${name}` }),
+        screen.getByRole('button', { name: `Rest for ${name}` }),
       ).toHaveAttribute('aria-expanded', 'false')
     }
   })
@@ -702,7 +702,7 @@ describe('optional, compact load entry', () => {
     const user = userEvent.setup()
     renderLoggingCircuit()
 
-    await user.click(screen.getByRole('button', { name: 'Log load and reps for back squat' }))
+    await user.click(screen.getByRole('button', { name: 'Rest for back squat' }))
 
     const form = formFor('back squat')
     expect(screen.getAllByRole('form', { name: /^Log set/ })).toHaveLength(1)
@@ -764,7 +764,7 @@ describe('optional, compact load entry', () => {
     expect(busy).toHaveAttribute('aria-busy', 'true')
 
     // The other movement and the round stay the athlete's to press.
-    await user.click(screen.getByRole('button', { name: 'Log load and reps for romanian deadlift' }))
+    await user.click(screen.getByRole('button', { name: 'Rest for romanian deadlift' }))
     expect(formFor('romanian deadlift').getByRole('button', { name: 'Log set 1' })).toBeEnabled()
     expect(startRound1()).toBeEnabled()
 
