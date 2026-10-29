@@ -300,3 +300,36 @@ actual delivered base; genuine Task 10 format recapture and all required native 
 server, full unit suite, native command or Claude call was started for this correction. The earlier
 6/6 proof is retained history, not proof of this changed runtime. No native acceptance or delivery
 is claimed.
+
+## Combined-build proof preparation after Task 7 delivery
+
+The controller normally integrated Task 7's actual delivered build
+`56ceb5107c3dccd3c6fb1109dc439efa44f14676` into this retained Task 10 branch without conflicts,
+at merge `62d0b224561ffe4be8e000f5c34e5fdd62e40d6e`. The original Task 10 claim/attempt history
+remains unchanged; this is the actual combined base for the next proof and native recovery.
+
+On that clean merged source, the targeted choose/Undo browser case passed **1/1 in 4.7 seconds**
+(controller foreground 11063). Its real record identifies head `62d0b224561ffe4be8e000f5c34e5fdd62e40d6e`,
+`dirty: false`, and Review working SHA-256
+`24750dfb391f32711cd560a1436c7dcbda926c09e97c7d8667d8d67b63b8cbe5`. The controller opened the
+actual chosen-state narrow PNG: SYNTHETIC, MOUNTAIN and SHOULDER remained whole, the full Undo
+was on its quiet row below the readings, and the name column retained its original width. The
+earlier 122 focused units and build passed on the correction committed as `6abf1f6`, before this
+base integration; they are not relabelled as new combined-build runs.
+
+Only the next format collector's destination and the audit test's actual source-lineage inputs are
+prepared here. The unique destination
+`docs/design/evidence-0143/task034-format-preview-batch05-task010` did not exist; no older group,
+record, screenshot or audit entry was overwritten. Existing validators are unchanged. The actual
+inputs are:
+
+- task `TASK-010`, revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-010`;
+- run `51fdc2db-4908-4b55-9b22-ec6df56ac3f9`, attempt 1;
+- retained branch `agent-runner/task-010-a1-51fdc2db`;
+- combined tested base `56ceb5107c3dccd3c6fb1109dc439efa44f14676`.
+
+**Pending:** the complete six-case grouped Review browser suite on the frozen preparation candidate,
+the existing authenticated format collector, derivation of actual new provenance/audit from its
+terminal output, all required native exact-head verification commands and normal delivery. No new
+capture, provenance, audit hash, acceptance receipt or delivery is created or claimed by this
+preparation. No test, browser, server, native Runner command or Claude call was run for it.
