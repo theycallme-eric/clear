@@ -382,7 +382,6 @@ const originOf = (baseURL: string | undefined) => new URL(baseURL!).origin
 // ─────────────────────────────────────────────────────────────────────────────
 
 const card = (page: Page) => page.locator('main .clr-card').first()
-const goalLine = (page: Page) => card(page).getByText(/^Goal:/)
 const focusLine = (page: Page) => card(page).getByText(/^Focus:/)
 const recoveryAction = (page: Page) => page.getByRole('button', { name: 'Recovery session', exact: true })
 const changeFocusAction = (page: Page) => page.getByRole('button', { name: 'Change focus', exact: true })
