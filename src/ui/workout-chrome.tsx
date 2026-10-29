@@ -477,6 +477,12 @@ export interface StructureBadgeProps {
  * An element frame, not a card: the small chamfer on the structure role, with
  * no accent bar, emitting through its own `.clr-bleed` wrapper. That is what
  * lets it sit inside a block's card or a section's without nesting one.
+ *
+ * The emission is the wrapper's `::before`, so it is exactly as wide as the
+ * wrapper. A flex-column or grid parent stretches an auto-width item to the
+ * line even though it is inline-flex, and the outline then ran on across the
+ * unused group width (B05-04). The wrapper is sized to its frame instead, in
+ * every parent, and capped at the parent so a long label wraps inside it.
  */
 export function StructureBadge({ identity }: StructureBadgeProps) {
   const detail = [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
@@ -502,6 +508,14 @@ export function StructureBadge({ identity }: StructureBadgeProps) {
 
 const STRUCTURE_BLEED_STYLE = {
   '--bleed': 'var(--border-frame-structure)',
+  width: 'fit-content',
+  maxWidth: '100%',
+  // Inside a scroll region every item may shrink below its words. Beside a
+  // label in a row, the badge gives up the width first and wraps its own
+  // label rather than squeezing the label under it — and never past its own
+  // longest word, so its text stays inside its frame.
+  minWidth: 'min-content',
+  flexShrink: 1000,
 } as CSSProperties
 
 function StructureGlyphIcon({ glyph }: { glyph: StructureGlyph }) {
