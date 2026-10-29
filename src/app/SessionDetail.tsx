@@ -33,6 +33,7 @@ import {
   AlertCircle,
   ArrowLeft,
   Button,
+  IconButton,
   Info,
   Play,
 } from '../design-system/index'
@@ -133,9 +134,11 @@ export function SessionDetail() {
         heading={view?.title}
         header={{
           actions: (
-            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
-              {SESSION_DETAIL_BACK_LABEL}
-            </Button>
+            <IconButton
+              label={SESSION_DETAIL_BACK_LABEL}
+              icon={<ArrowLeft size={20} />}
+              onClick={goBack}
+            />
           ),
         }}
         pinnedFoot={

@@ -1,6 +1,37 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-004 combined source-bound recapture — 29 October 2026
+## Current batch-05 TASK-005 combined source-bound recapture — 28 October 2026 (America/Chicago)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task005/`.
+The unchanged authenticated collector passed four skin cases / eight normal-short PNGs in22.1seconds,
+foreground9992, exit0. Source `5e90e9507adfbe3eef1c504c0b0dd639307fb6a4`; runtime
+`957c56c7ae03c53284501f205bdd4ab0b5194bf8b3a1133836b1ea863e262564`; driver
+`6d49620d1f84d3d4b2055734410e5b92199df4d4bc30a389896339402d78196e`; pinned0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The first record is clean; subsequent dirty statuses contain only collector-created evidence.
+Settings entry, read-only format/disclosure, Back/direct Back, accessibility and unchanged actual
+pixel/record/source checks passed. Manifest complete; every preview generation/write counter is0.
+Only owned disposable loopback Supabase/PostgreSQL17 and synthetic auth were used.
+
+Real source identity: TASK-005, run`fd1c27d1-92cf-4dfe-a361-21977a89c894`, producer attempt1,
+retained branch`agent-runner/task-005-a1-fd1c27d1`, actual combined tested base
+`40ffb2f749bb6930f21a8befa794a7b2c97913b6`, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-005`.
+The actual TASK-004 protected build merge is incorporated; original claim base0c9f55 remains history.
+Existing v1 source-only digest derived from real manifest, records and PNG bytes:
+`d18f2ffcbb92a8d627451f24a117675a9f1ce2c249c9ae681b21f2e69cdf5603`.
+All older groups remain unchanged. This is source continuity, not native acceptance or delivery.
+Independent criterion/task/project checks, exact-head receipt, requiredCI and protected build merge
+remain mandatory. No installed-iPhone, hosted schema/write, model canary, main or production result.
+
+Separate actual Task005 browser proof passed14/14 existing cases after integrating the live base:
+six in-app returns, six direct-entry fallbacks and two unrelated/collapse cases. Every required image
+hash is nonnull and matches the approved reference; missing/unreadable files now fail closed. All six
+actual housing pixel comparisons passed. Public IconButton housing and all six accessible names,
+handlers and header slots are retained. Actual reference regions, PNG/source identities, corrections
+and honest390x844/CLEAR limits are recorded in TASK-005's own note.
+
+## Prior batch-05 TASK-004 combined source-bound recapture — 29 October 2026
 
 Actual current group: `docs/design/evidence-0143/task034-format-preview-batch05-task004/`.
 The unchanged authenticated collector passed4/4skin cases and produced8normal/short PNGs in21.2seconds,

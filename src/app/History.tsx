@@ -28,7 +28,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { ArrowLeft, Button } from '../design-system/index'
+import { ArrowLeft, Button, IconButton } from '../design-system/index'
 import {
   filterHistory,
   historyEntries,
@@ -115,13 +115,11 @@ export function History() {
         title={SCREEN_TITLE}
         header={{
           actions: (
-            <Button
-              variant="quiet"
+            <IconButton
+              label={HISTORY_BACK_LABEL}
               icon={<ArrowLeft size={20} />}
               onClick={() => void navigate('/')}
-            >
-              {HISTORY_BACK_LABEL}
-            </Button>
+            />
           ),
         }}
         pinnedFoot={
