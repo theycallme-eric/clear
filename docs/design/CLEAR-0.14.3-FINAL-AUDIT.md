@@ -1,6 +1,17 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-009 combined source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-012 source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task012/`. The unchanged authenticated collector passed **4/4 skin cases / eight new PNGs in23.1seconds**, foreground79902, terminal exit0. Complete phone390×844 and short390×320 matrix in CLEAR, Vapour, Signal and Mono; existing Settings/disclosure, Back/direct Back, accessibility, settled layout, storage and network checks passed.
+
+Actual frozen source `baf2a0f8835463c1d163754cb3639d2b139a759e`, runtime `be16a46ae11a4ced6252f00b4844b44d58ff372bd8048b1cf6210e4af47615ab`, driver `e7a37eb12ed05d39126dbdebb328ff6457a571c7c1cc19aa8bf629c8a67d44dd`, pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. Observed 2026-10-29T21:41:48.431Z through 2026-10-29T21:41:53.329Z, capture process54446, loopback origin http://localhost:5173. First record clean; subsequent dirty status contains collector evidence only. All eight PNG bytes/digests independently checked. Every preview generation/blocked generation/attempted write/forwarded write counter is0. Owned disposable backend auth/onboarding setup and cleanup are fixture responsibilities; no hosted/model activity is claimed.
+
+Existing v1 source-only provenance records TASK-012, revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-012`, run `420a75c5-30fd-4c4f-93f2-42f650105495`, attempt1, retained branch `agent-runner/task-012-a1-420a75c5`, actual combined tested build base `a7fb2891ed207eff0fe9508164d2386a90d5349a`. Actual unchanged capturePayloadSha256() digest `520bf5c2806bc3725c9b6addc7752cca294ea65b218b14ed7444905c8f986fc7` excludes provenance itself. Original claim/worker/failure and all old groups are preserved.
+
+Separate actual Workout proof passed5/5 at390/320 with originala7e5f8c+dirtydriver identity retained externally; it is not relabelled as this capture. Native exact-head acceptance/receipt, required CI and protected build delivery remain pending. Physical-iPhone UAT remains separate.
+
+
+## Prior batch-05 TASK-009 combined source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task009/`. The unchanged authenticated collector passed **4/4 skin cases / eight new PNGs in 24.2 seconds**, foreground46072, terminal exit0. The complete manifest covers phone390×844 and short390×320 in CLEAR, Vapour, Signal and Mono. Settings entry, read-only format/disclosure, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 

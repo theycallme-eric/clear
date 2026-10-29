@@ -172,3 +172,8 @@ Visually inspected (opened):
   - with the countdown inside it, `Log set N` is reached by scrolling that region.
 - Physical-iPhone UAT remains pending. Nothing here is an installed-device result.
 - `origin/main` was not fetched or merged; the controller owns integration and delivery.
+
+
+## Genuine source-bound capture
+
+Frozen source baf2a0f8835463c1d163754cb3639d2b139a759e; unchanged collector79902 endedexit0,4/4skins/eightPNG/23.1s,completeactualmatrix. Runtime be16a46ae11a4ced6252f00b4844b44d58ff372bd8048b1cf6210e4af47615ab; driver e7a37eb12ed05d39126dbdebb328ff6457a571c7c1cc19aa8bf629c8a67d44dd; actualpayload 520bf5c2806bc3725c9b6addc7752cca294ea65b218b14ed7444905c8f986fc7. EightPNGbytes/digests checked; allpreviewnetworkwrite/generationcounters0,ownedlocalfixtureauthsetup/cleanupseparate. Actual v1source-onlyprovenance/audit derived; alloldgroupspreserved. Fullunchangednativechecks,exact-headreceipt,CIandprotectedbuilddeliverypending.
