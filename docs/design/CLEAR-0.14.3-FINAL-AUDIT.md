@@ -1,6 +1,46 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-005 combined source-bound recapture — 28 October 2026 (America/Chicago)
+## Current batch-05 TASK-008 source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task008/`.
+The existing authenticated collector passed all four skin cases in 24.6 seconds, foreground
+session 18202, terminal exit 0. It produced eight new PNGs: phone 390×844 and short 390×320 for
+CLEAR, Vapour, Signal and Mono. The derived manifest is complete; no failed or skipped case is
+counted. Each real session exercised Settings entry, read-only formats/disclosures, Back and direct
+entry Back, with the existing accessibility, settled-layout, storage and network assertions.
+
+All four records identify frozen source `f643b01f081a2076aa07a6ef12bc83889722d38a`, runtime
+`dd45bd8b70b06c002a68f11b1cef828237cfb24e8c0045e0a4fbd6b342843abf`, driver
+`e0b9150cf1108b60ce123324a2d8b27bffd77986a38581a9b661cc447e569b1b` and pinned 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+Observed at 13:50:31.664–13:50:47.381 UTC, process 16990, origin `http://localhost:5173`.
+The first record was clean; later dirty statuses truthfully include collector-created evidence.
+No product or capture-driver source changed during collection. Every preview generation request,
+blocked generation, attempted write and forwarded write counter is zero. Disposable local
+authentication/onboarding setup and cleanup remain the fixture's responsibility; this does not
+claim a journey with no backend writes of any kind.
+
+Existing v1 source-only provenance names TASK-008, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-008`, run
+`61a099b3-56ee-4d25-90cd-9dab2510bc29`, attempt 2, retained branch
+`agent-runner/task-008-a2-61a099b3` and tested build base
+`b933e929c02f5b74f66a7b915455bdbc121a2f56`. The unchanged `capturePayloadSha256()` derived the
+actual manifest/four-record/eight-PNG payload digest
+`fef05a9538eedde15241507b0a6fdd600566adfe01c23a1af99d147e661c9033`; provenance excludes itself.
+Every older evidence group and the original failed attempts remain unchanged.
+
+Existing focused audit, format-evidence and capture-lineage consumers passed **116/116** tests
+across three files in 12.72 seconds. They validated current source/driver/package binding, exact
+manifest/schema/PNG bytes and source lineage without changing any validator. Phone CLEAR and short
+Vapour PNGs were also opened for visual inspection.
+
+This refresh establishes current local source-bound proof. Separate TASK-008 visual evidence
+retains its actual earlier `314f73d` plus dirty-source identity; it is not relabelled as this capture.
+Full native criterion/task/project verification, exact-head receipt, required CI and protected
+build-branch delivery remain pending. No physical-iPhone UAT, deployed proof, hosted mutation,
+generation canary, main merge, production deployment or distance change is claimed.
+
+## Prior batch-05 TASK-005 combined source-bound recapture — 28 October 2026 (America/Chicago)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task005/`.
 The unchanged authenticated collector passed four skin cases / eight normal-short PNGs in22.1seconds,

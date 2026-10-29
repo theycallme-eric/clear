@@ -105,15 +105,36 @@ reviewed against B05-03. This is Chromium phone emulation; physical-iPhone UAT r
 
 ## Source-bound proof and next action
 
-The unchanged project audit binds the active format-preview proof to the entire runtime source.
-Refreshing it requires a real clean source capture, rather than changing old hashes or reusing PNGs.
-The active collector group and source-only lineage identity now name TASK-008, this run, attempt2 and
-the actual b933e929 build base; validators and historical groups remain unchanged.
+The unchanged project audit binds the active format-preview proof to the runtime source. Reviewed
+source was frozen at `f643b01f081a2076aa07a6ef12bc83889722d38a`, with exactly nine approved files,
+clean status, unchanged validators and the actual b933e929 build base. Source hashes matched the
+stable preservation copies. Six untracked generated diagnostics were moved outside the product to
+the correction-history directory with original device/inode/size preserved; unreadable content
+hashes remain explicitly unavailable. No original failure or attempt history was discarded.
 
-Next: freeze this reviewed source, run the existing four-skin/eightPNG authenticated format collector
-against the owned disposable local backend, derive actual provenance/audit from its records, commit
-proof, then invoke existing native same-workspace recovery. Its criterion/task/project checks and
-exact-head receipt remain mandatory, followed by ordinary PR/exact-head CI/protected build merge.
-Full project checks have not yet been rerun on this corrected source; no native acceptance or
-completion is claimed here. Runner/framework, approvals, references, counters, protected vendor and
-workflow paths, distance, hosted services, main and production remain unchanged.
+The existing authenticated collector then completed in foreground session 18202, terminal exit 0:
+**4 skin cases passed in 24.6 seconds**, producing eight new phone/short PNGs in
+`docs/design/evidence-0143/task034-format-preview-batch05-task008/`. All four records name the frozen
+source, runtime `dd45bd8b70b06c002a68f11b1cef828237cfb24e8c0045e0a4fbd6b342843abf`, driver
+`e0b9150cf1108b60ce123324a2d8b27bffd77986a38581a9b661cc447e569b1b` and the pinned 0.14.3 package.
+The manifest is complete. The preview walk recorded zero generation, blocked generation, attempted
+write and forwarded write counters; existing authenticated-session setup/cleanup stayed on the owned
+disposable local backend. The first record is clean; later dirty statuses reflect new evidence files.
+
+Existing v1 source-only provenance names this run, attempt 2, exact approved graph/task revision,
+retained branch and tested build base. Its actual payload digest, derived with unchanged
+`capturePayloadSha256()`, is `fef05a9538eedde15241507b0a6fdd600566adfe01c23a1af99d147e661c9033`.
+The audit records actual application/runtime/driver identities. Historical groups remain unchanged.
+Existing focused proof consumers passed **116/116 tests across three files in 12.72 seconds**:
+`src/test/design-0143-final-audit.test.ts`, `src/test/format-preview-evidence.test.ts` and
+`src/test/capture-source-lineage.test.ts`. Phone CLEAR and short Vapour PNGs were opened for visual
+inspection. The first sandbox invocation could not create its native macOS temporary directory and
+executed zero tests; the unchanged command passed in native host context. No test/config workaround
+was introduced. This validation does not substitute for native acceptance.
+
+Next: commit genuine proof/audit/progress, then invoke existing native same-workspace recovery.
+Its criterion/task/project checks and exact-head receipt remain mandatory, followed by ordinary
+PR/exact-head CI/protected build merge. Full project checks have not yet been rerun on this corrected
+source; no native acceptance or completion is claimed here. This is local Chromium proof, not
+physical-iPhone UAT or deployed proof. Runner/framework, approvals, references, counters, protected
+vendor and workflow paths, distance, hosted services, main and production remain unchanged.
