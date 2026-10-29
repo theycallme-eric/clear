@@ -177,3 +177,12 @@ No new issue, scope expansion or related header change was made. The owner was i
 
 Fresh four-skin/eight-PNG format proof and existing same-attempt native recovery remain pending.
 Validators, older evidence, vendor, TimerFrame and approval/attempt history remain unchanged.
+
+
+## Genuine combined frozen-source format proof
+
+Existing collector46072 terminal0:4/4skins/eightPNG/24.2s. Actual frozen source
+`7510f5bcf551214bef9aae803dac09a0f4cefed6`, runtime
+`b11842aad3115aa53fc482707a0655ac95ef2adce8d8620a61b2cd527afcca2e`, driver
+`e32542e19a16e26c6e01bbceccfdd3216376d43bf4e404a274b7fe5aed72bf35`. Preview generation/write counters all0; owned local auth fixture setup/cleanup only. Actual eight PNG bytes/digests match. Existing v1 provenance uses Task9/a1/run0b38/basecdbc and actual payload
+`3a1086379f566de7540475f73bc798e9f2817683498e977c811ab7fba1a74cc0`. Native no-model recovery and all project checks remain next; no model attempt, source validator, approval or earlier evidence was changed.

@@ -1,6 +1,26 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-006 source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-009 combined source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task009/`. The unchanged authenticated collector passed **4/4 skin cases / eight new PNGs in 24.2 seconds**, foreground46072, terminal exit0. The complete manifest covers phone390×844 and short390×320 in CLEAR, Vapour, Signal and Mono. Settings entry, read-only format/disclosure, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four real records identify frozen source `7510f5bcf551214bef9aae803dac09a0f4cefed6`, runtime
+`b11842aad3115aa53fc482707a0655ac95ef2adce8d8620a61b2cd527afcca2e`, driver
+`e32542e19a16e26c6e01bbceccfdd3216376d43bf4e404a274b7fe5aed72bf35` and pinned0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. Observed 2026-10-29T20:19:08.807Z through 2026-10-29T20:19:24.864Z, process97760, origin http://localhost:5173. The first record is clean; later dirty states include only collector-created evidence. Runtime/capture source remained frozen. All eight actual PNG byte counts/digests were independently verified.
+
+Every preview generation, blocked generation, attempted write and forwarded write counter is0. Owned disposable loopback backend auth/onboarding setup and cleanup remain the fixture's responsibility; no hosted target, paid model or global no-backend-write claim is implied.
+
+Existing v1 source-only provenance identifies TASK-009, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-009`, run
+`0b38aab8-cb02-4380-9ae1-6a65c8c85d69`, attempt1, branch
+`agent-runner/task-009-a1-0b38aab8`, actual combined tested build base
+`cdbcbe91fc7b9c79539c7ac2bd0fa3d5ad79df08`. Original f9ec claim history remains preserved. Actual manifest/four-record/eight-PNG payload digest, from unchanged capturePayloadSha256(), is
+`3a1086379f566de7540475f73bc798e9f2817683498e977c811ab7fba1a74cc0`; provenance excludes itself. All older groups remain unchanged.
+
+Separate task consumer proof passed10/10 cases and retains actual7803546 plus dirty identity; it is not relabelled as this collection. Native acceptance, exact-head receipt, required CI and protected build delivery remain pending. Physical-iPhone UAT, main merge, production deployment, distance changes and hosted mutation are not claimed.
+
+## Prior batch-05 TASK-006 source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task006/`. The existing authenticated collector passed **4/4 skin cases / eight new
 PNGs in 25.1 seconds**, foreground session 89855, terminal exit 0. The complete manifest covers
