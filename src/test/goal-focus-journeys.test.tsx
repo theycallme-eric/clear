@@ -232,7 +232,8 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(screen.getByText('Strength')).toBeInTheDocument()
     expect(focusLine()).toHaveTextContent('Lower body')
-    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    // B05-02.4: the recommendation is shown as the Focus, without its explanation.
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
     // Neither the Goal nor the Focus is a question.
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
@@ -376,8 +377,9 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
-    // Now the explanation is history's own, and there is history behind it.
-    expect(screen.getByText(/^No .+ in (\d+ days?|the sessions you’ve logged)\.$/)).toBeInTheDocument()
+    // Now the Focus is history's recommendation, said without its explanation (B05-02.4).
+    expect(focusLine()).not.toHaveTextContent('this workout only')
+    expect(screen.queryByText(/^No .+ in (\d+ days?|the sessions you’ve logged)\.$/)).not.toBeInTheDocument()
     expect(cta()).toBeEnabled()
     const shown = focusLine().textContent
 

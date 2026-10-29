@@ -232,6 +232,14 @@ body,
   display: flex;
 }
 
+/* A toggle chip sharing the row with buttons (Generate's Recovery beside
+   Change focus, B05-02.7) fills its cell as a button does, label centred,
+   so the pair's frames meet at the group's gap rather than leaving slack. */
+.clr-action-group > .clr-bleed > .clr-chip {
+  flex-grow: 1;
+  justify-content: center;
+}
+
 /* U25: a paired confirm/cancel is two equal halves or two full rows, never
    two ragged cells. Each starts at half the row and refuses to shrink below
    its label, so a label that does not fit its half wraps the pair onto full

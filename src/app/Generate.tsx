@@ -56,7 +56,7 @@
  * every visit, so a Goal changed in Settings is the Goal the next request sends.
  */
 import { useEffect, useId, useMemo, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   AlertCircle,
@@ -81,6 +81,7 @@ import {
   ANCHORS,
   anchorAllowed,
   canGenerate,
+  clampIntensity,
   GENERATE_PATH,
   GENERATION_GOALS,
   initialDraft,
@@ -186,9 +187,6 @@ function contextFrom(
 
 /** Where the standing Goal is set and changed. */
 export const SETTINGS_ROUTE = '/settings'
-
-/** The route out of the Goal context: the Goal is changed there, not here. */
-export const CHANGE_GOAL_LABEL = 'Change in Settings'
 
 /** The correction state, for a profile with no Goal and for a legacy one. */
 export const GOAL_CORRECTION_TITLE = 'Set your goal in Settings'
@@ -436,6 +434,8 @@ function GenerateForm({
   // recommendation the same choice is the manual one and carries no marker.
   const override =
     resolved.status === 'ready' && resolved.focusSource === 'override' ? resolved : null
+  // A Focus to show beside the Goal, and so one for `Change focus` to change.
+  const focused = recommended !== null || override !== null
 
   // The choices under `Change focus` open with an override in force — a
   // refreshed one included — and with Recovery, whose refused Power stays seen.
@@ -486,6 +486,8 @@ function GenerateForm({
   const range = REQUESTED_INTENSITY_RANGE
   const intensity = resolved.intensity ?? draft.intensity ?? range.start
   const standingGoal = GENERATION_GOALS.find((goal) => goal.value === goalPreset)
+  const intensityNoted =
+    resolved.goal === null || clampIntensity(resolved.goal, intensity) !== intensity
 
   /** Dismissing the choices takes the override with them (REQ-007). */
   function toggleChanging() {
@@ -586,25 +588,52 @@ function GenerateForm({
             </p>
           )}
 
-        {/* Goal — the profile's standing one, as context, said plainly (U26).
-            It is changed in Settings, never asked per workout (REQ-001). */}
+        {/* Goal and Focus at the top, said alike (B05-02.6/02.7). The Goal is
+            the profile's standing one, as context (U26); it is changed in
+            Settings, never asked per workout (REQ-001). */}
         <div className="clr-stack clr-stack--tight">
           <p style={{ margin: 0 }}>
             Goal: <strong>{standingGoal?.label}</strong>
           </p>
-          <p style={{ margin: 0 }}>
-            <Link to={SETTINGS_ROUTE}>{CHANGE_GOAL_LABEL}</Link>
-          </p>
+          {focused && (
+            <p style={{ margin: 0 }}>
+              Focus:{' '}
+              <strong>
+                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
+              </strong>
+              {override !== null && ` — ${OVERRIDE_SCOPE}`}
+            </p>
+          )}
         </div>
 
-        {/* Recovery — the secondary, one-workout mode. The standing Goal above
-            is untouched by it, and Power's refusal is said in text (§2.3). */}
+        {/* Recovery — the secondary, one-workout mode — and the way off the
+            Focus: one action group beneath them (B05-02.7), sharing the row
+            while both labels fit, Recovery's tick included, and each keeping
+            its own behaviour. With no Focus to change, Recovery stands alone.
+            The standing Goal is untouched by Recovery, and Power's refusal is
+            said in text (§2.3). */}
         <div className="clr-stack clr-stack--tight">
-          <div className="clr-row" style={CHIP_ROW}>
-            <Chip selected={draft.recovery} onClick={toggleRecovery}>
-              {RECOVERY_LABEL}
-            </Chip>
-          </div>
+          {focused ? (
+            <ActionGroup>
+              <Chip selected={draft.recovery} onClick={toggleRecovery}>
+                {RECOVERY_LABEL}
+              </Chip>
+              <Button
+                variant="quiet"
+                aria-expanded={expanded}
+                aria-controls={expanded ? focusChoices : undefined}
+                onClick={toggleChanging}
+              >
+                {CHANGE_FOCUS_LABEL}
+              </Button>
+            </ActionGroup>
+          ) : (
+            <div className="clr-row" style={CHIP_ROW}>
+              <Chip selected={draft.recovery} onClick={toggleRecovery}>
+                {RECOVERY_LABEL}
+              </Chip>
+            </div>
+          )}
           {draft.recovery && (
             <p style={{ margin: 0 }}>
               {RECOVERY_NOTE} {POWER_REFUSAL}
@@ -616,31 +645,17 @@ function GenerateForm({
             cannot, and never drawn before the read has answered */}
         {focusLoading ? (
           <LoadingView label={HISTORY_LOADING_LABEL} />
-        ) : recommended !== null || override !== null ? (
+        ) : focused ? (
+          // An override holds the choices open, so `expanded` covers both.
+          expanded && (
           <div className="clr-stack clr-stack--tight">
-            <p style={{ margin: 0 }}>
-              Focus:{' '}
-              <strong>
-                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
-              </strong>
-              {override !== null && ` — ${OVERRIDE_SCOPE}`}
-            </p>
-            {recommended !== null && <p style={{ margin: 0 }}>{recommended.reason}</p>}
-            <ActionGroup>
-              <Button
-                variant="quiet"
-                aria-expanded={expanded}
-                aria-controls={expanded ? focusChoices : undefined}
-                onClick={toggleChanging}
-              >
-                {CHANGE_FOCUS_LABEL}
-              </Button>
-              {override !== null && (
+            {override !== null && (
+              <ActionGroup>
                 <Button variant="quiet" onClick={() => chooseOverride(null)}>
                   {OVERRIDE_CANCEL_LABEL}
                 </Button>
-              )}
-            </ActionGroup>
+              </ActionGroup>
+            )}
             {/* The override's choices. Power stays visible under Recovery,
                 disabled, with the refusal said beside the Recovery action. */}
             {expanded && (
@@ -664,6 +679,7 @@ function GenerateForm({
               </div>
             )}
           </div>
+          )
         ) : (
           <>
             {focusHistory?.status === 'history-error' && (
@@ -716,7 +732,9 @@ function GenerateForm({
           />
         )}
 
-        {/* Intensity — one 1–10 choice; the hint says what the goal makes of it (U27) */}
+        {/* Intensity — one 1–10 choice. The range explanation is gone (B05-02.5);
+            the hint stays only where the goal composes the choice as another
+            value, or where no goal yet says how it is used (U27). */}
         <div className="clr-stack clr-stack--tight">
           <IntensitySlider
             label="Intensity"
@@ -726,10 +744,12 @@ function GenerateForm({
             value={intensity}
             disabled={resolved.goal === null}
             valueText={`${intensity} of ${range.max}`}
-            aria-describedby={intensityHint}
+            aria-describedby={intensityNoted ? intensityHint : undefined}
             onChange={chooseIntensity}
           />
-          <p id={intensityHint}>{intensityNote(resolved.goal, intensity)}</p>
+          {intensityNoted && (
+            <p id={intensityHint}>{intensityNote(resolved.goal, intensity)}</p>
+          )}
         </div>
 
         <Select
