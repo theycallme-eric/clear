@@ -255,3 +255,23 @@ and source-only consumer metadata identify the real run, attempt 1, task revisio
 f9ecf047. Validators and older evidence groups remain unchanged. The candidate will be frozen
 before real collection; native recovery, all project checks, PR/CI/build-branch delivery and physical
 UAT are not yet claimed.
+
+
+## Genuine frozen-source format proof
+
+The existing authenticated collector completed in foreground session 89855, exit 0:
+4/4 skins, eight phone/short PNGs, 25.1 seconds. Frozen source `196603e621f9b3581fdb5c4648f057ba51ae5579`,
+runtime `e87fa643ccdaab23eb7ace03a6e1744372150eac02fe7901d603d369849af8bd`, driver
+`8d65e54166fc1dc737d8228c1a6614881b3261af587313681f6ff618fa4ba2dc`. All preview generation/write counters are zero.
+Owned disposable loopback backend and existing auth setup/cleanup only; no hosted target or paid
+model use. All eight actual PNG digests/byte sizes match and phone CLEAR/short Vapour were viewed.
+The existing v1 provenance uses this actual Task 6 run/attempt/base and payload
+`c84833d4c4005c6cbdff8ebd2ab36b3fbf6f5a70715c2e0d936550d392adaf94`. Earlier evidence/failed attempts are preserved.
+
+React review found derived query state without effects, reused entry rendering, stable existing
+keys and module-level specimens; no new library, client fetching or production gallery route.
+The selected Input view and fallback behavior have 19/19 route/registry unit tests. All seven
+focused browser cases passed after true route readiness, without scoped or preliminary Axe scans.
+
+Native recovery and all final project checks remain the next step. Keep this candidate frozen
+once accepted; delivery/completion notes then belong in external Runner records.
