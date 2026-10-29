@@ -42,6 +42,7 @@ import {
   Checkbox,
   ChoiceGroup,
   EmptyState,
+  IconButton,
   Input,
   LogOut,
   TextAction,
@@ -137,9 +138,7 @@ export function Settings() {
         title="Settings"
         header={{
           actions: (
-            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={goBack}>
-              {SETTINGS_BACK_LABEL}
-            </Button>
+            <IconButton label={SETTINGS_BACK_LABEL} icon={<ArrowLeft size={20} />} onClick={goBack} />
           ),
         }}
         pinnedFoot={

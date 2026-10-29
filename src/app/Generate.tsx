@@ -65,6 +65,7 @@ import {
   Chip,
   EmptyState,
   FormField,
+  IconButton,
   Input,
   IntensitySlider,
 } from '../design-system/index'
@@ -287,15 +288,14 @@ export function Generate() {
   // GEN-05's screen has no route of its own: while a run this screen started is
   // in flight — or has failed and is being answered — the shared host makes it
   // the screen, and cancelling puts the form back where the user left it.
+  // REQ-007: Back is the shared framed icon-only housing; its name stays "Home".
   const header: ScreenHeader = {
     actions: (
-      <Button
-        variant="quiet"
+      <IconButton
+        label="Home"
         icon={<ArrowLeft size={20} />}
         onClick={() => void navigate('/')}
-      >
-        Home
-      </Button>
+      />
     ),
   }
 

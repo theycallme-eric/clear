@@ -30,7 +30,7 @@
 import type { CSSProperties } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
-import { ArrowLeft, Button } from '../design-system/index'
+import { ArrowLeft, IconButton } from '../design-system/index'
 import type { Enums } from '../data/database.types'
 import type { LadderRung } from '../state/ladder'
 import {
@@ -405,9 +405,7 @@ export function FormatPreview() {
         title={FORMAT_PREVIEW_TITLE}
         header={{
           actions: (
-            <Button variant="quiet" icon={<ArrowLeft size={20} />} onClick={backToSettings}>
-              Settings
-            </Button>
+            <IconButton label="Settings" icon={<ArrowLeft size={20} />} onClick={backToSettings} />
           ),
         }}
       >
