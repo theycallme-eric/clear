@@ -325,17 +325,6 @@ describe('StructureBadge', () => {
     expect(bleed.style.getPropertyValue('--bleed')).toBe('var(--border-frame-structure)')
   })
 
-  it('sizes its emitting wrapper to the label in any parent, not to the parent (B05-04)', () => {
-    renderWithProviders(<StructureBadge identity={standardIdentity()} />)
-
-    // The outline is the wrapper's own `::before`: a stretched wrapper is a
-    // stretched outline. The rendered geometry is proven in the browser spec.
-    const bleed = screen.getByText('STANDARD').parentElement as HTMLElement
-    expect(bleed.style.width).toBe('fit-content')
-    expect(bleed.style.maxWidth).toBe('100%')
-    expect(bleed.style.minWidth).toBe('min-content')
-  })
-
   it('is not a card, so it sits inside one without nesting', () => {
     renderWithProviders(
       <Card heading="Block">

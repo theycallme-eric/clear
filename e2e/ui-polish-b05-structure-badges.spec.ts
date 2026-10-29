@@ -1,4 +1,4 @@
-import { execSync, spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createServer, type AddressInfo } from 'node:net'
@@ -111,6 +111,22 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
     { scope: 'worker', timeout: 120_000 },
   ],
   baseURL: async ({ baseURL, syntheticOrigin }, use) => use(syntheticOrigin ?? baseURL),
+  checkA11y: async ({ page, checkA11y }, use) => {
+    await use(async () => {
+      const path = new URL(page.url()).pathname
+      const heading = path === '/review' ? REVIEW.workout.title
+        : path === '/workout' ? 'Workout'
+        : path === `/history/${DONE_ID}` ? DONE.title
+        : path === '/settings/formats' ? 'Workout formats' : null
+      if (heading === null) throw new Error(`No actual-route readiness contract for ${path}`)
+      // Boot also owns an h1, and Workout has a loading screen with its final
+      // title. Require the actual destination and badge content before the
+      // standing fixture's first complete accessibility assertion.
+      await expect(page.getByRole('heading', { level: 1, name: heading, exact: true })).toBeVisible()
+      await expect(page.locator('main#main').locator(BADGE).first()).toBeVisible()
+      await checkA11y()
+    })
+  },
 })
 
 type Viewport = { width: number; height: number }
@@ -132,12 +148,11 @@ const REFERENCE = {
 }
 
 function sourceIdentity() {
-  try {
-    const head = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
-    const dirty = execSync('git status --porcelain', { encoding: 'utf8' }).trim() !== ''
-    return { head, dirty }
-  } catch {
-    return { head: process.env.GITHUB_SHA ?? 'unknown', dirty: null }
+  const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', timeout: 10_000 }).trim()
+  if (!/^[a-f0-9]{40}$/.test(head)) throw new Error('Badge capture requires an actual Git source identity')
+  return {
+    head,
+    dirty: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8', timeout: 10_000 }).trim() !== '',
   }
 }
 

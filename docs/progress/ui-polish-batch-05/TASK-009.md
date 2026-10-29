@@ -44,10 +44,10 @@ layouts remain contained"), so it was fixed at the same owner.
   label beside it keeps its words.
 
 Vendor CSS, TimerFrame, the public timer composition (TASK-014), and every consumer's markup are
-unchanged. Cards, fields and action frames are untouched. The spec asserts they still fill their
-containers.
+unchanged. Cards, fields and action frames are untouched by the badge-only source change. The browser spec
+asserts enclosing card and rendered action-frame widths; it does not measure field widths.
 
-## Verification
+## Worker verification (historical first attempt)
 
 Spec `e2e/ui-polish-b05-structure-badges.spec.ts` (new). It renders the production routes on a
 synthetic local Vite origin with intercepted reads. No writes, no edge-function or model calls,
@@ -73,7 +73,7 @@ Per badge, the spec asserts:
 The record JSON for each case binds the reference file/hash/regions, the source head plus dirty
 flag, route, skin, viewport, and the PNG SHA-256 for each badge.
 
-**Negative control** (owner style reverted, same spec): 7 of 10 failed for the real reasons. In
+**Worker-reported negative control (not independently replayed by the controller)** (owner style reverted, same spec): 7 of 10 failed for the real reasons. In
 Review the unused span had stroke in 105/105 columns at 390 and 35/35 at 320. Format preview had
 53/53 columns. The BlockPanel collision was flagged (`Accessory … squeezed:true`). Session detail
 passed both ways, because its wrapping row never stretched the badge.
@@ -128,3 +128,52 @@ recovery as before: a new group `task034-format-preview-batch05-task009`, the
 behind HEAD), so integration remains with the controller.
 
 This is Chromium phone emulation. Physical-iPhone UAT remains pending.
+
+
+## Controller correction and combined-source verification
+
+Foreground initial entry 3077 ended exit 1. Worker succeeded in 955640 ms; native criterion and task
+browser commands passed independently (12.754 s and 10.701 s). Native `npm test` then failed two
+checks in `src/test/design-0143-final-audit.test.ts` (59.209 s). No PR, acceptance or new model
+attempt was implied. Original four source files and all 148 PNG files (74 primary plus attachment
+copies) were preserved with a 163-file manifest before correction; all manifest and PNG bytes match.
+
+The worker source was checkpointed at 76314f7. Completed Task 6's actual build merge
+`cdbcbe91fc7b9c79539c7ac2bd0fa3d5ad79df08` was integrated normally, retaining both histories.
+The combined merge is `7803546ad0ae31f2a9eae1b5f5be23bc76032b88`. Original claim base f9ecf047
+remains historical; final recovery/proof must identify the actual current build base cdbcbe91.
+
+The Task 9 test fixture now waits for the actual destination's named h1 and visible badge content
+before the standing first whole-page Axe assertion. This handles the boot h1 and Workout loading
+h1 without a primer, rule exclusion, selector restriction or retry. Git provenance fails closed on
+errors or a missing actual commit. The added style-string unit assertion was removed; actual
+browser geometry/pixels prove the parent-layout contract without a redundant implementation mirror.
+
+The full focused command passed **10/10 in 20.2 s**, foreground 67005, terminal exit 0, on this
+combined source. Controller verified all 10 records/74 primary PNGs against actual bytes, known
+7803546+dirty source identity and the approved reference hash. Every recorded badge has zero
+sibling collisions, frame stroke coverage 1.0 and zero stroke in unused outer space. Corrected
+proof is preserved externally before format recapture can clear test-results. It is not relabelled
+as clean frozen-source proof. All six consumer families, row/column parents and genuine wrapped
+labels are covered. Physical-iPhone UAT remains unobserved.
+
+## Separate unassigned visual finding — retained for owner UAT triage
+
+The narrow Workout conditioning capture shows Card heading CONDITIONING overlapping its
+SECTION 2/2 · NOT STARTED metadata above the badge-list row. Original capture:
+`workout-conditioning-narrow-320-badge3.png`, SHA
+`c894accfec7f36bfd77613712eef0f1232d3b8ff1ba1f4326173ad63d49e72aa`.
+This was visibly inspected. Cause and regression status are unproven; no fix is claimed.
+
+Scope disposition: Task 9 AC-026/070 owns the StructureBadge frame/emission and SectionHeader's
+badge-list row. This separate Card title/meta row is outside those criteria. Task 10 is Task 9's
+sole direct dependent and owns ReviewExerciseRow/grouping AC-027/028/029/064; that Review acceptance
+does not use this active Workout header row. Task 15 AC-054 owns active movement-name,
+prescription/equipment tiers; AC-055 excludes unrelated heading restyling. Tasks 11–14 own swap,
+Rest/Log, sheets and movement countdowns. B05-04/GLOBAL-PATTERNS select movement roles and badge
+sizing, not every card heading. Thus this observation touches neither Task 9 acceptance nor its
+Task 10 dependent; it is recorded for owner triage, not falsely deferred to a later assigned task.
+No new issue, scope expansion or related header change was made. The owner was informed.
+
+Fresh four-skin/eight-PNG format proof and existing same-attempt native recovery remain pending.
+Validators, older evidence, vendor, TimerFrame and approval/attempt history remain unchanged.
