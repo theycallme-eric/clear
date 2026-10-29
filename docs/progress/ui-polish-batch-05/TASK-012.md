@@ -4,32 +4,30 @@ Body: UI polish batch 05 · Requirement REQ-012 · GitHub issue #570 · completi
 Branch `agent-runner/task-012-a1-420a75c5`, tested base `cdbcbe91fc7b9c79539c7ac2bd0fa3d5ad79df08`.
 This task-owned record satisfies the shared daily-journal instruction for this body.
 
-## Controller review checkpoint — corrected source, browser verification pending
+## Controller verification checkpoint
 
-The initial worker record below is retained as history, **not final acceptance**. Its circuit Log
-exception was not approved by AC035 and has been removed. Its absent-rest first-open unit/reference
-image evidence does **not** reproduce a missing countdown with genuine active rest. That symptom
-remains unproven pending the actual baseline Workout browser experiment. No waiver or changed
-requirement is claimed.
+Same native run/attempt1; original history retained. Build a7fb2891 was integrated normally at
+merge dd1a80a, after preserving original18source/105totalfiles and checkpoint8f43231. All circuit
+new entries now say Rest, while circuit Start/Finish-round timing remains unchanged; no Log escape
+hatch remains. Save/Edit after skipped/expired rest, exact lb unit/observation identity, changed-input
+Cancel and combined independent drafts are covered.206focused units passed; final browser run
+passed **5/5 in31.0s**,1worker0retries, session8914. Actual direct artifacts (97files/76PNGs/20records)
+are externally retained; original capture source a7e5f8c+dirtyspec and driver6f71de…b96e remain honest.
 
-Initial source was preserved externally (18 source files, 105 total files, all hashes checked) and
-checkpointed at 8f43231. Current approved build a7fb2891 was normally merged at dd1a80a. Same native
-run/attempt retained; the initial worker succeeded but unchanged native verification failed at
-`npm test`, including the two source-bound audit checks. No PR or native acceptance exists yet.
+One390 Edit test exposed stale published footer geometry between collapse and the next card click.
+The trace did not establish a reproducible product bug. The proof now waits for observable collapse
+completion (sheet absent; actual footer height equals public published inset), with no fixed sleep,
+retry/force or product patch. Targeted390 and full5case checks passed; harness34/34 passed.
 
-Scoped corrections now make both collapsed and expanded circuit entries Rest while retaining
-`statesRest=false`, `restSeconds=null` and the existing Start/Finish-round clocks. Removed the Log
-escape-hatch prop. Actual Workout readiness precedes the first unchanged full-page Axe scan;
-reference bytes are pinned. Added absent/expired save and Edit, changed-input Cancel, exact unit
-and correction identity, combined draft recovery/expiry and circuit entry coverage. Existing broader
-browser selectors/rest-start expectations were adapted without removing their contract assertions.
+Owner accepted the baseline proof-method disposition in chat; resolved, no further investigation.
+Root viewed actual390 Rest-before-log and320 saved-Edit captures. Timer and measurement/effort fields
+are present; existing docked sheet styling remains Task13's separate approved work. No distance,
+optional effort enum, durable queue or vendor contract changed. The original worker record below is
+history, including its rejected circuit-label exception and preliminary proof claims.
 
-A separate implementation agent reports **206 focused tests passing across 10 files**, plus a later
-66-test overlapping circuit/harness recheck; `git diff --check` passes. The first unit invocation
-failed before tests on macOS temp access; TMPDIR=/tmp resolved it. Browser changes are **unexecuted**
-at this checkpoint: native Task7 exclusively owns that test-server lane. Root owns final browser
-inspection, genuine source-bound recapture, same-attempt native recovery and protected delivery.
-Original circuit wording and original browser claims below describe the preserved first pass only.
+Current active format evidence is prepared as a unique Task012 group and real task/run/attempt/tested
+base metadata. Genuine authenticated source-bound recapture, all unchanged native criterion/task/
+project checks, exact-head receipt, required CI and protected build delivery remain pending.
 
 ## Intended outcome
 

@@ -385,6 +385,23 @@ const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .
 const sheet = (page: Page) => page.locator('section.clr-set-sheet')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
+/** Complete the collapse layout before the next action on the moving card.
+ * The public region publishes its pinned-foot height asynchronously. A sheet
+ * can be absent while that published inset still describes its open height;
+ * auto-scrolling/clicking then can move a saved-row Edit between down/up.
+ * Wait for the actual measured boundary, without a sleep or a second click.
+ */
+async function collapseSheet(page: Page) {
+  await page.getByRole('button', { name: 'Minimize' }).click()
+  await expect(sheet(page)).toHaveCount(0)
+  await expect.poll(() => page.locator('main#main > .clr-scroll-region').evaluate((region) => {
+    const foot = region.querySelector(':scope > .clr-scroll-region__foot')
+    const actual = foot?.getBoundingClientRect().height ?? 0
+    const published = Number.parseFloat(getComputedStyle(region).getPropertyValue('--foot-h'))
+    return actual > 0 && Number.isFinite(published) && Math.abs(actual - published) <= 1
+  }), { message: 'Collapsed Workout footer must match its published scroll boundary before the next card action' }).toBe(true)
+}
+
 /** The one movement card, by its heading, on the main screen. */
 function card(page: Page, name: string): Locator {
   return content(page).locator('section').filter({
@@ -559,7 +576,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await form1.getByLabel('Reps').fill('5')
       await form1.getByRole('radio', { name: 'About right' }).check()
       await page.clock.fastForward(5000)
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await expect(sheet(page)).toHaveCount(0)
       // Collapsed: the same rest, now the footer's, still counting.
       remaining = await expectRestFrom(page, remaining, 5)
@@ -602,7 +619,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
 
       // Collapse after the save writes nothing more.
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await page.clock.fastForward(1000)
       expect(app.attempts).toHaveLength(1)
       remaining = await expectRestFrom(page, remaining, 1)
@@ -632,7 +649,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       expect(app.mutations[1]).toMatchObject({ set_number: 2, values: { weight: 105, weight_unit: 'lb', actual_reps: 4 } })
       expect(app.attempts[2]).toEqual(app.attempts[1])
       expect(app.mutations[1]).toEqual(app.attempts[1])
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
 
       // ── Saved-row Edit: corrects, never starts or resets rest ────────────
       remaining = await expectRestFrom(page, remaining)
@@ -692,7 +709,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect.poll(() => app.mutations.length).toBe(4)
       expect(app.mutations[3]).toMatchObject({ operation: 'insert', set_number: 3, values: { actual_reps: 3 } })
       await expect(restBars(page)).toHaveCount(0)
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await squat.getByRole('button', { name: 'Edit set 3' }).click()
       await expect(restBars(page)).toHaveCount(0)
       const expiredEdit = page.getByRole('form', { name: 'Edit set 3 of back squat' })
@@ -709,7 +726,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await rest.click()
       await expectRestFrom(page, SQUAT_REST)
       await restBars(page).getByRole('button', { name: 'Skip rest' }).click()
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
 
       // ── No rest prescribed: none is invented ─────────────────────────────
       await card(page, 'romanian deadlift').getByRole('button', { name: 'Rest', exact: true }).click()
@@ -727,7 +744,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await noRestForm.getByRole('button', { name: 'Log set 1', exact: true }).click()
       await expect.poll(() => app.mutations.length).toBe(6)
       await expect(restBars(page)).toHaveCount(0)
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await card(page, 'romanian deadlift').getByRole('button', { name: 'Edit set 1' }).click()
       await expect(restBars(page)).toHaveCount(0)
       const noRestEdit = page.getByRole('form', { name: 'Edit set 1 of romanian deadlift' })
@@ -770,7 +787,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await bench.getByRole('radio', { name: 'Too easy' }).check()
       await plank.getByLabel('Seconds').fill('28')
       await plank.getByRole('radio', { name: 'About right' }).check()
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await expect(round).toHaveCount(0)
       expect(app.attempts).toHaveLength(0)
       await page.clock.fastForward(4000)
@@ -814,7 +831,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await round2.getByRole('button', { name: 'Log round 2', exact: true }).click()
       await expect.poll(() => app.mutations.length).toBe(4)
       await expect(restBars(page)).toHaveCount(0)
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
 
       // The circuit's own Start / Finish round rest is untouched.
       await page.getByRole('button', { name: 'Next section' }).click()
@@ -844,7 +861,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
         measured: { referenceBands: ref.sheet.bands, actualBands: circuitEntry.bands },
         capture: circuitEntry.capture, criteria: { 'AC-035': 'pass', 'AC-039': 'pass' },
       })
-      await page.getByRole('button', { name: 'Minimize' }).click()
+      await collapseSheet(page)
       await content(page).getByRole('button', { name: 'Rest', exact: true }).click()
       await expect(circuitForm).toBeVisible()
       await expect(restBars(page)).toHaveCount(0)
