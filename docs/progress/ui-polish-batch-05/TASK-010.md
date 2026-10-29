@@ -226,3 +226,32 @@ succeed. No product behavior, format-proof binding, vendor, workflow, issue, Run
 the sole browser lane and must run them, inspect any actual failure, then perform the existing
 genuine format recapture and unchanged native same-attempt verification/delivery. This preparation
 does not resolve the existing source-audit binding or certify the added case as passing.
+
+## Controller static checkpoint after the supplemented browser proof
+
+The controller subsequently collected the complete supplemented browser suite: **6/6 passed** on
+`e100badc624596e7993fe03bc6d98b6f49513abf`. Its retained external directory
+`runner/reports/task010-corrected-browser-final-20261029` contains 17 records with that actual head,
+`dirty: false`, Review working SHA-256 `755e2c3fd26c7f4e2017629b4a6565f6d2baec9870cccd715269d0fca3cbc5ea`,
+and a passed last-run record. This checkpoint preserves that identity; it does not relabel those
+captures as proof of this later documentation commit or a future combined build.
+
+On the clean `e100badc` checkout, the following existing static commands were then run with only
+ordinary host runtime variables and `TMPDIR=/tmp`. Their logs are private (mode 0600), external to
+the product, under the body's `runner/reports/` directory:
+
+| Actual command | Result | External log |
+| --- | --- | --- |
+| `npm run build` | exit 0; its `tsc --noEmit` compilation and Vite build passed | `task010-static-build-bdr0x05u.log` |
+| `npm run lint` | exit 0; 0 errors, 149 warnings; no focused-spec entries | `task010-static-lint-sevt4lcz.log` |
+| `npm run gen:types -- --check` | exit 0; committed types current, nothing written | `task010-static-gen-types-check-s3lana_2.log` |
+| `python3 scripts/gen-issues.py --check` | exit 0; 71 requirements, 136 edges | `task010-static-issues-check-echncifw.log` |
+
+No source correction was needed. Build supplied the compilation check; a separate `npm run
+typecheck` command was not run at this checkpoint. No browser, server, full unit suite, native
+Runner command or Claude call was started for these static checks.
+
+**Next:** integrate Task 7's actual delivered build when available, bind and collect genuine Task 10
+format proof on the resulting frozen candidate, then run all required native verification commands
+and normal same-attempt delivery. Those steps, the source-audit resolution, PR/merge and physical
+phone UAT remain pending.
