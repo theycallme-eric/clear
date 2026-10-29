@@ -6,6 +6,7 @@ import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import { SCREENS } from '../../e2e/screens'
 import playwrightConfig, {
   browserSupabaseEnv,
+  browserTestIgnoreForTarget,
   MOBILE_VIEWPORT,
   vercelProtectionHeaders,
 } from '../../playwright.config'
@@ -79,6 +80,32 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(playwrightConfig.testDir).toBe('./e2e')
     expect(String(playwrightConfig.testMatch)).toContain('spec')
     expect(String(playwrightConfig.testMatch)).not.toContain('test')
+  })
+
+  it.each([
+    'http://localhost:5173',
+    'http://proof.localhost:5173',
+    'http://127.0.0.1:5173',
+    'http://127.42.17.3:5173',
+    'http://[::1]:5173',
+  ])('keeps every local visual proof discoverable at %s', (baseURL) => {
+    expect(browserTestIgnoreForTarget(baseURL)).toEqual([])
+  })
+
+  it.each([
+    'https://preview.example.invalid',
+    'https://localhost.example.invalid',
+  ])('excludes only already-local synthetic modules before loading at %s', (baseURL) => {
+    expect(browserTestIgnoreForTarget(baseURL)).toEqual([
+      '**/ui-polish-b05-*.spec.ts',
+      '**/ui-polish-integrated.spec.ts',
+    ])
+  })
+
+  it('applies the target policy during file discovery as well as case selection', () => {
+    expect(playwrightConfig.testIgnore).toEqual(
+      browserTestIgnoreForTarget(playwrightConfig.use!.baseURL!),
+    )
   })
 
   it('starts the dev server locally, and starts nothing when given a URL', () => {

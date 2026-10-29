@@ -198,3 +198,23 @@ patch, timeout increase, delay, retry or force click. Native-equivalent command 
 five workers, 13.2s**, session 55675. Actual direct output contains 97 files, 76 PNGs and 20 records;
 source cbbfe8a plus dirty spec is retained honestly. Runtime and format-capture driver did not change,
 so the real source-bound capture remains valid. Repeat unchanged native verification remains pending.
+
+
+## Owner-authorized CI correction
+
+PR582 retains the original accepted c4a6629 head while this local correction is prepared. CI484
+printed **237 files / 5,839 tests passed in282.33s**, then the five-minute job deadline cancelled
+completion. Eric explicitly authorized re-attempting with a higher limit; only the Test job's limit
+changes from five to ten minutes. All assertions, other job limits and branch protections remain.
+
+The deployment Preview job also exposed a real discovery defect in earlier B05 specs: top-level
+local JPEG reads happened before external-target grep excluded their tests. Product Playwright
+configuration now excludes only the already local-only B05/integrated files at discovery on external
+targets, reusing the exact loopback policy. Local visual proofs and all actual remote journeys remain.
+Focused harness tests passed42/42. An isolated checkout without staged screenshots must prove real
+external Playwright --list discovery before native recovery. New source-bound group task012-ci
+preserves the earlier genuine group and refreshes the changed capture-driver binding.
+
+This is genuine owner-authorized product CI correction. Use existing documented published-workspace
+drift reconciliation, same-attempt recovery, exact protected-path approval for .github/workflows/ci.yml,
+fresh native receipt, and the same PR. No Runner, contract, ledger or attempt-counter changes.
