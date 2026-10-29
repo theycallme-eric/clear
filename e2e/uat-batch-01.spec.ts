@@ -182,7 +182,7 @@ test('Generate and Settings follow the contained-form and measured-footer ruling
   await stubSupabase(page, true)
   await visit('/generate')
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeVisible()
+  await expect(page.getByRole('heading', { level: 1, name: 'Generate' })).toBeVisible()
 
   // 0.14.3 containment: one card holds every group, label and field, and only
   // the screen title sits on the atmosphere.

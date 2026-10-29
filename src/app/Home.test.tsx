@@ -99,7 +99,7 @@ describe('Home', () => {
     await user.click(screen.getByRole('button', { name: GENERATE_ACTION_LABEL }))
 
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+      await screen.findByRole('heading', { level: 1, name: 'Generate' }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText(/Time available/i)).toHaveValue(35)
     expect(generation.calls).toEqual([])
@@ -802,7 +802,7 @@ describe('Home’s one next-workout entry (REQ-007, U20)', () => {
   async function openGenerate(user: ReturnType<typeof userEvent.setup>) {
     await user.click(primary())
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+      await screen.findByRole('heading', { level: 1, name: 'Generate' }),
     ).toBeInTheDocument()
   }
 

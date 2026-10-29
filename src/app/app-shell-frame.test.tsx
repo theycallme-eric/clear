@@ -84,7 +84,7 @@ describe('REQ-001 page title in the header', () => {
     { path: '/', options: signedInHome, title: HOME_HEADING },
     { path: '/settings', options: signedInHome, title: 'Settings' },
     { path: '/history', options: signedInHome, title: 'History' },
-    { path: '/generate', options: signedInHome, title: 'Generate workout' },
+    { path: '/generate', options: signedInHome, title: 'Generate' },
     { path: '/review', options: signedInHome, title: 'Nothing to review' },
     { path: '/login', options: () => ({}), title: 'Get started' },
   ])('shows $title in $path’s header instead of the CLEAR logo', async ({ path, options, title }) => {

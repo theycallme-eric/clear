@@ -614,7 +614,7 @@ function protectedStops(detail: string): Stop[] {
   })
   return [
     at('/', 'Today'),
-    at('/generate', 'Generate workout'),
+    at('/generate', 'Generate'),
     at('/history', 'History'),
     at(`/history/${detail}`),
     at('/settings', 'Settings'),
@@ -846,7 +846,7 @@ backendTest('JOURNEY-002: Home and History keep one rhythm, enlarged readable te
   expect(await historyStatement.evaluate((node) => node.parentElement!.children.length)).toBe(1)
   await expectEnlargedFits(page, '/history empty')
   await page.locator('.clr-footer').getByRole('button', { name: 'Generate workout', exact: true }).click()
-  await reached(page, '/generate', 'Generate workout')
+  await reached(page, '/generate', 'Generate')
 
   // Generate with the on-screen keypad up: a shorter visual viewport, the
   // numeric field focused, and nothing pushed sideways or out of reach.
@@ -1363,7 +1363,7 @@ backendTest('focus: brackets for selectable controls, fields own focus, on prote
   expect([...kinds].sort()).toEqual(['brackets', 'field'])
 
   await visit('/generate')
-  await reached(page, '/generate', 'Generate workout')
+  await reached(page, '/generate', 'Generate')
   expect((await expectFocusOwnership(page, '/generate')).has('brackets')).toBe(true)
 
   await visit('/settings/locations')

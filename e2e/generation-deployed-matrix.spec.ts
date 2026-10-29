@@ -493,7 +493,7 @@ test.describe('deployed UAT matrix: nine entries to Review, model-free (REQ-028)
           timeout: 30_000,
         })
         await generate.click()
-        await expectScreen(page, 'Generate', 'Generate workout')
+        await expectScreen(page, 'Generate', 'Generate')
         await expect(
           page.getByText(new RegExp(`^Goal: ${labelOf(GOALS, entry.goal)}`)),
         ).toBeVisible({ timeout: 30_000 })

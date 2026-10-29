@@ -1,6 +1,21 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-012 CI correction source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-007 combined source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task007/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.2 seconds**, foreground session 80702, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+Actual frozen source `1d5722b9fad641f8218518a74fd2cb84f1df95f7`, runtime `b21c1f5aefd0cf7ada51d1f6c8ec5075389f358a6a4e9da689c2adbd2e6e059b`, capture driver `512f678b66bef3a32ca046aacc5ad74df96112e1a9a735eb449df95136d4f921` and pinned 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` were derived from all four records and independently matched to the current source tree. Observed 2026-10-29T22:54:50.434Z through 2026-10-29T22:55:04.709Z, process 47006, loopback origin http://localhost:5173. The first record is clean; later dirty statuses retain the collector-created evidence truthfully. Every actual PNG's SHA-256, byte count and dimensions and the complete four-record/eight-cell manifest were independently checked. Root opened the phone-CLEAR and short-Vapour PNGs and identified no additional visual issue in those captures.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero. The existing owned disposable backend's real authenticated fixture setup/cleanup is separate; this does not claim setup without backend writes or a hosted/deployed journey.
+
+Existing v1 source-only provenance names Task 7 revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-007`, run `f525ca4d-a0c0-4951-a8f5-0d61b6bd0b42`, attempt 1, retained branch `agent-runner/task-007-a1-f525ca4d` and actual combined tested build base `9eceed0566e41db2390e9b2d62d4635e2361a4db`. Actual unchanged capturePayloadSha256() payload `0c3b5c22c98a1046082658d8404026142e71cf4548ff9af418e4df88ee50370e` excludes provenance itself. All older groups and failure history remain preserved.
+
+Separate Welcome/PWA compatibility proof passed **7/7 cases in 17.3 seconds**, session 4785, one worker, zero retries, on actual source `433f0311d709e2321f5c744e145c417aff8dcbbd`; its original source identity is retained externally in `task007-preview-compatibility-passed-20261029`. The prior Generate comparison passed **16/16 cases in 38.3 seconds**, session 65021, on the genuine `0b0e3f009b07024d5c1242d0cbb3882c002f6905` plus measurement-driver working tree; its 130 files/84 PNGs remain in `task007-corrected-browser-final-20261029`. Neither earlier result is relabelled as this clean-source collection. The separate circuit visibility finding is not resolved by these proofs.
+
+Native exact-head criterion/task/project verification, receipt, required GitHub CI and protected build-branch delivery remain pending. Physical-iPhone UAT remains separate. This collection establishes actual local source-bound evidence only; no main merge, production deployment, hosted mutation, distance change or paid generation is claimed.
+
+
+## Prior batch-05 TASK-012 CI correction source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task012-ci/`. The unchanged authenticated collector passed **four skin cases / eight new PNGs in 26.8 seconds**, foreground session 68292, terminal exit 0. The complete phone 390×844 / short 390×320 matrix, Settings/disclosures, Back/direct Back, accessibility, settled layout, storage and network checks passed.
 

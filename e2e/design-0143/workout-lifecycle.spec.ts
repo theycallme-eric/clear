@@ -882,7 +882,7 @@ backendTest('review-boundaries: actual favorite history loading/error/retry and 
   await page.getByRole('button', { name: 'Regenerate', exact: true }).click()
   await page.getByRole('dialog', { name: 'Discard this workout?' })
     .getByRole('button', { name: 'Discard and regenerate', exact: true }).click()
-  await evidence.shot('Review', '/review', 'missing-or-invalid-handoff', '/generate', 'Generate workout', async () => {
+  await evidence.shot('Review', '/review', 'missing-or-invalid-handoff', '/generate', 'Generate', async () => {
     await expect(page.getByRole('button', { name: 'Generate workout', exact: true })).toBeVisible()
     await expectContained(page, 'Existing regenerate input fallback')
     expect(evidence.modelAttempts()).toBe(0)

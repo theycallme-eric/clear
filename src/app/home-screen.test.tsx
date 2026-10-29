@@ -153,7 +153,7 @@ describe('Home actions and copy (REQ-003)', () => {
       expect(generation.calls).toEqual([])
 
       await user.click(screen.getByRole('button', { name: GENERATE_ACTION_LABEL }))
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' })
+      await screen.findByRole('heading', { level: 1, name: 'Generate' })
       const minutes = screen.getByLabelText(/Time available/i)
       // An unfinished request is history, but not a completed prior to prefill.
       expect(minutes).toHaveValue(45)
@@ -237,7 +237,7 @@ describe('Home actions and copy (REQ-003)', () => {
 
     await user.click(screen.getByRole('button', { name: GENERATE_ACTION_LABEL }))
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+      await screen.findByRole('heading', { level: 1, name: 'Generate' }),
     ).toBeInTheDocument()
     const minutes = screen.getByLabelText(/Time available/i)
     expect(minutes).toHaveValue(35)
