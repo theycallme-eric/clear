@@ -1,6 +1,43 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-008 source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-006 source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task006/`. The existing authenticated collector passed **4/4 skin cases / eight new
+PNGs in 25.1 seconds**, foreground session 89855, terminal exit 0. The complete manifest covers
+phone 390×844 and short 390×320 in CLEAR, Vapour, Signal and Mono. Existing Settings entry,
+read-only formats/disclosures, Back/direct-entry Back, accessibility, settled-layout, storage and
+network assertions passed. No failed or skipped case is counted.
+
+All four records identify frozen application source `196603e621f9b3581fdb5c4648f057ba51ae5579`, runtime
+`e87fa643ccdaab23eb7ace03a6e1744372150eac02fe7901d603d369849af8bd`, driver
+`8d65e54166fc1dc737d8228c1a6614881b3261af587313681f6ff618fa4ba2dc` and pinned 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. Captures were observed
+2026-10-29T19:47:33.720Z through 2026-10-29T19:47:49.328Z, process
+20085, origin `http://localhost:5173`. The first record is clean; later dirty
+statuses truthfully include collector-created evidence. Runtime and capture-driver source remained
+frozen. All eight actual PNG byte counts and SHA-256 values were independently checked. Phone
+CLEAR and short Vapour PNGs were opened for visual inspection.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter
+is zero. Disposable local authentication/onboarding setup and cleanup remain the existing fixture's
+responsibility; this is not a claim that backend setup performed no writes.
+
+Existing v1 source-only provenance identifies TASK-006, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-006`, run
+`b0c1af28-d861-4c0a-aa7b-dd3eff9e53a1`, attempt 1, retained branch
+`agent-runner/task-006-a1-b0c1af28` and tested build base
+`f9ecf04744aef72603e8ac8dd7955f7f24e354c2`. The unchanged `capturePayloadSha256()` derived the actual
+manifest/four-record/eight-PNG payload digest `c84833d4c4005c6cbdff8ebd2ab36b3fbf6f5a70715c2e0d936550d392adaf94`; provenance excludes itself.
+All older groups and failed attempts remain unchanged.
+
+Separate Task 6 consumer proof passed 7/7 focused cases with full-page accessibility checks and
+retains its real f9ecf047 plus dirty identity; it is not relabelled as this clean-source collection.
+This establishes local source-bound evidence only. Full native criterion/task/project acceptance,
+exact-head receipt, required CI and protected build delivery remain pending. Physical-iPhone UAT,
+production deployment, main merge, hosted mutation, distance changes and paid generation are not
+claimed.
+
+## Prior batch-05 TASK-008 source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task008/`.
 The existing authenticated collector passed all four skin cases in 24.6 seconds, foreground
