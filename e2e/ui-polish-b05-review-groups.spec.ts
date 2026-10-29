@@ -1,4 +1,4 @@
-import { execSync, spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { createServer, type AddressInfo } from 'node:net'
@@ -142,15 +142,18 @@ const REFERENCE = {
 }
 
 function sourceIdentity() {
-  try {
-    const head = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim()
-    const dirty = execSync('git status --porcelain', { encoding: 'utf8' }).trim() !== ''
-    const tree = execSync('git rev-parse HEAD:src/app/Review.tsx', { encoding: 'utf8' }).trim()
-    const working = createHash('sha256').update(readFileSync(resolve(REPO_ROOT, 'src/app/Review.tsx'))).digest('hex')
-    return { head, dirty, reviewAtHead: tree, reviewWorkingSha256: working }
-  } catch {
-    return { head: process.env.GITHUB_SHA ?? 'unknown', dirty: null }
-  }
+  const git = (...args: string[]) => execFileSync('git', args, {
+    cwd: REPO_ROOT, encoding: 'utf8', timeout: 10_000,
+  }).trim()
+  const head = git('rev-parse', '--verify', 'HEAD')
+  const dirty = git('status', '--porcelain') !== ''
+  const tree = git('rev-parse', '--verify', 'HEAD:src/app/Review.tsx')
+  const working = createHash('sha256').update(readFileSync(resolve(REPO_ROOT, 'src/app/Review.tsx'))).digest('hex')
+  expect(head, 'Capture requires this checkout’s actual Git HEAD').toMatch(/^[a-f0-9]{40}$/)
+  expect(tree, 'Capture requires the actual Review blob at HEAD').toMatch(/^[a-f0-9]{40}$/)
+  expect(working, 'Capture requires the actual working Review source hash').toMatch(/^[a-f0-9]{64}$/)
+  // Interim proof can honestly be dirty; unknown identity cannot certify a capture.
+  return { head, dirty, reviewAtHead: tree, reviewWorkingSha256: working }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -209,10 +212,24 @@ const GROUPS = [
   { list: 'circuit, 2 rounds', badge: 'CIRCUIT · 2 ROUNDS', rest: 'Rest 60s between rounds', members: 3 },
 ] as const
 
-async function syntheticApp(page: Page, composition: SessionAcceptance) {
+const REPLACEMENT_ID = 'synthetic-lateral-cross-body-mountain-climber-with-shoulder-reach'
+const REPLACEMENT_NAME = 'Synthetic lateral cross body mountain climber with shoulder reach'
+const SWAP_CANDIDATE_SETS = [{
+  section: 'conditioning', relaxed: false,
+  candidates: [{
+    exercise_id: REPLACEMENT_ID, name: REPLACEMENT_NAME,
+    exercise_role: 'conditioning', can_be_primary: false,
+    movement_patterns: ['conditioning'], primary_patterns: ['conditioning'],
+    component_movements: [], muscles: [], usable_equipment: ['bodyweight'],
+  }],
+}] as const
+
+async function syntheticApp(page: Page, composition: SessionAcceptance,
+  candidateSets: readonly unknown[] = []) {
   const unexpected: string[] = []
   let attemptedWrites = 0
   let functionPosts = 0
+  let candidateReads = 0
   const guard = await installDeterministicCapture(page, { skin: 'clear', reducedMotion: true })
   await page.route('**/*', async (route) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(route.request().method())) return route.continue()
@@ -241,8 +258,16 @@ async function syntheticApp(page: Page, composition: SessionAcceptance) {
     // Reads that travel as POST: answered, never forwarded, never a write.
     if (request.method() === 'POST' && url.pathname.includes('/rpc/')) {
       if (name === 'resume_session') return reply(null)
-      if (['streak_sessions', 'constraints_in_force', 'anchor_evidence', 'conditioning_history',
-        'generation_candidate_sets_for_goal'].includes(name)) return reply([])
+      if (name === 'generation_candidate_sets_for_goal') {
+        expect(request.postDataJSON()).toMatchObject({
+          p_user_id: OWNER, p_focus: composition.session_focus,
+          p_location_id: composition.location_id, p_goal: composition.goal_preset,
+        })
+        candidateReads += 1
+        return reply(candidateSets)
+      }
+      if (['streak_sessions', 'constraints_in_force', 'anchor_evidence',
+        'conditioning_history'].includes(name)) return reply([])
     }
     if (request.method() !== 'GET') attemptedWrites += 1
     unexpected.push(`${request.method()} ${url.pathname}`)
@@ -262,11 +287,13 @@ async function syntheticApp(page: Page, composition: SessionAcceptance) {
     }
   }, { owner: OWNER, handoff: reviewHandoff(composition) })
   return {
-    assertReadOnly() {
+    assertReadOnly(expectedCandidateReads?: number) {
       expect(unexpected).toEqual([])
       expect(attemptedWrites).toBe(0)
       expect(functionPosts).toBe(0)
       expect(guard.blockedGenerations()).toBe(0)
+      if (expectedCandidateReads !== undefined) expect(candidateReads).toBe(expectedCandidateReads)
+      return { candidateReads, attemptedWrites, functionPosts, blockedGenerations: guard.blockedGenerations() }
     },
   }
 }
@@ -333,7 +360,7 @@ async function groupGeometry(list: Locator) {
       const row = item.firstElementChild!
       const [nameRow, prescription, equipment] = [...row.children]
       const name = nameRow.firstElementChild!
-      const swap = nameRow.querySelector('button')!
+      const swap = nameRow.querySelector('button[aria-label^="Swap "]')!
       const style = getComputedStyle(name)
       const [ordinal, words] = [...name.children]
       return {
@@ -345,6 +372,9 @@ async function groupGeometry(list: Locator) {
         ordinal: ordinal.textContent,
         swapColor: getComputedStyle(swap).color,
         swap: { ...box(swap), label: swap.getAttribute('aria-label') },
+        actions: [...nameRow.querySelectorAll('button')].map((button) => ({
+          ...box(button), label: button.getAttribute('aria-label'),
+        })),
         prescription: { ...box(prescription), text: prescription.textContent,
           fontSize: parseFloat(getComputedStyle(prescription).fontSize) },
         equipment: { ...box(equipment), text: equipment.textContent,
@@ -661,7 +691,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
             'AC-027 hierarchy': implementation.nameDominant && implementation.prescriptionThenEquipmentBelow &&
               implementation.swapOnNameRow && implementation.swapAtRight ? 'pass' : 'fail',
             'AC-028 one group rest': 'pass',
-            'AC-029 numbered/glyph/final divider/real behavior': 'pass',
+            'AC-029 numbered/glyph/final divider': 'pass',
             'AC-064 reference comparison': JSON.stringify(implementation) === JSON.stringify(reference) ? 'pass' : 'fail',
           }
           await record(page, testInfo, `${state}-${spec.list.split(',')[0]}-${size}-${skin}`, {
@@ -688,3 +718,104 @@ for (const { name: size, viewport } of VIEWPORTS) {
     }
   })
 }
+
+test.describe('B05 grouped Review after a real in-memory swap', () => {
+  test.use({ viewport: { width: 320, height: 568 } })
+
+  test('narrow multi-line name: choose and Undo keep both actions contained and preserve the prescription', async ({ page, visit, checkA11y }, testInfo) => {
+    const viewport = { width: 320, height: 568 }
+    const composition = STATES['multi-line']
+    const app = await syntheticApp(page, composition, SWAP_CANDIDATE_SETS)
+    await openReview(page, composition, visit, checkA11y)
+    const list = page.getByRole('list', { name: 'circuit, 2 rounds', exact: true })
+    const first = list.getByRole('listitem').first()
+    const originalId = composition.workout.sections[2].blocks[0].exercises[0].exercise_id
+    const originalName = originalId.replaceAll('-', ' ').replaceAll('_', ' ')
+    const replacementName = REPLACEMENT_ID.replaceAll('-', ' ').replaceAll('_', ' ')
+    const original = first.getByRole('button', { name: `Swap ${originalName}`, exact: true })
+    await first.scrollIntoViewIfNeeded()
+    await settleFonts(page)
+    const before = await groupGeometry(list)
+    const beforePng = await first.screenshot({ animations: 'disabled' })
+
+    await original.click()
+    const dialog = page.getByRole('dialog', { name: `Swap ${originalName}`, exact: true })
+    await expect(dialog).toBeVisible()
+    const alternatives = dialog.getByRole('list', { name: 'Alternatives', exact: true })
+    const choice = alternatives.getByRole('button', { name: new RegExp(`^${REPLACEMENT_NAME}\\s*BODYWEIGHT$`) })
+    await expect(choice).toBeEnabled()
+    await choice.click()
+    await expect(dialog).toBeHidden()
+    await expect(page.locator('dialog[open]')).toHaveCount(0)
+    await expect(page).toHaveURL(/\/review$/)
+    const replacement = first.getByRole('button', { name: `Swap ${replacementName}`, exact: true })
+    const undo = first.getByRole('button', { name: `Undo swap — back to ${originalName}`, exact: true })
+    await expect(replacement).toBeEnabled()
+    await expect(undo).toBeEnabled()
+    await expect(original).toHaveCount(0)
+    const toast = page.locator('[data-clear-toast-host]')
+    await expect(toast.getByRole('status')).toHaveText(`Swapped in ${REPLACEMENT_NAME}.`)
+    await toast.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await expect(toast).toHaveCount(0)
+    await first.scrollIntoViewIfNeeded()
+    await settleFonts(page)
+    const changed = await groupGeometry(list)
+    const member = changed.members[0]
+    expect(member.name.text).toBe(replacementName)
+    expect(member.name.lines).toBeGreaterThanOrEqual(2)
+    expect(member.actions.map((action) => action.label)).toEqual([
+      `Swap ${replacementName}`, `Undo swap — back to ${originalName}`,
+    ])
+
+    // Undo is a genuine second action, absent from the one-action reference.
+    // Both targets must fit beside the wrapped name and above its readings.
+    for (const action of member.actions) {
+      expect(action.width).toBeGreaterThan(0)
+      expect(action.height).toBeGreaterThanOrEqual(40 - TOLERANCE)
+      expect(action.left).toBeGreaterThanOrEqual(member.name.right - TOLERANCE)
+      expect(action.right).toBeLessThanOrEqual(changed.list.right + TOLERANCE)
+      expect(changed.list.right - action.right).toBeLessThanOrEqual(8)
+      expect(overlaps(member.name, action)).toBe(false)
+      expect(overlaps(member.prescription, action)).toBe(false)
+    }
+    expect(overlaps(member.actions[0], member.actions[1])).toBe(false)
+    expect(member.prescription.top).toBeGreaterThanOrEqual(
+      Math.max(member.name.bottom, ...member.actions.map((action) => action.bottom)) - TOLERANCE,
+    )
+    expect(member.equipment.top).toBeGreaterThanOrEqual(member.prescription.bottom - TOLERANCE)
+    expect(await first.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+    const readings = (geometry: Geometry) => ({
+      badge: geometry.badge.text, sequence: geometry.children[1].text, rest: geometry.rest.text,
+      members: geometry.members.map((entry) => ({
+        ordinal: entry.ordinal, prescription: entry.prescription.text,
+        equipment: entry.equipment.text, rule: entry.rule,
+      })),
+    })
+    expect(readings(changed)).toEqual(readings(before))
+    expect(changed.members.slice(1).map((entry) => entry.name.text)).toEqual(
+      before.members.slice(1).map((entry) => entry.name.text),
+    )
+    const changedPng = await first.screenshot({ animations: 'disabled' })
+    await checkA11y()
+
+    await undo.click()
+    await expect(original).toBeEnabled()
+    await expect(undo).toHaveCount(0)
+    await expect(replacement).toHaveCount(0)
+    await first.scrollIntoViewIfNeeded()
+    await settleFonts(page)
+    const restored = await groupGeometry(list)
+    expect(restored.members.map((entry) => entry.name.text)).toEqual(before.members.map((entry) => entry.name.text))
+    expect(readings(restored)).toEqual(readings(before))
+    const restoredPng = await first.screenshot({ animations: 'disabled' })
+    const requests = app.assertReadOnly(1)
+    await record(page, testInfo, 'multi-line-circuit-choose-undo-narrow-320', {
+      consumer: 'Review (ENTRY-010) grouped ReviewExerciseRow',
+      state: 'multi-line member after choose and after Undo', structure: 'circuit, 2 rounds', viewport,
+      chosen: { exerciseId: REPLACEMENT_ID, displayName: REPLACEMENT_NAME, equipment: 'bodyweight' },
+      measurements: { before, changed, restored }, requests,
+      comparison: 'Additional Undo state: both public action boxes remain contained without collisions; the original one-action pixel/reference comparisons remain unchanged.',
+      criteria: { 'AC-027 changed-row action containment': 'pass', 'AC-029 choose and Undo preserve composition readings': 'pass' },
+    }, [{ part: 'before', png: beforePng }, { part: 'chosen', png: changedPng }, { part: 'restored', png: restoredPng }])
+  })
+})

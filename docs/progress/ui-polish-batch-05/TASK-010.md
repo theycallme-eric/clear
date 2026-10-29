@@ -192,3 +192,37 @@ earlier batch tasks. That produces a new group, `task034-format-preview-batch05-
 
 - Physical-iPhone UAT of the grouped Review hierarchy has not been observed.
 - Native controller verification, recapture/rebind and delivery have not happened.
+
+## Controller supplement — bounded proof correction prepared, execution pending
+
+The original worker finished successfully. The initial native foreground command then ended with
+verification failure: the required grouped-Review browser command passed **5/5**, focused units
+passed **30/30**, and the full unit suite reached the two existing runtime/source-audit binding
+failures described above. The original source and browser output remain preserved externally;
+checkpoint `bd3c69fcc81bae693b42fe9bf28b1bfadb36b371` retains that implementation and its original proof.
+No native acceptance receipt, PR or delivery is claimed.
+
+This supplement changes only the focused browser spec:
+
+- Adds a separate 320 × 568 multiline circuit-member case that uses the actual Review provider's
+  candidate read, chooses a synthetic eligible replacement and invokes the real Undo action. These
+  operations change the in-memory pre-session composition; no write API is invented or permitted.
+- Measures both public Swap and Undo targets beside the wrapped name, their containment and
+  non-overlap with each other, the name and the prescription. Records actual before/chosen/restored
+  row captures and the group readings; verifies the other movements, prescription, equipment,
+  sequence, badge and group rest survive choose and Undo.
+- Keeps all existing reference pixel comparisons, geometry assertions and zero-write/generation
+  guards. The additional state expects exactly one actual intercepted candidate read. It also checks
+  the product's chosen-movement feedback and scans the changed Review state with Axe.
+- Fails capture recording if actual checkout Git identity cannot be read or is malformed. Git runs
+  in this checkout with a bounded timeout. Interim captures may honestly report `dirty: true`; an
+  unknown source identity cannot substitute for a real source. Final native proof remains pending.
+
+The original one-action reference cases now label their AC-029 result as numbered/glyph/divider
+proof; the new choose/Undo record labels behavior as passed only after those actual interactions
+succeed. No product behavior, format-proof binding, vendor, workflow, issue, Runner or state changed.
+
+**Not yet executed:** the new case and the complete supplemented browser suite. The controller owns
+the sole browser lane and must run them, inspect any actual failure, then perform the existing
+genuine format recapture and unchanged native same-attempt verification/delivery. This preparation
+does not resolve the existing source-audit binding or certify the added case as passing.
