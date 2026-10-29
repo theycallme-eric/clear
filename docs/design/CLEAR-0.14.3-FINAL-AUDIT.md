@@ -1,6 +1,31 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-003 source-bound recapture — 29 October 2026
+## Current batch-05 TASK-003 checked source-bound recapture — 29 October 2026
+
+Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task003-checked/`.
+Four actual skin cases/eight normal-short mobile PNGs passed21.5seconds, exit0, foreground71493.
+Captured source `a6cb4b8a00d7efb3150d31bd951f8b34f6228abc`; runtime
+`94266dda172471286f2d60af0b6a987d2883feb1fdd82842936503ad0970f051`; driver
+`50926ad8210e596b218221adf6eab99184c11127acdaabb17ff9818120d31134`; pinned0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The first record is clean; subsequent dirty statuses reflect collector-created evidence only.
+Existing authenticated Settings/read-only format/disclosure/Back/accessibility, pixel, record and
+route checks all passed. The manifest is complete and all generation/write counters are zero.
+The owned loopback backend uses existing29migrations/three catalog seeds and disposable auth.
+No hosted mutation, paid generation, installed-device result or native acceptance is claimed.
+
+Actual source provenance: TASK-003, run`fda3e2de-9448-4855-a2f6-41237bd879d2`, capture-producer attempt2,
+retained branch`agent-runner/task-003-a2-fda3e2de`, tested base
+`ec99341250b31bbd5bc0ab99fab71c8012c3d3dd`, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-003`.
+Existing v1 payload digest: `8d044049afe34dc985bb46994e29d738a5154d37d62d4c5b5cdb329b5700c7cd`.
+Both earlier batch05 groups remain genuine unchanged history. All seven unchanged project checks
+passed on this corrected source, including 237 unit files / 5,827 tests in 75.05 seconds. The exact
+scroll command passed 12/12 and the shell regression 22/22. Native current-attempt evidence,
+required GitHub CI and protected build delivery remain independently necessary; no native receipt
+or completion is claimed here.
+
+## Prior batch-05 TASK-003 initial source-bound recapture — 29 October 2026
 
 Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task003/`.
 The existing authenticated format-preview collector passed all four skin cases in20.2seconds,

@@ -147,3 +147,47 @@ and cleanup are retained. Neither assertion nor lint rule was disabled. The firs
 format group remains immutable history at its original source; active proof moves to the fresh
 task034-format-preview-batch05-task003-checked group before recapturing corrected source. Full
 checks will be rerun on that source. All native attempt/criterion-report restrictions still apply.
+
+## Final corrected candidate — all local verification passed
+
+Final frozen runtime/driver source: `a6cb4b8a00d7efb3150d31bd951f8b34f6228abc`.
+Active genuine format group: `docs/design/evidence-0143/task034-format-preview-batch05-task003-checked`.
+Runtime hash: `94266dda172471286f2d60af0b6a987d2883feb1fdd82842936503ad0970f051`.
+Driver hash: `50926ad8210e596b218221adf6eab99184c11127acdaabb17ff9818120d31134`.
+Actual payload digest: `8d044049afe34dc985bb46994e29d738a5154d37d62d4c5b5cdb329b5700c7cd`.
+Four skin cases/eight PNGs passed in 21.5 seconds, session 71493, exit 0. The first record is
+clean; subsequent dirty statuses reflect only the collector's evidence files. All recorded
+model/write counters are zero. Earlier groups remain immutable history.
+
+All seven unchanged project checks passed on the corrected source:
+
+| Command | Actual result |
+| --- | --- |
+| `npm test` | 237 files, 5,827 tests passed; 75.05 seconds, session 41140, exit 0. Includes the real unchanged audit/source-lineage consumers. |
+| `npm run lint:ds` | Session 85746, exit 0. |
+| `npm run build` | Session 51797, exit 0; existing chunk-size advisory retained. |
+| `npm run lint` | Session 36173, exit 0; 0 errors, 143 existing warnings retained. |
+| `npm run typecheck` | Session 70657, exit 0. |
+| `npm run gen:types -- --check` | Exit 0; generated types current, no write. |
+| `python3 scripts/gen-issues.py --check` | Exit 0; no issue-source write. |
+
+The exact approved scroll command passed again on this corrected runtime: 12/12, 39.6 seconds,
+session 79053, exit 0. The existing shell regression passed again: 22/22, 13.7 seconds,
+session 20831, exit 0. Final captures now truthfully identify source a6cb4b8 plus the evidence-only
+uncommitted files. Final scroll artifacts: execution-body
+`runner/reports/task-003-final-scroll-browser-evidence` (39 files, 19 PNGs); final shell artifacts:
+`runner/reports/task-003-final-shell-regression-evidence` (130 files, 86 PNGs). Each has a SHA-256
+inventory alongside it. These supersede the earlier operator browser captures for the corrected
+runtime without deleting or relabeling those earlier results.
+
+Independent scoped code review found no additional concrete criterion gap. Vendor, protected
+workflows, schema, Runner, profile, approved inputs and task revision remain unchanged. Local
+checks do not supply the missing native worker criterion report or confer delivery acceptance.
+The native run is still failed at 2/2; no extra attempt was granted, worker launched, PR published
+or task completion claimed by this checkpoint.
+
+Next safe action requires the owner's one-additional-attempt authorization for this run only.
+The supported retry-failed +1 / ordinary run-once path preserves this corrected a2 workspace and
+its source/proof descendant commits. It must genuinely obtain all six criterion claims and pass
+all independent native checks, required GitHub CI and protected build-branch delivery. Existing
+worker/timeout/estimate limits and all other task attempt limits remain unchanged.
