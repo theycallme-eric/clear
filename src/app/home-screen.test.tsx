@@ -292,9 +292,7 @@ describe('Recent workout rows (REQ-004)', () => {
     expect(title.style.fontSize).toBe('var(--label-md-size)')
     expect(title.style.fontSize).not.toBe('var(--heading-h5-size)')
 
-    // Status and date share one line. B05-01.5: centred, not baseline-aligned,
-    // so the text-less glyph cannot hang the date below the status word.
-    expect(statusDate.style.alignItems).toBe('center')
+    // Status and date share one line.
     expect(part(statusDate, 'status')).toHaveTextContent('Completed')
     expect(part(statusDate, 'date')).toHaveTextContent(/^\w{3} \d{1,2} \w{3} \d{4}$/)
 

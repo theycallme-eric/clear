@@ -239,6 +239,8 @@ async function recentRowGeometry(row: Locator) {
     const status = part('status')
     const date = part('date')
     const title = part('title')
+    const metadata = part('status-date')
+    const metadataBox = metadata.getBoundingClientRect()
     const glyph = status.querySelector('[aria-hidden="true"]')!.getBoundingClientRect()
     const titleStyle = getComputedStyle(title)
     const probe = document.createElement('div')
@@ -247,6 +249,8 @@ async function recentRowGeometry(row: Locator) {
     const tokenSize = getComputedStyle(probe).fontSize
     probe.remove()
     return {
+      metadata: { left: metadataBox.left, right: metadataBox.right,
+        scrollWidth: metadata.scrollWidth, clientWidth: metadata.clientWidth },
       status: textBox(status),
       date: textBox(date),
       glyph: { top: glyph.top, bottom: glyph.bottom, left: glyph.left, height: glyph.height },
@@ -318,6 +322,7 @@ async function record(page: Page, rows: readonly Locator[], testInfo: TestInfo, 
     source: sourceIdentity(),
     target: new URL(page.url()).origin,
     route: new URL(page.url()).pathname,
+    skin: await page.locator('html').getAttribute('data-skin'),
     syntheticPublicConfig: SYNTHETIC_ORIGIN_NEEDED,
     browser: `${testInfo.project.name} (Chromium emulation, deviceScaleFactor ${testInfo.project.use.deviceScaleFactor ?? 1})`,
     captures,
@@ -341,57 +346,64 @@ for (const { name: size, viewport } of VIEWPORTS) {
         const items = list.getByRole('listitem')
         await expect(items).toHaveCount(3)
 
-        const measured = []
-        for (const [index, source] of rows.entries()) {
-          const row = items.nth(index)
-          const status = source.completed_at !== null ? 'completed'
-            : source.started_at !== null ? 'partial' : 'unstarted'
-          await row.scrollIntoViewIfNeeded()
-          const shown = source.title.replace(/\s+session\s*$/i, '')
-          await expect(row).toHaveAttribute('data-status', status)
-          await expect(row.locator('[data-part="title"]')).toHaveText(shown)
-          await expect(row.locator('[data-part="status"]')).toHaveText(STATUS_LABEL[status])
-          const geometry = await recentRowGeometry(row)
+        // Use the same published skin contract as the standing capture lane:
+        // persisted choice plus the root attribute, never altered layout CSS.
+        for (const skin of ['clear', 'vapour'] as const) {
+          await page.evaluate((value) => {
+            localStorage.setItem('clear.skin', value)
+            document.documentElement.setAttribute('data-skin', value)
+          }, skin)
+          await expect(page.locator('html')).toHaveAttribute('data-skin', skin)
+          await page.evaluate(() => document.fonts.ready)
+          const measured = []
+          for (const [index, source] of rows.entries()) {
+            const row = items.nth(index)
+            const status = source.completed_at !== null ? 'completed'
+              : source.started_at !== null ? 'partial' : 'unstarted'
+            await row.scrollIntoViewIfNeeded()
+            const shown = source.title.replace(/\s+session\s*$/i, '')
+            await expect(row).toHaveAttribute('data-status', status)
+            await expect(row.locator('[data-part="title"]')).toHaveText(shown)
+            await expect(row.locator('[data-part="status"]')).toHaveText(STATUS_LABEL[status])
+            const geometry = await recentRowGeometry(row)
 
-          // Both pieces are kept, each whole, in the same type.
-          expect(geometry.date.lines).toBe(1)
-          expect(geometry.status.lines).toBe(1)
-          expect(geometry.statusFont).toBe(geometry.dateFont)
-          const wrapped = geometry.date.top >= geometry.status.bottom
-          // On the B05 phone width they share one line and one baseline.
-          if (viewport.width >= 375) expect(wrapped, JSON.stringify(geometry)).toBe(false)
-          if (!wrapped) {
+            // Both pieces are kept, each whole, in the same type.
+            expect(geometry.date.lines).toBe(1)
+            expect(geometry.status.lines).toBe(1)
+            expect(geometry.statusFont).toBe(geometry.dateFont)
+            const wrapped = geometry.date.top >= geometry.status.bottom
+            // The same row/baseline is required at every supported phone width.
+            expect(wrapped, JSON.stringify(geometry)).toBe(false)
             expect(Math.abs(geometry.status.bottom - geometry.date.bottom), JSON.stringify(geometry)).toBeLessThanOrEqual(TOLERANCE)
             expect(Math.abs(geometry.status.top - geometry.date.top), JSON.stringify(geometry)).toBeLessThanOrEqual(TOLERANCE)
             expect(geometry.date.left).toBeGreaterThan(geometry.status.right)
-          } else {
-            // Too narrow for both: the date takes the next line from the
-            // status's own start edge rather than shrinking either.
-            expect(Math.abs(geometry.date.left - geometry.glyph.left), JSON.stringify(geometry)).toBeLessThanOrEqual(TOLERANCE)
+            expect(geometry.glyph.left).toBeGreaterThanOrEqual(geometry.metadata.left - TOLERANCE)
+            expect(geometry.date.right).toBeLessThanOrEqual(geometry.metadata.right + TOLERANCE)
+            expect(geometry.metadata.scrollWidth).toBeLessThanOrEqual(geometry.metadata.clientWidth + 1)
+            measured.push({ result: status, wrapped, ...geometry })
+            // The glyph sits on the word's line, centred on it.
+            const glyphCentre = (geometry.glyph.top + geometry.glyph.bottom) / 2
+            const textCentre = (geometry.status.top + geometry.status.bottom) / 2
+            expect(Math.abs(glyphCentre - textCentre), JSON.stringify(geometry)).toBeLessThanOrEqual(1.5)
+
+            // 01.3: the whole title, wrapping, at its token size — not cut or shrunk.
+            expect(geometry.title.text).toBe(shown)
+            expect(geometry.title.fontSize).toBe(geometry.title.tokenFontSize)
+            expect(geometry.title.whiteSpace).toBe('normal')
+            expect(geometry.title.textOverflow).not.toBe('ellipsis')
+            expect(['', 'none']).toContain(geometry.title.lineClamp)
+            expect(geometry.title.overflowsX).toBe(false)
+            expect(geometry.title.overflowsY).toBe(false)
+            if (shown.length > 40) expect(geometry.title.box.lines).toBeGreaterThanOrEqual(2)
           }
-          measured.push({ result: status, wrapped, ...geometry })
-          // The glyph sits on the word's line, centred on it.
-          const glyphCentre = (geometry.glyph.top + geometry.glyph.bottom) / 2
-          const textCentre = (geometry.status.top + geometry.status.bottom) / 2
-          expect(Math.abs(glyphCentre - textCentre), JSON.stringify(geometry)).toBeLessThanOrEqual(1.5)
 
-          // 01.3: the whole title, wrapping, at its token size — not cut or shrunk.
-          expect(geometry.title.text).toBe(shown)
-          expect(geometry.title.fontSize).toBe(geometry.title.tokenFontSize)
-          expect(geometry.title.whiteSpace).toBe('normal')
-          expect(geometry.title.textOverflow).not.toBe('ellipsis')
-          expect(['', 'none']).toContain(geometry.title.lineClamp)
-          expect(geometry.title.overflowsX).toBe(false)
-          expect(geometry.title.overflowsY).toBe(false)
-          if (shown.length > 40) expect(geometry.title.box.lines).toBeGreaterThanOrEqual(2)
+          await record(page, await items.all(), testInfo, `home-recents-${state}-${size}-${skin}`, {
+            consumer: 'Home recent workouts (HistoryList layout="recent")',
+            layout: 'recent', state: `returning user, ${state} rows`, viewport,
+            criteria: { 'AC-011': 'pass', 'AC-012': 'pass', 'AC-013': 'pass' },
+            measurements: measured,
+          })
         }
-
-        await record(page, await items.all(), testInfo, `home-recents-${state}-${size}`, {
-          consumer: 'Home recent workouts (HistoryList layout="recent")',
-          layout: 'recent', state: `returning user, ${state} rows`, viewport,
-          criteria: { 'AC-011': 'pass', 'AC-012': 'pass', 'AC-013': 'pass' },
-          measurements: measured,
-        })
         app.assertReadOnly()
       })
     }

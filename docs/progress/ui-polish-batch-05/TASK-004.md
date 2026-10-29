@@ -159,3 +159,48 @@ existing procedure, recorded in TASK-002 "Root recovery checkpoint".
 1. The controller performs the audit recapture/rebind described above.
 2. It then runs the independent verification.
 3. The PR is opened from this branch (not done by this worker).
+
+## Controller correction — same-row contract at narrow width
+
+The preceding worker interpretation of the 320px wrap was rejected. AC-011 and JOURNEY-003 require
+status/date on the same row and baseline, including long titles/dates and all result statuses.
+Annotation01.3 preserves title handling; it does not exempt narrow metadata from01.5. The original
+six-case green result and wrapped captures remain history, not accepted narrow proof. No owner
+question is pending for this already approved criterion.
+
+Original worker candidate was preserved in commit `fbc31d782fd61fe19af8505453ef322ad51349ae`.
+The actual TASK-003 protected build merge `0c9f55bccf4cb79477c6ef508ea1fd779ba548c2` was then integrated
+cleanly into this same a1 branch. Original claim base ec99341 remains historical; combined-source
+proof uses that actual new build merge as testedBase. No main branch was merged or modified.
+
+Only the shared Home recent metadata composition changed: shipped paragraph-xs size/line-height
+(12px/15px), retained data font/tracking, public16px status glyphs and spacing-100 gaps(4px), centered
+same-row layout. Full status word, glyph and full date remain. Title styling/handling and History's
+chronology remain unchanged. No truncation, hidden overflow, title shrink, route-specific width or
+new token/vendor change.
+
+The original six browser case titles are preserved. Each Home case now exercises both Clear and
+Vapour, removes the375px exception, and requires status/date on one baseline within actual metadata
+bounds at390x844 and320x568. Exact approved command passed6/6 in7.6seconds, exit0. All24recent-row
+measurements have wrapped=false and0px baseline difference. The widest narrow case retains15.78px
+clearance: metadata right280, date right264.22. Titles remain16px, full and wrapping. History keeps
+its intentional head/context layout. Actual narrow Vapour Not-started and normal Vapour Completed
+captures were visually compared with the immutable reference. All36named row PNGs/10JSON records
+have verified capture hashes; output also contains Playwright's attachment copies.
+
+Final focused Home check passed14/14 in1.80seconds, session60815, exit0. The Home unit file now
+matches the actual build base exactly, retaining all existing hierarchy assertions and removing
+only new redundant style/SVG implementation assertions; actual behavior is proved in the browser.
+Changed-file ESLint and diff check passed. No process or server remains from those commands.
+
+Corrected captures are retained externally in
+`runner/reports/task-004-corrected-browser-evidence` with its SHA-256 inventory (83files,72PNGfiles
+including attachment copies). Original false-green captures remain separately under
+`runner/reports/task-004-initial-browser-evidence`. Capture source identity is the combined merge
+`e27e26db0710cc21df1850aca3265d0041335467` plus explicit dirty corrections, not falsely a clean head.
+
+Fresh active format group is `docs/design/evidence-0143/task034-format-preview-batch05-task004`.
+Source-only lineage uses this real run/attempt1, retained a1 branch and actual testedBase0c9f55.
+Its validators and all historical groups remain unchanged. Genuine capture and unchanged full
+native checks must still pass before publication/delivery; no receipt or native acceptance is
+claimed by these local results.
