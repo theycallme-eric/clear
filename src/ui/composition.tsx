@@ -10,7 +10,7 @@
  */
 import { createElement, type ElementType, type HTMLAttributes, type ReactNode } from 'react'
 
-import { EmptyState } from '../design-system/index'
+import { EmptyState, OverflowRail } from '../design-system/index'
 
 import { useInsideCard } from './card-context'
 
@@ -108,11 +108,24 @@ export function MetricFrame(props: CompositionProps) {
  * The compact workout-facts object: one aligned row of glyph-led readings, the
  * terse sibling of `MetricGrid` for a summary read at a glance (B05-03). It is
  * not a restyled metric grid — results and scores keep their readouts. A
- * description list by default; when the real facts are wider than the row,
- * they continue on the next line at the same left edge rather than clip.
+ * description list by default. The public rail keeps every reading reachable
+ * on the same line when they exceed the available width. Its named information
+ * group is one keyboard entry; horizontal keys scroll the containing viewport.
  */
 export function SummaryFacts(props: CompositionProps) {
-  return composition('dl', 'clr-summary-facts', props)
+  return (
+    <OverflowRail
+      className="clr-summary-facts-rail"
+      trackProps={{
+        tabIndex: 0,
+        role: 'group',
+        'aria-label': props['aria-label'] ?? 'Workout facts',
+        'aria-labelledby': props['aria-labelledby'],
+      }}
+    >
+      {composition('dl', 'clr-summary-facts', props)}
+    </OverflowRail>
+  )
 }
 
 /**
@@ -133,12 +146,14 @@ export function SummaryFact({
 }) {
   return (
     <div className="clr-summary-fact">
-      {glyph === undefined ? null : (
-        <span aria-hidden="true" className="clr-summary-fact__glyph">
-          {glyph}
-        </span>
-      )}
-      <dt className={termHidden ? 'a11y-hidden' : undefined}>{term}</dt>
+      <dt>
+        {glyph === undefined ? null : (
+          <span aria-hidden="true" className="clr-summary-fact__glyph">
+            {glyph}
+          </span>
+        )}
+        <span className={termHidden ? 'a11y-hidden' : undefined}>{term}</span>
+      </dt>
       <dd>{children}</dd>
     </div>
   )

@@ -315,38 +315,26 @@ function MetricGridOddCount() {
   )
 }
 
-function SummaryFactsRow() {
+function summaryFactsExample(widest: boolean) {
   return (
     <SummaryFacts aria-label="Workout facts">
       <SummaryFact glyph={<Clock size={16} />} term="Duration" termHidden>
-        45 min
+        {widest ? '120 min' : '45 min'}
       </SummaryFact>
       <SummaryFact glyph={<Target size={16} />} term="Anchor" termHidden>
-        Power
+        {widest ? 'Full body' : 'Power'}
       </SummaryFact>
       <SummaryFact glyph={<Gauge size={16} />} term="Intensity">
-        7 of 10
+        {widest ? '10 of 10' : '7 of 10'}
       </SummaryFact>
-    </SummaryFacts>
-  )
-}
-
-function SummaryFactsWrapped() {
-  return (
-    <SummaryFacts aria-label="Workout facts">
-      <SummaryFact glyph={<Clock size={16} />} term="Duration" termHidden>
-        120 min
-      </SummaryFact>
-      <SummaryFact glyph={<Target size={16} />} term="Anchor" termHidden>
-        Full body
-      </SummaryFact>
-      <SummaryFact glyph={<Gauge size={16} />} term="Intensity">
-        10 of 10
-      </SummaryFact>
-      <SummaryFact glyph={<Crosshair size={16} />} term="Goal">
-        Active recovery
-      </SummaryFact>
-      <SummaryFact term="Movements">9</SummaryFact>
+      {widest && (
+        <>
+          <SummaryFact glyph={<Crosshair size={16} />} term="Goal">
+            Active recovery
+          </SummaryFact>
+          <SummaryFact term="Movements">9</SummaryFact>
+        </>
+      )}
     </SummaryFacts>
   )
 }
@@ -2193,10 +2181,10 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'REQ-008',
     module: 'src/ui/composition.tsx',
     summary:
-      'The compact workout-facts row: glyph-led readings on one aligned line, continuing from the same edge when wider.',
+      'The compact workout-facts row: every glyph-led reading on one line, with public horizontal containment and keyboard reachability.',
     specimens: [
-      { state: 'pictured facts', Render: SummaryFactsRow },
-      { state: 'widest real facts', Render: SummaryFactsWrapped },
+      { state: 'pictured facts', Render: () => summaryFactsExample(false) },
+      { state: 'widest real facts', Render: () => summaryFactsExample(true) },
     ],
   },
   {
@@ -2205,8 +2193,8 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     module: 'src/ui/composition.tsx',
     summary: 'One reading in SummaryFacts: optional system glyph, a term (visible or for readers only) and its value.',
     specimens: [
-      { state: 'glyph, hidden term', Render: SummaryFactsRow },
-      { state: 'visible term, no glyph', Render: SummaryFactsWrapped },
+      { state: 'glyph, hidden term', Render: () => summaryFactsExample(false) },
+      { state: 'visible term, no glyph', Render: () => summaryFactsExample(true) },
     ],
   },
   {

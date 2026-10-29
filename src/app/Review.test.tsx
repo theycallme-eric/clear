@@ -593,10 +593,10 @@ describe('the intensity / anchor / goal header', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    expect(screen.getByText('Intensity').parentElement?.textContent).toContain('7 of 10')
-    expect(screen.getByText('Anchor').parentElement?.textContent).toContain('Lower body')
-    expect(screen.getByText('Goal').parentElement?.textContent).toContain('Strength')
-    expect(screen.getByText('Duration').parentElement?.textContent).toContain('45 min')
+    expect(screen.getByText('Intensity').closest('dt')?.nextElementSibling?.textContent).toBe('7 of 10')
+    expect(screen.getByText('Anchor').closest('dt')?.nextElementSibling?.textContent).toBe('Lower body')
+    expect(screen.getByText('Goal').closest('dt')?.nextElementSibling?.textContent).toBe('Strength')
+    expect(screen.getByText('Duration').closest('dt')?.nextElementSibling?.textContent).toBe('45 min')
   })
 
   it('says why the session differs from what was asked for', async () => {

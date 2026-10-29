@@ -432,10 +432,11 @@ describe('REQ-008: the compact workout-facts row under the workout title', () =>
       expect(glyph).toHaveAttribute('aria-hidden', 'true')
       expect(glyph.querySelector('svg')).not.toBeNull()
     }
-    // Self-describing values hide their term visually only.
-    expect(readings[0].querySelector('dt')).toHaveClass('a11y-hidden')
-    expect(readings[1].querySelector('dt')).toHaveClass('a11y-hidden')
-    expect(readings[2].querySelector('dt')).not.toHaveClass('a11y-hidden')
+    // Native description-list groups contain their term and description;
+    // decorative glyphs belong inside the term, never beside that pair.
+    for (const reading of readings) {
+      expect([...reading.children].map((child) => child.tagName)).toEqual(['DT', 'DD'])
+    }
   })
 
   // The title is the pinned header's; its place above the row is geometry,

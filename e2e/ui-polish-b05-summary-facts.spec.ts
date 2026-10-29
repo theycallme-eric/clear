@@ -1,7 +1,6 @@
-import AxeBuilder from '@axe-core/playwright'
 import { execSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { createServer, type AddressInfo } from 'node:net'
 import { basename, resolve } from 'node:path'
 import type { Locator, Page, Route, TestInfo } from '@playwright/test'
@@ -121,6 +120,10 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
   baseURL: async ({ baseURL, syntheticOrigin }, use) => use(syntheticOrigin ?? baseURL),
 })
 
+// Native keyboard scrolling and its capture share the browser's active page.
+// Keep these cases sequential so parallel foreground changes cannot steal it.
+test.describe.configure({ mode: 'default' })
+
 type Viewport = { width: number; height: number }
 /** The portrait phone B05 was captured on, and the narrowest supported one. */
 const VIEWPORTS: ReadonlyArray<{ name: string; viewport: Viewport }> = [
@@ -134,9 +137,7 @@ const REFERENCE_FILE = 'sources/source-06-B05-03-review-summary.jpg'
 const REFERENCE_PATH = resolve(REFERENCE_DIR, basename(REFERENCE_FILE))
 const REFERENCE = {
   file: REFERENCE_FILE,
-  sha256: existsSync(REFERENCE_PATH)
-    ? createHash('sha256').update(readFileSync(REFERENCE_PATH)).digest('hex')
-    : null,
+  sha256: createHash('sha256').update(readFileSync(REFERENCE_PATH)).digest('hex'),
   regions: {
     'B05-03 current': 'Left pane: the tall OVERVIEW metric grid (Intensity/Anchor/Goal/Duration/Movements) being replaced',
     '03.1': 'Right pane, YOUR WORKOUT card: title over one row "45 MIN  POWER  INTENSITY 7" (marker 1: keep the icons, in a row)',
@@ -303,15 +304,22 @@ async function factsGeometry(row: Locator) {
         width: rect.width, height: rect.height }
     }
     const card = element.closest('.clr-card')!
+    const rail = element.closest('.clr-summary-facts-rail')!
+    let scroller = element.parentElement
+    while (scroller && !['auto', 'scroll'].includes(getComputedStyle(scroller).overflowX)) {
+      scroller = scroller.parentElement
+    }
+    if (!scroller || !rail.contains(scroller)) throw new Error('Facts require their contained horizontal viewport')
     const style = getComputedStyle(element)
     const readings = [...element.querySelectorAll<HTMLElement>('.clr-summary-fact')].map((reading) => {
       const term = reading.querySelector('dt')!
       const value = reading.querySelector('dd')!
       const glyph = reading.querySelector('.clr-summary-fact__glyph svg')
-      const termStyle = getComputedStyle(term)
+      const termText = term.lastElementChild ?? term
+      const termStyle = getComputedStyle(termText)
       return {
         term: term.textContent,
-        termShown: termStyle.position !== 'absolute' && term.getBoundingClientRect().width > 1,
+        termShown: termStyle.position !== 'absolute' && termText.getBoundingClientRect().width > 1,
         value: value.textContent,
         box: box(reading),
         valueBox: box(value),
@@ -329,6 +337,16 @@ async function factsGeometry(row: Locator) {
         overflow: style.overflow, display: style.display, lineHeight: parseFloat(style.lineHeight),
         rowGap: parseFloat(style.rowGap), fontFamily: style.fontFamily, textTransform: style.textTransform },
       card: box(card),
+      rail: box(rail),
+      horizontal: {
+        viewport: box(scroller), left: scroller.scrollLeft,
+        max: scroller.scrollWidth - scroller.clientWidth,
+        pageLeft: document.scrollingElement?.scrollLeft ?? 0,
+        viewportWidth: innerWidth,
+        cues: [...rail.querySelectorAll<HTMLElement>('button[data-side]')].map((cue) => ({
+          side: cue.dataset.side, opacity: Number(getComputedStyle(cue).opacity),
+        })),
+      },
       cardInner: (() => {
         const rect = card.getBoundingClientRect()
         const cs = getComputedStyle(card)
@@ -353,6 +371,45 @@ function linesOf(geometry: Geometry) {
     else line.push(reading)
   }
   return lines
+}
+
+/** Use actual keyboard scrolling, never assigned offsets or forced item geometry. */
+async function keyboardEdge(page: Page, row: Locator, direction: 'left' | 'right') {
+  for (let presses = 0; presses < 40; presses += 1) {
+    const before = await factsGeometry(row)
+    const remaining = direction === 'right'
+      ? before.horizontal.max - before.horizontal.left : before.horizontal.left
+    const reading = direction === 'right' ? before.readings.at(-1)! : before.readings[0]
+    const fullyVisible = reading.box.left >= before.horizontal.viewport.left - TOLERANCE &&
+      reading.box.right <= before.horizontal.viewport.right + TOLERANCE
+    if (remaining <= 1 && fullyVisible) return before
+    await page.keyboard.press(direction === 'right' ? 'ArrowRight' : 'ArrowLeft')
+    try {
+      await expect.poll(async () => {
+        const after = await factsGeometry(row)
+        return direction === 'right'
+          ? after.horizontal.left > before.horizontal.left : after.horizontal.left < before.horizontal.left
+      }, { message: `Focused facts must scroll ${direction} with the horizontal key` }).toBe(true)
+    } catch (error) {
+      await test.info().attach('keyboard-stall.json', {
+        body: JSON.stringify({ direction, before, after: await factsGeometry(row),
+          activeElement: await page.evaluate(() => document.activeElement?.outerHTML) }, null, 2),
+        contentType: 'application/json',
+      })
+      throw error
+    }
+  }
+  throw new Error(`Keyboard did not reach the ${direction} fact boundary`)
+}
+
+function expectContainedRail(geometry: Geometry) {
+  expect(geometry.horizontal.pageLeft).toBe(0)
+  expect(geometry.rail.left).toBeGreaterThanOrEqual(geometry.cardInner.left - TOLERANCE)
+  expect(geometry.rail.right).toBeLessThanOrEqual(geometry.cardInner.right + TOLERANCE)
+  expect(geometry.horizontal.viewport.left).toBeGreaterThanOrEqual(geometry.rail.left - TOLERANCE)
+  expect(geometry.horizontal.viewport.right).toBeLessThanOrEqual(geometry.rail.right + TOLERANCE)
+  expect(geometry.rail.left).toBeGreaterThanOrEqual(0)
+  expect(geometry.rail.right).toBeLessThanOrEqual(geometry.horizontal.viewportWidth)
 }
 
 async function record(page: Page, targets: Readonly<Record<string, Locator>>, testInfo: TestInfo, id: string,
@@ -416,15 +473,8 @@ async function settleFonts(page: Page) {
  * the same document — the Generate → Review handoff's own history state.
  *
  * Review is then scanned once its region has measured and its faces have
- * loaded. Observed while building this spec, with the product unchanged
- * between runs: the first axe pass over Review's section triggers (bold
- * uppercase data face) intermittently reported them nameless —
- * `button-has-visible-text`, and so `landmark-unique` for the regions they
- * label — while the text was in the DOM, visible and unhidden, and a second
- * pass over the same, unmutated DOM was clean every time. That is axe's
- * text-as-icon-ligature canvas heuristic being primed, not the screen. One
- * unasserted priming pass precedes the asserted scan; a real violation
- * survives into the asserted scan exactly as it would have without it.
+ * loaded. The complete asserted scan runs once: a readiness check must not
+ * discard a first accessibility result or retry away a real failure.
  */
 async function openReview(page: Page, acceptance: SessionAcceptance,
   visit: (path: string) => Promise<void>, checkA11y: () => Promise<void>) {
@@ -437,8 +487,53 @@ async function openReview(page: Page, acceptance: SessionAcceptance,
   await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(acceptance.workout.title)
   await expect(page.locator('.clr-scroll-region[data-measured]')).toHaveCount(1)
   await settleFonts(page)
-  await new AxeBuilder({ page }).analyze()
-  await checkA11y()
+  // The real same-document route entrance must settle before the scan takes
+  // its DOM/style snapshot. Observe finite motion; never sleep or retry Axe.
+  await page.waitForFunction(() => {
+    const main = document.querySelector('main')
+    return main && main.getAnimations({ subtree: true })
+      .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+      .every((animation) => animation.playState !== 'running')
+  })
+  try {
+    await checkA11y()
+  } catch (error) {
+    // Preserve the first asserted failure and its actual DOM/font state. This
+    // diagnostic runs after failure; it never primes or repeats an Axe scan.
+    const diagnostic = await page.evaluate(() => {
+      const nodes = [...document.querySelectorAll<HTMLElement>(
+        '.clr-collapsible__trigger, .clr-summary-facts, .clr-summary-facts-rail, .clr-summary-facts-rail [role="group"]',
+      )].map((element) => {
+        const style = getComputedStyle(element)
+        const rect = element.getBoundingClientRect()
+        const ancestors = []
+        for (let node: HTMLElement | null = element; node; node = node.parentElement) {
+          const css = getComputedStyle(node)
+          ancestors.push({ tag: node.tagName, className: node.className, display: css.display,
+            visibility: css.visibility, opacity: css.opacity, inert: node.inert,
+            ariaHidden: node.getAttribute('aria-hidden') })
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = 300
+        canvas.height = 60
+        const context = canvas.getContext('2d', { willReadFrequently: true })!
+        context.font = `30px ${style.fontFamily}`
+        context.textBaseline = 'top'
+        context.fillText(element.textContent ?? '', 0, 0)
+        return { id: element.id, tag: element.tagName, text: element.textContent,
+          tabIndex: element.tabIndex, visible: element.checkVisibility(),
+          rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+          font: style.font, canvasInkPixels: [...context.getImageData(0, 0, 300, 60).data]
+            .filter((value, index) => index % 4 === 3 && value > 0).length, ancestors }
+      })
+      return { nodes, fontStatus: document.fonts.status,
+        faces: [...document.fonts].map((face) => ({ family: face.family, weight: face.weight, status: face.status })) }
+    })
+    await test.info().attach('first-a11y-diagnostic.json', {
+      body: JSON.stringify(diagnostic, null, 2), contentType: 'application/json',
+    })
+    throw error
+  }
 }
 
 /** Sub-pixel rounding only. */
@@ -487,10 +582,10 @@ for (const { name: size, viewport } of VIEWPORTS) {
           // Terse readings: a self-describing value carries no visible term.
           expect(geometry.readings.map((reading) => reading.termShown)).toEqual([false, false, true, true, true])
 
-          // No clipping or silent loss: every reading whole, inside the row and card.
+          // Every real reading stays whole in the one-line track. Its public
+          // rail, rather than the page, contains the actual horizontal overflow.
           expect(geometry.row.scrollWidth).toBeLessThanOrEqual(geometry.row.clientWidth + 1)
-          expect(geometry.row.left).toBeGreaterThanOrEqual(geometry.cardInner.left - TOLERANCE)
-          expect(geometry.row.right).toBeLessThanOrEqual(geometry.cardInner.right + TOLERANCE)
+          expectContainedRail(geometry)
           for (const reading of geometry.readings) {
             expect(reading.valueClipped, JSON.stringify(reading)).toBe(false)
             expect(reading.valueLines, JSON.stringify(reading)).toBe(1)
@@ -499,30 +594,19 @@ for (const { name: size, viewport } of VIEWPORTS) {
             expect(reading.box.bottom).toBeLessThanOrEqual(geometry.row.bottom + TOLERANCE)
           }
 
-          // One aligned row: readings on a line share their centre; any
-          // continuation line starts at the row's left edge, never indented.
+          // Exactly one aligned row for all five facts at both phone widths,
+          // including the widest real values. No continuation-line exception.
           const lines = linesOf(geometry)
-          for (const line of lines) {
-            const centres = line.map((reading) => (reading.box.top + reading.box.bottom) / 2)
-            expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(TOLERANCE)
-            expect(Math.abs(line[0].box.left - geometry.row.left)).toBeLessThanOrEqual(TOLERANCE)
-          }
-          // The reference's three facts lead. At the pictured phone width with
-          // the pictured-shape values they share the first line, as in 03.1;
-          // the two further real facts (goal, movements) continue below, and
-          // narrower widths or wider values wrap rather than clip or drop.
-          expect(lines.flat().map((reading) => reading.term).slice(0, 3)).toEqual(['Duration', 'Anchor', 'Intensity'])
-          if (state === 'pictured' && size === 'phone-390') {
-            expect(lines[0].map((reading) => reading.term)).toEqual(['Duration', 'Anchor', 'Intensity'])
-            expect(lines.length).toBe(2)
-          }
-          // Never one reading per line: the row stays a row wherever it fits two.
-          expect(lines.length).toBeLessThan(geometry.readings.length)
-          // Compact, not the tall grid: no metric frames, one text line per line.
+          expect(lines).toHaveLength(1)
+          expect(lines[0].map((reading) => reading.term)).toEqual([
+            'Duration', 'Anchor', 'Intensity', 'Goal', 'Movements',
+          ])
+          const centres = geometry.readings.map((reading) => (reading.box.top + reading.box.bottom) / 2)
+          expect(Math.max(...centres) - Math.min(...centres)).toBeLessThanOrEqual(TOLERANCE)
+          // Compact, not the tall grid: no metric frames, one text line.
           expect(geometry.metricFrames).toBe(0)
           expect(geometry.row.display).toBe('flex')
-          expect(geometry.row.height).toBeLessThanOrEqual(
-            lines.length * Math.max(geometry.row.lineHeight, 16) + (lines.length - 1) * geometry.row.rowGap + 2)
+          expect(geometry.row.height).toBeLessThanOrEqual(Math.max(geometry.row.lineHeight, 16) + 2)
 
           // The title leads, the facts follow it, and the required equipment is
           // visible in the first screen before any section.
@@ -548,13 +632,54 @@ for (const { name: size, viewport } of VIEWPORTS) {
             await expect(equipment.getByRole('listitem')).not.toContainText(['bodyweight'])
           }
 
+          // One real keyboard entry through the public rail's named information
+          // group, containing the passive native description list. Tab reaches
+          // it after the page's main content region, with no navigation role or
+          // per-fact tab stops.
+          await page.bringToFront()
+          await page.getByRole('link', { name: 'Skip to content', exact: true }).focus()
+          await page.keyboard.press('Tab')
+          await expect(scroller).toBeFocused()
+          await page.keyboard.press('Tab')
+          await expect(page.locator('.clr-summary-facts-rail')
+            .getByRole('group', { name: 'Workout facts', exact: true })).toBeFocused()
+          await expect(row.locator('a, button, input, [tabindex]')).toHaveCount(0)
+
+          const endAtBoundary = await keyboardEdge(page, row, 'right')
+          expectContainedRail(endAtBoundary)
+          expect(endAtBoundary.horizontal.left).toBeGreaterThan(0)
+          const finalFact = endAtBoundary.readings.at(-1)!
+          expect(finalFact.box.left).toBeGreaterThanOrEqual(endAtBoundary.horizontal.viewport.left - TOLERANCE)
+          expect(finalFact.box.right).toBeLessThanOrEqual(endAtBoundary.horizontal.viewport.right + TOLERANCE)
+          await expect.poll(async () => (await factsGeometry(row)).horizontal.cues)
+            .toEqual([{ side: 'start', opacity: 1 }, { side: 'end', opacity: 0 }])
+          const end = await factsGeometry(row)
+          await record(page, { card }, testInfo, `review-${state}-${size}-${skin}-end`, {
+            consumer: 'Review overview (SummaryFacts)',
+            classification: 'equivalent workout-facts object → compact SummaryFacts composition',
+            state: `${state} workout, final fact reached with ArrowRight`, viewport,
+            criteria: { 'AC-023': 'pass', 'AC-025': 'pass', 'AC-063': 'pass' },
+            measurements: end,
+          })
+
+          const returnedAtBoundary = await keyboardEdge(page, row, 'left')
+          expectContainedRail(returnedAtBoundary)
+          expect(returnedAtBoundary.readings[0].box.left).toBeGreaterThanOrEqual(returnedAtBoundary.horizontal.viewport.left - TOLERANCE)
+          expect(returnedAtBoundary.readings[0].box.right).toBeLessThanOrEqual(returnedAtBoundary.horizontal.viewport.right + TOLERANCE)
+          await expect.poll(async () => (await factsGeometry(row)).horizontal.cues)
+            .toEqual([{ side: 'start', opacity: 0 }, { side: 'end', opacity: 1 }])
+          const returned = await factsGeometry(row)
+
           await record(page, { card, firstScreen: page.locator('#main') }, testInfo,
             `review-${state}-${size}-${skin}`, {
               consumer: 'Review overview (SummaryFacts)',
               classification: 'equivalent workout-facts object → compact SummaryFacts composition',
               state: `${state} workout, top of Review`, viewport,
               criteria: { 'AC-023': 'pass', 'AC-024': 'pass', 'AC-025': 'pass', 'AC-063': 'pass' },
-              measurements: { lines: lines.map((line) => line.map((reading) => reading.term)), ...geometry },
+              measurements: {
+                lines: lines.map((line) => line.map((reading) => reading.term)), ...geometry,
+                keyboard: { end, returned },
+              },
             })
         }
         app.assertReadOnly()

@@ -263,14 +263,23 @@ body,
   overflow-wrap: anywhere;
 }
 
-/* The compact workout-facts row (B05-03): a glyph and a reading per fact on
-   one aligned line. Real facts wider than the row continue on the next line
-   from the same left edge; nothing is clipped, truncated or hidden. */
+/* The compact workout-facts row (B05-03): every reading stays whole on one
+   aligned line. The public OverflowRail owns containment and reachability
+   under width pressure; result and score metric grids keep their own layout. */
+.clr-summary-facts-rail:has(:focus-visible) {
+  /* The focused track is wider than its viewport. Keep the system's focus
+     ring on the visible app-owned boundary while that track is scrolled. */
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 .clr-summary-facts {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex: none;
+  width: max-content;
   align-items: center;
-  gap: var(--spacing-200) var(--spacing-300);
+  gap: var(--spacing-300);
   margin: 0;
   font-family: var(--font-data);
   font-size: var(--label-xs-size);
@@ -282,6 +291,7 @@ body,
 
 .clr-summary-fact {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--spacing-100);
   min-width: 0;
@@ -292,8 +302,15 @@ body,
   margin: 0;
 }
 
+.clr-summary-fact > dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-100);
+}
+
+.clr-summary-fact > dt,
 .clr-summary-fact > dd {
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .clr-summary-fact__glyph {
