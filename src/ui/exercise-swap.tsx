@@ -34,7 +34,12 @@ import { ErrorView, LoadingView } from './view-state'
 // On the movement's card
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ACTIONS_STYLE: CSSProperties = { gap: 'var(--spacing-200)', flexWrap: 'wrap' }
+/** Trailing-aligned: the controls close the movement's name row (B05-04). */
+const ACTIONS_STYLE: CSSProperties = {
+  gap: 'var(--spacing-200)',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+}
 
 const OPTION_LIST_STYLE: CSSProperties = {
   listStyle: 'none',
