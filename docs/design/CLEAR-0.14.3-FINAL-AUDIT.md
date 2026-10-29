@@ -1,6 +1,21 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-007 combined source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-010 combined source-bound recapture — 29 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task010/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.3 seconds**, foreground session 31038, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+Actual frozen source `6d57c429bb213996fdfb974991fd69196c506833`, runtime `4fe4b15fc7e5b23686dc84f7d581b9ae10754e76f81634a048b9000538048a0e`, capture driver `a8773f357c4e4002af09d5bf602ea2f908eb38eb15024045d33525eccf65be33` and pinned 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` were derived from all four records and independently matched to the current source tree. Observed 2026-10-29T23:25:58.270Z through 2026-10-29T23:26:12.421Z, process 62133, loopback origin http://localhost:5173. The first record is clean; later dirty statuses retain the collector-created evidence truthfully. Every PNG's actual SHA-256, byte count and dimensions, all eight unique matrix cells and the complete derived manifest were independently verified. Phone-CLEAR and short-Vapour PNGs were opened for visual inspection; no additional issue was identified in those captures.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero, including the authenticated fixture's generation counter. The existing owned disposable backend's real local authentication setup/cleanup writes are separate; this does not claim setup without backend writes, a hosted/deployed journey or paid generation.
+
+Existing v1 source-only provenance identifies revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-010`, run `51fdc2db-4908-4b55-9b22-ec6df56ac3f9`, attempt 1, retained branch `agent-runner/task-010-a1-51fdc2db` and actual combined tested build base `56ceb5107c3dccd3c6fb1109dc439efa44f14676`. The payload `e3e0a2e2d258eb3dda428a24ba2d6ab39110277ff3f0f33ac26967a9545a6f23` comes from the unchanged Node24 `capturePayloadSha256()` and excludes provenance itself. All older groups, audit entries and failed outputs remain preserved.
+
+Separate grouped Review proof passed **6/6 cases in 23.3 seconds**, foreground 99273, on the same clean frozen source `6d57c429bb213996fdfb974991fd69196c506833`. Its 17 clean-source records / 88 artifacts / 70 PNGs remain externally in `task010-final-combined-browser-20261029`; each record binds the actual reference and implementation capture identities. The actual chosen-row narrow PNG was opened: SYNTHETIC, MOUNTAIN and SHOULDER remain whole, Swap retains the name column and the full Undo sits below the readings. The earlier 6/6 proof on e100badc is preserved as insufficient history because its passing containment checks had missed the word-splitting defect; it is not accepted or relabelled as this correction. The shared composition correction's earlier 122 focused units and build, and the combined-base targeted 1/1 browser result, keep their actual prior source identities.
+
+Native exact-head criterion/task/project verification, receipt, required GitHub CI and protected build-branch delivery remain pending. Physical-iPhone UAT remains separate. This collection proves local source-bound evidence only; no main merge, production deployment, hosted schema mutation, distance change or model use is claimed.
+
+
+## Prior batch-05 TASK-007 combined source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task007/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.2 seconds**, foreground session 80702, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 

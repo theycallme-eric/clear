@@ -333,3 +333,48 @@ the existing authenticated format collector, derivation of actual new provenance
 terminal output, all required native exact-head verification commands and normal delivery. No new
 capture, provenance, audit hash, acceptance receipt or delivery is created or claimed by this
 preparation. No test, browser, server, native Runner command or Claude call was run for it.
+
+## Genuine combined-source proof collected and derived
+
+The complete supplemented grouped Review suite passed **6/6 in 23.3 seconds**, controller foreground
+99273, on clean frozen source `6d57c429bb213996fdfb974991fd69196c506833`. The external
+`runner/reports/task010-final-combined-browser-20261029` preservation has 17 records with that exact
+clean identity, 88 artifacts and 70 PNGs (plus its preservation manifest). Every reference/capture
+hash and measured criterion result remains bound to those real outputs. The narrow chosen-state
+PNG was also opened: the long words stay whole, the original name-column width is retained, and
+the full Undo is on its quiet row below the readings. The prior e100badc 6/6 result remains preserved
+as insufficient visual proof; its split-word screenshot is not accepted or relabelled.
+
+Without source edits after that suite, the existing authenticated format collector passed **4/4
+skins in 21.3 seconds**, foreground 31038, terminal exit 0. Its eight actual PNGs cover phone
+390×844 and short 390×320 in CLEAR, Vapour, Signal and Mono. The complete derived manifest, all
+four records, each PNG's byte count/SHA-256/dimensions, settled layout and route/interaction flags
+were independently checked. Phone-CLEAR and short-Vapour captures were opened for visual review.
+
+The genuine identities are:
+
+- captured source `6d57c429bb213996fdfb974991fd69196c506833`;
+- runtime `4fe4b15fc7e5b23686dc84f7d581b9ae10754e76f81634a048b9000538048a0e`;
+- capture driver `a8773f357c4e4002af09d5bf602ea2f908eb38eb15024045d33525eccf65be33`;
+- pinned package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`;
+- payload `e3e0a2e2d258eb3dda428a24ba2d6ab39110277ff3f0f33ac26967a9545a6f23` from the unchanged Node24 `capturePayloadSha256()`.
+
+The actual records were observed 2026-10-29T23:25:58.270Z through 2026-10-29T23:26:12.421Z, process 62133,
+loopback origin http://localhost:5173. The first checkout record is clean; later dirty statuses
+truthfully include the collector's created evidence. Preview generation, blocked generation,
+attempted writes and forwarded writes are all zero. The existing real authenticated fixture's owned
+local setup/cleanup writes are separate from these preview counters; no hosted service or model
+was used.
+
+Actual v1 source-only provenance in `docs/design/evidence-0143/task034-format-preview-batch05-task010/lineage-provenance.json`
+uses this task's unchanged approved revision, run, attempt, real retained branch, combined tested base
+`56ceb5107c3dccd3c6fb1109dc439efa44f14676` and captured source set derived from the records. The final audit now prepends
+this factual current collection and retains Task 7's prior entry and every older group. No validator,
+runtime, capture driver or helper changed during derivation.
+
+The earlier 122 focused units/build on correction 6abf1f6 and targeted 1/1 combined-base browser
+proof at 62d0b224 remain supporting results at their actual sources. **Pending:** all fresh native
+exact-head criterion/task/project checks and receipt, required GitHub CI, normal protected build-branch
+publication/delivery and later physical-phone UAT. This source-only proof does not claim native
+acceptance or delivery. No test suite, browser, server, native Runner or Claude command was launched
+while deriving these records.
