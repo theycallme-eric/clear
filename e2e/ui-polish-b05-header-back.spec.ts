@@ -1,6 +1,6 @@
 import { execSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
 import type { Locator, Page, Route, TestInfo } from '@playwright/test'
 
@@ -66,7 +66,7 @@ const WORKOUT = sessionSnapshotSchema.parse(snapshotFixture({
 const WORKOUT_EXERCISES = WORKOUT.sections.flatMap((section) => section.blocks
   .flatMap((block) => block.exercises.map(({ exercise }) => exercise)))
 
-/** Reviewed references: file, SHA-256 (when the evidence snapshot is reachable) and selected region. */
+/** Required reviewed references: readable file, SHA-256 and selected region. */
 const REFERENCE_DIR = resolve(import.meta.dirname, '..', '..', '.evidence',
   basename(resolve(import.meta.dirname, '..')), 'sources')
 const REFERENCE_FILES = {
@@ -77,7 +77,10 @@ type ReferenceId = keyof typeof REFERENCE_FILES
 function reference(id: ReferenceId) {
   const entry = REFERENCE_FILES[id]
   const path = resolve(REFERENCE_DIR, basename(entry.file))
-  return { id, ...entry, sha256: existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : null }
+  // Reading is mandatory: missing or unreadable approved evidence fails the
+  // proof instead of allowing a successful capture with a null reference hash.
+  const bytes = readFileSync(path)
+  return { id, ...entry, sha256: createHash('sha256').update(bytes).digest('hex') }
 }
 
 function sourceIdentity() {

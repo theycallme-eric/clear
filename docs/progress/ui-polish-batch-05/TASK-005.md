@@ -165,3 +165,38 @@ recapture on this frozen source, as TASK-002/003 did. That means a new evidence 
 tested base `0c9f55b`, and the audit hash. Then rerun `npm test`. The task's own browser and
 other project checks are green. `origin/main` was not fetched or merged here; the controller owns
 integration.
+
+## Controller combined-source checkpoint
+
+The first native attempt ended with a successful worker and a genuine four-criterion report, then
+failed project verification on the two stale source-audit checks. It was not published. Original
+worker candidate `4eec5da2e6b0cd74f79ce32e02b4c8d3c31b93fd` and native captures are preserved.
+The actual TASK-004 build merge `40ffb2f749bb6930f21a8befa794a7b2c97913b6` was integrated cleanly
+into this same a1 workspace. Original claim base0c9f55 remains history; the actual combined build
+merge40ffb2f is the testedBase for new proof and recovery, not a task PR head.
+
+Only the focused spec's reference reader needed a correction: missing/unreadable approved images
+now throw through readFileSync rather than producing a null hash. No original/staged reference was
+moved or modified. All fourteen existing case names, assertions and pixel thresholds remain.
+No production-source change was needed after the six-control worker implementation.
+
+Exact approved command on the combined tree passed14/14 in10.1seconds, exit0; foreground83538 was
+fully collected. All six in-app returns, six direct-entry fallbacks and unrelated/collapse cases
+passed. Twenty PNGs, twenty capture records and six actual pixel comparisons are retained under
+execution-body `runner/reports/task-005-combined-browser-evidence` with a SHA-256 inventory. Every
+PNG matches its record; all twelve Back references are nonnull and match both staged and immutable
+approved images. Captures identify combined merge`d9fa50786725caf92d5706c9fd10c638bf6dc5c5` plus
+explicit dirty helper/binding edits, not a falsely clean accepted head.
+
+Both the independent reviewer and controller viewed actual Generate/Settings captures: visible
+square framed arrows, no visible label text, and clear title/control separation at390x844/CLEAR.
+No other width, skin or installed-device result is inferred. The six source edits retain all
+accessible names, handlers, fallback/push/back/replace behavior and header.actions slots. Vendor,
+shell geometry, unrelated actions and collapse controls remain unchanged.
+
+New active format group: `docs/design/evidence-0143/task034-format-preview-batch05-task005`.
+Its source-only identity uses this actual run/producerattempt1/a1 and combined testedBase40ffb2f.
+All validators and previous groups remain unchanged. A clean committed source is frozen before
+running the existing genuine collector against the already-authorized disposable local backend;
+no new owner question is required for that routine proof. Native acceptance/delivery remain pending
+until actual independent checks, exact-head receipt, requiredCI and protected build merge pass.
