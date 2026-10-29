@@ -200,3 +200,13 @@ All validators and previous groups remain unchanged. A clean committed source is
 running the existing genuine collector against the already-authorized disposable local backend;
 no new owner question is required for that routine proof. Native acceptance/delivery remain pending
 until actual independent checks, exact-head receipt, requiredCI and protected build merge pass.
+
+## Genuine combined-source format evidence
+
+Source`5e90e9507adfbe3eef1c504c0b0dd639307fb6a4`; runtime`957c56c7ae03c53284501f205bdd4ab0b5194bf8b3a1133836b1ea863e262564`;
+driver`6d49620d1f84d3d4b2055734410e5b92199df4d4bc30a389896339402d78196e`. Four skins/eight PNGs passed22.1s,
+foreground9992 exit0, complete manifest and all generation/write counters0. Existing v1 source-only
+provenance derives from actual payload`d18f2ffcbb92a8d627451f24a117675a9f1ce2c249c9ae681b21f2e69cdf5603`, producerattempt1/a1 and actual
+combined testedBase`40ffb2f749bb6930f21a8befa794a7b2c97913b6`. Historical evidence is unchanged.
+The existing no-model native recovery is next, independently rerunning every approved criterion,
+task and project check. No model attempt/limit increase or publication/completion is claimed here.
