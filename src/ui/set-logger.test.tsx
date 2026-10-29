@@ -97,11 +97,11 @@ function mount(options: MountOptions = {}) {
 
 /**
  * The entry form, in the half-sheet. With no shell host mounted the sheet is
- * drawn in place, so the card's Log set opens it here.
+ * drawn in place, so the card's Rest action opens it here.
  */
 function form(setNumber: number) {
   if (screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ }) === null) {
-    fireEvent.click(screen.getByRole('button', { name: 'Log set' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rest' }))
   }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of back squat` }))
 }

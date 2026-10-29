@@ -2,8 +2,10 @@
  * REQ-009 — the half-sheet every set is entered in.
  *
  * The active workout screen shows each movement's prescription, its saved
- * results and an explicit Log set action; the fields themselves open here,
- * in one sheet docked in the pinned foot, beside the rest that is running.
+ * results and a Rest entry action (REQ-012) that opens this sheet and starts
+ * the prescribed rest; the fields themselves open here, in one sheet docked in
+ * the pinned foot, beside the rest that is running. The sheet's Log set N is
+ * the only save, and never starts or restarts rest.
  * New-entry and edit are the same sheet in two modes:
  *
  *   · a `Log set N` / `Edit set N` title — `Log round N` for a superset's

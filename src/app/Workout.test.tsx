@@ -132,7 +132,7 @@ function logForm(name: string, setNumber: number) {
     const log = screen
       .getAllByRole('heading', { name: new RegExp(`${name}$`) })
       .map((heading) => heading.closest('section'))
-      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Log set' })))
+      .map((section) => (section === null ? null : within(section).queryByRole('button', { name: 'Rest' })))
       .find((button) => button !== null)
     if (log === null || log === undefined) throw new Error(`no Log set for ${name}`)
     fireEvent.click(log)
@@ -1408,7 +1408,10 @@ describe('Workout — the session’s one rest', () => {
   async function logRound(round: number) {
     const user = userEvent.setup()
     if (screen.queryByRole('form', { name: /^Log round \d+ of / }) === null) {
-      await user.click(screen.getByRole('button', { name: 'Log round' }))
+      // The block's own Rest — its movements have none of their own.
+      const card = screen.getByRole('list', { name: 'Movements in this superset' }).closest('.clr-card')
+      if (!(card instanceof HTMLElement)) throw new Error('no superset card')
+      await user.click(within(card).getByRole('button', { name: 'Rest' }))
     }
     const form = within(screen.getByRole('form', { name: `Log round ${round} of bench press and barbell row` }))
     for (const performed of form.getAllByRole('checkbox', { name: 'Performed' })) {
@@ -1442,7 +1445,7 @@ describe('Workout — the session’s one rest', () => {
     expect(restBars()).toEqual([])
   })
 
-  it('starts the movement’s own rest when a set is logged', async () => {
+  it('starts the movement’s own rest when Rest opens its sheet', async () => {
     await restShell()
 
     await logSet('back squat', 1)
@@ -1477,7 +1480,7 @@ describe('Workout — the session’s one rest', () => {
     expect(restTimer()).toHaveTextContent('01:00')
   })
 
-  it('replaces the running rest when another set is logged, rather than queueing one', async () => {
+  it('keeps a running rest through another Rest and Log, rather than restarting or queueing one', async () => {
     await restShell()
 
     await logSet('back squat', 1)
@@ -1485,13 +1488,18 @@ describe('Workout — the session’s one rest', () => {
     returnToForeground()
     expect(restTimer()).toHaveTextContent('00:50')
 
+    // REQ-012: Rest with a rest running reopens it; saving never restarts it.
     await logRound(1)
 
     expect(restBars()).toHaveLength(1)
-    expect(screen.getByText('Rest after round 1')).toBeInTheDocument()
-    expect(screen.queryByText('Rest after back squat')).not.toBeInTheDocument()
-    expect(restTimer()).toHaveTextContent('01:00')
+    expect(screen.getAllByText('Rest after back squat').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Rest after round 1')).not.toBeInTheDocument()
+    expect(restTimer()).toHaveTextContent('00:50')
 
+    // Run out, the next Rest starts the full prescribed rest again.
+    advance(50)
+    returnToForeground()
+    expect(restBars()).toEqual([])
     await logSet('back squat', 2)
     expect(restBars()).toHaveLength(1)
     expect(restTimer()).toHaveTextContent('01:30')

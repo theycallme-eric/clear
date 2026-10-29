@@ -23,7 +23,7 @@
  *     that rest ends (REQ-017). The section's forward action saves the block
  *     with or without any of it.
  *   · **Load entry is compact and optional.** Each movement is one read-only
- *     row with a quiet `Log load and reps` action, which opens the shared
+ *     row with a quiet `Rest` entry action, which opens the shared
  *     half-sheet for that movement only and writes through the shell's one
  *     set path (`ExerciseSetLogger`). It is never the round clock's control.
  *   · **Round times are durations.** Each finished round's elapsed time is
@@ -348,6 +348,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // The circuit movement owns this clock independently of optional
           // load entry. Opening the logger must not create a second one.
           showCountdown={false}
+          // Its rest is the round boundary's, so its entry only opens the sheet.
           // The row's one tap opens the shared half-sheet straight away
           // (REQ-017); its Minimize and Cancel leave the movement unlogged.
           openSheetOnMount
@@ -368,10 +369,10 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           <div>
             <TextAction
               aria-expanded="false"
-              aria-label={`Log load and reps for ${name}`}
+              aria-label={`Rest for ${name}`}
               onClick={() => setOpen(true)}
             >
-              Log load and reps
+              Rest
             </TextAction>
           </div>
           <ExerciseCoaching exercise={exercise} />

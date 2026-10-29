@@ -17,10 +17,12 @@
  *
  * The card's hierarchy is fixed (REQ-008): the movement heading with its
  * subordinate `Set X/Y` counter, the prescription and equipment, the compact
- * saved results with their Edit controls, the explicit Log set action, then the
- * coaching disclosure. The fields are not on the card at all: Log set opens
- * the shared half-sheet (`set-logging-sheet.tsx`, REQ-009), and the draft it
- * edits lives here, so collapsing the sheet loses nothing. The draft includes
+ * saved results with their Edit controls, the Rest entry action, then the
+ * coaching disclosure. The fields are not on the card at all: Rest opens the
+ * shared half-sheet (`set-logging-sheet.tsx`, REQ-009) and starts the
+ * prescribed rest when none is running (REQ-012); the sheet's own Log set N is
+ * the only save. The draft it edits lives here, so collapsing the sheet loses
+ * nothing. The draft includes
  * the set's optional effort (`set-effort.tsx`, REQ-011), which starts every
  * new set unanswered and is recorded only by Log set.
  *
@@ -105,12 +107,10 @@ export interface ExerciseSetLoggerProps {
   /** False when the containing movement already owns a stable countdown. */
   showCountdown?: boolean
   /**
-   * The rest a logged set of this movement is followed by (EXE-05), in
+   * The rest this movement's Rest action starts (EXE-05, REQ-012), in
    * seconds. Omitted, it is the rest the movement states — its own
    * `rest_seconds` when `statesRest`, none otherwise — so the rest the card
-   * says and the rest the bar starts cannot disagree. A superset passes the
-   * block's `round_rest_seconds` to the movement that closes the pair and
-   * nothing to the one before it.
+   * says and the rest the bar starts cannot disagree. Null starts none.
    */
   restSeconds?: number | null
   /**
@@ -174,7 +174,7 @@ export function ExerciseSetLogger({
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
-  const restAfterSet = prescribedRestSeconds(
+  const restOnEntry = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
   )
   // A partner's partial round does not log this movement or rearm its clock.
@@ -213,19 +213,17 @@ export function ExerciseSetLogger({
   const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
   /**
-   * The set, then the rest it earns. The rest starts only for a set the shell
-   * can accept — with no unit to stamp the set is refused, and a rest after a
-   * set that was not recorded would be the app agreeing with itself about
-   * nothing. A set logged while a rest runs replaces it: the provider holds one.
+   * The Rest action (REQ-012): open the new-entry sheet and, when no rest is
+   * running, start the prescribed one, so the sheet shows it before anything
+   * is logged. A rest already running is the one being reopened — it keeps its
+   * remaining time. No rest prescribed starts none, and nothing is logged.
    */
-  const log = (performed: PerformedSet) => {
-    logSet(exercise.exerciseId, performed)
-    if (restAfterSet === null || weightUnit === null) return
-    restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restAfterSet })
-  }
-
   const openNew = () => {
     setCorrection(null)
+    const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
+    if (restOnEntry !== null && !resting) {
+      restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restOnEntry })
+    }
     sheet.setOpen(true)
   }
 
@@ -294,7 +292,7 @@ export function ExerciseSetLogger({
             aria-expanded={sheet.open}
             onClick={openNew}
           >
-            Log set
+            Rest
           </Button>
         </ActionGroup>
       ) : null}
@@ -333,7 +331,8 @@ export function ExerciseSetLogger({
               if (!logsSelf) collapse()
               return
             }
-            log(performed)
+            // The save only: a running rest carries on, and none is started.
+            logSet(exercise.exerciseId, performed)
           }}
           onCancel={() => {
             setCorrection(null)
@@ -930,8 +929,9 @@ function measureField(
  * partner that missed a round keeps a gap at that number rather than having
  * its next result slide into it.
  *
- * The rest is the block's and is started once, by the round (EXE-05). The
- * session clock is the shell's, and nothing here reads or restarts it.
+ * The rest is the block's and is started by the block's Rest action, never by
+ * the save (EXE-05, REQ-012). The session clock is the shell's, and nothing
+ * here reads or restarts it.
  */
 
 /**
@@ -970,8 +970,6 @@ export interface SupersetRoundSheetProps {
   /** The movements, in prescribed order, each with its block ordinal. */
   movements: readonly { readonly exercise: ExerciseProgress; readonly ordinal: string }[]
   round: number
-  /** The block's rest, raised once per round logged. */
-  roundRestSeconds: number | null
   /** The entry so far, or `null` before anything was entered. */
   held: RoundDraft | null
   onHeld: (draft: RoundDraft) => void
@@ -981,13 +979,11 @@ export interface SupersetRoundSheetProps {
 export function SupersetRoundSheet({
   movements,
   round,
-  roundRestSeconds,
   held,
   onHeld: setHeld,
   onCollapse,
 }: SupersetRoundSheetProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
-  const restTimer = useRestTimer()
 
   const parts = movements.map(({ exercise, ordinal }) => {
     const prescription = exercise.prescription
@@ -1043,14 +1039,6 @@ export function SupersetRoundSheet({
 
     for (const { part, reading } of chosen) {
       if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
-    }
-
-    // The round's one rest, after the pair. A round the shell cannot accept
-    // — no unit to stamp — earns none.
-    const rest = prescribedRestSeconds(roundRestSeconds)
-    const closing = parts[parts.length - 1]
-    if (rest !== null && weightUnit !== null && closing !== undefined) {
-      restTimer.start({ exerciseId: closing.exercise.exerciseId, label: `round ${round}`, seconds: rest })
     }
     return true
   }

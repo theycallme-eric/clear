@@ -24,10 +24,10 @@
  *     alternation is stated in words above them, because a line is a colour cue
  *     and colour is never the only cue.
  *
- *   · **The round is logged once** (REQ-016). One Log round opens one sheet
- *     with each movement's own fields and effort (`SupersetRoundSheet`); only
- *     the movements the athlete identifies are logged, and the rest starts
- *     once, for the round.
+ *   · **The round is logged once** (REQ-016). The block's Rest action opens one
+ *     sheet with each movement's own fields and effort (`SupersetRoundSheet`)
+ *     and starts the round's one rest (REQ-012); its Log round N saves only
+ *     the movements the athlete identifies, as one round.
  *
  * Everything else is deliberately `StandardBlock`'s: `ExerciseSetLogger` reads
  * the structured prescription and corrects each saved set through the shell's one path,
@@ -41,6 +41,7 @@
 import { useRef, useState, type CSSProperties } from 'react'
 
 import { Button } from '../design-system/index'
+import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import { useSetLogging } from '../state/set-logging'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
@@ -104,6 +105,19 @@ function SupersetRound({ block }: BlockRendererProps) {
   // The round being entered, kept here so a collapsed sheet loses nothing.
   const [entry, setEntry] = useState<RoundDraft | null>(null)
   const round = supersetRound(movements.map((exercise) => loggedSets(exercise.exerciseId)))
+  const restTimer = useRestTimer()
+
+  // The block's Rest action (REQ-012): open the round sheet and, when no rest
+  // is running, start the block's one rest. Log round N only saves.
+  const openRound = () => {
+    const seconds = prescribedRestSeconds(block.roundRestSeconds)
+    const closing = movements[movements.length - 1]
+    const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
+    if (seconds !== null && closing !== undefined && !resting) {
+      restTimer.start({ exerciseId: closing.exerciseId, label: `round ${round}`, seconds })
+    }
+    sheet.setOpen(true)
+  }
 
   const collapse = () => {
     sheet.setOpen(false)
@@ -139,7 +153,7 @@ function SupersetRound({ block }: BlockRendererProps) {
                 exercise={exercise}
                 ordinal={supersetOrdinal(exercise.position)}
                 // Rest here is the block's, stated once below the pair,
-                // and taken once per round, by Log round (EXE-05).
+                // and started once per round, by the block's Rest (EXE-05).
                 statesRest={false}
                 restSeconds={null}
                 // REQ-016: entered together, by the block's one action.
@@ -158,9 +172,9 @@ function SupersetRound({ block }: BlockRendererProps) {
           buttonRef={logButton}
           variant="secondary"
           aria-expanded={sheet.open}
-          onClick={() => sheet.setOpen(true)}
+          onClick={openRound}
         >
-          Log round
+          Rest
         </Button>
       </ActionGroup>
 
@@ -171,7 +185,6 @@ function SupersetRound({ block }: BlockRendererProps) {
             ordinal: supersetOrdinal(exercise.position),
           }))}
           round={round}
-          roundRestSeconds={block.roundRestSeconds}
           held={entry}
           onHeld={setEntry}
           onCollapse={collapse}
