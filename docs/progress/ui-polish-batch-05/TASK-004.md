@@ -204,3 +204,13 @@ Source-only lineage uses this real run/attempt1, retained a1 branch and actual t
 Its validators and all historical groups remain unchanged. Genuine capture and unchanged full
 native checks must still pass before publication/delivery; no receipt or native acceptance is
 claimed by these local results.
+
+## Genuine combined-source format proof collected
+
+Source`4f133adb06941f4de75fc1e0f41f6d74b3e1e82f`; runtime`080ecbaf17fab01b1c99672744a69d4b5c477345e9f5dc1d344ef35124b4fd8c`;
+driver`dca8951c8a284f8ef90f7ba6611de6c13e901179edc6fe18d716503ee2b2cef5`. Four skins/eight PNGs passed21.2s,
+foreground79852 exit0; complete manifest, all generation/write counters0. Existing v1 source-only
+provenance derives from actual payload`1b08a3458072f0f5377278b232ad257c565242708df474271b97b82e8d7a8c45`, real producerattempt1 and actual
+combined testedBase`0c9f55bccf4cb79477c6ef508ea1fd779ba548c2`. All earlier groups preserved.
+Native no-model independent recovery is the next action; no model attempt increase, SQLite change,
+fabricated report/receipt, publication or completion follows from this record alone.

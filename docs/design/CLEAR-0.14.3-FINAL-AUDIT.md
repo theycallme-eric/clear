@@ -1,6 +1,36 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-003 checked source-bound recapture — 29 October 2026
+## Current batch-05 TASK-004 combined source-bound recapture — 29 October 2026
+
+Actual current group: `docs/design/evidence-0143/task034-format-preview-batch05-task004/`.
+The unchanged authenticated collector passed4/4skin cases and produced8normal/short PNGs in21.2seconds,
+foreground79852, exit0. Source `4f133adb06941f4de75fc1e0f41f6d74b3e1e82f`; runtime
+`080ecbaf17fab01b1c99672744a69d4b5c477345e9f5dc1d344ef35124b4fd8c`; driver
+`dca8951c8a284f8ef90f7ba6611de6c13e901179edc6fe18d716503ee2b2cef5`; pinned0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+All four actual records identify this source. The first was clean; subsequent dirty statuses contain
+only the collector's growing evidence. Existing route, authenticated read-only interaction, Back,
+disclosure, accessibility, byte/pixel/source checks passed. Manifest complete, no skipped case and
+all preview generation/write counters0. Only the owned disposable loopback backend was used.
+
+TASK-004 source identity: run`f53c466a-3375-4662-b888-e95feae04061`, producer attempt1,
+retained branch`agent-runner/task-004-a1-f53c466a`, actual combined tested base
+`0c9f55bccf4cb79477c6ef508ea1fd779ba548c2`, task revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-004`.
+The original worker claim baseec993 remains historical; TASK-003's actual protected squash merge
+is already incorporated before this genuine capture. Existing v1 source-only payload digest:
+`1b08a3458072f0f5377278b232ad257c565242708df474271b97b82e8d7a8c45`.
+Previous groups remain unchanged. This establishes source continuity, not native acceptance,
+publication, merge or completion. Existing native checks and protected delivery remain necessary.
+
+Separate actual TASK-004 browser proof passed6/6named cases after removing the unapproved narrow
+wrap exception. Each Home case covers Clear and Vapour; all24recent rows have status/date on one
+baseline, including320px longdates/Not-started, while full titles/History chronology are unchanged.
+The task-owned record preserves actual visual correspondence, original false-green results,
+corrections and physical-device limits. No installed-iPhone, hosted write, migration, paid model
+canary, main merge, production or distance change is claimed.
+
+## Prior batch-05 TASK-003 checked source-bound recapture — 29 October 2026
 
 Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task003-checked/`.
 Four actual skin cases/eight normal-short mobile PNGs passed21.5seconds, exit0, foreground71493.

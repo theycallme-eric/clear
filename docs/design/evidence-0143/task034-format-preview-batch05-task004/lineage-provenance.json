@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "kind": "capture-input-provenance",
+  "repository": "theycallme-eric/clear",
+  "taskId": "TASK-004",
+  "taskRevision": "183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-004",
+  "runId": "f53c466a-3375-4662-b888-e95feae04061",
+  "attempt": 1,
+  "groupPath": "docs/design/evidence-0143/task034-format-preview-batch05-task004",
+  "retainedBranch": "agent-runner/task-004-a1-f53c466a",
+  "testedBase": "0c9f55bccf4cb79477c6ef508ea1fd779ba548c2",
+  "capturedSourceCommits": [
+    "4f133adb06941f4de75fc1e0f41f6d74b3e1e82f"
+  ],
+  "payloadSha256": "1b08a3458072f0f5377278b232ad257c565242708df474271b97b82e8d7a8c45"
+}
