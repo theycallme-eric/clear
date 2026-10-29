@@ -5,6 +5,35 @@ Branch `agent-runner/task-007-a1-f525ca4d`, base `a7fb289` (after TASK-006 and T
 This is the task-owned progress record. For this body it stands in for the shared daily journal,
 under the owner-selected task-owned exception.
 
+## Combined-build source preparation — fresh capture pending
+
+Task 12 delivered as protected build commit
+`9eceed0566e41db2390e9b2d62d4635e2361a4db` (PR #582). It was normally merged into this
+retained Task 7 branch at `45630931cbd5f1c19fddabc004b53b903d538d88`, preserving both histories
+without conflicts. The original native run `f525ca4d-a0c0-4951-a8f5-0d61b6bd0b42`, attempt 1,
+and branch `agent-runner/task-007-a1-f525ca4d` remain unchanged.
+
+The reviewed Generate correction already passed 16 focused browser cases in 38.3 seconds, one
+worker, zero retries, on the genuine `0b0e3f0` plus measurement-driver working tree. Its 130 files
+and 84 PNGs remain preserved externally in `task007-corrected-browser-final-20261029`; the
+checkpoint is `04bdd78c5b4c515eeda0340e4b5b06cc855b4954`. That earlier result does not certify
+this newly combined tree. The historical worker observations and failed source audit below remain
+history, superseded by the reviewed correction and the pending combined-build verification.
+
+Prepared the existing collector's unique destination
+`docs/design/evidence-0143/task034-format-preview-batch05-task007` and the audit consumer's real
+Task 7 revision, run, attempt and tested-base inputs. Every validator and previous evidence group
+is unchanged. No capture, hash, provenance or audit result was invented or copied from Task 12.
+No browser, server, unit test, native recovery or delivery command ran during this preparation.
+Task 10 owns the local browser/proof lane until its existing foreground command is terminal.
+
+Next, the controller freezes this clean candidate and uses the existing authenticated collector
+against the owned disposable backend. Require four passing skins, eight fresh phone/short PNGs,
+complete genuine records, and zero preview generation/write counters. Derive the existing v1
+provenance and audit entry from those actual outputs, preserving all older groups. Then commit
+that proof and run the unchanged same-attempt native recovery, all task/project checks, and the
+existing protected build-branch delivery. No receipt, PR, acceptance or completion is claimed here.
+
 ## Controller correction checkpoint — final browser review pending
 
 The original worker record below is retained as history. Its conditional narrow-phone title and
