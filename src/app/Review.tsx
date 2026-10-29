@@ -878,7 +878,7 @@ function ReviewExerciseRow({
           <span style={NAME_TEXT_STYLE}>{exercise.name}</span>
         </p>
         <div style={SWAP_SLOT_STYLE}>
-          <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} />
+          <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="swap" />
         </div>
       </div>
       <p style={PRESCRIPTION_STYLE}>
@@ -890,6 +890,7 @@ function ReviewExerciseRow({
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}
+      <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="undo" />
     </div>
   )
 }

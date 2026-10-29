@@ -375,6 +375,9 @@ async function groupGeometry(list: Locator) {
         actions: [...nameRow.querySelectorAll('button')].map((button) => ({
           ...box(button), label: button.getAttribute('aria-label'),
         })),
+        movementActions: [...row.querySelectorAll('button')]
+          .filter((button) => /^(Swap |Undo swap —)/.test(button.getAttribute('aria-label') ?? ''))
+          .map((button) => ({ ...box(button), label: button.getAttribute('aria-label') })),
         prescription: { ...box(prescription), text: prescription.textContent,
           fontSize: parseFloat(getComputedStyle(prescription).fontSize) },
         equipment: { ...box(equipment), text: equipment.textContent,
@@ -763,27 +766,65 @@ test.describe('B05 grouped Review after a real in-memory swap', () => {
     const member = changed.members[0]
     expect(member.name.text).toBe(replacementName)
     expect(member.name.lines).toBeGreaterThanOrEqual(2)
-    expect(member.actions.map((action) => action.label)).toEqual([
+    expect(member.actions.map((action) => action.label)).toEqual([`Swap ${replacementName}`])
+    expect(member.movementActions.map((action) => action.label)).toEqual([
       `Swap ${replacementName}`, `Undo swap — back to ${originalName}`,
     ])
+    expect(Math.abs(member.name.width - before.members[0].name.width),
+      'Undo must not take width from the original name column').toBeLessThanOrEqual(TOLERANCE)
 
     // Undo is a genuine second action, absent from the one-action reference.
-    // Both targets must fit beside the wrapped name and above its readings.
-    for (const action of member.actions) {
+    // Swap stays beside the name; the complete Undo follows the readings.
+    const [swapBox, undoBox] = member.movementActions
+    for (const action of member.movementActions) {
       expect(action.width).toBeGreaterThan(0)
       expect(action.height).toBeGreaterThanOrEqual(40 - TOLERANCE)
-      expect(action.left).toBeGreaterThanOrEqual(member.name.right - TOLERANCE)
+      expect(action.left).toBeGreaterThanOrEqual(changed.list.left - TOLERANCE)
       expect(action.right).toBeLessThanOrEqual(changed.list.right + TOLERANCE)
       expect(changed.list.right - action.right).toBeLessThanOrEqual(8)
       expect(overlaps(member.name, action)).toBe(false)
       expect(overlaps(member.prescription, action)).toBe(false)
+      expect(overlaps(member.equipment, action)).toBe(false)
     }
-    expect(overlaps(member.actions[0], member.actions[1])).toBe(false)
+    expect(overlaps(swapBox, undoBox)).toBe(false)
+    expect(swapBox.left).toBeGreaterThanOrEqual(member.name.right - TOLERANCE)
     expect(member.prescription.top).toBeGreaterThanOrEqual(
-      Math.max(member.name.bottom, ...member.actions.map((action) => action.bottom)) - TOLERANCE,
+      Math.max(member.name.bottom, swapBox.bottom) - TOLERANCE,
     )
     expect(member.equipment.top).toBeGreaterThanOrEqual(member.prescription.bottom - TOLERANCE)
+    expect(undoBox.top).toBeGreaterThanOrEqual(member.equipment.bottom - TOLERANCE)
     expect(await first.evaluate((element) => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
+    const wordWrapping = await first.evaluate((item) => {
+      const nameRow = item.firstElementChild!.firstElementChild!
+      const words = nameRow.firstElementChild!.lastElementChild!
+      const node = words.firstChild
+      if (node === null || node.nodeType !== Node.TEXT_NODE) throw new Error('Movement name text is unavailable')
+      const text = node.textContent ?? ''
+      const style = getComputedStyle(words)
+      const context = document.createElement('canvas').getContext('2d')!
+      context.font = `${style.fontStyle} ${style.fontVariant} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
+      const tracking = Number.parseFloat(style.letterSpacing) || 0
+      return {
+        availableWidth: words.getBoundingClientRect().width,
+        words: [...text.matchAll(/\S+/g)].map((match) => {
+          const range = document.createRange()
+          range.setStart(node, match.index!)
+          range.setEnd(node, match.index! + match[0].length)
+          const rendered = style.textTransform === 'uppercase' ? match[0].toUpperCase() : match[0]
+          const naturalWidth = context.measureText(rendered).width + tracking * Math.max(0, rendered.length - 1)
+          return {
+            word: rendered, naturalWidth,
+            lineTops: [...new Set([...range.getClientRects()].filter((rect) => rect.width > 0)
+              .map((rect) => Math.round(rect.top * 100) / 100))],
+          }
+        }),
+      }
+    })
+    const fittingWords = wordWrapping.words.filter((word) => word.naturalWidth <= wordWrapping.availableWidth - TOLERANCE)
+    expect(fittingWords.some((word) => word.word.length >= 7), 'The long-name proof must include a word that fits').toBe(true)
+    for (const word of fittingWords) {
+      expect(word.lineTops, `${word.word} fits the name column and must remain whole`).toHaveLength(1)
+    }
     const readings = (geometry: Geometry) => ({
       badge: geometry.badge.text, sequence: geometry.children[1].text, rest: geometry.rest.text,
       members: geometry.members.map((entry) => ({
@@ -813,8 +854,8 @@ test.describe('B05 grouped Review after a real in-memory swap', () => {
       consumer: 'Review (ENTRY-010) grouped ReviewExerciseRow',
       state: 'multi-line member after choose and after Undo', structure: 'circuit, 2 rounds', viewport,
       chosen: { exerciseId: REPLACEMENT_ID, displayName: REPLACEMENT_NAME, equipment: 'bodyweight' },
-      measurements: { before, changed, restored }, requests,
-      comparison: 'Additional Undo state: both public action boxes remain contained without collisions; the original one-action pixel/reference comparisons remain unchanged.',
+      measurements: { before, changed, restored, wordWrapping }, requests,
+      comparison: 'Additional Undo state: Swap retains the original name-column width, full Undo follows the readings, and fitting words remain whole. Original one-action pixel/reference comparisons remain unchanged.',
       criteria: { 'AC-027 changed-row action containment': 'pass', 'AC-029 choose and Undo preserve composition readings': 'pass' },
     }, [{ part: 'before', png: beforePng }, { part: 'chosen', png: changedPng }, { part: 'restored', png: restoredPng }])
   })

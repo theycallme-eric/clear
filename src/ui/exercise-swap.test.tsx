@@ -115,6 +115,48 @@ describe('ExerciseSwapControls', () => {
     expect(api.open).not.toHaveBeenCalled()
   })
 
+  it('can keep only Swap in the name row while Undo is available elsewhere', async () => {
+    const user = userEvent.setup()
+    const api = seam({ undoTarget: () => 'front-squat' })
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" actions="swap" />))
+
+    expect(screen.queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Swap back squat' }))
+    expect(api.open).toHaveBeenCalledExactlyOnceWith(SLOT)
+    expect(api.undo).not.toHaveBeenCalled()
+  })
+
+  it('can place the full Undo action independently with its original target', async () => {
+    const user = userEvent.setup()
+    const api = seam({ undoTarget: () => 'front-squat' })
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" actions="undo" />))
+
+    expect(screen.queryByRole('button', { name: 'Swap back squat' })).not.toBeInTheDocument()
+    const undo = screen.getByRole('button', { name: 'Undo swap — back to front squat' })
+    expect(undo).toHaveTextContent('Undo swap')
+    await user.click(undo)
+    expect(api.undo).toHaveBeenCalledExactlyOnceWith(SLOT)
+    expect(api.open).not.toHaveBeenCalled()
+  })
+
+  it('adds no empty Undo row before a movement has been swapped', () => {
+    const { container } = render(withSeam(seam(),
+      <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" actions="undo" />))
+    expect(container).toBeEmptyDOMElement()
+  })
+
+  it.each(['swap', 'undo'] as const)('keeps a separately placed %s disabled while busy', async (actions) => {
+    const user = userEvent.setup()
+    const api = seam({ isBusy: () => true, undoTarget: () => 'front-squat' })
+    render(withSeam(api, <ExerciseSwapControls slot={SLOT} exerciseId="back-squat" actions={actions} />))
+    const control = screen.getByRole('button')
+    expect(control).toBeDisabled()
+    expect(control).toHaveAttribute('aria-busy', 'true')
+    await user.click(control)
+    expect(api.open).not.toHaveBeenCalled()
+    expect(api.undo).not.toHaveBeenCalled()
+  })
+
   it('is the quiet text action: no frame, no second card in the card', () => {
     const api = seam({ undoTarget: () => 'front-squat' })
     const { container } = render(

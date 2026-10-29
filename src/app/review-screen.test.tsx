@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { Route, Routes } from 'react-router-dom'
 
 import type { SessionsClient } from '../data/sessions'
+import type { SectionCandidates } from '../data/candidates'
 import { ok, type Result } from '../state/errors'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
 import {
@@ -58,8 +59,9 @@ function sessionsDouble(): Partial<SessionsClient> {
 function renderReview(
   acceptance: SessionAcceptance = ACCEPTANCE,
   onRegenerate: () => void = () => undefined,
+  candidateSets: readonly SectionCandidates[] = [],
 ) {
-  const workout = createWorkoutDouble({ session: null, sessions: sessionsDouble() })
+  const workout = createWorkoutDouble({ session: null, sessions: sessionsDouble(), candidateSets })
   return renderWithProviders(
     <Routes>
       <Route
@@ -529,6 +531,40 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     expect(within(first).getByText('24 kg')).toBeInTheDocument()
     expect(within(first).getByText('kettlebell')).toBeInTheDocument()
     expect(first.textContent).not.toContain('Rest 60s')
+  })
+
+  it('keeps only Swap by the name and the full Undo after the readings following a real choice', async () => {
+    const user = userEvent.setup()
+    const acceptance = withBlocks([BODYWEIGHT_CIRCUIT])
+    renderReview(acceptance, () => undefined, [{
+      section: acceptance.workout.sections[0].section_type,
+      relaxed: false,
+      candidates: [{
+        exerciseId: 'synthetic-lateral-cross-body-mountain-climber-with-shoulder-reach',
+        name: 'Synthetic replacement', role: 'conditioning', canBePrimary: false,
+        patterns: ['conditioning'], primaryPatterns: ['conditioning'],
+        components: [], muscles: [], usableEquipment: ['bodyweight'],
+      }],
+    }])
+    await ready()
+    const list = screen.getByRole('list', { name: 'circuit, 2 rounds' })
+    const first = within(list).getAllByRole('listitem')[0]
+    const [nameRow, prescription, equipment] = [...first.firstElementChild!.children]
+    await user.click(within(first).getByRole('button', { name: 'Swap mountain climber' }))
+    await user.click(await screen.findByRole('button', { name: /Synthetic replacement\s*BODYWEIGHT/ }))
+
+    const swap = within(first).getByRole('button', {
+      name: 'Swap synthetic lateral cross body mountain climber with shoulder reach',
+    })
+    const undo = within(first).getByRole('button', { name: 'Undo swap — back to mountain climber' })
+    expect(nameRow).toContainElement(swap)
+    expect(nameRow).not.toContainElement(undo)
+    expect(precedes(prescription, equipment)).toBe(true)
+    expect(precedes(equipment, undo)).toBe(true)
+    expect(undo).toHaveTextContent('Undo swap')
+    await user.click(undo)
+    expect(within(first).getByRole('button', { name: 'Swap mountain climber' })).toBeInTheDocument()
+    expect(within(first).queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
   })
 
   it('leaves a standard movement’s own rest and load where they were', async () => {

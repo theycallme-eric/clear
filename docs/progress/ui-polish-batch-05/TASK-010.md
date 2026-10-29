@@ -255,3 +255,48 @@ Runner command or Claude call was started for these static checks.
 format proof on the resulting frozen candidate, then run all required native verification commands
 and normal same-attempt delivery. Those steps, the source-audit resolution, PR/merge and physical
 phone UAT remain pending.
+
+## Visual-review correction — keep Undo out of the movement-name column
+
+The retained `e100badc` six-case proof passed its assertions, but review of the actual chosen-state
+PNG found a real polish failure. Full "Undo swap" shared the trailing name-row column with Swap.
+At 320 px the name column shrank from 144.203125 px before the choice to 108 px after it; its text
+column shrank from 118.609375 px to 82.40625 px. The actual capture split SYNTHETIC as SYNTHETI/C,
+MOUNTAIN as MOUNTAI/N and SHOULDER as SHOULDE/R. Passing containment assertions alone had not
+proved the intended legibility. That original capture and its truthful source identity stay preserved.
+
+The shared Review row now reserves the trailing name-row action for **Swap only**. The complete
+**Undo swap** action appears on its own quiet row after the prescription/equipment and optional load
+reading. This uses an optional `actions` presentation seam on the existing app-owned
+`ExerciseSwapControls`: its default remains the existing paired API, while Review asks separately
+for Swap and Undo. Both use the same provider handlers and public `TextAction`, full accessible
+target labels and busy/disabled semantics. An unavailable Undo returns no empty row. The change
+applies through `ReviewExerciseRow` across all Review structures; the unswapped pictured state is
+intended to keep its existing composition. No font, label, vendor, backend or route-specific patch
+was introduced.
+
+The supplementary browser case now distinguishes name-row actions from all movement actions. It
+requires the chosen state's name-column width to equal its pre-choice width, keeps Swap beside
+the name, measures full Undo below the equipment, and checks both targets remain contained and
+non-overlapping. It also measures each actual rendered word against the available text-column width
+and requires every fitting word to remain on one line, including a fitting long word. Actual
+choose/Undo, group/prescription preservation, reference pixel comparisons, source identity and
+zero-write/generation guards are retained.
+
+Verification performed on this correction:
+
+| Actual command | Result | External mode-0600 log |
+| --- | --- | --- |
+| `npx vitest run src/ui/exercise-swap.test.tsx src/app/review-screen.test.tsx src/app/Review.test.tsx` | **122 passed** across 3 files (22 / 31 / 69), exit 0 | `task010-undo-composition-units-iu6z1no2.log` |
+| `npm run build` | exit 0; TypeScript compilation and Vite build passed, existing chunk-size warning retained | `task010-undo-composition-build-fsyfl4az.log` |
+
+The focused units exercise the backwards-compatible paired controls, separately placed Swap/Undo,
+empty Undo suppression, busy blocking and the actual Review choose/Undo placement. The React
+component review found no new conditional hook, effect, data-fetching boundary or mutable shared
+state. `git diff --check` passed.
+
+**Pending:** a new real browser run and visual review of this correction; integration of Task 7's
+actual delivered base; genuine Task 10 format recapture and all required native checks. No browser,
+server, full unit suite, native command or Claude call was started for this correction. The earlier
+6/6 proof is retained history, not proof of this changed runtime. No native acceptance or delivery
+is claimed.
