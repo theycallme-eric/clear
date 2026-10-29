@@ -32,19 +32,26 @@ function usePrefersReducedMotion(): boolean {
 }
 
 export function AtmosphereLayer() {
-  const prefersReducedMotion = usePrefersReducedMotion()
+  return <AtmosphereGround still={usePrefersReducedMotion()} />
+}
 
+/**
+ * The layer's markup alone, reading no preference. A surface that must render
+ * after the tree failed — the crash fallback — passes `still` itself rather
+ * than reading the store that may be what failed.
+ */
+export function AtmosphereGround({ still }: { still: boolean }) {
   return (
     <div
       aria-hidden="true"
       className="clr-atmosphere clr-atmosphere--fixed"
-      data-static={prefersReducedMotion ? 'true' : undefined}
+      data-static={still ? 'true' : undefined}
     >
       <span className="clr-atmosphere__blob clr-atmosphere__blob--structure" />
       <span className="clr-atmosphere__blob clr-atmosphere__blob--interaction" />
       <span className="clr-atmosphere__blob clr-atmosphere__blob--info" />
       <span className="clr-atmosphere__overlay" />
-      {prefersReducedMotion ? null : <span className="clr-atmosphere__scan" />}
+      {still ? null : <span className="clr-atmosphere__scan" />}
     </div>
   )
 }

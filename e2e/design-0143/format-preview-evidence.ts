@@ -8,9 +8,9 @@ export const FORMAT_HISTORICAL_EVIDENCE_DIR = 'docs/design/evidence-0143/task034
 export const FORMAT_HISTORICAL_COMMIT = 'eb61b9daf21848c2727eaa6fa2c5e203f4effd7b'
 // V3 catalog migration changes the source-list fingerprint; keep old captures intact.
 export const FORMAT_PRE_V3_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-mobile'
-// UI-polish TASK-018 changes runtime source; retain earlier records and collect anew.
+// UI-polish changes runtime source; retain earlier records and collect anew.
 export const FORMAT_PRE_UI_POLISH_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-mobile-v3-verified'
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-ui-polish-task018'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-batch05-task002'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

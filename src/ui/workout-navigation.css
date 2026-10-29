@@ -92,13 +92,13 @@
   }
 
   .clr-shell--contained > .clr-shell__content:has(> .clr-workout-header) {
-    padding-top: max(var(--spacing-200), env(safe-area-inset-top));
-    padding-bottom: max(var(--spacing-200), env(safe-area-inset-bottom));
+    --shell-gap-top: var(--spacing-200);
+    --shell-gap-bottom: var(--spacing-200);
   }
 
   .clr-scroll-region__foot > .clr-workout-footer {
     padding-top: var(--spacing-200);
-    padding-bottom: var(--spacing-200);
+    padding-bottom: var(--shell-inset-bottom, var(--spacing-200));
   }
 }
 

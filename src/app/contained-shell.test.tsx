@@ -4,6 +4,7 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderApp, renderWithProviders } from '../test/render'
+import { ErrorBoundary } from './ErrorBoundary'
 import { Screen } from './Screen'
 
 afterEach(() => {
@@ -119,6 +120,27 @@ describe('CLEAR 0.14.3 contained shell', () => {
     expect(header).not.toBeNull()
     expect(scroller?.contains(header ?? null)).toBe(false)
     expect(container.querySelector('.clr-scroll-region__foot .clr-footer')).not.toBeNull()
+  })
+
+  it('renders the crash fallback inside the contained shell with a still atmosphere (B05)', () => {
+    const Crash = () => {
+      throw new Error('synthetic render fault')
+    }
+    const logger = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() }
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { container } = renderWithProviders(
+      <ErrorBoundary logger={logger as never} onReload={() => undefined}>
+        <Crash />
+      </ErrorBoundary>,
+    )
+    quiet.mockRestore()
+
+    expect(container.querySelector('.clr-shell')).toHaveClass('clr-shell--fixed', 'clr-shell--contained')
+    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute('data-static', 'true')
+    expect(container.querySelectorAll('main')).toHaveLength(1)
+    expect(container.querySelector('.clr-scroll-region__scroller')).not.toBeNull()
+    expect(screen.getByRole('alert')).toHaveTextContent('Display error')
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument()
   })
 
   it('keeps one owner even when screen content is long', () => {
