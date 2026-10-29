@@ -190,7 +190,7 @@ describe('all generated content renders', () => {
     ).toBeInTheDocument()
   })
 
-  it('heads the facts inside one overview card, as readouts rather than frames', async () => {
+  it('heads the facts inside one overview card, as one compact row rather than frames', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
@@ -199,15 +199,16 @@ describe('all generated content renders', () => {
       .closest<HTMLElement>('.clr-card')!
     expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
 
-    // The description list is the card's content; each fact keeps its own
-    // readout and none of them draws a second frame inside the card.
+    // The description list is the card's content (REQ-008: the compact
+    // workout-facts row); each fact keeps its term and none of them draws a
+    // second frame inside the card.
     const facts = card.querySelector<HTMLElement>('dl')!
     expect(facts).toHaveAttribute('aria-label', FACTS_LABEL)
+    expect(facts).toHaveClass('clr-summary-facts')
     const strength = within(facts).getByText('Strength', { selector: 'dd' })
-    const readout = strength.closest<HTMLElement>('.clr-metric-frame')!
-    expect(readout).not.toHaveClass('clr-chamfer')
-    expect(facts.querySelectorAll('.clr-metric-frame')).toHaveLength(5)
-    expect(facts.querySelector('.clr-chamfer')).toBeNull()
+    expect(strength.closest('.clr-summary-fact')).not.toBeNull()
+    expect(facts.querySelectorAll('.clr-summary-fact')).toHaveLength(5)
+    expect(facts.querySelector('.clr-chamfer, .clr-metric-frame')).toBeNull()
   })
 
   it('gives every section its own card and nests no card anywhere', async () => {

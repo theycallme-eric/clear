@@ -104,6 +104,46 @@ export function MetricFrame(props: CompositionProps) {
   )
 }
 
+/**
+ * The compact workout-facts object: one aligned row of glyph-led readings, the
+ * terse sibling of `MetricGrid` for a summary read at a glance (B05-03). It is
+ * not a restyled metric grid — results and scores keep their readouts. A
+ * description list by default; when the real facts are wider than the row,
+ * they continue on the next line at the same left edge rather than clip.
+ */
+export function SummaryFacts(props: CompositionProps) {
+  return composition('dl', 'clr-summary-facts', props)
+}
+
+/**
+ * One reading in `SummaryFacts`. The term is always present; `termHidden` keeps
+ * it for assistive technology only, where the glyph and value already say what
+ * the reading is (`45 min`, `Lower body`).
+ */
+export function SummaryFact({
+  glyph,
+  term,
+  termHidden = false,
+  children,
+}: {
+  glyph?: ReactNode
+  term: ReactNode
+  termHidden?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="clr-summary-fact">
+      {glyph === undefined ? null : (
+        <span aria-hidden="true" className="clr-summary-fact__glyph">
+          {glyph}
+        </span>
+      )}
+      <dt className={termHidden ? 'a11y-hidden' : undefined}>{term}</dt>
+      <dd>{children}</dd>
+    </div>
+  )
+}
+
 /** Pinned screen action area with the system's full-width top rule. */
 export function PhoneFooter(props: CompositionProps) {
   return composition('footer', 'clr-footer', props)

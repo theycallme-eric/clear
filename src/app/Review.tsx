@@ -91,7 +91,7 @@ import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ExerciseSwapControls } from '../ui/exercise-swap'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionButton,
   LoadSuggestionDialog,
@@ -408,9 +408,9 @@ interface SuggestionProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A glyph beside each fact. The label is the cue and the glyph is the
- * shorthand — never the other way round, which is why every one of them is
- * rendered next to its own `<dt>` rather than in place of it.
+ * A glyph beside each fact. The glyph is shorthand, never the only cue: each
+ * reading keeps its own `<dt>`, visible wherever the value alone would not
+ * say what it is.
  */
 const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
   [INTENSITY_LABEL]: <Gauge size={16} />,
@@ -449,12 +449,39 @@ const DATA_STYLE: CSSProperties = {
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
 /**
- * The facts, in one card under its own heading. No generated overview sits
- * above them (REQ-010): the card states what the workout was composed under,
- * not a narrative about it. The facts are a description list, because that is what they are: terms and
- * their values. A grid of divs would render the same and say nothing about
- * which value belongs to which label. Inside the card `MetricFrame` is a bare
- * readout, so the card is the only frame here.
+ * The order the compact row reads in: B05-03's duration, focus and intensity
+ * first, then the two real facts the pictured demo row did not carry. Both stay
+ * — the goal and the movement count are accepted facts of this workout, and a
+ * compact row is not a reason to drop them.
+ */
+const FACT_ORDER: readonly string[] = [DURATION_LABEL, ANCHOR_LABEL, INTENSITY_LABEL, GOAL_LABEL]
+
+/** Unknown labels keep their given order, after the known ones. */
+function factRank(label: string): number {
+  const rank = FACT_ORDER.indexOf(label)
+  return rank === -1 ? FACT_ORDER.length : rank
+}
+
+/**
+ * Facts whose glyph and value already say what they are (`45 min`, `Lower
+ * body`); their term stays for assistive technology. Intensity, goal and the
+ * movement count keep a visible term: `7 of 10`, `Not set` and `5` are not
+ * readable without one.
+ */
+const SELF_DESCRIBING_FACTS: ReadonlySet<string> = new Set([DURATION_LABEL, ANCHOR_LABEL])
+
+export const MOVEMENTS_LABEL = 'Movements'
+
+/**
+ * The facts, in one card under its own heading, directly beneath the page's
+ * title — the workout's own name. No generated overview sits above them
+ * (REQ-010): the card states what the workout was composed under, not a
+ * narrative about it.
+ *
+ * B05-03: the compact workout-facts row, a glyph beside each reading, in
+ * place of the tall metric grid. It is still a description list, so every
+ * value keeps its term. Inside the card the row is bare; the card is the only
+ * frame here.
  */
 function BriefingOverview({
   facts,
@@ -467,23 +494,22 @@ function BriefingOverview({
   movementCount: number
   equipment: readonly string[]
 }) {
+  const ordered = [...facts].sort((a, b) => factRank(a.label) - factRank(b.label))
   return (
     <Card heading={OVERVIEW_LABEL}>
-      <MetricGrid as="dl" aria-label={FACTS_LABEL} style={{ margin: 0 }}>
-        {facts.map((fact) => (
-          <MetricFrame key={fact.label}>
-            <dt style={LABEL_STYLE}>
-              {FACT_GLYPHS[fact.label]}
-              {fact.label}
-            </dt>
-            <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{fact.value}</dd>
-          </MetricFrame>
+      <SummaryFacts aria-label={FACTS_LABEL}>
+        {ordered.map((fact) => (
+          <SummaryFact
+            key={fact.label}
+            glyph={FACT_GLYPHS[fact.label]}
+            term={fact.label}
+            termHidden={SELF_DESCRIBING_FACTS.has(fact.label)}
+          >
+            {fact.value}
+          </SummaryFact>
         ))}
-        <MetricFrame>
-          <dt style={LABEL_STYLE}>Movements</dt>
-          <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{movementCount}</dd>
-        </MetricFrame>
-      </MetricGrid>
+        <SummaryFact term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
+      </SummaryFacts>
 
       <RequiredEquipment equipment={equipment} />
 
