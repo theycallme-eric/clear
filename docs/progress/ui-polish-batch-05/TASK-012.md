@@ -176,4 +176,12 @@ Visually inspected (opened):
 
 ## Genuine source-bound capture
 
-Frozen source baf2a0f8835463c1d163754cb3639d2b139a759e; unchanged collector79902 endedexit0,4/4skins/eightPNG/23.1s,completeactualmatrix. Runtime be16a46ae11a4ced6252f00b4844b44d58ff372bd8048b1cf6210e4af47615ab; driver e7a37eb12ed05d39126dbdebb328ff6457a571c7c1cc19aa8bf629c8a67d44dd; actualpayload 520bf5c2806bc3725c9b6addc7752cca294ea65b218b14ed7444905c8f986fc7. EightPNGbytes/digests checked; allpreviewnetworkwrite/generationcounters0,ownedlocalfixtureauthsetup/cleanupseparate. Actual v1source-onlyprovenance/audit derived; alloldgroupspreserved. Fullunchangednativechecks,exact-headreceipt,CIandprotectedbuilddeliverypending.
+Frozen source baf2a0f8835463c1d163754cb3639d2b139a759e; unchanged collector session 79902 ended
+exit 0: four skins, eight PNGs, 23.1 seconds, complete actual matrix. Runtime
+be16a46ae11a4ced6252f00b4844b44d58ff372bd8048b1cf6210e4af47615ab; driver
+e7a37eb12ed05d39126dbdebb328ff6457a571c7c1cc19aa8bf629c8a67d44dd; actual payload
+520bf5c2806bc3725c9b6addc7752cca294ea65b218b14ed7444905c8f986fc7.
+Eight PNG byte counts and digests were checked. All preview write/generation counters were zero;
+owned local fixture auth setup and cleanup remain separate. Actual v1 source-only provenance and
+audit were derived, with all older groups preserved. The unchanged native checks, exact-head
+receipt, required CI and protected build delivery remain pending.
