@@ -10,7 +10,7 @@
  */
 import { createElement, type ElementType, type HTMLAttributes, type ReactNode } from 'react'
 
-import { EmptyState } from '../design-system/index'
+import { EmptyState, OverflowRail } from '../design-system/index'
 
 import { useInsideCard } from './card-context'
 
@@ -101,6 +101,61 @@ export function MetricFrame(props: CompositionProps) {
     'div',
     insideCard ? 'clr-metric-frame' : 'clr-metric-frame clr-chamfer clr-chamfer--sm',
     props,
+  )
+}
+
+/**
+ * The compact workout-facts object: one aligned row of glyph-led readings, the
+ * terse sibling of `MetricGrid` for a summary read at a glance (B05-03). It is
+ * not a restyled metric grid — results and scores keep their readouts. A
+ * description list by default. The public rail keeps every reading reachable
+ * on the same line when they exceed the available width. Its named information
+ * group is one keyboard entry; horizontal keys scroll the containing viewport.
+ */
+export function SummaryFacts(props: CompositionProps) {
+  return (
+    <OverflowRail
+      className="clr-summary-facts-rail"
+      trackProps={{
+        tabIndex: 0,
+        role: 'group',
+        'aria-label': props['aria-label'] ?? 'Workout facts',
+        'aria-labelledby': props['aria-labelledby'],
+      }}
+    >
+      {composition('dl', 'clr-summary-facts', props)}
+    </OverflowRail>
+  )
+}
+
+/**
+ * One reading in `SummaryFacts`. The term is always present; `termHidden` keeps
+ * it for assistive technology only, where the glyph and value already say what
+ * the reading is (`45 min`, `Lower body`).
+ */
+export function SummaryFact({
+  glyph,
+  term,
+  termHidden = false,
+  children,
+}: {
+  glyph?: ReactNode
+  term: ReactNode
+  termHidden?: boolean
+  children: ReactNode
+}) {
+  return (
+    <div className="clr-summary-fact">
+      <dt>
+        {glyph === undefined ? null : (
+          <span aria-hidden="true" className="clr-summary-fact__glyph">
+            {glyph}
+          </span>
+        )}
+        <span className={termHidden ? 'a11y-hidden' : undefined}>{term}</span>
+      </dt>
+      <dd>{children}</dd>
+    </div>
   )
 }
 

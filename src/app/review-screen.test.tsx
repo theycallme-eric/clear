@@ -25,7 +25,16 @@ import {
 import { renderWithProviders, signedIn } from '../test/render'
 import { createWorkoutDouble, snapshotFixture } from '../test/workout-double'
 import {
+  ANCHOR_LABEL,
+  DURATION_LABEL,
+  GOAL_LABEL,
+  INTENSITY_LABEL,
+  reviewBriefing,
+} from '../state/review'
+import {
   EQUIPMENT_LABEL,
+  FACTS_LABEL,
+  MOVEMENTS_LABEL,
   NO_EQUIPMENT_LABEL,
   OVERVIEW_LABEL,
   REGENERATE_LABEL,
@@ -371,5 +380,88 @@ describe('AC-024: no trailing divider, the rest beside its group, no repeat desc
     await ready()
 
     expect(screen.getByText(note, { exact: true })).toBeInTheDocument()
+  })
+})
+
+/**
+ * TASK-008 (issue #566, REQ-008): B05-03's compact summary — the workout's
+ * title, then one aligned row of glyph-led facts with real values, in place
+ * of the tall metric grid. The rendered row is proved in the browser by
+ * `e2e/ui-polish-b05-summary-facts.spec.ts`; this is its structural half.
+ */
+describe('REQ-008: the compact workout-facts row under the workout title', () => {
+  function factsRow(): HTMLElement {
+    return screen.getByRole('main').querySelector<HTMLElement>(`dl[aria-label="${FACTS_LABEL}"]`)!
+  }
+
+  it('reads the real facts, in order, as one glyph-led row inside the overview card', async () => {
+    renderReview()
+    await ready()
+
+    const overview = screen
+      .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
+      .closest<HTMLElement>('.clr-card')!
+    const row = factsRow()
+    expect(overview).toContainElement(row)
+    expect(row).toHaveClass('clr-summary-facts')
+    expect(overview.querySelector('.clr-metric-grid, .clr-metric-frame')).toBeNull()
+
+    const readings = [...row.querySelectorAll<HTMLElement>('.clr-summary-fact')]
+    expect(readings.map((reading) => reading.querySelector('dt')!.textContent)).toEqual([
+      DURATION_LABEL,
+      ANCHOR_LABEL,
+      INTENSITY_LABEL,
+      GOAL_LABEL,
+      MOVEMENTS_LABEL,
+    ])
+    // Real values, from the composition rather than the reference's demo row.
+    const briefing = reviewBriefing(ACCEPTANCE, null)
+    const value = (label: string) => briefing.facts.find((fact) => fact.label === label)!.value
+    expect(readings.map((reading) => reading.querySelector('dd')!.textContent)).toEqual([
+      value(DURATION_LABEL),
+      value(ANCHOR_LABEL),
+      value(INTENSITY_LABEL),
+      value(GOAL_LABEL),
+      String(briefing.movementCount),
+    ])
+
+    // The system glyphs stay beside the four composed facts, decorative to a
+    // reader; the term carries the meaning either way.
+    for (const reading of readings.slice(0, 4)) {
+      const glyph = reading.querySelector('.clr-summary-fact__glyph')!
+      expect(glyph).toHaveAttribute('aria-hidden', 'true')
+      expect(glyph.querySelector('svg')).not.toBeNull()
+    }
+    // Native description-list groups contain their term and description;
+    // decorative glyphs belong inside the term, never beside that pair.
+    for (const reading of readings) {
+      expect([...reading.children].map((child) => child.tagName)).toEqual(['DT', 'DD'])
+    }
+  })
+
+  // The title is the pinned header's; its place above the row is geometry,
+  // measured in the browser spec. Here: the facts lead, then the equipment.
+  it('keeps the workout title as the page title, the facts first, then the equipment', async () => {
+    renderReview()
+    await ready()
+
+    expect(screen.getByRole('heading', { level: 1, name: SPECTRUM.title })).toBeInTheDocument()
+    const row = factsRow()
+    const equipment = screen.getByRole('list', { name: EQUIPMENT_LABEL })
+    expect(precedes(row, equipment)).toBe(true)
+    expect(precedes(equipment, screen.getAllByRole('button', { expanded: true })[0])).toBe(true)
+  })
+
+  it('never renders the excluded bodyweight sentence, and leaves equipment as it was', async () => {
+    renderReview(withBlocks([THREE_STATION_CIRCUIT]))
+    await ready()
+
+    expect(screen.getByRole('main').textContent).not.toMatch(/bodyweight movements included/i)
+    // A mixed workout still lists its real equipment, bodyweight excluded as
+    // before; nothing about eligibility moved.
+    const items = within(screen.getByRole('list', { name: EQUIPMENT_LABEL }))
+      .getAllByRole('listitem')
+      .map((item) => item.textContent)
+    expect(items).toEqual(['kettlebell', 'dumbbell'])
   })
 })

@@ -242,9 +242,9 @@ body,
   min-width: fit-content;
 }
 
-/* Review facts and completed-session results are the same visual object:
-   short labelled values, each in its own small frame. Keeping this in the
-   shared shell layer prevents route-specific copies of the stat grid. */
+/* Completed-session results and readouts: short labelled values, each in its
+   own small frame. Keeping this in the shared shell layer prevents
+   route-specific copies of the stat grid. */
 .clr-metric-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -261,4 +261,60 @@ body,
 
 .clr-metric-frame > :last-child {
   overflow-wrap: anywhere;
+}
+
+/* The compact workout-facts row (B05-03): every reading stays whole on one
+   aligned line. The public OverflowRail owns containment and reachability
+   under width pressure; result and score metric grids keep their own layout. */
+.clr-summary-facts-rail:has(:focus-visible) {
+  /* The focused track is wider than its viewport. Keep the system's focus
+     ring on the visible app-owned boundary while that track is scrolled. */
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.clr-summary-facts {
+  display: flex;
+  flex-wrap: nowrap;
+  flex: none;
+  width: max-content;
+  align-items: center;
+  gap: var(--spacing-300);
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.clr-summary-fact {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--spacing-100);
+  min-width: 0;
+}
+
+.clr-summary-fact > dt,
+.clr-summary-fact > dd {
+  margin: 0;
+}
+
+.clr-summary-fact > dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-100);
+}
+
+.clr-summary-fact > dt,
+.clr-summary-fact > dd {
+  white-space: nowrap;
+}
+
+.clr-summary-fact__glyph {
+  display: inline-flex;
+  flex: none;
+  color: var(--text-card-label);
 }

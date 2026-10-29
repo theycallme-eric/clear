@@ -16,7 +16,16 @@
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { Button, Checkbox, Chip, Input } from '../design-system/index'
+import {
+  Button,
+  Checkbox,
+  Chip,
+  Clock,
+  Crosshair,
+  Gauge,
+  Input,
+  Target,
+} from '../design-system/index'
 import {
   applyAppearance,
   DEFAULT_SKIN,
@@ -67,6 +76,8 @@ import {
   MetricFrame,
   MetricGrid,
   PhoneFooter,
+  SummaryFact,
+  SummaryFacts,
   TabBand,
 } from '../ui/composition'
 import { ConditioningScoreLine } from '../ui/conditioning-score'
@@ -301,6 +312,30 @@ function MetricGridOddCount() {
         <strong>7</strong>
       </MetricFrame>
     </MetricGrid>
+  )
+}
+
+function summaryFactsExample(widest: boolean) {
+  return (
+    <SummaryFacts aria-label="Workout facts">
+      <SummaryFact glyph={<Clock size={16} />} term="Duration" termHidden>
+        {widest ? '120 min' : '45 min'}
+      </SummaryFact>
+      <SummaryFact glyph={<Target size={16} />} term="Anchor" termHidden>
+        {widest ? 'Full body' : 'Power'}
+      </SummaryFact>
+      <SummaryFact glyph={<Gauge size={16} />} term="Intensity">
+        {widest ? '10 of 10' : '7 of 10'}
+      </SummaryFact>
+      {widest && (
+        <>
+          <SummaryFact glyph={<Crosshair size={16} />} term="Goal">
+            Active recovery
+          </SummaryFact>
+          <SummaryFact term="Movements">9</SummaryFact>
+        </>
+      )}
+    </SummaryFacts>
   )
 }
 
@@ -2139,6 +2174,27 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'two framed facts', Render: MetricGridFacts },
       { state: 'odd fact count', Render: MetricGridOddCount },
+    ],
+  },
+  {
+    component: 'SummaryFacts',
+    requirement: 'REQ-008',
+    module: 'src/ui/composition.tsx',
+    summary:
+      'The compact workout-facts row: every glyph-led reading on one line, with public horizontal containment and keyboard reachability.',
+    specimens: [
+      { state: 'pictured facts', Render: () => summaryFactsExample(false) },
+      { state: 'widest real facts', Render: () => summaryFactsExample(true) },
+    ],
+  },
+  {
+    component: 'SummaryFact',
+    requirement: 'REQ-008',
+    module: 'src/ui/composition.tsx',
+    summary: 'One reading in SummaryFacts: optional system glyph, a term (visible or for readers only) and its value.',
+    specimens: [
+      { state: 'glyph, hidden term', Render: () => summaryFactsExample(false) },
+      { state: 'visible term, no glyph', Render: () => summaryFactsExample(true) },
     ],
   },
   {
