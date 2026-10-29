@@ -1,34 +1,38 @@
 import { execSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
 import type { CDPSession, Page, Route, TestInfo } from '@playwright/test'
 
 import { readE2eEnv } from '../scripts/e2e/env.mjs'
 import { makeSessionRow } from '../src/test/factories'
 import { fixtureLocation, onboardedProfile } from '../src/test/user-data-double'
+import { definitionFixture, snapshotFixture } from '../src/test/workout-double'
 import { installDeterministicCapture } from './design-0143/fixtures'
 import { expect, test as scanned } from './fixtures'
 
 /**
- * UI polish batch 05 — TASK-001 shell diagnostic (REQ-001 header clearance,
- * REQ-002 bottom band). TASK-002 turns this file into its repair proof.
+ * UI polish batch 05 — shell header clearance (REQ-001) and bottom band
+ * (REQ-002). TASK-001 reproduced the baseline here; TASK-002's shared repair
+ * turns the same cases into the expected result.
  *
- * Diagnostic phase: every case renders the production shell at an actual
- * routed, guard, boot or crash-fallback boundary, then records its geometry
- * and a viewport capture as attachments. Nothing here edits application CSS
- * or substitutes test padding: Chromium's safe-area override only changes the
- * values CSS env() reads, and a viewport resize is a local layout exercise.
- * None of this is an installed-iPhone, keyboard or resume-on-device result.
+ * Every case renders the production shell at an actual routed, guard, boot or
+ * crash-fallback boundary, then records its geometry and a viewport capture as
+ * attachments. Nothing here edits application CSS or substitutes test padding:
+ * Chromium's safe-area override only changes the values CSS env() reads, and a
+ * viewport resize is a local layout exercise standing in for a keyboard. None
+ * of this is an installed-iPhone, keyboard or resume-on-device result.
  *
- * The assertions pin what the current tree actually does, so the record cannot
- * drift silently: the fixed atmosphere paints the whole emulated viewport, the
- * contained shell reserves max(--spacing-500, inset) above and below, `<main>`
- * ends exactly that far above the viewport bottom, and titles/header controls
- * sit below the top inset and are the top hit-test target at their own
- * points. The crash fallback renders outside both shells, so it receives no
- * safe-area clearance at all and its alert starts inside the top inset.
- * TASK-002 replaces these with the corrected expected geometry.
+ * The repaired geometry, asserted for every shell family:
+ * - the fixed atmosphere still paints the whole viewport (blur retained);
+ * - the page's top gap starts below the top inset (inset + --spacing-500), so
+ *   the title and header controls have page clearance below the top inset and
+ *   are the top hit-test target at their own points;
+ * - the shell reserves nothing at the bottom: `<main>` reaches the viewport
+ *   bottom, and the last layer — the pinned footer, or the scrolling content
+ *   without one — ends max(--spacing-300, bottom inset) from it, so the
+ *   bottom inset is the action's clearance rather than a strip below it;
+ * - the crash fallback renders inside the same contained shell.
  *
  * Data is synthetic: an intercepted session for a fictional user, synthetic
  * reads, and no writes, model calls or real account.
@@ -42,6 +46,23 @@ const CORS = {
   'access-control-allow-methods': 'GET, HEAD, POST, PATCH, DELETE, OPTIONS',
 }
 const LOCATION_ID = '00000000-0000-4000-8000-000000000051'
+const WORKOUT = snapshotFixture({
+  userId: OWNER,
+  title: 'Synthetic B05 shell workout',
+  startedAt: new Date(Date.now() - 10 * 60_000).toISOString(),
+  session: { location_id: LOCATION_ID, goal_preset: 'strength' },
+  sections: [
+    { title: 'Strength', sectionType: 'primary_lift', blocks: [{ exercises: [{ prescription: {
+      exercise_id: 'back-squat', sets: 3, target_value: 8, rest_seconds: 45,
+    } }] }] },
+    { title: 'Core', sectionType: 'accessory', blocks: [{ exercises: [{ prescription: {
+      exercise_id: 'plank', equipment_used: 'bodyweight', load_type: 'bodyweight', load_value: null,
+      modality: 'time', target_value: 30, sets: 2, rest_seconds: 30,
+    } }] }] },
+  ],
+})
+const WORKOUT_EXERCISES = WORKOUT.sections.flatMap((section) => section.blocks
+  .flatMap((block) => block.exercises.map(({ exercise }) => exercise)))
 const HISTORY = Array.from({ length: 4 }, (_, index) => {
   const day = new Date()
   day.setUTCDate(day.getUTCDate() - index - 1)
@@ -123,12 +144,25 @@ const NARROW = { viewport: { width: 320, height: 568 }, insets: { top: 20, right
 /** A reduced height standing in for an open keyboard; not an iOS keyboard. */
 const SHORT = { viewport: { width: 390, height: 480 }, insets: { top: 47, right: 0, bottom: 0, left: 0 } }
 
-/** The reviewed reference images, identified for the record; never read here. */
-const REFERENCES = {
-  'B05-01': 'sources/source-04-B05-01-home.jpg (01.1 header, 01.4 bottom)',
-  'B05-02': 'sources/source-05-B05-02-generate.jpg (02.8 bottom)',
-  'B05-08': 'sources/source-11-B05-08-settings.jpg (08.2 lower boundary)',
+/**
+ * The reviewed reference images and the region each case is compared with.
+ * The evidence snapshot sits beside this workspace under the same name; where
+ * it is reachable the record carries each file's SHA-256, otherwise null. The
+ * pixels are not compared automatically: the selected local captures need a
+ * visual review, and installed-device status chrome remains outside this proof.
+ */
+const REFERENCE_DIR = resolve(import.meta.dirname, '..', '..', '.evidence',
+  basename(resolve(import.meta.dirname, '..')), 'sources')
+const REFERENCE_FILES = {
+  'B05-01': { file: 'sources/source-04-B05-01-home.jpg', regions: '01.1 header row (title + corner control); 01.4 bottom band' },
+  'B05-02': { file: 'sources/source-05-B05-02-generate.jpg', regions: 'header title; 02.8 bottom band' },
+  'B05-08': { file: 'sources/source-11-B05-08-settings.jpg', regions: 'header; 08.2 lower boundary (no footer)' },
 } as const
+const REFERENCES = Object.fromEntries(Object.entries(REFERENCE_FILES).map(([id, entry]) => {
+  const path = resolve(REFERENCE_DIR, basename(entry.file))
+  const sha256 = existsSync(path) ? createHash('sha256').update(readFileSync(path)).digest('hex') : null
+  return [id, { ...entry, sha256 }]
+}))
 
 function sourceIdentity() {
   try {
@@ -140,12 +174,15 @@ function sourceIdentity() {
   }
 }
 
-async function syntheticApp(page: Page, options: { signedIn: boolean; history: HistoryMode }) {
+async function syntheticApp(page: Page, options: {
+  signedIn: boolean; history: HistoryMode; profile?: 'onboarded' | 'none'
+  activeWorkout?: boolean; skin?: 'clear' | 'vapour'
+}) {
   const unexpected: string[] = []
   let attemptedWrites = 0
   let release = () => {}
   const held = new Promise<void>((resolve) => { release = resolve })
-  const guard = await installDeterministicCapture(page, { skin: 'clear', reducedMotion: false })
+  const guard = await installDeterministicCapture(page, { skin: options.skin ?? 'clear', reducedMotion: false })
   await page.route('**/*', async (route) => {
     if (['GET', 'HEAD', 'OPTIONS'].includes(route.request().method())) return route.continue()
     attemptedWrites += 1
@@ -164,8 +201,16 @@ async function syntheticApp(page: Page, options: { signedIn: boolean; history: H
       return route.abort('blockedbyclient')
     }
     if (request.method() === 'GET') {
-      if (name === 'profiles') return reply([onboardedProfile({ id: OWNER, goal_preset: 'strength' })])
+      if (name === 'profiles') {
+        return reply(options.profile === 'none' ? [] : [onboardedProfile({ id: OWNER, goal_preset: 'strength' })])
+      }
       if (name === 'locations') return reply([fixtureLocation({ id: LOCATION_ID, user_id: OWNER, tier: 'full' })])
+      if (options.activeWorkout && name === 'exercise_definitions') {
+        const id = url.searchParams.get('id')?.replace(/^eq\./, '')
+        return reply(WORKOUT_EXERCISES.filter((exercise) => id === undefined || exercise.exercise_id === id)
+          .map((exercise) => definitionFixture({ id: exercise.exercise_id })))
+      }
+      if (options.activeWorkout && name === 'workout_exercises') return reply(WORKOUT_EXERCISES)
       if (name === 'workout_sessions') {
         if (options.history === 'hold') {
           await held
@@ -181,9 +226,15 @@ async function syntheticApp(page: Page, options: { signedIn: boolean; history: H
       return reply([])
     }
     if (request.method() === 'POST' && url.pathname.includes('/rpc/')) {
-      if (name === 'resume_session') return reply(null)
+      if (name === 'resume_session') return reply(options.activeWorkout ? WORKOUT : null)
+      if (options.activeWorkout && name === 'session_snapshot') return reply(WORKOUT)
       if (['streak_sessions', 'constraints_in_force', 'anchor_evidence', 'conditioning_history'].includes(name)) {
         return reply([])
+      }
+      // Session-detail reads answer as a failed read: its error state is the
+      // shell family under test, and no reconstructed session is invented.
+      if (['session_snapshot', 'session_as_generated', 'session_as_intended_at_start', 'session_as_performed'].includes(name)) {
+        return reply({ code: 'PGRST000', message: 'Synthetic session-detail read failure.' }, 503)
       }
     }
     if (request.method() !== 'GET') attemptedWrites += 1
@@ -216,7 +267,7 @@ async function syntheticApp(page: Page, options: { signedIn: boolean; history: H
     release,
     unexpected,
     assertNoWrites() {
-      expect(attemptedWrites).toBe(0)
+      expect(attemptedWrites, unexpected.join(', ')).toBe(0)
       expect(guard.blockedGenerations()).toBe(0)
     },
   }
@@ -275,9 +326,15 @@ async function geometry(page: Page) {
     const shells = [...document.querySelectorAll('.clr-shell--fixed')]
     const content = document.querySelector('.clr-shell--contained > .clr-shell__content')
     const contentStyle = content === null ? null : getComputedStyle(content)
+    const scroller = document.querySelector('main .clr-scroll-region__scroller')
+    const screenContent = document.querySelector('main .clr-screen__content')
     const header = document.querySelector('.clr-shell__content > header')
     const title = document.querySelector('h1')
-    const controls = header === null ? [] : [...header.querySelectorAll('button, a[href]')]
+    const allControls = header === null ? [] : [...header.querySelectorAll('button, a[href]')]
+    // Closed menu items intentionally have no rendered box. Record that state
+    // separately instead of treating a hidden item's 0,0 as header occlusion.
+    const controls = allControls.filter((control) => control.getClientRects().length > 0 &&
+      getComputedStyle(control).visibility !== 'hidden')
     const main = document.querySelector('.clr-shell__content > main') ?? document.querySelector('#root main')
     const foot = main?.querySelector('.clr-scroll-region__foot') ?? null
     const footControls = foot === null ? [] : [...foot.querySelectorAll('button, a[href]')]
@@ -287,11 +344,16 @@ async function geometry(page: Page) {
     const lastFoot = footControls.at(-1) ?? null
     return {
       path: location.pathname,
+      skin: document.documentElement.dataset.skin ?? null,
       viewport: { width: innerWidth, height: innerHeight },
       visualViewportHeight: window.visualViewport?.height ?? null,
       documentClientHeight: document.documentElement.clientHeight,
       cssHeights: { vh: length('100vh'), dvh: length('100dvh'), svh: length('100svh'), lvh: length('100lvh') },
       spacing500: content === null ? null : parseFloat(getComputedStyle(content).getPropertyValue('--spacing-500')),
+      spacing300: content === null ? null : parseFloat(getComputedStyle(content).getPropertyValue('--spacing-300')),
+      spacing200: content === null ? null : parseFloat(getComputedStyle(content).getPropertyValue('--spacing-200')),
+      scroller: box(scroller),
+      screenContentPaddingBottom: screenContent === null ? null : parseFloat(getComputedStyle(screenContent).paddingBottom),
       shellCount: shells.length,
       shell: box(shells[0] ?? null),
       contentPadding: contentStyle === null ? null : {
@@ -310,6 +372,8 @@ async function geometry(page: Page) {
         name: control.getAttribute('aria-label') ?? control.textContent?.trim() ?? '',
         box: box(control), hits: hits(control),
       })),
+      hiddenHeaderControls: allControls.filter((control) => !controls.includes(control))
+        .map((control) => control.getAttribute('aria-label') ?? control.textContent?.trim() ?? ''),
       main: mainBox,
       mainPaddingTop: main === null ? null : getComputedStyle(main).paddingTop,
       foot: box(foot),
@@ -341,6 +405,7 @@ async function record(page: Page, testInfo: TestInfo, id: string, context: {
   const entry = {
     id,
     ...context,
+    skin: measured.skin,
     references: REFERENCES,
     source: sourceIdentity(),
     target: new URL(page.url()).origin,
@@ -355,34 +420,92 @@ async function record(page: Page, testInfo: TestInfo, id: string, context: {
   return measured
 }
 
-/** The contained shell as it currently stands (routed and boot instances). */
-function expectContainedShell(measured: Geometry, viewport: Viewport, insets: Insets) {
+/** The repaired contained shell, shared by routed, boot and fallback instances. */
+function expectContainedShell(measured: Geometry, viewport: Viewport, insets: Insets,
+  gap = measured.spacing500 ?? Number.NaN) {
   expect(measured.viewport).toEqual(viewport)
   expect(measured.shellCount).toBe(1)
   expect(measured.atmosphereCount).toBe(1)
-  // Locally the fixed atmosphere reaches the emulated viewport bottom, so an
-  // unpainted band like B05's cannot appear here.
+  // The retained atmosphere still paints the whole viewport, insets included.
   expect(measured.unpaintedBelowAtmosphere).toBeCloseTo(0, 0)
+  expect(measured.atmosphere?.y).toBeCloseTo(0, 0)
   expect(measured.shell?.height).toBeCloseTo(viewport.height, 0)
   expect(measured.cssHeights.dvh).toBeCloseTo(viewport.height, 0)
-  const spacing = measured.spacing500 ?? Number.NaN
-  expect(spacing).toBeGreaterThan(0)
-  expect(measured.contentPadding?.top).toBeCloseTo(Math.max(spacing, insets.top), 0)
-  expect(measured.contentPadding?.bottom).toBeCloseTo(Math.max(spacing, insets.bottom), 0)
-  // The shell's bottom padding is the whole gap below <main>: the safe-area
-  // inset when one is reported, and --spacing-500 of empty space when not.
-  expect(measured.bottomGapBelowMain).toBeCloseTo(Math.max(spacing, insets.bottom), 0)
+  expect(gap).toBeGreaterThan(0)
+  // The page's top gap starts below the inset rather than inside it.
+  expect(measured.contentPadding?.top).toBeCloseTo(insets.top + gap, 0)
+  // The shell reserves nothing below: <main> reaches the viewport bottom.
+  expect(measured.contentPadding?.bottom).toBeCloseTo(0, 0)
+  expect(measured.bottomGapBelowMain).toBeCloseTo(0, 0)
   expect(measured.documentScroll.top).toBe(0)
   expect(measured.documentScroll.height).toBe(measured.documentScroll.client)
 }
 
-/** Title and header controls: below the top inset and hit-testable as themselves. */
-function expectClearHead(measured: Geometry, insets: Insets) {
+/** The bottom inset or the last layer's own gap, whichever is larger. */
+function lastLayerGap(measured: Geometry, insets: Insets, gap = measured.spacing300 ?? Number.NaN) {
+  return Math.max(gap, insets.bottom)
+}
+
+/**
+ * The screen's last layer ends at the viewport bottom and owns the bottom
+ * clearance. With a footer, its last action sits exactly that clearance above
+ * the bottom edge; without one, the scroller runs to the edge and its content
+ * keeps the same clearance after its last item.
+ */
+function expectBottomEdge(measured: Geometry, insets: Insets, gap?: number) {
+  const clearance = lastLayerGap(measured, insets, gap)
+  expect(clearance).toBeGreaterThan(0)
+  if (measured.footControls.length > 0) {
+    expect(measured.foot?.bottom).toBeCloseTo(measured.viewport.height, 0)
+    expect(measured.bottomGapBelowLastFootControl).toBeCloseTo(clearance, 0)
+  } else {
+    expect(measured.scroller?.bottom).toBeCloseTo(measured.viewport.height, 0)
+    expect(measured.screenContentPaddingBottom).toBeCloseTo(clearance, 0)
+  }
+}
+
+/**
+ * Long content: scrolled to its end, the last item clears the bottom inset
+ * (no footer) or the footer's top edge, and nothing scrolls the document.
+ */
+async function expectEndOfContent(page: Page, insets: Insets) {
+  const end = await page.evaluate(async () => {
+    const scroller = document.querySelector('main .clr-scroll-region__scroller')
+    const content = document.querySelector('main .clr-screen__content')
+    const foot = document.querySelector('main .clr-scroll-region__foot')
+    if (scroller === null || content === null) return null
+    scroller.scrollTop = scroller.scrollHeight
+    await new Promise((settle) => requestAnimationFrame(() => requestAnimationFrame(settle)))
+    const last = content.lastElementChild
+    return {
+      overflowing: scroller.scrollHeight > scroller.clientHeight + 1,
+      lastBottom: last?.getBoundingClientRect().bottom ?? null,
+      limit: foot === null ? innerHeight : foot.getBoundingClientRect().top,
+      hasFoot: foot !== null,
+      documentScrollTop: document.scrollingElement?.scrollTop ?? null,
+    }
+  })
+  expect(end).not.toBeNull()
+  expect(end?.documentScrollTop).toBe(0)
+  const limit = (end?.limit ?? 0) - (end?.hasFoot ? 0 : insets.bottom)
+  expect(end?.lastBottom ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(limit + 0.5)
+  return end
+}
+
+/**
+ * Title and header controls: clear of the top inset by the page's own gap,
+ * and hit-testable as themselves at every sampled point, upper quarter
+ * included. These local measurements do not establish an installed-device
+ * status-area effect; selected captures are reviewed separately.
+ */
+function expectClearHead(measured: Geometry, insets: Insets, gap = measured.spacing500 ?? Number.NaN) {
+  const clearTop = insets.top + gap - 1
   expect(measured.title).not.toBeNull()
-  expect(measured.title?.box?.y ?? -1).toBeGreaterThanOrEqual(insets.top - 1)
+  expect(measured.title?.box?.y ?? -1).toBeGreaterThanOrEqual(clearTop)
   expect(measured.title?.hits.every((hit) => hit.clear)).toBe(true)
+  if (measured.header !== null) expect(measured.header.y).toBeCloseTo(insets.top + gap, 0)
   for (const control of measured.headerControls) {
-    expect(control.box?.y ?? -1).toBeGreaterThanOrEqual(insets.top - 1)
+    expect(control.box?.y ?? -1).toBeGreaterThanOrEqual(clearTop)
     expect(control.hits.every((hit) => hit.clear)).toBe(true)
   }
 }
@@ -400,87 +523,246 @@ async function withInsets<T>(page: Page, insets: Insets, run: (cdp: CDPSession) 
 
 test.use({ timezoneId: 'UTC' })
 
+/**
+ * One representative per routed layout family. `lands` is where the route
+ * actually resolves with this synthetic account; `header`/`foot` are what
+ * that screen composes, so intentionally absent chrome is asserted absent.
+ */
 const ROUTED = [
-  { consumer: 'Home', path: '/', header: true, foot: true },
-  { consumer: 'Generate', path: '/generate', header: true, foot: true },
-  { consumer: 'Settings', path: '/settings', header: true, foot: false },
-  { consumer: 'Not found', path: '/b05-shell-diagnostic-unknown', header: false, foot: false },
+  { consumer: 'Home', path: '/', lands: '/', state: 'populated', header: true, controls: true, foot: true },
+  { consumer: 'Generate', path: '/generate', lands: '/generate', state: 'populated', header: true, controls: true, foot: true },
+  { consumer: 'Settings', path: '/settings', lands: '/settings', state: 'populated, long, no footer', header: true, controls: true, foot: false },
+  { consumer: 'Locations', path: '/settings/locations', lands: '/settings/locations', state: 'populated', header: true, controls: true, foot: null },
+  { consumer: 'History', path: '/history', lands: '/history', state: 'populated', header: true, controls: true, foot: null },
+  { consumer: 'Session detail', path: `/history/${HISTORY[0].id}`, lands: `/history/${HISTORY[0].id}`, state: 'error (synthetic read failure)', header: true, controls: true, foot: null },
+  { consumer: 'Review (pre-start, nothing to review)', path: '/review', lands: '/review', state: 'empty', header: true, controls: null, foot: null },
+  { consumer: 'Summary without a completed session', path: '/summary', lands: '/', state: 'guard redirect to Home', header: true, controls: true, foot: true },
+  { consumer: 'Workout without an active session', path: '/workout', lands: '/', state: 'guard redirect to Home', header: true, controls: true, foot: true },
+  { consumer: 'Not found', path: '/b05-shell-unknown', lands: '/b05-shell-unknown', state: 'short, no header, no footer', header: false, controls: null, foot: false },
 ] as const
 
-for (const { consumer, path, header, foot } of ROUTED) {
-  test(`B05 TASK-001 diagnostic: routed ${consumer} records header clearance and bottom geometry`, async ({ page, visit }, testInfo) => {
+for (const { consumer, path, lands, state, header, controls, foot } of ROUTED) {
+  test(`B05 shell: routed ${consumer} clears its header and has no bottom band`, async ({ page, visit }, testInfo) => {
     test.setTimeout(120_000)
     testInfo.annotations.push({ type: 'proof-mode',
-      description: 'Diagnostic baseline: synthetic intercepted session, Chromium CSS env override; not installed-iPhone evidence.' })
+      description: 'Synthetic intercepted session, Chromium CSS env override; not installed-iPhone evidence.' })
     const app = await syntheticApp(page, { signedIn: true, history: 'ok' })
     await page.setViewportSize(PHONE.viewport)
     await withInsets(page, PHONE.insets, async () => {
       await visit(path)
       await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName('CLEAR')
-      await expect(page.locator('.clr-shell__content > header')).toHaveCount(header ? 1 : 0)
-      if (foot) await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
-      if (consumer === 'Settings') await expect(page.getByText('Reading your settings')).toHaveCount(0)
-      const measured = await record(page, testInfo, `routed-${consumer.toLowerCase().replace(/\s+/g, '-')}-phone`, {
-        family: 'routed', consumer, state: 'populated', ...PHONE,
+      if (lands !== null) await expect(page).toHaveURL((url) => url.pathname === lands)
+      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator('[aria-busy="true"], .clr-scan-loader')).toHaveCount(0)
+      if (header !== null) await expect(page.locator('.clr-shell__content > header')).toHaveCount(header ? 1 : 0)
+      if (foot === true) await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
+      if (foot === false) await expect(page.locator('main .clr-scroll-region__foot')).toHaveCount(0)
+      const landed = new URL(page.url()).pathname
+      const measured = await record(page, testInfo, `routed-${consumer.toLowerCase().replace(/[^a-z]+/g, '-').replace(/-$/, '')}-phone`, {
+        family: 'routed', consumer: `${consumer} (landed ${landed})`, state, ...PHONE,
       })
       expectContainedShell(measured, PHONE.viewport, PHONE.insets)
       expectClearHead(measured, PHONE.insets)
-      if (header) expect(measured.headerControls.length).toBeGreaterThan(0)
-      if (foot) {
-        // Below the last footer action: the PhoneFooter's own padding plus the
-        // shell's bottom padding, with nothing else beneath it.
-        expect(measured.bottomGapBelowLastFootControl ?? 0).toBeGreaterThan(measured.bottomGapBelowMain ?? 0)
+      expectBottomEdge(measured, PHONE.insets)
+      if (controls === true) expect(measured.headerControls.length).toBeGreaterThan(0)
+      const end = await expectEndOfContent(page, PHONE.insets)
+      if (end?.overflowing) {
+        await record(page, testInfo, `routed-${consumer.toLowerCase().replace(/[^a-z]+/g, '-').replace(/-$/, '')}-phone-end`, {
+          family: 'routed', consumer: `${consumer} (landed ${landed})`, state: `${state}, scrolled to end`, ...PHONE,
+        })
       }
     })
     app.assertNoWrites()
   })
 }
 
-test('B05 TASK-001 diagnostic: Home across narrow, short, zero-inset and lifecycle resume geometry', async ({ page, visit }, testInfo) => {
+test('B05 shell: signed-in account without a profile lands in onboarding with the shared geometry', async ({ page, visit }, testInfo) => {
   test.setTimeout(120_000)
-  testInfo.annotations.push({ type: 'proof-mode',
-    description: 'Viewport resize stands in for keyboard height; CDP page freeze/resume is a Chromium lifecycle, not iOS app resume.' })
-  const app = await syntheticApp(page, { signedIn: true, history: 'ok' })
+  const app = await syntheticApp(page, { signedIn: true, history: 'ok', profile: 'none' })
   await page.setViewportSize(PHONE.viewport)
-  await withInsets(page, PHONE.insets, async (cdp) => {
+  await withInsets(page, PHONE.insets, async () => {
     await visit('/')
-    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Today')
-    await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
-    const before = await record(page, testInfo, 'routed-home-phone-before-resume', {
-      family: 'routed', consumer: 'Home', state: 'populated', ...PHONE,
+    await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName('CLEAR')
+    await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+    const landed = new URL(page.url()).pathname
+    const measured = await record(page, testInfo, 'guard-onboarding-phone', {
+      family: 'guard', consumer: `no-profile redirect (landed ${landed})`, state: 'populated', ...PHONE,
     })
-    await cdp.send('Page.setWebLifecycleState', { state: 'frozen' })
-    await cdp.send('Page.setWebLifecycleState', { state: 'active' })
-    const after = await record(page, testInfo, 'routed-home-phone-after-resume', {
-      family: 'routed', consumer: 'Home', state: 'populated, after frozen/active lifecycle', ...PHONE,
-    })
-    expect(after.main).toEqual(before.main)
-    expect(after.header).toEqual(before.header)
-
-    for (const [label, layout] of [['narrow', NARROW], ['short', SHORT]] as const) {
-      await setInsets(cdp, layout.insets)
-      await page.setViewportSize(layout.viewport)
-      const measured = await record(page, testInfo, `routed-home-${label}`, {
-        family: 'routed', consumer: 'Home', state: 'populated', ...layout,
-      })
-      expectContainedShell(measured, layout.viewport, layout.insets)
-      expectClearHead(measured, layout.insets)
-    }
-
-    await setInsets(cdp, ZERO)
-    await page.setViewportSize(PHONE.viewport)
-    const flat = await record(page, testInfo, 'routed-home-zero-inset', {
-      family: 'routed', consumer: 'Home', state: 'populated', viewport: PHONE.viewport, insets: ZERO,
-    })
-    expectContainedShell(flat, PHONE.viewport, ZERO)
-    expectClearHead(flat, ZERO)
-    // With no reported inset the shell still reserves --spacing-500 below <main>.
-    expect(flat.bottomGapBelowMain ?? 0).toBeGreaterThan(0)
+    expectContainedShell(measured, PHONE.viewport, PHONE.insets)
+    expectClearHead(measured, PHONE.insets)
+    expectBottomEdge(measured, PHONE.insets)
   })
   app.assertNoWrites()
 })
 
-test('B05 TASK-001 diagnostic: signed-out guard lands in the routed shell with its geometry recorded', async ({ page, visit }, testInfo) => {
+test('B05 shell: Login keeps its header, footer action and bottom edge', async ({ page, visit }, testInfo) => {
+  test.setTimeout(120_000)
+  const app = await syntheticApp(page, { signedIn: false, history: 'ok' })
+  await page.setViewportSize(PHONE.viewport)
+  await withInsets(page, PHONE.insets, async () => {
+    await visit('/login')
+    await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
+    const measured = await record(page, testInfo, 'routed-login-phone', {
+      family: 'routed', consumer: 'Login', state: 'populated, footer action', ...PHONE,
+    })
+    expectContainedShell(measured, PHONE.viewport, PHONE.insets)
+    expectClearHead(measured, PHONE.insets)
+    expectBottomEdge(measured, PHONE.insets)
+  })
+  app.assertNoWrites()
+})
+
+for (const { consumer, path } of [
+  { consumer: 'Home', path: '/' },
+  { consumer: 'Settings', path: '/settings' },
+] as const) {
+  test(`B05 shell: ${consumer} across narrow, short (keyboard stand-in), zero-inset and lifecycle resume`, async ({ page, visit }, testInfo) => {
+    test.setTimeout(120_000)
+    testInfo.annotations.push({ type: 'proof-mode',
+      description: 'Viewport resize stands in for keyboard height; CDP page freeze/resume is a Chromium lifecycle, not iOS app resume.' })
+    const app = await syntheticApp(page, { signedIn: true, history: 'ok' })
+    const slug = consumer.toLowerCase()
+    await page.setViewportSize(PHONE.viewport)
+    await withInsets(page, PHONE.insets, async (cdp) => {
+      await visit(path)
+      await expect(page).toHaveURL((url) => url.pathname === path)
+      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator('[aria-busy="true"]')).toHaveCount(0)
+      const before = await record(page, testInfo, `routed-${slug}-phone-before-resume`, {
+        family: 'routed', consumer, state: 'populated', ...PHONE,
+      })
+      await cdp.send('Page.setWebLifecycleState', { state: 'frozen' })
+      await cdp.send('Page.setWebLifecycleState', { state: 'active' })
+      const after = await record(page, testInfo, `routed-${slug}-phone-after-resume`, {
+        family: 'routed', consumer, state: 'populated, after frozen/active lifecycle', ...PHONE,
+      })
+      expect(after.main).toEqual(before.main)
+      expect(after.header).toEqual(before.header)
+      expect(after.scroller).toEqual(before.scroller)
+      expectContainedShell(after, PHONE.viewport, PHONE.insets)
+      expectClearHead(after, PHONE.insets)
+      expectBottomEdge(after, PHONE.insets)
+
+      // The keyboard stand-in shrinks the phone in place and then restores it,
+      // as opening and closing the keyboard does.
+      for (const [label, layout] of [['narrow', NARROW], ['short', SHORT], ['restored', PHONE]] as const) {
+        await setInsets(cdp, layout.insets)
+        await page.setViewportSize(layout.viewport)
+        const measured = await record(page, testInfo, `routed-${slug}-${label}`, {
+          family: 'routed', consumer, state: label === 'short' ? 'populated, keyboard-height stand-in' : 'populated', ...layout,
+        })
+        expectContainedShell(measured, layout.viewport, layout.insets)
+        expectClearHead(measured, layout.insets)
+        expectBottomEdge(measured, layout.insets)
+        await expectEndOfContent(page, layout.insets)
+      }
+
+      await setInsets(cdp, ZERO)
+      const flat = await record(page, testInfo, `routed-${slug}-zero-inset`, {
+        family: 'routed', consumer, state: 'populated', viewport: PHONE.viewport, insets: ZERO,
+      })
+      expectContainedShell(flat, PHONE.viewport, ZERO)
+      expectClearHead(flat, ZERO)
+      // With no reported inset nothing is reserved below the last layer's own gap.
+      expectBottomEdge(flat, ZERO)
+    })
+    app.assertNoWrites()
+  })
+}
+
+/** The reviewed phone uses Vapour; capture its actual retained atmosphere too. */
+for (const { consumer, path } of [
+  { consumer: 'Home', path: '/' },
+  { consumer: 'Generate', path: '/generate' },
+  { consumer: 'Settings', path: '/settings' },
+] as const) {
+  test(`B05 shell: Vapour ${consumer} records the selected reference header and bottom regions`, async ({ page, visit }, testInfo) => {
+    test.setTimeout(120_000)
+    const app = await syntheticApp(page, { signedIn: true, history: 'ok', skin: 'vapour' })
+    await page.setViewportSize(PHONE.viewport)
+    await withInsets(page, PHONE.insets, async () => {
+      await visit(path)
+      await expect(page).toHaveURL((url) => url.pathname === path)
+      await expect(page.locator('html')).toHaveAttribute('data-skin', 'vapour')
+      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator('[aria-busy="true"], .clr-scan-loader')).toHaveCount(0)
+      const context = { family: 'routed', consumer, state: 'populated, Vapour reference skin', ...PHONE }
+      const measured = await record(page, testInfo, `vapour-${consumer.toLowerCase()}-phone`, context)
+      expect(measured.skin).toBe('vapour')
+      expectContainedShell(measured, PHONE.viewport, PHONE.insets)
+      expectClearHead(measured, PHONE.insets)
+      expectBottomEdge(measured, PHONE.insets)
+      if (consumer === 'Settings') {
+        await expectEndOfContent(page, PHONE.insets)
+        await record(page, testInfo, 'vapour-settings-phone-end', {
+          ...context, state: 'populated, Vapour reference skin, scrolled to end',
+        })
+      }
+    })
+    app.assertNoWrites()
+  })
+}
+
+test('B05 shell: actual active Workout keeps its compact short-window navigation and restores normal geometry', async ({ page, visit }, testInfo) => {
+  test.setTimeout(120_000)
+  testInfo.annotations.push({ type: 'proof-mode',
+    description: 'Synthetic active session on the real Workout route; viewport resize and CDP lifecycle are not installed-iPhone evidence.' })
+  const app = await syntheticApp(page, { signedIn: true, history: 'ok', activeWorkout: true })
+  await page.setViewportSize(PHONE.viewport)
+  await withInsets(page, PHONE.insets, async (cdp) => {
+    await visit('/workout')
+    await expect(page).toHaveURL((url) => url.pathname === '/workout')
+    await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout')
+    await expect(page.locator('main .clr-scroll-region__foot > .clr-workout-footer')).toHaveCount(1)
+    const navigation = page.getByRole('navigation', { name: 'Workout sections', exact: true })
+    const actions = page.getByRole('button', { name: 'Actions', exact: true })
+    const previous = navigation.getByRole('button', { name: 'Previous', exact: true })
+    const next = navigation.getByRole('button', { name: 'Next section', exact: true })
+    await expect(previous).toBeDisabled()
+    await expect(next).toBeEnabled()
+    await expect(actions).toBeVisible()
+    const before = await record(page, testInfo, 'routed-workout-active-phone', {
+      family: 'routed', consumer: 'Workout (actual active session)', state: 'populated', ...PHONE,
+    })
+    expectContainedShell(before, PHONE.viewport, PHONE.insets)
+    expectClearHead(before, PHONE.insets)
+    expectBottomEdge(before, PHONE.insets)
+    for (const [label, layout] of [['narrow', NARROW], ['short', SHORT], ['restored', PHONE]] as const) {
+      await setInsets(cdp, layout.insets)
+      await page.setViewportSize(layout.viewport)
+      const measured = await record(page, testInfo, `routed-workout-active-${label}`, {
+        family: 'routed', consumer: 'Workout (actual active session)',
+        state: label === 'short' ? 'populated, compact keyboard-height stand-in' : 'populated', ...layout,
+      })
+      // The existing Workout-only short-window composition narrows page gaps,
+      // while retaining the actual safe-area values and full-size navigation.
+      const short = label === 'short'
+      const topGap = (short ? measured.spacing200 : measured.spacing500) ?? Number.NaN
+      const bottomGap = (short ? measured.spacing200 : measured.spacing300) ?? Number.NaN
+      expectContainedShell(measured, layout.viewport, layout.insets, topGap)
+      expectClearHead(measured, layout.insets, topGap)
+      expectBottomEdge(measured, layout.insets, bottomGap)
+      await expect(previous).toBeInViewport({ ratio: 1 })
+      await expect(next).toBeInViewport({ ratio: 1 })
+      await expect(actions).toBeInViewport({ ratio: 1 })
+    }
+    await cdp.send('Page.setWebLifecycleState', { state: 'frozen' })
+    await cdp.send('Page.setWebLifecycleState', { state: 'active' })
+    const after = await record(page, testInfo, 'routed-workout-active-after-resume', {
+      family: 'routed', consumer: 'Workout (actual active session)',
+      state: 'populated, restored after frozen/active lifecycle', ...PHONE,
+    })
+    expect(after.main).toEqual(before.main)
+    expect(after.header).toEqual(before.header)
+    expectContainedShell(after, PHONE.viewport, PHONE.insets)
+    expectClearHead(after, PHONE.insets)
+    expectBottomEdge(after, PHONE.insets)
+    await expect(page).toHaveURL((url) => url.pathname === '/workout')
+  })
+  app.assertNoWrites()
+})
+
+test('B05 shell: signed-out guard lands in the routed shell with the shared geometry', async ({ page, visit }, testInfo) => {
   test.setTimeout(120_000)
   const app = await syntheticApp(page, { signedIn: false, history: 'ok' })
   await page.setViewportSize(PHONE.viewport)
@@ -488,16 +770,17 @@ test('B05 TASK-001 diagnostic: signed-out guard lands in the routed shell with i
     await visit('/')
     await expect(page).not.toHaveURL((url) => url.pathname === '/')
     const measured = await record(page, testInfo, 'guard-signed-out-phone', {
-      family: 'guard', consumer: 'signed-out redirect', state: 'populated', ...PHONE,
+      family: 'guard', consumer: `signed-out redirect (landed ${new URL(page.url()).pathname})`, state: 'populated', ...PHONE,
     })
     expectContainedShell(measured, PHONE.viewport, PHONE.insets)
     expectClearHead(measured, PHONE.insets)
+    expectBottomEdge(measured, PHONE.insets)
   })
   app.assertNoWrites()
 })
 
 for (const mode of ['hold', 'fail'] as const) {
-  test(`B05 TASK-001 diagnostic: independent boot shell (${mode === 'hold' ? 'checking' : 'failed'}) geometry`, async ({ page, visit }, testInfo) => {
+  test(`B05 shell: independent boot shell (${mode === 'hold' ? 'checking' : 'failed'}) has the shared geometry`, async ({ page, visit }, testInfo) => {
     test.setTimeout(120_000)
     const app = await syntheticApp(page, { signedIn: true, history: mode })
     await page.setViewportSize(PHONE.viewport)
@@ -516,6 +799,7 @@ for (const mode of ['hold', 'fail'] as const) {
         })
         expectContainedShell(measured, PHONE.viewport, PHONE.insets)
         expectClearHead(measured, PHONE.insets)
+        expectBottomEdge(measured, PHONE.insets)
       })
     } finally {
       app.release()
@@ -524,7 +808,7 @@ for (const mode of ['hold', 'fail'] as const) {
   })
 }
 
-test('B05 TASK-001 diagnostic: crash fallback renders outside both shells with no safe-area clearance', async ({ page, visit }, testInfo) => {
+test('B05 shell: crash fallback renders inside the shared contained shell with safe-area clearance', async ({ page, visit }, testInfo) => {
   test.setTimeout(120_000)
   testInfo.annotations.push({ type: 'proof-mode',
     description: 'A synthetic thrown render error reaches the real top-level boundary; stylesheets are untouched.' })
@@ -552,12 +836,13 @@ test('B05 TASK-001 diagnostic: crash fallback renders outside both shells with n
           startsInsideTopInset: alertBox === null ? null : alertBox.y < PHONE.insets.top }, null, 2),
         contentType: 'application/json',
       })
-      expect(measured.shellCount).toBe(0)
-      expect(measured.atmosphereCount).toBe(0)
-      expect(measured.contentPadding).toBeNull()
-      expect(measured.mainPaddingTop).toBe('0px')
-      // Reproduced: the fallback's alert begins inside the reported top inset.
-      expect(alertBox?.y ?? Number.NaN).toBeLessThan(PHONE.insets.top)
+      // The fallback is now the same contained shell, with a still atmosphere.
+      expectContainedShell(measured, PHONE.viewport, PHONE.insets)
+      expectClearHead(measured, PHONE.insets)
+      expectBottomEdge(measured, PHONE.insets)
+      await expect(page.locator('.clr-atmosphere[data-static="true"]')).toHaveCount(1)
+      expect(alertBox?.y ?? Number.NaN).toBeGreaterThanOrEqual(PHONE.insets.top + (measured.spacing500 ?? 0) - 1)
+      await expect(page.getByRole('main')).toHaveCount(1)
     })
   } finally {
     app.release()

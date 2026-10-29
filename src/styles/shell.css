@@ -20,6 +20,18 @@
    the outer edge the header's controls already sit on; the header does not
    move inward. Gutters are page geometry only: card padding and in-card row
    rules keep their own card-internal values below.
+
+   B05 REQ-001/REQ-002: the safe areas belong to the system, the gaps to the
+   page, and the two are not traded against each other.
+   - Top: the page's own gap starts *below* the top inset instead of being
+     absorbed into it, keeping titles and controls away from that boundary.
+     The installed-device wash's cause is unproven; device UAT is still needed.
+   - Bottom: the shell reserves nothing. The screen runs to the viewport
+     bottom and its last layer — the pinned footer, or the scrolling content
+     when there is none — keeps its bottom gap or the bottom inset, whichever
+     is larger. No empty strip sits under the last action or the last card.
+   One pair of properties carries this for every routed screen, the boot
+   shell and the crash fallback alike; no route states an offset.
    ============================================================================= */
 
 html,
@@ -36,14 +48,20 @@ body,
   --shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));
   --page-gutter-left: var(--shell-inset-left);
   --page-gutter-right: var(--shell-inset-right);
+  /* A composition that must reclaim height (a keyboard-short window) narrows
+     these gaps; the insets themselves are never reduced. */
+  --shell-gap-top: var(--spacing-500);
+  --shell-gap-bottom: var(--spacing-300);
+  --shell-inset-top: calc(env(safe-area-inset-top) + var(--shell-gap-top));
+  --shell-inset-bottom: max(var(--shell-gap-bottom), env(safe-area-inset-bottom));
   width: 100%;
   height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: max(var(--spacing-500), env(safe-area-inset-top));
+  padding-top: var(--shell-inset-top);
   padding-right: 0;
-  padding-bottom: max(var(--spacing-500), env(safe-area-inset-bottom));
+  padding-bottom: 0;
   padding-left: 0;
 }
 
@@ -80,6 +98,13 @@ body,
   gap: var(--spacing-400);
   min-height: 100%;
   padding: var(--spacing-100) var(--page-gutter-right) var(--spacing-300) var(--page-gutter-left);
+}
+
+/* B05 REQ-002: with no pinned footer the scrolling content is the screen's
+   last layer, so it carries the bottom inset — content scrolls to the
+   viewport edge and its end still clears the home indicator. */
+.clr-screen > .clr-scroll-region:not(:has(> .clr-scroll-region__foot)) .clr-screen__content {
+  padding-bottom: var(--shell-inset-bottom, var(--spacing-300));
 }
 
 /* With its title in the header, a screen's first card opens one group gap
@@ -136,11 +161,13 @@ body,
 
 /* ScrollRegion already owns the measured foot, its hard edge, and its side
    inset. Keep the public footer vocabulary without drawing that structure a
-   second time inside the slot. */
+   second time inside the slot. B05 REQ-002: the footer is the screen's last
+   layer, so its bottom gap is the shell's bottom inset — the home indicator
+   area is the action's clearance, not an extra strip beneath it. */
 .clr-scroll-region__foot > .clr-footer {
   position: static;
   margin: 0;
-  padding: var(--spacing-300) 0;
+  padding: var(--spacing-300) 0 var(--shell-inset-bottom, var(--spacing-300));
   border-top: 0;
 }
 

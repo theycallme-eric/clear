@@ -121,6 +121,56 @@ describe('REQ-001 page title in the header', () => {
   })
 })
 
+describe('B05 shared header clearance and bottom edge', () => {
+  const frame = rule('.clr-shell--contained > .clr-shell__content')
+
+  it('starts the page gap below the top inset instead of absorbing it', () => {
+    expect(frame).toContain('--shell-gap-top: var(--spacing-500);')
+    expect(frame).toContain('--shell-inset-top: calc(env(safe-area-inset-top) + var(--shell-gap-top));')
+    expect(frame).toContain('padding-top: var(--shell-inset-top);')
+    expect(frame).not.toMatch(/padding-top:\s*max\(/)
+  })
+
+  it('reserves nothing below the shell; the last layer carries the bottom inset', () => {
+    expect(frame).toContain('--shell-gap-bottom: var(--spacing-300);')
+    expect(frame).toContain(
+      '--shell-inset-bottom: max(var(--shell-gap-bottom), env(safe-area-inset-bottom));',
+    )
+    expect(frame).toContain('padding-bottom: 0;')
+    expect(rule('.clr-scroll-region__foot > .clr-footer')).toContain(
+      'padding: var(--spacing-300) 0 var(--shell-inset-bottom, var(--spacing-300));',
+    )
+    expect(
+      rule('.clr-screen > .clr-scroll-region:not(:has(> .clr-scroll-region__foot)) .clr-screen__content'),
+    ).toContain('padding-bottom: var(--shell-inset-bottom, var(--spacing-300));')
+  })
+
+  it('states no route offset, fixed height or zeroed inset anywhere in the app styles', () => {
+    for (const name of readdirSync('src/styles').filter((file) => file.endsWith('.css'))) {
+      const css = readFileSync(`src/styles/${name}`, 'utf8')
+      expect(css, name).not.toMatch(/calc\(100d?vh\s*-/)
+      expect(css, name).not.toMatch(/env\(safe-area-inset-\w+\)\s*\*\s*0|safe-area-inset-\w+:\s*0/)
+    }
+    // The workout's short-window rule narrows the gaps, never the insets.
+    const workout = readFileSync('src/ui/workout-navigation.css', 'utf8')
+    expect(workout).toContain('--shell-gap-top: var(--spacing-200);')
+    expect(workout).toContain('--shell-gap-bottom: var(--spacing-200);')
+    expect(workout).not.toMatch(/padding-(top|bottom):\s*max\(var\(--spacing-200\), env/)
+  })
+
+  it('routes, boot and the crash fallback render the one ContainedShell', () => {
+    for (const file of ['src/app/RootLayout.tsx', 'src/app/BootSequence.tsx', 'src/app/ErrorBoundary.tsx']) {
+      const source = readFileSync(file, 'utf8')
+      expect(source, file).toContain('<ContainedShell')
+    }
+    const root = readFileSync('src/app/RootLayout.tsx', 'utf8')
+    expect(root.match(/clr-shell clr-shell--fixed clr-shell--contained/g)).toHaveLength(1)
+    for (const file of ['src/app/BootSequence.tsx', 'src/app/ErrorBoundary.tsx']) {
+      expect(readFileSync(file, 'utf8'), file).not.toContain('clr-shell--contained')
+    }
+  })
+})
+
 describe('REQ-001 page rules stay distinct from card-internal rules', () => {
   it('runs header, band and footer rules edge to edge on the page gutter', () => {
     expect(rule('.clr-shell--contained > .clr-shell__content')).toMatch(/padding-right: 0;[\s\S]*padding-left: 0;/)

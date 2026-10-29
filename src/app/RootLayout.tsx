@@ -8,13 +8,39 @@
  * `data-atmosphere` selects nothing in the shipped CSS any more. It still lands
  * on `<html>` and on the shell as an inert marker of the one atmosphere, which
  * keeps that contract readable from the rendered tree.
+ *
+ * B05 REQ-001/REQ-002: `ContainedShell` is the shell markup itself. Routes,
+ * the boot sequence (rendered before the router) and the crash fallback
+ * (rendered above both) all use it, so the safe-area, header-clearance and
+ * bottom-edge geometry in src/styles/shell.css reaches every one of them
+ * instead of each keeping its own copy — or, for the fallback, none.
  */
-import { useEffect } from 'react'
+import { useEffect, type ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { FocusBrackets } from '../design-system/index'
 import { AtmosphereLayer } from '../ui/atmosphere'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
+
+export interface ContainedShellProps {
+  /** Defaults to the live layer; the crash fallback passes a still one. */
+  atmosphere?: ReactNode
+  children: ReactNode
+}
+
+export function ContainedShell({ atmosphere, children }: ContainedShellProps) {
+  return (
+    <>
+      {atmosphere ?? <AtmosphereLayer />}
+      <div
+        className="clr-shell clr-shell--fixed clr-shell--contained"
+        data-atmosphere={DEFAULT_ATMOSPHERE}
+      >
+        <div className="clr-shell__content">{children}</div>
+      </div>
+    </>
+  )
+}
 
 export function RootLayout() {
   useEffect(() => {
@@ -24,15 +50,9 @@ export function RootLayout() {
   return (
     <>
       <FocusBrackets />
-      <AtmosphereLayer />
-      <div
-        className="clr-shell clr-shell--fixed clr-shell--contained"
-        data-atmosphere={DEFAULT_ATMOSPHERE}
-      >
-        <div className="clr-shell__content">
-          <Outlet />
-        </div>
-      </div>
+      <ContainedShell>
+        <Outlet />
+      </ContainedShell>
     </>
   )
 }

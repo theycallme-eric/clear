@@ -31,6 +31,10 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // CORE-05 structural mechanisms: they have no appearance of their own, and
   // what they produce is the outline of every other specimen on the page.
   Heading: 'CORE-05 — renders h1…h6 from section depth; no visual surface',
+  // B05: the markup AtmosphereLayer renders, split out so the crash fallback
+  // can pass `still` without reading the preference store. Its appearance is
+  // exactly the framed AtmosphereLayer specimen.
+  AtmosphereGround: 'B05 — AtmosphereLayer’s own markup; framed through AtmosphereLayer',
   HeadingLevelProvider: 'CORE-05 — context only, renders nothing',
   HeadingSection: 'CORE-05 — a <section> that deepens the outline',
   Nav: 'CORE-05 — a <nav> landmark that requires a name; no visual surface',
