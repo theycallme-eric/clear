@@ -5,6 +5,43 @@ Branch `agent-runner/task-007-a1-f525ca4d`, base `a7fb289` (after TASK-006 and T
 This is the task-owned progress record. For this body it stands in for the shared daily journal,
 under the owner-selected task-owned exception.
 
+## Combined source proof collected — native verification pending
+
+The unchanged authenticated collector completed in the root-owned foreground session 80702:
+**4/4 skin cases passed in 21.2 seconds**, exit 0, with eight genuine phone/short PNGs in
+`docs/design/evidence-0143/task034-format-preview-batch05-task007`. Captured frozen source:
+`1d5722b9fad641f8218518a74fd2cb84f1df95f7`. The actual current tree still matches recorded runtime
+`b21c1f5aefd0cf7ada51d1f6c8ec5075389f358a6a4e9da689c2adbd2e6e059b`, driver
+`512f678b66bef3a32ca046aacc5ad74df96112e1a9a735eb449df95136d4f921` and pinned package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+
+All four records and the complete manifest were independently checked against the actual eight
+PNG byte counts, SHA-256 values and IHDR dimensions. Observed 2026-10-29T22:54:50.434Z through
+2026-10-29T22:55:04.709Z, capture process 47006, origin http://localhost:5173. The first capture
+record reports a clean source; later dirty states truthfully include the collector's new evidence.
+All preview generation/blocked-generation/attempted-write/forwarded-write counters are zero.
+Existing disposable local authenticated-fixture setup and cleanup are separate. Root visually
+inspected phone CLEAR and short Vapour and identified no additional issue in those captures.
+
+Derived the existing v1 source-only provenance with this actual task/run/attempt/branch, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-007`, tested build
+`9eceed0566e41db2390e9b2d62d4635e2361a4db` and unchanged helper payload
+`0c3b5c22c98a1046082658d8404026142e71cf4548ff9af418e4df88ee50370e`. Prepended the actual current audit entry and preserved the previous
+current entry as prior; every earlier evidence group and failure remains unchanged.
+
+The correctly configured Welcome/PWA compatibility run 4785 passed 7/7 cases in 17.3 seconds,
+one worker, zero retries, at actual source `433f0311d709e2321f5c744e145c417aff8dcbbd`.
+External `task007-preview-compatibility-passed-20261029` retains that original source identity.
+The earlier Generate 16/16 comparison at `0b0e3f0` plus the measurement-driver working tree remains
+separate in `task007-corrected-browser-final-20261029`; it is not relabelled as this capture.
+The existing circuit visibility finding remains separate and unresolved; it touches neither
+Task 7's criteria nor a Task 7 dependent.
+
+No browser, test, native recovery or model command ran during this derivation. This is source-only
+proof, not a native receipt or delivery. Root still must independently run every approved native
+criterion/task/project check on the resulting exact candidate, then required GitHub CI and the
+normal protected build-branch delivery. Physical-iPhone UAT remains outside the DAG afterward.
+
 ## Preview contract reconciliation — verification pending
 
 The separate Task 12 preview run exposed seven old assertions that measured obsolete owners:
