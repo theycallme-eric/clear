@@ -223,3 +223,9 @@ centered one control row.255focused unit tests across8files passed before this m
 
 Before final source-bound capture/native checks, integrate the protected build after Task12 delivery.
 No receipt, PR or completion is claimed at this checkpoint. Original failures and evidence remain.
+
+## 2026-10-29T22:54:26.671970+00:00 — Shared-layout compatibility verified
+
+On clean source `433f0311d709e2321f5c744e145c417aff8dcbbd`, the two existing remote-safe preview specs passed all seven JOURNEY-002 cases in 17.3 seconds with one worker and zero retries. The real Welcome label enlargement and footer-owned safe-area clearance passed at normal, narrow, short and landscape sizes, preserving touch, focus/draft, toast, accessibility and no-write checks. Synthetic public URL/key were supplied; no service credential, hosted target or model was involved. The earlier run omitted that fixture configuration; its six fixture failures are preserved separately and are not product-regression evidence.
+
+Generate consumer proof and these compatibility outputs retain their actual source identities externally. The next unchanged authenticated collector will produce a new Task 7 four-skin/eight-PNG source group on the frozen combined candidate; native exact-head acceptance and protected delivery remain pending. Separate existing circuit timer viewport failure remains open; no product fix or green preview is claimed here.
