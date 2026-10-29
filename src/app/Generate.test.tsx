@@ -160,7 +160,7 @@ describe('the screen’s composition (Form Screen template)', () => {
   it('states the goal, then asks the anchor, the intensity, the place, the time and the notes', () => {
     renderGenerate()
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByText('Strength')).toBeInTheDocument()
 
     const anchors = within(group('Anchor')).getAllByRole('button')
@@ -212,6 +212,7 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(formCard().querySelector('.clr-stack > .clr-stack')).toBe(goal.parentElement)
 
     const pair = recovery().closest('.clr-action-group')!
+    expect(pair).toHaveClass('clr-action-group--paired-labels')
     expect(pair.children).toHaveLength(2)
     expect(pair.children[0]).toContainElement(recovery())
     expect(pair.children[1]).toContainElement(changeFocus())
@@ -827,7 +828,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Generate workout' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Generate' })).not.toBeInTheDocument()
 
     await act(async () => {
       generation.reachStage('composing')
@@ -944,7 +945,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     await composeAndSubmit(user)
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByText('Strength')).toBeInTheDocument()
     expect(chipIn('Anchor', 'Upper body')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText(/place/i)).toHaveValue(GYM.id)
@@ -973,7 +974,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
 
     expect(screen.queryByText('Too late')).not.toBeInTheDocument()
     expect(screen.queryByText(GENERATION_LOADING_TITLE)).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByLabelText(/notes/i)).toHaveValue('Left shoulder is tight.')
   })
 
@@ -987,7 +988,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     })
 
     expect(liveToasts()).toEqual([])
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
   })
 
   it('discards the answer when the screen unmounts mid-run', async () => {
@@ -1590,7 +1591,7 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
     await user.click(cta())
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(url()).toBe(drafted)
     expect(intentFrom(url().slice(GENERATE_PATH.length))).toEqual({
       override: 'upper_body',

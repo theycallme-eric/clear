@@ -161,7 +161,7 @@ export const AUTHENTICATED_CAPTURE_TARGETS: readonly CaptureTarget[] = [
     screen: 'Generate',
     route: '/generate',
     path: '/generate',
-    heading: 'Generate workout',
+    heading: 'Generate',
     state: 'first-or-stale-history-manual-focus',
     // This first-workout member of the baseline state excludes history-read errors.
     stateText: 'First workout: choose a starting focus.',

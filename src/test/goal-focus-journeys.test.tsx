@@ -312,7 +312,7 @@ describe('REQ-016 — the six Goal/Focus journeys', () => {
 
     await goTo(journey, '/generate')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     await waitFor(() => expect(screen.getByText('Conditioning')).toBeInTheDocument())
     expect(screen.queryByText('Strength')).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()

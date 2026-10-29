@@ -379,7 +379,7 @@ test.describe('critical browser lane: a new user, sign-up to Review (REQ-023)', 
     await generate.click()
 
     // ── Generate ───────────────────────────────────────────────────────────
-    await screen('Generate', 'Generate workout')
+    await screen('Generate', 'Generate')
     // The saved Goal is shown as context rather than asked for again.
     await expect(page.getByText(/^Goal: Strength/)).toBeVisible({ timeout: 30_000 })
     await pressGenerate(page)
@@ -464,7 +464,7 @@ test.describe('critical browser lane: a new user, sign-up to Review (REQ-023)', 
     const { lane, release } = await answerGeneration(page, () => saved, false)
 
     await visit(routeOf('Generate'))
-    await expectScreen(page, 'Generate', 'Generate workout')
+    await expectScreen(page, 'Generate', 'Generate')
     await pressGenerate(page)
     await expectLoading(page)
     release()

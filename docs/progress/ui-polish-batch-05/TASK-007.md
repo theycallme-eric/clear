@@ -5,6 +5,26 @@ Branch `agent-runner/task-007-a1-f525ca4d`, base `a7fb289` (after TASK-006 and T
 This is the task-owned progress record. For this body it stands in for the shared daily journal,
 under the owner-selected task-owned exception.
 
+## Controller correction checkpoint — final browser review pending
+
+The original worker record below is retained as history. Its conditional narrow-phone title and
+selected-pair observations were not accepted as final visual proof. Initial source checkpoint
+fc27db8 and original136files/84PNGs remain preserved externally. Same native run/attempt1 retained.
+
+The clearly permitted short **Generate** title now applies across populated/loading/error/empty/guard
+route states; exact title expectations were updated, while action copy stays unchanged. The selected
+Recovery/ChangeFocus pair uses named app composition `clr-action-group--paired-labels`: one control
+row, full labels with natural whole-word wrapping, stock public font/padding/tick. Default single,
+multi-action and confirmation fallback is unchanged. No route raw width, vendor/private-selector
+patch, smaller typography or shorter action copy. The focused proof now strictly checks all3phone
+sizes, selected/default/override states, full label/tick containment, actual ink and one-line title.
+It waits for populated Generate before the first route-wide accessibility scan after Home entry.
+
+Offline correction verification:255tests across8files passed; a prior240-test title-only run also
+passed. Initial sandbox macOS temp access failed before tests; TMPDIR=/tmp resolved it. Browser
+comparison of this candidate remains pending at this checkpoint; no native receipt/PR/acceptance
+or delivery is claimed. Genuine source-bound recapture and all unchanged native checks still follow.
+
 ## Outcome intended
 
 B05-02: keep the Generate title on one line (02.1). Remove the "Change in Settings" link (02.3), the

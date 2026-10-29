@@ -43,13 +43,13 @@ const NOTES = 'Tight hamstrings today.'
 type Viewport = { width: number; height: number }
 /**
  * The portrait phone B05 was captured on (430 wide: see REFERENCE_SCALE), a
- * common narrower one, and a narrow, short one. `shown` marks the width the
- * owner's marks were made at, where the one-row criteria are asserted.
+ * common narrower one, and a narrow, short one. The title and selected pair
+ * criteria are asserted at all three widths, with label wrapping recorded.
  */
-const VIEWPORTS: ReadonlyArray<{ name: string; viewport: Viewport; shown: boolean }> = [
-  { name: 'phone-430', viewport: { width: 430, height: 932 }, shown: true },
-  { name: 'phone-390', viewport: { width: 390, height: 844 }, shown: false },
-  { name: 'narrow-short-320', viewport: { width: 320, height: 568 }, shown: false },
+const VIEWPORTS: ReadonlyArray<{ name: string; viewport: Viewport }> = [
+  { name: 'phone-430', viewport: { width: 430, height: 932 } },
+  { name: 'phone-390', viewport: { width: 390, height: 844 } },
+  { name: 'narrow-short-320', viewport: { width: 320, height: 568 } },
 ]
 const SKINS = ['clear', 'vapour', 'signal', 'mono'] as const
 
@@ -182,7 +182,18 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
   baseURL: async ({ baseURL, syntheticOrigin }, use) => use(syntheticOrigin ?? baseURL),
   checkA11y: async ({ page, checkA11y }, use) => {
     await use(async () => {
-      if (new URL(page.url()).pathname === '/dev/gallery/app') {
+      const path = new URL(page.url()).pathname
+      if (path === '/generate') {
+        // A boot/guard heading is not the populated Generate route.
+        await expect(page.getByRole('heading', {
+          level: 1, name: 'Generate', exact: true,
+        })).toBeVisible()
+        await expect(page.getByLabel('Notes', { exact: true })).toBeVisible()
+        await expect(page.getByLabel('Time available', { exact: true })).toHaveValue('45')
+        await expect(page.getByRole('button', {
+          name: 'Change focus', exact: true,
+        })).toBeVisible()
+      } else if (path === '/dev/gallery/app') {
         // Wait for the lazy gallery route rather than scanning the boot shell.
         await expect(page.getByRole('heading', {
           level: 1, name: 'Component Gallery', exact: true,
@@ -408,22 +419,23 @@ async function textGeometry(locator: Locator) {
 }
 
 /** Home's Generate entry (ENTRY-008) onto the actual route, then notes filled. */
-async function enterGenerate(page: Page, visit: (path: string) => Promise<void>) {
+async function enterGenerate(page: Page, visit: (path: string) => Promise<void>, checkA11y: () => Promise<void>) {
   await visit('/')
   await page.getByRole('button', { name: 'Generate workout', exact: true }).first().click()
   await expect(page).toHaveURL((url) => url.pathname === '/generate')
   await expect(focusLine(page)).toHaveText('Focus: Lower body')
   await page.getByLabel('Notes').fill(NOTES)
   await page.evaluate(() => document.fonts.ready)
+  await checkA11y()
 }
 
 /**
  * 02.1: the header title, its lines in the DOM and in its pixels; the
- * reference's same region holds two. One line is asserted where `oneLine`;
- * elsewhere the observed count is returned for the record.
+ * reference's same region holds two. The permitted short title stays on one
+ * line at the shown, common and narrow phone widths.
  */
-async function assertTitle(page: Page, testInfo: TestInfo, id: string, oneLine: boolean) {
-  const heading = page.getByRole('heading', { level: 1 })
+async function assertTitle(page: Page, testInfo: TestInfo, id: string) {
+  const heading = page.getByRole('heading', { level: 1, name: 'Generate', exact: true })
   const geometry = await textGeometry(heading)
   const shot = await capture(page, testInfo, id, geometry.text)
   const ink = await inkBands(page, shot.shot, 'image/png', shot.local(geometry.text), Math.round(4 * shot.scale))
@@ -432,23 +444,32 @@ async function assertTitle(page: Page, testInfo: TestInfo, id: string, oneLine: 
   expect(geometry.overflow, detail).toBeLessThanOrEqual(0)
   expect(ink.bands.length, detail).toBe(geometry.lines)
   if (back !== null) expect(geometry.text.right, detail).toBeLessThanOrEqual(back.x)
-  if (oneLine) expect(geometry.lines, detail).toBe(1)
+  expect(geometry.lines, detail).toBe(1)
   return { text: await heading.textContent(), geometry, ink, capture: { file: shot.file, sha256: shot.sha256 } }
 }
 
 /**
  * 02.6/02.7: Goal then Focus said alike at the top; Recovery and Change focus
- * in one action group beneath. Where `oneRow` the two sit side by side, each
- * label drawn on one shared row; elsewhere the group's own fallback (U07: a
- * full row each when the labels do not fit) is checked whole and recorded.
+ * in one named action group beneath. The controls stay side by side at every
+ * checked width. Label words may wrap inside those cells; DOM and pixel line
+ * counts must agree and the complete label/tick must remain inside the frame.
  */
-async function assertTopComposition(page: Page, testInfo: TestInfo, id: string, oneRow: boolean) {
+async function assertTopComposition(page: Page, testInfo: TestInfo, id: string) {
   // Filling the notes scrolled the form; the card's top is measured in view.
   await card(page).evaluate((element) => element.scrollIntoView({ block: 'start' }))
   const goal = await textGeometry(goalLine(page))
   const focus = await textGeometry(focusLine(page))
   const recovery = await textGeometry(recoveryAction(page))
   const change = await textGeometry(changeFocusAction(page))
+  const selection = await recoveryAction(page).evaluate((element) => {
+    const tick = element.querySelector('svg')!
+    const rect = tick.getBoundingClientRect()
+    const style = getComputedStyle(tick)
+    return {
+      pressed: element.getAttribute('aria-pressed'), opacity: style.opacity,
+      tick: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom, width: rect.width, height: rect.height },
+    }
+  })
   const pair = await recoveryAction(page).evaluate((element) => {
     const group = element.closest('.clr-action-group')!
     const rect = group.getBoundingClientRect()
@@ -463,7 +484,7 @@ async function assertTopComposition(page: Page, testInfo: TestInfo, id: string, 
   })
   const cardBox = (await card(page).boundingBox())!
   const intensity = (await slider(page).boundingBox())!
-  const detail = JSON.stringify({ goal, focus, recovery, change, pair, cardBox, intensity })
+  const detail = JSON.stringify({ goal, focus, recovery, change, selection, pair, cardBox, intensity })
 
   // Goal and Focus: the first lines of the card, adjacent, in one typography.
   expect(goal.box.top - cardBox.y, detail).toBeLessThan(48)
@@ -473,29 +494,38 @@ async function assertTopComposition(page: Page, testInfo: TestInfo, id: string, 
   // The pair: the shared action group, Recovery then Change focus, directly
   // beneath the Focus and above the intensity, each label whole.
   expect(pair.className.split(' '), detail).toContain('clr-action-group')
+  expect(pair.className.split(' '), detail).toContain('clr-action-group--paired-labels')
   expect(pair.cells, detail).toHaveLength(2)
   const sideBySide = Math.abs(pair.cells[0]!.top - pair.cells[1]!.top) <= 1 &&
     pair.cells[1]!.left > pair.cells[0]!.right - 0.5
-  if (oneRow) expect(sideBySide, detail).toBe(true)
-  else if (!sideBySide) {
-    // Fallback: a full row each, Change focus beneath Recovery, no overlap.
-    expect(pair.cells[1]!.top, detail).toBeGreaterThanOrEqual(pair.cells[0]!.bottom - 0.5)
-    for (const cell of pair.cells) expect(Math.abs(cell.width - pair.box.width), detail).toBeLessThanOrEqual(1)
-  }
+  expect(sideBySide, detail).toBe(true)
   // Each control's frame fills its cell: the frames meet at the group's gap.
   expect(Math.abs(recovery.box.width - pair.cells[0]!.width), detail).toBeLessThanOrEqual(1)
   expect(Math.abs(change.box.width - pair.cells[1]!.width), detail).toBeLessThanOrEqual(1)
-  expect(recovery.lines, detail).toBe(1)
-  expect(change.lines, detail).toBe(1)
+  for (const control of [recovery, change]) {
+    expect(control.lines, detail).toBeGreaterThanOrEqual(1)
+    expect(control.lines, detail).toBeLessThanOrEqual(2)
+    expect(control.text.left, detail).toBeGreaterThanOrEqual(control.box.left)
+    expect(control.text.right, detail).toBeLessThanOrEqual(control.box.right)
+    expect(control.text.top, detail).toBeGreaterThanOrEqual(control.box.top)
+    expect(control.text.bottom, detail).toBeLessThanOrEqual(control.box.bottom)
+  }
   expect(recovery.overflow, detail).toBeLessThanOrEqual(0)
   expect(change.overflow, detail).toBeLessThanOrEqual(0)
+  if (selection.pressed === 'true') {
+    expect(selection.opacity, detail).toBe('1')
+    expect(selection.tick.width, detail).toBeGreaterThan(0)
+    expect(selection.tick.left, detail).toBeGreaterThanOrEqual(recovery.box.left)
+    expect(selection.tick.right, detail).toBeLessThanOrEqual(recovery.box.right)
+    expect(selection.tick.top, detail).toBeGreaterThanOrEqual(recovery.box.top)
+    expect(selection.tick.bottom, detail).toBeLessThanOrEqual(recovery.box.bottom)
+  }
   expect(pair.box.top, detail).toBeGreaterThan(focus.box.bottom)
   expect(pair.box.top - focus.box.bottom, detail).toBeLessThan(24)
   expect(pair.box.bottom, detail).toBeLessThan(intensity.y)
   expect(pair.box.right, detail).toBeLessThanOrEqual(cardBox.x + cardBox.width + 0.5)
 
-  // The pixels of the card's top: Goal and Focus each one row of ink, and the
-  // two labels drawn on one shared row, one in each half.
+  // Read every drawn label line, including natural narrow-phone wrapping.
   const top = { left: cardBox.x, top: cardBox.y, right: cardBox.x + cardBox.width, bottom: pair.box.bottom + 8 }
   const shot = await capture(page, testInfo, id, top)
   const join = Math.round(3 * shot.scale)
@@ -513,13 +543,16 @@ async function assertTopComposition(page: Page, testInfo: TestInfo, id: string, 
     expect(ink.bands, pixelDetail).toHaveLength(lines)
     expect(ink.contrast, pixelDetail).toBeGreaterThan(40)
   }
-  const centre = (ink: typeof goalInk) => (ink.bands[0]!.top + ink.bands[0]!.bottom) / 2 / shot.scale
+  const centre = (ink: typeof goalInk) => (ink.bands[0]!.top + ink.bands.at(-1)!.bottom) / 2 / shot.scale
   const rowDelta = Math.abs(centre(recoveryInk) - centre(changeInk))
-  if (sideBySide) expect(rowDelta, pixelDetail).toBeLessThanOrEqual(2)
-  else expect(centre(changeInk), pixelDetail).toBeGreaterThan(centre(recoveryInk))
+  expect(rowDelta, pixelDetail).toBeLessThanOrEqual(2)
   expect(centre(focusInk), pixelDetail).toBeGreaterThan(centre(goalInk))
   expect(centre(recoveryInk), pixelDetail).toBeGreaterThan(centre(focusInk))
-  return { goal, focus, recovery, change, pair, sideBySide, pixels: { ...pixels, labelRowDelta: rowDelta }, capture: { file: shot.file, sha256: shot.sha256 } }
+  const labels = {
+    recovery: { text: await recoveryAction(page).textContent(), lines: recovery.lines, inkRows: recoveryInk.bands.length, font: recovery.font },
+    changeFocus: { text: await changeFocusAction(page).textContent(), lines: change.lines, inkRows: changeInk.bands.length, font: change.font },
+  }
+  return { goal, focus, recovery, change, selection, labels, pair, sideBySide, pixels: { ...pixels, labelRowDelta: rowDelta }, capture: { file: shot.file, sha256: shot.sha256 } }
 }
 
 /** 02.3–02.5: the three marked texts are not on the route at all. */
@@ -687,13 +720,13 @@ test('B05-02 reference regions show the marked state this proof compares against
   await testInfo.attach('reference-b05-02.json', { body: JSON.stringify(measured, null, 2), contentType: 'application/json' })
 })
 
-for (const { name: size, viewport, shown } of VIEWPORTS) {
+for (const { name: size, viewport } of VIEWPORTS) {
   test.describe(`B05 Generate @ ${size}`, () => {
     test.use({ viewport })
 
-    test('JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus and paired actions, notes and pinned action', async ({ page, visit, baseURL }, testInfo) => {
+    test('JOURNEY-005: Home to Generate with the one-line title, removals, Goal/Focus and paired actions, notes and pinned action', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
       const app = await syntheticApp(page, originOf(baseURL))
-      await enterGenerate(page, visit)
+      await enterGenerate(page, visit, checkA11y)
       const ref = reference()
       const titleRef = await referenceRegion(page, 'title')
       const recoveryRef = await referenceRegion(page, 'recovery')
@@ -701,16 +734,15 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       const referenceRowDelta = Math.abs((recoveryRef.ink.bands[0]!.top + recoveryRef.ink.bands[0]!.bottom) / 2
         - (changeRef.ink.bands[0]!.top + changeRef.ink.bands[0]!.bottom) / 2) / REFERENCE_SCALE
 
-      // 02.1: one line at the shown width and the common 390 one.
-      const oneLineTitle = size !== 'narrow-short-320'
-      const title = await assertTitle(page, testInfo, `generate-title-${size}`, oneLineTitle)
-      if (oneLineTitle) expect(title.ink.bands.length).toBeLessThan(titleRef.ink.bands.length)
+      // 02.1: the permitted short title stays on one line at every phone width.
+      const title = await assertTitle(page, testInfo, `generate-title-${size}`)
+      expect(title.ink.bands.length).toBeLessThan(titleRef.ink.bands.length)
       await record(page, testInfo, `generate-title-${size}`, {
         consumer: 'Generate · AppHeader title', state: 'recommended Focus, populated notes', viewport,
         reference: { file: ref.file, sha256: ref.sha256, region: titleRef.region, measuredLines: titleRef.ink.bands.length },
         actual: { text: title.text, lines: title.geometry.lines, inkRows: title.ink.bands.length },
         capture: title.capture,
-        criteria: oneLineTitle ? { 'AC-014': 'pass' } : { 'AC-014': 'observed only (narrower than the shown width)' },
+        criteria: { 'AC-014': 'pass' },
       })
 
       // 02.3–02.5
@@ -719,7 +751,7 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       await expect(slider(page)).toHaveValue('8')
 
       // 02.6/02.7
-      const top = await assertTopComposition(page, testInfo, `generate-top-${size}`, shown)
+      const top = await assertTopComposition(page, testInfo, `generate-top-${size}`)
       if (top.sideBySide) expect(top.pixels.labelRowDelta).toBeLessThan(referenceRowDelta - 50)
       await record(page, testInfo, `generate-top-${size}`, {
         consumer: 'Generate · form card top (Goal, Focus, ActionGroup: Recovery session | Change focus)',
@@ -728,10 +760,10 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
           regions: [REFERENCE_REGIONS.settings, REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.focus,
             REFERENCE_REGIONS.reason, REFERENCE_REGIONS.changeFocus, REFERENCE_REGIONS.intensityNote],
           measured: { recoveryToChangeFocusRowDelta: referenceRowDelta } },
-        actual: { sideBySide: top.sideBySide, labelRowDelta: top.pixels.labelRowDelta, pair: top.pair, goalFont: top.goal.font, focusFont: top.focus.font },
+        actual: { sideBySide: top.sideBySide, labels: top.labels, selection: top.selection, labelRowDelta: top.pixels.labelRowDelta, pair: top.pair, goalFont: top.goal.font, focusFont: top.focus.font },
         capture: top.capture,
         criteria: { 'AC-015': 'pass', 'AC-016': 'pass', 'AC-017': 'pass', 'AC-047': 'pass', 'AC-060': 'pass',
-          'AC-018': shown ? 'pass' : `group fallback observed: ${top.sideBySide ? 'one row' : 'a full row each'}` },
+          'AC-018': 'pass' },
       })
 
       // Notes and the pinned action, at the foot of the form.
@@ -744,9 +776,9 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       app.assertReadOnly()
     })
 
-    test('Recovery session, Change focus and intensity each keep their own behaviour from the paired row', async ({ page, visit, baseURL }, testInfo) => {
+    test('Recovery session, Change focus and intensity each keep their own behaviour from the paired row', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
       const app = await syntheticApp(page, originOf(baseURL))
-      await enterGenerate(page, visit)
+      await enterGenerate(page, visit, checkA11y)
       const recovery = recoveryAction(page)
       const change = changeFocusAction(page)
       const choices = page.getByRole('group', { name: 'Focus for this workout' })
@@ -761,12 +793,12 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       await choices.getByRole('button', { name: 'Upper body', exact: true }).click()
       await expect(focusLine(page)).toHaveText('Focus: Upper body — this workout only')
       await expect(page).toHaveURL((url) => url.searchParams.get('override') === 'upper_body')
-      const override = await assertTopComposition(page, testInfo, `generate-top-override-${size}`, shown)
+      const override = await assertTopComposition(page, testInfo, `generate-top-override-${size}`)
       await record(page, testInfo, `generate-top-override-${size}`, {
         consumer: 'Generate · form card top', state: 'Focus overridden for this workout, choices open', viewport,
         reference: { file: REFERENCE_FILE, sha256: reference().sha256, regions: [REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.focus, REFERENCE_REGIONS.changeFocus] },
-        actual: { sideBySide: override.sideBySide, labelRowDelta: override.pixels.labelRowDelta, pair: override.pair },
-        capture: override.capture, criteria: { 'AC-018': shown ? 'pass' : 'fallback observed', 'AC-047': 'pass', 'AC-060': 'pass' },
+        actual: { sideBySide: override.sideBySide, labels: override.labels, selection: override.selection, labelRowDelta: override.pixels.labelRowDelta, pair: override.pair },
+        capture: override.capture, criteria: { 'AC-018': 'pass', 'AC-047': 'pass', 'AC-060': 'pass' },
       })
       // The single cancel action keeps its own group and row, outside the pair.
       const cancel = page.getByRole('button', { name: 'Use the recommended focus', exact: true })
@@ -786,12 +818,12 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       await recovery.click()
       await expect(recovery).toHaveAttribute('aria-pressed', 'true')
       await expect(card(page).getByText(/Power/).first()).toBeVisible()
-      const recovering = await assertTopComposition(page, testInfo, `generate-top-recovery-${size}`, shown)
+      const recovering = await assertTopComposition(page, testInfo, `generate-top-recovery-${size}`)
       await record(page, testInfo, `generate-top-recovery-${size}`, {
         consumer: 'Generate · form card top', state: 'Recovery session on (tick shown)', viewport,
         reference: { file: REFERENCE_FILE, sha256: reference().sha256, regions: [REFERENCE_REGIONS.recovery, REFERENCE_REGIONS.changeFocus] },
-        actual: { sideBySide: recovering.sideBySide, labelRowDelta: recovering.pixels.labelRowDelta, pair: recovering.pair },
-        capture: recovering.capture, criteria: { 'AC-018': shown ? 'pass' : 'fallback observed', 'AC-047': 'pass' },
+        actual: { sideBySide: recovering.sideBySide, labels: recovering.labels, selection: recovering.selection, labelRowDelta: recovering.pixels.labelRowDelta, pair: recovering.pair },
+        capture: recovering.capture, criteria: { 'AC-018': 'pass', 'AC-047': 'pass' },
       })
       await recovery.click()
       await expect(recovery).toHaveAttribute('aria-pressed', 'false')
@@ -810,9 +842,9 @@ for (const { name: size, viewport, shown } of VIEWPORTS) {
       app.assertReadOnly()
     })
 
-    test('Generate Time available: MINUTES is whole and comfortably contained in every skin', async ({ page, visit, baseURL }, testInfo) => {
+    test('Generate Time available: MINUTES is whole and comfortably contained in every skin', async ({ page, visit, baseURL, checkA11y }, testInfo) => {
       const app = await syntheticApp(page, originOf(baseURL))
-      await enterGenerate(page, visit)
+      await enterGenerate(page, visit, checkA11y)
       const input = page.getByLabel('Time available')
       await expect(input).toHaveValue('45')
       const ref = await referenceMinutes(page)

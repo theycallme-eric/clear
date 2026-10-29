@@ -301,7 +301,7 @@ export function Generate() {
     <GenerationLoadingHost generation={generation} cancelTo={cancelTo}>
       {needsSettings ? (
         <Screen
-          title="Generate workout"
+          title="Generate"
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -323,14 +323,14 @@ export function Generate() {
           />
         </Screen>
       ) : state.status === 'loading' ? (
-        <Screen title="Generate workout" header={header}>
+        <Screen title="Generate" header={header}>
           <LoadingView
             label={profileSettled ? 'Reading your places' : 'Reading your profile'}
           />
         </Screen>
       ) : state.status === 'error' ? (
         <Screen
-          title="Generate workout"
+          title="Generate"
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -352,7 +352,7 @@ export function Generate() {
         </Screen>
       ) : state.status === 'empty' ? (
         <Screen
-          title="Generate workout"
+          title="Generate"
           header={header}
           pinnedFoot={
             <PhoneFooter>
@@ -561,7 +561,7 @@ function GenerateForm({
   return (
     <>
       <Screen
-        title="Generate workout"
+        title="Generate"
         header={header}
         pinnedFoot={
           <PhoneFooter>
@@ -607,14 +607,15 @@ function GenerateForm({
         </div>
 
         {/* Recovery — the secondary, one-workout mode — and the way off the
-            Focus: one action group beneath them (B05-02.7), sharing the row
-            while both labels fit, Recovery's tick included, and each keeping
-            its own behaviour. With no Focus to change, Recovery stands alone.
+            Focus: one action group beneath them (B05-02.7). This semantic
+            pair keeps one control row; label words may wrap inside their
+            cells, with Recovery's tick and both behaviours intact. With no
+            Focus to change, Recovery stands alone.
             The standing Goal is untouched by Recovery, and Power's refusal is
             said in text (§2.3). */}
         <div className="clr-stack clr-stack--tight">
           {focused ? (
-            <ActionGroup>
+            <ActionGroup className="clr-action-group--paired-labels">
               <Chip selected={draft.recovery} onClick={toggleRecovery}>
                 {RECOVERY_LABEL}
               </Chip>

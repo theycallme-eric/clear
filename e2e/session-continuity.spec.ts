@@ -104,7 +104,7 @@ test.describe('one session from sign-in to Generate (REQ-019)', () => {
     )
 
     await visit(routeOf('Generate'))
-    await expectScreen(page, 'Generate', 'Generate workout')
+    await expectScreen(page, 'Generate', 'Generate')
     expect(await storedUserId(page), 'Generate is not the journey’s athlete').toBe(
       authenticatedSession.userId,
     )

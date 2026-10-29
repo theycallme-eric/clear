@@ -128,7 +128,7 @@ export const routes: RouteObject[] = [
             path: '/generate',
             handle: motion({ depth: 4 }),
             element: (
-              <Protected title="Generate workout">
+              <Protected title="Generate">
                 <Generate />
               </Protected>
             ),

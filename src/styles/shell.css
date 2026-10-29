@@ -250,6 +250,18 @@ body,
   min-width: fit-content;
 }
 
+/* B05-02.7: the selected semantic pair stays on one control row. Cells
+   shrink only to their whole-word content, so the public controls keep
+   their padding, typography and selection tick while labels wrap naturally.
+   Single, multi-action and confirm/cancel groups keep their own fallback. */
+.clr-action-group--paired-labels {
+  flex-wrap: nowrap;
+}
+
+.clr-action-group--paired-labels > * {
+  min-width: min-content;
+}
+
 /* Completed-session results and readouts: short labelled values, each in its
    own small frame. Keeping this in the shared shell layer prevents
    route-specific copies of the stat grid. */

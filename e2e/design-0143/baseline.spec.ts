@@ -103,7 +103,7 @@ test.describe('0.14.3 capture harness: negative state rejection (REQ-030)', () =
         screenshots += 1
         return realDriver.screenshot(name)
       },
-    }, { target, viewport, skin: SKIN })).rejects.toThrow('expected the heading "Generate workout"')
+    }, { target, viewport, skin: SKIN })).rejects.toThrow('expected the heading "Generate"')
     expect(failedReads).toBeGreaterThan(0)
     expect(screenshots).toBe(0)
     expect(network.blockedGenerations(), 'a negative capture asked for a generation').toBe(0)

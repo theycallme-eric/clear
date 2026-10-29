@@ -890,13 +890,13 @@ backendTest('generate: the full real form, selection, disabled, validation and r
   const duration = page.getByLabel(/Time available/)
   const notes = page.getByLabel(/Notes/)
   const slider = page.getByRole('slider')
-  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate', async () => {
     await visibleText(page, 'First workout: choose a starting focus.')
     await expect(cta).toBeDisabled()
     expect(await page.locator('main .clr-card .clr-card').count()).toBe(0)
     expect(await page.locator('main .clr-card').count()).toBeGreaterThan(0)
   }, { short: cta })
-  await evidence.shot('Generate', '/generate', 'request-validation-disabled', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'request-validation-disabled', at, 'Generate', async () => {
     await expect(cta).toBeDisabled()
     expect(evidence.modelAttempts()).toBe(0)
   })
@@ -924,7 +924,7 @@ backendTest('generate: the full real form, selection, disabled, validation and r
   const upper = anchor.getByRole('button', { name: 'Upper body', exact: true })
   const lower = anchor.getByRole('button', { name: 'Lower body', exact: true })
   await upper.click()
-  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate', async () => {
     await expect(upper).toHaveAttribute('aria-pressed', 'true')
     await expect(cta).toBeEnabled()
     await expect.poll(async () => (await chipProbe(upper)).tickOpacity).toBe(1)
@@ -945,7 +945,7 @@ backendTest('generate: the full real form, selection, disabled, validation and r
 
   await duration.fill('')
   await cta.click()
-  await evidence.shot('Generate', '/generate', 'request-validation-disabled', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'request-validation-disabled', at, 'Generate', async () => {
     await expect(page.getByRole('alert')).toContainText('This request can’t be sent yet.')
     await visibleText(page, 'Give the time available as a whole number of minutes.')
     await expect(duration).toHaveAttribute('aria-invalid', 'true')
@@ -961,7 +961,7 @@ backendTest('generate: the full real form, selection, disabled, validation and r
   const emptyNotes = await expectFramedField(notes, 'Notes')
   expect(emptyNotes).toMatchObject({ resize: 'none', fieldSizing: 'content', clipped: false })
   await notes.fill(Array.from({ length: 9 }, (_, line) => `Disposable capture draft line ${line + 1}`).join('\n'))
-  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'first-or-stale-history-manual-focus', at, 'Generate', async () => {
     const grown = await fieldProbe(notes)
     expect(grown.height, 'Notes did not grow with its content').toBeGreaterThan(emptyNotes.height + 20)
     expect(grown).toMatchObject({ resize: 'none', clipped: false, inViewport: true })
@@ -970,7 +970,7 @@ backendTest('generate: the full real form, selection, disabled, validation and r
 
   const recovery = page.getByRole('button', { name: 'Recovery session', exact: true })
   await recovery.click()
-  await evidence.shot('Generate', '/generate', 'recovery-override', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'recovery-override', at, 'Generate', async () => {
     await expect(recovery).toHaveAttribute('aria-pressed', 'true')
     await expect(slider).toHaveAttribute('min', '1')
     await expect(slider).toHaveAttribute('max', '3')
@@ -1022,7 +1022,7 @@ backendTest('generate-reads: Goal and Focus ownership, missing goal, no place an
   evidence.note('fixture', 'Scoped reads for the real session user only: profile with goal_preset null; an empty locations list; three parsed history rows; six anchor_evidence rows.')
   await transformProfile(page, session.userId, null)
   await visit('/generate')
-  await evidence.shot('Generate', '/generate', 'goal-correction', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'goal-correction', at, 'Generate', async () => {
     await visibleText(page, 'Set your goal in Settings')
     await expect(page.getByRole('button', { name: 'Open Settings', exact: true })).toBeVisible()
     // Goal is Settings' to own: Generate offers no way to set it here.
@@ -1036,7 +1036,7 @@ backendTest('generate-reads: Goal and Focus ownership, missing goal, no place an
     return route.fallback()
   })
   await page.reload()
-  await evidence.shot('Generate', '/generate', 'no-place', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'no-place', at, 'Generate', async () => {
     await visibleText(page, 'No places yet')
     await expect(page.getByRole('button', { name: 'Add a place', exact: true })).toBeVisible()
   }, { skins: true })
@@ -1052,14 +1052,14 @@ backendTest('generate-reads: Goal and Focus ownership, missing goal, no place an
   })
   await fixtureHistory(page, session.userId, rows)
   await visit('/generate')
-  await evidence.shot('Generate', '/generate', 'history-recommended-focus', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'history-recommended-focus', at, 'Generate', async () => {
     await visibleText(page, 'Focus: Lower body')
     await visibleText(page, /^No \w+ in 16 days\.$/)
   })
   await page.getByRole('button', { name: 'Change focus', exact: true }).click()
   const focusGroup = page.getByRole('group', { name: 'Focus for this workout', exact: true })
   await focusGroup.getByRole('button', { name: 'Upper body', exact: true }).click()
-  await evidence.shot('Generate', '/generate', 'focus-override', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'focus-override', at, 'Generate', async () => {
     await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toHaveAttribute('aria-expanded', 'true')
     await expect(focusGroup.getByRole('button', { name: 'Upper body', exact: true })).toHaveAttribute('aria-pressed', 'true')
     expect(new URL(page.url()).searchParams.get('override')).toBe('upper_body')
@@ -1088,7 +1088,7 @@ backendTest('generate-reads: Goal and Focus ownership, missing goal, no place an
   await slider.focus()
   await slider.press('End')
   const dialog = page.getByRole('dialog', { name: 'Train hard today?' })
-  await evidence.shot('Generate', '/generate', 'deload-confirmation', at, 'Generate workout', async () => {
+  await evidence.shot('Generate', '/generate', 'deload-confirmation', at, 'Generate', async () => {
     await expect(dialog).toBeVisible()
     await expect(page.getByRole('button', { name: 'Keep it easier', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Go hard anyway', exact: true })).toBeVisible()
@@ -1171,18 +1171,18 @@ backendTest('loading: a held request, the slow threshold, an actionable failure 
       await expect(retry).toHaveCount(0)
     }, { variant: 'input-refusal' })
     await change.click()
-    await heading(page, 'Generate workout')
+    await heading(page, 'Generate')
     failure = 'generation.upstream'
     held = deferred()
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
     await heading(page, 'Generating session')
     await cancel.click()
-    await evidence.shot('Generate', '/generate', 'cancel-preserves-draft', at, 'Generate workout', async () => {
+    await evidence.shot('Generate', '/generate', 'cancel-preserves-draft', at, 'Generate', async () => {
       await expect(page.getByLabel(/Time available/)).toHaveValue('30')
       await expect(page.getByLabel(/Notes/)).toHaveValue('Disposable capture draft')
       await expect(upper).toHaveAttribute('aria-pressed', 'true')
     })
-    await evidence.shot('Loading', null, 'cancel', at, 'Generate workout', () =>
+    await evidence.shot('Loading', null, 'cancel', at, 'Generate', () =>
       expect(page.getByLabel(/Notes/)).toHaveValue('Disposable capture draft'), { variant: 'transition-destination' })
     held.release()
     expect(posts).toBe(3)
@@ -1268,8 +1268,8 @@ backendTest('boot: authenticated checking, failed read, retry and reduced-motion
     const readsBeforeRetry = new Set(otherReads)
     fail = false
     await retry.click()
-    await heading(page, 'Generate workout')
-    await evidence.shot('BootSequence', null, 'ready', at, 'Generate workout', () =>
+    await heading(page, 'Generate')
+    await evidence.shot('BootSequence', null, 'ready', at, 'Generate', () =>
       expect(page.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible(),
       { variant: 'transition-destination' })
     expect(profileReads, 'Retry did not rerun exactly the failed read').toBe(2)
@@ -1280,10 +1280,10 @@ backendTest('boot: authenticated checking, failed read, retry and reduced-motion
       await page.unroute(REST)
       await page.emulateMedia({ reducedMotion: 'reduce' })
       await visit('/generate')
-      await heading(page, 'Generate workout')
+      await heading(page, 'Generate')
       await expect.poll(() => page.evaluate(() =>
         document.getAnimations().filter((animation) => animation.playState === 'running').length)).toBe(0)
-      await evidence.shot('BootSequence', null, 'ready', at, 'Generate workout', () =>
+      await evidence.shot('BootSequence', null, 'ready', at, 'Generate', () =>
         expect(page.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible(),
         { variant: 'reduced-motion-handoff' })
       evidence.note('motion', 'Under prefers-reduced-motion an authenticated boot hands off to the requested route with nothing left animating.')
