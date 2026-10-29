@@ -29,9 +29,10 @@ import { expect, test as scanned } from './fixtures'
  *   the title and header controls have page clearance below the top inset and
  *   are the top hit-test target at their own points;
  * - the shell reserves nothing at the bottom: `<main>` reaches the viewport
- *   bottom, and the last layer — the pinned footer, or the scrolling content
- *   without one — ends max(--spacing-300, bottom inset) from it, so the
- *   bottom inset is the action's clearance rather than a strip below it;
+ *   bottom, and the last layer owns max(--spacing-300, bottom inset): an
+ *   action footer, a decorative lower edge for overflowing action-free
+ *   screens, or the fitting content itself. The inset is actual clearance,
+ *   and never an extra strip beneath an action or a second content inset;
  * - the crash fallback renders inside the same contained shell.
  *
  * Data is synthetic: an intercepted session for a fictional user, synthetic
@@ -39,6 +40,8 @@ import { expect, test as scanned } from './fixtures'
  */
 const OWNER = '00000000-0000-4000-8000-000000000005'
 const AUTH_KEY = 'clear.auth.session'
+const SCREEN_REGION = 'main.clr-screen > .clr-scroll-region'
+const SCREEN_HEADER = `${SCREEN_REGION} > .clr-scroll-region__head > header`
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 const CORS = {
   'access-control-allow-origin': '*',
@@ -326,22 +329,26 @@ async function geometry(page: Page) {
     const shells = [...document.querySelectorAll('.clr-shell--fixed')]
     const content = document.querySelector('.clr-shell--contained > .clr-shell__content')
     const contentStyle = content === null ? null : getComputedStyle(content)
-    const scroller = document.querySelector('main .clr-scroll-region__scroller')
-    const screenContent = document.querySelector('main .clr-screen__content')
-    const header = document.querySelector('.clr-shell__content > header')
+    const main = document.querySelector('.clr-shell__content > main') ?? document.querySelector('#root main')
+    const region = main?.querySelector(':scope > .clr-scroll-region') ?? null
+    const scroller = region?.querySelector(':scope > .clr-scroll-region__scroller') ?? null
+    const screenContent = scroller?.querySelector(':scope > .clr-screen__content') ?? null
+    const head = region?.querySelector(':scope > .clr-scroll-region__head') ?? null
+    const header = head?.querySelector(':scope > header') ?? null
     const title = document.querySelector('h1')
     const allControls = header === null ? [] : [...header.querySelectorAll('button, a[href]')]
     // Closed menu items intentionally have no rendered box. Record that state
     // separately instead of treating a hidden item's 0,0 as header occlusion.
     const controls = allControls.filter((control) => control.getClientRects().length > 0 &&
       getComputedStyle(control).visibility !== 'hidden')
-    const main = document.querySelector('.clr-shell__content > main') ?? document.querySelector('#root main')
-    const foot = main?.querySelector('.clr-scroll-region__foot') ?? null
+    const foot = region?.querySelector(':scope > .clr-scroll-region__foot') ?? null
+    const edge = foot?.querySelector(':scope > [data-screen-edge]') ?? null
     const footControls = foot === null ? [] : [...foot.querySelectorAll('button, a[href]')]
     const atmospheres = [...document.querySelectorAll('.clr-atmosphere')]
     const lowestAtmosphere = atmospheres.reduce((lowest, layer) => Math.max(lowest, layer.getBoundingClientRect().bottom), 0)
     const mainBox = box(main)
     const lastFoot = footControls.at(-1) ?? null
+    const lastContent = screenContent?.lastElementChild ?? null
     return {
       path: location.pathname,
       skin: document.documentElement.dataset.skin ?? null,
@@ -353,6 +360,9 @@ async function geometry(page: Page) {
       spacing300: content === null ? null : parseFloat(getComputedStyle(content).getPropertyValue('--spacing-300')),
       spacing200: content === null ? null : parseFloat(getComputedStyle(content).getPropertyValue('--spacing-200')),
       scroller: box(scroller),
+      pinnedHead: box(head),
+      lowerEdge: box(edge),
+      lastContent: box(lastContent),
       screenContentPaddingBottom: screenContent === null ? null : parseFloat(getComputedStyle(screenContent).paddingBottom),
       shellCount: shells.length,
       shell: box(shells[0] ?? null),
@@ -381,6 +391,7 @@ async function geometry(page: Page) {
       /** Space between the lowest shell content edge and the viewport bottom. */
       bottomGapBelowMain: mainBox === null ? null : innerHeight - mainBox.bottom,
       bottomGapBelowLastFootControl: lastFoot === null ? null : innerHeight - lastFoot.getBoundingClientRect().bottom,
+      bottomGapBelowLastContent: lastContent === null ? null : innerHeight - lastContent.getBoundingClientRect().bottom,
       documentScroll: {
         top: document.scrollingElement?.scrollTop ?? null,
         height: document.scrollingElement?.scrollHeight ?? null,
@@ -448,9 +459,10 @@ function lastLayerGap(measured: Geometry, insets: Insets, gap = measured.spacing
 
 /**
  * The screen's last layer ends at the viewport bottom and owns the bottom
- * clearance. With a footer, its last action sits exactly that clearance above
- * the bottom edge; without one, the scroller runs to the edge and its content
- * keeps the same clearance after its last item.
+ * clearance. An action footer keeps its last action that far above the bottom.
+ * With no actions, an overflowing screen's decorative lower edge now owns the
+ * inset; fitting content retains its content-owned inset. This preserves the
+ * actual clearance without assuming that every public foot contains actions.
  */
 function expectBottomEdge(measured: Geometry, insets: Insets, gap?: number) {
   const clearance = lastLayerGap(measured, insets, gap)
@@ -458,7 +470,15 @@ function expectBottomEdge(measured: Geometry, insets: Insets, gap?: number) {
   if (measured.footControls.length > 0) {
     expect(measured.foot?.bottom).toBeCloseTo(measured.viewport.height, 0)
     expect(measured.bottomGapBelowLastFootControl).toBeCloseTo(clearance, 0)
+  } else if (measured.lowerEdge !== null) {
+    expect(measured.foot?.bottom).toBeCloseTo(measured.viewport.height, 0)
+    expect(measured.lowerEdge.bottom).toBeCloseTo(measured.viewport.height, 0)
+    expect(measured.lowerEdge.height).toBeCloseTo(clearance, 0)
+    expect(measured.scroller?.bottom).toBeCloseTo(measured.foot?.y ?? Number.NaN, 0)
+    // Only the ordinary content gap remains above the rule, not another inset.
+    expect(measured.screenContentPaddingBottom).toBeCloseTo(measured.spacing300 ?? Number.NaN, 0)
   } else {
+    expect(measured.foot).toBeNull()
     expect(measured.scroller?.bottom).toBeCloseTo(measured.viewport.height, 0)
     expect(measured.screenContentPaddingBottom).toBeCloseTo(clearance, 0)
   }
@@ -470,9 +490,10 @@ function expectBottomEdge(measured: Geometry, insets: Insets, gap?: number) {
  */
 async function expectEndOfContent(page: Page, insets: Insets) {
   const end = await page.evaluate(async () => {
-    const scroller = document.querySelector('main .clr-scroll-region__scroller')
-    const content = document.querySelector('main .clr-screen__content')
-    const foot = document.querySelector('main .clr-scroll-region__foot')
+    const region = document.querySelector('main.clr-screen > .clr-scroll-region')
+    const scroller = region?.querySelector(':scope > .clr-scroll-region__scroller') ?? null
+    const content = scroller?.querySelector(':scope > .clr-screen__content') ?? null
+    const foot = region?.querySelector(':scope > .clr-scroll-region__foot') ?? null
     if (scroller === null || content === null) return null
     scroller.scrollTop = scroller.scrollHeight
     await new Promise((settle) => requestAnimationFrame(() => requestAnimationFrame(settle)))
@@ -482,6 +503,9 @@ async function expectEndOfContent(page: Page, insets: Insets) {
       lastBottom: last?.getBoundingClientRect().bottom ?? null,
       limit: foot === null ? innerHeight : foot.getBoundingClientRect().top,
       hasFoot: foot !== null,
+      lowerEdgeHeight: foot?.querySelector('[data-screen-edge]')?.getBoundingClientRect().height ?? null,
+      contentEndPadding: parseFloat(getComputedStyle(content).paddingBottom),
+      lastContentGapToViewport: last === null ? null : innerHeight - last.getBoundingClientRect().bottom,
       documentScrollTop: document.scrollingElement?.scrollTop ?? null,
     }
   })
@@ -525,8 +549,8 @@ test.use({ timezoneId: 'UTC' })
 
 /**
  * One representative per routed layout family. `lands` is where the route
- * actually resolves with this synthetic account; `header`/`foot` are what
- * that screen composes, so intentionally absent chrome is asserted absent.
+ * actually resolves with this synthetic account; `header`/`foot` describe header and action-footer
+ * composition (a decorative no-action scroll edge is measured separately), so intentionally absent chrome is asserted absent.
  */
 const ROUTED = [
   { consumer: 'Home', path: '/', lands: '/', state: 'populated', header: true, controls: true, foot: true },
@@ -552,11 +576,14 @@ for (const { consumer, path, lands, state, header, controls, foot } of ROUTED) {
       await visit(path)
       await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName('CLEAR')
       if (lands !== null) await expect(page).toHaveURL((url) => url.pathname === lands)
-      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator(`${SCREEN_REGION}[data-measured]`)).toHaveCount(1)
       await expect(page.locator('[aria-busy="true"], .clr-scan-loader')).toHaveCount(0)
-      if (header !== null) await expect(page.locator('.clr-shell__content > header')).toHaveCount(header ? 1 : 0)
-      if (foot === true) await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
-      if (foot === false) await expect(page.locator('main .clr-scroll-region__foot')).toHaveCount(0)
+      if (header !== null) await expect(page.locator(SCREEN_HEADER)).toHaveCount(header ? 1 : 0)
+      if (foot === true) await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot button`).first()).toBeVisible()
+      if (foot === false) {
+        await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot button, ${SCREEN_REGION} > .clr-scroll-region__foot a[href]`)).toHaveCount(0)
+        await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot > .clr-footer`)).toHaveCount(0)
+      }
       const landed = new URL(page.url()).pathname
       const measured = await record(page, testInfo, `routed-${consumer.toLowerCase().replace(/[^a-z]+/g, '-').replace(/-$/, '')}-phone`, {
         family: 'routed', consumer: `${consumer} (landed ${landed})`, state, ...PHONE,
@@ -583,7 +610,7 @@ test('B05 shell: signed-in account without a profile lands in onboarding with th
   await withInsets(page, PHONE.insets, async () => {
     await visit('/')
     await expect(page.getByRole('heading', { level: 1 })).not.toHaveAccessibleName('CLEAR')
-    await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+    await expect(page.locator(`${SCREEN_REGION}[data-measured]`)).toHaveCount(1)
     const landed = new URL(page.url()).pathname
     const measured = await record(page, testInfo, 'guard-onboarding-phone', {
       family: 'guard', consumer: `no-profile redirect (landed ${landed})`, state: 'populated', ...PHONE,
@@ -601,7 +628,7 @@ test('B05 shell: Login keeps its header, footer action and bottom edge', async (
   await page.setViewportSize(PHONE.viewport)
   await withInsets(page, PHONE.insets, async () => {
     await visit('/login')
-    await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
+    await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot button`).first()).toBeVisible()
     const measured = await record(page, testInfo, 'routed-login-phone', {
       family: 'routed', consumer: 'Login', state: 'populated, footer action', ...PHONE,
     })
@@ -626,7 +653,7 @@ for (const { consumer, path } of [
     await withInsets(page, PHONE.insets, async (cdp) => {
       await visit(path)
       await expect(page).toHaveURL((url) => url.pathname === path)
-      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator(`${SCREEN_REGION}[data-measured]`)).toHaveCount(1)
       await expect(page.locator('[aria-busy="true"]')).toHaveCount(0)
       const before = await record(page, testInfo, `routed-${slug}-phone-before-resume`, {
         family: 'routed', consumer, state: 'populated', ...PHONE,
@@ -684,7 +711,7 @@ for (const { consumer, path } of [
       await visit(path)
       await expect(page).toHaveURL((url) => url.pathname === path)
       await expect(page.locator('html')).toHaveAttribute('data-skin', 'vapour')
-      await expect(page.locator('main .clr-scroll-region[data-measured]')).toHaveCount(1)
+      await expect(page.locator(`${SCREEN_REGION}[data-measured]`)).toHaveCount(1)
       await expect(page.locator('[aria-busy="true"], .clr-scan-loader')).toHaveCount(0)
       const context = { family: 'routed', consumer, state: 'populated, Vapour reference skin', ...PHONE }
       const measured = await record(page, testInfo, `vapour-${consumer.toLowerCase()}-phone`, context)
@@ -713,7 +740,7 @@ test('B05 shell: actual active Workout keeps its compact short-window navigation
     await visit('/workout')
     await expect(page).toHaveURL((url) => url.pathname === '/workout')
     await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('Workout')
-    await expect(page.locator('main .clr-scroll-region__foot > .clr-workout-footer')).toHaveCount(1)
+    await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot > .clr-workout-footer`)).toHaveCount(1)
     const navigation = page.getByRole('navigation', { name: 'Workout sections', exact: true })
     const actions = page.getByRole('button', { name: 'Actions', exact: true })
     const previous = navigation.getByRole('button', { name: 'Previous', exact: true })
@@ -790,7 +817,7 @@ for (const mode of ['hold', 'fail'] as const) {
         await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName('CLEAR')
         if (mode === 'fail') {
           await expect(page.getByText('System check failed').first()).toBeVisible({ timeout: 60_000 })
-          await expect(page.locator('main .clr-scroll-region__foot button').first()).toBeVisible()
+          await expect(page.locator(`${SCREEN_REGION} > .clr-scroll-region__foot button`).first()).toBeVisible()
         } else {
           await expect(page.getByText('System check').first()).toBeVisible()
         }

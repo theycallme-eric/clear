@@ -95,7 +95,9 @@ describe('CLEAR 0.14.3 contained shell', () => {
   it('runs header, band and pinned-action rules edge to edge, insetting content within each layer (U01)', () => {
     const css = readFileSync('src/styles/shell.css', 'utf8')
     const shell = css.match(/\.clr-shell--contained > \.clr-shell__content \{[^}]*\}/s)?.[0]
-    const header = css.match(/\.clr-shell--contained > \.clr-shell__content > header \{[^}]*\}/s)?.[0]
+    const header = css.match(
+      /\.clr-screen > \.clr-scroll-region > \.clr-scroll-region__head > header \{[^}]*\}/s,
+    )?.[0]
 
     // No side padding on the shell, so nothing inside it stops short of the edge.
     expect(shell).toMatch(/padding-right: 0;/)
@@ -114,7 +116,8 @@ describe('CLEAR 0.14.3 contained shell', () => {
 
   it('separates the fixed header from content with a rule while the header stays outside the scroller (U02)', () => {
     const { container } = renderApp(['/login'])
-    const header = container.querySelector('.clr-shell__content > header')
+    // B05 REQ-003: the header is the region's pinned head, never scrolled content.
+    const header = container.querySelector('.clr-scroll-region__head > header')
     const scroller = container.querySelector('.clr-scroll-region__scroller')
 
     expect(header).not.toBeNull()

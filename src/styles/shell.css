@@ -65,17 +65,27 @@ body,
   padding-left: 0;
 }
 
+/* B05 REQ-003: the fixed header is the ScrollRegion's pinned head (Screen),
+   so the region measures it and lights its top streak on the header's rule
+   while the content scrolls. The head adds nothing of its own around the
+   header: no padding, and no cap or clip, so the header sits exactly where it
+   did and a menu panel can still drop over the content below. */
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head:has(> header) {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+
 /* The fixed header closes on the same full-width rule the pinned footer
    opens with, so both chrome layers read as separate from the content. */
-.clr-shell--contained > .clr-shell__content > header {
-  flex: 0 0 auto;
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header {
   padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);
   border-bottom: var(--border-width) solid var(--border-region-rule);
 }
 
 /* REQ-001: the page title is the header's title, in the h1's own display
    type. A long title wraps beside the actions instead of pushing them off. */
-.clr-shell__content > header .clr-screen__title {
+.clr-scroll-region__head > header .clr-screen__title {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -105,6 +115,14 @@ body,
    viewport edge and its end still clears the home indicator. */
 .clr-screen > .clr-scroll-region:not(:has(> .clr-scroll-region__foot)) .clr-screen__content {
   padding-bottom: var(--shell-inset-bottom, var(--spacing-300));
+}
+
+/* B05 REQ-003 (08.2): an overflowing screen with no footer action still
+   clips its content at a lower edge. Screen gives it a bare pinned foot: the
+   region's own foot rule and bottom streak, over the bottom inset. Nothing
+   else is drawn and no action is added; content that fits gets no edge. */
+.clr-screen__edge {
+  height: var(--shell-inset-bottom, var(--spacing-300));
 }
 
 /* With its title in the header, a screen's first card opens one group gap
@@ -175,8 +193,9 @@ body,
    step. Every role that draws from it — row meta, counts, streaks, field
    units, choice hints, text actions — enlarges together, so no route restates
    a size. Body text keeps the package's own steps and 1.25 line height.
-   Dialogs and toasts sit outside Screen and are unchanged. */
-.clr-screen {
+   Dialogs and toasts sit outside Screen, and the header in its pinned head
+   keeps the package's own tier, so both are unchanged. */
+.clr-screen > .clr-scroll-region > :is(.clr-scroll-region__scroller, .clr-scroll-region__foot) {
   --label-xs-size: var(--label-sm-size);
   --label-xs-line-height: var(--label-sm-line-height);
 }

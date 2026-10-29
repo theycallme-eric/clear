@@ -28,7 +28,7 @@ function signedInHome() {
 }
 
 function fixedHeader(container: HTMLElement): HTMLElement {
-  const header = container.querySelector<HTMLElement>('.clr-shell__content > header')
+  const header = container.querySelector<HTMLElement>('.clr-scroll-region__head > header')
   expect(header).not.toBeNull()
   return header as HTMLElement
 }
@@ -47,7 +47,7 @@ describe('REQ-001 16px symmetric content gutters', () => {
   })
 
   it('leaves the header — and the Settings control in it — on its existing outer edge', () => {
-    const header = rule('.clr-shell--contained > .clr-shell__content > header')
+    const header = rule('.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')
 
     expect(header).toContain(
       'padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);',
@@ -97,7 +97,8 @@ describe('REQ-001 page title in the header', () => {
     expect(within(header).queryByText('CLEAR')).toBeNull()
     // One h1 per screen: the content does not repeat the title.
     expect(container.querySelectorAll('h1')).toHaveLength(1)
-    expect(container.querySelector('main h1')).toBeNull()
+    // B05 REQ-003: the header is main's pinned head; the scrolled content has no h1.
+    expect(container.querySelector('main .clr-scroll-region__scroller h1')).toBeNull()
   })
 
   it('keeps the h1 in the content for a screen without a fixed header', () => {
@@ -174,7 +175,7 @@ describe('B05 shared header clearance and bottom edge', () => {
 describe('REQ-001 page rules stay distinct from card-internal rules', () => {
   it('runs header, band and footer rules edge to edge on the page gutter', () => {
     expect(rule('.clr-shell--contained > .clr-shell__content')).toMatch(/padding-right: 0;[\s\S]*padding-left: 0;/)
-    expect(rule('.clr-shell--contained > .clr-shell__content > header')).toContain(
+    expect(rule('.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')).toContain(
       'border-bottom: var(--border-width) solid var(--border-region-rule);',
     )
     expect(rule('.clr-screen__content .clr-band')).toContain(
@@ -194,7 +195,7 @@ describe('REQ-001 page rules stay distinct from card-internal rules', () => {
 
 describe('REQ-001 preserves the 0.14.3 type, chamfers, atmosphere and scanlines', () => {
   it('sets the header title in the package’s own h1 display type', () => {
-    const title = rule('.clr-shell__content > header .clr-screen__title')
+    const title = rule('.clr-scroll-region__head > header .clr-screen__title')
 
     expect(foundation).toMatch(/h1, \.h1, h2[^{]*\{ font-family: var\(--font-display\);/)
     expect(title).not.toMatch(/font|letter-spacing|text-transform|color/)
