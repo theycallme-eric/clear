@@ -41,6 +41,13 @@ const STATUS_GLYPH: Readonly<Record<HistorySessionStatus, ReactNode>> = {
   unstarted: <CircleX />,
 }
 
+/** Compact metadata glyphs; the chronology keeps its existing icon size. */
+const RECENT_STATUS_GLYPH: Readonly<Record<HistorySessionStatus, ReactNode>> = {
+  completed: <CircleCheck size={16} />,
+  partial: <Pause size={16} />,
+  unstarted: <CircleX size={16} />,
+}
+
 const ROW_STYLE: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',
@@ -218,6 +225,30 @@ const RECENT_LINK_STYLE: CSSProperties = {
   color: 'inherit',
 }
 
+/**
+ * B05-01.5: the status and date share one line and one baseline. The status
+ * leads with a text-less glyph, so baseline alignment would hang the date off
+ * the glyph's bottom edge; centring the two same-type items lines up their text.
+ */
+const RECENT_STATUS_DATE_STYLE: CSSProperties = {
+  ...ROW_STYLE,
+  ...META_STYLE,
+  alignItems: 'center',
+  flexWrap: 'nowrap',
+  gap: 'var(--spacing-100)',
+  fontSize: 'var(--paragraph-xs-size)',
+  lineHeight: 'var(--paragraph-xs-line-height)',
+  marginTop: 'var(--spacing-100)',
+}
+
+/** One compact data line, including narrow phones; title metrics stay separate. */
+const RECENT_STATUS_STYLE: CSSProperties = {
+  ...GLYPH_STYLE,
+  fontSize: 'inherit',
+  lineHeight: 'inherit',
+  flexShrink: 0,
+}
+
 /** Metrics a glance can read: a step up from the data labels, in paragraph colour. */
 const RECENT_METRICS_STYLE: CSSProperties = {
   ...ROW_STYLE,
@@ -289,16 +320,13 @@ function RecentSessionItem({
           </Link>
         )}
       </Heading>
-      <p
-        data-part="status-date"
-        style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-100)' }}
-      >
+      <p data-part="status-date" style={RECENT_STATUS_DATE_STYLE}>
         <span
           data-part="status"
-          style={{ ...GLYPH_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
+          style={{ ...RECENT_STATUS_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
         >
           <span aria-hidden="true" style={{ display: 'flex' }}>
-            {STATUS_GLYPH[entry.status]}
+            {RECENT_STATUS_GLYPH[entry.status]}
           </span>
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>
