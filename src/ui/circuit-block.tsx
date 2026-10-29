@@ -348,6 +348,8 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           // The circuit movement owns this clock independently of optional
           // load entry. Opening the logger must not create a second one.
           showCountdown={false}
+          // Its rest is the round boundary's, so its entry only opens the sheet.
+          entryAction="log"
           // The row's one tap opens the shared half-sheet straight away
           // (REQ-017); its Minimize and Cancel leave the movement unlogged.
           openSheetOnMount

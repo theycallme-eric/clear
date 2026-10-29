@@ -228,7 +228,7 @@ function movementHeadings(): string[] {
  */
 function formFor(name: string, setNumber = 1) {
   if (screen.queryByRole('form', { name: /^Log round \d+ of / }) === null) {
-    fireEvent.click(screen.getByRole('button', { name: 'Log round' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rest' }))
   }
   const form = screen.getByRole('form', { name: /^Log round \d+ of / })
   return within(within(form).getByRole('group', { name: new RegExp(`^A\\d ${name}, set ${setNumber}$`) }))
@@ -540,7 +540,7 @@ describe('the superset draws with the shared block frame', () => {
     const { completion } = mount()
 
     // REQ-016: one combined action, inside the card, and no per-movement Log set.
-    expect(within(cards()[0]).getAllByRole('button', { name: 'Log round' })).toHaveLength(1)
+    expect(within(cards()[0]).getAllByRole('button', { name: 'Rest' })).toHaveLength(1)
     expect(rowFor('A1 romanian deadlift').queryByRole('button', { name: 'Log set' })).toBeNull()
     expect(rowFor('A2 back squat').queryByRole('button', { name: 'Log set' })).toBeNull()
 

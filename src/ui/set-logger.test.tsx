@@ -101,7 +101,7 @@ function mount(options: MountOptions = {}) {
  */
 function form(setNumber: number) {
   if (screen.queryByRole('form', { name: /^Log set \d+ of back squat$/ }) === null) {
-    fireEvent.click(screen.getByRole('button', { name: 'Log set' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Rest' }))
   }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of back squat` }))
 }

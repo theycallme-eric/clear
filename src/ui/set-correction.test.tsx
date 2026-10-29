@@ -112,7 +112,7 @@ function card(name: string): HTMLElement {
   const found = screen
     .getAllByRole('heading', { name: new RegExp(`${name}$`) })
     .map((heading) => heading.closest('section'))
-    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Log set' }))
+    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Rest' }))
   if (found === undefined || found === null) throw new Error(`no ${name} card`)
   return found
 }
@@ -125,7 +125,7 @@ async function logFirstSet(
   name: string,
   fill: { weight?: string; unit?: 'kg' | 'lb'; effort?: string } = {},
 ) {
-  await user.click(within(card(name)).getByRole('button', { name: 'Log set' }))
+  await user.click(within(card(name)).getByRole('button', { name: 'Rest' }))
   const form = sheetForm('Log', 1, name)
   if (fill.weight !== undefined) await user.type(form.getByLabelText('Weight'), fill.weight)
   if (fill.unit !== undefined) await user.selectOptions(form.getByRole('combobox', { name: 'Unit' }), fill.unit)
@@ -378,7 +378,7 @@ describe('AC-048: corrections exist only in the current workout, with concise co
     )
     await screen.findByRole('heading', { level: 1, name: 'Workout' })
 
-    await user.click(within(card('back squat')).getByRole('button', { name: 'Log set' }))
+    await user.click(within(card('back squat')).getByRole('button', { name: 'Rest' }))
     await act(async () => {
       await user.click(sheetForm('Log', 1, 'back squat').getByRole('button', { name: 'Log set 1' }))
     })

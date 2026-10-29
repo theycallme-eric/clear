@@ -139,7 +139,7 @@ function movementCard(): HTMLElement {
   const card = screen
     .getAllByRole('heading', { name: /hollow body hold$/ })
     .map((heading) => heading.closest('section'))
-    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Log set' }))
+    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Rest' }))
   if (card === undefined || card === null) throw new Error('no hollow body hold card')
   return card
 }
@@ -235,7 +235,7 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
     fireEvent.click(control('Start'))
     advance(5)
 
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     const form = sheetForm()
     expect(form).not.toBeNull()
     // One countdown, on the card — none in the sheet.
@@ -259,7 +259,7 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
 
     fireEvent.click(control('Start'))
     advance(30)
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     await user.click(
       within(screen.getByRole('form', { name: 'Log set 1 of hollow body hold' })).getByRole(
         'button',
