@@ -110,6 +110,16 @@ interface Manifest {
 
 const manifest = JSON.parse(readFileSync(resolve(root, MANIFEST_PATH), 'utf-8')) as Manifest
 
+// These headings belong to the recorded BEFORE harness at 1523f8fb7f1075b2e5819d632dad1d0d89e3efc2.
+// Current route titles can change without relabelling the historical pictures or their manifest.
+const BEFORE_CAPTURE_HEADINGS: Readonly<Record<string, string>> = {
+  '/': 'Today',
+  '/generate': 'Generate workout',
+  '/history': 'History',
+  '/settings': 'Settings',
+  '/settings/locations': 'Places and equipment',
+}
+
 describe('0.14.3 before-state manifest (TASK-040)', () => {
   it('names the commit, package and baseline every capture was taken with', () => {
     expect(manifest.task).toBe('TASK-040')
@@ -158,10 +168,11 @@ describe('0.14.3 before-state manifest (TASK-040)', () => {
           candidate.state === capture.state,
       )
       expect(target, capture.pairId).toBeDefined()
-      // Reached, not redirected: the route and heading are the target's own.
+      // Reached, not redirected: validate the heading the BEFORE harness actually captured.
+      expect(BEFORE_CAPTURE_HEADINGS[capture.route], capture.pairId).toBeDefined()
       expect(capture.reached).toEqual({
         pathname: target!.path,
-        heading: target!.heading,
+        heading: BEFORE_CAPTURE_HEADINGS[capture.route],
         stateVisible: true,
       })
       expect(CAPTURE_SKINS).toContain(capture.skin)
