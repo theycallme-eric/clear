@@ -191,3 +191,23 @@ The supported retry-failed +1 / ordinary run-once path preserves this corrected 
 its source/proof descendant commits. It must genuinely obtain all six criterion claims and pass
 all independent native checks, required GitHub CI and protected build-branch delivery. Existing
 worker/timeout/estimate limits and all other task attempt limits remain unchanged.
+
+## Attempt 3 — native worker continuation (2026-10-28)
+
+The authorized third native attempt resumed the preserved a2 workspace at `5255533`. No source,
+spec or vendor change was needed: the previous controller failure (9 cases, 6 failed) came from
+the earlier pre-correction spec/source, and the corrected tree already present here passes. Re-run
+on this tree:
+
+| Command | Result |
+| --- | --- |
+| `npx playwright test e2e/ui-polish-b05-scroll-boundaries.spec.ts --project=mobile` | 12/12 passed, 9.1 s, exit 0 |
+| `npm test` | 237 files, 5,827 tests passed, exit 0 |
+| `npm run lint:ds` · `npm run lint` | exit 0 (lint: 0 errors, existing warnings only) |
+| `npm run typecheck` · `npm run build` | exit 0 (build: existing chunk-size warning only) |
+| `npm run gen:types -- --check` · `python3 scripts/gen-issues.py --check` | exit 0; types current; 71 requirements, 136 edges |
+
+The worker sandbox did not permit `git fetch` or commits, so this attempt did not integrate
+`origin/main` and this checkpoint is left uncommitted; the controller still owns integration and
+rerunning the checks on the combined tree. Physical-iPhone UAT is still pending. Next safe action:
+controller independent verification of this diff.
