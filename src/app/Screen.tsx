@@ -60,10 +60,7 @@ function useOverflow(content: RefObject<HTMLElement | null>, watch: boolean): bo
   useLayoutEffect(() => {
     const element = content.current
     const scroller = element?.parentElement
-    if (!watch || !element || !scroller) {
-      setOverflowing(false)
-      return
-    }
+    if (!watch || !element || !scroller) return
     const measure = () => {
       const region = scroller.parentElement
       const edge = region?.querySelector<HTMLElement>(
@@ -87,7 +84,7 @@ function useOverflow(content: RefObject<HTMLElement | null>, watch: boolean): bo
     return () => observer.disconnect()
   }, [content, watch])
 
-  return overflowing
+  return watch && overflowing
 }
 
 export function Screen({

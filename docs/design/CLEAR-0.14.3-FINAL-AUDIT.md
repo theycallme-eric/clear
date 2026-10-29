@@ -1,6 +1,36 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-002 source-bound recapture — 29 October 2026
+## Current batch-05 TASK-003 source-bound recapture — 29 October 2026
+
+Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task003/`.
+The existing authenticated format-preview collector passed all four skin cases in20.2seconds,
+with eight actual PNGs: phone390×844 and short390×320 for CLEAR, Vapour, Signal and Mono.
+It exercised Settings entry, read-only formats/disclosures, Back and direct-entry Back, including
+unchanged accessibility and pixel/record checks. The derived manifest is complete; no failed or
+skipped case is counted as proof. Every recorded generation/write counter is zero.
+
+Actual captured source: `60b4d84c8046d47cec56e0f17f91baf822e4de41`; runtime
+`a06c0026093939e83a543846268070ff1ede6457f487a04c0be757e20c60b371`; driver
+`5acfaa6039c0354248461a83102f877d12641392e0826e88926c3634a5874026`; pinned0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The source was committed and clean before capture; subsequent dirty statuses record only the
+collector's growing evidence group. Foreground session78589 completed exit0 against the owned
+loopback Supabase/PostgreSQL17 backend with the existing29migrations/three catalog seeds.
+Authentication used disposable synthetic users; no preview write or model request was forwarded.
+No hosted target, migration change, production or installed-device result is claimed.
+
+Actual source input identity: TASK-003, run `fda3e2de-9448-4855-a2f6-41237bd879d2`, capture-producer attempt2,
+retained branch `agent-runner/task-003-a2-fda3e2de`, tested base
+`ec99341250b31bbd5bc0ab99fab71c8012c3d3dd`, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-003`.
+Existing v1 source-only provenance was derived from the actual records and payload bytes:
+`edd9cf6392d6d3183eff7ee485d33a118e68df6b8739e367ef5ad0e2ccee5757`.
+This source continuity record grants no native acceptance, merge or completion authority. Both
+configured native attempts are used and no worker criterion report exists. The corrected candidate
+has separate actual12-case scroll and22-case shell evidence. Full local checks and a genuine native
+worker report remain necessary. Every historical evidence group is preserved unchanged.
+
+## Prior batch-05 TASK-002 source-bound recapture — 29 October 2026
 
 Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task002/`.
 The existing authenticated format-preview collector passed all four skin cases in 23.6 seconds,

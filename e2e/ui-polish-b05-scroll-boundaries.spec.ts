@@ -246,7 +246,7 @@ async function syntheticApp(page: Page, mode: Mode = {}) {
       user: { id: owner, email: 'synthetic-b05-scroll@example.invalid' },
     }))
     if (handoff !== null && location.pathname === '/review') {
-      history.replaceState({ usr: handoff, key: 'synthetic-scroll-proof', idx: 0 }, '', location.href)
+      window.history.replaceState({ usr: handoff, key: 'synthetic-scroll-proof', idx: 0 }, '', location.href)
     }
   }, { authKey: AUTH_KEY, owner: OWNER, handoff: mode.review ? reviewHandoff(ACCEPTANCE) : null })
   return {

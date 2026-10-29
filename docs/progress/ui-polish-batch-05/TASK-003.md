@@ -57,8 +57,11 @@ No Runner, profile, state, approval or attempt-limit change was made for these c
 - Existing shell regression command `npx playwright test e2e/ui-polish-b05-shell.spec.ts --project=mobile`:
   22/22passed, exit0,15.9s. Selectors follow the intentional pinned-head/edge composition while
   genuine title/control, viewport, action-inset, narrow/short and resume checks remain.
-- Fresh source-bound format proof and the full project checks are still pending at this checkpoint.
-  No local command result is presented as a native criterion receipt.
+- Genuine source-bound format collector:4/4skin cases passed,8PNGs,20.2s,exit0, foreground78589.
+  Captured clean source`60b4d84c8046d47cec56e0f17f91baf822e4de41`; runtime`a06c0026093939e83a543846268070ff1ede6457f487a04c0be757e20c60b371`;
+  driver`5acfaa6039c0354248461a83102f877d12641392e0826e88926c3634a5874026`. All generation/write counters0. Existing v1 source-only
+  provenance uses actual producer attempt2 and payload`edd9cf6392d6d3183eff7ee485d33a118e68df6b8739e367ef5ad0e2ccee5757`.
+  Full project checks remain pending. No local result is a native criterion receipt.
 
 ## Actual reference and render correspondence
 
@@ -133,3 +136,14 @@ required GitHub CI, exact-head build-branch merge and issue completion remain ma
 Physical installed-iPhone UAT stays outside the DAG. These are local Chromium results; no hosted
 mutation, new migration, generator/distance change, paid canary, main merge or production deployment
 was performed. Other approved polish tasks remain separate and are not claimed complete here.
+
+## Full-check checkpoint before final source recapture
+
+The first full unit run passed237files/5827tests,56.06s,exit0. Required build and general lint
+exposed two corrections: the browser init script now explicitly uses window.history rather than
+its fixture-array namesake, and the overflow hook derives watch&&overflowing rather than
+synchronously resetting state in the no-watch effect branch. Measurement/ResizeObserver behavior
+and cleanup are retained. Neither assertion nor lint rule was disabled. The first genuine Task003
+format group remains immutable history at its original source; active proof moves to the fresh
+task034-format-preview-batch05-task003-checked group before recapturing corrected source. Full
+checks will be rerun on that source. All native attempt/criterion-report restrictions still apply.
