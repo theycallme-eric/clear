@@ -5,6 +5,40 @@ Branch `agent-runner/task-007-a1-f525ca4d`, base `a7fb289` (after TASK-006 and T
 This is the task-owned progress record. For this body it stands in for the shared daily journal,
 under the owner-selected task-owned exception.
 
+## Preview contract reconciliation — verification pending
+
+The separate Task 12 preview run exposed seven old assertions that measured obsolete owners:
+Welcome's xs label tier on ancestor `main`, and six safe-area cases requiring bottom padding on
+the shell. Delivered Task 2/3 deliberately put the enlarged label scope on the public scroller/foot
+and bottom clearance on the actual final layer. Changing product CSS to restore those ancestors
+would undo the approved shared contract. The root's read-only review retained the actual failures
+and source comparison externally in `task012-preview-failure-review-20261029.md`.
+
+Updated only the two existing remote preview specs in this compatibility correction:
+
+- `app-shell.spec.ts` reads the actual Welcome scroller's size/line-height tiers and real statement
+  typography before and after the existing enlarged-text override. Main keeps the package xs tier;
+  the statement, one entry, paragraph margin, long label, clipping and overflow checks remain.
+- `ui-polish-pwa-viewport.spec.ts` waits for the public measured foot height, then measures one actual
+  shell/scroller/foot snapshot. It requires zero ancestor bottom padding, viewport-reaching main and
+  foot, exact footer-owned max(gap, inset) clearance, retained header/body label scopes and real
+  action containment. A genuinely overflowing foot may scroll; its content-end comparison applies
+  when it reaches its end. Home, Generate and Review actions must remain safe and reachable.
+- Existing touch scrolling, resize/focus/draft retention, Reason cancel/Escape behavior, toast hit
+  testing/dismissal, Axe and blocked-write/model assertions remain. Checking Generate's action at the
+  reduced height restores Notes focus/value before the original resize-back assertion.
+
+The eighth preview finding, circuit countdown viewport inclusion, remains separate for the root's
+bounded geometry diagnosis. This correction does not change its test or product behavior, assign it
+to Task 15, or claim that it is resolved. It touches neither Task 7's Generate criteria nor a Task 7
+dependent (Task 7 is a leaf in the approved graph).
+
+Task 10's foreground command is terminal; no new worker was launched here. No browser, server,
+unit test, native recovery or model ran during this edit. `git diff --check` passed. Root still must
+run the focused Welcome/PWA checks and Task 7 checks on the final combined candidate, genuinely
+capture the new format group, derive actual provenance/audit, and perform normal native acceptance
+and protected delivery. No passing browser result or completion is inferred from this source edit.
+
 ## Combined-build source preparation — fresh capture pending
 
 Task 12 delivered as protected build commit
