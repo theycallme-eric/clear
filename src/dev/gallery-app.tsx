@@ -5,6 +5,8 @@
  * frames them. Each state is labelled with the prop that produces it, so a
  * review comment can name what it is about.
  */
+import { useSearchParams } from 'react-router-dom'
+
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GALLERY_ENTRIES, type GalleryEntry } from './gallery-registry'
 
@@ -37,7 +39,12 @@ function EntrySection({ entry }: { entry: GalleryEntry }) {
 }
 
 export function AppComposedParts() {
-  const stateCount = GALLERY_ENTRIES.reduce(
+  const [searchParams] = useSearchParams()
+  const component = searchParams.get('component')
+  const selectedEntries = GALLERY_ENTRIES.filter((entry) => entry.component === component)
+  // Unknown or empty selections keep the complete review surface visible.
+  const entries = selectedEntries.length > 0 ? selectedEntries : GALLERY_ENTRIES
+  const stateCount = entries.reduce(
     (total, entry) => total + entry.specimens.length,
     0,
   )
@@ -46,11 +53,12 @@ export function AppComposedParts() {
     <div className="clr-dev-gallery__section">
       <Heading>App-composed</Heading>
       <p>
-        {GALLERY_ENTRIES.length} parts, {stateCount} states. Everything CLEAR
-        builds on top of the export: DS-04's card, select and disclosure, DS-05's
-        toast host and error surfaces, and DS-06's one atmosphere.
+        {entries.length} {entries.length === 1 ? 'part' : 'parts'}, {stateCount} states.
+        {selectedEntries.length > 0
+          ? ` Showing ${component}.`
+          : " Everything CLEAR builds on top of the export: DS-04's card, select and disclosure, DS-05's toast host and error surfaces, and DS-06's one atmosphere."}
       </p>
-      {GALLERY_ENTRIES.map((entry) => (
+      {entries.map((entry) => (
         <EntrySection key={`${entry.component}-${entry.module}`} entry={entry} />
       ))}
     </div>

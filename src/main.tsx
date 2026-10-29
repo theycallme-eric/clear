@@ -13,6 +13,8 @@ import './styles/app-motion.css'
 import './styles/atmosphere.css'
 import './styles/a11y.css'
 import './styles/shell.css'
+// REQ-006: the public Input unit end cap fits its unit text.
+import './styles/fields.css'
 
 import { appAuthClients } from './app/auth-client'
 import { BootGate } from './app/BootSequence'
