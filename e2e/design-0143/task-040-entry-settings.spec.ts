@@ -508,24 +508,24 @@ backendTest('Generate: genuine first-workout, validation and workout-only recove
   await visit('/generate')
   const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
   const cta = page.getByRole('button', { name: 'Generate workout', exact: true })
-  await evidence.route('Generate', '/generate', 'first-or-stale-history-manual-focus', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'first-or-stale-history-manual-focus', 'Generate', async () => {
     await visibleText(page, 'First workout: choose a starting focus.')
     await expect(cta).toBeDisabled()
   })
-  await evidence.route('Generate', '/generate', 'request-validation-disabled', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'request-validation-disabled', 'Generate', async () => {
     await expect(cta).toBeDisabled(); expect(evidence.modelAttempts()).toBe(0)
   })
   await anchor.getByRole('button', { name: 'Upper body', exact: true }).click()
   await page.getByLabel(/Time available/).fill('')
   await cta.click()
-  await evidence.surface('Generate', '/generate', 'request-validation-disabled', 'Generate workout', async () => {
+  await evidence.surface('Generate', '/generate', 'request-validation-disabled', 'Generate', async () => {
     await expect(page.getByRole('alert')).toContainText('This request can’t be sent yet.')
     await visibleText(page, 'Give the time available as a whole number of minutes.')
     expect(evidence.modelAttempts()).toBe(0)
   }, 'invalid-duration-does-not-disable-cta')
   await page.getByLabel(/Time available/).fill('30')
   await page.getByRole('button', { name: 'Recovery session', exact: true }).click()
-  await evidence.route('Generate', '/generate', 'recovery-override', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'recovery-override', 'Generate', async () => {
     await expect(page.getByRole('button', { name: 'Recovery session', exact: true })).toHaveAttribute('aria-pressed', 'true')
     await expect(page.getByRole('slider')).toHaveAttribute('min', '1')
     await expect(page.getByRole('slider')).toHaveAttribute('max', '3')
@@ -538,7 +538,7 @@ backendTest('Generate: scoped valid missing goal and empty-place reads', async (
   evidence.fixture('scoped real onboarded profile with goal_preset null; then scoped valid empty locations read')
   await transformProfile(page, session.userId, null)
   await visit('/generate')
-  await evidence.route('Generate', '/generate', 'goal-correction', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'goal-correction', 'Generate', async () => {
     await visibleText(page, 'Set your goal in Settings')
     await expect(page.getByRole('button', { name: 'Open Settings', exact: true })).toBeVisible()
     await expect(page.getByRole('group', { name: 'Anchor', exact: true })).toHaveCount(0)
@@ -551,7 +551,7 @@ backendTest('Generate: scoped valid missing goal and empty-place reads', async (
     return route.fallback()
   })
   await page.reload()
-  await evidence.route('Generate', '/generate', 'no-place', 'Generate workout', () => visibleText(page, 'No places yet'))
+  await evidence.route('Generate', '/generate', 'no-place', 'Generate', () => visibleText(page, 'No places yet'))
   await page.getByRole('button', { name: 'Add a place', exact: true }).click()
   await evidence.route('Settings', '/settings/locations', 'no-locations-empty', 'Places and equipment', () => visibleText(page, 'No places yet'))
   expect(evidence.modelAttempts()).toBe(0)
@@ -561,7 +561,7 @@ backendTest('Generate: real session with named recent/stale history fixture and 
   evidence.fixture('scoped parsed history rows from existing makeSessionRow, relative to actual suggestion day')
   await fixtureHistory(page, session.userId, recentRows(session.userId))
   await visit('/generate')
-  await evidence.route('Generate', '/generate', 'history-recommended-focus', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'history-recommended-focus', 'Generate', async () => {
     await visibleText(page, 'Focus: Lower body')
     await visibleText(page, /^No \w+ in 16 days\.$/)
     await expect(page.getByRole('slider')).toHaveValue('7')
@@ -569,7 +569,7 @@ backendTest('Generate: real session with named recent/stale history fixture and 
   await page.getByRole('button', { name: 'Change focus', exact: true }).click()
   await page.getByRole('group', { name: 'Focus for this workout', exact: true })
     .getByRole('button', { name: 'Upper body', exact: true }).click()
-  await evidence.route('Generate', '/generate', 'focus-override', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'focus-override', 'Generate', async () => {
     await expect(page.getByRole('button', { name: 'Change focus', exact: true })).toHaveAttribute('aria-expanded', 'true')
     await expect(page.getByRole('group', { name: 'Focus for this workout', exact: true })
       .getByRole('button', { name: 'Upper body', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -586,7 +586,7 @@ backendTest('Generate: real session with named recent/stale history fixture and 
     date, created_at: `${date}T08:00:00.000Z`, updated_at: `${date}T10:00:00.000Z`,
     started_at: `${date}T09:00:00.000Z`, completed_at: `${date}T10:00:00.000Z` })])
   await visit('/generate')
-  await evidence.surface('Generate', '/generate', 'first-or-stale-history-manual-focus', 'Generate workout', () =>
+  await evidence.surface('Generate', '/generate', 'first-or-stale-history-manual-focus', 'Generate', () =>
     visibleText(page, 'Choose the focus for this workout.'), 'stale-history-member')
   expect(evidence.modelAttempts()).toBe(0)
 })
@@ -610,7 +610,7 @@ backendTest('Generate: existing anchor evidence exposes a real deload confirmati
   const slider = page.getByRole('slider')
   await slider.focus()
   await slider.press('End')
-  await evidence.route('Generate', '/generate', 'deload-confirmation', 'Generate workout', async () => {
+  await evidence.route('Generate', '/generate', 'deload-confirmation', 'Generate', async () => {
     await expect(page.getByRole('dialog', { name: 'Train hard today?' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Keep it easier', exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Go hard anyway', exact: true })).toBeVisible()
@@ -668,7 +668,7 @@ backendTest('Loading: held client stages, actual slow threshold, retriable and t
       await expect(page.getByRole('button', { name: 'Retry', exact: true })).toHaveCount(0)
     }, 'input-refusal')
     await page.getByRole('button', { name: 'Change options', exact: true }).click()
-    await heading(page, 'Generate workout')
+    await heading(page, 'Generate')
     failure = 'generation.exhausted'
     held = deferred()
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
@@ -679,19 +679,19 @@ backendTest('Loading: held client stages, actual slow threshold, retriable and t
       await expect(page.getByRole('button', { name: 'Retry', exact: true })).toHaveCount(0)
     }, 'exhausted')
     await page.locator('main').getByRole('button', { name: 'Cancel', exact: true }).click()
-    await heading(page, 'Generate workout')
+    await heading(page, 'Generate')
     failure = 'generation.upstream'
     held = deferred()
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
     await heading(page, 'Generating session')
     await page.locator('main').getByRole('button', { name: 'Cancel', exact: true }).click()
-    await evidence.route('Generate', '/generate', 'cancel-preserves-draft', 'Generate workout', async () => {
+    await evidence.route('Generate', '/generate', 'cancel-preserves-draft', 'Generate', async () => {
       await expect(page.getByLabel(/Time available/)).toHaveValue('30')
       await expect(page.getByLabel(/Notes/)).toHaveValue('Disposable capture draft')
       await expect(page.getByRole('group', { name: 'Anchor', exact: true }).getByRole('button', { name: 'Upper body', exact: true }))
         .toHaveAttribute('aria-pressed', 'true')
     })
-    await evidence.transition('Loading', null, 'cancel', '/generate', '/generate', 'Generate workout', () =>
+    await evidence.transition('Loading', null, 'cancel', '/generate', '/generate', 'Generate', () =>
       expect(page.getByLabel(/Notes/)).toHaveValue('Disposable capture draft'))
     held.release()
     expect(posts).toBe(4)
@@ -730,7 +730,7 @@ backendTest('Boot: a genuine scoped shared-read hold/failure/retry and automatic
     })
     fail = false
     await page.getByRole('button', { name: 'Retry', exact: true }).click()
-    await evidence.transition('BootSequence', null, 'ready', '/generate', '/generate', 'Generate workout', () =>
+    await evidence.transition('BootSequence', null, 'ready', '/generate', '/generate', 'Generate', () =>
       expect(page.getByRole('group', { name: 'Anchor', exact: true })).toBeVisible())
     expect(profileReads).toBe(2)
     for (const state of ['profile-or-places-loading', 'read-error-retry', 'history-loading', 'history-error-manual-or-retry']) {

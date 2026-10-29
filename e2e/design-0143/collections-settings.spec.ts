@@ -934,7 +934,7 @@ backendTest('suggestion: real qualifying history, one next-workout entry into pr
     await generate.click()
     const selected = new URL(next.path, 'https://owned-fixture.invalid')
     await expect(page).toHaveURL((url) => url.pathname === selected.pathname && url.search === selected.search)
-    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate workout', async () => {
+    await evidence.shot('Home', '/', 'suggestion-selected-dismissed', '/generate', 'Generate', async () => {
       await visibleText(page, next.suggestion!.focusLabel)
       await expect(page.getByRole('slider')).toHaveValue(String(next.suggestion!.intensity))
       await expect(page.getByLabel(/Time available/i)).toHaveValue(String(next.prior!.durationMins))

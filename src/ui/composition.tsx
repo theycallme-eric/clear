@@ -38,6 +38,8 @@ export function ActionRow(props: CompositionProps) {
 /**
  * In-card actions sharing the card's width: equal cells while the labels fit,
  * one full-width row each when they do not.
+ * The named `clr-action-group--paired-labels` composition keeps a selected
+ * semantic pair in one row, wrapping whole words inside its cells instead.
  */
 export function ActionGroup(props: CompositionProps) {
   return composition('div', 'clr-action-group', props)

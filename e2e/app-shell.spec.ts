@@ -127,16 +127,33 @@ test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier a
   await expect(card.locator('p')).toHaveText('Strength training, simplified.')
   await expect(card.getByRole('button')).toHaveCount(1)
 
-  // U06: on a screen the 12px data-label tier reads at the next label step.
-  const tier = await page.locator('main.clr-screen').evaluate((main) => {
-    const style = getComputedStyle(main)
+  // U06: the public content scroller owns the enlarged data-label tier;
+  // main and the pinned header keep their package scope. Welcome's statement
+  // is a real label-sm consumer inside that scroller, not a header label.
+  const scroller = page.locator('main.clr-screen > .clr-scroll-region > .clr-scroll-region__scroller')
+  await expect(scroller).toHaveCount(1)
+  const readTier = () => scroller.evaluate((owner) => {
+    const main = owner.closest('main.clr-screen')
+    const statement = owner.querySelector('.clr-screen__content .clr-card p.label')
+    if (!main || !statement) throw new Error('The Welcome label or its actual content owner is missing')
+    const style = getComputedStyle(owner)
+    const label = getComputedStyle(statement)
     return {
       xs: style.getPropertyValue('--label-xs-size').trim(),
       sm: style.getPropertyValue('--label-sm-size').trim(),
-      margin: getComputedStyle(main.querySelector('.clr-screen__content p')!).marginBottom,
+      xsLine: style.getPropertyValue('--label-xs-line-height').trim(),
+      smLine: style.getPropertyValue('--label-sm-line-height').trim(),
+      ancestorXs: getComputedStyle(main).getPropertyValue('--label-xs-size').trim(),
+      rootXs: getComputedStyle(document.documentElement).getPropertyValue('--label-xs-size').trim(),
+      labelSize: label.fontSize, labelLine: label.lineHeight, margin: label.marginBottom,
     }
   })
+  const tier = await readTier()
   expect(tier.xs).toBe(tier.sm)
+  expect(tier.xsLine).toBe(tier.smLine)
+  expect(tier.labelSize).toBe(tier.sm)
+  expect(tier.labelLine).toBe(tier.smLine)
+  expect(tier.ancestorXs).toBe(tier.rootXs)
   // U05: the gap owns the rhythm, never a browser paragraph margin.
   expect(tier.margin).toBe('0px')
 
@@ -151,6 +168,13 @@ test('JOURNEY-002 welcome: one statement, its entries, the enlarged label tier a
       label.textContent = `${label.textContent} with the longest label`
     })
   }
+  const enlargedTier = await readTier()
+  expect(enlargedTier.sm).toBe('18px')
+  expect(enlargedTier.xs).toBe(enlargedTier.sm)
+  expect(enlargedTier.xsLine).toBe(enlargedTier.smLine)
+  expect(enlargedTier.labelSize).toBe(enlargedTier.sm)
+  expect(enlargedTier.labelLine).toBe(enlargedTier.smLine)
+  expect(enlargedTier.ancestorXs).toBe(enlargedTier.rootXs)
   const fit = await page.evaluate(() => {
     const buttons = [...document.querySelectorAll<HTMLElement>('main .clr-card button')]
     return {

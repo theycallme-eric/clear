@@ -60,7 +60,6 @@ import { AppProviders, renderApp, renderWithProviders, signedIn } from '../test/
 import { createTestRouter } from './router'
 import {
   CHANGE_FOCUS_LABEL,
-  CHANGE_GOAL_LABEL,
   DURATION_LABEL,
   DURATION_UNIT,
   FIRST_WORKOUT_MESSAGE,
@@ -161,7 +160,7 @@ describe('the screen’s composition (Form Screen template)', () => {
   it('states the goal, then asks the anchor, the intensity, the place, the time and the notes', () => {
     renderGenerate()
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByText('Strength')).toBeInTheDocument()
 
     const anchors = within(group('Anchor')).getAllByRole('button')
@@ -185,7 +184,7 @@ describe('the screen’s composition (Form Screen template)', () => {
 
     const card = formCard()
     expect(card).toContainElement(screen.getByText('Strength'))
-    expect(card).toContainElement(screen.getByRole('link', { name: CHANGE_GOAL_LABEL }))
+    expect(screen.queryByRole('link', { name: 'Change in Settings' })).not.toBeInTheDocument()
     expect(card).toContainElement(screen.getByRole('button', { name: RECOVERY_LABEL }))
     expect(card).toContainElement(group('Anchor'))
     expect(card).toContainElement(screen.getByText(FIRST_WORKOUT_MESSAGE))
@@ -199,6 +198,32 @@ describe('the screen’s composition (Form Screen template)', () => {
     expect(card).not.toContainElement(screen.getByRole('heading', { level: 1 }))
     expect(card).not.toContainElement(cta())
     expect(card.querySelector('.clr-chamfer--urgency')).toBeNull()
+  })
+
+  it('puts Goal and Focus first, then Recovery and Change focus in one group (B05-02.6/02.7)', () => {
+    renderGenerate({ history: lowerBodyDue(7) })
+
+    const goal = screen.getByText(/^Goal:/)
+    const focus = screen.getByText(/^Focus:/)
+    expect(focus).toHaveTextContent('Focus: Lower body')
+    // Said alike, in one block, at the top of the card.
+    expect(focus.parentElement).toBe(goal.parentElement)
+    expect(focus.tagName).toBe(goal.tagName)
+    expect(formCard().querySelector('.clr-stack > .clr-stack')).toBe(goal.parentElement)
+
+    const pair = recovery().closest('.clr-action-group')!
+    expect(pair).toHaveClass('clr-action-group--paired-labels')
+    expect(pair.children).toHaveLength(2)
+    expect(pair.children[0]).toContainElement(recovery())
+    expect(pair.children[1]).toContainElement(changeFocus())
+    expect(goal.parentElement!.nextElementSibling).toBe(pair.parentElement)
+  })
+
+  it('keeps Recovery a lone action when there is no Focus to change', () => {
+    renderGenerate()
+
+    expect(screen.queryByRole('button', { name: CHANGE_FOCUS_LABEL })).not.toBeInTheDocument()
+    expect(recovery().closest('.clr-action-group')).toBeNull()
   })
 
   it('prefills the default place rather than the first one listed', () => {
@@ -227,7 +252,9 @@ describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
     expect(slider()).toHaveAttribute('min', '1')
     expect(slider()).toHaveAttribute('max', '10')
     expect(slider()).toHaveValue(String(INTENSITY_BY_GOAL.conditioning.start))
-    expect(screen.getByText('Conditioning works at 4 to 10.')).toBeVisible()
+    // B05-02.5: the in-range explanation is gone; the control describes nothing.
+    expect(screen.queryByText('Conditioning works at 4 to 10.')).not.toBeInTheDocument()
+    expect(slider()).not.toHaveAttribute('aria-describedby')
   })
 
   it.each(GENERATION_GOALS.map((goal) => goal.value))(
@@ -246,7 +273,6 @@ describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
     ['strength', 1, 'Strength works at 3 to 10, so 1 is composed as 3.'],
     ['hypertrophy', 10, 'Hypertrophy works at 3 to 9, so 10 is composed as 9.'],
     ['conditioning', 2, 'Conditioning works at 4 to 10, so 2 is composed as 4.'],
-    ['balanced', 1, 'Balanced works at 1 to 10.'],
   ] as const)(
     'sends %s’s chosen %i unchanged and says how the goal reads it',
     async (goal, chosen, note) => {
@@ -262,6 +288,19 @@ describe('goal → intensity (v3 delta §2.2, REQ-009 U27)', () => {
       expect(generation.calls[0]).toMatchObject({ goal, requested_intensity: chosen })
     },
   )
+
+  it('sends an in-range choice unchanged with no range explanation (B05-02.5)', async () => {
+    const { user, generation } = renderGenerate({ goal: 'balanced' })
+
+    fireEvent.change(slider(), { target: { value: '1' } })
+    expect(slider()).toHaveValue('1')
+    expect(screen.queryByText(/works at/)).not.toBeInTheDocument()
+
+    await user.click(chipIn('Anchor', 'Upper body'))
+    await user.click(cta())
+
+    expect(generation.calls[0]).toMatchObject({ goal: 'balanced', requested_intensity: 1 })
+  })
 })
 
 describe('goal → anchor (v3 delta §2.3)', () => {
@@ -277,8 +316,8 @@ describe('goal → anchor (v3 delta §2.3)', () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('REQ-001 — the standing Goal is context, not a question', () => {
-  it('shows the profile’s Goal and a route to Settings, and no Goal choice', async () => {
-    const { user } = renderGenerate({ goal: 'strength' })
+  it('shows the profile’s Goal, no Goal choice and no Settings link (B05-02.3)', () => {
+    renderGenerate({ goal: 'strength' })
 
     expect(screen.getByText('Strength')).toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
@@ -287,9 +326,7 @@ describe('REQ-001 — the standing Goal is context, not a question', () => {
       expect(screen.queryByRole('button', { name: label })).not.toBeInTheDocument()
     }
 
-    await user.click(screen.getByRole('link', { name: CHANGE_GOAL_LABEL }))
-
-    expect(await screen.findByRole('heading', { level: 1, name: 'Settings' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Change in Settings' })).not.toBeInTheDocument()
   })
 
   it('sends the Goal a fresh visit finds on the profile, with no Goal interaction', async () => {
@@ -454,11 +491,12 @@ function expectFourUnselected() {
 }
 
 describe('REQ-004 — the recommended Focus and its intensity', () => {
-  it('opens on the recommended Focus, its reason and the history intensity, ready to generate', async () => {
+  it('opens on the recommended Focus and the history intensity, ready to generate', async () => {
     const { user, generation } = renderGenerate({ history: lowerBodyDue(7) })
 
     expect(screen.getByText('Lower body')).toBeInTheDocument()
-    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    // B05-02.4: the recommendation's explanation is not shown; the Focus is.
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(slider()).toHaveValue('7')
     expect(cta()).toBeEnabled()
@@ -559,7 +597,8 @@ describe('REQ-005 — a manual Focus before the first completed workout, or on s
     expect(screen.queryByRole('group', { name: 'Anchor' })).not.toBeInTheDocument()
     expect(screen.queryByText(FIRST_WORKOUT_MESSAGE)).not.toBeInTheDocument()
     expect(screen.getByText(/^Focus:/)).toBeInTheDocument()
-    expect(screen.getByText(/^No .+ in the sessions you’ve logged\.$/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: CHANGE_FOCUS_LABEL })).toBeInTheDocument()
+    expect(screen.queryByText(/^No .+ in the sessions you’ve logged\.$/)).not.toBeInTheDocument()
     expect(cta()).toBeEnabled()
   })
 })
@@ -644,7 +683,8 @@ describe('REQ-006 — a history read that fails or is still in flight', () => {
     failing = false
     await user.click(retry())
 
-    expect(await screen.findByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(await screen.findByText(/^Focus:/)).toHaveTextContent(/^Focus: Lower body$/)
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
     expect(calls.count).toBe(reads + 1)
     expect(screen.getByText('Lower body')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
@@ -788,7 +828,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(GENERATION_LOADING_TITLE)
     expect(screen.queryByRole('group', { name: 'Goal' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /generate workout/i })).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'Generate workout' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Generate' })).not.toBeInTheDocument()
 
     await act(async () => {
       generation.reachStage('composing')
@@ -905,7 +945,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     await composeAndSubmit(user)
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByText('Strength')).toBeInTheDocument()
     expect(chipIn('Anchor', 'Upper body')).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByLabelText(/place/i)).toHaveValue(GYM.id)
@@ -934,7 +974,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
 
     expect(screen.queryByText('Too late')).not.toBeInTheDocument()
     expect(screen.queryByText(GENERATION_LOADING_TITLE)).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(screen.getByLabelText(/notes/i)).toHaveValue('Left shoulder is tight.')
   })
 
@@ -948,7 +988,7 @@ await user.click(chipIn('Anchor', 'Upper body'))
     })
 
     expect(liveToasts()).toEqual([])
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
   })
 
   it('discards the answer when the screen unmounts mid-run', async () => {
@@ -1345,7 +1385,7 @@ describe('REQ-007 — a Focus for this workout only', () => {
 
     expect(focusLine()).toHaveTextContent('Lower body')
     expect(screen.queryByText(new RegExp(OVERRIDE_SCOPE))).not.toBeInTheDocument()
-    expect(screen.getByText(LOWER_BODY_REASON)).toBeInTheDocument()
+    expect(screen.queryByText(LOWER_BODY_REASON)).not.toBeInTheDocument()
     expect(url()).toBe('/generate')
 
     await user.click(cta())
@@ -1474,7 +1514,7 @@ describe('REQ-008 — a Recovery session for this workout only', () => {
 
     expect(recovery()).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByText(new RegExp(POWER_REFUSAL))).not.toBeInTheDocument()
-    expect(screen.getByText('Strength works at 3 to 10.')).toBeVisible()
+    expect(screen.queryByText(/works at/)).not.toBeInTheDocument()
     expect(url()).toBe('/generate')
 
     await user.click(cta())
@@ -1551,7 +1591,7 @@ describe('REQ-009 — the same Goal and Focus however the draft is reached', () 
     await user.click(cta())
     await user.click(screen.getByRole('button', { name: 'Cancel' }))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Generate workout' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Generate' })).toBeInTheDocument()
     expect(url()).toBe(drafted)
     expect(intentFrom(url().slice(GENERATE_PATH.length))).toEqual({
       override: 'upper_body',
@@ -1690,7 +1730,6 @@ describe('U26 — the goal, plainly, and first-workout guidance only when needed
     const option = GENERATION_GOALS.find((candidate) => candidate.value === goal)!
     expect(goalLine()).toHaveTextContent(new RegExp(`^Goal: ${option.label}$`))
     expect(screen.getByRole('main')).not.toHaveTextContent(option.description!)
-    expect(screen.getByRole('link', { name: CHANGE_GOAL_LABEL })).toBeInTheDocument()
   })
 
   it('guides the first request until an anchor is chosen, and again if it is cleared', async () => {

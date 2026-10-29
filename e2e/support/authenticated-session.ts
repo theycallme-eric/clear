@@ -212,7 +212,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
           await generate.click()
 
           // ── Generate (reached, and left alone) ───────────────────────────
-          await expectScreen('Generate', 'Generate workout')
+          await expectScreen('Generate', 'Generate')
           // Whatever the screen loads on arrival has to have gone out before
           // the counts are read.
           await page.waitForLoadState('networkidle')
