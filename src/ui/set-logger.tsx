@@ -114,12 +114,6 @@ export interface ExerciseSetLoggerProps {
    */
   restSeconds?: number | null
   /**
-   * What the card's new-entry action is. `'rest'` (REQ-012) opens the sheet
-   * and starts the prescribed rest; `'log'` only opens it — a circuit's row,
-   * whose rest is the round boundary's and not the movement's (REQ-017).
-   */
-  entryAction?: 'rest' | 'log'
-  /**
    * Who logs this movement's next set. `'self'` is its own Log set; `'round'`
    * is a superset's one Log round (REQ-016), which then also names the set
    * number the round is entering, so the card's `Set X/Y` and the round agree.
@@ -149,7 +143,6 @@ export function ExerciseSetLogger({
   showCountdown = true,
   restSeconds,
   logging = 'self',
-  entryAction = 'rest',
   onReturnToRound,
   onCorrectSet,
   openSheetOnMount = false,
@@ -228,7 +221,7 @@ export function ExerciseSetLogger({
   const openNew = () => {
     setCorrection(null)
     const resting = restTimer.rest !== null && restTimer.remainingSeconds > 0
-    if (entryAction === 'rest' && restOnEntry !== null && !resting) {
+    if (restOnEntry !== null && !resting) {
       restTimer.start({ exerciseId: exercise.exerciseId, label: name, seconds: restOnEntry })
     }
     sheet.setOpen(true)
@@ -299,7 +292,7 @@ export function ExerciseSetLogger({
             aria-expanded={sheet.open}
             onClick={openNew}
           >
-            {entryAction === 'rest' ? 'Rest' : 'Log set'}
+            Rest
           </Button>
         </ActionGroup>
       ) : null}

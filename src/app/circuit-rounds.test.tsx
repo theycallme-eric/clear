@@ -143,7 +143,7 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     rows().forEach((row, index) => {
       const name = NAMES[index]!
       const inside = within(row)
-      expect(inside.getByRole('button', { name: `Log load and reps for ${name}` })).toHaveAttribute(
+      expect(inside.getByRole('button', { name: `Rest for ${name}` })).toHaveAttribute(
         'aria-expanded',
         'false',
       )
@@ -161,7 +161,7 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     const user = userEvent.setup()
     const double = await shell()
 
-    await user.click(button('Log load and reps for push up'))
+    await user.click(button('Rest for push up'))
 
     const form = await screen.findByRole('form', { name: 'Log set 1 of push up' })
     expect(form.closest('.clr-set-sheet')).not.toBeNull()
@@ -178,7 +178,7 @@ describe('AC-061 — compact numbered rows, optional sheet-based logging', () =>
     const user = userEvent.setup()
     const double = await shell()
 
-    await user.click(button('Log load and reps for goblet squat'))
+    await user.click(button('Rest for goblet squat'))
     const form = within(await screen.findByRole('form', { name: 'Log set 1 of goblet squat' }))
     await user.clear(form.getByLabelText('Weight'))
     await user.type(form.getByLabelText('Weight'), '20')
@@ -352,7 +352,7 @@ describe('AC-062 — Start, Finish, elapsed round clock, shared rest and the nex
 
     // Logging a movement neither stops nor restarts the round clock …
     advance(20)
-    await user.click(button('Log load and reps for kettlebell swing'))
+    await user.click(button('Rest for kettlebell swing'))
     const form = within(await screen.findByRole('form', { name: 'Log set 1 of kettlebell swing' }))
     await user.click(form.getByRole('button', { name: 'Log set 1' }))
     await waitFor(() => expect(double.loggedSets()).toHaveLength(1))

@@ -581,12 +581,12 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await expect(actions).toHaveAttribute('aria-expanded', 'false')
       await expect(actions).toBeFocused()
 
-      // New entry: the movement card's own Log set opens the half-sheet.
+      // New entry: the movement card's Rest opens the half-sheet and starts rest.
       const card = (name: RegExp) => page.locator('section')
         .filter({ has: page.getByRole('heading', { name }) })
-        .filter({ has: page.getByRole('button', { name: 'Log set', exact: true }) }).last()
+        .filter({ has: page.getByRole('button', { name: 'Rest', exact: true }) }).last()
       const squat = card(/back squat$/)
-      await tap(squat.getByRole('button', { name: 'Log set', exact: true }))
+      await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       const form = (verb: 'Log' | 'Edit', set: number, movement = 'back squat') =>
         page.getByRole('form', { name: `${verb} set ${set} of ${movement}` })
       const minimize = page.getByRole('button', { name: 'Minimize', exact: true })
@@ -601,6 +601,9 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await expect(form('Log', 1).getByLabel('Unit', { exact: true })).toBeVisible()
       await expect(page.getByText('Reps performed')).toHaveCount(0)
       await expect(page.getByText('No sets logged yet')).toHaveCount(0)
+      const rest = page.getByRole('region', { name: 'Rest' })
+      await expect(rest.getByRole('timer', { name: 'Time remaining' })).toBeVisible()
+      expect(await timerSeconds(rest.getByRole('timer', { name: 'Time remaining' }))).toBeLessThanOrEqual(SQUAT_REST)
       expect(api.mutations).toHaveLength(0)
 
       // Keyboard-like resize: a shorter window keeps the focused entry, its
@@ -633,6 +636,8 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await checkA11y()
 
       // A refused save never reads as saved, and the entry is kept to retry.
+      // Rest started at entry; saving or retrying may not restart it.
+      const restBeforeSave = await timerSeconds(rest.getByRole('timer', { name: 'Time remaining' }))
       api.failNextMutation()
       await tap(logOne)
       const logged = squat.getByRole('list', { name: 'Logged sets' })
@@ -656,13 +661,12 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       expect(api.head(originalId)).toMatchObject({ revision: 1, cleared: false,
         mutation_id: refused.mutation_id, row: { id: originalId, actual_reps: 8, weight: 60 } })
 
-      // Rest runs; skipping it leaves logging reachable.
-      const rest = page.getByRole('region', { name: 'Rest' })
+      // The same rest runs; skipping it leaves logging reachable.
       await expect(rest.getByRole('timer', { name: 'Time remaining' })).toBeVisible()
+      expect(await timerSeconds(rest.getByRole('timer', { name: 'Time remaining' }))).toBeLessThanOrEqual(restBeforeSave)
       await tap(rest.getByRole('button', { name: 'Skip rest', exact: true }))
       await expect(rest).toHaveCount(0)
       expect(api.mutations).toHaveLength(1)
-      if (await form('Log', 2).count() === 0) await tap(squat.getByRole('button', { name: 'Log set', exact: true }))
       await expect(form('Log', 2)).toBeVisible()
       await tap(form('Log', 2).getByRole('button', { name: 'Log set 2', exact: true }))
       await expect(logged.getByRole('listitem').filter({ hasText: 'Set 2' })).toContainText('Saved')
@@ -671,7 +675,11 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       const secondHead = api.head(secondId)
       expect(secondId).not.toBe(originalId)
 
-      // Rest expiry, with the sheet minimised, also leaves logging reachable.
+      // Saving set 2 after a skip starts no rest. A new explicit Rest starts
+      // the next prescribed countdown; expiry still leaves logging reachable.
+      await expect(rest).toHaveCount(0)
+      await tap(minimize)
+      await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       await expect(rest).toBeVisible()
       await tap(minimize)
       await expect(form('Log', 3)).toHaveCount(0)
@@ -679,7 +687,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await expect(rest).toHaveCount(0)
       expect(api.mutations).toHaveLength(2)
       expect(await timerSeconds(sessionTime)).toBeGreaterThanOrEqual(sessionAtEntry + SQUAT_REST + 2)
-      await tap(squat.getByRole('button', { name: 'Log set', exact: true }))
+      await tap(squat.getByRole('button', { name: 'Rest', exact: true }))
       await expect(form('Log', 3)).toBeVisible()
       await tap(minimize)
 
@@ -746,7 +754,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       expect(api.head(originalId)).toEqual({ revision: 3, mutation_id: clear.mutation_id, cleared: true, row: null })
       expect(api.head(secondId)).toEqual(secondHead)
       expect(api.acknowledgements.at(-1)?.head.row).toBeNull()
-      await expect(squat.getByRole('button', { name: 'Log set', exact: true })).toBeFocused()
+      await expect(squat.getByRole('button', { name: 'Rest', exact: true })).toBeFocused()
 
       // Paired navigation forward to the timed movement and its own clock.
       await tap(next)
@@ -781,7 +789,7 @@ for (const { keyboard, ...viewport } of VIEWPORTS) {
       await expect(countdown.getByRole('button', { name: 'Start', exact: true })).toBeDisabled()
 
       const hold = card(/hollow body hold$/)
-      await tap(hold.getByRole('button', { name: 'Log set', exact: true }))
+      await tap(hold.getByRole('button', { name: 'Rest', exact: true }))
       const timed = form('Log', 1, 'hollow body hold')
       await expect(timed.getByLabel('Seconds', { exact: true })).toHaveValue('30')
       await expect(timed.getByLabel('Weight', { exact: true })).toHaveCount(0)
@@ -859,9 +867,12 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     const next = nav.getByRole('button', { name: 'Next section', exact: true })
     await expect(nav.getByRole('progressbar', { name: 'Section 1 of 3' })).toBeVisible()
 
-    await tap(page.getByRole('button', { name: 'Log round', exact: true }))
+    await tap(page.getByRole('button', { name: 'Rest', exact: true }))
     const round = page.getByRole('form', { name: 'Log round 1 of bench press and plank', exact: true })
     await expect(round).toBeVisible()
+    const sharedRest = page.getByRole('region', { name: 'Rest', exact: true })
+    await expect(sharedRest).toHaveCount(1)
+    expect(api.attempts).toHaveLength(0)
     const bench = round.getByRole('group', { name: 'A1 bench press, set 1', exact: true })
     const plank = round.getByRole('group', { name: 'A2 plank, set 1', exact: true })
     await expect(bench.getByLabel('Reps', { exact: true })).toHaveValue('8')
@@ -882,6 +893,7 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     await expect(plank.getByRole('radio', { name: 'Too easy', exact: true })).toHaveAttribute('aria-checked', 'true')
     expect(api.attempts).toHaveLength(0)
     await checkA11y()
+    const restBeforeRoundSave = await timerSeconds(sharedRest.getByRole('timer', { name: 'Time remaining', exact: true }))
     await tap(logRound)
     await expect.poll(() => api.mutations.length).toBe(2)
     const members = api.snapshot().sections[0].blocks[0].exercises
@@ -900,10 +912,10 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
       const movement = movementList.locator(':scope > li').filter({ has: page.getByRole('heading', { name }) })
       await expect(movement.getByRole('list', { name: 'Logged sets', exact: true })).toContainText('Saved')
     }
-    const sharedRest = page.getByRole('region', { name: 'Rest', exact: true })
     await expect(sharedRest).toHaveCount(1)
     const remaining = sharedRest.getByRole('timer', { name: 'Time remaining', exact: true })
     const beforeRest = await timerSeconds(remaining)
+    expect(beforeRest).toBeLessThanOrEqual(restBeforeRoundSave)
     const beforeRestGlobal = await timerSeconds(sessionTime)
     await page.clock.fastForward(2000)
     expect(await timerSeconds(remaining)).toBeLessThan(beforeRest)
@@ -929,7 +941,7 @@ test('JOURNEY-017: a combined superset and optional circuit entry keep their obs
     expect(await timerSeconds(movementClock)).toBeLessThanOrEqual(118)
 
     // Replay the actual circuit-to-sheet seam, without logging a result.
-    const optional = page.getByRole('button', { name: 'Log load and reps for hollow body hold', exact: true })
+    const optional = page.getByRole('button', { name: 'Rest for hollow body hold', exact: true })
     await tap(optional)
     const optionalForm = page.getByRole('form', { name: 'Log set 1 of hollow body hold', exact: true })
     await expect(optionalForm).toBeVisible()

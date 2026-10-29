@@ -25,7 +25,7 @@
  * gap found: reopening a minimised correction through its own saved row's Edit
  * started over from the stored result; `set-logger.tsx` now hands it back.
  */
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RouterProvider, createMemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -293,5 +293,62 @@ describe('A minimised draft survives, and hiding the sheet does not pause rest (
     expect(
       within(screen.getByRole('form', { name: 'Edit set 1 of back squat' })).getByLabelText(/^Reps/),
     ).toHaveValue(5)
+  })
+})
+
+describe('Saving and correcting never start absent or expired rest (B05 AC-037/039)', () => {
+  it.each(['skipped', 'expired'] as const)('saves the draft after rest is %s; Edit and its save keep rest absent', async (ending) => {
+    const user = userEvent.setup()
+    const double = await shell()
+    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
+    expect(restTimer()).toHaveTextContent('01:30')
+    const entry = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
+    await user.type(entry.getByLabelText('Weight'), '135')
+    await user.selectOptions(entry.getByRole('combobox', { name: 'Unit' }), 'lb')
+    await user.clear(entry.getByLabelText('Reps'))
+    await user.type(entry.getByLabelText('Reps'), '5')
+    await user.click(entry.getByRole('radio', { name: 'Too hard' }))
+
+    if (ending === 'skipped') await user.click(screen.getByRole('button', { name: 'Skip rest' }))
+    else {
+      advance(91)
+      returnToForeground()
+    }
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
+    expect(double.loggedSets()).toEqual([])
+    await user.click(entry.getByRole('button', { name: 'Log set 1' }))
+    await screen.findByRole('form', { name: 'Log set 2 of back squat' })
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(1))
+    const stored = double.loggedSets()[0]
+    expect(stored).toMatchObject({ weightUnit: 'lb', performed: { setNumber: 1, weight: 135, reps: 5, effort: 'too_hard' } })
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+
+    const openEdit = () => user.click(within(movementCard()).getByRole('button', { name: 'Edit set 1' }))
+    await openEdit()
+    const edit = () => within(screen.getByRole('form', { name: 'Edit set 1 of back squat' }))
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
+    await user.clear(edit().getByLabelText('Weight'))
+    await user.type(edit().getByLabelText('Weight'), '0')
+    await user.selectOptions(edit().getByRole('combobox', { name: 'Unit' }), 'kg')
+    await user.click(edit().getByRole('radio', { name: 'Too easy' }))
+    await user.click(edit().getByRole('button', { name: 'Cancel' }))
+    expect(double.correctedSets()).toEqual([])
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
+
+    await openEdit()
+    expect(edit().getByLabelText('Weight')).toHaveValue(135)
+    expect(edit().getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+    expect(edit().getByRole('radio', { name: 'Too hard' })).toHaveAttribute('aria-checked', 'true')
+    await user.clear(edit().getByLabelText('Reps'))
+    await user.type(edit().getByLabelText('Reps'), '4')
+    await user.click(edit().getByRole('button', { name: 'Save correction' }))
+    await waitFor(() => expect(double.correctedSets()).toHaveLength(1))
+    expect(double.correctedSets()[0]).toMatchObject({
+      id: stored.id, exerciseId: stored.exerciseId, weightUnit: 'lb',
+      performed: { setNumber: 1, weight: 135, reps: 4, effort: 'too_hard' },
+    })
+    expect(double.loggedSets()).toHaveLength(1)
+    expect(screen.queryByRole('region', { name: 'Rest' })).toBeNull()
   })
 })

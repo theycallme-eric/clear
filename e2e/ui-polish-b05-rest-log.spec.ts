@@ -86,6 +86,7 @@ const BLOCK_IDS = new Set(WORKOUT.sections.flatMap((section) => section.blocks.m
  * the proof rather than yielding a capture with no reference behind it.
  */
 const REFERENCE_FILE = 'sources/source-10-B05-07-logging-sheet.jpg'
+const REFERENCE_SHA256 = 'b7fa59ba908bd27bf86baa29075a1c8e8d308ecb9d72e20618dd1c9025c19f4e'
 const REFERENCE_DIRS = [
   process.env.B05_EVIDENCE_DIR,
   resolve(import.meta.dirname, '..', '..', '.evidence', basename(resolve(import.meta.dirname, '..'))),
@@ -94,7 +95,9 @@ function reference() {
   const dir = REFERENCE_DIRS.find((candidate) => existsSync(resolve(candidate, REFERENCE_FILE)))
   if (dir === undefined) throw new Error(`B05-07 reference ${REFERENCE_FILE} is not readable from ${REFERENCE_DIRS.join(', ')}`)
   const bytes = readFileSync(resolve(dir, REFERENCE_FILE))
-  return { file: REFERENCE_FILE, sha256: createHash('sha256').update(bytes).digest('hex'), bytes }
+  const sha256 = createHash('sha256').update(bytes).digest('hex')
+  if (sha256 !== REFERENCE_SHA256) throw new Error(`B05-07 reference changed: ${sha256}`)
+  return { file: REFERENCE_FILE, sha256, bytes }
 }
 
 /**
@@ -218,6 +221,16 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
     { scope: 'worker', timeout: 120_000 },
   ],
   baseURL: async ({ baseURL, syntheticOrigin }, use) => use(syntheticOrigin ?? baseURL),
+  checkA11y: async ({ page, checkA11y }, use) => {
+    await use(async () => {
+      // Boot and the Workout loading state both expose headings. Scan only
+      // after the actual route and its populated movement surface are ready.
+      await expect(page.getByRole('heading', { level: 1, name: 'Workout', exact: true })).toBeVisible()
+      await expect(content(page).getByRole('heading', { name: 'back squat', exact: true })).toBeVisible()
+      await expect(content(page).getByRole('button', { name: 'Rest', exact: true }).first()).toBeVisible()
+      await checkA11y()
+    })
+  },
 })
 
 /**
@@ -289,11 +302,32 @@ async function syntheticApp(page: Page, origin: string) {
         expect(isSetObservationMutation(mutation)).toBe(true)
         if (!isSetObservationMutation(mutation)) return reply({ outcome: 'invalid' }, 400)
         attempts.push(mutation)
+        // Reject a plausible-looking correction to the wrong observation:
+        // the existing durable identity/revision contract is part of this proof.
+        const previous = heads.get(mutation.observation_id)
+        if (previous?.mutation_id === mutation.mutation_id) {
+          // A response may be lost after application. Preserve the real RPC's
+          // idempotent replay contract without counting a second observation.
+          expect(mutation).toEqual(mutations.find((applied) => applied.mutation_id === mutation.mutation_id))
+          return reply({ outcome: 'replayed', mutation, head: previous })
+        }
+        if (mutation.operation === 'insert') {
+          expect(previous).toBeUndefined()
+          expect(mutation.expected_revision).toBe(0)
+          expect(mutation.revision).toBe(1)
+        } else {
+          expect(mutation.operation).toBe('correct')
+          expect(previous).toBeDefined()
+          expect(previous?.row?.workout_exercise_id).toBe(mutation.exercise_id)
+          expect(previous?.row?.set_number).toBe(mutation.set_number)
+          expect(mutation.expected_revision).toBe(previous?.revision)
+          expect(mutation.revision).toBe((previous?.revision ?? -1) + 1)
+          expect(mutation.mutation_id).not.toBe(previous?.mutation_id)
+        }
         if (failNext) {
           failNext = false
           return reply({ code: 'PGRST000', message: 'Synthetic refused write.' }, 503)
         }
-        const previous = heads.get(mutation.observation_id)
         const row = exerciseSetLogRowSchema.parse({
           id: mutation.observation_id, workout_exercise_id: mutation.exercise_id,
           prescription_revision_status: 'active', set_number: mutation.set_number,
@@ -521,6 +555,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       // ── Draft, collapse, reopen ──────────────────────────────────────────
       const form1 = page.getByRole('form', { name: 'Log set 1 of back squat' })
       await form1.getByLabel('Weight').fill('100')
+      await form1.getByRole('combobox', { name: 'Unit' }).selectOption('lb')
       await form1.getByLabel('Reps').fill('5')
       await form1.getByRole('radio', { name: 'About right' }).check()
       await page.clock.fastForward(5000)
@@ -532,6 +567,7 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await page.clock.fastForward(10_000)
       await rest.click()
       await expect(form1.getByLabel('Weight')).toHaveValue('100')
+      await expect(form1.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
       await expect(form1.getByLabel('Reps')).toHaveValue('5')
       await expect(form1.getByRole('radio', { name: 'About right' })).toBeChecked()
       // Reopened: not restarted, and still only one countdown.
@@ -551,11 +587,12 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await expect.poll(() => app.mutations.length).toBe(1)
       expect(app.mutations[0]).toMatchObject({
         operation: 'insert', exercise_id: EXERCISE_ID.get('back-squat'), set_number: 1,
-        values: { weight: 100, actual_reps: 5, effort: 'about_right' },
+        values: { weight: 100, weight_unit: 'lb', actual_reps: 5, effort: 'about_right' },
       })
       remaining = await expectRestFrom(page, remaining)
       const saved =squat.getByRole('list', { name: 'Logged sets' }).getByRole('listitem').filter({ hasText: 'Set 1' })
       await expect(saved).toContainText('5 reps')
+      await expect(saved).toContainText('100 lb')
       await expect(saved).toContainText('Saved')
       const logged = await captureSheet(page, testInfo, `sheet-after-log-${size}`)
       await record(page, testInfo, `sheet-after-log-${size}`, {
@@ -592,7 +629,9 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
       await page.evaluate(() => window.dispatchEvent(new Event('online')))
       await expect(held).toContainText('Saved')
-      expect(app.mutations[1]).toMatchObject({ set_number: 2, values: { weight: 105, actual_reps: 4 } })
+      expect(app.mutations[1]).toMatchObject({ set_number: 2, values: { weight: 105, weight_unit: 'lb', actual_reps: 4 } })
+      expect(app.attempts[2]).toEqual(app.attempts[1])
+      expect(app.mutations[1]).toEqual(app.attempts[1])
       await page.getByRole('button', { name: 'Minimize' }).click()
 
       // ── Saved-row Edit: corrects, never starts or resets rest ────────────
@@ -600,15 +639,30 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await squat.getByRole('button', { name: 'Edit set 1' }).click()
       const edit = page.getByRole('form', { name: 'Edit set 1 of back squat' })
       await expect(edit.getByLabel('Reps')).toHaveValue('5')
+      await expect(edit.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
       remaining = await expectRestFrom(page, remaining)
+      await edit.getByLabel('Weight').fill('0')
+      await edit.getByRole('combobox', { name: 'Unit' }).selectOption('kg')
+      await edit.getByLabel('Reps').fill('7')
+      await edit.getByRole('radio', { name: 'Too easy' }).check()
       await edit.getByRole('button', { name: 'Cancel' }).click()
       expect(app.mutations).toHaveLength(2)
       await squat.getByRole('button', { name: 'Edit set 1' }).click()
+      await expect(edit.getByLabel('Weight')).toHaveValue('100')
+      await expect(edit.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+      await expect(edit.getByLabel('Reps')).toHaveValue('5')
+      await expect(edit.getByRole('radio', { name: 'About right' })).toBeChecked()
       await edit.getByLabel('Reps').fill('6')
       const editing = await captureSheet(page, testInfo, `sheet-saved-edit-${size}`)
       await edit.getByRole('button', { name: 'Save correction' }).click()
       await expect.poll(() => app.mutations.length).toBe(3)
-      expect(app.mutations[2]).toMatchObject({ operation: 'correct', set_number: 1, values: { actual_reps: 6 } })
+      expect(app.mutations[2]).toMatchObject({
+        operation: 'correct', observation_id: app.mutations[0].observation_id,
+        exercise_id: app.mutations[0].exercise_id, set_number: 1,
+        expected_revision: 1, revision: 2,
+        values: { actual_reps: 6, weight: 100, weight_unit: 'lb', effort: 'about_right' },
+      })
+      expect(app.mutations[2].mutation_id).not.toBe(app.mutations[0].mutation_id)
       // Save correction neither starts nor resets the running rest.
       await expectRestFrom(page, remaining)
       await record(page, testInfo, `sheet-saved-edit-${size}`, {
@@ -632,13 +686,28 @@ for (const { name: size, viewport } of VIEWPORTS) {
         reference: refRecord(ref.sheet.region), measured: { referenceBands: ref.sheet.bands, actualBands: expired.bands },
         capture: expired.capture, criteria: { 'AC-039': 'pass', 'AC-067': 'pass' },
       })
+      // Log with an expired (non-null) period: saving may not silently start
+      // another rest merely because there is no active countdown anymore.
+      await form3.getByRole('button', { name: 'Log set 3', exact: true }).click()
+      await expect.poll(() => app.mutations.length).toBe(4)
+      expect(app.mutations[3]).toMatchObject({ operation: 'insert', set_number: 3, values: { actual_reps: 3 } })
+      await expect(restBars(page)).toHaveCount(0)
       await page.getByRole('button', { name: 'Minimize' }).click()
-      // The entry stays discoverable; with no rest running it starts the next one.
+      await squat.getByRole('button', { name: 'Edit set 3' }).click()
+      await expect(restBars(page)).toHaveCount(0)
+      const expiredEdit = page.getByRole('form', { name: 'Edit set 3 of back squat' })
+      await expiredEdit.getByLabel('Reps').fill('2')
+      await expiredEdit.getByRole('button', { name: 'Save correction' }).click()
+      await expect.poll(() => app.mutations.length).toBe(5)
+      expect(app.mutations[4]).toMatchObject({
+        operation: 'correct', observation_id: app.mutations[3].observation_id,
+        set_number: 3, values: { actual_reps: 2 },
+      })
+      await expect(restBars(page)).toHaveCount(0)
+      // Only the explicit Rest activation may start the next prescribed rest.
       await expect(rest).toBeVisible()
       await rest.click()
       await expectRestFrom(page, SQUAT_REST)
-      await expect(form3.getByLabel('Reps')).toHaveValue('3')
-      expect(app.attempts).toHaveLength(writes)
       await restBars(page).getByRole('button', { name: 'Skip rest' }).click()
       await page.getByRole('button', { name: 'Minimize' }).click()
 
@@ -653,8 +722,23 @@ for (const { name: size, viewport } of VIEWPORTS) {
         reference: refRecord(ref.sheet.region), measured: { referenceBands: ref.sheet.bands, actualBands: unprescribed.bands },
         capture: unprescribed.capture, criteria: { 'AC-035': 'pass', 'AC-039': 'pass', 'AC-067': 'pass' },
       })
+      const noRestForm = page.getByRole('form', { name: 'Log set 1 of romanian deadlift' })
+      await noRestForm.getByLabel('Reps').fill('8')
+      await noRestForm.getByRole('button', { name: 'Log set 1', exact: true }).click()
+      await expect.poll(() => app.mutations.length).toBe(6)
+      await expect(restBars(page)).toHaveCount(0)
       await page.getByRole('button', { name: 'Minimize' }).click()
-      expect(app.attempts).toHaveLength(writes)
+      await card(page, 'romanian deadlift').getByRole('button', { name: 'Edit set 1' }).click()
+      await expect(restBars(page)).toHaveCount(0)
+      const noRestEdit = page.getByRole('form', { name: 'Edit set 1 of romanian deadlift' })
+      await noRestEdit.getByLabel('Reps').fill('7')
+      await noRestEdit.getByRole('button', { name: 'Save correction' }).click()
+      await expect.poll(() => app.mutations.length).toBe(7)
+      expect(app.mutations[6]).toMatchObject({
+        operation: 'correct', observation_id: app.mutations[5].observation_id,
+        exercise_id: EXERCISE_ID.get('romanian-deadlift'), set_number: 1, values: { actual_reps: 7 },
+      })
+      await expect(restBars(page)).toHaveCount(0)
       app.assertContained()
     })
 
@@ -678,9 +762,27 @@ for (const { name: size, viewport } of VIEWPORTS) {
       const roundRest = await expectRestFrom(page, ROUND_REST)
       await expect(restBars(page)).toContainText('Rest after round 1')
       expect(app.attempts).toHaveLength(0)
-      await round.getByRole('group', { name: 'A1 bench press, set 1' }).getByLabel('Reps').fill('7')
-      await round.getByRole('group', { name: 'A2 plank, set 1' }).getByLabel('Seconds').fill('28')
+      const bench = round.getByRole('group', { name: 'A1 bench press, set 1' })
+      const plank = round.getByRole('group', { name: 'A2 plank, set 1' })
+      await bench.getByLabel('Weight').fill('135')
+      await bench.getByRole('combobox', { name: 'Unit' }).selectOption('lb')
+      await bench.getByLabel('Reps').fill('7')
+      await bench.getByRole('radio', { name: 'Too easy' }).check()
+      await plank.getByLabel('Seconds').fill('28')
+      await plank.getByRole('radio', { name: 'About right' }).check()
+      await page.getByRole('button', { name: 'Minimize' }).click()
+      await expect(round).toHaveCount(0)
+      expect(app.attempts).toHaveLength(0)
       await page.clock.fastForward(4000)
+      await pair.getByRole('button', { name: 'Rest', exact: true }).click()
+      await expect(bench.getByLabel('Weight')).toHaveValue('135')
+      await expect(bench.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+      await expect(bench.getByLabel('Reps')).toHaveValue('7')
+      await expect(bench.getByRole('radio', { name: 'Too easy' })).toBeChecked()
+      await expect(plank.getByLabel('Seconds')).toHaveValue('28')
+      await expect(plank.getByRole('radio', { name: 'About right' })).toBeChecked()
+      await expectRestFrom(page, roundRest, 4)
+      expect(app.attempts).toHaveLength(0)
       const combined = await captureSheet(page, testInfo, `sheet-combined-round-${size}`)
       expect(combined.bands).toBeGreaterThan(ref.sheet.bands)
       await round.getByRole('button', { name: 'Log round 1', exact: true }).click()
@@ -689,18 +791,30 @@ for (const { name: size, viewport } of VIEWPORTS) {
       expect(app.mutations.map((mutation) => [mutation.exercise_id, mutation.set_number])).toEqual([
         [EXERCISE_ID.get('bench-press'), 1], [EXERCISE_ID.get('plank'), 1],
       ])
-      expect(app.mutations[0].values).toMatchObject({ actual_reps: 7 })
-      expect(app.mutations[1].values).toMatchObject({ actual_duration_seconds: 28 })
+      expect(app.mutations[0].values).toMatchObject({ actual_reps: 7, weight: 135, weight_unit: 'lb', effort: 'too_easy' })
+      expect(app.mutations[1].values).toMatchObject({ actual_duration_seconds: 28, effort: 'about_right' })
+      expect(new Set(app.mutations.map((mutation) => mutation.observation_id)).size).toBe(2)
       await expectRestFrom(page, roundRest, 4)
       await record(page, testInfo, `sheet-combined-round-${size}`, {
         consumer: 'Workout · SupersetRoundSheet via the block Rest (src/ui/superset-block.tsx)',
-        state: 'Rest started the round rest; Log round 1 saved both movements once; rest continued', viewport,
+        state: 'Rest started round rest; collapse/reopen retained independent drafts and deadline; Log round 1 saved both once', viewport,
         reference: { file: ref.file, sha256: ref.sha256, region: ref.sheet.region },
         measured: { referenceBands: ref.sheet.bands, actualBands: combined.bands },
         mutations: app.mutations, capture: combined.capture, criteria: { 'AC-039': 'pass', 'AC-051': 'pass', 'AC-067': 'pass' },
       })
+      // Expiry while a second combined draft is open saves nothing. Its
+      // subsequent explicit save cannot silently start another round rest.
+      const round2 = page.getByRole('form', { name: 'Log round 2 of bench press and plank' })
+      await expect(round2).toBeVisible()
+      await round2.getByRole('group', { name: 'A1 bench press, set 2' }).getByLabel('Reps').fill('6')
+      await round2.getByRole('group', { name: 'A2 plank, set 2' }).getByLabel('Seconds').fill('25')
+      await page.clock.fastForward((ROUND_REST + 5) * 1000)
+      await expect(restBars(page)).toHaveCount(0)
+      expect(app.mutations).toHaveLength(2)
+      await round2.getByRole('button', { name: 'Log round 2', exact: true }).click()
+      await expect.poll(() => app.mutations.length).toBe(4)
+      await expect(restBars(page)).toHaveCount(0)
       await page.getByRole('button', { name: 'Minimize' }).click()
-      await restBars(page).getByRole('button', { name: 'Skip rest' }).click()
 
       // The circuit's own Start / Finish round rest is untouched.
       await page.getByRole('button', { name: 'Next section' }).click()
@@ -708,9 +822,34 @@ for (const { name: size, viewport } of VIEWPORTS) {
       await page.getByRole('button', { name: 'Finish round 1' }).click()
       await expect(page.getByText('Rest between rounds', { exact: true })).toBeVisible()
       await expect(restBars(page)).toHaveCount(0)
-      await expect(content(page).getByRole('button', { name: 'Rest', exact: true })).toHaveCount(0)
-      await expect(page.getByRole('button', { name: 'Log load and reps for goblet squat' })).toBeVisible()
-      expect(app.mutations).toHaveLength(2)
+      await expect(page.getByRole('button', { name: 'Rest for goblet squat', exact: true })).toBeVisible()
+      await expect(content(page).getByRole('button', { name: /^log/i })).toHaveCount(0)
+      const writesBeforeCircuitEntry = app.attempts.length
+      await page.getByRole('button', { name: 'Rest for goblet squat', exact: true }).click()
+      const circuitForm = page.getByRole('form', { name: 'Log set 1 of goblet squat' })
+      await expect(circuitForm).toBeVisible()
+      // Circuit movement entry opens the shared sheet without inventing a
+      // movement rest, resetting its round rest or recording a round/set.
+      await expect(restBars(page)).toHaveCount(0)
+      await expect(page.getByText('Rest between rounds', { exact: true })).toBeVisible()
+      await expect(content(page).getByRole('button', { name: 'Rest', exact: true })).toHaveCount(1)
+      await expect(content(page).getByRole('button', { name: /^log/i })).toHaveCount(0)
+      expect(app.attempts).toHaveLength(writesBeforeCircuitEntry)
+      const circuitEntry = await captureSheet(page, testInfo, `sheet-circuit-entry-${size}`)
+      expect(circuitEntry.geometry.rest).toBeNull()
+      await record(page, testInfo, `sheet-circuit-entry-${size}`, {
+        consumer: 'Workout · circuit movement Rest entry and shared sheet',
+        state: 'circuit round rest running; no movement rest prescribed; opening logs nothing', viewport,
+        reference: { file: ref.file, sha256: ref.sha256, region: ref.sheet.region },
+        measured: { referenceBands: ref.sheet.bands, actualBands: circuitEntry.bands },
+        capture: circuitEntry.capture, criteria: { 'AC-035': 'pass', 'AC-039': 'pass' },
+      })
+      await page.getByRole('button', { name: 'Minimize' }).click()
+      await content(page).getByRole('button', { name: 'Rest', exact: true }).click()
+      await expect(circuitForm).toBeVisible()
+      await expect(restBars(page)).toHaveCount(0)
+      expect(app.attempts).toHaveLength(writesBeforeCircuitEntry)
+      expect(app.mutations).toHaveLength(4)
       app.assertContained()
     })
   })

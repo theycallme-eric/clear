@@ -4,6 +4,33 @@ Body: UI polish batch 05 · Requirement REQ-012 · GitHub issue #570 · completi
 Branch `agent-runner/task-012-a1-420a75c5`, tested base `cdbcbe91fc7b9c79539c7ac2bd0fa3d5ad79df08`.
 This task-owned record satisfies the shared daily-journal instruction for this body.
 
+## Controller review checkpoint — corrected source, browser verification pending
+
+The initial worker record below is retained as history, **not final acceptance**. Its circuit Log
+exception was not approved by AC035 and has been removed. Its absent-rest first-open unit/reference
+image evidence does **not** reproduce a missing countdown with genuine active rest. That symptom
+remains unproven pending the actual baseline Workout browser experiment. No waiver or changed
+requirement is claimed.
+
+Initial source was preserved externally (18 source files, 105 total files, all hashes checked) and
+checkpointed at 8f43231. Current approved build a7fb2891 was normally merged at dd1a80a. Same native
+run/attempt retained; the initial worker succeeded but unchanged native verification failed at
+`npm test`, including the two source-bound audit checks. No PR or native acceptance exists yet.
+
+Scoped corrections now make both collapsed and expanded circuit entries Rest while retaining
+`statesRest=false`, `restSeconds=null` and the existing Start/Finish-round clocks. Removed the Log
+escape-hatch prop. Actual Workout readiness precedes the first unchanged full-page Axe scan;
+reference bytes are pinned. Added absent/expired save and Edit, changed-input Cancel, exact unit
+and correction identity, combined draft recovery/expiry and circuit entry coverage. Existing broader
+browser selectors/rest-start expectations were adapted without removing their contract assertions.
+
+A separate implementation agent reports **206 focused tests passing across 10 files**, plus a later
+66-test overlapping circuit/harness recheck; `git diff --check` passes. The first unit invocation
+failed before tests on macOS temp access; TMPDIR=/tmp resolved it. Browser changes are **unexecuted**
+at this checkpoint: native Task7 exclusively owns that test-server lane. Root owns final browser
+inspection, genuine source-bound recapture, same-attempt native recovery and protected delivery.
+Original circuit wording and original browser claims below describe the preserved first pass only.
+
 ## Intended outcome
 
 B05-07.1/07.2 (owner-resolved; see DECISIONS Rest/Log table): the movement card's entry action is
