@@ -1,8 +1,43 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current UI-polish TASK-018 source-bound recapture — 28 October 2026
+## Current batch-05 TASK-002 source-bound recapture — 29 October 2026
 
-Current genuinely executed format-preview group: `docs/design/evidence-0143/task034-format-preview-ui-polish-task018/`.
+Current genuinely executed group: `docs/design/evidence-0143/task034-format-preview-batch05-task002/`.
+The existing authenticated format-preview collector passed all four skin cases in 23.6 seconds,
+with eight actual PNGs: phone 390×844 and short 390×320 for CLEAR, Vapour, Signal and Mono.
+It exercised Settings entry, read-only formats/disclosures, Back and direct-entry Back, including
+the unchanged accessibility and pixel/record checks. The derived manifest is complete; no failed
+or skipped case is counted as proof. All recorded generation/write counters are zero.
+
+Actual captured source: `3652e246bfbf03f1a3c047ed9f7d36066e9c0bbc`; runtime
+`abcf73e6e0450c55a58b8c3a3eb4a4472d07ef2b779bd2ed5a23cee594994bba`; driver
+`083baa314ddec0d70482758f1e41459d18f938dd1a23c2d4f7536fdb7cfb00b9`; pinned 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+Capture session 43703 completed with exit 0 against only the owned loopback Supabase/PostgreSQL17
+backend, populated from the existing 29 committed migrations and three catalog seed files.
+Authentication setup/cleanup used disposable synthetic users; the preview walk forwarded no data
+write or model request. No hosted target, migration change, production or installed-device result
+is claimed. Every older capture group remains unchanged and bound to its original source.
+
+Actual native input identity: TASK-002, run `5b3cef73-0c9d-4314-b06e-972b41989280`, attempt 1,
+retained branch `agent-runner/task-002-a1-5b3cef73`, tested base
+`deda747b41bf9d690bedbba6c27a5fd2e362428a`, revision
+`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-002`.
+The existing v1 source-only lineage provenance was derived from the actual four records and payload
+bytes: `1a53ce4230f9d88de4ae44fe1fd8cb73b8d4a5bf6524bdf89a6e9a4630801af8`.
+The unchanged audit/source-lineage consumers passed 67/67 tests (10.44 seconds, exit 0).
+That continuity record grants no acceptance, merge or completion authority. Native independent
+criterion/task/project verification and protected delivery remain pending until actually observed.
+
+Separate TASK-002 local shell evidence passed 22 browser cases, including actual active Workout
+normal/narrow/short/restored/resume, routed/guard/boot/crash and Vapour reference regions. The
+task-owned record retains capture/reference hashes and honest installed-device limits. A claimed
+system-status-area cause was corrected to an unproven possibility; no physical-iPhone result is
+inferred from Chromium. Scroll-edge treatment remains TASK-003.
+
+## Prior UI-polish TASK-018 source-bound recapture — 28 October 2026
+
+Previously executed format-preview group: `docs/design/evidence-0143/task034-format-preview-ui-polish-task018/`.
 Four authenticated mobile skin cases/eight normal-short PNGs passed25.2s on clean committed
 source `459c8703b90d4263d9acab9e47eae799b57ff62c`, runtime
 `820201e00d5c68f5f4b979a6b6c63794f01eec6b83e158bc72cf6432f841a71d`, driver

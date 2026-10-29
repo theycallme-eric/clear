@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 469,
+  "consumer": "task034-format-preview-mobile",
+  "scope": "mobile-only-2026-10-22",
+  "sourceFile": "e2e/design-0143/format-preview.spec.ts",
+  "status": "passed",
+  "project": "mobile",
+  "skin": "signal",
+  "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
+  "observedAt": "2026-10-29T00:50:18.854Z",
+  "captureProcessId": 79005,
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "abcf73e6e0450c55a58b8c3a3eb4a4472d07ef2b779bd2ed5a23cee594994bba",
+    "applicationCommit": "3652e246bfbf03f1a3c047ed9f7d36066e9c0bbc",
+    "testedDeployment": "http://localhost:5173"
+  },
+  "sourceCheckout": {
+    "dirty": true,
+    "statusSha256": "c536167a66c37ab3679a81ef1c1bd14b754fe224da442c1d63e0affe6d1ee489"
+  },
+  "driverSourceHash": "083baa314ddec0d70482758f1e41459d18f938dd1a23c2d4f7536fdb7cfb00b9",
+  "baselineAbsence": {
+    "kind": "route-introduced-after-baseline",
+    "commit": "c31ef865f60811df076db396a40f90517701380e",
+    "route": "/settings/formats",
+    "sources": [
+      {
+        "path": "src/app/router.tsx",
+        "sha256": "4e862af4cba382d372628bee2b5232b49fc8fb231489063ece78be259d45fbba"
+      },
+      {
+        "path": "e2e/required-routes.ts",
+        "sha256": "d172f7c08236ead7078e14b9ffdc74d1358653c68031dce0f3d9f49d91b9554a"
+      }
+    ],
+    "before": null
+  },
+  "session": {
+    "fixture": "authenticatedSession",
+    "realSession": true,
+    "codeRequests": 1,
+    "verificationRequests": 1,
+    "generationRequests": 0,
+    "screens": [
+      "Welcome",
+      "OTP Login",
+      "Home",
+      "Generate"
+    ]
+  },
+  "observations": {
+    "settingsEntry": true,
+    "settingsBack": true,
+    "directEntryBack": true,
+    "allDisclosures": true,
+    "formatsAndStates": true,
+    "accessibility": true,
+    "storageUnchanged": true
+  },
+  "network": {
+    "generationRequests": 0,
+    "blockedGenerations": 0,
+    "attemptedWrites": 0,
+    "forwardedWrites": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "captures": [
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "signal",
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 844,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-phone-signal.png",
+        "sha256": "65787bd29c8bd51a1a3b04a2e2c31069b3aafdd8ac25cb06a664b377368460e9",
+        "bytes": 185840,
+        "width": 390,
+        "height": 844,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    },
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "signal",
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 320,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-short-signal.png",
+        "sha256": "9f1a7f4e4fef00e3c26e0b33b9ccea15592815dd0c197d13eea6969bd17bc45e",
+        "bytes": 77537,
+        "width": 390,
+        "height": 320,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    }
+  ]
+}

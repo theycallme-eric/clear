@@ -143,9 +143,10 @@ declaration test. Format preview is likewise wired but was not rendered in this 
    - Session detail issues read-only RPCs (`session_*`) that the fixture counted as writes. They now
      answer as a synthetic failed read, which renders the error state.
    - The failure message now names the request.
-2. **Full suite failures.**
+2. **Full suite failures in the original worker candidate.**
    - Gallery coverage required an account for the new `src/ui` export; it is recorded.
-   - Still failing: two `src/test/design-0143-final-audit.test.ts` tests. See Unresolved.
+   - Two `src/test/design-0143-final-audit.test.ts` tests rejected stale proof. See the genuine root
+     recovery below; final native acceptance remains pending.
 3. **Tool approvals.** Ad-hoc `shasum`, filtered Playwright and single-file vitest runs were not
    approved. Hashes were therefore computed inside the spec, and only the exact controller commands
    were run.
@@ -163,9 +164,9 @@ declaration test. Format preview is likewise wired but was not rendered in this 
 - `npm run gen:types -- --check`: current.
 - `python3 scripts/gen-issues.py --check`: exit 0.
 
-## Unresolved
+## Original blocker and remaining verification
 
-- **Blocker: the 0.14.3 final-audit binding.** `design-0143-final-audit.test.ts` binds the audit and
+- **Original blocker: the 0.14.3 final-audit binding.** `design-0143-final-audit.test.ts` binds the audit and
   TASK-034's format-preview evidence records to the exact runtime-source hash of `index.html` + `src`.
   Any runtime change, including this required shell repair, makes both fail until two things happen:
   - TASK-034's format-preview group is genuinely recaptured against an isolated disposable local
@@ -176,6 +177,9 @@ declaration test. Format preview is likewise wired but was not rendered in this 
   local backend was prohibited was incorrect: the approved boundaries prohibit hosted/schema and
   generation changes, while disposable local verification is expressly allowed. Root selected the
   existing genuine recapture/rebind procedure, preserving every check and earlier evidence group.
+  Fresh collection and the unchanged offline audit/source-lineage consumers subsequently passed
+  (4/4 collector cases, eight PNGs; 67/67 consumer tests). Native final verification and delivery
+  remain pending; the earlier worker's stale-proof failure is preserved as history.
 - **Device-only, pending outside the DAG:** the cause of the installed iPhone's flat bottom band,
   and whether the shared page gap fully clears the status-area wash on the
   pictured device. Physical installed-iPhone UAT has not been observed. Local results are Chromium
@@ -225,4 +229,16 @@ uncommitted TASK-002 changes (`dirty: true`). No installed or deployed identity 
 An owned disposable Postgres 17/auth/REST project uses isolated loopback API 55631/database 55632
 with only the current 29 committed migrations and three catalog seed files. Existing local services
 are untouched; runtime connection data is private and excluded from Git. The cached CLI remains
-2.117.0. Fresh format-preview records and native final verification are still pending here.
+2.117.0. The actual four-skin/eight-PNG format collector subsequently passed in 23.6 seconds on
+committed source `3652e246bfbf03f1a3c047ed9f7d36066e9c0bbc` (session 43703, exit 0).
+Fresh group: `docs/design/evidence-0143/task034-format-preview-batch05-task002`.
+Runtime `abcf73e6e0450c55a58b8c3a3eb4a4472d07ef2b779bd2ed5a23cee594994bba`, driver
+`083baa314ddec0d70482758f1e41459d18f938dd1a23c2d4f7536fdb7cfb00b9`.
+All four cases passed, all eight phone/short PNGs are real new captures, and every recorded
+generation/write counter is zero. The existing source-only v1 lineage record uses the actual
+current task/run/base/revision and payload hash
+`1a53ce4230f9d88de4ae44fe1fd8cb73b8d4a5bf6524bdf89a6e9a4630801af8`.
+All earlier groups remain unchanged. The final audit was derived from these records; the unchanged
+offline audit/source-lineage consumer command passed **67/67** tests (10.44 seconds, exit 0,
+session 41320). Every approved native criterion/task/project check and protected delivery remain
+pending until actually observed on the final candidate.
