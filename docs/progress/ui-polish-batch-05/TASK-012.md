@@ -218,3 +218,6 @@ preserves the earlier genuine group and refreshes the changed capture-driver bin
 This is genuine owner-authorized product CI correction. Use existing documented published-workspace
 drift reconciliation, same-attempt recovery, exact protected-path approval for .github/workflows/ci.yml,
 fresh native receipt, and the same PR. No Runner, contract, ledger or attempt-counter changes.
+
+
+CI correction rehearsal passed: actual external discovery without staged references found 340 tests in 38 files; local Rest/Log discovery retained five. The new genuine source-bound group passed four skins/eight PNGs/26.8s, source 388db2e001ce8e2442ddbabb36e59f6739f9446b, runtime be16a46ae11a4ced6252f00b4844b44d58ff372bd8048b1cf6210e4af47615ab, driver 012d31e11d33146271cca7df06f31699590a7684607516cd485b17e5da2d5bbe, payload 59053047b13ba7fa825e8330ae9ace8e08b249458289358089cf444262b84024. Previous capture group stays intact. Native reconciliation session 44319 recorded the actual authorized workspace drift and retained the same run/attempt/old delivery. Fresh recovery must confirm the exact final head and only protected path .github/workflows/ci.yml, then rerun all unchanged checks before updating PR582.
