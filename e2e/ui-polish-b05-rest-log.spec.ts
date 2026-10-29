@@ -385,21 +385,27 @@ const content = (page: Page) => page.locator('main#main > .clr-scroll-region > .
 const sheet = (page: Page) => page.locator('section.clr-set-sheet')
 const restBars = (page: Page) => page.getByRole('region', { name: 'Rest', exact: true })
 
-/** Complete the collapse layout before the next action on the moving card.
- * The public region publishes its pinned-foot height asynchronously. A sheet
- * can be absent while that published inset still describes its open height;
- * auto-scrolling/clicking then can move a saved-row Edit between down/up.
- * Wait for the actual measured boundary, without a sleep or a second click.
+/** Complete both collapse measurements before the next card action.
+ * The fitted entry first measures its current content; the outer public
+ * region then publishes the pinned-foot inset. Either may still describe the
+ * open sheet after its DOM is gone, moving a target during auto-scroll/click.
+ * Wait for both actual boundaries, without a sleep or a second click.
  */
 async function collapseSheet(page: Page) {
   await page.getByRole('button', { name: 'Minimize' }).click()
   await expect(sheet(page)).toHaveCount(0)
   await expect.poll(() => page.locator('main#main > .clr-scroll-region').evaluate((region) => {
     const foot = region.querySelector(':scope > .clr-scroll-region__foot')
-    const actual = foot?.getBoundingClientRect().height ?? 0
-    const published = Number.parseFloat(getComputedStyle(region).getPropertyValue('--foot-h'))
-    return actual > 0 && Number.isFinite(published) && Math.abs(actual - published) <= 1
-  }), { message: 'Collapsed Workout footer must match its published scroll boundary before the next card action' }).toBe(true)
+    const fitted = foot?.querySelector<HTMLElement>('.clr-workout-footer__entry')
+    const content = fitted?.querySelector(':scope > .clr-scroll-region > .clr-scroll-region__scroller > div')
+    if (!foot || !fitted || !content) return false
+    const requestedEntry = Number.parseFloat(fitted.style.height)
+    const currentContent = content.getBoundingClientRect().height
+    const actualFoot = foot.getBoundingClientRect().height
+    const publishedFoot = Number.parseFloat(getComputedStyle(region).getPropertyValue('--foot-h'))
+    return Number.isFinite(requestedEntry) && Math.abs(requestedEntry - currentContent) <= 1
+      && actualFoot > 0 && Number.isFinite(publishedFoot) && Math.abs(actualFoot - publishedFoot) <= 1
+  }), { message: 'Collapsed Workout entry content and outer footer must match both measured scroll boundaries before the next card action' }).toBe(true)
 }
 
 /** The one movement card, by its heading, on the main screen. */

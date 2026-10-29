@@ -185,3 +185,16 @@ Eight PNG byte counts and digests were checked. All preview write/generation cou
 owned local fixture auth setup and cleanup remain separate. Actual v1 source-only provenance and
 audit were derived, with all older groups preserved. The unchanged native checks, exact-head
 receipt, required CI and protected build delivery remain pending.
+
+
+## Native-concurrency correction
+
+First same-attempt native recovery session 36480 stopped in its exact required browser command.
+The trace ruled out an insufficient 30-second case budget: final Edit was clicked at about 12.25s,
+then its missing form consumed the remaining time. The empty fitted entry still requested 292px;
+that later shrank to zero and shifted the click target. The collapse helper now waits for BOTH
+current fitted content/requested height and outer actual/published footer height. No application
+patch, timeout increase, delay, retry or force click. Native-equivalent command passed **5/5 using
+five workers, 13.2s**, session 55675. Actual direct output contains 97 files, 76 PNGs and 20 records;
+source cbbfe8a plus dirty spec is retained honestly. Runtime and format-capture driver did not change,
+so the real source-bound capture remains valid. Repeat unchanged native verification remains pending.
