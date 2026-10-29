@@ -136,8 +136,9 @@ describe('the preview is opened from Settings and leaves everything as it was', 
     expect(await heading(FORMAT_PREVIEW_TITLE)).toBeVisible()
 
     // Every control the preview has, used: the section disclosures, twice each.
-    const main = screen.getByRole('main')
-    const controls = within(main).getAllByRole('button')
+    // The header (Back) is Screen's pinned head; the preview is its content.
+    const content = screen.getByRole('region', { name: `${FORMAT_PREVIEW_TITLE} content` })
+    const controls = within(content).getAllByRole('button')
     expect(controls.length).toBeGreaterThan(0)
     for (const control of controls) {
       await user.click(control)
@@ -298,7 +299,9 @@ describe('representative prescriptions, timing and execution states', () => {
     const main = await openPreview()
 
     expect(main.querySelector('form, input, textarea, select')).toBeNull()
-    for (const button of within(main).getAllByRole('button')) {
+    // Back sits in the header, Screen's pinned head; every other button is a disclosure.
+    const content = within(main).getByRole('region', { name: `${FORMAT_PREVIEW_TITLE} content` })
+    for (const button of within(content).getAllByRole('button')) {
       expect(button).toHaveAttribute('aria-expanded')
     }
   })

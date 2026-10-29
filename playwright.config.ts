@@ -65,6 +65,8 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
     // discovery on its existing cases; directly selecting only this file on
     // an external target finds no cases and retains Playwright's failure.
     exclusions.push(String.raw`(?:^|[\\/\s])ui-polish-integrated\.spec\.ts(?:$|[\s:])`)
+    // B05 fixtures intercept synthetic data and must never target a deployment.
+    exclusions.push(String.raw`(?:^|[\\/\s])ui-polish-b05-[a-z0-9-]+\.spec\.ts(?:$|[\s:])`)
   }
   return exclusions.length ? new RegExp(`^(?!.*(?:${exclusions.join('|')})).*$`) : /.*/
 }

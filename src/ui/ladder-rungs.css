@@ -69,6 +69,10 @@
 /* A rung that can be chosen is a touch target first: 48px each way, whatever
    the number inside it is. */
 .clr-rung--selectable {
+  /* The visually hidden native radio belongs to this rung, not the outer
+     positioned rail. Native focus must reveal it through the rail's scroller
+     rather than scrolling an ancestor toward a box outside that scroller. */
+  position: relative;
   min-width: var(--spacing-1000);
   min-height: var(--spacing-1000);
   padding: var(--spacing-100) var(--spacing-200);

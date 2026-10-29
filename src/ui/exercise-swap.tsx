@@ -23,10 +23,11 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { AppDialog } from './app-dialog'
-import { Button, EmptyState, RefreshCw, ScrollRegion, TextAction } from '../design-system/index'
+import { Button, EmptyState, RefreshCw, TextAction } from '../design-system/index'
 import { exerciseName } from '../state/prescription'
 import { useExerciseSwap, type SwapOptionsState } from '../state/swap-context'
 import type { SwapOption } from '../state/swap'
+import { FittedScrollRegion } from './fitted-scroll-region'
 import { ErrorView, LoadingView } from './view-state'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -247,7 +248,7 @@ function SwapOptionList({
 
   return (
     <div data-swap-list-frame style={{ height: listHeight, maxHeight: LIST_FRAME_MAX_HEIGHT }}>
-      <ScrollRegion>
+      <FittedScrollRegion fit={false}>
         <ul ref={listRef} aria-label="Alternatives" className="clr-stack--tight" style={OPTION_LIST_STYLE}>
           {options.map((option) => (
             <li key={option.exerciseId}>
@@ -264,7 +265,7 @@ function SwapOptionList({
             </li>
           ))}
         </ul>
-      </ScrollRegion>
+      </FittedScrollRegion>
     </div>
   )
 }

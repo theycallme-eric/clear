@@ -7,10 +7,18 @@
  *
  * REQ-001: a screen with a fixed header passes `header`; the page title is
  * then that header's title in place of the repeated CLEAR logo, and the
- * scrolling content starts with its first card. The header stays a sibling
- * above `<main>`, exactly where screens rendered it before.
+ * scrolling content starts with its first card.
+ *
+ * B05 REQ-003: the header is the region's pinned head. The public region
+ * draws its top streak and measures its scroller's top edge only from a head
+ * it owns, so a header rendered beside it left the clip line at the header's
+ * rule without the scroll treatment. The header keeps its own closing rule
+ * (`headRule={false}`, as for any head that ends on a rule of its own) and the
+ * streak lights on that rule. With no pinned footer, an overflowing screen
+ * gets a bare lower edge layer: the foot's rule, and the bottom inset beneath
+ * it, with no action added. Content that fits gets neither.
  */
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 
 import { AppHeader, ScrollRegion, type AppHeaderProps } from '../design-system/index'
 import { Heading, HeadingLevelProvider } from '../ui/Heading'
@@ -42,6 +50,46 @@ export interface ScreenProps {
   children?: ReactNode
 }
 
+/**
+ * Whether the scroller holding `content` actually overflows. Only watched when
+ * `watch` is set; a screen with its own footer already has a lower layer.
+ */
+function useOverflow(content: RefObject<HTMLElement | null>, watch: boolean): boolean {
+  const [overflowing, setOverflowing] = useState(false)
+
+  useLayoutEffect(() => {
+    const element = content.current
+    const scroller = element?.parentElement
+    if (!watch || !element || !scroller) {
+      setOverflowing(false)
+      return
+    }
+    const measure = () => {
+      const region = scroller.parentElement
+      const edge = region?.querySelector<HTMLElement>(
+        ':scope > .clr-scroll-region__foot > [data-screen-edge]',
+      )
+      const reservedFoot = edge?.parentElement?.getBoundingClientRect().height ?? 0
+      const paddingBottom = parseFloat(getComputedStyle(element).paddingBottom) || 0
+      // Measure the no-footer layout even while its temporary edge is mounted.
+      // The edge owns the safe inset then, so restore that content padding for
+      // this comparison and restore the space the public foot reserves.
+      const inset = edge?.getBoundingClientRect().height ?? paddingBottom
+      const contentHeight = Math.max(element.scrollHeight, element.getBoundingClientRect().height)
+        + inset - paddingBottom
+      setOverflowing(contentHeight > scroller.clientHeight + reservedFoot + 1)
+    }
+    measure()
+    if (typeof ResizeObserver === 'undefined') return
+    const observer = new ResizeObserver(measure)
+    observer.observe(scroller)
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [content, watch])
+
+  return overflowing
+}
+
 export function Screen({
   title,
   heading,
@@ -67,14 +115,29 @@ export function Screen({
     </HeadingLevelProvider>
   )
 
+  const contentRef = useRef<HTMLDivElement>(null)
+  const overflowing = useOverflow(contentRef, !pinnedFoot)
+
+  const head =
+    header === undefined ? (
+      pinnedHead
+    ) : (
+      <>
+        <AppHeader {...header}>{pageTitle}</AppHeader>
+        {pinnedHead}
+      </>
+    )
+
+  const foot =
+    pinnedFoot || (overflowing ? <div className="clr-screen__edge" data-screen-edge="" /> : undefined)
+
   return (
     <>
-      {header === undefined ? null : <AppHeader {...header}>{pageTitle}</AppHeader>}
       <main id="main" className="clr-screen" tabIndex={-1}>
         <ScrollRegion
-          head={pinnedHead}
-          headRule={pinnedHeadRule}
-          foot={pinnedFoot}
+          head={head}
+          headRule={header === undefined || pinnedHead ? pinnedHeadRule : false}
+          foot={foot}
           scrollerProps={{
             'aria-label': `${title} content`,
             role: 'region',
@@ -82,6 +145,7 @@ export function Screen({
           }}
         >
           <div
+            ref={contentRef}
             className={[
               'clr-screen__content',
               centered ? 'clr-screen__content--centered' : null,

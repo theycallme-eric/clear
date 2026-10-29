@@ -125,7 +125,7 @@ describe('shell safe-area declarations (AC-075; browser geometry checked separat
   })
 
   it('declares an in-flow header without a negative top offset', () => {
-    const header = rule(shell, '.clr-shell--contained > .clr-shell__content > header')
+    const header = rule(shell, '.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')
 
     expect(header).toBeDefined()
     expect(header).not.toMatch(/position:\s*(fixed|absolute)/)

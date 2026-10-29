@@ -112,3 +112,93 @@ describe('Screen (CORE-05)', () => {
     ).toBeInTheDocument()
   })
 })
+
+/**
+ * B05 REQ-003: the sibling header is connected to the public region's pinned
+ * head, and a footerless screen that overflows gets a bare lower edge layer.
+ * jsdom has no layout, so the scroller's overflow is stated explicitly.
+ */
+describe('Screen scroll boundaries (B05 REQ-003)', () => {
+  function overflowBy(scrollHeight: number, clientHeight: number) {
+    const proto = HTMLElement.prototype
+    const scroll = Object.getOwnPropertyDescriptor(proto, 'scrollHeight')
+    const client = Object.getOwnPropertyDescriptor(proto, 'clientHeight')
+    Object.defineProperty(proto, 'scrollHeight', { configurable: true, get: () => scrollHeight })
+    Object.defineProperty(proto, 'clientHeight', { configurable: true, get: () => clientHeight })
+    return () => {
+      if (scroll) Object.defineProperty(proto, 'scrollHeight', scroll)
+      else Reflect.deleteProperty(proto, 'scrollHeight')
+      if (client) Object.defineProperty(proto, 'clientHeight', client)
+      else Reflect.deleteProperty(proto, 'clientHeight')
+    }
+  }
+
+  it('places the header in the region’s pinned head, so the top streak is emitted on its rule', () => {
+    const { container } = renderWithProviders(
+      <Screen title="Titled" header={{}}>
+        <p>Body</p>
+      </Screen>,
+    )
+
+    const region = container.querySelector('main > .clr-scroll-region')!
+    const head = region.querySelector(':scope > .clr-scroll-region__head')
+    expect(head?.querySelector(':scope > header h1')).toHaveTextContent('Titled')
+    // The header draws its own closing rule; the region adds no second one.
+    expect(head).not.toHaveAttribute('data-rule')
+    expect(region.querySelectorAll(':scope > .clr-scroll-region__streak')).toHaveLength(2)
+    expect(region.querySelector('.clr-scroll-region__scroller header')).toBeNull()
+  })
+
+  it('emits no top streak for a screen without a header or pinned head', () => {
+    const { container } = renderWithProviders(<Screen title="Plain">Body</Screen>)
+
+    const region = container.querySelector('main > .clr-scroll-region')!
+    expect(region.querySelector(':scope > .clr-scroll-region__head')).toBeNull()
+    expect(region.querySelectorAll(':scope > .clr-scroll-region__streak')).toHaveLength(1)
+  })
+
+  it.each([undefined, null, false])('gives an overflowing screen a bare lower edge when its footer is %s', (footer) => {
+    const restore = overflowBy(2000, 600)
+    try {
+      const { container } = renderWithProviders(
+        <Screen title="Settings" header={{}} pinnedFoot={footer}>
+          <p>Long</p>
+        </Screen>,
+      )
+      const foot = container.querySelector('main > .clr-scroll-region > .clr-scroll-region__foot')
+      expect(foot?.querySelector(':scope > [data-screen-edge]')).not.toBeNull()
+      expect(foot?.querySelector('button, a, .clr-footer')).toBeNull()
+    } finally {
+      restore()
+    }
+  })
+
+  it.each([undefined, null, false])('adds no lower edge when the content fits and its footer is %s', (footer) => {
+    const restore = overflowBy(600, 600)
+    try {
+      const { container } = renderWithProviders(
+        <Screen title="Short" header={{}} pinnedFoot={footer}>
+          <p>Short</p>
+        </Screen>,
+      )
+      expect(container.querySelector('.clr-scroll-region__foot')).toBeNull()
+    } finally {
+      restore()
+    }
+  })
+
+  it('keeps a screen’s own footer as its lower layer', () => {
+    const restore = overflowBy(2000, 600)
+    try {
+      const { container } = renderWithProviders(
+        <Screen title="Footed" header={{}} pinnedFoot={<div className="clr-footer">Action</div>}>
+          <p>Long</p>
+        </Screen>,
+      )
+      expect(container.querySelector('[data-screen-edge]')).toBeNull()
+      expect(container.querySelector('.clr-scroll-region__foot > .clr-footer')).not.toBeNull()
+    } finally {
+      restore()
+    }
+  })
+})
