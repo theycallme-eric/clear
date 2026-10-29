@@ -82,6 +82,7 @@ import {
 } from '../state/workout-queries'
 import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
+import { FittedScrollRegion } from '../ui/fitted-scroll-region'
 import { PhoneFooter } from '../ui/composition'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { SetLoggingSheetHost, SetLoggingSheetSlot } from '../ui/set-logging-sheet'
@@ -434,7 +435,12 @@ function WorkoutShell({
             pinnedFoot={
               <PhoneFooter className="clr-workout-footer">
                 <div className="clr-workout-footer__content">
-                  <div className="clr-workout-footer__entry">
+                  {/*
+                    B05 REQ-003: the capped entry area scrolls through the
+                    public region, so a sheet taller than its allowance keeps
+                    the hard clip and the transient scroll cues.
+                  */}
+                  <FittedScrollRegion className="clr-workout-footer__entry">
                     {/*
                       REQ-009: one set-logging half-sheet for the whole screen.
                       While it is open it draws the running rest itself, so the
@@ -442,7 +448,7 @@ function WorkoutShell({
                     */}
                     <FooterRest />
                     <SetLoggingSheetSlot />
-                  </div>
+                  </FittedScrollRegion>
                   <SectionNavigation
                     section={current}
                     progress={progress}

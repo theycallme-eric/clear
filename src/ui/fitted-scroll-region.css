@@ -1,0 +1,21 @@
+/* B05 REQ-003: the host's height is the content's, shrunk by its flex parent
+   when there is not room; the public region is laid over exactly that box, so
+   it never depends on a percentage of an auto-sized parent. */
+.clr-fitted-scroll {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.clr-fitted-scroll > .clr-scroll-region {
+  position: absolute;
+  inset: 0;
+  height: auto;
+}
+
+/* Empty public pinned layers contribute only their own border. The region
+   measures those rules and owns the streaks on them; fitting content mounts
+   neither layer. */
+.clr-fitted-scroll > .clr-scroll-region > :is(.clr-scroll-region__head, .clr-scroll-region__foot) {
+  padding: 0;
+}

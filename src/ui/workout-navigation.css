@@ -63,13 +63,8 @@
   gap: var(--spacing-200);
 }
 
-.clr-workout-footer__entry {
-  min-height: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-/* Docked here, the entry is the sheet's one scroller. The frame's own capped,
+/* Docked here, the entry's public region (FittedScrollRegion) is the sheet's
+   one scroller. The frame's own capped,
    contained scroll box sat under the finger without overflowing, so on a short
    phone a touch swipe stopped at it and the fields below stayed out of reach. */
 .clr-workout-footer__entry .clr-set-sheet__frame {
@@ -91,7 +86,7 @@
     max-height: 100%;
   }
 
-  .clr-shell--contained > .clr-shell__content:has(> .clr-workout-header) {
+  .clr-shell--contained > .clr-shell__content:has(.clr-workout-header) {
     --shell-gap-top: var(--spacing-200);
     --shell-gap-bottom: var(--spacing-200);
   }
