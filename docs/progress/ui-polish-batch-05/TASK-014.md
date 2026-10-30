@@ -130,3 +130,19 @@ They are genuine source evidence for the pre-prominence tree, not acceptance of 
 readout. A new unique capture group will be used after the scoped visual correction. Root will use
 existing font tokens through the existing Movement TimerFrame caller; no session/rest timer, vendor,
 clock engine or TimerFrame adapter change is authorized by this finding.
+
+
+## Scoped prominent readout correction — not yet run
+
+The existing MovementCountdown caller now uses the pinned shared heading-h1 size token (32px)
+for its data-font digits and omits the redundant visible Countdown caption. The timer keeps its
+accessible Countdown name, spoken value, public TimerFrame/containment, colors, controls and clock
+engine; session/rest/round/AMRAP timers and the TimerFrame adapter are unchanged. No new font scale,
+raw style value, vendor edit or caption/accessibility workaround was introduced.
+
+Proof now compares the actual readout/control-row height ratio with the same selected reference
+(the genuine reference ratio is130/93), and requires digit prominence over control text. All earlier
+width/placement/containment/state/mutation assertions remain. This closes the visual gap that a
+width/order-only comparison had missed. Actual images and ratios must pass before acceptance;
+the new unique format group is task034-format-preview-batch05-task014-prominent. Prior14 records
+and actual source-only provenance remain unchanged as explicitly insufficient visual history.

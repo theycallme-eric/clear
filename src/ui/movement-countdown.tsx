@@ -89,10 +89,9 @@ export function MovementCountdownView({ clock, movement }: MovementCountdownView
       <div className="clr-movement-countdown__timer">
         <TimerFrame
           label="Countdown"
-          caption="Countdown"
           text={formatElapsed(remainingSeconds)}
           spoken={spokenRest(remainingSeconds)}
-          size="var(--label-md-size)"
+          size="var(--heading-h1-size)"
           low={low}
           pulse={urgent ? loop : undefined}
         />

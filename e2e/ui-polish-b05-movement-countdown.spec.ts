@@ -239,6 +239,7 @@ function composition(major: Blocks) {
     blocks: major.length,
     timerSpan: timer === undefined ? 0 : Math.max(...timer.clusters.map((c) => c.right)) - Math.min(...timer.clusters.map((c) => c.left)),
     timerAbovePair: timer !== undefined && pair !== undefined && timer.bottom < pair.top,
+    timerToPairHeight: timer === undefined || pair === undefined ? 0 : timer.height / pair.height,
     pairHalves: halves.length,
     leftHalf: halves[0] ?? null,
     rightHalf: halves[1] ?? null,
@@ -254,6 +255,10 @@ function expectComposition(actual: Composition, ref: Composition, context: strin
   // Full width: the timer spans the card's content as the reference does.
   expect(actual.timerSpan, detail).toBeGreaterThan(0.9)
   expect(Math.abs(actual.timerSpan - ref.timerSpan), detail).toBeLessThan(0.08)
+  // The selected preview makes the readout more prominent than its controls;
+  // a wide strip containing the old compact digits is not that composition.
+  expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeGreaterThan(0.8)
+  expect(actual.timerToPairHeight / ref.timerToPairHeight, detail).toBeLessThan(1.25)
   // Side by side: two halves, one each side of the centre, as wide as each other.
   expect(actual.pairHalves, detail).toBe(2)
   expect(actual.leftHalf!.right, detail).toBeLessThan(0.52)
@@ -524,6 +529,8 @@ async function placement(region: Locator, cardLocator: Locator, rest: Locator) {
       groupClass: element.querySelector('.clr-action-group')?.className ?? '',
       buttons,
       nestedCards: element.querySelectorAll('.clr-card').length,
+      digitSize: parseFloat(getComputedStyle(element.querySelector('[role="timer"] .clr-tumble')!).fontSize),
+      controlSize: parseFloat(getComputedStyle(element.querySelector('.clr-action-group button')!).fontSize),
     }
   })
   return { region: box!, card: cardBox!, rest: restBox!, ...parts }
@@ -550,6 +557,7 @@ function expectPlacement(found: Awaited<ReturnType<typeof placement>>, context: 
   expect(Math.abs(first.width - second.width), detail).toBeLessThan(2)
   // EXC-03: no card nested inside the movement's card through the timer.
   expect(found.nestedCards, detail).toBe(0)
+  expect(found.digitSize, detail).toBeGreaterThanOrEqual(found.controlSize * 1.5)
 }
 
 /** The countdown as captured, with the same arrangement measure the reference takes. */
@@ -611,6 +619,7 @@ test('B05-06.2/06.3 reference region is a full-width countdown above a side-by-s
   const detail = JSON.stringify(ref)
   expect(ref.measured.blocks, detail).toBeGreaterThanOrEqual(2)
   expect(ref.measured.timerAbovePair, detail).toBe(true)
+  expect(ref.measured.timerToPairHeight, detail).toBeGreaterThan(1)
   expect(ref.measured.timerSpan, detail).toBeGreaterThan(0.9)
   expect(ref.measured.pairHalves, detail).toBe(2)
   await testInfo.attach('reference-06.json', { body: JSON.stringify(ref, null, 2), contentType: 'application/json' })
