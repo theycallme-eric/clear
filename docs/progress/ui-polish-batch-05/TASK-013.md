@@ -85,3 +85,21 @@ The unchanged full source-bound capture/audit checks also require genuinely fres
 Use the existing evidence procedure; do not weaken validators, relabel old images or manufacture
 missing worker evidence. Root owns final synchronization, normal continuation/recovery, native checks,
 publication, required GitHub CI and verified delivery only to the approved build branch.
+
+
+## Rest/Log regression flow after the overlay change — unrun correction
+
+The root execution owner reported run33952: the phone390 main Rest/Log case failed when it tried
+to tap the background Rest control immediately after Save correction. The approved Task13 overlay
+leaves the current sheet open over that control. The narrow320 case and the other cases passed.
+This is an old interaction-sequence assumption, not authority to allow clicks through the sheet.
+
+The existing regression now invokes its real `collapseSheet()` / Minimize action before that
+covered Rest activation. The same Save-correction → covered-Rest sequence later in the expired-rest
+branch uses Minimize too, and explicitly rechecks that no rest appeared before the user starts it.
+The helper's measured-collapse wait and every existing expiry, held-draft, correction identity,
+rest-deadline and no-write assertion remain. No force click, retry, sleep, assertion removal, UI/CSS
+change or scroll-boundary-test change was made.
+
+This narrow correction has NOT been executed by the editing agent. Root owns the browser lane and
+will run the regression on the final combined candidate; this entry claims no new passing result.
