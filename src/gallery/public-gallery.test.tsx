@@ -56,6 +56,28 @@ describe('public actual-component gallery', () => {
     expect(window.location.pathname).toBe('/gallery/app')
   })
 
+  it('switches between named comparisons and the full library without losing the selected view', async () => {
+    const user = userEvent.setup()
+    await open('/gallery')
+    const nav = screen.getByRole('navigation', { name: 'Gallery sections' })
+    for (const [name, component, count] of [
+      ['History and Favorites', 'WorkoutEntryComparison', 2],
+      ['Movement across workout screens', 'MovementIdentityComparison', 3],
+    ] as const) {
+      await user.click(within(nav).getByRole('link', { name }))
+      expect(window.location.pathname).toBe('/gallery/app')
+      expect(window.location.search).toBe(`?component=${component}`)
+      expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(1)
+      expect(document.querySelectorAll('.clr-dev-gallery__specimen')).toHaveLength(count)
+      expect(within(nav).getByRole('link', { name })).toHaveAttribute('aria-current', 'page')
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus())
+    }
+    await user.click(within(nav).getByRole('link', { name: 'All components' }))
+    expect(window.location.search).toBe('')
+    expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(GALLERY_ENTRIES.length)
+    expect(initializeClients).not.toHaveBeenCalled()
+  })
+
   it('changes skins without persisting preferences and focuses the screen after section navigation', async () => {
     const user = userEvent.setup()
     localStorage.setItem('clear.skin', 'clear')
@@ -64,7 +86,7 @@ describe('public actual-component gallery', () => {
     await user.click(within(chrome).getByRole('radio', { name: 'mono' }))
     expect(document.documentElement.dataset.skin).toBe('mono')
     expect(localStorage.getItem('clear.skin')).toBe('clear')
-    await user.click(screen.getByRole('link', { name: 'App-composed' }))
+    await user.click(screen.getByRole('link', { name: 'All components' }))
     await screen.findByRole('heading', { level: 2, name: 'App-composed' })
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus())
   })

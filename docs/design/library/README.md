@@ -4,6 +4,12 @@ Use `/gallery` or `/gallery/app` for actual app components. Both use the same
 register and styles as the development gallery. This branch is a source
 proposal; deployment and visual approval are recorded separately.
 
+The public navigation separates All components, History and Favorites, and
+Movement across workout screens. The comparison views show existing app UI
+in related contexts, not before-and-after design proposals. Initial review asks
+whether those examples are accurate and useful; it is not approval of every
+existing visual choice. Material proposed changes receive their own review.
+
 ## Find and reuse
 
 - Start with [the component index](COMPONENTS.md), generated from

@@ -84,7 +84,7 @@ describe('/dev/gallery', () => {
     expect(groups).toHaveLength(GALLERY_ENTRIES.length)
     for (const [index, entry] of GALLERY_ENTRIES.entries()) {
       expect(within(groups[index] as HTMLElement).getByRole('heading', {
-        name: entry.component,
+        name: entry.title ?? entry.component,
       })).toBeInTheDocument()
     }
   })

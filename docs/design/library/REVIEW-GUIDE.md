@@ -56,6 +56,11 @@ the smallest change there and list affected consumers.
 ## Gallery review
 
 Review `/gallery` and `/gallery/app` in a fresh logged-out browser.
+Use History and Favorites or Movement across workout screens in the top
+navigation for a focused comparison; All components returns to the full
+register. These show current UI across contexts, not competing proposals or
+before/after changes. A positive initial accuracy/usability pass is sufficient
+for this library checkpoint; detailed design decisions follow with the pilot.
 Check direct reloads, four skins, a narrow phone, keyboard section navigation,
 one dialog, and a few familiar parent components. The App-composed view uses the
 actual component implementations. Historical archive pages remain development

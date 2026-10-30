@@ -16,7 +16,7 @@
  * rather than playing at once.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { resolveAtmosphere, type AtmosphereLevel } from '../app/atmosphere'
 import { Screen } from '../app/Screen'
@@ -30,6 +30,7 @@ import { AppComposedParts } from './gallery-app'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { DesignSystemSpecimens } from './gallery-ds'
 import { SPECIMENS } from './specimens'
+import { GALLERY_ENTRIES } from './gallery-registry'
 
 import './gallery.css'
 
@@ -107,10 +108,33 @@ const SECTIONS = [
 ]
 
 function GalleryNav({ publicView }: { publicView: boolean }) {
+  const { search } = useLocation()
+  const component = new URLSearchParams(search).get('component')
+  const comparisons = GALLERY_ENTRIES.filter(entry =>
+    entry.component === 'WorkoutEntryComparison' || entry.component === 'MovementIdentityComparison',
+  )
+  if (publicView) {
+    return (
+      <Nav label="Gallery sections">
+        <ul className="clr-dev-gallery__nav-list">
+          <li>
+            <Link to="/gallery/app" aria-current={comparisons.some(entry => entry.component === component) ? undefined : 'page'}>All components</Link>
+          </li>
+          {comparisons.map(entry => (
+            <li key={entry.component}>
+              <Link to={`/gallery/app?component=${entry.component}`} aria-current={component === entry.component ? 'page' : undefined}>
+                {entry.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Nav>
+    )
+  }
   return (
     <Nav label="Gallery sections">
       <ul className="clr-dev-gallery__nav-list">
-        {SECTIONS.filter((section) => !publicView || section.to === 'app').map((section) => (
+        {SECTIONS.map((section) => (
           <li key={section.label}>
             <NavLink to={section.to} end={section.end}>
               {section.label}
@@ -129,14 +153,15 @@ function GalleryNav({ publicView }: { publicView: boolean }) {
  * skin in the other.
  */
 function GalleryLayout({ publicView }: { publicView: boolean }) {
-  const { pathname } = useLocation()
-  const previousPath = useRef(pathname)
+  const { pathname, search } = useLocation()
+  const location = pathname + search
+  const previousPath = useRef(location)
   useEffect(() => {
-    if (publicView && previousPath.current !== pathname) {
+    if (publicView && previousPath.current !== location) {
       document.querySelector<HTMLElement>('main h1')?.focus()
     }
-    previousPath.current = pathname
-  }, [pathname, publicView])
+    previousPath.current = location
+  }, [location, publicView])
   return (
     <Screen title="Component Gallery">
       <div className="clr-dev-gallery">

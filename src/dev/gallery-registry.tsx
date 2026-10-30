@@ -124,6 +124,8 @@ export interface GallerySpecimen {
 export interface GalleryEntry {
   /** Exported component name — what the coverage gate matches on. */
   component: string
+  /** Human-readable heading when a registered comparison needs a plain name. */
+  title?: string
   /** The DAG node that owns it. */
   requirement: string
   /** Module path, so a reviewer can go and read it. */
@@ -1824,9 +1826,10 @@ function AppearancePickerChosenSkin() {
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
   {
     component: 'WorkoutEntryComparison',
+    title: 'History and Favorites',
     requirement: 'LIB-002',
     module: 'src/dev/gallery-registry.tsx',
-    summary: 'Related workout summaries using the real History and Favorites rows. Chronology reports a dated result; Favorites offers restart and removal. These are intentional differences, not one behavior.',
+    summary: 'The same workout as two current summaries. History shows the dated result; Favorites offers restart and removal. Compare how the title, metadata and spacing relate while their actions stay specific to each screen.',
     specimens: [
       { state: 'History · completed session', Render: WorkoutListItemCompleted },
       { state: 'Favorites · saved workout', Render: FavoriteListItemRestorable },
@@ -1844,11 +1847,12 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
   },
   {
     component: 'MovementIdentityComparison',
+    title: 'Movement across workout screens',
     requirement: 'LIB-002',
     module: 'src/dev/gallery-registry.tsx',
-    summary: 'Back squat across the real Review row, live BlockPanel.Movement and recorded SessionSectionCard. Keep prescribed targets, live counters and recorded outcomes distinct. Existing size differences are visible for review, not normalized by this refactor.',
+    summary: 'Back squat before, during and after a workout, using the current Review row, live movement presentation and saved detail. Compare the movement name, prescription and supporting text; live counters and recorded results keep their own meaning.',
     specimens: [
-      { state: 'Review · proposed prescription', Render: ReviewMovementStandalone },
+      { state: 'Review · before starting', Render: ReviewMovementStandalone },
       { state: 'Workout · movement identity', note: 'Actual presentation only; session logging controls and state remain a documented fixture gap.', Render: LiveMovementIdentity },
       { state: 'Saved detail · recorded sets', note: 'The section owns its real disclosure and table. The saved circuit outcome is historical context, not a current target.', Render: () => <SessionSectionCard section={{ ...SAMPLE_DETAIL_SECTION, title: 'Saved detail · primary work' }} /> },
     ],
