@@ -111,3 +111,22 @@ substantive placement/state/draft/rest/expiry/mutation assertion or product code
 expiry no-write and20→15 next-set rearm all executed. These diagnostics are not relabelled as clean
 final captures. Root now freezes the reviewed source for complete final movement proof and genuine
 format collection; native remainingattempt2/full gates/CI/delivery remain pending.
+
+
+## Manual prominence finding after passing composition proof
+
+Final clean movement proof72331 passed10/10 in1.3m, with48actual records all identifying clean
+ed8cae4b73a04fe9b184b65a9a99f9b339d46ca4;456artifacts/405PNGs are retained externally in
+task014-final-clean-browser-evidence-20261030. Root opened source09 and real narrow Standard,
+normal Circuit and short Superset viewport captures. The arrangement passed, but manual comparison
+found the inherited compact16px label-md digits and visible Countdown caption did not carry the
+selected preview's prominence. This passing arrangement proof is insufficient for final visual
+acceptance; it is not relabelled or discarded.
+
+Authenticated collector81805 on that same source also terminal0 with four skin cases/eight real
+images. Its original group task034-format-preview-batch05-task014 and actual source-only provenance
+remain intact, with a byte-for-byte external archive task014-pre-prominence-format-evidence-20261030.
+They are genuine source evidence for the pre-prominence tree, not acceptance of the requested larger
+readout. A new unique capture group will be used after the scoped visual correction. Root will use
+existing font tokens through the existing Movement TimerFrame caller; no session/rest timer, vendor,
+clock engine or TimerFrame adapter change is authorized by this finding.
