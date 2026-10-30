@@ -18,10 +18,12 @@ import { expect, test as scanned } from './fixtures'
  *
  * Every case renders the production shell at an actual routed, guard, boot or
  * crash-fallback boundary, then records its geometry and a viewport capture as
- * attachments. Nothing here edits application CSS or substitutes test padding:
+ * attachments. The original B05 cases do not edit application CSS or substitute test padding:
  * Chromium's safe-area override only changes the values CSS env() reads, and a
  * viewport resize is a local layout exercise standing in for a keyboard. None
- * of this is an installed-iPhone, keyboard or resume-on-device result.
+ * of this is an installed-iPhone, keyboard or resume-on-device result. The added
+ * PWA hotfix case separately exercises the sizing mechanism by applying the
+ * actual installed-only declarations to an explicitly synthetic short document.
  *
  * The repaired geometry, asserted for every shell family:
  * - the fixed atmosphere still paints the whole viewport (blur retained);
@@ -874,5 +876,75 @@ test('B05 shell: crash fallback renders inside the shared contained shell with s
   } finally {
     app.release()
   }
+  app.assertNoWrites()
+})
+
+test('PWA hotfix: synthetic short document regains shared full-height layers and footer clearance', async ({ page, visit, checkA11y }, testInfo) => {
+  test.setTimeout(120_000)
+  testInfo.annotations.push({ type: 'proof-mode', description:
+    'Synthetic document-height mechanism only. Actual app declarations are extracted from inactive CSS rules; this does not activate the native iOS gate or reproduce the installed-device bug.' })
+  const app = await syntheticApp(page, { signedIn: true, history: 'ok' })
+  await page.setViewportSize(PHONE.viewport)
+  await withInsets(page, PHONE.insets, async (cdp) => {
+    await visit('/generate')
+    await expect(page).toHaveURL((url) => url.pathname === '/generate')
+    await expect(page.locator(`${SCREEN_REGION}[data-measured]`)).toHaveCount(1)
+    const rootHeights = () => page.evaluate(() => ({
+      html: document.documentElement.getBoundingClientRect().height,
+      body: document.body.getBoundingClientRect().height,
+      root: document.getElementById('root')?.getBoundingClientRect().height ?? null,
+    }))
+    // A deliberate, local-only percentage-chain constraint, not an iOS reproduction.
+    const shortened = await page.addStyleTag({
+      content: `html { height: calc(100vh - ${PHONE.insets.top}px); }`,
+    })
+    const before = await rootHeights()
+    for (const height of Object.values(before)) {
+      expect(height).toBeCloseTo(PHONE.viewport.height - PHONE.insets.top, 0)
+    }
+    const candidate = await page.evaluate(() => {
+      const sheet = document.querySelector<HTMLStyleElement>(
+        'style[data-vite-dev-id$="/src/styles/shell.css"]',
+      )?.sheet
+      if (!sheet) throw new Error('The actual app shell stylesheet is missing')
+      for (const rule of [...sheet.cssRules]) {
+        if (!(rule instanceof CSSMediaRule) || rule.conditionText !== '(display-mode: standalone)') continue
+        for (const nested of [...rule.cssRules]) {
+          if (nested instanceof CSSSupportsRule && nested.conditionText === '(-webkit-touch-callout: none)') {
+            return [...nested.cssRules].map((declaration) => declaration.cssText).join('\n')
+          }
+        }
+      }
+      throw new Error('The installed-only app sizing candidate is missing')
+    })
+    // Adopt the shipped declarations verbatim; never hand-copy a passing fix.
+    const adopted = await page.addStyleTag({ content: candidate })
+    try {
+      await testInfo.attach('synthetic-sizing-input.json', {
+        body: JSON.stringify({ before, shortenedBy: PHONE.insets.top,
+          appliedAppDeclarations: candidate, proof: 'mechanism only; no installed-iPhone result' }, null, 2),
+        contentType: 'application/json',
+      })
+      for (const [label, layout] of [['phone', PHONE], ['short', SHORT], ['restored', PHONE]] as const) {
+        await setInsets(cdp, layout.insets)
+        await page.setViewportSize(layout.viewport)
+        await expect.poll(rootHeights).toEqual({
+          html: layout.viewport.height, body: layout.viewport.height, root: layout.viewport.height,
+        })
+        const measured = await record(page, testInfo, `pwa-synthetic-sizing-${label}`, {
+          family: 'synthetic PWA sizing mechanism', consumer: 'Generate',
+          state: label === 'short' ? 'synthetic resized window, not an iOS keyboard' : 'populated', ...layout,
+        })
+        expectContainedShell(measured, layout.viewport, layout.insets)
+        expectClearHead(measured, layout.insets)
+        expectBottomEdge(measured, layout.insets)
+        await expectEndOfContent(page, layout.insets)
+      }
+      await checkA11y()
+    } finally {
+      await adopted.evaluate((element) => element.parentNode?.removeChild(element))
+      await shortened.evaluate((element) => element.parentNode?.removeChild(element))
+    }
+  })
   app.assertNoWrites()
 })
