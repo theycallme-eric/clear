@@ -1,10 +1,6 @@
 /* =============================================================================
-   DS-07 — the gallery's own layout. Dev only.
-
-   This file lands in no production bundle: it is reached solely through the
-   `import.meta.env.DEV` branch in `src/app/router.tsx`, and
-   `prod-exclusion.test.ts` asserts the `clr-dev-gallery` prefix appears in no
-   built asset.
+   Shared public/development gallery layout. Actual app presentation remains
+   in its canonical components; this file arranges the review surface only.
 
    Layout only. The gallery introduces no visual idea of its own — every value
    here is a token, the corner radius stays 0, and a specimen is framed rather

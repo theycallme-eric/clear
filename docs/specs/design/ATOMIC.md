@@ -359,6 +359,16 @@ These names are gone from the package. They must not appear in production code.
 Passing lint proves vocabulary compliance, not visual fidelity. Route work still requires rendered
 comparison against the 0.14.3 package (`docs/design/evidence-0143/`).
 
+### 9.3 Public visual library
+
+The owner-approved library plan opens `/gallery` as an independent public review
+entry. It reuses the same app components/register and the stylesheet order in
+`src/main.tsx`, outside product account startup. `/gallery/ds` labels the unchanged
+0.14.3 archive references separately from app-styled examples. Their versioned
+static publication is not a vendor edit or foundation authoring source. Review
+uses isolated branches and actual components; a source snapshot does not imply
+visual approval. See `docs/design/library/README.md` for ownership and handoff.
+
 ---
 
 ## 10. Non-negotiables

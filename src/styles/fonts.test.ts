@@ -21,6 +21,7 @@ import { build } from 'vite'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import { localVendorFontParser } from '../../vite.config.ts'
+import { PUBLIC_SPECIMEN_BASE } from '../dev/specimen-url'
 
 const srcDir = resolve(import.meta.dirname, '..')
 const projectDir = resolve(srcDir, '..')
@@ -130,7 +131,10 @@ describe('no font is requested from Google', () => {
     })
     if (!('output' in result) && !Array.isArray(result)) throw new Error('Expected build output')
     const assets = (Array.isArray(result) ? result : [result]).flatMap((output) => output.output)
+      // Raw, sandboxed upstream references intentionally retain their archive
+      // CSS. The app/gallery stylesheet contract applies to compiled assets.
       .filter((output) => output.type === 'asset')
+      .filter((output) => !output.fileName.startsWith(PUBLIC_SPECIMEN_BASE.slice(1)))
     builtCss = assets.filter((asset) => asset.fileName.endsWith('.css'))
       .map((asset) => String(asset.source)).join('\n')
     builtHtml = assets.filter((asset) => asset.fileName.endsWith('.html'))

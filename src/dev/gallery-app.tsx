@@ -1,5 +1,5 @@
 /**
- * DS-07 — `/dev/gallery/app`: every app-composed part, in every state.
+ * Registered app-component examples shared by both gallery entry points.
  *
  * The parts and their states come from `gallery-registry.tsx`; this file only
  * frames them. Each state is labelled with the prop that produces it, so a
@@ -56,7 +56,7 @@ export function AppComposedParts() {
         {entries.length} {entries.length === 1 ? 'part' : 'parts'}, {stateCount} states.
         {selectedEntries.length > 0
           ? ` Showing ${component}.`
-          : " Everything CLEAR builds on top of the export: DS-04's card, select and disclosure, DS-05's toast host and error surfaces, and DS-06's one atmosphere."}
+          : ' Registered app components and states. Session-dependent surfaces have documented coverage gaps.'}
       </p>
       {entries.map((entry) => (
         <EntrySection key={`${entry.component}-${entry.module}`} entry={entry} />

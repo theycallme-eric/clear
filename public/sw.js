@@ -22,7 +22,7 @@
 
 // Bump to invalidate every cached shell at once. `activate` deletes anything
 // that does not match, so an old deploy's cache cannot outlive it.
-const CACHE = 'clear-shell-v1'
+const CACHE = 'clear-shell-v2'
 
 const SHELL_DOCUMENT = '/index.html'
 
@@ -127,6 +127,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url, self.location.href)
   if (url.origin !== self.location.origin) return
   if (DATA_PATHS.some((pattern) => pattern.test(url.pathname))) return
+
+  // Upstream iframe documents are not the app shell. A navigation to one
+  // must never replace /index.html in the app's offline cache.
+  if (url.pathname.startsWith('/gallery-reference/')) return
 
   if (request.mode === 'navigate') {
     event.respondWith(documentFromNetwork(request))

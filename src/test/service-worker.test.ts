@@ -264,6 +264,8 @@ describe('data is never cached (PWA-01)', () => {
     ['a cross-origin API call', request('https://db.supabase.co/rest/v1/sets')],
     ['a same-origin API route', request('/api/generate')],
     ['a same-origin auth route', request('/auth/v1/token')],
+    ['an upstream reference document', navigation('/gallery-reference/0.14.3/components/Button/card.html')],
+    ['an upstream reference stylesheet', request('/gallery-reference/0.14.3/styles.css', { destination: 'style' })],
   ]
 
   it.each(uncacheable)('leaves %s to the network, uncached', async (_name, target) => {

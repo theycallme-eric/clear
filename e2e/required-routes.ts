@@ -71,6 +71,13 @@ export const REQUIRED_JOURNEYS: readonly RequiredJourney[] = [
  */
 export type RequiredGuard = 'public-only' | 'protected' | 'onboarding' | 'dev-only' | 'none'
 
+/** IA.md §5: public reference screens, outside the product account journeys. */
+export const PUBLIC_LIBRARY_ROUTES = [
+  { screen: 'Library overview', path: '/gallery', section: null },
+  { screen: 'App-composed', path: '/gallery/app', section: 'App-composed' },
+  { screen: 'Upstream references', path: '/gallery/ds', section: 'Upstream references' },
+] as const
+
 export interface RequiredScreen {
   /** The screen exactly as IA.md §4 heads it. */
   readonly screen: string
@@ -185,8 +192,8 @@ export const REQUIRED_SCREENS: readonly RequiredScreen[] = [
     journeys: ['settings-appearance', 'focused-forms'],
   },
   {
-    // Development only: a production build — which is what the preview serves —
-    // has no gallery to scan, so the browser suite does not visit it.
+    // This product-router alias remains development-only. The independent
+    // public library has its own required inventory and browser cases.
     screen: 'Component Gallery',
     route: '/dev/gallery',
     path: '/dev/gallery/ds',

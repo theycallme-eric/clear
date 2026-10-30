@@ -308,7 +308,7 @@ WorkoutLayout
 **Visual reference:** `exports/clear-design-system-0.14.3/preview/`, `exports/clear-design-system-0.14.3/components/*/card.html`, and the export's 43 preview/component review pages
 **Motion:** Route uses `.route-enter-fade`; specimens stay still until the reviewer explicitly triggers their motion preview so simultaneous effects never obscure inspection.
 **Guard:** dev only · **Requirements:** DS-07
-The export's 43 preview/component review pages are served unmodified at `/dev/gallery/ds`, plus every app-composed part at `/dev/gallery/app`. Live skin switching remains; the atmosphere is the same single one production uses. Excluded from production bundles. **This is the visual review surface** — screens get approved rendered, not drawn.
+Development alias for the shared registry and renderer. The public library has a separate bootstrap, documented in §5; it does not turn this product-router development path into a production route.
 
 ### Not Found — `*`
 **Atmosphere:** the one atmosphere
@@ -319,6 +319,16 @@ The export's 43 preview/component review pages are served unmodified at `/dev/ga
 ---
 
 ## 5. Cross-cutting
+
+**Public design-library routes.** These reference screens use an independent public bootstrap outside product auth, BootGate and the product-journey inventory in §4. All three must open directly and on reload without an account. `e2e/required-routes.ts` records their independent inventory as `PUBLIC_LIBRARY_ROUTES`.
+
+| Public library screen | Route |
+| --- | --- |
+| Library overview | `/gallery` |
+| App-composed | `/gallery/app` |
+| Upstream references | `/gallery/ds` |
+
+The public library and development alias use the same registry and renderer. App-composed examples use actual shared components and app styles. The 43 unmodified upstream reference pages use versioned asset URLs and opaque script-enabled iframes. Skin switching is nonpersisting. Upstream styling/illustrative content is labeled separately from app-styled source snapshots and visual approval. See `docs/design/library/README.md` and the owner-approved visual-library plan.
 
 **Error boundary (CORE-04).** Wraps the router. A render crash produces a recoverable screen, never a white page.
 
