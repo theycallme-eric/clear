@@ -55,14 +55,6 @@ const ROW_STYLE: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const META_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const GLYPH_STYLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -195,11 +187,11 @@ function SessionItem({
           {HISTORY_STATUS_LABELS[entry.status]}
         </span>
       </div>
-      <p data-part="context" style={{ ...META_STYLE, marginTop: 'var(--spacing-100)' }}>
+      <p data-part="context" className="clr-text-data-xs" style={{ marginTop: 'var(--spacing-100)' }}>
         {`${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
       </p>
       {/* A count never wraps away from its unit. */}
-      <p data-part="metrics" style={{ ...ROW_STYLE, ...META_STYLE, marginTop: 'var(--spacing-100)' }}>
+      <p data-part="metrics" className="clr-text-data-xs" style={{ ...ROW_STYLE, marginTop: 'var(--spacing-100)' }}>
         <span className="clr-nowrap">{`${REQUESTED_DURATION_LABEL} ${entry.requestedMins} min`}</span>
         {entry.durationMins !== null && (
           <span className="clr-nowrap">{`${ACTUAL_DURATION_LABEL} ${entry.durationMins} min`}</span>
@@ -232,7 +224,6 @@ const RECENT_LINK_STYLE: CSSProperties = {
  */
 const RECENT_STATUS_DATE_STYLE: CSSProperties = {
   ...ROW_STYLE,
-  ...META_STYLE,
   alignItems: 'center',
   flexWrap: 'nowrap',
   gap: 'var(--spacing-100)',
@@ -320,7 +311,7 @@ function RecentSessionItem({
           </Link>
         )}
       </Heading>
-      <p data-part="status-date" style={RECENT_STATUS_DATE_STYLE}>
+      <p data-part="status-date" className="clr-text-data-xs" style={RECENT_STATUS_DATE_STYLE}>
         <span
           data-part="status"
           style={{ ...RECENT_STATUS_STYLE, color: RECENT_STATUS_COLOR[entry.status] }}
@@ -362,7 +353,7 @@ function RestItem({ entry, as }: { entry: HistoryRestEntry; as?: ElementType }) 
         } as CSSProperties
       }
     >
-      <p style={META_STYLE}>{formatRestRange(entry)}</p>
+      <p className="clr-text-data-xs">{formatRestRange(entry)}</p>
       <Heading style={{ ...TITLE_STYLE, ...GLYPH_STYLE, color: 'var(--text-rail-cue)' }}>
         <span aria-hidden="true" style={{ display: 'flex' }}>
           <Rest />

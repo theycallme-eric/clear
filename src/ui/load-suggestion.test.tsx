@@ -80,7 +80,7 @@ describe('the suggestion affordance', () => {
     expect(button).toHaveAttribute('data-confidence', 'low')
     expect(button.firstElementChild?.querySelector('svg')).not.toBeNull()
     const weight = within(button).getByText(weightText(suggestion.weight ?? 0, 'kg'))
-    expect(weight.style.fontFamily).toBe('var(--font-data)')
+    expect(weight).toHaveClass('clr-text-data-xs')
   })
 
   it('is the public text action: a native button with no frame of its own', async () => {

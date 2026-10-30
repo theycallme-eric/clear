@@ -211,6 +211,11 @@ CSS-only public composition parts include `.clr-chamfer`, `.clr-card`, `.clr-ble
 
 ### 4.1 App-owned composition
 
+App metadata also uses the small shared recipe in `src/styles/text-roles.css`.
+See `docs/design/library/README.md` for the exact consumers and intentional
+exceptions. It composes existing tokens; it does not replace foundation type
+roles or change the immutable import.
+
 App-owned domain components are appropriate: workout section renderers, set logging, history rows,
 streak display, suggestions, and other product semantics compose the public parts. They may not
 introduce new geometry, focus, atmosphere, motion or scrolling rules.

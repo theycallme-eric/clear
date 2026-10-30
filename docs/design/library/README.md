@@ -33,8 +33,8 @@ Use the existing issue/PR for these references; no separate sidecar is required.
 
 ## Examples and limits
 
-The current register has 49 entries and 131 initial examples. It covers 48 app
-UI exports plus contextual Input; important live/session owners still need safe
+The current register has 52 entries and 138 initial examples. It covers 49 app
+UI exports, contextual Input and two related-context comparison groups; important live/session owners still need safe
 fixtures. Use actual implementations with deterministic data/controllers, no
 live account writes and no shipped test harness. Add coverage in useful slices.
 Do not copy a historical pattern merely because it has an example.
@@ -48,3 +48,30 @@ public archive delivery is deferred.
 [Released-batch UAT guide](REVIEW-GUIDE.md). Shared implementation changes should
 update the relevant examples and check actual consumers using existing tests.
 Merge and production release remain separate from visual approval.
+
+## Shared metadata text
+
+Use `clr-text-data-xs` from `src/styles/text-roles.css` for the existing compact
+data metadata role. It composes font-data, label-xs-size, tracking-data,
+text-card-label and zero margin. Add `clr-text-data-xs--upper` for an explicit
+uppercase label or `clr-text-data-xs--quiet` for secondary equipment context.
+Weight, line height and casing otherwise inherit; owners keep their layout.
+
+| Consumer | Preserved distinction |
+| --- | --- |
+| Review and `ReviewExerciseRow` | Uppercase equipment label; quiet capitalized equipment; rest header color and ordinal layout |
+| History rows | Recent status/date retains its smaller paragraph size and line height |
+| Favorites rows | Outdated warning retains negative color and its explanatory text |
+| Favorite progression | Larger values and comparison glyphs retain their own roles |
+| Load suggestions | Low-confidence weight uses this role; units retain sentence case |
+| Saved session detail | Table headings use the uppercase variant; results and status glyphs retain their own roles |
+
+Do not use this recipe for larger prescriptions, titles, numeric readouts or
+glyph/status rows that intentionally inherit color and margin differently.
+This is one verified shared role, not a universal inline-style ban.
+
+Compare real owners at `/gallery/app?component=WorkoutEntryComparison` and
+`/gallery/app?component=MovementIdentityComparison`. The second includes the
+actual Review row with an in-memory swap dialog, live movement presentation,
+and saved detail with its real disclosure/table. It preserves existing visual
+differences for review; it does not certify complete session logging fixtures.

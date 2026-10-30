@@ -1,0 +1,18 @@
+/* App metadata recipe. Same role as the former DATA_STYLE/META_STYLE copies.
+   Keep inherited weight, line height and casing; owners retain their layout.
+   Larger prescriptions, glyph/status rows and body text have distinct roles. */
+.clr-text-data-xs {
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-card-label);
+  margin: 0;
+}
+
+.clr-text-data-xs--upper {
+  text-transform: uppercase;
+}
+
+.clr-text-data-xs--quiet {
+  color: var(--text-secondary);
+}

@@ -70,14 +70,6 @@ export function RemoveFavoriteDialog({
   )
 }
 
-const META_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const TITLE_STYLE: CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontSize: 'var(--heading-h5-size)',
@@ -89,7 +81,6 @@ const TITLE_STYLE: CSSProperties = {
 }
 
 const OUTDATED_STYLE: CSSProperties = {
-  ...META_STYLE,
   display: 'flex',
   alignItems: 'flex-start',
   gap: 'var(--spacing-200)',
@@ -129,11 +120,11 @@ export function FavoriteListItem({
         </span>
         {entry.title}
       </Heading>
-      <p style={{ ...META_STYLE, marginTop: 'var(--spacing-200)' }}>{entry.meta}</p>
-      <p style={META_STYLE}>{completionSummary(entry)}</p>
+      <p className="clr-text-data-xs" style={{ marginTop: 'var(--spacing-200)' }}>{entry.meta}</p>
+      <p className="clr-text-data-xs">{completionSummary(entry)}</p>
 
       {!entry.restorable && (
-        <p style={OUTDATED_STYLE} role="note">
+        <p className="clr-text-data-xs" style={OUTDATED_STYLE} role="note">
           <span aria-hidden="true" style={{ display: 'flex' }}>
             <AlertCircle size={16} />
           </span>

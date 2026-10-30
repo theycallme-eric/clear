@@ -109,6 +109,7 @@ import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
+import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -1821,6 +1822,37 @@ function AppearancePickerChosenSkin() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  {
+    component: 'WorkoutEntryComparison',
+    requirement: 'LIB-002',
+    module: 'src/dev/gallery-registry.tsx',
+    summary: 'Related workout summaries using the real History and Favorites rows. Chronology reports a dated result; Favorites offers restart and removal. These are intentional differences, not one behavior.',
+    specimens: [
+      { state: 'History · completed session', Render: WorkoutListItemCompleted },
+      { state: 'Favorites · saved workout', Render: FavoriteListItemRestorable },
+    ],
+  },
+  {
+    component: 'ReviewExerciseRow',
+    requirement: 'REV-01',
+    module: 'src/ui/review-exercise-row.tsx',
+    summary: 'The actual Review movement row, extracted unchanged from the screen. Safe in-memory swap controller opens the real empty-state dialog; no account or catalog requests.',
+    specimens: [
+      { state: 'standalone prescription', Render: ReviewMovementStandalone },
+      { state: 'round member', note: 'One-round target; group rest belongs to the surrounding group, not this row.', Render: ReviewMovementInRounds },
+    ],
+  },
+  {
+    component: 'MovementIdentityComparison',
+    requirement: 'LIB-002',
+    module: 'src/dev/gallery-registry.tsx',
+    summary: 'Back squat across the real Review row, live BlockPanel.Movement and recorded SessionSectionCard. Keep prescribed targets, live counters and recorded outcomes distinct. Existing size differences are visible for review, not normalized by this refactor.',
+    specimens: [
+      { state: 'Review · proposed prescription', Render: ReviewMovementStandalone },
+      { state: 'Workout · movement identity', note: 'Actual presentation only; session logging controls and state remain a documented fixture gap.', Render: LiveMovementIdentity },
+      { state: 'Saved detail · recorded sets', note: 'The section owns its real disclosure and table. The saved circuit outcome is historical context, not a current target.', Render: () => <SessionSectionCard section={{ ...SAMPLE_DETAIL_SECTION, title: 'Saved detail · primary work' }} /> },
+    ],
+  },
   {
     component: 'WorkoutListItem',
     requirement: 'HIST-01',

@@ -14,6 +14,8 @@ import './styles/a11y.css'
 import './styles/shell.css'
 // REQ-006: the public Input unit end cap fits its unit text.
 import './styles/fields.css'
+// Shared app-owned text recipes, composed only from the pinned token layer.
+import './styles/text-roles.css'
 
 import { AppEntry } from './AppEntry'
 import { ErrorBoundary } from './app/ErrorBoundary'
