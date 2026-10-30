@@ -244,3 +244,48 @@ Then rerun `npm test`.
 
 - Physical-iPhone UAT of the roomy swap selection (safe areas, touch scrolling) has not been observed.
 - Native controller verification, the recapture/rebind and delivery have not happened.
+
+## Offline proof supplement after the first native attempt
+
+The controller reports the first native attempt terminal with worker success, both focused browser
+phases passing all 18 cases (18.6s and 18.1s), then `npm test` failing only the two existing final-audit
+source-binding assertions. Original source and browser artifacts were preserved externally before
+checkpoint `e227f73d0bb0e2d73f11f3b3c4caf854dfe1d260`. This supplement retains that worker history;
+it does not turn the failed native attempt into acceptance.
+
+Only `e2e/ui-polish-b05-swap.spec.ts` and this task-owned note changed in the offline supplement:
+
+- Capture identity now uses the actual checkout's `git rev-parse --verify HEAD` and status through
+  the existing Task10 `execFileSync`/10-second-bound pattern. Git or source-read failure throws;
+  there is no `GITHUB_SHA`, `unknown` or null-dirty fallback. Interim dirty evidence remains honestly
+  identified; final clean proof remains the controller's next step.
+- The original 18 passing cases and their assertions remain. An optional composition/candidate
+  response seam leaves their defaults intact, while two additional cases use Task10's real-shaped
+  Superset and Circuit factory recipe at normal and narrow phone sizes. Each opens the actual
+  grouped Review's selection, compares its long-list composition with the selected reference, picks
+  an actual intercepted candidate in the intended member, observes the existing toast/full Undo,
+  then undoes it. Group readings, other members and the other group must remain unchanged; route,
+  focus, accessibility and the original no-write/model/outbound guards are preserved.
+- One additional 390×320 case uses Task10's long current-movement ID plus long candidate names.
+  It requires the full title/Keep label, list containment, last-choice reachability and independently
+  reachable return before and after scrolling, then verifies unchanged Review on return. It retains
+  full labels and existing geometry assertions; no product height cap, font or CSS changed.
+
+**These additions have NOT been run.** Task13 owns the sole local browser/test lane. No test, build,
+browser/server, Git, database, Runner or GitHub operation was run for this supplement. In particular,
+the new shortest-view proof may expose the existing guessed list-cap floor; no speculative product
+fix or pass claim is made. After that lane is available, the controller must run the actual cases,
+inspect their new pictures, address any concrete in-scope failure, then perform genuine source-bound
+recapture/native verification and normal protected-build delivery. Physical-iPhone UAT stays pending.
+
+
+### Controller preparation of the existing source-bound proof
+
+The controller selected the unused `task034-format-preview-batch05-task011` destination and changed
+only active lineage inputs to this actual TASK-011 / approved graph revision / run89097d5c / attempt1 /
+tested base0f4ee603. The unchanged helper derives the real retained branch from that identity. Old
+groups, validators, package constants and photographs remain untouched. The destination has no
+new captures yet. This is preparation for genuine collection after the final browser proof; no audit
+pass, runtime hash, provenance or native acceptance is inferred. Product TSX/CSS match the preserved
+original worker checkpoint byte-for-byte. Added21-case browser candidate remains unexecuted while
+Task13 owns the local lane.

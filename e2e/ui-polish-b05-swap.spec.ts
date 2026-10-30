@@ -1,4 +1,4 @@
-import { execSync, spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, resolve } from 'node:path'
@@ -6,7 +6,13 @@ import type { Locator, Page, Route, TestInfo } from '@playwright/test'
 
 import { readE2eEnv } from '../scripts/e2e/env.mjs'
 import { reviewHandoff } from '../src/state/review-handoff'
-import { makeSessionAcceptance } from '../src/test/factories'
+import type { SessionAcceptance } from '../src/state/schemas'
+import {
+  makeGenerationOutput,
+  makePrescription,
+  makeSessionAcceptance,
+  makeWorkoutBlock,
+} from '../src/test/factories'
 import { fixtureLocation, onboardedProfile } from '../src/test/user-data-double'
 import { installDeterministicCapture } from './design-0143/fixtures'
 import { expect, test as scanned } from './fixtures'
@@ -38,6 +44,7 @@ const CORS = {
 const PHONE = { width: 390, height: 844 }
 const NARROW = { width: 320, height: 568 }
 const SHORT = { width: 390, height: 480 }
+const LANDSCAPE_SHORT = { width: 390, height: 320 }
 const VIEWPORTS = { phone: PHONE, narrow: NARROW, short: SHORT } as const
 type ViewportName = keyof typeof VIEWPORTS
 const TOLERANCE = 1
@@ -58,6 +65,60 @@ const LONG_NAMES = [
 const LONG_LIST = Array.from({ length: 24 }, (_, index) =>
   index % 8 === 5 ? LONG_NAMES[(index / 8) | 0]! : `Synthetic swap option ${String(index + 1).padStart(2, '0')}`)
 const SHORT_LIST = ['Synthetic goblet squat', 'Synthetic box squat', 'Synthetic split squat']
+
+/** Valid grouped shapes already exercised by the Task10 Review proof. */
+function groupedAcceptance(firstSupersetId = 'kb-swing'): SessionAcceptance {
+  const base = makeGenerationOutput()
+  return makeSessionAcceptance({
+    ...ACCEPTANCE,
+    workout: {
+      ...base,
+      title: 'Synthetic grouped swap selection',
+      sections: [base.sections[0]!, {
+        section_type: 'accessory', section_title: 'Accessory', section_notes: null,
+        blocks: [makeWorkoutBlock({
+          structure_type: 'superset', rep_scheme: 'fixed', rounds: 3, round_rest_seconds: 90,
+          exercises: [firstSupersetId, 'high-pull'].map((exercise_id, index) => makePrescription({
+            exercise_id, equipment: index === 0 ? 'kettlebell' : 'dumbbell', sets: 3,
+            target_value: index === 0 ? 10 : 8, load_type: 'absolute', load_value: 16, rest_seconds: 0,
+          })),
+        })],
+      }, {
+        section_type: 'conditioning', section_title: 'Conditioning', section_notes: null,
+        blocks: [makeWorkoutBlock({
+          structure_type: 'circuit', rep_scheme: 'fixed', rounds: 2, round_rest_seconds: 60,
+          exercises: ['mountain-climber', 'squat-jump', 'bear-crawl'].map((exercise_id, index) => makePrescription({
+            exercise_id, equipment: 'bodyweight', load_type: 'bodyweight', load_value: null,
+            sets: 2, rest_seconds: 60,
+            ...(index === 2 ? { modality: 'time' as const, target_value: 20 } : { target_value: 12 - index * 2 }),
+          })),
+        })],
+      }],
+    },
+  })
+}
+
+const GROUPED_ACCEPTANCE = groupedAcceptance()
+const GROUPED_INVOCATIONS = [
+  { list: 'superset, 3 rounds', slotName: 'kb swing', section: 'accessory', equipment: 'KETTLEBELL',
+    rest: 'Rest 90s between rounds' },
+  { list: 'circuit, 2 rounds', slotName: 'mountain climber', section: 'conditioning', equipment: 'BODYWEIGHT',
+    rest: 'Rest 60s between rounds' },
+] as const
+
+function groupedCandidateSets(names: readonly string[]) {
+  return GROUPED_INVOCATIONS.map(({ section }) => ({
+    section, relaxed: false,
+    candidates: names.map((name, index) => ({
+      exercise_id: `synthetic-${section}-${index + 1}`, name,
+      exercise_role: section === 'accessory' ? 'accessory' : 'conditioning', can_be_primary: false,
+      movement_patterns: section === 'accessory' ? ['hinge'] : ['conditioning'],
+      primary_patterns: section === 'accessory' ? ['hinge'] : ['conditioning'],
+      component_movements: [], muscles: [],
+      usable_equipment: section === 'accessory' ? ['kettlebell', 'dumbbell'] : ['bodyweight'],
+    })),
+  }))
+}
 
 type CandidateMode =
   | { kind: 'ready'; names: readonly string[] }
@@ -122,17 +183,20 @@ function referenceIdentity() {
 }
 
 function sourceIdentity() {
-  try {
-    const swapSource = readFileSync(resolve(import.meta.dirname, '../src/ui/exercise-swap.tsx'))
-    const swapCss = readFileSync(resolve(import.meta.dirname, '../src/ui/exercise-swap.css'))
-    return {
-      head: execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim(),
-      dirty: execSync('git status --porcelain', { encoding: 'utf8' }).trim() !== '',
-      exerciseSwapTsx: createHash('sha256').update(swapSource).digest('hex'),
-      exerciseSwapCss: createHash('sha256').update(swapCss).digest('hex'),
-    }
-  } catch {
-    return { head: process.env.GITHUB_SHA ?? 'unknown', dirty: null }
+  const root = resolve(import.meta.dirname, '..')
+  const git = (...args: string[]) => execFileSync('git', args, {
+    cwd: root, encoding: 'utf8', timeout: 10_000,
+  }).trim()
+  const head = git('rev-parse', '--verify', 'HEAD')
+  const dirty = git('status', '--porcelain') !== ''
+  const swapSource = readFileSync(resolve(root, 'src/ui/exercise-swap.tsx'))
+  const swapCss = readFileSync(resolve(root, 'src/ui/exercise-swap.css'))
+  expect(head, 'Capture requires this checkout’s actual Git HEAD').toMatch(/^[a-f0-9]{40}$/)
+  // Interim evidence may honestly be dirty. A failed Git read cannot certify a capture.
+  return {
+    head, dirty,
+    exerciseSwapTsx: createHash('sha256').update(swapSource).digest('hex'),
+    exerciseSwapCss: createHash('sha256').update(swapCss).digest('hex'),
   }
 }
 
@@ -190,7 +254,9 @@ const test = scanned.extend<object, { syntheticOrigin: string | null }>({
   baseURL: async ({ baseURL, syntheticOrigin }, use) => use(syntheticOrigin ?? baseURL),
 })
 
-async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 'vapour' = 'vapour') {
+async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 'vapour' = 'vapour',
+  options: { acceptance?: SessionAcceptance; candidateSets?: readonly unknown[] } = {}) {
+  const acceptance = options.acceptance ?? ACCEPTANCE
   const unexpected: string[] = []
   const blockedOutbound: string[] = []
   let attemptedWrites = 0
@@ -220,7 +286,7 @@ async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 
     }
     if (request.method() === 'GET') {
       if (name === 'profiles') return reply([onboardedProfile({ id: OWNER, goal_preset: 'strength' })])
-      if (name === 'locations') return reply([fixtureLocation({ id: ACCEPTANCE.location_id!, user_id: OWNER, tier: 'full' })])
+      if (name === 'locations') return reply([fixtureLocation({ id: acceptance.location_id!, user_id: OWNER, tier: 'full' })])
       if (['workout_sessions', 'load_anchors', 'location_equipment', 'saved_workout_attempts', 'saved_workouts', 'rest_days'].includes(name)) {
         return reply([])
       }
@@ -237,7 +303,7 @@ async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 
           return reply({ code: 'PGRST000', message: 'Synthetic candidate read failure.' }, 503)
         }
         if (mode.kind === 'held') await held
-        return reply(candidateSets(mode.names))
+        return reply(options.candidateSets ?? candidateSets(mode.names))
       }
       if (['streak_sessions', 'constraints_in_force', 'anchor_evidence', 'conditioning_history'].includes(name)) {
         return reply([])
@@ -259,7 +325,7 @@ async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 
     if (location.pathname === '/review') {
       window.history.replaceState({ usr: handoff, key: 'synthetic-swap-proof', idx: 0 }, '', location.href)
     }
-  }, { authKey: AUTH_KEY, owner: OWNER, handoff: reviewHandoff(ACCEPTANCE) })
+  }, { authKey: AUTH_KEY, owner: OWNER, handoff: reviewHandoff(acceptance) })
   return {
     release: () => release(),
     candidateReads: () => candidateReads,
@@ -272,9 +338,9 @@ async function syntheticReview(page: Page, mode: CandidateMode, skin: 'clear' | 
   }
 }
 
-async function openReview(page: Page, visit: (path: string) => Promise<unknown>) {
+async function openReview(page: Page, visit: (path: string) => Promise<unknown>, acceptance = ACCEPTANCE) {
   await visit('/review')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(ACCEPTANCE.workout.title)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(acceptance.workout.title)
   await page.evaluate(() => document.fonts.ready)
 }
 
@@ -381,6 +447,22 @@ function expectRoomyRows(state: Composition) {
   expect(state.scroller!.bottom).toBeLessThanOrEqual(state.keep!.top + TOLERANCE)
   expect(state.scroller!.left).toBeCloseTo(state.list!.left, 0)
   expect(state.scroller!.right).toBeCloseTo(state.list!.right, 0)
+}
+
+/** The real grouped row readings, excluding only the movement that a pick replaces. */
+async function groupReadings(list: Locator) {
+  return list.evaluate((ol) => ({
+    badge: ol.parentElement!.firstElementChild!.textContent,
+    rest: ol.parentElement!.lastElementChild!.textContent,
+    members: [...ol.children].map((item) => {
+      const [nameRow, prescription, equipment] = [...item.firstElementChild!.children]
+      return {
+        ordinal: nameRow!.firstElementChild!.firstElementChild!.textContent,
+        prescription: prescription!.textContent,
+        equipment: equipment!.textContent,
+      }
+    }),
+  }))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -738,6 +820,153 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
     await compareWithReference(page, testInfo, 'swap-long-narrow-clear', state, {
       consumer: 'ExerciseSwapControls → SwapDialog (primary_lift, Swap back squat)', state: 'long list, at rest',
       skin: 'clear', criteria: ['AC-030', 'AC-049', 'AC-065'] })
+    app.assertNoWrites()
+  })
+
+  for (const { name, viewport } of [
+    { name: 'phone', viewport: PHONE },
+    { name: 'narrow', viewport: NARROW },
+  ]) {
+    test(`Superset and Circuit selections preserve their owning grouped Review at ${name}`, async ({ page, visit, checkA11y }, testInfo) => {
+      await page.setViewportSize(viewport)
+      const app = await syntheticReview(page, { kind: 'ready', names: LONG_LIST }, 'vapour', {
+        acceptance: GROUPED_ACCEPTANCE, candidateSets: groupedCandidateSets(LONG_LIST),
+      })
+      await openReview(page, visit, GROUPED_ACCEPTANCE)
+      const chosenIndex = LONG_LIST.length - 3
+      const chosen = LONG_LIST[chosenIndex]!
+      expect(LONG_NAMES).toContain(chosen)
+
+      for (const invocation of GROUPED_INVOCATIONS) {
+        const group = page.getByRole('list', { name: invocation.list, exact: true })
+        const owner = group.locator('xpath=..')
+        const first = group.getByRole('listitem').first()
+        const other = page.getByRole('list', {
+          name: GROUPED_INVOCATIONS.find((entry) => entry.list !== invocation.list)!.list, exact: true,
+        })
+        const original = first.getByRole('button', { name: `Swap ${invocation.slotName}`, exact: true })
+        await expect(original).toBeEnabled()
+        const beforeText = await owner.innerText()
+        const beforeReadings = await groupReadings(group)
+        const otherText = await other.innerText()
+        const siblingLabels = await group.getByRole('button', { name: /^Swap / })
+          .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))
+        await expect(owner.getByText(invocation.rest, { exact: true })).toHaveCount(1)
+
+        const { dialog } = await openSwap(page, invocation.slotName)
+        await expect(dialog.getByRole('list', { name: 'Alternatives' }).getByRole('button')).toHaveCount(LONG_LIST.length)
+        const state = await composition(dialog)
+        expectRoomyFrame(state)
+        expectRoomyRows(state)
+        expect(state.region!.scrollHeight).toBeGreaterThan(state.region!.clientHeight)
+        await compareWithReference(page, testInfo, `swap-grouped-${invocation.section}-${name}`, state, {
+          consumer: `Review ${invocation.list} → SwapDialog`, state: 'grouped long-list selection',
+          skin: 'vapour', criteria: ['AC-030', 'AC-049', 'AC-065'],
+        })
+        await checkA11y()
+
+        const choice = dialog.getByRole('list', { name: 'Alternatives' })
+          .getByRole('button', { name: new RegExp(`^${chosen}\\s*${invocation.equipment}$`) })
+        await choice.scrollIntoViewIfNeeded()
+        const visible = await composition(dialog)
+        const choiceBox = (await choice.boundingBox())!
+        expect(choiceBox.y).toBeGreaterThanOrEqual(visible.scroller!.top - TOLERANCE)
+        expect(choiceBox.y + choiceBox.height).toBeLessThanOrEqual(visible.scroller!.bottom + TOLERANCE)
+        expect(visible.keep!.bottom).toBeLessThanOrEqual(viewport.height + TOLERANCE)
+        await choice.click()
+        await expect(dialog).toBeHidden()
+        await expect(page.locator('dialog[open]')).toHaveCount(0)
+        await expect(page).toHaveURL(/\/review$/)
+        await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(GROUPED_ACCEPTANCE.workout.title)
+
+        const replacementName = `synthetic ${invocation.section} ${chosenIndex + 1}`
+        const replacement = first.getByRole('button', { name: `Swap ${replacementName}`, exact: true })
+        const undo = first.getByRole('button', { name: `Undo swap — back to ${invocation.slotName}`, exact: true })
+        await expect(replacement).toBeEnabled()
+        await expect(replacement).toBeFocused()
+        await expect(undo).toBeEnabled()
+        await expect(undo).toHaveText('Undo swap')
+        await expect(original).toHaveCount(0)
+        expect(await groupReadings(group)).toEqual(beforeReadings)
+        expect(await group.getByRole('button', { name: /^Swap / })
+          .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))).toEqual(siblingLabels)
+        expect(await other.innerText()).toBe(otherText)
+        const toast = page.locator('[data-clear-toast-host]')
+        await expect(toast.getByRole('status')).toHaveText(`Swapped in ${chosen}.`)
+        await toast.getByRole('button', { name: 'Dismiss', exact: true }).click()
+        await expect(toast).toHaveCount(0)
+        await first.scrollIntoViewIfNeeded()
+        await capture(page, testInfo, `swap-grouped-${invocation.section}-${name}-chosen`, {
+          consumer: `Review ${invocation.list}`, state: 'intended member replaced, complete Undo available',
+          criteria: ['AC-031', 'AC-049'], readings: await groupReadings(group),
+        })
+
+        await undo.click()
+        await expect(original).toBeEnabled()
+        await expect(original).toBeFocused()
+        await expect(undo).toHaveCount(0)
+        await expect(replacement).toHaveCount(0)
+        expect(await owner.innerText()).toBe(beforeText)
+        expect(await groupReadings(group)).toEqual(beforeReadings)
+        expect(await other.innerText()).toBe(otherText)
+        await checkA11y()
+        await capture(page, testInfo, `swap-grouped-${invocation.section}-${name}-restored`, {
+          consumer: `Review ${invocation.list}`, state: 'Undo restored original member and all group readings',
+          criteria: ['AC-031', 'AC-049'], readings: beforeReadings,
+        })
+      }
+      app.assertNoWrites()
+    })
+  }
+
+  test('390x320 long current title and long choices keep the full return reachable', async ({ page, visit }, testInfo) => {
+    await page.setViewportSize(LANDSCAPE_SHORT)
+    const currentId = 'single-arm-kettlebell-overhead-reverse-lunge'
+    const currentName = 'single arm kettlebell overhead reverse lunge'
+    const acceptance = groupedAcceptance(currentId)
+    const app = await syntheticReview(page, { kind: 'ready', names: LONG_LIST }, 'vapour', {
+      acceptance, candidateSets: groupedCandidateSets(LONG_LIST),
+    })
+    await openReview(page, visit, acceptance)
+    const group = page.getByRole('list', { name: 'superset, 3 rounds', exact: true })
+    const before = await group.locator('xpath=..').innerText()
+    const { dialog, trigger } = await openSwap(page, currentName)
+    await expect(dialog.getByRole('heading', { name: `Swap ${currentName}`, exact: true })).toBeVisible()
+    const choices = dialog.getByRole('list', { name: 'Alternatives' }).getByRole('button')
+    await expect(choices).toHaveCount(LONG_LIST.length)
+    const state = await composition(dialog)
+    expectRoomyFrame(state)
+    expectRoomyRows(state)
+    expect(state.keepLabel).toBe(`Keep ${currentName}`)
+    expect(state.region!.scrollHeight).toBeGreaterThan(state.region!.clientHeight)
+    const keep = dialog.getByRole('button', { name: `Keep ${currentName}`, exact: true })
+    await expect(keep).toBeInViewport({ ratio: 1 })
+    await expect(keep).toHaveText(`Keep ${currentName}`)
+    await capture(page, testInfo, 'swap-landscape-long-title-open', {
+      consumer: 'Review superset → SwapDialog', state: 'long current title, long choices, full return before scroll',
+      criteria: ['AC-030', 'AC-049'], composition: state,
+    })
+    const last = choices.last()
+    await last.scrollIntoViewIfNeeded()
+    const scrolled = await composition(dialog)
+    const lastBox = (await last.boundingBox())!
+    expect(lastBox.y).toBeGreaterThanOrEqual(scrolled.scroller!.top - TOLERANCE)
+    expect(lastBox.y + lastBox.height).toBeLessThanOrEqual(scrolled.scroller!.bottom + TOLERANCE)
+    expectRoomyFrame(scrolled)
+    await expect(keep).toBeInViewport({ ratio: 1 })
+    await capture(page, testInfo, 'swap-landscape-long-title-scrolled', {
+      consumer: 'Review superset → SwapDialog', state: 'last option reached, full return still separate and reachable',
+      criteria: ['AC-030', 'AC-049'], composition: scrolled,
+    })
+    await keep.click()
+    await expect(dialog).toBeHidden()
+    await expect(page.locator('dialog[open]')).toHaveCount(0)
+    await expect(page).toHaveURL(/\/review$/)
+    await expect(trigger).toBeEnabled()
+    await expect(trigger).toBeFocused()
+    expect(await group.locator('xpath=..').innerText()).toBe(before)
+    await expect(page.getByRole('button', { name: /^Undo swap/ })).toHaveCount(0)
+    await expect(page.locator('[data-clear-toast-host]')).toHaveCount(0)
     app.assertNoWrites()
   })
 
