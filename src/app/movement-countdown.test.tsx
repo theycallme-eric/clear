@@ -185,9 +185,10 @@ describe('Elapsed session clock and movement countdown stay separate (AC-050)', 
     expect(countdown()).not.toBe(sessionClock())
     expect(countdownRegion()).not.toContainElement(sessionClock())
 
-    // The session clock is the larger one, and says nothing about time left.
+    // B05-06 gives the owning movement its prominent readout; the compact
+    // session clock keeps its existing size and says nothing about time left.
     expect(digitSize(sessionClock())).toBe('var(--label-lg-size)')
-    expect(digitSize(countdown())).toBe('var(--label-md-size)')
+    expect(digitSize(countdown())).toBe('var(--heading-h1-size)')
     expect(sessionClock()).not.toHaveTextContent(/left/)
 
     fireEvent.click(control('Start'))

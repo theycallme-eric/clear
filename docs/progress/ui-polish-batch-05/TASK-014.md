@@ -146,3 +146,14 @@ width/placement/containment/state/mutation assertions remain. This closes the vi
 width/order-only comparison had missed. Actual images and ratios must pass before acceptance;
 the new unique format group is task034-format-preview-batch05-task014-prominent. Prior14 records
 and actual source-only provenance remain unchanged as explicitly insufficient visual history.
+
+
+The assigned curated preview code explicitly specifies `.v2 .countdown-element` as bold data-font
+`var(--heading-h1-size)/var(--heading-h1-line-height)` (source14 line301), supporting the source09
+prominence and this exact existing size token. Targeted57005 stopped at the unit phase:60/61passed;
+the sole failure was an older exact label-md size expectation/comment that the session clock must
+be larger. That is the old composition, not the selected movement readout. The unit now expects the
+source-backed heading-h1 movement size while retaining the exact unchanged label-lg session size,
+all distinct-name/containment/elapsed-versus-countdown behavior assertions. No clock behavior,
+project check, acceptance criterion, role or assertion was removed. Build/browser had not run in
+that stopped pipeline; they remain pending the corrected style expectation.
