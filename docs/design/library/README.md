@@ -39,6 +39,21 @@ existing visual choice. Material proposed changes receive their own review.
 - Regenerate the index with `node scripts/gallery-index.mjs` after register
   changes; `--check` verifies that the generated file is current.
 
+## Motion on new or changed components
+
+Inherit motion from the shared component first (for example, AppDialog owns
+dialog entrance/exit). Use the meanings in `gallery-motion-patterns.ts`, the
+shipped timings/keyframes and `src/ui/motion.ts` helpers for app composition.
+Availability in the lab does not by itself approve a new use.
+
+In the ordinary issue/PR and requirements, name the canonical component and
+motion pattern, its trigger/state change and reduced-motion end state. Show
+the relevant interaction in the real-component gallery example and check the
+affected consumer. Intentional stillness is valid. If a new moment does not
+fit, use the same gap request below before inventing an effect or timing.
+Existing adherence/reduced-motion checks cover mechanical rules; review still
+checks that the chosen motion communicates the intended state.
+
 ## Request a gap
 
 Record four things in the issue/PR before requirements consume a new contract:

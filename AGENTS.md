@@ -20,6 +20,8 @@ record a gap using the README when they do not fit. Render real components in
 the gallery and check affected screens. Update the register and regenerate its
 index when examples change. `docs/design/library/PLAN.md` is the active delivery
 checklist; older detailed research is reference, not extra shipping gates.
+For motion, follow the README's motion rule: inherit shared behavior, name the
+trigger and reduced-motion result, and preview a missing pattern before building it.
 
 ## Process journal
 

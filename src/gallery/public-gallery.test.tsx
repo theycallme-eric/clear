@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { PUBLIC_LIBRARY_ROUTES } from '../../e2e/required-routes'
 import { AppEntry } from '../AppEntry'
@@ -10,6 +10,10 @@ const { initializeClients } = vi.hoisted(() => ({
   initializeClients: vi.fn(() => { throw new Error('Public gallery initialized real clients') }),
 }))
 vi.mock('../app/auth-client', () => ({ appAuthClients: initializeClients }))
+
+// Keep cold module transformation out of the DOM readiness deadline under CI
+// load. Browser tests still exercise the real lazy entry on direct navigation.
+beforeAll(async () => { await import('./PublicGalleryApp') })
 
 afterEach(() => {
   window.history.replaceState(null, '', '/')

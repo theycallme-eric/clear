@@ -51,13 +51,11 @@ function MotionLab() {
     setLast(pattern.label + (reduced ? ' · reduced motion: static end state' : ' · ' + pattern.meaning))
     if (pattern.id === 'tumble') {
       setSeconds(value => value === 1428 ? 1539 : 1428)
-      readout.current?.scrollIntoView?.({ block: 'nearest' })
       return
     }
     if (reduced) return
     const target = pattern.id === 'boot' ? rows.current : subject.current
     if (!target) return
-    target.scrollIntoView?.({ block: 'nearest' })
     void target.offsetWidth
     target.classList.add(pattern.className)
     if (pattern.id === 'scan') target.classList.add('clr-scan--once')
