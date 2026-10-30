@@ -43,6 +43,33 @@ body,
   overflow: hidden;
 }
 
+/* Installed iOS + viewport-fit=cover: a percentage-height document can use
+   the shortened containing block while the translucent status bar overlaps
+   its top, leaving a status-bar-sized strip below the app. Give the document
+   and its actual app layers the same large viewport height. Browser tabs
+   retain the package's dynamic viewport sizing; Android stays on that path
+   too. Keep the safe areas on content, not outside the shell.
+   This is a candidate for installed-device UAT, not an emulated-device proof.
+   https://github.com/openchamber/openchamber/pull/3593 */
+@media (display-mode: standalone) {
+  @supports (-webkit-touch-callout: none) {
+    html,
+    body {
+      height: 100vh;
+    }
+
+    .clr-shell--fixed.clr-shell--contained {
+      height: 100%;
+    }
+
+    /* Only the app ground: gallery specimens keep their own containing box. */
+    #root > .clr-atmosphere--fixed {
+      bottom: auto;
+      height: 100vh;
+    }
+  }
+}
+
 .clr-shell--contained > .clr-shell__content {
   --shell-inset-left: max(var(--spacing-400), env(safe-area-inset-left));
   --shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));

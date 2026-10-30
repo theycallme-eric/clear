@@ -13,7 +13,10 @@ export const FORMAT_PRE_UI_POLISH_EVIDENCE_DIR = 'docs/design/evidence-0143/task
 export const FORMAT_PRE_LIBRARY_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-batch05-task015'
 // LIB-001/#590 reverifies the real read-only route after startup moved into
 // AppRuntime. Keep the prior Batch05 source/records intact; collect fresh here.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-590'
+export const FORMAT_LIBRARY_INITIAL_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-590'
+export const FORMAT_PWA_HOTFIX_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-pwa-hotfix-591'
+// Freeze the integrated PWA + public-entry source before collecting this group.
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-590-integrated'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

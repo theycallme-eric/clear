@@ -1,6 +1,6 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current LIB-001 public-gallery startup reverification — 30 October 2026
+## Prior LIB-001 startup reverification before main integration — 30 October 2026
 
 Under issue590, the existing authenticated Format Preview collector passed **4/4 skin cases and eight new screenshots in25.96 seconds**. Actual group: `docs/design/evidence-0143/task034-format-preview-library-590/`. The prior Task015/Batch05 group remains unchanged. This is manual current-source reverification for LIB-001, not a new native Task015 attempt, Runner receipt, merge approval or production deployment.
 
@@ -8,7 +8,19 @@ All records identify application commit `59e8ce362b0f65ade59d8558e064370cbfc2af6
 
 The app was served on loopback http://127.0.0.1:4181 using the existing configured Supabase test fixture. The fixture provisioned/onboarded and automatically deleted only its disposable namespaced example.com user; OTP delivery was intercepted. Setup/cleanup writes are separate from the preview walk. Every record reports zero generation, attempted preview write and forwarded preview write requests. This is not a no-backend-write setup or hosted frontend/UAT proof. The first record's clean checkout and later evidence-created dirty states remain as actually collected.
 
-## Previous batch-05 TASK-015 source-bound hierarchy recapture — 30 October 2026 (UTC)
+## Prior PWA hotfix #591 source-bound recapture — 30 October 2026
+
+This is ordinary hotfix evidence for PR #592, not a new native Task015 run, receipt or delivery claim. The owner reported that the separate installed-PWA preview worked and explicitly authorized merging this fix so it is live. That is owner-reported verification of the preview at c39bf03; no remote device inspection or individual keyboard/launch measurements are invented here.
+
+Actual new group: `docs/design/evidence-0143/task034-format-preview-pwa-hotfix-591/`. The unchanged authenticated collector passed **4/4 skin cases / eight real PNGs in 22.1 seconds**, foreground session10198, terminal exit0. Phone390×844 and short390×320 cover CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four records identify actual frozen source `058b86911eb6ec92dab72d546d3e25918f1047f6`, runtime `75a98ef47318af36089d39d654c46bca05fed156f90e7735dc9e346cee626a0b`, capture driver `1c17cfc6699bb8bdad5c67420d3c941bae6aabeda569a7e22bd75e0473fb3b0e` and pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. These hashes were independently derived from actual current files and matched every record. Runtime CSS is identical to the owner-tested preview; only the capture destination and journal changed before this source freeze. Observations span 2026-10-30T17:16:36.761Z through 2026-10-30T17:16:51.401Z, process27896, loopback origin http://localhost:5173. The first record is clean; later dirty statuses truthfully include collector-created evidence.
+
+The four records, eight unique matrix cells and each PNG's actual bytes, SHA-256 and IHDR dimensions were independently checked. Actual payload `2519ab13116c633b5b4de99c28051b0270960d172e7ddff2b03d10f6998ce5b9` was derived by unchanged `capturePayloadSha256()`. The unchanged lineage consumer accepts the real capture source through direct ancestry; no old Runner identity/provenance was forged or rebound. All14 original Task015 group files, including its lineage record, were independently compared with committed bytes and remain unchanged at their original path. Every historical group/audit entry remains preserved below.
+
+All preview/session generation, blocked generation, attempted application-write and forwarded-write counters are zero. Existing disposable local authentication setup/cleanup writes are separate. These captures are local same-source evidence; they are not the installed-iPhone proof, a fresh deployed result or a paid generation. The owner's separate preview report is recorded as such. Required full local/GitHub checks and protected merge remain pending at this evidence checkpoint; no main or Production success is claimed here.
+
+## Prior batch-05 TASK-015 source-bound hierarchy recapture — 30 October 2026 (UTC)
 
 Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task015/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 20.5 seconds**, foreground 43333, terminal exit 0. The complete phone390×844 / short390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 
