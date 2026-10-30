@@ -12,7 +12,7 @@
 .clr-gallery-motion__scroll-stage { height: calc(var(--spacing-1400) * 2); }
 .clr-gallery-motion__scroll-stage > div { height: 100%; }
 .clr-gallery-motion__scroll-body { padding: var(--gallery-dissolve-depth) var(--spacing-200); }
-/* Earlier 26px request, scoped only to the labelled gallery reference sample.
+/* Owner-tuned dissolve, scoped only to the labelled gallery sample.
    Current app ScrollRegion and its hard-edge contract remain untouched. */
 .clr-gallery-motion__dissolve {
   mask-image: linear-gradient(to bottom, transparent 0, var(--ink) var(--gallery-dissolve-depth), var(--ink) calc(100% - var(--gallery-dissolve-depth)), transparent 100%);

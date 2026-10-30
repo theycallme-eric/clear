@@ -13,8 +13,8 @@ import { galleryScrollSettleTime } from './gallery-scroll-settle-time'
 import './gallery-motion.css'
 
 const EFFECT_CLASSES = [...MOTION_PATTERNS.map(pattern => pattern.className), 'clr-phosphor-in', 'clr-scan--once']
-// The earlier source request specifies this preview depth. It is not a new app token.
-const DISSOLVE_REFERENCE_PX = 26
+// Owner review: 15% shorter than the earlier 26px reference, gallery-only.
+const DISSOLVE_PREVIEW_PX = 22.1
 const SCROLL_ROWS = Array.from({ length: 14 }, (_, index) => index + 1)
 
 function clearSamples(elements: (HTMLElement | null)[]) {
@@ -207,7 +207,7 @@ function ScrollComparison() {
         <p className="clr-text-data-xs">Move the slider to compare matching positions, or scroll each panel independently.</p>
         <Button variant="secondary" aria-pressed={holdGlow} onClick={() => setHoldGlow(value => !value)}>Hold glow for inspection</Button>
         <p className="clr-text-data-xs">Hold keeps the same edge glow visible for review. With Hold off, it lights during scrolling and settles afterward.</p>
-        <div ref={pair} className="clr-gallery-motion__scroll-pair" style={{ '--gallery-dissolve-depth': String(DISSOLVE_REFERENCE_PX) + 'px' } as CSSProperties}>
+        <div ref={pair} className="clr-gallery-motion__scroll-pair" style={{ '--gallery-dissolve-depth': String(DISSOLVE_PREVIEW_PX) + 'px' } as CSSProperties}>
           {(['hard', 'dissolve'] as const).map(kind => <HeadingSection key={kind}>
             <Heading className="clr-gallery-motion__sample-title">{kind === 'hard' ? 'Hard edge' : 'CRT dissolve'}</Heading>
             <p className="clr-text-data-xs">{kind === 'hard' ? 'Baseline' : 'Selected'}</p>

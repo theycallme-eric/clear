@@ -20,7 +20,8 @@ existing visual choice. Material proposed changes receive their own review.
   Carry the trigger, state sequence and reduced-motion outcome through the
   ordinary visual preview and requirements handoff when motion is involved.
 - The Motion view also compares the actual hard-edge ScrollRegion with an
-  explicitly scoped 26 CSS pixel dissolve reference. Both use the same real component
+  scoped dissolve preview (22.1 CSS pixels after the owner's 15% reduction).
+  Both use the same real component
   and content. Eric selected dissolve with visible glow; its final appearance
   and versioned foundation integration remain open. A gallery-only adapter
   preserves the token's milliseconds when compiled CSS uses seconds (#600).

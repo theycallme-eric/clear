@@ -17,7 +17,8 @@ CSS explicitly specify hard clipping with transient edge streaks and no fade.
 These are different source stages, not two names for the same effect.
 
 The paired panels use the actual ScrollRegion, identical content and a linked
-position control. Only the reference panel has a scoped 26 CSS pixel mask.
+position control. The dissolve started at the reference's 26 CSS pixels; Eric
+requested a 15% shorter dissolve, now 22.1 CSS pixels. The glow remains unchanged.
 The pinned layers and shared streaks remain outside that mask. Eric selected
 CRT dissolve with visible glow. Final appearance review and a versioned
 implementation with affected-screen verification remain open.
