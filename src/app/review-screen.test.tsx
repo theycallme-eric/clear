@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest'
 import { Route, Routes } from 'react-router-dom'
 
 import type { SessionsClient } from '../data/sessions'
+import type { SectionCandidates } from '../data/candidates'
 import { ok, type Result } from '../state/errors'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
 import {
@@ -58,8 +59,9 @@ function sessionsDouble(): Partial<SessionsClient> {
 function renderReview(
   acceptance: SessionAcceptance = ACCEPTANCE,
   onRegenerate: () => void = () => undefined,
+  candidateSets: readonly SectionCandidates[] = [],
 ) {
-  const workout = createWorkoutDouble({ session: null, sessions: sessionsDouble() })
+  const workout = createWorkoutDouble({ session: null, sessions: sessionsDouble(), candidateSets })
   return renderWithProviders(
     <Routes>
       <Route
@@ -463,5 +465,121 @@ describe('REQ-008: the compact workout-facts row under the workout title', () =>
       .getAllByRole('listitem')
       .map((item) => item.textContent)
     expect(items).toEqual(['kettlebell', 'dumbbell'])
+  })
+})
+
+/**
+ * TASK-010 (issue #568, REQ-009): B05-04's grouped hierarchy through the shared
+ * `ReviewExerciseRow` — the name row leads with Swap at its end, then a
+ * separate prescription row, then equipment — and the group's round rest said
+ * once instead of a rest and a `Bodyweight` on every movement. The rendered
+ * relationships are proved in `e2e/ui-polish-b05-review-groups.spec.ts`.
+ */
+describe('REQ-009: grouped Review movement hierarchy and one group rest', () => {
+  const bodyweight = { equipment: 'bodyweight', load_type: 'bodyweight' as const, load_value: null }
+  const BODYWEIGHT_CIRCUIT = makeWorkoutBlock({
+    structure_type: 'circuit',
+    rep_scheme: 'fixed',
+    rounds: 2,
+    round_rest_seconds: 60,
+    exercises: [
+      makePrescription({ exercise_id: 'mountain-climber', ...bodyweight, sets: 2, target_value: 12, rest_seconds: 60 }),
+      makePrescription({ exercise_id: 'squat-jump', ...bodyweight, sets: 2, target_value: 10, rest_seconds: 60 }),
+      makePrescription({ exercise_id: 'bear-crawl', ...bodyweight, sets: 2, modality: 'time', target_value: 20, rest_seconds: 60 }),
+    ],
+  })
+
+  it.each([
+    ['superset, 4 rounds', undefined],
+    ['circuit, 2 rounds', BODYWEIGHT_CIRCUIT],
+  ] as const)('%s: name row with Swap at its end, then prescription, then equipment', async (name, block) => {
+    renderReview(block === undefined ? ACCEPTANCE : withBlocks([block]))
+    await ready()
+
+    for (const item of within(screen.getByRole('list', { name })).getAllByRole('listitem')) {
+      const [row, prescription, equipment] = [...item.firstElementChild!.children] as HTMLElement[]
+      const [title, swapSlot] = [...row.children] as HTMLElement[]
+      expect(title.textContent).toMatch(/^\d\d [a-z ]+$/)
+      expect(title.style.fontFamily).toBe('var(--font-display)')
+      expect(within(swapSlot).getByRole('button', { name: /^Swap / })).toBeInTheDocument()
+      expect(prescription.tagName).toBe('P')
+      expect(prescription.style.fontSize).toBe('var(--label-md-size)')
+      expect(equipment.style.color).toBe('var(--text-secondary)')
+    }
+  })
+
+  it('states the round rest once, in the group, never on each movement', async () => {
+    renderReview(withBlocks([BODYWEIGHT_CIRCUIT]))
+    await ready()
+
+    const list = screen.getByRole('list', { name: 'circuit, 2 rounds' })
+    const group = list.parentElement!
+    expect(group.textContent?.match(/Rest 60s/g)).toHaveLength(1)
+    expect(group.lastElementChild).toHaveTextContent('Rest 60s between rounds')
+    for (const item of within(list).getAllByRole('listitem')) {
+      expect(item.textContent?.match(/bodyweight/gi)).toHaveLength(1)
+    }
+    expect(within(list).getAllByText('12 reps')).toHaveLength(1)
+    expect(within(list).getAllByText('20 sec')).toHaveLength(1)
+  })
+
+  it('keeps a real load beside its equipment inside a group', async () => {
+    renderReview(withBlocks([THREE_STATION_CIRCUIT]))
+    await ready()
+
+    const [first] = within(screen.getByRole('list', { name: 'circuit, 5 rounds' })).getAllByRole('listitem')
+    expect(within(first).getByText('24 kg')).toBeInTheDocument()
+    expect(within(first).getByText('kettlebell')).toBeInTheDocument()
+    expect(first.textContent).not.toContain('Rest 60s')
+  })
+
+  it('keeps only Swap by the name and the full Undo after the readings following a real choice', async () => {
+    const user = userEvent.setup()
+    const acceptance = withBlocks([BODYWEIGHT_CIRCUIT])
+    renderReview(acceptance, () => undefined, [{
+      section: acceptance.workout.sections[0].section_type,
+      relaxed: false,
+      candidates: [{
+        exerciseId: 'synthetic-lateral-cross-body-mountain-climber-with-shoulder-reach',
+        name: 'Synthetic replacement', role: 'conditioning', canBePrimary: false,
+        patterns: ['conditioning'], primaryPatterns: ['conditioning'],
+        components: [], muscles: [], usableEquipment: ['bodyweight'],
+      }],
+    }])
+    await ready()
+    const list = screen.getByRole('list', { name: 'circuit, 2 rounds' })
+    const first = within(list).getAllByRole('listitem')[0]
+    const [nameRow, prescription, equipment] = [...first.firstElementChild!.children]
+    await user.click(within(first).getByRole('button', { name: 'Swap mountain climber' }))
+    await user.click(await screen.findByRole('button', { name: /Synthetic replacement\s*BODYWEIGHT/ }))
+
+    const swap = within(first).getByRole('button', {
+      name: 'Swap synthetic lateral cross body mountain climber with shoulder reach',
+    })
+    const undo = within(first).getByRole('button', { name: 'Undo swap — back to mountain climber' })
+    expect(nameRow).toContainElement(swap)
+    expect(nameRow).not.toContainElement(undo)
+    expect(precedes(prescription, equipment)).toBe(true)
+    expect(precedes(equipment, undo)).toBe(true)
+    expect(undo).toHaveTextContent('Undo swap')
+    await user.click(undo)
+    expect(within(first).getByRole('button', { name: 'Swap mountain climber' })).toBeInTheDocument()
+    expect(within(first).queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
+  })
+
+  it('leaves a standard movement’s own rest and load where they were', async () => {
+    renderReview(
+      withBlocks([
+        makeWorkoutBlock({
+          exercises: [makePrescription({ exercise_id: 'air-squat', ...bodyweight, rest_seconds: 45 })],
+        }),
+      ]),
+    )
+    await ready()
+
+    const main = screen.getByRole('main')
+    expect(within(main).getByText('Rest 45s')).toBeInTheDocument()
+    expect(within(main).getByText('Bodyweight')).toBeInTheDocument()
+    expect(within(main).getByRole('button', { name: 'Swap air squat' })).toBeInTheDocument()
   })
 })

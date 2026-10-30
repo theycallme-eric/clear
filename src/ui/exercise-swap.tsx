@@ -34,7 +34,12 @@ import { ErrorView, LoadingView } from './view-state'
 // On the movement's card
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ACTIONS_STYLE: CSSProperties = { gap: 'var(--spacing-200)', flexWrap: 'wrap' }
+/** Quiet trailing actions; the caller chooses the reading row each belongs to. */
+const ACTIONS_STYLE: CSSProperties = {
+  gap: 'var(--spacing-200)',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+}
 
 const OPTION_LIST_STYLE: CSSProperties = {
   listStyle: 'none',
@@ -69,6 +74,8 @@ export interface ExerciseSwapControlsProps {
   slot: string
   /** The catalog id of the movement the slot currently prescribes. */
   exerciseId: string
+  /** Default keeps the existing paired API; Review places Undo after its readings. */
+  actions?: 'both' | 'swap' | 'undo'
 }
 
 /**
@@ -81,27 +88,30 @@ export interface ExerciseSwapControlsProps {
  * write is in flight they are disabled and busy rather than animated — the
  * dialog's loader is the one loop on screen.
  */
-export function ExerciseSwapControls({ slot, exerciseId }: ExerciseSwapControlsProps) {
+export function ExerciseSwapControls({ slot, exerciseId, actions = 'both' }: ExerciseSwapControlsProps) {
   const swap = useExerciseSwap()
   if (swap === null) return null
 
   const name = exerciseName(exerciseId)
   const previous = swap.undoTarget(slot)
+  if (actions === 'undo' && previous === null) return null
   const busy = swap.isBusy(slot)
 
   return (
     <div className="clr-row" style={ACTIONS_STYLE}>
-      <TextAction
-        aria-label={`Swap ${name}`}
-        aria-busy={busy || undefined}
-        disabled={busy}
-        onClick={() => swap.open(slot)}
-      >
-        <RefreshCw size={16} />
-        Swap
-      </TextAction>
+      {actions === 'undo' ? null : (
+        <TextAction
+          aria-label={`Swap ${name}`}
+          aria-busy={busy || undefined}
+          disabled={busy}
+          onClick={() => swap.open(slot)}
+        >
+          <RefreshCw size={16} />
+          Swap
+        </TextAction>
+      )}
 
-      {previous === null ? null : (
+      {actions === 'swap' || previous === null ? null : (
         <TextAction
           aria-label={`Undo swap — back to ${exerciseName(previous)}`}
           aria-busy={busy || undefined}
