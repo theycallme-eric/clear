@@ -114,6 +114,12 @@ Delivery 2 is implemented in [PR 595](https://github.com/theycallme-eric/clear/p
 
 # Working rules for agents
 
+Requested library refinement: [PR 599](https://github.com/theycallme-eric/clear/pull/599)
+restores the package's motion lab/use cases at `/gallery/motion` and shows the
+current hard-edge scroll treatment beside the earlier dissolve reference.
+This supports visual review; the scroll choice and any versioned foundation
+integration remain open. It does not replace delivery 3's workout-prompt pilot.
+
 Read the repository's project instructions and the short library README before UI work. Search the existing registry and src/ui before creating presentation. Use the same components, style authority and real state owners in gallery examples; supply deterministic data/controllers without live writes.
 
 Keep code and rendered evidence tied to the version they actually represent. Current, proposed, approved, merged and released are distinct facts recorded through the ordinary workflow. Never mix an old/partial preview into a current baseline or infer approval from a screenshot.
