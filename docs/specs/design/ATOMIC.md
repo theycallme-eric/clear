@@ -6,11 +6,11 @@
 dispositions, task mapping and app-owned exceptions)
 
 IA answers what screens exist and what they do. This document records the design-system
-contract those screens compose from. The owner-supplied 0.14.3 archive is authoritative when this
-document, historical requirements, screenshots, recovery notes, or local fixes disagree.
+contract those screens compose from. The owner-supplied 0.14.3 archive governs the
+unchanged imported foundation. Later owner-approved repository additions follow §1.2.
 
-The design system is an external, versioned input. Product code may compose its public API; it
-must not patch the vendored implementation or invent a second visual dialect.
+The imported foundation is an external, versioned input. Product code may compose its public API;
+it must not patch that historical implementation. Shared app-owned additions follow §1.2.
 
 ---
 
@@ -57,6 +57,19 @@ visual references, not production imports.
 The prose header in the supplied `index.d.ts` still says 0.5.0. It is a non-blocking upstream
 documentation defect: `VERSION`, `package.json`, the changelog, the archive name, and this pin all
 agree on 0.14.3. The vendor remains byte-identical rather than patching the header locally.
+
+### 1.2 Current authoring ownership
+
+Eric clarified on 30 October 2026 that the CLEAR repository and executable gallery
+are the source of truth going forward. The Claude Design project is maintained
+for older files; a Claude export is not a prerequisite for approved repository
+work. Author new shared presentation in `src/ui/` and `src/styles/`, compose the
+public foundation, and render the same implementation in the gallery and app.
+
+Preserve the historical 0.14.3 runtime/evidence identity. This ownership decision
+does not relabel modified bytes as 0.14.3. A future replacement of that dependency
+still requires the explicit versioned migration checks in §9.2. Send legacy
+maintenance updates using `docs/design/library/CLAUDE-DESIGN-MAINTENANCE-PROMPT.md`.
 
 ---
 

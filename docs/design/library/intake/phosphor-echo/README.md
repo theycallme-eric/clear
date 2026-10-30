@@ -2,7 +2,7 @@
 
 Owner-selected round-3 visual direction, received 30 October 2026. This intake
 preserves one reusable decorative effect under [issue596](https://github.com/theycallme-eric/clear/issues/596).
-Its next step is a scoped, opt-in foundation/gallery integration proposal.
+Its next step is a scoped, opt-in shared app/gallery integration proposal.
 
 ## Source and selected preset
 
@@ -38,13 +38,13 @@ Its START-HERE.txt explains how to open the complete isolated study.
 1. **Need:** one static CRT rear image on eligible outer foreground surfaces.
 2. **Options checked:** existing emission/bleed and primary-action glow lack
    this offset filled silhouette with foreground occlusion.
-3. **Smallest extension and owner:** the next versioned CLEAR foundation's
-   shared decorative-effect API owns the kernel and parameters. App adapters
-   supply eligible silhouettes and semantic role colors. The pinned 0.14.3
-   runtime/reference copies remain immutable. Locate/confirm the editable
-   foundation authoring source before integration; add the effect there and
-   consume it through a new versioned import, rather than an app-local visual
-   fork or edits to historical `_source/`. No version number is assigned here.
+3. **Smallest extension and owner:** one repository-owned shared decorative
+   effect owns the kernel and parameters; eligible components supply silhouettes
+   and semantic role colors. Eric clarified that this repository/gallery is the
+   source of truth and Claude Design maintains older files. Author the approved
+   shared effect here; a Claude export is not a gate. The pinned 0.14.3 copies
+   remain immutable. A future replacement of that dependency still needs its
+   versioned migration. Do not create separate per-screen effects or edit `_source/`.
 4. **Consumers and review:** show real heading, framed back action, outer Card
    and CTA owners together with the effect off/on before opting a screen in.
    Register the actual shared implementation in the existing gallery/index.
@@ -77,8 +77,8 @@ wholesale into the application.
 - Verify one filter/parameter owner, complete silhouette input, foreground
   occlusion/transparency and source hiding when off. Check exposed left/bottom
   pixels and unchanged foreground interiors with the preferred preset.
-- Carry the reviewed implementation through the normal issue/PR and versioned
-  import workflow, then opt eligible surfaces in deliberately. This intake
+- Carry the reviewed implementation through the normal repository issue/PR
+  workflow, then opt eligible surfaces in deliberately. This intake
   authorizes preservation, not app-wide activation, merge or release.
 
 The supplied verification covers the isolated study at its initial round-3

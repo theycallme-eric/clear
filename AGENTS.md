@@ -22,6 +22,9 @@ index when examples change. `docs/design/library/PLAN.md` is the active delivery
 checklist; older detailed research is reference, not extra shipping gates.
 For motion, follow the README's motion rule: inherit shared behavior, name the
 trigger and reduced-motion result, and preview a missing pattern before building it.
+The CLEAR repository/gallery is the current authoring authority. Claude Design
+maintains older files; its export is not a gate for new app-owned shared work.
+Keep the historical 0.14.3 import intact. See ATOMIC.md §1.2 for this boundary.
 
 ## Process journal
 

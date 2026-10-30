@@ -1,5 +1,11 @@
 # CLEAR visual library
 
+Owner clarification, 30 October 2026: this repository and executable gallery are
+the design-library source of truth going forward. Claude Design is maintained
+for older files. Use [the maintenance prompt](CLAUDE-DESIGN-MAINTENANCE-PROMPT.md)
+to send changes back there; do not wait for its export to author approved shared
+app components/styles here. The historical 0.14.3 import remains intact.
+
 Use `/gallery` or `/gallery/app` for actual app components. Both use the same
 register and styles as the development gallery. This branch is a source
 proposal; deployment and visual approval are recorded separately.
@@ -81,9 +87,11 @@ fixtures. Use actual implementations with deterministic data/controllers, no
 live account writes and no shipped test harness. Add coverage in useful slices.
 Do not copy a historical pattern merely because it has an example.
 
-The 0.14.3 foundation remains an immutable import. App-owned styles/components
-are editable; revisit foundation authoring when a real foundation edit is
-wanted. Historical archive pages stay at `/dev/gallery/ds` in development.
+The 0.14.3 foundation remains an immutable import. Approved additions belong in
+the repository's shared app-owned styles/components and real gallery examples.
+Claude maintenance is downstream of that work. Replacing the imported dependency
+would still require an explicit versioned migration. Historical archive pages
+stay at `/dev/gallery/ds` in development.
 Their FormField/OverflowRail accessibility findings remain reference findings;
 public archive delivery is deferred.
 

@@ -8,6 +8,13 @@ Version 2.0 · Updated 30 October 2026, America/Chicago. Eric approved this simp
 
 # What stays true
 
+Owner clarification, 30 October 2026: the CLEAR repository and executable gallery
+are the source of truth going forward. Claude Design maintains older files.
+Approved shared app components/styles are authored here without waiting for a
+Claude export. Keep the historical 0.14.3 import intact; replacing that dependency
+remains a separate versioned migration. The legacy maintenance handoff is
+[this copy-and-paste prompt](CLAUDE-DESIGN-MAINTENANCE-PROMPT.md).
+
 - Gallery and app consume the same actual components, variables and shared presentation recipes. A shared change reaches the appropriate consumers.
 
 - Related Review, History and Favorites presentations are shown together so their similarities and intentional differences can be reviewed. Preserve distinct prescription, logging and recorded-result behavior.
@@ -96,7 +103,9 @@ Deferred until a concrete need justifies them:
 
 - Public historical-archive delivery; additional route families, ID alias infrastructure and branch-comparison routing.
 
-- Foundation authoring migration, an external reusable toolkit, a separate repository and Storybook migration. Revisit foundation ownership when an actual foundation edit is wanted.
+- An external reusable toolkit, a separate repository and Storybook migration.
+  Repository-owned shared app presentation is the current authoring path;
+  preserving the historical foundation does not require a separate authoring migration.
 
 - A formal approval-state machine, separate visual-decision schema and thirteen prospective maintenance gates.
 
@@ -120,8 +129,8 @@ current hard-edge scroll treatment beside the dissolve direction Eric selected.
 Eric likes the corrected glow and CRT direction; he requested a 15% shorter
 dissolve, now 22.1px, with the glow unchanged. The production CSS-time unit bug
 is tracked in issue600. The gallery normalizes the token for preview and offers
-Hold for inspection; canonical foundation correction and app integration remain
-separate. This does not replace delivery 3's pilot.
+Hold for inspection. The shared app-owned correction and integration are tracked
+in issue600; Claude maintenance is downstream. This does not replace delivery 3's pilot.
 
 Read the repository's project instructions and the short library README before UI work. Search the existing registry and src/ui before creating presentation. Use the same components, style authority and real state owners in gallery examples; supply deterministic data/controllers without live writes.
 
