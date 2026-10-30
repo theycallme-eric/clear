@@ -1,6 +1,21 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-011 combined source-bound recapture — 30 October 2026 (UTC)
+## Current batch-05 TASK-013 combined source-bound recapture — 30 October 2026 (UTC)
+
+Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task013/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.2 seconds**, foreground 5849, terminal exit 0. Phone 390×844 and short 390×320 cover CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four records identify actual frozen source `9bdc20f56f3131bb11a370fafaf81d31bbb5088b`, runtime `0776e7ff99d376b72849bfd2f6b0770d7bdd7e8ca0a6a9271b08f03a521fb676`, capture driver `da38c08a3bfcf84d10917a5addcb0c4220569a5e13db117cc37fa1088246523a` and pinned 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. Runtime, driver and package hashes were independently reproduced from current source bytes. Observed 2026-10-30T03:56:25.727Z through 2026-10-30T03:56:39.853Z, process 19625, loopback origin http://localhost:5173. The first record is clean; later dirty statuses truthfully include generated collector evidence. Four records, complete derived manifest, eight unique matrix cells and every actual PNG's byte count, SHA-256 and IHDR dimensions were independently checked.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero, including session generation. Real owned-local-backend authentication setup/cleanup writes remain separate. This is not hosted/deployed proof, paid generation or a no-backend-write setup claim.
+
+Existing v1 source-only provenance truthfully retains a1 ownership: revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-013`, run `c2542709-c98b-4fa1-bccd-c2dcecc286cc`, attempt 1, branch `agent-runner/task-013-a1-c2542709` and its original tested base `0f4ee603516be9ab477c0a109549be3063975fce`. The candidate had normally integrated delivered Task11/build 5585 before this frozen capture. Actual payload `8afc53986c2b1a0b8a2430a04441505660b25c97c60b2d118d866f9bb1abdd82` comes from unchanged Node24 `capturePayloadSha256()`, excluding provenance itself. No a1 image is labelled as a2 or as native acceptance. All prior groups, rows, audit entries and failed outputs remain.
+
+On this same clean frozen source, root's combined browser foreground 91475 passed **15/15 cases in 1.2 minutes**: focused sheet surface and keyboard modes, preserved Rest/Log flows and sheet scroll boundaries. All 58 source-bearing records identify `9bdc20f56f3131bb11a370fafaf81d31bbb5088b` with dirty=false; 311 retained artifacts / 250 PNGs plus the retention manifest remain externally in `task013-final-combined-browser-evidence-20261030`. Root reviewed three actual UI images. Earlier combined build and 51 focused-unit results retain their recorded preflight history; they are not newly rerun or relabelled by this derivation.
+
+Normal native continuation must inspect/reuse the preserved candidate and genuine combined proof where unchanged, and supply its own actual claim, criterion report and mandatory independent checks. Native a2 claim/acceptance, exact-head receipt, required GitHub CI and protected build-branch delivery are still pending. Physical-iPhone UAT remains separate. No main merge, production deployment, hosted schema, distance or Runner change is claimed.
+
+
+## Prior batch-05 TASK-011 combined source-bound recapture — 30 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task011/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.5 seconds**, foreground session 52834, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 

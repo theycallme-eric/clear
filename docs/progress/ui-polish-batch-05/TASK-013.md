@@ -114,3 +114,24 @@ Combined regression65998 was terminal1:7/8 passed in37.3s, including both comple
 The scoped sheet regression now polls its actual content/host dimensions, matching head/foot presence and published measured insets across two animation frames before taking its snapshot. All original fitting/no-cue, actual overflow, hard-edge, pixel and no-write assertions remain unchanged; no fixed delay, wider tolerance, expectation flip or product/global FittedScrollRegion patch was introduced. The updated case still needs execution on the frozen combined source.
 
 The existing authenticated format collector is prepared for a unique Task13 group. Its source-only lineage truthfully names the original a1 retained run/branch/base before normal a2 continuation. New source hashes, PNGs, manifest/provenance and native acceptance remain pending actual collection; old groups and validators stay intact.
+
+
+## Actual combined proof and retained-a1 format capture
+
+The root froze clean candidate `9bdc20f56f3131bb11a370fafaf81d31bbb5088b` after normal build-5585 integration and the measured scroll-settlement correction. Combined browser foreground91475 ended terminal0: **15/15 passed in 1.2 minutes**, including seven focused sheet/reference/keyboard cases, five preserved Rest/Log cases and three genuine scroll-boundary cases. All 58 source-bearing records identify that exact source with dirty=false. The actual 311 retained artifacts / 250 PNGs plus manifest remain in `task013-final-combined-browser-evidence-20261030`. Root reviewed three actual UI captures. The previously recorded combined build/51 focused units remain valid preflight history; this derivation ran no new checks or build.
+
+Existing authenticated format collector foreground5849 ended terminal0: **4/4 skin cases in 21.2 seconds**. Group`docs/design/evidence-0143/task034-format-preview-batch05-task013` now contains eight genuine phone390×844/short390×320 PNGs and the complete four-record/eight-cell manifest. They were observed 2026-10-30T03:56:25.727Z through 2026-10-30T03:56:39.853Z, process19625. Every PNG's bytes, SHA-256 and IHDR dimensions and the manifest/record matrix were independently checked. Actual identities:
+
+- captured source: `9bdc20f56f3131bb11a370fafaf81d31bbb5088b`
+- runtime: `0776e7ff99d376b72849bfd2f6b0770d7bdd7e8ca0a6a9271b08f03a521fb676`
+- driver: `da38c08a3bfcf84d10917a5addcb0c4220569a5e13db117cc37fa1088246523a`
+- package0.14.3: `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+- payload: `8afc53986c2b1a0b8a2430a04441505660b25c97c60b2d118d866f9bb1abdd82`
+
+Runtime, driver and package were independently reproduced from actual current bytes. Preview generation, blocked generation, attempted write and forwarded write counters are all0, including session generation. Real disposable local auth setup/cleanup remains separate. First record clean; later dirty statuses record newly generated evidence honestly.
+
+Existing v1 provenance uses the unchanged `capturePayloadSha256()`, excluding provenance itself. It records the REAL retained a1 run`c2542709-c98b-4fa1-bccd-c2dcecc286cc`, attempt1, revision`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-013`, branch`agent-runner/task-013-a1-c2542709` and original a1 tested base`0f4ee603516be9ab477c0a109549be3063975fce`. These source-only captures are not labelled as a2. The original failed worker/turn-exhaustion and lack of normalized criterion evidence remain in history.
+
+**Next action:** normal supported native continuation should inspect and reuse this preserved candidate and genuine combined proof when their inputs are unchanged, then establish its own actual current claim/criterion report and execute all unchanged mandatory independent checks. A new claim alone is not acceptance. Do not rebuild the UI or recreate unchanged proof just because the native attempt changes; do not reuse this proof after input changes. Native a2 acceptance/receipt, full gates, required CI and protected build-only delivery are pending. No native evidence was fabricated by this derivation. Physical-iPhone UAT remains unobserved.
+
+This derivation wrote only the generated v1 provenance, current audit entry (prior Task11 marked Prior) and this note. It ran no tests/browser/Git, read no private configuration and changed no UI/runtime/driver/helper/Runner/state.
