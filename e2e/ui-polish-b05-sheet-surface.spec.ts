@@ -68,6 +68,7 @@ const WORKOUT = sessionSnapshotSchema.parse(snapshotFixture({
 }))
 const WORKOUT_EXERCISES = WORKOUT.sections.flatMap((section) => section.blocks
   .flatMap((block) => block.exercises.map(({ exercise }) => exercise)))
+const EXERCISE_ID = new Map(WORKOUT_EXERCISES.map((exercise) => [exercise.exercise_id, exercise.id]))
 const BLOCK_IDS = new Set(WORKOUT.sections.flatMap((section) => section.blocks.map(({ block }) => block.id)))
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -348,6 +349,19 @@ async function syntheticApp(page: Page, origin: string) {
         if (!isSetObservationMutation(mutation)) return reply({ outcome: 'invalid' }, 400)
         const previous = heads.get(mutation.observation_id)
         if (previous?.mutation_id === mutation.mutation_id) return reply({ outcome: 'replayed', mutation, head: previous })
+        if (mutation.operation === 'insert') {
+          expect(previous).toBeUndefined()
+          expect(mutation.expected_revision).toBe(0)
+          expect(mutation.revision).toBe(1)
+        } else {
+          expect(mutation.operation).toBe('correct')
+          expect(previous).toBeDefined()
+          expect(previous?.row?.workout_exercise_id).toBe(mutation.exercise_id)
+          expect(previous?.row?.set_number).toBe(mutation.set_number)
+          expect(mutation.expected_revision).toBe(previous?.revision)
+          expect(mutation.revision).toBe((previous?.revision ?? -1) + 1)
+          expect(mutation.mutation_id).not.toBe(previous?.mutation_id)
+        }
         const row = exerciseSetLogRowSchema.parse({
           id: mutation.observation_id, workout_exercise_id: mutation.exercise_id,
           prescription_revision_status: 'active', set_number: mutation.set_number,
@@ -395,9 +409,11 @@ async function syntheticApp(page: Page, origin: string) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function sourceIdentity() {
-  const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
+  const cwd = resolve(import.meta.dirname, '..')
+  const git = (args: string[]) => execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 10_000 }).trim()
+  const head = git(['rev-parse', 'HEAD'])
   if (!/^[a-f0-9]{40}$/.test(head)) throw new Error('Sheet-surface capture requires an actual Git source identity')
-  return { head, dirty: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim() !== '' }
+  return { head, dirty: git(['status', '--porcelain', '--untracked-files=all']) !== '' }
 }
 
 async function screen(page: Page, testInfo: TestInfo, id: string) {
@@ -549,7 +565,7 @@ async function proveSurface(page: Page, testInfo: TestInfo, ref: ReferenceMeasur
   expect(sheetBox.y, 'the sheet covers the navigation, not laid out above it').toBeLessThan(navBox.y)
   for (const name of ['Previous', /^(Next section|Finish workout)$/]) {
     const target = await box(nav(page).getByRole('button', { name }))
-    const covered = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('section.clr-set-sheet') !== null,
+    const covered = await page.evaluate(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('section.clr-set-sheet')),
       { x: target.x + target.width / 2, y: target.y + target.height / 2 })
     expect(covered, `${String(name)} lies under the sheet`).toBe(true)
   }
@@ -659,7 +675,7 @@ async function proveCollapsed(page: Page) {
   const previous = nav(page).getByRole('button', { name: 'Previous', exact: true })
   await expect(previous).toBeVisible()
   const target = await box(previous)
-  const top = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.closest('.clr-workout-nav') !== null,
+  const top = await page.evaluate(({ x, y }) => Boolean(document.elementFromPoint(x, y)?.closest('.clr-workout-nav')),
     { x: target.x + target.width / 2, y: target.y + target.height / 2 })
   expect(top, 'Previous is the topmost element again').toBe(true)
 }
@@ -670,6 +686,47 @@ async function remaining(page: Page): Promise<number> {
   const digits = /(\d\d):(\d\d)/.exec(text ?? '')
   if (digits === null) throw new Error(`no countdown digits in ${text}`)
   return Number(digits[1]) * 60 + Number(digits[2])
+}
+
+/**
+ * Observe the focused field after the resize, then explicitly reveal it through
+ * the real scroll owner. This proves reachability after that reveal; it does not
+ * claim that the browser automatically scrolled a physical keyboard into place.
+ */
+async function captureKeyboardField(page: Page, testInfo: TestInfo, options: {
+  id: string; consumer: string; field: Locator; reference: ReferenceMeasures
+}) {
+  await expect(options.field).toBeFocused()
+  await options.field.scrollIntoViewIfNeeded()
+  await expect(options.field).toBeFocused()
+  const field = await box(options.field)
+  expect(field.y).toBeGreaterThanOrEqual(0)
+  expect(field.y + field.height).toBeLessThanOrEqual(KEYBOARD.height)
+  const region = page.locator('.clr-set-sheet-layer__entry > .clr-scroll-region')
+  await expect(region).toHaveAttribute('data-measured', '')
+  const scroll = await region.locator(':scope > .clr-scroll-region__scroller').evaluate((element) => ({
+    overflowY: getComputedStyle(element).overflowY, client: element.clientHeight, scroll: element.scrollHeight,
+  }))
+  expect(scroll.overflowY).toBe('auto')
+  expect(scroll.scroll).toBeGreaterThan(scroll.client)
+  const regionBox = await box(region)
+  expect(regionBox.y).toBeGreaterThan(0)
+  expect(regionBox.y + regionBox.height).toBeLessThanOrEqual(KEYBOARD.height + 0.5)
+  const focus = await options.field.evaluate((element) => ({
+    fieldFocused: document.activeElement === element,
+    form: element.closest('form')?.getAttribute('aria-label'),
+    value: (element as HTMLInputElement).value,
+  }))
+  expect(focus.fieldFocused).toBe(true)
+  const shot = await screen(page, testInfo, options.id)
+  await record(page, testInfo, options.id, {
+    consumer: options.consumer,
+    state: 'keyboard-like resize, actual field focused after explicit scrollIntoViewIfNeeded reveal',
+    reference: { file: options.reference.file, sha256: options.reference.sha256, regions: options.reference.regions },
+    capture: { file: shot.file, sha256: shot.sha256 },
+    measured: { focus, field, scroll, region: regionBox, automaticKeyboardRevealClaimed: false },
+  })
+  return { region, scroll, focus }
 }
 
 const originOf = (baseURL: string | undefined) => new URL(baseURL!).origin
@@ -725,6 +782,7 @@ for (const { name: size, viewport } of [
       // Collapse with a draft: nothing saved, rest uninterrupted, navigation back.
       const logForm = page.getByRole('form', { name: 'Log set 1 of back squat' })
       await logForm.getByLabel('Weight').fill('100')
+      await logForm.getByRole('combobox', { name: 'Unit' }).selectOption('kg')
       await page.getByRole('button', { name: 'Minimize' }).click()
       await proveCollapsed(page)
       const collapsed = await screen(page, testInfo, `collapsed-${size}`)
@@ -748,6 +806,10 @@ for (const { name: size, viewport } of [
       await logForm.getByLabel('Reps').fill('5')
       await logForm.getByRole('button', { name: 'Log set 1', exact: true }).click()
       await expect.poll(() => app.mutations.length).toBe(1)
+      expect(app.mutations[0]).toMatchObject({
+        operation: 'insert', exercise_id: EXERCISE_ID.get('back-squat'), set_number: 1,
+        expected_revision: 0, revision: 1, values: { weight: 100, weight_unit: 'kg', actual_reps: 5 },
+      })
 
       // ── Correction of the saved set ──────────────────────────────────────────
       if (await sheet(page).count() > 0) {
@@ -765,11 +827,42 @@ for (const { name: size, viewport } of [
       })
       // Cancel leaves the stored result alone and ends the correction; the
       // sheet's one collapse is still Minimize.
+      const editForm = page.getByRole('form', { name: 'Edit set 1 of back squat' })
+      await editForm.getByLabel('Reps').fill('3')
       await sheet(page).getByRole('button', { name: 'Cancel' }).click()
       await expect(page.getByRole('heading', { name: 'Edit set 1' })).toHaveCount(0)
       if (await sheet(page).count() > 0) await page.getByRole('button', { name: 'Minimize' }).click()
       await proveCollapsed(page)
       expect(app.mutations).toHaveLength(1)
+
+      // Reopening after Cancel restores the saved value; only the explicit
+      // Save correction updates that same observation and leaves rest running.
+      await squat.getByRole('button', { name: 'Edit set 1' }).click()
+      await expect(editForm.getByLabel('Reps')).toHaveValue('5')
+      await expect(editForm.getByLabel('Weight')).toHaveValue('100')
+      await editForm.getByLabel('Weight').fill('105')
+      await editForm.getByLabel('Reps').fill('6')
+      await page.clock.fastForward(2000)
+      const beforeCorrection = await remaining(page)
+      await editForm.getByRole('button', { name: 'Save correction' }).click()
+      await expect.poll(() => app.mutations.length).toBe(2)
+      expect(app.mutations[1]).toMatchObject({
+        operation: 'correct', observation_id: app.mutations[0].observation_id,
+        exercise_id: app.mutations[0].exercise_id, set_number: 1,
+        expected_revision: 1, revision: 2,
+        values: { weight: 105, weight_unit: 'kg', actual_reps: 6 },
+      })
+      expect(app.mutations[1].mutation_id).not.toBe(app.mutations[0].mutation_id)
+      expect(await remaining(page)).toBeLessThanOrEqual(beforeCorrection)
+      if (await sheet(page).count() > 0) await page.getByRole('button', { name: 'Minimize' }).click()
+      await proveCollapsed(page)
+      const savedCorrection = await screen(page, testInfo, `correction-saved-${size}`)
+      await record(page, testInfo, `correction-saved-${size}`, {
+        consumer: 'SetLoggingSheet correction', state: 'explicit correction saved to the same set, sheet collapsed, rest retained',
+        reference: { file: ref.file, sha256: ref.sha256, regions: ref.regions },
+        capture: { file: savedCorrection.file, sha256: savedCorrection.sha256 },
+        mutations: app.mutations.slice(), measured: { beforeCorrection, remaining: await remaining(page) },
+      })
 
       // ── The combined superset round ──────────────────────────────────────────
       await page.getByRole('button', { name: 'All sections', exact: true }).click()
@@ -778,12 +871,49 @@ for (const { name: size, viewport } of [
       await expect(pair).toBeVisible()
       const closedRound = await screen(page, testInfo, `closed-round-${size}`)
       await pair.getByRole('button', { name: 'Rest', exact: true }).click()
-      await expect(page.getByRole('form', { name: 'Log round 1 of bench press and plank' })).toBeAttached()
+      const roundForm = page.getByRole('form', { name: 'Log round 1 of bench press and plank' })
+      await expect(roundForm).toBeAttached()
       const round = await proveSurface(page, testInfo, ref, { id: `sheet-round-${size}`, consumer: 'SetLoggingSheet combined superset round', state: 'open, round rest running', closed: closedRound, header: await headerBand(page) })
       await proveActions(page, 'single')
+      const bench = roundForm.getByRole('group', { name: 'A1 bench press, set 1' })
+      const plank = roundForm.getByRole('group', { name: 'A2 plank, set 1' })
+      await bench.getByLabel('Weight').fill('135')
+      await bench.getByRole('combobox', { name: 'Unit' }).selectOption('lb')
+      await bench.getByLabel('Reps').fill('7')
+      await bench.getByRole('radio', { name: 'Too easy' }).check()
+      await plank.getByLabel('Seconds').fill('28')
+      await plank.getByRole('radio', { name: 'About right' }).check()
+      const roundRest = await remaining(page)
       await page.getByRole('button', { name: 'Minimize' }).click()
       await proveCollapsed(page)
-      expect(app.mutations).toHaveLength(1)
+      expect(app.mutations).toHaveLength(2)
+      await page.clock.fastForward(2000)
+      await pair.getByRole('button', { name: 'Rest', exact: true }).click()
+      await expect(bench.getByLabel('Weight')).toHaveValue('135')
+      await expect(bench.getByRole('combobox', { name: 'Unit' })).toHaveValue('lb')
+      await expect(bench.getByLabel('Reps')).toHaveValue('7')
+      await expect(bench.getByRole('radio', { name: 'Too easy' })).toBeChecked()
+      await expect(plank.getByLabel('Seconds')).toHaveValue('28')
+      await expect(plank.getByRole('radio', { name: 'About right' })).toBeChecked()
+      expect(await remaining(page)).toBeLessThanOrEqual(roundRest - 2)
+      await roundForm.getByRole('button', { name: 'Log round 1', exact: true }).click()
+      await expect.poll(() => app.mutations.length).toBe(4)
+      expect(app.mutations.slice(2).map((mutation) => [mutation.operation, mutation.exercise_id, mutation.set_number])).toEqual([
+        ['insert', EXERCISE_ID.get('bench-press'), 1], ['insert', EXERCISE_ID.get('plank'), 1],
+      ])
+      expect(app.mutations[2].values).toMatchObject({ weight: 135, weight_unit: 'lb', actual_reps: 7, effort: 'too_easy' })
+      expect(app.mutations[3].values).toMatchObject({ actual_duration_seconds: 28, effort: 'about_right' })
+      expect(new Set(app.mutations.slice(2).map((mutation) => mutation.observation_id)).size).toBe(2)
+      expect(await remaining(page)).toBeLessThanOrEqual(roundRest - 2)
+      if (await sheet(page).count() > 0) await page.getByRole('button', { name: 'Minimize' }).click()
+      await proveCollapsed(page)
+      const savedRound = await screen(page, testInfo, `round-saved-${size}`)
+      await record(page, testInfo, `round-saved-${size}`, {
+        consumer: 'SetLoggingSheet combined superset round', state: 'independent drafts retained through collapse; explicit Log round saved both once',
+        reference: { file: ref.file, sha256: ref.sha256, regions: ref.regions },
+        capture: { file: savedRound.file, sha256: savedRound.sha256 },
+        mutations: app.mutations.slice(2), measured: { roundRestBeforeCollapse: roundRest, remaining: await remaining(page) },
+      })
 
       // The same bar and surface in every mode.
       for (const mode of [edit, round]) {
@@ -823,46 +953,39 @@ test.describe('B05 sheet surface @ keyboard resize and semantics', () => {
     const outside = await page.evaluate(() => {
       const active = document.activeElement
       return {
-        inSheet: active?.closest('section.clr-set-sheet') !== null,
-        inNav: active?.closest('.clr-workout-footer__content') !== null,
+        activePresent: active !== null,
+        inSheet: Boolean(active?.closest('section.clr-set-sheet')),
+        inNav: Boolean(active?.closest('.clr-workout-footer__content')),
       }
     })
+    expect(outside.activePresent).toBe(true)
     expect(outside.inSheet).toBe(false)
     expect(outside.inNav).toBe(false)
 
     // The keyboard opens: the window shrinks while the Weight field has focus.
     const weight = page.getByRole('form', { name: 'Log set 1 of back squat' }).getByLabel('Weight')
     await weight.focus()
-    const closed = await screen(page, testInfo, 'keyboard-before')
+    const beforeResize = await screen(page, testInfo, 'keyboard-before')
     await page.setViewportSize(KEYBOARD)
-    await expect(weight).toBeFocused()
-    await weight.scrollIntoViewIfNeeded()
-    const field = await box(weight)
-    expect(field.y).toBeGreaterThanOrEqual(0)
-    expect(field.y + field.height).toBeLessThanOrEqual(KEYBOARD.height)
-    // The sheet scrolls through the public region: measured, hard-clipped, inside the gutters.
-    const region = page.locator('.clr-set-sheet-layer__entry > .clr-scroll-region')
-    await expect(region).toHaveAttribute('data-measured', '')
-    const scroll = await region.locator(':scope > .clr-scroll-region__scroller').evaluate((element) => ({
-      overflowY: getComputedStyle(element).overflowY, client: element.clientHeight, scroll: element.scrollHeight,
-    }))
-    expect(scroll.overflowY).toBe('auto')
-    expect(scroll.scroll).toBeGreaterThan(scroll.client)
-    const regionBox = await box(region)
-    expect(regionBox.y).toBeGreaterThan(0)
-    expect(regionBox.y + regionBox.height).toBeLessThanOrEqual(KEYBOARD.height + 0.5)
+    const { region, scroll, focus } = await captureKeyboardField(page, testInfo, {
+      id: 'sheet-keyboard-focused-390x420', consumer: 'SetLoggingSheet new entry', field: weight, reference: ref,
+    })
     await region.locator(':scope > .clr-scroll-region__scroller').evaluate((element) => { element.scrollTop = 0 })
-    await proveSurface(page, testInfo, ref, { id: 'sheet-keyboard-390x420', consumer: 'SetLoggingSheet new entry', state: 'keyboard-like resize 844 -> 420, Weight focused, region scrolled to top', closed: await (async () => {
+    await proveSurface(page, testInfo, ref, { id: 'sheet-keyboard-390x420', consumer: 'SetLoggingSheet new entry', state: 'reopened at keyboard-sized viewport, title focused and region at top', closed: await (async () => {
       // The same window, sheet collapsed, as the comparison's undimmed screen.
       await page.getByRole('button', { name: 'Minimize' }).click()
       const shot = await screen(page, testInfo, 'keyboard-closed-390x420')
       await squat.getByRole('button', { name: 'Rest', exact: true }).click()
+      await expect(title).toBeFocused()
+      await region.locator(':scope > .clr-scroll-region__scroller').evaluate((element) => { element.scrollTop = 0 })
       return shot
     })(), header: await headerBand(page) })
     await record(page, testInfo, 'semantics', {
       consumer: 'SetLoggingSheet new entry', state: 'focus, Escape, outside tap, keyboard resize',
-      before: { file: closed.file, sha256: closed.sha256 },
-      measured: { escapeKeptOpen: true, outsideTapKeptOpen: true, focusLeftSheetBackwards: !outside.inSheet, scroll },
+      reference: { file: ref.file, sha256: ref.sha256, regions: ref.regions },
+      before: { file: beforeResize.file, sha256: beforeResize.sha256 },
+      measured: { escapeKeptOpen: true, outsideTapKeptOpen: true, focusLeftSheetBackwards: !outside.inSheet,
+        focusedFieldAfterExplicitReveal: focus, automaticKeyboardRevealClaimed: false, surfaceCaptureFocus: 'title after reopen', scroll },
       criteria: { 'AC-044': 'passed', 'AC-053': 'passed' },
     })
     await page.setViewportSize(PHONE)
@@ -885,4 +1008,119 @@ test.describe('B05 sheet surface @ keyboard resize and semantics', () => {
     expect(dialogBackdrop).toContain('feTurbulence')
     app.assertContained()
   })
+
+  for (const mode of ['edit', 'superset'] as const) {
+    test(`${mode} retains its draft and explicit save through a focused keyboard-like resize`, async ({ page, visit, baseURL }, testInfo) => {
+      const app = await syntheticApp(page, originOf(baseURL))
+      await page.clock.install()
+      await visit('/workout')
+      const ref = await referenceMeasures(page)
+      const squat = card(page, 'back squat')
+      const pair = content(page).locator('.clr-card').filter({ has: page.getByRole('list', { name: 'Movements in this superset' }) })
+
+      if (mode === 'edit') {
+        await squat.getByRole('button', { name: 'Rest', exact: true }).click()
+        const initial = page.getByRole('form', { name: 'Log set 1 of back squat' })
+        await initial.getByLabel('Weight').fill('100')
+        await initial.getByRole('combobox', { name: 'Unit' }).selectOption('kg')
+        await initial.getByLabel('Reps').fill('5')
+        await initial.getByRole('button', { name: 'Log set 1', exact: true }).click()
+        await expect.poll(() => app.mutations.length).toBe(1)
+        if (await sheet(page).count() > 0) await page.getByRole('button', { name: 'Minimize' }).click()
+        await proveCollapsed(page)
+      } else {
+        await page.getByRole('button', { name: 'All sections', exact: true }).click()
+        await page.getByRole('button', { name: /^Accessory, / }).click()
+        await expect(pair).toBeVisible()
+      }
+
+      // Take the undimmed comparison at the actual small viewport before
+      // opening the sheet, rather than reopening it under a focused-field label.
+      await page.setViewportSize(KEYBOARD)
+      const closed = await screen(page, testInfo, `keyboard-${mode}-closed-390x420`)
+      await page.setViewportSize(PHONE)
+
+      let form: Locator
+      let field: Locator
+      let consumer: string
+      if (mode === 'edit') {
+        await squat.getByRole('button', { name: 'Edit set 1' }).click()
+        form = page.getByRole('form', { name: 'Edit set 1 of back squat' })
+        field = form.getByLabel('Reps')
+        consumer = 'SetLoggingSheet correction'
+        await field.fill('6')
+      } else {
+        await pair.getByRole('button', { name: 'Rest', exact: true }).click()
+        form = page.getByRole('form', { name: 'Log round 1 of bench press and plank' })
+        const bench = form.getByRole('group', { name: 'A1 bench press, set 1' })
+        const plank = form.getByRole('group', { name: 'A2 plank, set 1' })
+        await bench.getByLabel('Weight').fill('135')
+        await bench.getByRole('combobox', { name: 'Unit' }).selectOption('lb')
+        await bench.getByLabel('Reps').fill('7')
+        await plank.getByLabel('Seconds').fill('28')
+        field = bench.getByLabel('Weight')
+        consumer = 'SetLoggingSheet combined superset round'
+      }
+      await field.focus()
+      await page.setViewportSize(KEYBOARD)
+      const { region } = await captureKeyboardField(page, testInfo, {
+        id: `sheet-keyboard-${mode}-focused-390x420`, consumer, field, reference: ref,
+      })
+      if (mode === 'edit') {
+        await expect(form.getByLabel('Reps')).toHaveValue('6')
+        await expect(form.getByLabel('Weight')).toHaveValue('100')
+      } else {
+        await expect(form.getByRole('group', { name: 'A1 bench press, set 1' }).getByLabel('Weight')).toHaveValue('135')
+        await expect(form.getByRole('group', { name: 'A1 bench press, set 1' }).getByLabel('Reps')).toHaveValue('7')
+        await expect(form.getByRole('group', { name: 'A2 plank, set 1' }).getByLabel('Seconds')).toHaveValue('28')
+      }
+      expect(app.mutations).toHaveLength(mode === 'edit' ? 1 : 0)
+
+      // This second capture deliberately observes the title/top of the sheet.
+      // It is distinct from the genuinely focused-input capture above.
+      const title = sheet(page).locator('.clr-set-sheet__title')
+      await title.focus()
+      await expect(title).toBeFocused()
+      await region.locator(':scope > .clr-scroll-region__scroller').evaluate((element) => { element.scrollTop = 0 })
+      await proveSurface(page, testInfo, ref, {
+        id: `sheet-keyboard-${mode}-surface-390x420`, consumer,
+        state: 'keyboard-sized viewport, draft retained, title focused after explicit top reset',
+        closed, header: await headerBand(page),
+      })
+      await proveActions(page, mode === 'edit' ? 'paired' : 'single')
+      await page.clock.fastForward(2000)
+      const beforeSaveRest = await remaining(page)
+
+      if (mode === 'edit') {
+        await form.getByRole('button', { name: 'Save correction' }).click()
+        await expect.poll(() => app.mutations.length).toBe(2)
+        expect(app.mutations[1]).toMatchObject({
+          operation: 'correct', observation_id: app.mutations[0].observation_id,
+          exercise_id: app.mutations[0].exercise_id, set_number: 1,
+          expected_revision: 1, revision: 2, values: { actual_reps: 6, weight: 100, weight_unit: 'kg' },
+        })
+      } else {
+        await form.getByRole('button', { name: 'Log round 1', exact: true }).click()
+        await expect.poll(() => app.mutations.length).toBe(2)
+        expect(app.mutations.map((mutation) => [mutation.operation, mutation.exercise_id, mutation.set_number])).toEqual([
+          ['insert', EXERCISE_ID.get('bench-press'), 1], ['insert', EXERCISE_ID.get('plank'), 1],
+        ])
+        expect(app.mutations[0].values).toMatchObject({ weight: 135, weight_unit: 'lb', actual_reps: 7 })
+        expect(app.mutations[1].values).toMatchObject({ actual_duration_seconds: 28 })
+        expect(new Set(app.mutations.map((mutation) => mutation.observation_id)).size).toBe(2)
+      }
+      expect(await remaining(page)).toBeLessThanOrEqual(beforeSaveRest)
+      if (await sheet(page).count() > 0) await page.getByRole('button', { name: 'Minimize' }).click()
+      await proveCollapsed(page)
+      const saved = await screen(page, testInfo, `keyboard-${mode}-saved-390x420`)
+      await record(page, testInfo, `keyboard-${mode}-saved-390x420`, {
+        consumer, state: 'explicit save after keyboard-like resize, sheet collapsed and rest retained',
+        reference: { file: ref.file, sha256: ref.sha256, regions: ref.regions },
+        capture: { file: saved.file, sha256: saved.sha256 },
+        mutations: app.mutations.slice(), measured: { beforeSaveRest, remaining: await remaining(page) },
+      })
+      await page.setViewportSize(PHONE)
+      app.assertContained()
+    })
+  }
 })
