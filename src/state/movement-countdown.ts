@@ -118,6 +118,11 @@ export function useMovementCountdown(
 
   const [held, setHeld] = useState(() => ({ armedFor, state: countdownReady(totalSeconds) }))
   const state = held.armedFor === armedFor ? held.state : countdownReady(totalSeconds)
+  if (held.armedFor !== armedFor) {
+    // Keep each observed arming transition, not just the last set acted on.
+    // Revisiting an earlier set must not resurrect its old countdown state.
+    setHeld({ armedFor, state })
+  }
   const [reading, setReading] = useState(() => now())
 
   // A countdown that has run out stops repainting; nothing it shows can change.
