@@ -449,6 +449,24 @@ describe('AC-035: borders and the countdown', () => {
       .toBe('var(--border-cta-primary)')
   })
 
+  it('joins one accent bar to the frame, without making the sheet a card (B05-07.3, EXC-06)', async () => {
+    const user = userEvent.setup()
+    mount()
+    const sheet = await openSheet(user)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+    await within(sheet).findByRole('region', { name: 'Rest' })
+
+    const frame = sheet.querySelector('.clr-set-sheet__frame')!
+    const bars = Array.from(frame.parentElement!.children).filter((child) =>
+      child.classList.contains('clr-card__bar'))
+    expect(bars).toHaveLength(1)
+    expect(bars[0]).toHaveAttribute('aria-hidden', 'true')
+    expect(bars[0]!.nextElementSibling).toBe(frame)
+    // The sheet is an overlay, not a card: the rest's timer card inside it is not nested.
+    expect(sheet.closest('.clr-card')).toBeNull()
+    expect(frame).not.toHaveClass('clr-card__body')
+  })
+
   it('draws a running rest with the timer card inside the sheet, without recolouring it', async () => {
     const user = userEvent.setup()
     mount()

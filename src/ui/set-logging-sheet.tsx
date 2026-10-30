@@ -3,8 +3,8 @@
  *
  * The active workout screen shows each movement's prescription, its saved
  * results and a Rest entry action (REQ-012) that opens this sheet and starts
- * the prescribed rest; the fields themselves open here, in one sheet docked in
- * the pinned foot, beside the rest that is running. The sheet's Log set N is
+ * the prescribed rest; the fields themselves open here, in one sheet floating
+ * over the lower screen (B05-07.4), beside the rest that is running. The sheet's Log set N is
  * the only save, and never starts or restarts rest.
  * New-entry and edit are the same sheet in two modes:
  *
@@ -23,6 +23,7 @@
  * nothing and only an explicit Log set records an observation.
  */
 import {
+  use,
   useCallback,
   useEffect,
   useId,
@@ -35,10 +36,12 @@ import {
 import { Button, ChevronDown, IconButton } from '../design-system/index'
 import { CardContainmentContext } from './card-context'
 import { ActionGroup } from './composition'
+import { FittedScrollRegion } from './fitted-scroll-region'
 import { useInvalidFocus } from './formFocus'
 import { Heading, HeadingLevelProvider } from './Heading'
 import {
   SetLoggingSheetHostContext,
+  useSetLoggingSheetOpen,
   type SetLoggingSheetHostApi,
 } from './set-logging-sheet-context'
 import { RestTimerBar } from './workout-chrome'
@@ -67,12 +70,35 @@ export function SetLoggingSheetHost({ children }: { children: ReactNode }) {
   return <SetLoggingSheetHostContext value={api}>{children}</SetLoggingSheetHostContext>
 }
 
-/** Where the open sheet is drawn: the shell's pinned foot, above navigation. */
+/** Where the open sheet is drawn. */
 export function SetLoggingSheetSlot() {
   return (
     <SetLoggingSheetHostContext.Consumer>
       {(host) => (host === null ? null : <div ref={host.attach} data-set-sheet-slot="" />)}
     </SetLoggingSheetHostContext.Consumer>
+  )
+}
+
+/**
+ * B05-07.4: the layer the open sheet floats in, over the lower workout content
+ * and its Previous/Next rather than laid out above them. Behind the panel the
+ * screen is dimmed and lightly blurred — the Dialog backdrop's dim and blur,
+ * without its scanline and static layers.
+ *
+ * The backdrop is only a picture. It is not a native Dialog: it traps no
+ * focus, answers no Escape and dismisses nothing when tapped, so the sheet
+ * keeps its one explicit Minimize and the content above stays as reachable as
+ * it was. The panel scrolls through the public region (GLOBAL-03).
+ */
+export function SetLoggingSheetOverlay() {
+  const open = useSetLoggingSheetOpen()
+  return (
+    <div className="clr-set-sheet-layer" data-open={open ? '' : undefined}>
+      {open ? <div aria-hidden="true" className="clr-set-sheet-layer__backdrop" /> : null}
+      <FittedScrollRegion className="clr-set-sheet-layer__entry">
+        <SetLoggingSheetSlot />
+      </FittedScrollRegion>
+    </div>
   )
 }
 
@@ -151,11 +177,14 @@ export function SetLoggingSheet({
   const bodyId = useId()
   const submitWith = useInvalidFocus()
 
-  // Opening the sheet takes the reader to it — it is drawn in the pinned
-  // foot, away from the card whose Log set opened it.
+  // Opening the sheet takes the reader to it — it is drawn over the lower
+  // screen, away from the card whose Rest opened it. In the shell's overlay
+  // the title is already in view, and its region has not been sized yet:
+  // scrolling to it there would leave the sheet opened part-way down.
+  const hosted = use(SetLoggingSheetHostContext) !== null
   useEffect(() => {
-    document.getElementById(titleId)?.focus()
-  }, [titleId])
+    document.getElementById(titleId)?.focus({ preventScroll: hosted })
+  }, [titleId, hosted])
 
   return (
     // Portalled out of the block's card, the sheet is not inside it: React
@@ -164,6 +193,13 @@ export function SetLoggingSheet({
     <CardContainmentContext.Provider value={false}>
     <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
       <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
+        {/*
+          B05-07.3: the frame carries the shipped accent bar in every mode.
+          Overlays otherwise carry none; this app-owned sheet is the owner's
+          scoped exception (ledger EXC-06). The sheet is still not a card, so
+          the rest's timer card inside it is not a nested one.
+        */}
+        <span className="clr-card__bar clr-set-sheet__bar" aria-hidden="true" />
         <div
           id={bodyId}
           className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame"

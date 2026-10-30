@@ -674,7 +674,9 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
 
   for (const { viewport, overflowing } of [
     { viewport: { width: 320, height: 360 }, overflowing: true },
-    { viewport: SHORT, overflowing: false },
+    // At 390x480 the overlay keeps a dimmed band above the sheet, so the
+    // sheet with its running rest scrolls rather than covering the header.
+    { viewport: SHORT, overflowing: true },
     { viewport: PHONE, overflowing: false },
   ]) {
     test(`capped workout entry area holds the sheet through a public region at ${viewport.width}x${viewport.height} (B05-07)`, async ({ page, visit }, testInfo) => {
@@ -686,7 +688,9 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
       await content.getByRole('button', { name: /^(log set|rest)/i }).first().click()
       const sheet = page.locator('.clr-set-sheet')
       await expect(sheet).toBeVisible()
-      const region = page.locator('.clr-workout-footer__entry > .clr-scroll-region')
+      // B05-07.4 (TASK-013): the sheet floats in its own overlay region now,
+      // over the navigation rather than inside the pinned foot.
+      const region = page.locator('.clr-set-sheet-layer__entry > .clr-scroll-region')
       await expect(region).toHaveAttribute('data-measured', '')
       await page.evaluate(() => document.fonts.ready)
       await expect.poll(async () => (await regionState(region)).overflow.client).toBeGreaterThan(0)
@@ -698,14 +702,14 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
       expect(nav.y + nav.height).toBeLessThanOrEqual(viewport.height + 0.5)
       const id = `workout-sheet-${viewport.width}x${viewport.height}`
       await capture(page, testInfo, `${id}-rest`, {
-        reference: reference('B05-07'), consumer: 'Workout footer entry FittedScrollRegion + SetLoggingSheet',
+        reference: reference('B05-07'), consumer: 'Workout sheet overlay FittedScrollRegion + SetLoggingSheet',
         state: overflowing ? 'overflowing, at rest' : 'non-overflowing' })
       if (overflowing) {
         expect(rest.overflow.scroll).toBeGreaterThan(rest.overflow.client)
         const { state: lit, png: litPng } = await wheelWhileCapturing(page, region, 200)
         expectLitWhileScrolling(lit)
         await capture(page, testInfo, `${id}-scrolling`, {
-          reference: reference('B05-07'), consumer: 'Workout footer entry FittedScrollRegion', state: 'scrolling', rendered: lit }, litPng)
+          reference: reference('B05-07'), consumer: 'Workout sheet overlay FittedScrollRegion', state: 'scrolling', rendered: lit }, litPng)
         const barBox = await region.locator(':scope > .clr-scroll-region__bar').boundingBox()
         const contrast = await cueContrast(page, region, litPng, { x: barBox!.x, y: barBox!.y, width: 2, height: barBox!.height })
         testInfo.annotations.push({ type: 'pixel-comparison', description: `sheet scrollbar settled ${contrast.rest.toFixed(1)} -> scrolling ${contrast.lit.toFixed(1)}` })
