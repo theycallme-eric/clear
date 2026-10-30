@@ -157,3 +157,26 @@ source-backed heading-h1 movement size while retaining the exact unchanged label
 all distinct-name/containment/elapsed-versus-countdown behavior assertions. No clock behavior,
 project check, acceptance criterion, role or assertion was removed. Build/browser had not run in
 that stopped pipeline; they remain pending the corrected style expectation.
+
+
+## Actual final prominence proof and genuine retained-a1 recapture
+
+The corrected targeted pipeline74295 passed **61/61 timer/logger units and build**, then one phone browser case in13seconds. Root opened the larger readout. Those earlier observations keep their original capture identity; they are not relabelled as the subsequent clean freeze.
+
+Root froze reviewed source `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb`. Final combined browser foreground88356 is terminal0: **12/12 passed in1.4minutes**. All48 actual source-bearing records identify that exact clean head with dirty=false;456 artifacts/405 PNGs plus manifest remain in `task014-final-prominent-browser-evidence-20261030`. Both real owned-backend JOURNEY-014 footer flows pass, including actual open-sheet occlusion/inertness and default click-trial reachability after Minimize. Synthetic movement/expiry cases retain zero-write checks; the Superset cases separately prove the two explicit observations and no implicit expiry mutation. Prominence now has actual readout/control-height and digit guards, preserving every earlier placement/state/containment assertion.
+
+Authenticated collector67459 ended terminal0: **4/4 skin cases in21.7seconds**. Actual group `docs/design/evidence-0143/task034-format-preview-batch05-task014-prominent` contains four records/eight unique phone390×844/short390×320 PNGs and the complete derived manifest. Observed 2026-10-30T05:19:19.922Z through 2026-10-30T05:19:34.290Z, process63552. Each actual PNG's bytes, SHA-256 and IHDR dimensions was checked. Actual identities:
+
+- source: `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb`
+- runtime: `a841f5d055cd91c72eb0226aabc8f1a0c6f216865337274bc54f52d925447dc8`
+- driver: `db751d8fb1e665f57817a60e323c70d018b9739dc89da763eaa539d1d1c84361`
+- package0.14.3: `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+- payload: `9d860d83cb103596906fca07a3492b526b4ba491953ee9744dfbe84e72be2428`
+
+Runtime, driver and package were independently reproduced from current bytes. Preview generation, blocked generation, attempted write and forwarded write counters are all0, including session generation. Real owned local authentication setup/cleanup writes remain separate. First record clean; later dirty statuses truthfully include generated collector evidence. Existing v1 provenance uses unchanged `capturePayloadSha256()` and the actual retained a1 revision`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-014`, run`9696d01f-d66b-4989-bdcd-80819f8b938f`/attempt1, branch`agent-runner/task-014-a1-9696d01f`, tested base`0e66325a3d63ae30074ae1c0295c2173005c2e15`. It is source-only a1 proof, not a native a2 claim or receipt.
+
+The earlier `task034-format-preview-batch05-task014` captures and existing18183fc source-only provenance remain genuine pre-prominence history for ed8; they are unchanged, not discarded, reused, relabelled or accepted as the final requested visual result. All original failed-a1/turn-exhaustion and missing-criterion-claim history remains.
+
+**Next:** normal supported remaining a2 continuation must establish its own actual current claim/criterion report and mandatory full verification, followed by required CI and approved build-only delivery. Preserve/reuse the reviewed candidate and genuine proof only while their inputs remain unchanged; this derivation supplies no native report or acceptance. Native exact-head receipt/delivery and physical-iPhone UAT remain pending.
+
+This derivation wrote only the new prominent group's v1 provenance, current audit entry (priorTask13 marked Prior) and this note. It ran no tests, browser, Git or private-configuration operation and changed no UI/runtime/driver/helper/Runner/state.

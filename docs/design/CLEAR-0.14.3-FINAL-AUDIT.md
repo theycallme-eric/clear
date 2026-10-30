@@ -1,6 +1,23 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-013 combined source-bound recapture — 30 October 2026 (UTC)
+## Current batch-05 TASK-014 prominent readout source-bound recapture — 30 October 2026 (UTC)
+
+Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task014-prominent/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.7 seconds**, foreground 67459, terminal exit 0. The complete phone390×844 / short390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four records identify actual frozen source `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb`, runtime `a841f5d055cd91c72eb0226aabc8f1a0c6f216865337274bc54f52d925447dc8`, capture driver `db751d8fb1e665f57817a60e323c70d018b9739dc89da763eaa539d1d1c84361` and pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. These three hashes were independently reproduced from actual current bytes. Observed 2026-10-30T05:19:19.922Z through 2026-10-30T05:19:34.290Z, process63552, loopback origin http://localhost:5173. The first record is clean; later dirty statuses truthfully record collector-created evidence. All four records, the complete derived manifest, eight unique matrix cells and each PNG's actual bytes, SHA-256 and IHDR dimensions were independently verified.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero, including session generation. Real disposable local authentication setup/cleanup writes remain separate; this is not hosted/deployed proof, paid generation or a no-backend-write setup claim.
+
+Existing v1 source-only provenance truthfully names the retained a1 revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-014`, run `9696d01f-d66b-4989-bdcd-80819f8b938f`, attempt1, branch `agent-runner/task-014-a1-9696d01f` and tested build base `0e66325a3d63ae30074ae1c0295c2173005c2e15`. Actual payload `9d860d83cb103596906fca07a3492b526b4ba491953ee9744dfbe84e72be2428` comes from unchanged Node24 `capturePayloadSha256()`, excluding provenance itself. No native a2 ownership or acceptance is claimed.
+
+Final combined browser foreground88356 passed **12/12 cases in1.4minutes** on this same clean source. All48 source-bearing records identify `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb` with dirty=false;456 retained artifacts/405 PNGs plus manifest remain in `task014-final-prominent-browser-evidence-20261030`. Both real owned-backend footer flows pass with open-sheet occlusion/inert state and actual click-trial reachability after Minimize. Synthetic movement cases preserve zero-write expiry; the Superset flow separately exercises its two explicit logging mutations. Root's corrected targeted pipeline74295 passed61 timer/logger units and build, followed by one phone case in13seconds with the larger readout opened for review; that earlier targeted result retains its own identity.
+
+Manual comparison had shown the earlier width/order proof missed compact16px digits. The movement caller now uses the existing public heading-h1 token32 and omits the redundant visible caption while retaining the timer's accessible name and clock behavior. Final proof adds readout/control-height and digit-prominence comparisons against the selected source09/source14 treatment. The earlier real `task034-format-preview-batch05-task014` group, captured on pre-prominenceed8 source and provenance committed at18183fc, remains unchanged and explicitly insufficient for final visual acceptance; none of its pictures or hashes is reused or relabelled here. Every older group, row and audit entry remains preserved.
+
+Original a1 turn-exhaustion and its missing normalized native claim remain in history. Root's normal remaining a2 continuation must establish its own actual claim/report, run mandatory full gates and independently verify the exact head before required CI and protected build-branch delivery. Native acceptance, receipt and delivery remain pending. Physical-iPhone UAT remains separate; no main/production/hosted-schema/distance/Runner change is claimed.
+
+
+## Prior batch-05 TASK-013 combined source-bound recapture — 30 October 2026 (UTC)
 
 Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task013/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.2 seconds**, foreground 5849, terminal exit 0. Phone 390×844 and short 390×320 cover CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 
