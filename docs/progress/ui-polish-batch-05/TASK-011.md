@@ -289,3 +289,49 @@ new captures yet. This is preparation for genuine collection after the final bro
 pass, runtime hash, provenance or native acceptance is inferred. Product TSX/CSS match the preserved
 original worker checkpoint byte-for-byte. Added21-case browser candidate remains unexecuted while
 Task13 owns the local lane.
+
+
+## Explicit Undo focus correction — 2026-10-30T02:43:26.973925+00:00
+
+The first run of the three supplementary browser cases on clean `41420613` ended exit1:
+390×320 long-title/full-Keep passed (2.2s), while both grouped cases reached the same failed
+`original Swap.toBeFocused()` assertion after Undo. Real selection, replacement focus, toast and
+unchanged group readings had passed first. The controller retained those original failures in
+`task011-grouped-supplement-diagnostic-20261030`; the raw pre-fix output was also copied to
+`task011-before-undo-focus-targeted-20261030` before the corrected run.
+
+**Cause.** Explicit Undo removes its own focused TextAction. Task10 deliberately renders Swap and
+Undo in separate `ExerciseSwapControls` instances, so the Undo-only instance returns null after
+restoration. There is no dialog close at this point to restore native focus; focus was left on
+the document instead of the movement's restored Swap control. This was an actual accessibility
+gap exposed by the added grouped journey, not a reason to remove or force the assertion.
+
+**Local correction.** `src/ui/exercise-swap.tsx` marks the existing Swap button with its slot. On
+explicit Undo only, it records the nearest shared ancestor containing that same-slot Swap plus
+the expected restored exercise ID, then invokes the unchanged provider once. A layout effect
+after the composition commit restores focus to the current enabled Swap button in that local
+scope, including when the Undo-only instance now renders null. No global document lookup, timer,
+new component/provider/caller API, label, product CSS, height cap or data behavior changed.
+
+`src/ui/exercise-swap.test.tsx` now exercises real keyboard-triggered state replacement in both
+paired and split controls, with another movement present to prove focus stays with its owning
+slot. A separate case proves a composition change that was not explicit Undo does not steal focus.
+
+**Observed verification.**
+- `TMPDIR=/tmp npx vitest run src/ui/exercise-swap.test.tsx`: foreground24039 terminal0,
+  **25/25 passed**,1.13s.
+- `npx playwright test e2e/ui-polish-b05-swap.spec.ts --project=mobile --workers=1 --retries=0
+  --grep 'Superset and Circuit|390x320'`: foreground59333 terminal0, **3/3 passed**,18.2s.
+  Grouped phone8.0s and narrow6.7s both traverse Superset and Circuit choose/Undo with the actual
+  focus assertions retained; long-current-title390×320/full-Keep passed2.1s. Whitelisted local
+  environment omitted E2E_BASE_URL and real/provider credentials; existing synthetic-origin and
+  no-write/model/outbound guards remained.
+- Actual targeted output retained in `task011-undo-focus-targeted-passed-20261030` with SHA-256
+  retention manifest: 38 files, 18 PNGs. Its captures honestly record
+  the actual `41420613` head with dirty source during this correction; they are not relabelled
+  final clean-source/native acceptance evidence.
+
+Both commands were fully collected and the browser lane released. The full21-case browser run,
+combined-tree build/full verification, genuine format recapture and native recovery/delivery are
+still the controller's next steps. No Git, Runner/state or GitHub operation was run for this
+correction. Physical-iPhone UAT remains unobserved.

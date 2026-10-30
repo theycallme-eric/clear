@@ -42,6 +42,19 @@ const ACTIONS_STYLE: CSSProperties = {
   justifyContent: 'flex-end',
 }
 
+function swapButtonIn(scope: Element, slot: string): HTMLButtonElement | undefined {
+  return [...scope.querySelectorAll<HTMLButtonElement>('button[data-exercise-swap-slot]')]
+    .find((button) => button.getAttribute('data-exercise-swap-slot') === slot)
+}
+
+/** Default paired controls share a wrapper; Review's separate controls share their movement row. */
+function swapReturnScope(undo: Element, slot: string): HTMLElement | null {
+  for (let scope = undo.parentElement; scope !== null; scope = scope.parentElement) {
+    if (swapButtonIn(scope, slot) !== undefined) return scope
+  }
+  return null
+}
+
 const OPTION_LIST_STYLE: CSSProperties = {
   listStyle: 'none',
   margin: 0,
@@ -108,6 +121,14 @@ export interface ExerciseSwapControlsProps {
  */
 export function ExerciseSwapControls({ slot, exerciseId, actions = 'both' }: ExerciseSwapControlsProps) {
   const swap = useExerciseSwap()
+  const returnAfterUndo = useRef<{ scope: HTMLElement; exerciseId: string } | null>(null)
+  useLayoutEffect(() => {
+    const pending = returnAfterUndo.current
+    returnAfterUndo.current = null
+    if (pending === null || swap === null || pending.exerciseId !== exerciseId || !pending.scope.isConnected) return
+    const button = swapButtonIn(pending.scope, slot)
+    if (button !== undefined && !button.disabled) button.focus()
+  }, [exerciseId, slot, swap])
   if (swap === null) return null
 
   const name = exerciseName(exerciseId)
@@ -120,6 +141,7 @@ export function ExerciseSwapControls({ slot, exerciseId, actions = 'both' }: Exe
       {actions === 'undo' ? null : (
         <TextAction
           aria-label={`Swap ${name}`}
+          data-exercise-swap-slot={slot}
           aria-busy={busy || undefined}
           disabled={busy}
           onClick={() => swap.open(slot)}
@@ -134,7 +156,13 @@ export function ExerciseSwapControls({ slot, exerciseId, actions = 'both' }: Exe
           aria-label={`Undo swap — back to ${exerciseName(previous)}`}
           aria-busy={busy || undefined}
           disabled={busy}
-          onClick={() => swap.undo(slot)}
+          onClick={(event) => {
+            const scope = swapReturnScope(event.currentTarget, slot)
+            // Undo removes its own focused action. Restore only this explicit action's slot,
+            // after the composition commit has restored the actual Swap label/button.
+            returnAfterUndo.current = scope === null ? null : { scope, exerciseId: previous }
+            swap.undo(slot)
+          }}
         >
           Undo swap
         </TextAction>
