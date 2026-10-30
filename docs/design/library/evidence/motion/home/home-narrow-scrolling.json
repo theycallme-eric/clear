@@ -1,0 +1,115 @@
+{
+  "id": "home-narrow-scrolling",
+  "sha256": "6ac3c09206ce5a6dca49cf5107c2b034364e49d6fdfcc093ae8140e0acf7640c",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "pixels": {
+    "width": 320,
+    "height": 568,
+    "scale": "css"
+  },
+  "source": {
+    "head": "c141aed5c43d26cc3966b0d9a624be3950d1df46",
+    "dirty": false
+  },
+  "path": "http://localhost:5390/",
+  "reference": {
+    "id": "B05-01",
+    "file": "sources/source-04-B05-01-home.jpg",
+    "region": "01.2 content clipped at the header rule",
+    "sha256": null
+  },
+  "consumer": "page ScrollRegion + AppHeader head",
+  "state": "scrolling",
+  "rendered": {
+    "measured": true,
+    "scrolling": true,
+    "region": {
+      "top": 20,
+      "bottom": 568,
+      "left": 0,
+      "right": 320,
+      "height": 548,
+      "width": 320
+    },
+    "scroller": {
+      "top": 74,
+      "bottom": 486,
+      "left": 0,
+      "right": 320,
+      "height": 412,
+      "width": 320
+    },
+    "head": {
+      "top": 20,
+      "bottom": 74,
+      "left": 0,
+      "right": 320,
+      "height": 54,
+      "width": 320
+    },
+    "foot": {
+      "top": 486,
+      "bottom": 568,
+      "left": 0,
+      "right": 320,
+      "height": 82,
+      "width": 320
+    },
+    "headHasHeader": true,
+    "headRule": false,
+    "footRule": {
+      "width": 2,
+      "style": "solid",
+      "color": "color(srgb 0.705882 0.490196 1 / 0.3)"
+    },
+    "footEdge": false,
+    "footControls": 1,
+    "overflow": {
+      "scroll": 1035,
+      "client": 412,
+      "top": 240
+    },
+    "clip": "hidden",
+    "streaks": [
+      {
+        "bottom": false,
+        "box": {
+          "top": 72,
+          "bottom": 74,
+          "left": 0,
+          "right": 320,
+          "height": 2,
+          "width": 320
+        },
+        "opacity": 0.466667
+      },
+      {
+        "bottom": true,
+        "box": {
+          "top": 486,
+          "bottom": 488,
+          "left": 0,
+          "right": 320,
+          "height": 2,
+          "width": 320
+        },
+        "opacity": 0.466667
+      }
+    ],
+    "bar": {
+      "width": 2,
+      "height": 164,
+      "opacity": 0.466667
+    },
+    "fades": [
+      "none|none|none",
+      "none|none|none",
+      "none|none|none",
+      "none|none|none"
+    ],
+    "ruleWidth": 2
+  }
+}

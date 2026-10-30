@@ -1,0 +1,26 @@
+/* Review layout and an explicitly scoped comparison; no new keyframes. */
+.clr-gallery-motion__section { display: flex; flex-direction: column; gap: var(--spacing-400); }
+.clr-gallery-motion__effects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--spacing-1400)), 1fr)); gap: var(--spacing-200); }
+.clr-gallery-motion__samples { display: flex; flex-wrap: wrap; gap: var(--spacing-400); align-items: flex-start; }
+.clr-gallery-motion__samples > * { flex: 1 1 var(--spacing-1400); min-width: 0; }
+.clr-gallery-motion__rules { margin: 0; display: flex; flex-direction: column; gap: var(--spacing-300); }
+.clr-gallery-motion__rules dt { font-family: var(--font-data); color: var(--text-card-label); }
+.clr-gallery-motion__rules dd { margin: var(--spacing-100) 0 0; overflow-wrap: anywhere; }
+.clr-gallery-motion__scroll-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-300); }
+.clr-gallery-motion__scroll-pair > section { min-width: 0; }
+.clr-gallery-motion__sample-title { font-family: var(--font-data); font-size: var(--label-xs-size); line-height: var(--label-xs-line-height); text-transform: uppercase; }
+.clr-gallery-motion__scroll-stage { height: calc(var(--spacing-1400) * 2); }
+.clr-gallery-motion__scroll-stage > div { height: 100%; }
+.clr-gallery-motion__scroll-body { padding: var(--gallery-dissolve-depth) var(--spacing-200); }
+/* Earlier 26px request, scoped only to the labelled gallery reference sample.
+   Current app ScrollRegion and its hard-edge contract remain untouched. */
+.clr-gallery-motion__dissolve {
+  mask-image: linear-gradient(to bottom, transparent 0, var(--ink) var(--gallery-dissolve-depth), var(--ink) calc(100% - var(--gallery-dissolve-depth)), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, var(--ink) var(--gallery-dissolve-depth), var(--ink) calc(100% - var(--gallery-dissolve-depth)), transparent 100%);
+}
+/* Local simulation of the same still/end-state rules; it cannot enable motion
+   against the device preference. State-bearing text and controls stay visible. */
+.clr-gallery-motion--reduced *, .clr-gallery-motion--reduced *::before, .clr-gallery-motion--reduced *::after { animation: none !important; transition: none !important; }
+.clr-gallery-motion--reduced .clr-scan-band { display: none; }
+.clr-gallery-motion--reduced .clr-scroll-region[data-scrolling] > .clr-scroll-region__streak,
+.clr-gallery-motion--reduced .clr-scroll-region[data-scrolling] > .clr-scroll-region__bar { opacity: 0.5; box-shadow: none; }

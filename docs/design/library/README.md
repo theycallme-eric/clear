@@ -12,6 +12,18 @@ existing visual choice. Material proposed changes receive their own review.
 
 ## Find and reuse
 
+- `/gallery/motion` (Motion and behavior) restores the pinned Motion Lab's nine
+  effects with current components. `src/dev/gallery-motion-patterns.ts` records
+  each meaning and current consumer examples; reference-only effects are labeled.
+  Replay/temporary timings use the actual shared keyframes. Interaction rules,
+  interruption, one-loop coordination and reduced motion are demonstrated too.
+  Carry the trigger, state sequence and reduced-motion outcome through the
+  ordinary visual preview and requirements handoff when motion is involved.
+- The Motion view also compares the actual hard-edge ScrollRegion with an
+  explicitly scoped 26 CSS pixel dissolve reference. Both use the same real component
+  and content. The dissolve is a gallery-only proposal, pending visual choice
+  and versioned foundation integration; it is not current Home behavior.
+
 - Selected visual inputs awaiting scoped integration live in
   [the Phosphor Echo intake](intake/phosphor-echo/README.md): one shared effect,
   owner-selected preset, source/application rules and Augmented UI aesthetic

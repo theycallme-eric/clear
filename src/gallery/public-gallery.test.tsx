@@ -56,6 +56,19 @@ describe('public actual-component gallery', () => {
     expect(window.location.pathname).toBe('/gallery/app')
   })
 
+  it('opens motion from the public navigation and returns to components', async () => {
+    const user = userEvent.setup()
+    await open('/gallery')
+    const nav = screen.getByRole('navigation', { name: 'Gallery sections' })
+    await user.click(within(nav).getByRole('link', { name: 'Motion and behavior' }))
+    expect(window.location.pathname).toBe('/gallery/motion')
+    expect(screen.getByRole('heading', { level: 2, name: 'Motion and behavior' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Motion and behavior' })).toHaveAttribute('aria-current', 'page')
+    await user.click(within(nav).getByRole('link', { name: 'All components' }))
+    expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(GALLERY_ENTRIES.length)
+    expect(initializeClients).not.toHaveBeenCalled()
+  })
+
   it('switches between named comparisons and the full library without losing the selected view', async () => {
     const user = userEvent.setup()
     await open('/gallery')
