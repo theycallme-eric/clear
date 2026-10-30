@@ -74,6 +74,14 @@ MovementCountdownView and SetLoggingSheetOverlay through their real owners.
 Preserve released Rest entry/internal Log and floating-sheet behavior; do not
 restore the older pinned-foot/log-entry pattern.
 
+The owner also wants related workout presentations in Review, History and
+Favorites displayed together with matching fixture assumptions. Use that
+comparison to identify shared visual patterns and explicit variants while
+preserving each context's behavior. The expanded element audit supports those
+decisions; it is not a requirement to turn every source occurrence into a new
+component. This comparison view is planned, not implemented by the public-entry
+slice. A separate external-model scope review is requested before broadening it.
+
 Foundation authoring ownership is a separate decision. Using the pinned package
 here does not depend on the deferred external repository/Storybook initiative239.
 
