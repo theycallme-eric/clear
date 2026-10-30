@@ -119,7 +119,7 @@ export interface GallerySpecimen {
   Render: () => ReactNode
 }
 
-/** One app-composed part, with every state it can be in. */
+/** One app-composed part and its registered review states. */
 export interface GalleryEntry {
   /** Exported component name — what the coverage gate matches on. */
   component: string

@@ -4,7 +4,7 @@
  * Screens get approved rendered, not drawn, so this is where they are looked
  * at. Two sections, both reachable from the chrome that stays mounted across
  * them: `/dev/gallery/ds` serves the export's specimen cards unmodified, and
- * `/dev/gallery/app` frames every app-composed part in every state.
+ * `/dev/gallery/app` frames registered app-composed parts and states.
  *
  * PublicGalleryApp reaches the same renderer outside account clients and
  * BootGate. The legacy product-router entry remains development-only.

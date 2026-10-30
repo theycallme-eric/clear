@@ -1,6 +1,14 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-015 source-bound hierarchy recapture — 30 October 2026 (UTC)
+## Current LIB-001 public-gallery startup reverification — 30 October 2026
+
+Under issue590, the existing authenticated Format Preview collector passed **4/4 skin cases and eight new screenshots in25.96 seconds**. Actual group: `docs/design/evidence-0143/task034-format-preview-library-590/`. The prior Task015/Batch05 group remains unchanged. This is manual current-source reverification for LIB-001, not a new native Task015 attempt, Runner receipt, merge approval or production deployment.
+
+All records identify application commit `59e8ce362b0f65ade59d8558e064370cbfc2af64`, runtime `d3c0fc8fbabde5b7ce1c0ce3ee7065a2ae0e4f136fae0278b590bcd30bfb8e32`, capture driver `2931112d163e7cadf7a101927be2dd3401018f8c0636264f615ffe5c0c518231` and pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. The complete390×844/390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all format disclosures, Back/direct-entry Back, accessibility, storage, settled layout and read-only network assertions passed. The unchanged record validator and PNG bytes/hashes still apply. Git ancestry of the actual new captured commit establishes source continuity; historical native-task metadata is not a claim about this manual session.
+
+The app was served on loopback http://127.0.0.1:4181 using the existing configured Supabase test fixture. The fixture provisioned/onboarded and automatically deleted only its disposable namespaced example.com user; OTP delivery was intercepted. Setup/cleanup writes are separate from the preview walk. Every record reports zero generation, attempted preview write and forwarded preview write requests. This is not a no-backend-write setup or hosted frontend/UAT proof. The first record's clean checkout and later evidence-created dirty states remain as actually collected.
+
+## Previous batch-05 TASK-015 source-bound hierarchy recapture — 30 October 2026 (UTC)
 
 Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task015/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 20.5 seconds**, foreground 43333, terminal exit 0. The complete phone390×844 / short390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 
