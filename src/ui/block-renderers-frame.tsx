@@ -60,6 +60,54 @@ const LIST_STYLE: CSSProperties = {
   gap: 'var(--spacing-300)',
 }
 
+/**
+ * B05-04's selected movement hierarchy, in three tiers (REQ-014). The name is
+ * one role whatever level the nesting gives its heading, so a standard,
+ * superset and circuit card all lead with the same emphasis; the prescription
+ * and the equipment each sit a distinct step below it.
+ */
+const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE, gap: 'var(--spacing-200)' }
+
+const MOVEMENT_NAME_ROW_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 'var(--spacing-300)',
+}
+
+const MOVEMENT_NAME_STYLE: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  margin: 0,
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--heading-h3-size)',
+  lineHeight: 'var(--heading-h3-line-height)',
+  fontWeight: 'var(--font-weight-bold)',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+  overflowWrap: 'anywhere',
+}
+
+/** The counter keeps its own column: a long name wraps beside it, never over it. */
+const MOVEMENT_COUNTER_STYLE: CSSProperties = { ...LABEL_STYLE, flex: 'none' }
+
+const MOVEMENT_DETAIL_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-md-size)',
+  lineHeight: 'var(--label-md-line-height)',
+  letterSpacing: 'var(--tracking-data)',
+  color: 'var(--text-paragraph)',
+}
+
+const MOVEMENT_CONTEXT_STYLE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-xs-size)',
+  letterSpacing: 'var(--tracking-data)',
+  color: 'var(--text-secondary)',
+  textTransform: 'capitalize',
+}
+
 const FIELD_ROW_STYLE: CSSProperties = {
   flexWrap: 'wrap',
   gap: 'var(--spacing-200)',
@@ -257,34 +305,25 @@ export interface BlockMovementProps {
 /**
  * One movement: its name as a heading one level below the block, any counter
  * beside it in the label face, then its prescription in the data face and its
- * equipment context.
+ * equipment context — B05-04's three tiers, the name leading.
  */
 function Movement({ title, detail, counter, context, children }: BlockMovementProps) {
-  const heading = <Heading style={{ margin: 0, textTransform: 'uppercase' }}>{title}</Heading>
+  const heading = <Heading style={MOVEMENT_NAME_STYLE}>{title}</Heading>
 
   return (
-    <HeadingSection className="clr-stack--tight" style={STACK_STYLE}>
+    <HeadingSection className="clr-stack--tight" style={MOVEMENT_STYLE}>
       {counter === undefined || counter === null ? heading : (
-        <div
-          className="clr-row"
-          style={{ justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap' }}
-        >
+        <div className="clr-row" data-movement-name-row="" style={MOVEMENT_NAME_ROW_STYLE}>
           {heading}
-          <span style={LABEL_STYLE}>{counter}</span>
+          <span style={MOVEMENT_COUNTER_STYLE}>{counter}</span>
         </div>
       )}
       {detail === undefined || detail === null ? null : (
-        <p
-          style={{
-            margin: 0,
-            fontFamily: 'var(--font-data)',
-            letterSpacing: 'var(--tracking-data)',
-          }}
-        >
-          {detail}
-        </p>
+        <p data-movement-detail="" style={MOVEMENT_DETAIL_STYLE}>{detail}</p>
       )}
-      {context === undefined || context === null ? null : <Label>{context}</Label>}
+      {context === undefined || context === null ? null : (
+        <p data-movement-context="" style={MOVEMENT_CONTEXT_STYLE}>{context}</p>
+      )}
       {children}
     </HeadingSection>
   )
