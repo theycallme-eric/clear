@@ -9,7 +9,7 @@
  */
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 
 import { createError, ErrorCode } from '../state/errors'
@@ -48,6 +48,30 @@ function seam(overrides: Partial<ExerciseSwapApi> = {}): ExerciseSwapApi {
 
 function withSeam(api: ExerciseSwapApi | null, children: ReactNode) {
   return <ExerciseSwapContext.Provider value={api}>{children}</ExerciseSwapContext.Provider>
+}
+
+/** Real state replacement removes Undo, including when it lives apart from Swap as in Review. */
+function UndoFocusFixture({ split, onUndo }: { split: boolean; onUndo: (slot: string) => void }) {
+  const [exerciseId, setExerciseId] = useState('goblet-squat')
+  const otherSlot = prescriptionSiteKey(0, 0, 1)
+  const api = seam({
+    undoTarget: (slot) => slot === SLOT && exerciseId !== 'back-squat' ? 'back-squat' : null,
+    undo: (slot) => {
+      onUndo(slot)
+      if (slot === SLOT) setExerciseId('back-squat')
+    },
+  })
+  return withSeam(api, <>
+    <div>
+      {split ? <>
+        <div><ExerciseSwapControls slot={SLOT} exerciseId={exerciseId} actions="swap" /></div>
+        <p>Three rounds of eight reps</p>
+        <span>Kettlebell</span>
+        <ExerciseSwapControls slot={SLOT} exerciseId={exerciseId} actions="undo" />
+      </> : <ExerciseSwapControls slot={SLOT} exerciseId={exerciseId} />}
+    </div>
+    <div><ExerciseSwapControls slot={otherSlot} exerciseId="front-squat" actions="swap" /></div>
+  </>)
 }
 
 const GOBLET: SwapOption = {
@@ -113,6 +137,39 @@ describe('ExerciseSwapControls', () => {
     expect(api.undo).toHaveBeenCalledTimes(1)
     expect(api.undo).toHaveBeenCalledWith(SLOT)
     expect(api.open).not.toHaveBeenCalled()
+  })
+
+  it.each([false, true])('returns keyboard focus to the restored slot after Undo (separate controls: %s)', async (split) => {
+    const user = userEvent.setup()
+    const onUndo = vi.fn()
+    render(<UndoFocusFixture split={split} onUndo={onUndo} />)
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Swap goblet squat' })).toHaveFocus()
+    await user.tab()
+    expect(screen.getByRole('button', { name: 'Undo swap — back to back squat' })).toHaveFocus()
+    await user.keyboard('{Enter}')
+
+    expect(onUndo).toHaveBeenCalledExactlyOnceWith(SLOT)
+    expect(screen.getByRole('button', { name: 'Swap back squat' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap front squat' })).not.toHaveFocus()
+    expect(screen.queryByRole('button', { name: /^Undo swap/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Swap goblet squat' })).not.toBeInTheDocument()
+  })
+
+  it('does not move focus for a composition change that was not an explicit Undo', async () => {
+    const user = userEvent.setup()
+    const api = seam()
+    const view = (exerciseId: string) => withSeam(api, <>
+      <button type="button">Continue reading</button>
+      <ExerciseSwapControls slot={SLOT} exerciseId={exerciseId} />
+    </>)
+    const { rerender } = render(view('back-squat'))
+    await user.click(screen.getByRole('button', { name: 'Continue reading' }))
+    rerender(view('front-squat'))
+
+    expect(screen.getByRole('button', { name: 'Continue reading' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap front squat' })).not.toHaveFocus()
+    expect(api.undo).not.toHaveBeenCalled()
   })
 
   it('can keep only Swap in the name row while Undo is available elsewhere', async () => {
