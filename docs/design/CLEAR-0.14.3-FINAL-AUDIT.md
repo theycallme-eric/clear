@@ -1,6 +1,21 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-010 combined source-bound recapture — 29 October 2026 (UTC)
+## Current batch-05 TASK-011 combined source-bound recapture — 30 October 2026 (UTC)
+
+Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task011/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.5 seconds**, foreground session 52834, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four records identify actual frozen source `cdd5044b177baa8a4ea55d35d522688df175a9ce`, runtime `c245a873f78437d10837ecd41b12cabc0b5053f3935a6839cbb3096cbed23f92`, capture driver `6a91f60cdf4da1714887cce9bd3786e038ff154c18a2ea1b65bc36b2f02e3ae7` and pinned 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. The runtime, driver and package hashes were independently reproduced from the unchanged current tree's actual bytes. Observed 2026-10-30T02:55:15.525Z through 2026-10-30T02:55:29.991Z, process 16064, loopback origin http://localhost:5173. The first record is clean; later dirty statuses truthfully include collector-created evidence. All four passed records, complete derived manifest, eight unique matrix cells and all eight actual PNG byte counts, SHA-256 digests and IHDR dimensions were independently verified. Root's final picture review remains separate.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero, including the authenticated fixture's generation counter. The owned disposable backend's real local authentication setup/cleanup writes are separate; this is not a hosted/deployed journey, paid generation or a claim that backend setup performs no writes.
+
+Existing v1 source-only provenance identifies revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-011`, run `89097d5c-2de1-47ef-8a42-efaa7339e6bd`, attempt 1, retained branch `agent-runner/task-011-a1-89097d5c` and tested build base `0f4ee603516be9ab477c0a109549be3063975fce`. Actual payload `65d1fbead06540b2491b2132618bbb5b265a190ec7d3be4bc8e9f1ed8dae4a96` was derived by the unchanged Node24 `capturePayloadSha256()`; provenance itself is excluded. All older groups, rows, audit entries and failures remain preserved.
+
+Separate Task11 consumer proof passed **21/21 cases in 1.4 minutes**, foreground 2921, on the same clean frozen source `cdd5044b177baa8a4ea55d35d522688df175a9ce`. Its 38 clean-source records / 115 retained artifacts / 56 PNGs (plus retention manifest) remain externally in `task011-full-browser-clean-evidence-20261030`. It includes actual standard, Superset and Circuit selection/Undo, long names, all read states, selected/rejected reference comparison and the 390×320 full-return case. Five existing swap regressions passed **5/5 in 41.4 seconds**, foreground 60811, on that same source; ten retained artifacts / four PNGs plus manifest remain in `task011-existing-swap-regressions-passed-20261030`. Earlier dirty-41420613 targeted proof retains its own identity and is not relabelled as these clean-source results.
+
+Native exact-head criterion/task/project verification, receipt, required GitHub CI and protected build-branch delivery remain pending. Physical-iPhone UAT remains separate. This collection proves local source-bound evidence only; no main merge, production deployment, hosted schema mutation, distance change or model use is claimed.
+
+
+## Prior batch-05 TASK-010 combined source-bound recapture — 29 October 2026 (UTC)
 
 Actual group: `docs/design/evidence-0143/task034-format-preview-batch05-task010/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.3 seconds**, foreground session 31038, terminal exit 0. The complete phone 390×844 / short 390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 

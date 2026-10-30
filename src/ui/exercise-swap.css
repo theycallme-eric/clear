@@ -1,0 +1,27 @@
+/* =============================================================================
+   SWAP SELECTION — B05 REQ-010 (B05-05.2). The roomy selection composition for
+   every ExerciseSwapControls invocation (src/ui/exercise-swap.tsx).
+
+   Viewport/overlay/route choice: the selection stays a native modal overlay
+   (AppDialog) above the owning Review route, so Review keeps its scroll, state
+   and focus return, and no route is added. Only this dialog is widened; every
+   confirmation/feedback dialog keeps the package's centred panel.
+
+   The native dialog sizes to its content and every Button sits in an
+   inline-flex bleed wrapper, so both shrank to the longest label — the narrow
+   column of B05-05.1. Here the dialog spans the screen with the same side
+   gutters as the contained shell (16px, or the safe area when wider), the
+   package panel fills that box, and each choice fills the list's width.
+   The package's own panel cap still applies on wide screens.
+   ============================================================================= */
+
+.clr-dialog.clr-swap-dialog {
+  box-sizing: border-box;
+  width: 100%;
+  padding-right: max(var(--spacing-400), env(safe-area-inset-right));
+  padding-left: max(var(--spacing-400), env(safe-area-inset-left));
+}
+
+.clr-swap-dialog__options > li > .clr-bleed {
+  display: flex;
+}
