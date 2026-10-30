@@ -860,8 +860,11 @@ for (const { name: size, viewport } of VIEWPORTS) {
       const ref = await referenceComposition(page)
       const refRecord = { file: ref.file, sha256: ref.sha256, region: ref.region }
       await page.getByRole('button', { name: 'Next section', exact: true }).click()
-      await expect(page.getByRole('heading', { name: 'Timed pair', exact: true })).toBeVisible()
       const block = content(page).locator('.clr-card').filter({ has: page.getByRole('list', { name: 'Movements in this superset' }) }).last()
+      // Section headings use the existing section-type label. Observe the
+      // actual Superset consumer rather than the fixture's stored title.
+      await expect(block.getByRole('list', { name: 'Movements in this superset', exact: true })).toBeVisible()
+      await expect(block.getByRole('heading', { name: 'A2 plank', exact: true })).toBeVisible()
       const plank = () => card(page, 'A2 plank')
       const region = countdownOf(page, 'plank')
       const timer = timerOf(region)

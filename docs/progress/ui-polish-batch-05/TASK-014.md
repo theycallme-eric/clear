@@ -90,3 +90,24 @@ Standalone no-host logger fallback remains existing component-unit proof, not an
 The source identity fails closed on the actual checkout/40-hex HEAD with10-second Git bounds. No
 runtime/UI/vendor/helper/Runner changes were made by the proof supplement. Both the completed
 supplement and reviewed footer compatibility change require genuine execution before acceptance.
+
+
+## Actual corrected preflight and Superset selector result
+
+On clean12926ab9e53f305094d03a382fe516d3348c0fa0, production build, lint:ds and lint all passed
+(foreground63516 terminal0;149 pre-existing warnings/0errors). Existing standalone/fallback logger
+component suite passed39/39 in1.99s. Combined browser29883 terminal1:9/12passed1.4m. Both genuine
+owned-backend JOURNEY-014 phone flows passed2.7/2.6s, including covered+inert sheet state and actual
+click-trial reachability after Minimize. All seven original+short movement cases passed. Only three
+new Superset cases failed before their timer assertions: the fixture title Timed pair is not a real
+section heading; actual accessible content shows Accessory plus the Superset list/A2 plank.
+All339 diagnostic files are preserved externally in task014-first-combined-browser-diagnostic-20261030.
+
+The test now waits on that actual observed Superset list and movement heading, without changing any
+substantive placement/state/draft/rest/expiry/mutation assertion or product code. Targeted Superset
+95150 is terminal0:3/3passed26.0s across normal/narrow/short, one worker/zero retries. Its111files,
+90PNGs,18records and manifest are preserved in task014-superset-targeted-passed-20261030; source
+12926ab9/dirtytrue honestly reflects this test-only selector change. The real two combined inserts,
+expiry no-write and20→15 next-set rearm all executed. These diagnostics are not relabelled as clean
+final captures. Root now freezes the reviewed source for complete final movement proof and genuine
+format collection; native remainingattempt2/full gates/CI/delivery remain pending.
