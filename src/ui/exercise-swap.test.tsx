@@ -144,16 +144,16 @@ describe('ExerciseSwapControls', () => {
     const onUndo = vi.fn()
     render(<UndoFocusFixture split={split} onUndo={onUndo} />)
     await user.tab()
-    expect(screen.getByRole('button', { name: 'Swap goblet squat', exact: true })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap goblet squat' })).toHaveFocus()
     await user.tab()
-    expect(screen.getByRole('button', { name: 'Undo swap — back to back squat', exact: true })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Undo swap — back to back squat' })).toHaveFocus()
     await user.keyboard('{Enter}')
 
     expect(onUndo).toHaveBeenCalledExactlyOnceWith(SLOT)
-    expect(screen.getByRole('button', { name: 'Swap back squat', exact: true })).toHaveFocus()
-    expect(screen.getByRole('button', { name: 'Swap front squat', exact: true })).not.toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap back squat' })).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap front squat' })).not.toHaveFocus()
     expect(screen.queryByRole('button', { name: /^Undo swap/ })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Swap goblet squat', exact: true })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Swap goblet squat' })).not.toBeInTheDocument()
   })
 
   it('does not move focus for a composition change that was not an explicit Undo', async () => {
@@ -168,7 +168,7 @@ describe('ExerciseSwapControls', () => {
     rerender(view('front-squat'))
 
     expect(screen.getByRole('button', { name: 'Continue reading' })).toHaveFocus()
-    expect(screen.getByRole('button', { name: 'Swap front squat', exact: true })).not.toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Swap front squat' })).not.toHaveFocus()
     expect(api.undo).not.toHaveBeenCalled()
   })
 

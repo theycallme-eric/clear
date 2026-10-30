@@ -352,3 +352,20 @@ Existing authenticated format collector foreground52834 ended terminal0, **4/4 s
 Runtime/driver/package were independently reproduced from current source bytes. Preview generation, blocked generation, attempted write and forwarded write counters are all0, including session generation; owned local auth setup/cleanup remains separate. The first record is clean; later dirty status reflects newly generated collector evidence. Existing v1 source-only provenance derives the actual payload with unchanged `capturePayloadSha256()`, using Task11 revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-011`, run`89097d5c-2de1-47ef-8a42-efaa7339e6bd`/attempt1, branch`agent-runner/task-011-a1-89097d5c` and actual tested base`0f4ee603516be9ab477c0a109549be3063975fce`. No old image or hash was relabelled; previous rows/groups/assertions remain.
 
 Only generated provenance, this note and the audit entry were changed during derivation. No product/runtime/driver/helper/test, Runner/state or Git change, test/browser run or private configuration access occurred. Native exact-head criterion/task/project acceptance, receipt, required CI and build-branch-only delivery are still pending; physical-iPhone UAT remains unobserved. Root owns final picture review, commit, independent native verification and delivery.
+
+
+### Native recovery build correction
+
+Native recovery56618 passed the21-case criterion and task browser phases, full npmtest including
+the genuine refreshed audit, and design-system lint. Build then rejected six new Testing Library
+ByRole options: `exact` is not part of that unit-query API. The unsupported options were removed;
+all full accessible-name strings and every focus assertion remain. This changes only unit-test
+query options and this record, with no runtime, format-driver, captured image or validator change.
+Corrected build/targeted behavior and final native results remain to be recorded after execution.
+
+
+The corrected production build passed, followed by all63 focused tests:25 swap behavior/focus cases
+and38 actual final-audit consumer cases. The latter confirm the unchanged runtime/driver and genuine
+cdd5044 capture/provenance still match after this unit-only correction; no new pictures or hashes were
+invented. Prior native browser output is retained externally before rerun. Final native recovery,
+GitHub checks and build-branch delivery remain pending.
