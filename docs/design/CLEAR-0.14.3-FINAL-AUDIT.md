@@ -1,6 +1,23 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current batch-05 TASK-014 prominent readout source-bound recapture — 30 October 2026 (UTC)
+## Current batch-05 TASK-015 source-bound hierarchy recapture — 30 October 2026 (UTC)
+
+Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task015/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 20.5 seconds**, foreground 43333, terminal exit 0. The complete phone390×844 / short390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
+
+All four records identify actual frozen source `0f91610eae8b84a0c6cbb8b60e26227243ca1ddb`, runtime `603cd4a8c16a242a1cd3b68811b58731bd9d6b74abaeaf27bce573d24ce1997b`, capture driver `a1f0a099dd98fec979603a99c94de7b43d1b951c8d227d829b5376318c5b0d28` and pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. Runtime, driver and package hashes were independently reproduced from actual current bytes. Observed 2026-10-30T06:05:02.097Z through 2026-10-30T06:05:15.773Z, process98036, loopback origin http://localhost:5173. The first record is clean; later dirty statuses truthfully include collector-created evidence. The complete derived manifest, four passed records, eight unique matrix cells and every actual PNG's bytes, SHA-256 and IHDR dimensions were independently verified.
+
+Every preview generation request, blocked generation, attempted write and forwarded write counter is zero, including session generation. Real disposable local authentication setup/cleanup writes remain separate. This is local source-bound evidence, not hosted/deployed proof, paid generation or a claim that authentication setup made no backend writes.
+
+Existing v1 source-only provenance names the actual retained a1 revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-015`, run `2f33f4e2-69fe-4187-b9b8-53f9324e1974`, attempt1, branch `agent-runner/task-015-a1-2f33f4e2` and tested build base `bbe10c51c965076c45a462a1d5c098f724db571d`. Actual payload `7bee91b872e9e3c72ec12b9d563882b2145472b806ecff7d6360569e4d4f9e36` was derived using unchanged Node24 `capturePayloadSha256()`, excluding provenance itself. The prior Task14 prominent group and every older capture, row, audit entry and failure remain unchanged. No later-attempt source ownership or native acceptance is implied.
+
+Controller foreground79375 passed typecheck and **25/25 combined hierarchy/countdown/RestLog browser cases in3.2minutes** on this same clean frozen source. All98 actual source-bearing records identify `0f91610eae8b84a0c6cbb8b60e26227243ca1ddb` with dirty=false;825 retained artifacts/726 PNGs remain externally in `task015-final-combined-browser-evidence-20261030`. The controller opened genuine normal, narrow and short phone images and found the selected hierarchy without collisions; no runtime correction followed. The proof preserves counters, saved results/correction/refusal, explicit logging mutations, zero-write expiry and the accepted prominent movement countdown.
+
+Actual-size phone captures and probes establish readable tiers through genuine scrolling, including each measured wrapped line when the name itself exceeds the short scroller. Complete text, actual viewport/scroller/scroll position, header/footer boundaries and hit-test readings remain bound to those captures. Same-width taller captures are labelled supplemental typography comparison only, with separate capture-window metadata; they do not stand in for short-phone reachability. Counter exclusion and hierarchy samples use the actual PNG's scroll epoch. No product styling was changed to repair capture collection.
+
+The original native verification failure and actual three-criterion report remain preserved. The unchanged audit consumer, mandatory native same-attempt verification/recovery, exact-head GitHub CI and protected build-branch delivery still remain pending; these source proofs are not a native receipt or delivery claim. Physical-iPhone UAT stays separate and unobserved. No main/production/hosted-schema/distance/Runner change is claimed.
+
+
+## Prior batch-05 TASK-014 prominent readout source-bound recapture — 30 October 2026 (UTC)
 
 Actual retained-a1 group: `docs/design/evidence-0143/task034-format-preview-batch05-task014-prominent/`. The existing authenticated collector passed **4/4 skin cases / eight new PNGs in 21.7 seconds**, foreground 67459, terminal exit 0. The complete phone390×844 / short390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, read-only formats/disclosures, Back/direct Back, accessibility, settled layout, storage and network assertions passed.
 
