@@ -618,6 +618,94 @@ function nameRole(found: Tiers) {
   return { fontSize, fontWeight, fontFamily, color, textTransform }
 }
 
+/** Each tier (or each wrapped line of an oversized name) is readable on the actual phone. */
+async function phoneTierReachability(page: Page, testInfo: TestInfo, id: string, section: Locator, viewport: Viewport) {
+  const selectors = {
+    name: ':scope > :is(h1, h2, h3, h4, h5, h6), :scope > [data-movement-name-row] > :is(h1, h2, h3, h4, h5, h6)',
+    prescription: ':scope > [data-movement-detail]',
+    equipment: ':scope > [data-movement-context]',
+  }
+  const read = (element: Element, { selector, line, scroll }: { selector: string; line: number | null; scroll: boolean }) => {
+    const tier = element.querySelector(selector)!
+    const scroller = element.closest<HTMLElement>('.clr-scroll-region__scroller')!
+    const box = (node: Element) => {
+      const { left, right, top, bottom, width, height } = node.getBoundingClientRect()
+      return { left, right, top, bottom, width, height }
+    }
+    // Character ranges retain real wrapping and identify every non-space
+    // character, without assuming a line height or slicing a tall screenshot.
+    const lines: Array<Box & { text: string }> = []
+    const walker = document.createTreeWalker(tier, NodeFilter.SHOW_TEXT)
+    for (let node = walker.nextNode(); node !== null; node = walker.nextNode()) {
+      const text = node.textContent ?? ''
+      for (let i = 0; i < text.length; i += 1) {
+        const range = document.createRange()
+        range.setStart(node, i)
+        range.setEnd(node, i + 1)
+        const rect = range.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) continue
+        const existing = lines.find((candidate) => Math.abs(candidate.top - rect.top) < 1 && Math.abs(candidate.bottom - rect.bottom) < 1)
+        if (existing === undefined) {
+          lines.push({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            width: rect.width, height: rect.height, text: text[i] })
+        } else {
+          existing.left = Math.min(existing.left, rect.left)
+          existing.right = Math.max(existing.right, rect.right)
+          existing.width = existing.right - existing.left
+          existing.text += text[i]
+        }
+      }
+    }
+    const at = line === null ? box(tier) : lines[line]
+    const window = box(scroller)
+    if (scroll) scroller.scrollTop += (at.top + at.bottom - window.top - window.bottom) / 2
+    const region = scroller.parentElement!
+    const occlusions = Array.from(region.querySelectorAll(':scope > .clr-scroll-region__head, :scope > .clr-scroll-region__foot'))
+      .map((node) => ({ className: node.className, box: box(node) }))
+      .filter(({ box: other }) => at.left < other.right - 1 && other.left < at.right - 1 &&
+        at.top < other.bottom - 1 && other.top < at.bottom - 1)
+    const points = [0.1, 0.5, 0.9].flatMap((x) => [0.1, 0.5, 0.9].map((y) => {
+      const point = { x: at.left + at.width * x, y: at.top + at.height * y }
+      const hit = document.elementFromPoint(point.x, point.y)
+      return { ...point, hitTag: hit?.tagName ?? null, hitClass: hit?.getAttribute('class') ?? null,
+        belongsToTier: hit !== null && tier.contains(hit) }
+    }))
+    return { viewport: { width: innerWidth, height: innerHeight }, devicePixelRatio,
+      text: tier.textContent ?? '', tier: box(tier), target: at, lines, line,
+      scroller: window, scrollTop: scroller.scrollTop, scrollHeight: scroller.scrollHeight,
+      clientHeight: scroller.clientHeight, occlusions, points }
+  }
+  const readings = []
+  for (const [role, selector] of Object.entries(selectors)) {
+    const initial = await section.evaluate(read, { selector, line: null, scroll: false })
+    const targets = role === 'name' && initial.tier.height > initial.scroller.height + TOLERANCE
+      ? initial.lines.map((_, index) => index) : [null]
+    expect(targets.length, `${id} ${role} has actual readable text`).toBeGreaterThan(0)
+    for (const line of targets) {
+      await section.evaluate(read, { selector, line, scroll: true })
+      await settleFonts(page)
+      const probe = await section.evaluate(read, { selector, line, scroll: false })
+      const detail = `${id} actual-phone ${role}: ${JSON.stringify(probe)}`
+      expect(probe.viewport, detail).toEqual(viewport)
+      expect(probe.lines.map((entry) => entry.text).join('').replace(/\s/g, ''), detail).toBe(probe.text.replace(/\s/g, ''))
+      expect(probe.lines.map((entry) => entry.text), detail).toEqual(initial.lines.map((entry) => entry.text))
+      expect(probe.target.height, detail).toBeGreaterThan(0)
+      expect(probe.target.top, detail).toBeGreaterThanOrEqual(probe.scroller.top - TOLERANCE)
+      expect(probe.target.bottom, detail).toBeLessThanOrEqual(probe.scroller.bottom + TOLERANCE)
+      expect(probe.target.left, detail).toBeGreaterThanOrEqual(probe.scroller.left - TOLERANCE)
+      expect(probe.target.right, detail).toBeLessThanOrEqual(probe.scroller.right + TOLERANCE)
+      expect(probe.occlusions, detail).toEqual([])
+      expect(probe.points.every((point) => point.belongsToTier), detail).toBe(true)
+      const file = `${id}-phone-${role}${line === null ? '' : `-line-${line + 1}`}.png`
+      const png = await page.screenshot({ animations: 'disabled', caret: 'hide' })
+      writeFileSync(testInfo.outputPath(file), png)
+      await testInfo.attach(file, { path: testInfo.outputPath(file), contentType: 'image/png' })
+      readings.push({ role, ...probe, capture: { file, sha256: createHash('sha256').update(png).digest('hex') } })
+    }
+  }
+  return readings
+}
+
 /** Capture the three tiers as drawn and read them the way the reference is read. */
 async function capture(page: Page, testInfo: TestInfo, id: string, section: Locator) {
   // The tiers centred in the scroller, clear of the header and the footer.
@@ -634,16 +722,39 @@ async function capture(page: Page, testInfo: TestInfo, id: string, section: Loca
   await centre()
   await settleFonts(page)
   await page.mouse.move(0, 0)
-  const found = await tiers(section)
+  // If the complete tier region fits, bring that region (not just the name)
+  // into the real scroller before deciding whether a supplemental image is needed.
+  await section.evaluate((element) => {
+    const name = element.querySelector(':scope > :is(h1, h2, h3, h4, h5, h6), :scope > [data-movement-name-row] > :is(h1, h2, h3, h4, h5, h6)')!
+    const equipment = element.querySelector(':scope > [data-movement-context]')!
+    const scroller = element.closest<HTMLElement>('.clr-scroll-region__scroller')!
+    const top = name.getBoundingClientRect().top - 2
+    const bottom = equipment.getBoundingClientRect().bottom
+    const window = scroller.getBoundingClientRect()
+    if (bottom - top <= window.height) {
+      if (top < window.top) scroller.scrollTop += top - window.top
+      else if (bottom > window.bottom) scroller.scrollTop += bottom - window.bottom
+    }
+  })
+  await settleFonts(page)
+  const phoneScroller = (await content(page).boundingBox())!
   const viewportShot = await page.screenshot({ animations: 'disabled', caret: 'hide' })
+  const viewport = page.viewportSize()!
+  const phoneScrollTop = await content(page).evaluate((element) => element.scrollTop)
+  const phoneReadings = await phoneTierReachability(page, testInfo, id, section, viewport)
+  await content(page).evaluate((element, scrollTop) => { element.scrollTop = scrollTop }, phoneScrollTop)
+  await settleFonts(page)
+  // Read again after the phone probes restore the scroll position: all tier
+  // and counter coordinates below belong to the actual comparison PNG epoch.
+  const found = await tiers(section)
   let clip = clipOf(found)
   let window = await fits(clip)
-  const viewport = page.viewportSize()!
   let captureWindow: Viewport = viewport
+  let captureSample = found
   if (!window.fits) {
     // A short phone's scroller is shorter than a wrapped name's three tiers.
-    // Read them whole in a taller window of the same width: every line wraps
-    // exactly as on the phone, and nothing sits under the header or footer.
+    // This same-width image supplements typography comparison only. The
+    // original-size captures and probes above establish actual phone reachability.
     captureWindow = { width: viewport.width, height: 1600 }
     await page.setViewportSize(captureWindow)
     await centre()
@@ -654,16 +765,20 @@ async function capture(page: Page, testInfo: TestInfo, id: string, section: Loca
       .toEqual({ name: found.name.lines, width: found.section.width, detail: found.detail!.lines, equipment: found.equipment!.lines })
     clip = clipOf(tall)
     window = await fits(clip)
+    captureSample = tall
   }
   expect(window.fits, `tiers fully inside the visible scroller: ${JSON.stringify({ clip, window, captureWindow })}`).toBe(true)
+  // Counter exclusion belongs to the tier PNG's exact geometry epoch, before
+  // the following element screenshot is allowed to scroll the card.
+  const counterNow = captureSample.counter
+  const scale = await page.evaluate(() => devicePixelRatio)
   const tierShot = await page.screenshot({ clip, animations: 'disabled', caret: 'hide' })
   const cardShot = await section.screenshot({ animations: 'disabled', caret: 'hide' })
-  const counterNow = captureWindow === viewport ? found.counter : (await tiers(section)).counter
   if (captureWindow !== viewport) {
     await page.setViewportSize(viewport)
-    await centre()
   }
-  const scale = await page.evaluate(() => devicePixelRatio)
+  await content(page).evaluate((element, scrollTop) => { element.scrollTop = scrollTop }, phoneScrollTop)
+  await settleFonts(page)
   const exclude = counterNow === null ? null : {
     x: Math.floor((counterNow.left - 2 - clip.x) * scale), y: 0,
     width: Math.ceil((clip.x + clip.width - counterNow.left + 2) * scale),
@@ -682,9 +797,12 @@ async function capture(page: Page, testInfo: TestInfo, id: string, section: Loca
     measured: hierarchy(reading),
     capture: {
       tiers: { file: files.tiers, sha256: hash(tierShot), clipCss: clip, counterExcludedPx: exclude,
-        captureWindow, phoneScroller: window.scroller },
-      card: { file: files.card, sha256: hash(cardShot) },
-      viewport: { file: files.viewport, sha256: hash(viewportShot) },
+        captureWindow, captureScroller: window.scroller, phoneScroller,
+        supplementalTypographyOnly: captureWindow !== viewport },
+      card: { file: files.card, sha256: hash(cardShot), captureWindow,
+        supplementalTypographyOnly: captureWindow !== viewport },
+      viewport: { file: files.viewport, sha256: hash(viewportShot), captureWindow: viewport, phoneScroller },
+      phoneTierReachability: phoneReadings,
     },
   }
 }

@@ -108,3 +108,14 @@ image `sources/source-07-B05-04-review-grouping.jpg` (SHA256
   is not an installed-device result.
 - Observation, not reassigned: on short phones the pinned rest/session areas leave a ~105–170px
   Workout scroller. This is the already tracked viewport finding, not a hierarchy change.
+
+
+## Controller review and proof refresh
+
+The initial native command ended `verification-failed` after a successful worker and real three-criterion report. Both independent native browser phases passed 10 cases (14.570 / 14.369 seconds). Full unit verification ran 54.087 seconds; the results cache confirms only the existing final-audit file failed, on its two stale source bindings. Original four changed paths plus 307 artifacts / 270 PNGs were preserved externally before checkpoint `bfab788`. No native state, attempt or result was reset.
+
+Read-only component review found the shared runtime changes scoped to the existing movement role, with no new hook, effect, fetch or logging/timer state change. Actual selected B05-04 and a genuine candidate card image were opened. Final source uses the public heading-h3 token for the movement name; the accepted heading-h1 movement countdown remains unchanged.
+
+The controller corrected capture methodology without changing product styling or removing any assertion: original phone and taller supplemental-window metadata are separate; the counter exclusion is measured in the actual tier PNG's scroll epoch; each actual phone-size tier is genuinely scrolled into view and captured. When a wrapped name itself exceeds the short scroller, measured DOM Range lines prove every non-space character is retained and each line is reachable. Phone probes retain actual viewport, scroller, scroll position, header/footer boundaries and hit-test readings. A same-width taller image is explicitly supplemental typography comparison only and cannot claim short-phone reachability. All original ten cases, reference comparisons, mutation/correction/refusal and zero-write behavior remain.
+
+The unique Task15 format group and exact run/a1/base/revision lineage metadata are prepared; all previous evidence remains untouched. Combined-source browser verification, actual new authenticated captures, unchanged audit consumption and native same-attempt recovery are pending at this source freeze. No native acceptance, GitHub delivery or installed-iPhone outcome is claimed here.
