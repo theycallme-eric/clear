@@ -1,5 +1,13 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Current integrated LIB-001 and PWA source reverification — 30 October 2026
+
+After integrating main ba19701/PR592 unchanged, the existing authenticated Format Preview collector passed **4/4 skin cases and eight fresh screenshots in28.71 seconds**. Group: `docs/design/evidence-0143/task034-format-preview-library-590-integrated/`. The initial library590, PWA-hotfix591 and all older groups remain unchanged. This is manual issue590 source verification, not a new native Task015 attempt, receipt or merge/deployment approval.
+
+Actual frozen application commit `8ef47ad28d5b79c83135fcb79c5a8e5e61fb72d6`, runtime `aeb59beef09d49cd435eb0bf5269a8d7c892f58783a9b27f33fd61f230d21c07`, driver `7a06b5e2677019a9eb81b98591b9260c93ae64ea80e463ee1f52a6ac6964529c` and package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all four records. The unchanged validator checks the complete390×844/390×320 matrix in all four skins, real authenticated journey, Settings/disclosures and Back/direct-entry Back, accessibility, settled layout, storage and actual PNG bytes/hash/dimensions. The captured commit is genuine ancestry of this branch; no native Runner identity is rebound.
+
+The app ran on loopback http://127.0.0.1:4181 with the existing configured Supabase disposable fixture. Its only account/setup writes belonged to its namespaced example.com user and were cleaned up; OTP delivery was intercepted. During the preview every generation, attempted-write and forwarded-write count is zero. No hosted frontend or installed-device/UAT result is claimed. The incoming PWA runtime fix remains unchanged.
+
 ## Prior LIB-001 startup reverification before main integration — 30 October 2026
 
 Under issue590, the existing authenticated Format Preview collector passed **4/4 skin cases and eight new screenshots in25.96 seconds**. Actual group: `docs/design/evidence-0143/task034-format-preview-library-590/`. The prior Task015/Batch05 group remains unchanged. This is manual current-source reverification for LIB-001, not a new native Task015 attempt, Runner receipt, merge approval or production deployment.
