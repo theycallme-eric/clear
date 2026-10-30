@@ -67,6 +67,7 @@ import {
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
+import { equipmentName } from '../state/review'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -367,6 +368,8 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
         <BlockPanel.Movement
           title={`${exercise.position}. ${name}`}
           detail={targetText(prescription)}
+          // The same equipment tier the open logger shows (B05-04).
+          context={`Equipment · ${equipmentName(prescription.equipment_used)}`}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
