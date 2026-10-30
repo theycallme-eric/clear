@@ -68,6 +68,10 @@ on its branch preview to see related owners together. Check Swap/Escape and the
 saved-section disclosure. Compare their roles and intentional differences;
 the metadata refactor is expected to preserve the existing appearance.
 
+[PR595](https://github.com/theycallme-eric/clear/pull/595) has the focused diff
+against PR593 and its [comparison preview](https://clear-git-codex-lib-002-text-roles-erics-projects-0ade0dda.vercel.app/gallery/app?component=MovementIdentityComparison).
+Switch the query to `WorkoutEntryComparison` for History/Favorites summaries.
+
 These counts do not cover every interaction or screen. The released report identifies 25
 missing owner-fixture candidates, 14 context exemptions and one dormant export.
 Do not use a missing live workout example as a reason to recreate that UI.

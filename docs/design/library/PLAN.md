@@ -46,15 +46,15 @@ Start with the verified repeated metadata text role in Review, History, Favorite
 
 Show related real presentations together using existing gallery specimens and safe owner fixtures. Compare workout-entry summaries with summaries and movement rows with movement rows. Keep context-specific actions and behavior with their owners. Foundational buttons, fields and text states remain in scope as real app-styled examples, added in useful slices.
 
-- [ ] Identify the selected recipe, its consumers and intentional differences.
+- [x] Identify the selected recipe, its consumers and intentional differences.
 
-- [ ] Consolidate the verified equivalent uses; investigate every unexpected appearance or behavior change.
+- [x] Consolidate the verified equivalent uses; investigate every unexpected appearance or behavior change.
 
-- [ ] Gallery examples render actual owners with comparable data where meaning permits, not look-alike copies.
+- [x] Gallery examples render actual owners with comparable data where meaning permits, not look-alike copies.
 
-- [ ] Check relevant 320px/390px, state and skin contexts; record a concrete exception when a real owner cannot yet be rendered safely.
+- [x] Check relevant 320px/390px, state and skin contexts; record a concrete exception when a real owner cannot yet be rendered safely.
 
-- [ ] Stop at a bounded, reviewable improvement. Re-scope new token/component/behavior needs rather than silently expand the refactor.
+- [x] Stop at a bounded, reviewable improvement. Re-scope new token/component/behavior needs rather than silently expand the refactor.
 
 ## 3 One real design-to-delivery pilot
 
@@ -106,11 +106,11 @@ The external review informed this simplification. Its typography recommendation 
 
 # Current status
 
-Released audit baseline: 14acb2cc549b482e2fb5466a2402bbe5a34029c3. The existing gallery has 49 entries and 131 initial examples. Important live/session surfaces still need owner fixtures; registration counts do not certify state completeness or visual approval.
+Released audit baseline: 14acb2cc549b482e2fb5466a2402bbe5a34029c3. Delivery 1 has 49 entries and 131 initial examples; delivery 2's proposal expands the same register to 52 entries and 138 examples. Important live/session surfaces still need owner fixtures; registration counts do not certify state completeness or visual approval.
 
-Delivery 1 is implemented and locally verified in [PR 593](https://github.com/theycallme-eric/clear/pull/593), linked to [issue 590](https://github.com/theycallme-eric/clear/issues/590). The branch includes main ba19701 and preserves its PWA fix. All 5,891 unit tests pass; both public-route browser cases, twelve width/skin contexts and the existing four-case/eight-image authenticated collector pass. Source-bound evidence checks are resolved with fresh records; prior records and archived-reference findings remain preserved. Vercel reports the preview ready. Required GitHub jobs are queued; owner review, merge and release remain pending.
+Delivery 1 is implemented and verified in [PR 593](https://github.com/theycallme-eric/clear/pull/593), linked to [issue 590](https://github.com/theycallme-eric/clear/issues/590). The branch includes main ba19701 and preserves its PWA fix. All 5,891 unit tests, both public-route browser cases, twelve width/skin contexts and the existing authenticated collector pass. Required GitHub checks and Vercel preview succeeded. Owner acceptance, merge and release remain pending.
 
-Owner UAT of the recent released batch can proceed alongside this work. The workout-experience handoff is prepared; an external review was supplied by the owner. No in-thread reviewer or new agent should be launched without the owner's request.
+Delivery 2 is implemented in [PR 595](https://github.com/theycallme-eric/clear/pull/595), tracking [issue 594](https://github.com/theycallme-eric/clear/issues/594), stacked on PR 593. Six repeated metadata recipes share one app-owned stylesheet; actual Review, live movement, saved-detail and workout-summary presentations are compared in the gallery. All 5,894 unit tests pass; 208 component-state PNG comparisons are identical at 320/390px across four skins. Three public browser cases and four current-source collector cases pass. See PR 595 for current remote-check results; owner acceptance remains pending. Recent-batch owner UAT can proceed independently. Delivery 3 needs the current workout-prompt proposal selected; paused mixed-source Refine previews remain historical references. No in-thread reviewer or new agent should be launched without the owner's request.
 
 # Working rules for agents
 
@@ -126,10 +126,10 @@ Use the source and pattern maps to find affected consumers. Do not merge unrelat
 
 - [x] Consider the outside review and replace the immediate process with these three deliveries.
 
-- [x] Delivery 1 implementation: focused app gallery and agent guidance verified locally and published as PR 593/preview; remote checks and owner acceptance remain pending.
+- [x] Delivery 1 implementation: focused app gallery and agent guidance published as PR 593/preview; required checks pass, owner acceptance remains pending.
 
-- [ ] Delivery 2: consolidate one verified metadata recipe and compare related actual presentations.
+- [x] Delivery 2 implementation: verified shared metadata recipe and actual-context comparison published as PR 595; owner acceptance remains pending; the PR records current remote checks.
 
 - [ ] Delivery 3: demonstrate the approved workout-experience design through requirements and integration.
 
-Next action: review PR 593 and its preview while required GitHub checks finish, then proceed with delivery 2's verified metadata recipe and related actual-component comparison on an isolated branch. No main merge or release is authorized by completing this checklist item.
+Next action: review PR 593 and PR 595 and select the current workout-prompt/experience proposal for delivery 3. Prepare accurate current/proposed visuals from that source; meaningful design approval precedes requirements and integration. Completing implementation checks does not authorize main merge or release.
