@@ -335,3 +335,20 @@ Both commands were fully collected and the browser lane released. The full21-cas
 combined-tree build/full verification, genuine format recapture and native recovery/delivery are
 still the controller's next steps. No Git, Runner/state or GitHub operation was run for this
 correction. Physical-iPhone UAT remains unobserved.
+
+
+## Combined clean-source proof and real format recapture
+
+The controller froze the reviewed candidate at `cdd5044b177baa8a4ea55d35d522688df175a9ce`. Full focused browser foreground2921 passed **21/21 in 1.4 minutes** on this clean source. All 38 source-bearing records name that exact head with dirty=false; 115 artifacts / 56 PNGs plus the retention manifest are preserved externally in `task011-full-browser-clean-evidence-20261030`. This includes the added grouped choose/Undo and long-current-title390×320 checks with the genuine focus assertions preserved. Existing swap-regression foreground60811 passed **5/5 in 41.4 seconds** on the same source; ten artifacts / four PNGs plus manifest are preserved in `task011-existing-swap-regressions-passed-20261030`. Earlier dirty targeted and failed outputs remain honest separate history.
+
+Existing authenticated format collector foreground52834 ended terminal0, **4/4 skin cases in 21.5 seconds**. It generated eight genuine phone390×844 / short390×320 PNGs in `docs/design/evidence-0143/task034-format-preview-batch05-task011`, observed 2026-10-30T02:55:15.525Z through 2026-10-30T02:55:29.991Z, process16064. Four passed records, the complete derived eight-cell manifest and each actual PNG's bytes, SHA-256 and IHDR dimensions were checked. Actual source/runtime/driver/package identity is:
+
+- captured source: `cdd5044b177baa8a4ea55d35d522688df175a9ce`
+- runtime: `c245a873f78437d10837ecd41b12cabc0b5053f3935a6839cbb3096cbed23f92`
+- driver: `6a91f60cdf4da1714887cce9bd3786e038ff154c18a2ea1b65bc36b2f02e3ae7`
+- package0.14.3: `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+- payload: `65d1fbead06540b2491b2132618bbb5b265a190ec7d3be4bc8e9f1ed8dae4a96`
+
+Runtime/driver/package were independently reproduced from current source bytes. Preview generation, blocked generation, attempted write and forwarded write counters are all0, including session generation; owned local auth setup/cleanup remains separate. The first record is clean; later dirty status reflects newly generated collector evidence. Existing v1 source-only provenance derives the actual payload with unchanged `capturePayloadSha256()`, using Task11 revision `183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-011`, run`89097d5c-2de1-47ef-8a42-efaa7339e6bd`/attempt1, branch`agent-runner/task-011-a1-89097d5c` and actual tested base`0f4ee603516be9ab477c0a109549be3063975fce`. No old image or hash was relabelled; previous rows/groups/assertions remain.
+
+Only generated provenance, this note and the audit entry were changed during derivation. No product/runtime/driver/helper/test, Runner/state or Git change, test/browser run or private configuration access occurred. Native exact-head criterion/task/project acceptance, receipt, required CI and build-branch-only delivery are still pending; physical-iPhone UAT remains unobserved. Root owns final picture review, commit, independent native verification and delivery.
