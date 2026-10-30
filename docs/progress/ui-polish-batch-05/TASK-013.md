@@ -103,3 +103,14 @@ change or scroll-boundary-test change was made.
 
 This narrow correction has NOT been executed by the editing agent. Root owns the browser lane and
 will run the regression on the final combined candidate; this entry claims no new passing result.
+
+
+## Combined-source preflight and measured scroll timing
+
+Root normally merged delivered Task11/build `5585f1e31254e994c3578cc29789a765aa667d66` into this retained branch without conflict (`741327e553343f4a8daa61787525a13cd9dd09b6`). Production build and three directly affected unit files passed:51/51 tests in3.13s. No UI/CSS change was needed after the preserved original candidate.
+
+Combined regression65998 was terminal1:7/8 passed in37.3s, including both complete Rest/Log flows and both combined Superset/Circuit cases. The phone fitting assertion read client439/scroll443 before the host's ResizeObserver removed two transient2px rules. The immediately collected actual DOM measurements instead showed host/content442.953125, client443/scroll443, no head/foot rules. Short and narrow windows genuinely overflowed and retained both rules. These179 diagnostic files, actual metrics, log and source identity remain preserved externally; no passing result is claimed for the failed invocation.
+
+The scoped sheet regression now polls its actual content/host dimensions, matching head/foot presence and published measured insets across two animation frames before taking its snapshot. All original fitting/no-cue, actual overflow, hard-edge, pixel and no-write assertions remain unchanged; no fixed delay, wider tolerance, expectation flip or product/global FittedScrollRegion patch was introduced. The updated case still needs execution on the frozen combined source.
+
+The existing authenticated format collector is prepared for a unique Task13 group. Its source-only lineage truthfully names the original a1 retained run/branch/base before normal a2 continuation. New source hashes, PNGs, manifest/provenance and native acceptance remain pending actual collection; old groups and validators stay intact.

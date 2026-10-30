@@ -694,7 +694,67 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
       await expect(region).toHaveAttribute('data-measured', '')
       await page.evaluate(() => document.fonts.ready)
       await expect.poll(async () => (await regionState(region)).overflow.client).toBeGreaterThan(0)
+      // Cue opacity settles independently of the fitted host's ResizeObserver.
+      // Wait for its actual allowance and edge reservation to agree before
+      // taking the snapshot; do not measure a removed pair of transient rules.
+      await expect.poll(() => region.evaluate(async (wrap) => {
+        const host = wrap.parentElement!
+        const scroller = wrap.querySelector(':scope > .clr-scroll-region__scroller')! as HTMLElement
+        const content = scroller.firstElementChild!
+        const read = () => {
+          const height = host.getBoundingClientRect().height
+          const contentHeight = content.getBoundingClientRect().height
+          const edges = wrap.querySelectorAll('[data-fitted-scroll-edge]').length
+          const head = wrap.querySelector(':scope > .clr-scroll-region__head') !== null
+          const foot = wrap.querySelector(':scope > .clr-scroll-region__foot') !== null
+          const overflowing = contentHeight > host.clientHeight + 1
+          const style = getComputedStyle(wrap)
+          const reserved = parseFloat(style.getPropertyValue('--head-h')) + parseFloat(style.getPropertyValue('--foot-h'))
+          return { height, contentHeight, client: scroller.clientHeight, edges, head, foot, reserved,
+            ready: height > 0 && head === overflowing && foot === overflowing && edges === (overflowing ? 2 : 0) &&
+              Math.abs(scroller.clientHeight + reserved - host.clientHeight) <= 1 }
+        }
+        const before = read()
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+        const after = read()
+        return before.ready && after.ready && JSON.stringify(before) === JSON.stringify(after)
+      }), { message: 'the fitted sheet allowance and measured edges settle' }).toBe(true)
       const rest = await settle(region)
+      // Retain the actual content/allowance/edge boxes when a fitting case fails.
+      await testInfo.attach('sheet-fit-measurements', {
+        contentType: 'application/json',
+        body: JSON.stringify(await region.evaluate((wrap) => {
+          const host = wrap.parentElement!
+          const scroller = wrap.querySelector(':scope > .clr-scroll-region__scroller')!
+          const content = scroller.firstElementChild!
+          const measure = (element: Element | null) => {
+            if (!element) return null
+            const el = element as HTMLElement
+            const style = getComputedStyle(el)
+            return {
+              rect: el.getBoundingClientRect().toJSON(), client: el.clientHeight, scroll: el.scrollHeight,
+              scrollTop: el.scrollTop, inlineHeight: el.style.height,
+              height: style.height, maxHeight: style.maxHeight, minHeight: style.minHeight,
+              flexShrink: style.flexShrink, boxSizing: style.boxSizing,
+              padding: [style.paddingTop, style.paddingBottom],
+              border: [style.borderTopWidth, style.borderBottomWidth],
+              margin: [style.marginTop, style.marginBottom],
+              head: style.getPropertyValue('--head-h'), foot: style.getPropertyValue('--foot-h'),
+            }
+          }
+          return {
+            host: measure(host), region: measure(wrap), scroller: measure(scroller), content: measure(content),
+            slot: measure(content.querySelector('[data-set-sheet-slot]')),
+            sheet: measure(content.querySelector('.clr-set-sheet')),
+            bleed: measure(content.querySelector('.clr-set-sheet > .clr-bleed')),
+            frame: measure(content.querySelector('.clr-set-sheet__frame')),
+            head: measure(wrap.querySelector(':scope > .clr-scroll-region__head')),
+            foot: measure(wrap.querySelector(':scope > .clr-scroll-region__foot')),
+            edgeCount: wrap.querySelectorAll('[data-fitted-scroll-edge]').length,
+            overlay: measure(host.parentElement),
+          }
+        }), null, 2),
+      })
       expectHardEdges(rest)
       expectAtRest(rest)
       // The navigation below stays fully on screen.
