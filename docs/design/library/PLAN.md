@@ -116,9 +116,11 @@ Delivery 2 is implemented in [PR 595](https://github.com/theycallme-eric/clear/p
 
 Requested library refinement: [PR 599](https://github.com/theycallme-eric/clear/pull/599)
 restores the package's motion lab/use cases at `/gallery/motion` and shows the
-current hard-edge scroll treatment beside the earlier dissolve reference.
-This supports visual review; the scroll choice and any versioned foundation
-integration remain open. It does not replace delivery 3's workout-prompt pilot.
+current hard-edge scroll treatment beside the dissolve direction Eric selected.
+Visible glow still needs owner review after correcting a production CSS-time
+unit bug tracked in issue600. The gallery normalizes the existing token for
+preview and offers Hold for inspection; canonical foundation correction and
+app integration remain separate. This does not replace delivery 3's pilot.
 
 Read the repository's project instructions and the short library README before UI work. Search the existing registry and src/ui before creating presentation. Use the same components, style authority and real state owners in gallery examples; supply deterministic data/controllers without live writes.
 

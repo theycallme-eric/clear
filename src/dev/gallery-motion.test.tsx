@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 
 import { GalleryMotion } from './gallery-motion'
 import { MOTION_PATTERNS } from './gallery-motion-patterns'
+import { galleryScrollSettleTime } from './gallery-scroll-settle-time'
 
 describe('restored Motion Lab', () => {
   it('accounts for every original effect using the shipped motion vocabulary', () => {
@@ -37,7 +38,16 @@ describe('restored Motion Lab', () => {
     expect(samples).toHaveLength(2)
     expect(within(samples[0] as HTMLElement).getByText('Entry 01')).toBeInTheDocument()
     expect(within(samples[1] as HTMLElement).getByText('Entry 01')).toBeInTheDocument()
-    expect(screen.getByText(/gallery-only comparison/)).toBeInTheDocument()
+    expect(screen.getByText(/gallery-only preview/)).toBeInTheDocument()
     expect(screen.getByRole('slider', { name: 'Scroll both samples (%)' })).toBeInTheDocument()
+  })
+})
+
+describe('production scroll timing compatibility', () => {
+  it.each([['420ms', '420ms'], ['.42s', '420ms'], [' 0.42s ', '420ms'], ['0ms', '0ms']])('preserves %s as milliseconds', (css, expected) => {
+    expect(galleryScrollSettleTime(css)).toBe(expected)
+  })
+  it.each(['', 'invalid', '-1s'])('leaves an invalid token to the component fallback: %s', value => {
+    expect(galleryScrollSettleTime(value)).toBeUndefined()
   })
 })

@@ -21,8 +21,11 @@ existing visual choice. Material proposed changes receive their own review.
   ordinary visual preview and requirements handoff when motion is involved.
 - The Motion view also compares the actual hard-edge ScrollRegion with an
   explicitly scoped 26 CSS pixel dissolve reference. Both use the same real component
-  and content. The dissolve is a gallery-only proposal, pending visual choice
-  and versioned foundation integration; it is not current Home behavior.
+  and content. Eric selected dissolve with visible glow; its final appearance
+  and versioned foundation integration remain open. A gallery-only adapter
+  preserves the token's milliseconds when compiled CSS uses seconds (#600).
+  Hold glow for inspection shows the existing shared CSS state continuously.
+  This preview correction is not a production Home fix.
 
 - Selected visual inputs awaiting scoped integration live in
   [the Phosphor Echo intake](intake/phosphor-echo/README.md): one shared effect,

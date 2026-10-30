@@ -1,5 +1,5 @@
 /** Current components and shared motion; experiments stay inside this review surface. */
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { Button, ChamferedFrame, Chip, Clock, IntensitySlider, Progress, ScrollRegion, TimerDisplay } from '../design-system/index'
 import { Card } from '../ui/card'
@@ -8,6 +8,7 @@ import { ListFrame, ListRow } from '../ui/composition'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { interruptMotion, prefersReducedMotion, useArrivalStagger, useInterfaceLoop } from '../ui/motion'
 import { MOTION_PATTERNS, type MotionPattern } from './gallery-motion-patterns'
+import { galleryScrollSettleTime } from './gallery-scroll-settle-time'
 
 import './gallery-motion.css'
 
@@ -184,6 +185,13 @@ function MotionRules() {
 function ScrollComparison() {
   const pair = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState(0)
+  const [holdGlow, setHoldGlow] = useState(false)
+  useLayoutEffect(() => {
+    const element = pair.current
+    if (!element) return
+    const time = galleryScrollSettleTime(getComputedStyle(element).getPropertyValue('--dur-streak-settle'))
+    if (time) element.style.setProperty('--dur-streak-settle', time)
+  }, [])
   function scrollBoth(value: number) {
     setPosition(value)
     pair.current?.querySelectorAll<HTMLElement>('.clr-scroll-region__scroller').forEach(scroller => {
@@ -197,12 +205,14 @@ function ScrollComparison() {
         <p>Both examples use the real ScrollRegion and identical content. The first cuts text off sharply. The second adds the earlier request’s edge fade. Both have the same brief edge glow while scrolling.</p>
         <IntensitySlider label="Scroll both samples (%)" aria-label="Scroll both samples (%)" min={0} max={100} value={position} onChange={scrollBoth} style={{ minWidth: 0 }} />
         <p className="clr-text-data-xs">Move the slider to compare matching positions, or scroll each panel independently.</p>
+        <Button variant="secondary" aria-pressed={holdGlow} onClick={() => setHoldGlow(value => !value)}>Hold glow for inspection</Button>
+        <p className="clr-text-data-xs">Hold keeps the same edge glow visible for review. With Hold off, it lights during scrolling and settles afterward.</p>
         <div ref={pair} className="clr-gallery-motion__scroll-pair" style={{ '--gallery-dissolve-depth': String(DISSOLVE_REFERENCE_PX) + 'px' } as CSSProperties}>
           {(['hard', 'dissolve'] as const).map(kind => <HeadingSection key={kind}>
             <Heading className="clr-gallery-motion__sample-title">{kind === 'hard' ? 'Hard edge' : 'CRT dissolve'}</Heading>
-            <p className="clr-text-data-xs">{kind === 'hard' ? 'Current' : 'Reference'}</p>
+            <p className="clr-text-data-xs">{kind === 'hard' ? 'Baseline' : 'Selected'}</p>
             <ChamferedFrame role="structure" cornerSize="md" trace={false} className="clr-gallery-motion__scroll-stage" style={{ paddingBottom: 0 }}>
-              <ScrollRegion title="Entries" foot={<span className="clr-text-data-xs">14 entries</span>} scrollerProps={{ role: 'region', 'aria-label': kind === 'hard' ? 'Hard edge sample entries' : 'CRT dissolve sample entries', tabIndex: 0, className: kind === 'dissolve' ? 'clr-gallery-motion__dissolve' : undefined }} data-gallery-scroll={kind}>
+              <ScrollRegion title="Entries" foot={<span className="clr-text-data-xs">14 entries</span>} scrollerProps={{ role: 'region', 'aria-label': kind === 'hard' ? 'Hard edge sample entries' : 'CRT dissolve sample entries', tabIndex: 0, className: kind === 'dissolve' ? 'clr-gallery-motion__dissolve' : undefined }} data-gallery-scroll={kind} {...(holdGlow ? { 'data-scrolling': '' } : {})}>
                 <div className="clr-gallery-motion__scroll-body"><ListFrame>
                   {SCROLL_ROWS.map(index => <ListRow key={index}><span className="clr-text-data-xs">Entry {String(index).padStart(2, '0')}</span><br />Sample reading</ListRow>)}
                 </ListFrame></div>
@@ -210,8 +220,8 @@ function ScrollComparison() {
             </ChamferedFrame>
           </HeadingSection>)}
         </div>
-        <p>The 26 CSS pixel dissolve is a gallery-only comparison, not current app behavior or an approved rollout. The earlier request and shipped contract disagree; choose the treatment visually before integration.</p>
-        <p>Home currently uses the hard edge. The glow appears while scrolling and settles shortly after you stop.</p>
+        <p>CRT dissolve with visible glow is the selected direction. This gallery-only preview corrects the glow timing for review; the final appearance and app integration remain open.</p>
+        <p>Home currently uses the hard-edge layout.</p>
       </Card>
     </HeadingSection>
   )

@@ -18,13 +18,30 @@ These are different source stages, not two names for the same effect.
 
 The paired panels use the actual ScrollRegion, identical content and a linked
 position control. Only the reference panel has a scoped 26 CSS pixel mask.
-The pinned layers and shared streaks remain outside that mask. This comparison
-does not choose a new app behavior. A chosen foundation change needs a separate
-versioned implementation and affected-screen verification.
+The pinned layers and shared streaks remain outside that mask. Eric selected
+CRT dissolve with visible glow. Final appearance review and a versioned
+implementation with affected-screen verification remain open.
+
+His deployed-preview review exposed issue600: compiled CSS serializes 420ms as
+`.42s`, but pinned ScrollRegion parses that number as milliseconds. The streak
+then settles too soon to become visible. The earlier Home evidence below used
+development CSS and did not verify this compiled-unit case. Both device and
+local reduced motion were off in Eric's actual tab.
+
+The gallery now normalizes that same token to milliseconds on the comparison
+stage only; it introduces no new timing or glow style. Hold for inspection
+forces the existing shared CSS scroll state so its glow can be examined at rest.
+Real scroll activation/settling is tested separately against production output.
+The immutable import is retained. Remove this compatibility adapter when the
+canonical versioned foundation correction in issue600 is imported; this does
+not establish that Home's production timing is fixed.
 
 - `scroll-comparison-320.png` and `scroll-comparison-390.png`: default Clear skin,
   matching mid-scroll positions, from `e2e/gallery-motion.spec.ts`. These show
   the cutoff/fade; the live preview demonstrates the brief glow.
+- `scroll-glow-held.png`: production-built actual shared edge CSS, held on for
+  inspection. The browser test also verifies real scroll activation reaches
+  visible opacity before settling, and reduced motion removes the shadow.
 - `home/`: genuine synthetic Home captures from the existing
   `ui-polish-b05-scroll-boundaries.spec.ts` case, on clean source `c141aed`.
   Each JSON retains its actual viewport/source/pixel record. The test measured
