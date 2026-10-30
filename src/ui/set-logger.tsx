@@ -17,8 +17,8 @@
  *
  * The card's hierarchy is fixed (REQ-008): the movement heading with its
  * subordinate `Set X/Y` counter, the prescription and equipment, the compact
- * saved results with their Edit controls, the Rest entry action, then the
- * coaching disclosure. The fields are not on the card at all: Rest opens the
+ * saved results with their Edit controls, a timed set's countdown (B05-06),
+ * the Rest entry action, then the coaching disclosure. The fields are not on the card at all: Rest opens the
  * shared half-sheet (`set-logging-sheet.tsx`, REQ-009) and starts the
  * prescribed rest when none is running (REQ-012); the sheet's own Log set N is
  * the only save. The draft it edits lives here, so collapsing the sheet loses
@@ -104,8 +104,13 @@ export interface ExerciseSetLoggerProps {
    * untouched either way; this decides only who says it.
    */
   statesRest?: boolean
-  /** False when the containing movement already owns a stable countdown. */
-  showCountdown?: boolean
+  /**
+   * The containing movement's own countdown view, when that movement holds a
+   * clock that must outlive this logger (a circuit row's optional load
+   * entry). Given, it is drawn in the countdown's place and the logger holds
+   * none of its own, so there is never a second movement clock.
+   */
+  countdown?: ReactNode
   /**
    * The rest this movement's Rest action starts (EXE-05, REQ-012), in
    * seconds. Omitted, it is the rest the movement states — its own
@@ -140,7 +145,7 @@ export function ExerciseSetLogger({
   exercise,
   ordinal,
   statesRest = true,
-  showCountdown = true,
+  countdown,
   restSeconds,
   logging = 'self',
   onReturnToRound,
@@ -183,7 +188,7 @@ export function ExerciseSetLogger({
   const countdownSetNumber = logsSelf
     ? setNumber
     : logged.reduce((highest, set) => Math.max(highest, set.setNumber), 0) + 1
-  const countdownSeconds = showCountdown
+  const countdownSeconds = countdown === undefined
     ? movementCountdownSeconds(prescription, countdownSetNumber)
     : null
 
@@ -251,19 +256,6 @@ export function ExerciseSetLogger({
       */}
       {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
 
-      {/*
-        REQ-014: a timed set counts down here, on the movement, whatever the
-        sheet is doing. Keyed to the set it times, so the next set starts from
-        its own prescribed seconds; running out records nothing.
-      */}
-      {countdownSeconds === null ? null : (
-        <MovementCountdown
-          key={`${countdownSetNumber}:${countdownSeconds}`}
-          seconds={countdownSeconds}
-          movement={name}
-        />
-      )}
-
       <LoggedSetList
         sets={logged}
         onEdit={
@@ -282,6 +274,20 @@ export function ExerciseSetLogger({
             }
         }
       />
+
+      {/*
+        REQ-014, B05-06: a timed set counts down here, on the movement, above
+        its Rest entry, whatever the sheet is doing. Keyed to the set it times,
+        so the next set starts from its own prescribed seconds; running out
+        records nothing.
+      */}
+      {countdown ?? (countdownSeconds === null ? null : (
+        <MovementCountdown
+          key={`${countdownSetNumber}:${countdownSeconds}`}
+          seconds={countdownSeconds}
+          movement={name}
+        />
+      ))}
 
       {/* A superset's movements are entered together, by the block's Log round. */}
       {logsSelf ? (

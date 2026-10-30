@@ -99,17 +99,25 @@ export interface MovementCountdownApi {
  * The countdown, held by the movement that renders it. The interval only
  * repaints; the three ways a throttled page resumes each take a fresh reading,
  * the same shape `useRestRemaining` uses.
+ *
+ * `armedFor` names the set the countdown times. When it changes the countdown
+ * is ready again on the new prescribed seconds — the same as remounting it, for
+ * an owner that must keep one clock across views it mounts and unmounts.
  */
 export function useMovementCountdown(
   totalSeconds: number,
   now: () => number = Date.now,
+  armedFor?: string,
 ): MovementCountdownApi {
   const clock = useRef(now)
+  const arming = useRef({ armedFor, totalSeconds })
   useEffect(() => {
     clock.current = now
+    arming.current = { armedFor, totalSeconds }
   })
 
-  const [state, setState] = useState(() => countdownReady(totalSeconds))
+  const [held, setHeld] = useState(() => ({ armedFor, state: countdownReady(totalSeconds) }))
+  const state = held.armedFor === armedFor ? held.state : countdownReady(totalSeconds)
   const [reading, setReading] = useState(() => now())
 
   // A countdown that has run out stops repainting; nothing it shows can change.
@@ -136,7 +144,11 @@ export function useMovementCountdown(
   const act = useCallback((change: (state: CountdownState, at: number) => CountdownState) => {
     const at = clock.current()
     setReading(at)
-    setState((current) => change(current, at))
+    const { armedFor: current, totalSeconds: seconds } = arming.current
+    setHeld((held) => ({
+      armedFor: current,
+      state: change(held.armedFor === current ? held.state : countdownReady(seconds), at),
+    }))
   }, [])
 
   return {

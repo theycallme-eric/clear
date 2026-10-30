@@ -13,6 +13,10 @@
  *   · It records nothing. Running out is not proof the hold was held; only
  *     the athlete's own Log set writes a result.
  *
+ * B05-06 arranges it: the countdown spans the card's width, with Start/Pause
+ * and Reset side by side underneath as one paired action row, above the
+ * card's Rest entry action.
+ *
  * The frame is EXC-03's `TimerFrame`, the same adapter the session clock
  * draws with, so border, surface, chamfer and bar are one vocabulary. On a
  * card it is an element frame with no bar of its own: never a second card,
@@ -22,11 +26,20 @@
  * digits, and the 80% pulse as the view's one urgent loop — and, while the
  * countdown runs, the screen-edge cue (`movement-countdown.css`). Under reduced
  * motion both are still and both stay drawn.
+ *
+ * `MovementCountdown` holds its own clock. An owner that must keep one clock
+ * across views it mounts and unmounts — a circuit row whose load entry opens
+ * and closes — holds `useMovementCountdown` itself and draws
+ * `MovementCountdownView` in whichever card is showing.
  */
 import { createPortal } from 'react-dom'
 
 import { Button, Pause, Play, RefreshCw } from '../design-system/index'
-import { COUNTDOWN_LOW_SECONDS, useMovementCountdown } from '../state/movement-countdown'
+import {
+  COUNTDOWN_LOW_SECONDS,
+  useMovementCountdown,
+  type MovementCountdownApi,
+} from '../state/movement-countdown'
 import { spokenRest } from '../state/rest'
 import { formatElapsed } from '../state/workout-clock'
 import { ActionGroup } from './composition'
@@ -50,7 +63,18 @@ const STATUS_STYLE = {
 } as const
 
 export function MovementCountdown({ seconds, movement }: MovementCountdownProps) {
-  const { status, remainingSeconds, start, pause, reset } = useMovementCountdown(seconds)
+  return <MovementCountdownView clock={useMovementCountdown(seconds)} movement={movement} />
+}
+
+export interface MovementCountdownViewProps {
+  /** The countdown, held by whoever owns the movement's clock. */
+  clock: MovementCountdownApi
+  /** The movement's name, which names the region the countdown sits in. */
+  movement: string
+}
+
+export function MovementCountdownView({ clock, movement }: MovementCountdownViewProps) {
+  const { status, remainingSeconds, start, pause, reset } = clock
 
   const low = status !== 'ready' && remainingSeconds <= COUNTDOWN_LOW_SECONDS
   const urgent = status === 'running' && low
@@ -59,11 +83,10 @@ export function MovementCountdown({ seconds, movement }: MovementCountdownProps)
   return (
     <section
       aria-label={`${movement} countdown`}
-      className="clr-stack--tight"
+      className="clr-stack--tight clr-movement-countdown"
       data-countdown-status={status}
-      style={{ display: 'flex', flexDirection: 'column' }}
     >
-      <div className="clr-row" style={{ flexWrap: 'wrap', alignItems: 'center', gap: 'var(--spacing-300)' }}>
+      <div className="clr-movement-countdown__timer">
         <TimerFrame
           label="Countdown"
           caption="Countdown"
@@ -73,33 +96,38 @@ export function MovementCountdown({ seconds, movement }: MovementCountdownProps)
           low={low}
           pulse={urgent ? loop : undefined}
         />
-        <ActionGroup style={{ flex: 1 }}>
-          {status === 'running' ? (
-            <Button variant="secondary" size="sm" icon={<Pause />} onClick={pause}>
-              Pause
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<Play />}
-              disabled={status === 'finished'}
-              onClick={start}
-            >
-              Start
-            </Button>
-          )}
-          <Button
-            variant="quiet"
-            size="sm"
-            icon={<RefreshCw />}
-            disabled={status === 'ready'}
-            onClick={reset}
-          >
-            Reset
-          </Button>
-        </ActionGroup>
       </div>
+
+      {/*
+        One paired row underneath: two framed halves that never stack or go
+        ragged. Both secondary — the screen's one primary is not a timer's.
+      */}
+      <ActionGroup className="clr-action-group--paired clr-action-group--paired-labels">
+        {status === 'running' ? (
+          <Button variant="secondary" size="sm" icon={<Pause />} onClick={pause}>
+            Pause
+          </Button>
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<Play />}
+            disabled={status === 'finished'}
+            onClick={start}
+          >
+            Start
+          </Button>
+        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          icon={<RefreshCw />}
+          disabled={status === 'ready'}
+          onClick={reset}
+        >
+          Reset
+        </Button>
+      </ActionGroup>
 
       {/* Milestones only — the timer itself is labelled, not live. */}
       <p

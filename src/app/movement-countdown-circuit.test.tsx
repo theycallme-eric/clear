@@ -55,6 +55,13 @@ function row() {
   return found
 }
 
+/** The movement card showing for the row: its own, or the opened logger's. */
+function card() {
+  const found = screen.getByRole('heading', { name: /hollow body hold$/ }).closest('section')
+  if (found === null) throw new Error('no circuit movement card')
+  return found
+}
+
 const region = () => screen.getByRole('region', { name: 'hollow body hold countdown' })
 const timer = () => within(region()).getByRole('timer', { name: 'Countdown' })
 const button = (name: string) => within(region()).getByRole('button', { name })
@@ -74,29 +81,51 @@ describe('AC-051: a circuit movement owns its countdown independently of load en
     expect(card.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
   })
 
+  it('draws the clock inside the movement card, full width above its pair, above Rest', async () => {
+    const user = userEvent.setup()
+    await shell()
+    // Closed: the row's own card, the clock above its Rest entry.
+    expect(card()).toContainElement(region())
+    expect(region().compareDocumentPosition(
+      within(card()).getByRole('button', { name: 'Rest for hollow body hold' }),
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const pair = button('Start').closest('.clr-action-group')
+    expect(pair).toHaveClass('clr-action-group--paired', 'clr-action-group--paired-labels')
+    expect(pair).toContainElement(button('Reset'))
+    expect(region().firstElementChild).toHaveClass('clr-movement-countdown__timer')
+
+    // Opened: the shared logger's card, the clock above its Rest entry.
+    await user.click(within(row()).getByRole('button', { name: 'Rest for hollow body hold' }))
+    await user.click(screen.getByRole('button', { name: 'Minimize' }))
+    expect(card()).toContainElement(region())
+    expect(region().compareDocumentPosition(
+      within(card()).getByRole('button', { name: 'Rest' }),
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
   it('keeps the same running clock through load-entry show/hide and shared-sheet opening', async () => {
     const user = userEvent.setup()
     await shell()
-    const original = timer()
     fireEvent.click(button('Start'))
     advance(5)
     await user.click(within(row()).getByRole('button', { name: 'Rest for hollow body hold' }))
-    expect(timer()).toBe(original)
     expect(timer()).toHaveTextContent('00:25')
+    expect(button('Pause')).toBeInTheDocument()
     const form = screen.getByRole('form', { name: 'Log set 1 of hollow body hold' })
     expect(form).not.toContainElement(region())
     expect(screen.getAllByRole('region', { name: 'hollow body hold countdown' })).toHaveLength(1)
-    expect(row()).toContainElement(region())
+    expect(card()).toContainElement(region())
     advance(5)
     await user.click(screen.getByRole('button', { name: 'Minimize' }))
     await user.click(within(row()).getByRole('button', { name: 'Hide load entry for hollow body hold' }))
-    expect(timer()).toBe(original)
     expect(timer()).toHaveTextContent('00:20')
+    expect(button('Pause')).toBeInTheDocument()
     advance(5)
     expect(timer()).toHaveTextContent('00:15')
     await user.click(within(row()).getByRole('button', { name: 'Rest for hollow body hold' }))
-    expect(timer()).toBe(original)
+    expect(timer()).toHaveTextContent('00:15')
     expect(screen.getAllByRole('region', { name: 'hollow body hold countdown' })).toHaveLength(1)
+    expect(card()).toContainElement(region())
   })
 
   it('keeps pause/reset usable with load entry closed and records nothing at expiry', async () => {

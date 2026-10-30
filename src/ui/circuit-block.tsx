@@ -66,7 +66,7 @@ import {
   type RoundTiming,
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
-import { movementCountdownSeconds } from '../state/movement-countdown'
+import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -78,7 +78,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
-import { MovementCountdown } from './movement-countdown'
+import { MovementCountdownView } from './movement-countdown'
 import { useInterfaceLoop } from './motion'
 import { TimerFrame } from './workout-chrome'
 
@@ -334,6 +334,16 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
   let nextSet = 1
   while (taken.has(nextSet)) nextSet += 1
   const countdownSeconds = movementCountdownSeconds(prescription, nextSet)
+  // The row holds the movement's one clock, armed for the set it times, so
+  // load entry opening or closing swaps the card it is drawn in without
+  // replacing the clock or losing its deadline (B05-06).
+  const clock = useMovementCountdown(
+    countdownSeconds ?? 0,
+    Date.now,
+    `${nextSet}:${countdownSeconds}`,
+  )
+  const countdown =
+    countdownSeconds === null ? null : <MovementCountdownView clock={clock} movement={name} />
 
   return (
     <>
@@ -346,8 +356,8 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           statesRest={false}
           restSeconds={null}
           // The circuit movement owns this clock independently of optional
-          // load entry. Opening the logger must not create a second one.
-          showCountdown={false}
+          // load entry. Opening the logger draws it; it never creates another.
+          countdown={countdown}
           // Its rest is the round boundary's, so its entry only opens the sheet.
           // The row's one tap opens the shared half-sheet straight away
           // (REQ-017); its Minimize and Cancel leave the movement unlogged.
@@ -366,6 +376,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
               {logged} {logged === 1 ? 'set' : 'sets'} logged
             </BlockPanel.Note>
           )}
+          {countdown}
           <div>
             <TextAction
               aria-expanded="false"
@@ -377,16 +388,6 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           </div>
           <ExerciseCoaching exercise={exercise} />
         </BlockPanel.Movement>
-      )}
-
-      {/* A fixed child of this movement's row: load entry can mount/unmount
-          beside it without replacing the clock or losing its deadline. */}
-      {countdownSeconds === null ? null : (
-        <MovementCountdown
-          key={`${nextSet}:${countdownSeconds}`}
-          seconds={countdownSeconds}
-          movement={name}
-        />
       )}
 
       {open ? (

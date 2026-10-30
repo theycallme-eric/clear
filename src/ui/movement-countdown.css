@@ -23,3 +23,20 @@
     inset 0 0 0 var(--border-width) var(--border-timer-low),
     inset 0 0 var(--spacing-600) var(--surface-timer-low);
 }
+
+/* B05-06: the countdown spans its card's width, digits centred, with the
+   paired Start/Pause and Reset row underneath. The frame is TimerFrame's own
+   (EXC-03); only its width is decided here. */
+.clr-movement-countdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.clr-movement-countdown__timer > .clr-bleed {
+  display: flex;
+}
+
+.clr-movement-countdown__timer > .clr-bleed > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}

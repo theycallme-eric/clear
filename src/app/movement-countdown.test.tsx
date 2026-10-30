@@ -277,6 +277,35 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
   })
 })
 
+describe('B05-06: full-width countdown above its paired controls, above Rest', () => {
+  it('draws the timer first, then Start/Pause and Reset as one pair, inside the card above Rest', async () => {
+    await shell()
+
+    const card = movementCard()
+    const region = countdownRegion()
+    const rest = within(card).getByRole('button', { name: 'Rest' })
+    expect(card).toContainElement(region)
+    expect(region.compareDocumentPosition(rest) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const [timerRow, pair] = Array.from(region.children) as HTMLElement[]
+    expect(timerRow).toHaveClass('clr-movement-countdown__timer')
+    expect(timerRow).toContainElement(countdown())
+    expect(pair).toHaveClass('clr-action-group', 'clr-action-group--paired', 'clr-action-group--paired-labels')
+    expect(pair).toContainElement(control('Start'))
+    expect(pair).toContainElement(control('Reset'))
+
+    fireEvent.click(control('Start'))
+    expect(pair).toContainElement(control('Pause'))
+    // The card's one entry is Rest; no separate Log button sits outside the sheet.
+    expect(within(card).queryByRole('button', { name: /^Log/ })).toBeNull()
+  })
+
+  it('spans the card width and keeps the pair on one row through the shipped rules', () => {
+    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed\s*\{[^}]*display:\s*flex/)
+    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed > \*\s*\{[^}]*flex:\s*1 1 auto/)
+  })
+})
+
 describe('Countdown framing matches the session clock (AC-052)', () => {
   it('is an element frame of the timer role inside the block card — no second card, no second bar', async () => {
     await shell()
