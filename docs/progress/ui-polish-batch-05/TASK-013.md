@@ -135,3 +135,14 @@ Existing v1 provenance uses the unchanged `capturePayloadSha256()`, excluding pr
 **Next action:** normal supported native continuation should inspect and reuse this preserved candidate and genuine combined proof when their inputs are unchanged, then establish its own actual current claim/criterion report and execute all unchanged mandatory independent checks. A new claim alone is not acceptance. Do not rebuild the UI or recreate unchanged proof just because the native attempt changes; do not reuse this proof after input changes. Native a2 acceptance/receipt, full gates, required CI and protected build-only delivery are pending. No native evidence was fabricated by this derivation. Physical-iPhone UAT remains unobserved.
 
 This derivation wrote only the generated v1 provenance, current audit entry (prior Task11 marked Prior) and this note. It ran no tests/browser/Git, read no private configuration and changed no UI/runtime/driver/helper/Runner/state.
+
+
+## Attempt 2 verification — 29 October 2026 (local)
+
+The controller's attempt-1 `npm test` failure was 2/38 in `src/test/design-0143-final-audit.test.ts`. Its truncated output does not name the cases. They predate the retained Task13 format group and lineage (`dd229f2`). On clean head `dd229f23352ef1b99197f481e306e1488a40a48c` the preserved candidate was reused unchanged; no UI, CSS, spec or evidence change was needed. Every controller-required command was run from the workspace and exited 0:
+
+- `npx playwright test e2e/ui-polish-b05-sheet-surface.spec.ts --project=mobile` — 7/7 passed in 12.0s (B05-07.3/07.4 reference regions; phone 390×844, short 390×480, narrow 320×568 new/edit/superset with collapse; keyboard-resize semantics; edit and superset draft retention through resize).
+- `npm test` — 237/237 files, 5866/5866 tests.
+- `npm run lint:ds`, `npm run lint` (0 errors, 149 pre-existing warnings), `npm run typecheck`, `npm run build`, `npm run gen:types -- --check`, `python3 scripts/gen-issues.py --check` — all passed.
+
+The unit stderr "not configured to support act(...)" lines are warnings, not failures. Physical-iPhone UAT remains unobserved. **Next action:** controller independent verification of this head plus the progress note.
