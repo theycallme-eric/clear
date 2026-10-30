@@ -35,6 +35,9 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // can pass `still` without reading the preference store. Its appearance is
   // exactly the framed AtmosphereLayer specimen.
   AtmosphereGround: 'B05 — AtmosphereLayer’s own markup; framed through AtmosphereLayer',
+  // B05-06: MovementCountdown's own markup, drawn from a clock its owner
+  // holds. Its appearance is exactly the framed MovementCountdown specimen.
+  MovementCountdownView: 'B05-06 — MovementCountdown’s own markup; framed through MovementCountdown',
   // B05 REQ-003: a sizing host around the public ScrollRegion. It draws
   // nothing of its own; its appearance is the region's, specimened upstream.
   FittedScrollRegion: 'B05 REQ-003 — sizes the public ScrollRegion to its content; no visual surface',

@@ -1,0 +1,182 @@
+# TASK-014 — Movement countdown arrangement
+
+Issue572 · REQ-011 · approved AC-032/033/034/050/066. Original run
+`9696d01f-d66b-4989-bdcd-80819f8b938f`, attempt1, base
+`0e66325a3d63ae30074ae1c0295c2173005c2e15`, branch
+`agent-runner/task-014-a1-9696d01f`. Task-owned notes satisfy the approved shared-journal exception.
+
+## Intent and actual original outcome
+
+Source `sources/source-09-B05-06-movement-timer.jpg`, SHA256
+`489dded0b4d90dd6789e23e352d5ec29cc96aa96a1abd6ee4be14d3f606f8aab`:
+full-width movement countdown above its paired Start/Pause and Reset, inside the owning movement
+card ABOVE Rest. Preserve TimerFrame containment/no extra bar, each countdown state, explicit-log
+rearm, and distinct elapsed/rest/round/AMRAP clocks. Normal, narrow/short and shared consumers require
+actual visual proof; physical-iPhone UAT is separate.
+
+Native initial44236 is terminal1/collected. Worker failed `turn-exhausted` at998288ms under the
+unchanged100-turn profile. There is NO normalized current-attempt criterion report. Independent
+native task verification still passed all five browser cases (12.207s) and both existing focused
+countdown unit files (2.392s). The full `npm test` command failed57.285s; actual Vitest cache identifies
+only `src/test/design-0143-final-audit.test.ts`, whose output reports2/38 stale source-binding
+assertions. Neither worker success nor native acceptance/PR/completion is claimed.
+
+The original nine source files, four transient worker logs, raw captures/report and byte manifest
+are preserved externally in `runner/reports/task014-first-attempt-preserved-20261030` (159files,
+120PNGs including attachment/report copies). Generated .b05-*.log product copies were removed only
+after preserving them; they are not public product source. Original checkpoint is
+`6c7b631210adb5d4c682c5b98483c3d45a766ad2`. The original failure/history remains in the native ledger;
+no counters, profile, approval or state were reset.
+
+## Controller review and pending work
+
+Read-only review identified a concrete unrun A→B→A armed-key rearm case in the newly lifted hook.
+Actual reproduction is required before choosing a correction. The rendered Circuit view may move
+between branches while its hook owns a stable deadline: meaningful elapsed continuity and one
+region are the behavior, not an added DOM-node-identity gate. Preserve all existing assertions.
+
+The original browser proof has Standard/Circuit cases at390×844 and320×568. The approved short and
+Superset shared-consumer matrix must be completed honestly; existing no-write cases remain intact,
+and any explicit-save supplement must verify exact synthetic mutations and no additional writes.
+All source identity must resolve in the actual checkout with a bounded Git command and no fallback.
+
+Separate deployed preview955 was cancelled at its unchanged20-minute limit, with no final totals.
+It showed the already tracked Circuit REST viewport finding and an older footer test attempting
+clicks through the deliberately covering Task13 sheet. Compatibility proof should retain every
+footer geometry/label/alignment check, prove occlusion/inert while open and retain actual click-trial
+reachability after explicit Minimize. Do not force clicks, skip assertions, change timeouts or alter
+product navigation to satisfy the old open-sheet assumption. The unrelated REST visibility finding
+is not silently reassigned to this movement-timer task.
+
+Root owns final review and source freeze, real combined browser images and actual authenticated
+format recapture/provenance/audit. The supported normal remaining nativeattempt2 must reuse the
+preserved workspace/history and supply its own real criterion report, mandatory independent checks,
+required GitHub CI and approved protected build-only delivery. Model-free recovery cannot create a
+missing report; no claim/receipt fabrication, Runner repair or extra attempt grant is allowed.
+
+
+## Reproduced arming-key correction and pending integration proof
+
+On original6c7b631, four meaningful hook regressions produced3FAIL/1PASS: A→B→A revived the old
+running25s, paused25s or finished0s state instead of ready30s. Same-key rerender retained its actual
+deadline. The hook now persists each observed key transition using the already-derived ready state;
+returning to a prior key cannot resurrect its previous state. New hook plus both unchanged app
+countdown suites passed22/22 in1.88s; foreground27173 terminal0. Red/green sources, outputs and hash
+manifests remain externally in task014-arming-red-evidence-20261030 and corresponding green archive.
+No browser/native acceptance is inferred from this focused result.
+
+Root applied the reviewed footer proof compatibility patch: open-sheet states require actual inert
+ownership and a non-null centre hit on the sheet; every existing geometry/label/bar check remains,
+and actual Minimize is followed by the original enabled-action click trials. No product navigation,
+forceclick, timeout, skip or retry was changed. Both genuine phone flows still need execution.
+
+The existing format collector's unique Task14 group and source-only lineage expectation are prepared
+for this actual a1 run/branch/originalbase. No current PNG, hash or success record is invented. Freeze
+the reviewed final combined source before real collection, preserve all prior groups, and establish
+native a2 acceptance independently. The offline short/Superset proof supplement is not yet executed.
+
+
+## Frozen proof supplement — execution still pending
+
+All five original cases/assertions and default zero-write rejection remain. The viewport loop adds
+390×480 to390×844/320×568, and three actual Workout Superset cases cover the shared movement clock,
+block rest and independent held drafts through sheet/Minimize. The explicit combined action must
+save exactly its two synthetic observations; expiry saves neither observation nor block round, and
+only that explicit save rearms the timed movement20→15seconds without autostart. Actual source-bound
+reference/capture records and full-viewport PNGs are generated only by execution. Expected count is10,
+not a test result. Root also strengthened bottom containment within the actual owning movement card.
+Standalone no-host logger fallback remains existing component-unit proof, not an invented route.
+
+The source identity fails closed on the actual checkout/40-hex HEAD with10-second Git bounds. No
+runtime/UI/vendor/helper/Runner changes were made by the proof supplement. Both the completed
+supplement and reviewed footer compatibility change require genuine execution before acceptance.
+
+
+## Actual corrected preflight and Superset selector result
+
+On clean12926ab9e53f305094d03a382fe516d3348c0fa0, production build, lint:ds and lint all passed
+(foreground63516 terminal0;149 pre-existing warnings/0errors). Existing standalone/fallback logger
+component suite passed39/39 in1.99s. Combined browser29883 terminal1:9/12passed1.4m. Both genuine
+owned-backend JOURNEY-014 phone flows passed2.7/2.6s, including covered+inert sheet state and actual
+click-trial reachability after Minimize. All seven original+short movement cases passed. Only three
+new Superset cases failed before their timer assertions: the fixture title Timed pair is not a real
+section heading; actual accessible content shows Accessory plus the Superset list/A2 plank.
+All339 diagnostic files are preserved externally in task014-first-combined-browser-diagnostic-20261030.
+
+The test now waits on that actual observed Superset list and movement heading, without changing any
+substantive placement/state/draft/rest/expiry/mutation assertion or product code. Targeted Superset
+95150 is terminal0:3/3passed26.0s across normal/narrow/short, one worker/zero retries. Its111files,
+90PNGs,18records and manifest are preserved in task014-superset-targeted-passed-20261030; source
+12926ab9/dirtytrue honestly reflects this test-only selector change. The real two combined inserts,
+expiry no-write and20→15 next-set rearm all executed. These diagnostics are not relabelled as clean
+final captures. Root now freezes the reviewed source for complete final movement proof and genuine
+format collection; native remainingattempt2/full gates/CI/delivery remain pending.
+
+
+## Manual prominence finding after passing composition proof
+
+Final clean movement proof72331 passed10/10 in1.3m, with48actual records all identifying clean
+ed8cae4b73a04fe9b184b65a9a99f9b339d46ca4;456artifacts/405PNGs are retained externally in
+task014-final-clean-browser-evidence-20261030. Root opened source09 and real narrow Standard,
+normal Circuit and short Superset viewport captures. The arrangement passed, but manual comparison
+found the inherited compact16px label-md digits and visible Countdown caption did not carry the
+selected preview's prominence. This passing arrangement proof is insufficient for final visual
+acceptance; it is not relabelled or discarded.
+
+Authenticated collector81805 on that same source also terminal0 with four skin cases/eight real
+images. Its original group task034-format-preview-batch05-task014 and actual source-only provenance
+remain intact, with a byte-for-byte external archive task014-pre-prominence-format-evidence-20261030.
+They are genuine source evidence for the pre-prominence tree, not acceptance of the requested larger
+readout. A new unique capture group will be used after the scoped visual correction. Root will use
+existing font tokens through the existing Movement TimerFrame caller; no session/rest timer, vendor,
+clock engine or TimerFrame adapter change is authorized by this finding.
+
+
+## Scoped prominent readout correction — not yet run
+
+The existing MovementCountdown caller now uses the pinned shared heading-h1 size token (32px)
+for its data-font digits and omits the redundant visible Countdown caption. The timer keeps its
+accessible Countdown name, spoken value, public TimerFrame/containment, colors, controls and clock
+engine; session/rest/round/AMRAP timers and the TimerFrame adapter are unchanged. No new font scale,
+raw style value, vendor edit or caption/accessibility workaround was introduced.
+
+Proof now compares the actual readout/control-row height ratio with the same selected reference
+(the genuine reference ratio is130/93), and requires digit prominence over control text. All earlier
+width/placement/containment/state/mutation assertions remain. This closes the visual gap that a
+width/order-only comparison had missed. Actual images and ratios must pass before acceptance;
+the new unique format group is task034-format-preview-batch05-task014-prominent. Prior14 records
+and actual source-only provenance remain unchanged as explicitly insufficient visual history.
+
+
+The assigned curated preview code explicitly specifies `.v2 .countdown-element` as bold data-font
+`var(--heading-h1-size)/var(--heading-h1-line-height)` (source14 line301), supporting the source09
+prominence and this exact existing size token. Targeted57005 stopped at the unit phase:60/61passed;
+the sole failure was an older exact label-md size expectation/comment that the session clock must
+be larger. That is the old composition, not the selected movement readout. The unit now expects the
+source-backed heading-h1 movement size while retaining the exact unchanged label-lg session size,
+all distinct-name/containment/elapsed-versus-countdown behavior assertions. No clock behavior,
+project check, acceptance criterion, role or assertion was removed. Build/browser had not run in
+that stopped pipeline; they remain pending the corrected style expectation.
+
+
+## Actual final prominence proof and genuine retained-a1 recapture
+
+The corrected targeted pipeline74295 passed **61/61 timer/logger units and build**, then one phone browser case in13seconds. Root opened the larger readout. Those earlier observations keep their original capture identity; they are not relabelled as the subsequent clean freeze.
+
+Root froze reviewed source `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb`. Final combined browser foreground88356 is terminal0: **12/12 passed in1.4minutes**. All48 actual source-bearing records identify that exact clean head with dirty=false;456 artifacts/405 PNGs plus manifest remain in `task014-final-prominent-browser-evidence-20261030`. Both real owned-backend JOURNEY-014 footer flows pass, including actual open-sheet occlusion/inertness and default click-trial reachability after Minimize. Synthetic movement/expiry cases retain zero-write checks; the Superset cases separately prove the two explicit observations and no implicit expiry mutation. Prominence now has actual readout/control-height and digit guards, preserving every earlier placement/state/containment assertion.
+
+Authenticated collector67459 ended terminal0: **4/4 skin cases in21.7seconds**. Actual group `docs/design/evidence-0143/task034-format-preview-batch05-task014-prominent` contains four records/eight unique phone390×844/short390×320 PNGs and the complete derived manifest. Observed 2026-10-30T05:19:19.922Z through 2026-10-30T05:19:34.290Z, process63552. Each actual PNG's bytes, SHA-256 and IHDR dimensions was checked. Actual identities:
+
+- source: `2803a64de2b35fd51a1aa22bcb5f4d000b8c03bb`
+- runtime: `a841f5d055cd91c72eb0226aabc8f1a0c6f216865337274bc54f52d925447dc8`
+- driver: `db751d8fb1e665f57817a60e323c70d018b9739dc89da763eaa539d1d1c84361`
+- package0.14.3: `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+- payload: `9d860d83cb103596906fca07a3492b526b4ba491953ee9744dfbe84e72be2428`
+
+Runtime, driver and package were independently reproduced from current bytes. Preview generation, blocked generation, attempted write and forwarded write counters are all0, including session generation. Real owned local authentication setup/cleanup writes remain separate. First record clean; later dirty statuses truthfully include generated collector evidence. Existing v1 provenance uses unchanged `capturePayloadSha256()` and the actual retained a1 revision`183640643cde2e984abe8e52393a336ff9516279c4d0a42ccfb5c44bda86a2e5:TASK-014`, run`9696d01f-d66b-4989-bdcd-80819f8b938f`/attempt1, branch`agent-runner/task-014-a1-9696d01f`, tested base`0e66325a3d63ae30074ae1c0295c2173005c2e15`. It is source-only a1 proof, not a native a2 claim or receipt.
+
+The earlier `task034-format-preview-batch05-task014` captures and existing18183fc source-only provenance remain genuine pre-prominence history for ed8; they are unchanged, not discarded, reused, relabelled or accepted as the final requested visual result. All original failed-a1/turn-exhaustion and missing-criterion-claim history remains.
+
+**Next:** normal supported remaining a2 continuation must establish its own actual current claim/criterion report and mandatory full verification, followed by required CI and approved build-only delivery. Preserve/reuse the reviewed candidate and genuine proof only while their inputs remain unchanged; this derivation supplies no native report or acceptance. Native exact-head receipt/delivery and physical-iPhone UAT remain pending.
+
+This derivation wrote only the new prominent group's v1 provenance, current audit entry (priorTask13 marked Prior) and this note. It ran no tests, browser, Git or private-configuration operation and changed no UI/runtime/driver/helper/Runner/state.
