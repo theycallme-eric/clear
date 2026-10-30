@@ -182,6 +182,17 @@ async function insideOwner(target: Locator, owner: Locator) {
 
 async function frame(page: Page, viewport: Viewport, insets: Insets) {
   await expect.poll(() => readInsets(page)).toEqual(insets)
+  const region = page.locator('main.clr-screen > .clr-scroll-region')
+  const foot = region.locator(':scope > .clr-scroll-region__foot')
+  await expect(foot.locator(':scope > footer.clr-footer')).toHaveCount(1)
+  // ResizeObserver publishes the real pinned layer height. Observe that
+  // contract before sampling the coupled scroller/foot geometry after resize.
+  await expect.poll(() => region.evaluate((element) => {
+    const pinned = element.querySelector(':scope > .clr-scroll-region__foot')
+    const published = parseFloat(getComputedStyle(element).getPropertyValue('--foot-h'))
+    return pinned !== null && element.hasAttribute('data-measured') &&
+      Number.isFinite(published) && Math.abs(published - pinned.getBoundingClientRect().height) < 0.5
+  })).toBe(true)
   const atmosphere = page.locator('.clr-atmosphere')
   await expect(atmosphere).toHaveCount(1)
   await expect(atmosphere).toHaveCSS('position', 'fixed')
@@ -190,9 +201,31 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
     const content = document.querySelector('.clr-shell--contained > .clr-shell__content')
     const shell = document.querySelector('.clr-shell--fixed')
     const scan = layer.querySelector('.clr-atmosphere__scan')
-    if (!content || !shell || !scan) throw new Error('The PWA shell or normal-motion atmosphere is missing')
+    const main = content?.querySelector('main.clr-screen')
+    const region = main?.querySelector(':scope > .clr-scroll-region')
+    const head = region?.querySelector(':scope > .clr-scroll-region__head')
+    const scroller = region?.querySelector(':scope > .clr-scroll-region__scroller')
+    const foot = region?.querySelector(':scope > .clr-scroll-region__foot')
+    const footer = foot?.querySelector(':scope > footer.clr-footer')
+    if (!content || !shell || !scan || !main || !head || !scroller || !foot || !footer) {
+      throw new Error('The PWA shell, normal-motion atmosphere or actual screen layers are missing')
+    }
     const contentStyle = getComputedStyle(content)
     const scanRect = scan.getBoundingClientRect()
+    // Resolve the inherited gap as a CSS length; parsing an unevaluated var()
+    // or max() custom-property expression would not measure real clearance.
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;padding-bottom:var(--shell-gap-bottom)'
+    content.append(probe)
+    const bottomGap = parseFloat(getComputedStyle(probe).paddingBottom)
+    probe.remove()
+    const tier = (element: Element) => {
+      const style = getComputedStyle(element)
+      return { xs: style.getPropertyValue('--label-xs-size').trim(),
+        sm: style.getPropertyValue('--label-sm-size').trim(),
+        xsLine: style.getPropertyValue('--label-xs-line-height').trim(),
+        smLine: style.getPropertyValue('--label-sm-line-height').trim() }
+    }
     return {
       x: rect.x, y: rect.y, width: rect.width, height: rect.height,
       viewport: { width: innerWidth, height: innerHeight },
@@ -202,6 +235,13 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
       overlayCount: layer.querySelectorAll('.clr-atmosphere__overlay').length,
       shellHeight: shell.getBoundingClientRect().height,
       paddingTop: parseFloat(contentStyle.paddingTop), paddingBottom: parseFloat(contentStyle.paddingBottom),
+      mainBottom: main.getBoundingClientRect().bottom,
+      scrollerBottom: scroller.getBoundingClientRect().bottom,
+      footTop: foot.getBoundingClientRect().top, footBottom: foot.getBoundingClientRect().bottom,
+      footerBottom: footer.getBoundingClientRect().bottom,
+      footRemaining: foot.scrollHeight - foot.clientHeight - foot.scrollTop,
+      bottomGap, footerPaddingBottom: parseFloat(getComputedStyle(footer).paddingBottom),
+      tiers: { root: tier(document.documentElement), head: tier(head), scroller: tier(scroller), foot: tier(foot) },
       shellGround: getComputedStyle(shell).backgroundColor,
       scrollTop: document.scrollingElement?.scrollTop,
       scrollHeight: document.scrollingElement?.scrollHeight,
@@ -224,7 +264,26 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
   expect(geometry.overlayCount).toBe(1)
   expect(geometry.shellHeight).toBeCloseTo(viewport.height, 0)
   expect(geometry.paddingTop).toBeGreaterThanOrEqual(insets.top)
-  expect(geometry.paddingBottom).toBeGreaterThanOrEqual(insets.bottom)
+  // B05: no shell-owned blank band. The actual final action layer owns
+  // max(ordinary gap, safe inset), while main and its foot reach the viewport.
+  expect(geometry.paddingBottom).toBe(0)
+  expect(geometry.mainBottom).toBeCloseTo(viewport.height, 0)
+  expect(geometry.footBottom).toBeCloseTo(viewport.height, 0)
+  expect(geometry.scrollerBottom).toBeCloseTo(geometry.footTop, 0)
+  expect(Number.isFinite(geometry.bottomGap)).toBe(true)
+  expect(geometry.bottomGap).toBeGreaterThan(0)
+  expect(geometry.footerPaddingBottom).toBeCloseTo(Math.max(geometry.bottomGap, insets.bottom), 0)
+  // A genuinely overflowing foot is allowed to scroll. Only compare its
+  // content end once it fits or has reached its real scroll end.
+  if (geometry.footRemaining <= 0.5) {
+    expect(geometry.footerBottom).toBeCloseTo(geometry.footBottom, 0)
+  }
+  expect(geometry.tiers.head.xs).toBe(geometry.tiers.root.xs)
+  expect(geometry.tiers.head.xsLine).toBe(geometry.tiers.root.xsLine)
+  for (const tier of [geometry.tiers.scroller, geometry.tiers.foot]) {
+    expect(tier.xs).toBe(tier.sm)
+    expect(tier.xsLine).toBe(tier.smLine)
+  }
   expect(geometry.shellGround).toBe('rgba(0, 0, 0, 0)')
   expect(geometry.scrollTop).toBe(0)
   expect(geometry.scrollHeight).toBe(geometry.clientHeight)
@@ -238,6 +297,25 @@ async function reveal(target: Locator, viewport: Viewport, insets: Insets, owner
   await target.scrollIntoViewIfNeeded()
   await safeBox(target, viewport, insets)
   await insideOwner(target, owner)
+  const end = await target.evaluate((element) => {
+    const foot = element.closest('.clr-scroll-region__foot')
+    if (foot === null) return null
+    const footer = foot.querySelector(':scope > footer.clr-footer')
+    if (!footer || !footer.contains(element)) throw new Error('The revealed action has no actual footer owner')
+    const controls = [...footer.querySelectorAll('button, a[href]')].filter((control) => control.getClientRects().length > 0)
+    return {
+      gap: innerHeight - element.getBoundingClientRect().bottom,
+      clearance: parseFloat(getComputedStyle(footer).paddingBottom),
+      last: controls.at(-1) === element,
+      remaining: foot.scrollHeight - foot.clientHeight - foot.scrollTop,
+    }
+  })
+  if (end !== null) {
+    expect(Number.isFinite(end.clearance)).toBe(true)
+    expect(end.clearance).toBeGreaterThan(0)
+    expect(end.gap).toBeGreaterThanOrEqual(end.clearance - 1)
+    if (end.last && end.remaining <= 0.5) expect(end.gap).toBeCloseTo(end.clearance, 0)
+  }
 }
 
 /** One real, bounded finger drag; scroll geometry is observed, never assigned. */
@@ -386,10 +464,18 @@ test('JOURNEY-002: a focused Generate text draft survives a reduced viewport and
     await safeBox(notes, reduced, insets)
     await insideOwner(notes, page.locator('main > .clr-scroll-region > .clr-scroll-region__scroller'))
     await checkA11y()
+    const footer = page.locator('main > .clr-scroll-region > .clr-scroll-region__foot')
+    const generate = page.getByRole('button', { name: 'Generate workout', exact: true })
+    await reveal(generate, reduced, insets, footer)
+    // Restore the original focused-draft precondition before resizing back.
+    await notes.focus()
+    await expect(notes).toBeFocused()
+    await expect(notes).toHaveValue(draft)
     await page.setViewportSize(viewport)
     await expect(notes).toBeFocused()
     await expect(notes).toHaveValue(draft)
     await frame(page, viewport, insets)
+    await reveal(generate, viewport, insets, footer)
     const home = page.getByRole('button', { name: 'Home', exact: true })
     await safeBox(home, viewport, insets)
     await home.click()
@@ -451,6 +537,8 @@ test('JOURNEY-002: the real swap toast and its dismissal remain inside simulated
     await page.touchscreen.tap(point.x, point.y)
     await expect(host).toHaveCount(0)
     await expect(page).toHaveURL((url) => url.pathname === '/review')
+    await reveal(page.getByRole('button', { name: 'Start workout', exact: true }), landscape, landscapeInsets,
+      page.locator('main > .clr-scroll-region > .clr-scroll-region__foot'))
     await checkA11y()
     fixture.assertReadOnly(1)
   } finally {

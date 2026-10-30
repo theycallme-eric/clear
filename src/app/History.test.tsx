@@ -185,7 +185,7 @@ describe('History route', () => {
 
     await user.click(action)
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Generate workout' }),
+      await screen.findByRole('heading', { level: 1, name: 'Generate' }),
     ).toBeInTheDocument()
   })
 

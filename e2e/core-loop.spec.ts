@@ -337,7 +337,7 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     await page.getByRole('button', { name: 'Generate workout', exact: true }).click()
 
     // ── Generate ───────────────────────────────────────────────────────────
-    await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
+    await expectScreen('Generate', routeOf('Generate'), 'Generate')
 
     // Preserve the standing Goal, but explicitly request this one Recovery
     // session. Requested 9 stays 9 on the wire; only the effective value is 3.

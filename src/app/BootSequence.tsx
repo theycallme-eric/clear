@@ -31,7 +31,8 @@
  * (AUTH-03) still owns every question about who this is and where they may go.
  * Because it renders above the route tree it brings its own atmosphere layer,
  * exactly as the template does — the one `RootLayout` mounts for the app takes
- * over when boot hands off.
+ * over when boot hands off. Both are the same `ContainedShell`, so boot gets
+ * the routed screens' safe-area and bottom-edge geometry rather than a copy.
  */
 import { useEffect, type CSSProperties, type ReactNode } from 'react'
 
@@ -43,11 +44,11 @@ import {
   BOOT_RETRY_LABEL,
   type BootView,
 } from '../state/boot'
-import { AtmosphereLayer } from '../ui/atmosphere'
 import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
+import { ContainedShell } from './RootLayout'
 import { Screen } from './Screen'
 
 export interface BootSequenceProps {
@@ -70,58 +71,50 @@ export function BootSequence({ view, onRetry }: BootSequenceProps) {
   }, [])
 
   return (
-    <>
-      <AtmosphereLayer />
-      <div
-        className="clr-shell clr-shell--fixed clr-shell--contained"
-        data-atmosphere={DEFAULT_ATMOSPHERE}
+    <ContainedShell>
+      <Screen
+        title="CLEAR"
+        heading={
+          <span role="img" aria-label="CLEAR" style={BRAND_HEADING_STYLE}>
+            <ClearLogo size="lg" boot />
+          </span>
+        }
+        pinnedFoot={
+          view.status === 'failed' ? (
+            <PhoneFooter>
+              <ActionRow>
+                <Button variant="primary" size="lg" onClick={onRetry}>
+                  {BOOT_RETRY_LABEL}
+                </Button>
+              </ActionRow>
+            </PhoneFooter>
+          ) : undefined
+        }
       >
-        <div className="clr-shell__content">
-          <Screen
-            title="CLEAR"
-            heading={
-              <span role="img" aria-label="CLEAR" style={BRAND_HEADING_STYLE}>
-                <ClearLogo size="lg" boot />
-              </span>
-            }
-            pinnedFoot={
-              view.status === 'failed' ? (
-                <PhoneFooter>
-                  <ActionRow>
-                    <Button variant="primary" size="lg" onClick={onRetry}>
-                      {BOOT_RETRY_LABEL}
-                    </Button>
-                  </ActionRow>
-                </PhoneFooter>
-              ) : undefined
-            }
-          >
-            {view.status === 'checking' ? (
-              <LoadingView
-                label={BOOT_LABEL}
-                lines={[...view.lines]}
-                value={view.value}
-                max={view.max}
-              />
-            ) : (
-              <Card>
-                <ErrorView
-                  // Fixed copy plus the failed read's own code and requestId —
-                  // the raw message could name an internal cause, and the user
-                  // needs the one fact that matters: nothing was lost.
-                  error={{
-                    code: view.failure.error.code,
-                    message: view.failure.message,
-                    requestId: view.failure.error.requestId,
-                  }}
-                  title={BOOT_FAILURE_TITLE}
-                />
-              </Card>
-            )}
-          </Screen>
-        </div>
-      </div>
-    </>
+        {view.status === 'checking' ? (
+          <LoadingView
+            label={BOOT_LABEL}
+            lines={[...view.lines]}
+            value={view.value}
+            max={view.max}
+          />
+        ) : (
+          <Card>
+            <ErrorView
+              // Fixed copy plus the failed read's own code and requestId —
+              // the raw message could name an internal cause, and the user
+              // needs the one fact that matters: nothing was lost.
+              error={{
+                code: view.failure.error.code,
+                message: view.failure.message,
+                requestId: view.failure.error.requestId,
+              }}
+              title={BOOT_FAILURE_TITLE}
+            />
+          </Card>
+        )}
+      </Screen>
+    </ContainedShell>
   )
 }
 

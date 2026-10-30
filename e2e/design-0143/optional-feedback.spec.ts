@@ -186,7 +186,7 @@ const finishWorkout = (page: Page) => nav(page).getByRole('button', { name: 'Fin
 /** Generate from the saved setup; the provider is the stub. */
 async function generate(page: Page, visit: (path: string) => Promise<void>, title: string) {
   await visit('/generate')
-  await heading(page, 'Generate workout')
+  await heading(page, 'Generate')
   // A returning athlete's Focus is recommended from history; a first one is asked.
   const anchor = page.getByRole('group', { name: 'Anchor', exact: true })
   const focus = page.getByText(/^Focus:/)

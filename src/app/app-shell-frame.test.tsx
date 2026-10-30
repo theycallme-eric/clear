@@ -28,7 +28,7 @@ function signedInHome() {
 }
 
 function fixedHeader(container: HTMLElement): HTMLElement {
-  const header = container.querySelector<HTMLElement>('.clr-shell__content > header')
+  const header = container.querySelector<HTMLElement>('.clr-scroll-region__head > header')
   expect(header).not.toBeNull()
   return header as HTMLElement
 }
@@ -47,7 +47,7 @@ describe('REQ-001 16px symmetric content gutters', () => {
   })
 
   it('leaves the header — and the Settings control in it — on its existing outer edge', () => {
-    const header = rule('.clr-shell--contained > .clr-shell__content > header')
+    const header = rule('.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')
 
     expect(header).toContain(
       'padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);',
@@ -84,7 +84,7 @@ describe('REQ-001 page title in the header', () => {
     { path: '/', options: signedInHome, title: HOME_HEADING },
     { path: '/settings', options: signedInHome, title: 'Settings' },
     { path: '/history', options: signedInHome, title: 'History' },
-    { path: '/generate', options: signedInHome, title: 'Generate workout' },
+    { path: '/generate', options: signedInHome, title: 'Generate' },
     { path: '/review', options: signedInHome, title: 'Nothing to review' },
     { path: '/login', options: () => ({}), title: 'Get started' },
   ])('shows $title in $path’s header instead of the CLEAR logo', async ({ path, options, title }) => {
@@ -97,7 +97,8 @@ describe('REQ-001 page title in the header', () => {
     expect(within(header).queryByText('CLEAR')).toBeNull()
     // One h1 per screen: the content does not repeat the title.
     expect(container.querySelectorAll('h1')).toHaveLength(1)
-    expect(container.querySelector('main h1')).toBeNull()
+    // B05 REQ-003: the header is main's pinned head; the scrolled content has no h1.
+    expect(container.querySelector('main .clr-scroll-region__scroller h1')).toBeNull()
   })
 
   it('keeps the h1 in the content for a screen without a fixed header', () => {
@@ -121,10 +122,60 @@ describe('REQ-001 page title in the header', () => {
   })
 })
 
+describe('B05 shared header clearance and bottom edge', () => {
+  const frame = rule('.clr-shell--contained > .clr-shell__content')
+
+  it('starts the page gap below the top inset instead of absorbing it', () => {
+    expect(frame).toContain('--shell-gap-top: var(--spacing-500);')
+    expect(frame).toContain('--shell-inset-top: calc(env(safe-area-inset-top) + var(--shell-gap-top));')
+    expect(frame).toContain('padding-top: var(--shell-inset-top);')
+    expect(frame).not.toMatch(/padding-top:\s*max\(/)
+  })
+
+  it('reserves nothing below the shell; the last layer carries the bottom inset', () => {
+    expect(frame).toContain('--shell-gap-bottom: var(--spacing-300);')
+    expect(frame).toContain(
+      '--shell-inset-bottom: max(var(--shell-gap-bottom), env(safe-area-inset-bottom));',
+    )
+    expect(frame).toContain('padding-bottom: 0;')
+    expect(rule('.clr-scroll-region__foot > .clr-footer')).toContain(
+      'padding: var(--spacing-300) 0 var(--shell-inset-bottom, var(--spacing-300));',
+    )
+    expect(
+      rule('.clr-screen > .clr-scroll-region:not(:has(> .clr-scroll-region__foot)) .clr-screen__content'),
+    ).toContain('padding-bottom: var(--shell-inset-bottom, var(--spacing-300));')
+  })
+
+  it('states no route offset, fixed height or zeroed inset anywhere in the app styles', () => {
+    for (const name of readdirSync('src/styles').filter((file) => file.endsWith('.css'))) {
+      const css = readFileSync(`src/styles/${name}`, 'utf8')
+      expect(css, name).not.toMatch(/calc\(100d?vh\s*-/)
+      expect(css, name).not.toMatch(/env\(safe-area-inset-\w+\)\s*\*\s*0|safe-area-inset-\w+:\s*0/)
+    }
+    // The workout's short-window rule narrows the gaps, never the insets.
+    const workout = readFileSync('src/ui/workout-navigation.css', 'utf8')
+    expect(workout).toContain('--shell-gap-top: var(--spacing-200);')
+    expect(workout).toContain('--shell-gap-bottom: var(--spacing-200);')
+    expect(workout).not.toMatch(/padding-(top|bottom):\s*max\(var\(--spacing-200\), env/)
+  })
+
+  it('routes, boot and the crash fallback render the one ContainedShell', () => {
+    for (const file of ['src/app/RootLayout.tsx', 'src/app/BootSequence.tsx', 'src/app/ErrorBoundary.tsx']) {
+      const source = readFileSync(file, 'utf8')
+      expect(source, file).toContain('<ContainedShell')
+    }
+    const root = readFileSync('src/app/RootLayout.tsx', 'utf8')
+    expect(root.match(/clr-shell clr-shell--fixed clr-shell--contained/g)).toHaveLength(1)
+    for (const file of ['src/app/BootSequence.tsx', 'src/app/ErrorBoundary.tsx']) {
+      expect(readFileSync(file, 'utf8'), file).not.toContain('clr-shell--contained')
+    }
+  })
+})
+
 describe('REQ-001 page rules stay distinct from card-internal rules', () => {
   it('runs header, band and footer rules edge to edge on the page gutter', () => {
     expect(rule('.clr-shell--contained > .clr-shell__content')).toMatch(/padding-right: 0;[\s\S]*padding-left: 0;/)
-    expect(rule('.clr-shell--contained > .clr-shell__content > header')).toContain(
+    expect(rule('.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')).toContain(
       'border-bottom: var(--border-width) solid var(--border-region-rule);',
     )
     expect(rule('.clr-screen__content .clr-band')).toContain(
@@ -144,7 +195,7 @@ describe('REQ-001 page rules stay distinct from card-internal rules', () => {
 
 describe('REQ-001 preserves the 0.14.3 type, chamfers, atmosphere and scanlines', () => {
   it('sets the header title in the package’s own h1 display type', () => {
-    const title = rule('.clr-shell__content > header .clr-screen__title')
+    const title = rule('.clr-scroll-region__head > header .clr-screen__title')
 
     expect(foundation).toMatch(/h1, \.h1, h2[^{]*\{ font-family: var\(--font-display\);/)
     expect(title).not.toMatch(/font|letter-spacing|text-transform|color/)

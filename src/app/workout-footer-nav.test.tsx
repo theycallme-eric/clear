@@ -173,7 +173,12 @@ describe('AC-065: readable, aligned, reachable, and the same flow', () => {
     expect(footerNav().closest('.clr-shell--contained')).not.toBeNull()
     const max = (property: string, inset: string) =>
       new RegExp(`${property}:\\s*max\\(var\\(--spacing-\\d+\\),\\s*env\\(safe-area-inset-${inset}\\)\\)`)
-    expect(SHELL_CSS).toMatch(max('padding-bottom', 'bottom'))
+    expect(SHELL_CSS).toMatch(
+      /--shell-inset-bottom:\s*max\(var\(--shell-gap-bottom\),\s*env\(safe-area-inset-bottom\)\)/,
+    )
+    expect(SHELL_CSS).toMatch(
+      /\.clr-scroll-region__foot > \.clr-footer \{[^}]*padding: var\(--spacing-300\) 0 var\(--shell-inset-bottom/s,
+    )
     expect(SHELL_CSS).toMatch(max('--shell-inset-left', 'left'))
     expect(SHELL_CSS).toMatch(max('--shell-inset-right', 'right'))
   })

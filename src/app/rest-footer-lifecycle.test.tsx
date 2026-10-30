@@ -17,8 +17,8 @@
  *     own Log set still opens the sheet (saved-row Edit is covered by TASK-011);
  *   · expiry, the next round's clock, the prefilled sheet and section
  *     navigation write no movement result — only an explicit Log set does;
- *   · the countdown is read from when the set was logged, not from a clock the
- *     screen starts for itself.
+ *   · the countdown is read from when Rest started it (REQ-012), not from a
+ *     clock the screen starts for itself.
  *
  * Baseline, recorded rather than assumed: on the reviewed base the footer's
  * rest (`FooterRest` → `RestTimerBar`) already draws nothing once the
@@ -105,7 +105,7 @@ function movementCard(): HTMLElement {
   const card = screen
     .getAllByRole('heading', { name: /back squat$/ })
     .map((heading) => heading.closest('section'))
-    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Log set' }))
+    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Rest' }))
   if (card === undefined || card === null) throw new Error('no back squat card')
   return card
 }
@@ -126,7 +126,7 @@ function sheet(): HTMLElement | null {
 
 /** Opens the sheet from the card, logs one set, and minimises the sheet. */
 async function logAndMinimise(user: ReturnType<typeof userEvent.setup>) {
-  fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+  fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
   const form = within(screen.getByRole('form', { name: 'Log set 1 of back squat' }))
   await user.click(form.getByRole('button', { name: 'Log set 1' }))
   await screen.findByRole('form', { name: 'Log set 2 of back squat' })
@@ -143,6 +143,13 @@ function expectNoFinishedRest() {
   expect(screen.queryByRole('button', { name: /^Rest complete.*00:00$/i })).not.toBeInTheDocument()
 }
 
+/** With no rest running, Rest starts the full prescribed one — not a finished one. */
+function expectFreshRest() {
+  expect(restBars()).toHaveLength(1)
+  expect(restTimer()).toHaveTextContent('01:30')
+  expect(screen.queryByText(/Rest complete/i)).not.toBeInTheDocument()
+}
+
 /**
  * Logging is reachable from the card itself, without any rest control: the
  * saved row stays on the card and its Log set opens the sheet. Saved-row Edit
@@ -152,7 +159,7 @@ function expectNoFinishedRest() {
 async function expectLoggingReachable(user: ReturnType<typeof userEvent.setup>) {
   const card = within(movementCard())
   expect(card.getByRole('list', { name: 'Logged sets' })).toHaveTextContent('8 reps')
-  await user.click(card.getByRole('button', { name: 'Log set' }))
+  await user.click(card.getByRole('button', { name: 'Rest' }))
   expect(screen.getByRole('form', { name: 'Log set 2 of back squat' })).toBeInTheDocument()
 }
 
@@ -161,7 +168,7 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
     const user = userEvent.setup()
     await shell()
 
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     await user.click(
       within(screen.getByRole('form', { name: 'Log set 1 of back squat' })).getByRole('button', {
         name: 'Log set 1',
@@ -184,7 +191,7 @@ describe('Rest footer — a shared countdown that survives minimise and reopen (
 
     advance(10)
     returnToForeground()
-    await user.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
 
     // Reopened: not restarted, and still one countdown.
     expect(restBars()).toHaveLength(1)
@@ -228,8 +235,9 @@ describe('Rest footer — gone once there is no countdown (AC-055)', () => {
     expectNoFinishedRest()
     expect(double.loggedSets()).toHaveLength(1)
     await expectLoggingReachable(user)
-    // Reopening after expiry draws no finished rest inside the sheet either.
-    expectNoFinishedRest()
+    // Rest after expiry starts the next prescribed rest, never a finished one.
+    expectFreshRest()
+    expect(double.loggedSets()).toHaveLength(1)
   })
 
   it('hides the minimised Rest control when the rest is skipped, and leaves logging reachable', async () => {
@@ -244,7 +252,8 @@ describe('Rest footer — gone once there is no countdown (AC-055)', () => {
     expectNoFinishedRest()
     expect(double.loggedSets()).toHaveLength(1)
     await expectLoggingReachable(user)
-    expectNoFinishedRest()
+    expectFreshRest()
+    expect(double.loggedSets()).toHaveLength(1)
   })
 
   it('stays gone on later foreground returns, rather than reappearing at zero', async () => {
@@ -266,7 +275,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     const double = await shell()
 
     // Prefill: the sheet opens with the prescription filled, and writes nothing.
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(double.loggedSets()).toEqual([])
 
     await user.click(
@@ -284,7 +293,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     expect(double.loggedSets()).toHaveLength(1)
 
     await user.click(screen.getByRole('button', { name: 'Minimize' }))
-    await user.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    await user.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     expect(double.loggedSets()).toHaveLength(1)
   })
 
@@ -329,7 +338,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
     advance(90)
     returnToForeground()
     await user.click(screen.getByRole('button', { name: 'Previous' }))
-    await waitFor(() => expect(within(movementCard()).getByRole('button', { name: 'Log set' })).toBeInTheDocument())
+    await waitFor(() => expect(within(movementCard()).getByRole('button', { name: 'Rest' })).toBeInTheDocument())
 
     expectNoFinishedRest()
     expect(double.loggedSets()).toHaveLength(1)
@@ -339,7 +348,7 @@ describe('Rest footer — nothing is recorded but an explicit Log set (AC-056)',
 })
 
 describe('Rest footer — the real timer lifecycle (AC-057)', () => {
-  it('starts no rest on mount: the countdown begins only from a logged set', async () => {
+  it('starts no rest on mount: the countdown begins only from the Rest action', async () => {
     await shell()
 
     advance(120)

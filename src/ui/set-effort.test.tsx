@@ -84,7 +84,7 @@ function form(setNumber: number, mode: 'Log' | 'Edit' = 'Log') {
 }
 
 async function openSheet(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(main().getByRole('button', { name: 'Log set' }))
+  await user.click(main().getByRole('button', { name: 'Rest' }))
 }
 
 async function logSet(user: ReturnType<typeof userEvent.setup>, setNumber: number, effort?: string) {

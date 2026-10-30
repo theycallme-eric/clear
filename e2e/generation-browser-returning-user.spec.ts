@@ -388,7 +388,7 @@ test.describe('critical browser lane: a returning user with the owner’s saved 
     await generate.click()
 
     // ── Generate ───────────────────────────────────────────────────────────
-    await expectScreen('Generate', routeOf('Generate'), 'Generate workout')
+    await expectScreen('Generate', routeOf('Generate'), 'Generate')
 
     // The saved Goal is shown as context rather than asked for again; with no
     // history yet, the athlete supplies only the Focus (labelled Anchor).

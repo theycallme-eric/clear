@@ -139,7 +139,7 @@ function movementCard(): HTMLElement {
   const card = screen
     .getAllByRole('heading', { name: /hollow body hold$/ })
     .map((heading) => heading.closest('section'))
-    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Log set' }))
+    .find((section) => section !== null && within(section).queryByRole('button', { name: 'Rest' }))
   if (card === undefined || card === null) throw new Error('no hollow body hold card')
   return card
 }
@@ -185,9 +185,10 @@ describe('Elapsed session clock and movement countdown stay separate (AC-050)', 
     expect(countdown()).not.toBe(sessionClock())
     expect(countdownRegion()).not.toContainElement(sessionClock())
 
-    // The session clock is the larger one, and says nothing about time left.
+    // B05-06 gives the owning movement its prominent readout; the compact
+    // session clock keeps its existing size and says nothing about time left.
     expect(digitSize(sessionClock())).toBe('var(--label-lg-size)')
-    expect(digitSize(countdown())).toBe('var(--label-md-size)')
+    expect(digitSize(countdown())).toBe('var(--heading-h1-size)')
     expect(sessionClock()).not.toHaveTextContent(/left/)
 
     fireEvent.click(control('Start'))
@@ -235,7 +236,7 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
     fireEvent.click(control('Start'))
     advance(5)
 
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     const form = sheetForm()
     expect(form).not.toBeNull()
     // One countdown, on the card — none in the sheet.
@@ -259,7 +260,7 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
 
     fireEvent.click(control('Start'))
     advance(30)
-    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movementCard()).getByRole('button', { name: 'Rest' }))
     await user.click(
       within(screen.getByRole('form', { name: 'Log set 1 of hollow body hold' })).getByRole(
         'button',
@@ -274,6 +275,35 @@ describe('A movement-owned countdown with Start / Pause / Reset (AC-051)', () =>
     })).toHaveTextContent('01:00')
     expect(countdown()).toHaveTextContent('00:30')
     expect(control('Start')).toBeEnabled()
+  })
+})
+
+describe('B05-06: full-width countdown above its paired controls, above Rest', () => {
+  it('draws the timer first, then Start/Pause and Reset as one pair, inside the card above Rest', async () => {
+    await shell()
+
+    const card = movementCard()
+    const region = countdownRegion()
+    const rest = within(card).getByRole('button', { name: 'Rest' })
+    expect(card).toContainElement(region)
+    expect(region.compareDocumentPosition(rest) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const [timerRow, pair] = Array.from(region.children) as HTMLElement[]
+    expect(timerRow).toHaveClass('clr-movement-countdown__timer')
+    expect(timerRow).toContainElement(countdown())
+    expect(pair).toHaveClass('clr-action-group', 'clr-action-group--paired', 'clr-action-group--paired-labels')
+    expect(pair).toContainElement(control('Start'))
+    expect(pair).toContainElement(control('Reset'))
+
+    fireEvent.click(control('Start'))
+    expect(pair).toContainElement(control('Pause'))
+    // The card's one entry is Rest; no separate Log button sits outside the sheet.
+    expect(within(card).queryByRole('button', { name: /^Log/ })).toBeNull()
+  })
+
+  it('spans the card width and keeps the pair on one row through the shipped rules', () => {
+    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed\s*\{[^}]*display:\s*flex/)
+    expect(COUNTDOWN_CSS).toMatch(/\.clr-movement-countdown__timer > \.clr-bleed > \*\s*\{[^}]*flex:\s*1 1 auto/)
   })
 })
 

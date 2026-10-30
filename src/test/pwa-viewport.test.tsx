@@ -114,14 +114,18 @@ describe('shell safe-area declarations (AC-075; browser geometry checked separat
   const content = rule(shell, '.clr-shell--contained > .clr-shell__content')
 
   it('pads the shell content by every safe-area inset', () => {
-    expect(content).toMatch(/padding-top:\s*max\(var\(--spacing-\d+\),\s*env\(safe-area-inset-top\)\)/)
-    expect(content).toMatch(/padding-bottom:\s*max\(var\(--spacing-\d+\),\s*env\(safe-area-inset-bottom\)\)/)
+    // B05: the top gap starts below the inset; the bottom inset is carried by
+    // the screen's last layer, so the shell itself reserves nothing below.
+    expect(content).toMatch(/--shell-inset-top:\s*calc\(env\(safe-area-inset-top\)\s*\+\s*var\(--shell-gap-top\)\)/)
+    expect(content).toMatch(/padding-top:\s*var\(--shell-inset-top\)/)
+    expect(content).toMatch(/--shell-inset-bottom:\s*max\(var\(--shell-gap-bottom\),\s*env\(safe-area-inset-bottom\)\)/)
+    expect(content).toMatch(/padding-bottom:\s*0;/)
     expect(content).toMatch(/--shell-inset-left:\s*max\(var\(--spacing-\d+\),\s*env\(safe-area-inset-left\)\)/)
     expect(content).toMatch(/--shell-inset-right:\s*max\(var\(--spacing-\d+\),\s*env\(safe-area-inset-right\)\)/)
   })
 
   it('declares an in-flow header without a negative top offset', () => {
-    const header = rule(shell, '.clr-shell--contained > .clr-shell__content > header')
+    const header = rule(shell, '.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header')
 
     expect(header).toBeDefined()
     expect(header).not.toMatch(/position:\s*(fixed|absolute)/)

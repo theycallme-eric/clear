@@ -480,7 +480,9 @@ async function failFirstBlockSave(page: Page) {
 }
 
 /** Actual rendered phone geometry; no simulated notch or physical-device claim. */
-async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finish workout') {
+async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finish workout',
+  options: { coveredBySheet?: boolean } = {}) {
+  const coveredBySheet = options.coveredBySheet === true
   const navigation = page.getByRole('navigation', { name: 'Workout sections', exact: true })
   const progress = navigation.getByRole('progressbar', { name: /^Section / })
   const previous = navigation.getByRole('button', { name: 'Previous', exact: true })
@@ -488,6 +490,10 @@ async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finis
   await expect(navigation).toBeVisible()
   await expect(progress).toBeVisible()
   await page.evaluate(() => document.fonts.ready)
+  if (coveredBySheet) await expect(page.locator('section.clr-set-sheet')).toBeVisible()
+  await expect.poll(() => navigation.evaluate((nav) =>
+    nav.closest('.clr-workout-footer__content[inert]') !== null),
+  ).toBe(coveredBySheet)
 
   const viewport = page.viewportSize()
   if (viewport === null) throw new Error('Footer geometry needs a configured phone viewport')
@@ -532,8 +538,22 @@ async function expectFooterPair(page: Page, forwardName: 'Next section' | 'Finis
       expect(label.bottom).toBeLessThanOrEqual(metrics.bottom + 1)
     }
     boxes.push(metrics)
-    // A visible rectangle is insufficient if another pinned layer covers the action.
-    if (await action.isEnabled()) await action.click({ trial: true })
+    // Geometry remains valid underneath the approved sheet, but those actions are inert.
+    if (coveredBySheet) {
+      const coverage = await action.evaluate((button) => {
+        const box = button.getBoundingClientRect()
+        const hit = document.elementFromPoint((box.left + box.right) / 2, (box.top + box.bottom) / 2)
+        return {
+          inertAncestor: button.closest('.clr-workout-footer__content[inert]') !== null,
+          sheetOnTop: Boolean(hit?.closest('section.clr-set-sheet')),
+        }
+      })
+      expect(coverage.inertAncestor, 'the covered footer action has its actual inert owner').toBe(true)
+      expect(coverage.sheetOnTop, 'the sheet actually covers the footer action centre').toBe(true)
+    } else if (await action.isEnabled()) {
+      // A visible rectangle alone cannot prove that the enabled action is reachable.
+      await action.click({ trial: true })
+    }
   }
   expect(boxes[0].right).toBeLessThanOrEqual(boxes[1].left)
   expect(Math.abs(boxes[0].top - boxes[1].top)).toBeLessThanOrEqual(1)
@@ -606,10 +626,10 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
   // Minimize and hide the entry again; no result was submitted.
   const second = display(world.catalog[1].id)
   for (const exercise of world.catalog) {
-    await expect(page.getByRole('button', { name: `Log load and reps for ${display(exercise.id)}`, exact: true }))
+    await expect(page.getByRole('button', { name: `Rest for ${display(exercise.id)}`, exact: true }))
       .toHaveAttribute('aria-expanded', 'false')
   }
-  await page.getByRole('button', { name: `Log load and reps for ${second}`, exact: true }).click()
+  await page.getByRole('button', { name: `Rest for ${second}`, exact: true }).click()
   const sheet = page.locator('[data-set-sheet-slot]')
   await expect(page.getByRole('form', { name: /^Log set/ })).toHaveCount(1)
   await expect(sheet.getByRole('form', { name: `Log set 1 of ${second}`, exact: true })).toBeVisible()
@@ -737,7 +757,7 @@ test('JOURNEY-025: an untouched circuit saves with no inferred rounds and skippi
 })
 
 for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }]) {
-  test(`JOURNEY-014: paired footer stays readable and reachable at ${viewport.width}x${viewport.height}, including rest and the shared sheet`, async ({ page, visit, world, modelPosts }) => {
+  test(`JOURNEY-014: paired footer labels and layout fit at ${viewport.width}x${viewport.height}, with sheet occlusion and restored reachability after Minimize`, async ({ page, visit, world, modelPosts }) => {
     test.setTimeout(120_000)
     await page.setViewportSize(viewport)
     await page.clock.install({ time: Date.now() })
@@ -756,17 +776,19 @@ for (const viewport of [{ width: 320, height: 568 }, { width: 390, height: 844 }
     const timer = page.getByRole('timer', { name: 'Time remaining', exact: true })
     await expect(timer).toBeVisible()
     const exercise = display(world.catalog[1].id)
-    await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
+    await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
     const sheet = page.locator('[data-set-sheet-slot]')
     await expect(sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })).toBeVisible()
     // Circuit rest belongs to the block, independently of the set-rest sheet.
     await expect(timer).toHaveCount(1)
     await expect(timer).toContainText('00:30')
-    await expectFooterPair(page, 'Next section')
-    // Scrolling the entry to its final action must not scroll the pager away.
+    await expectFooterPair(page, 'Next section', { coveredBySheet: true })
+    // The approved open sheet covers the fitted pager, including after scrolling its entry.
     await sheet.getByRole('button', { name: 'Log set 1', exact: true }).scrollIntoViewIfNeeded()
-    await expectFooterPair(page, 'Next section')
+    await expectFooterPair(page, 'Next section', { coveredBySheet: true })
     await sheet.getByRole('button', { name: 'Minimize', exact: true }).click()
+    // Only actual Minimize restores the original real click-trial reachability contract.
+    await expectFooterPair(page, 'Next section')
     await page.getByRole('button', { name: `Hide load entry for ${exercise}`, exact: true }).click()
     await expectHandsOff(page)
 
@@ -880,7 +902,7 @@ test('JOURNEY-015: menu abandon failure preserves an explicitly logged set, and 
 
   // A real explicit submit through the shared sheet creates the observation.
   const exercise = display(world.catalog[0].id)
-  await page.getByRole('button', { name: `Log load and reps for ${exercise}`, exact: true }).click()
+  await page.getByRole('button', { name: `Rest for ${exercise}`, exact: true }).click()
   const sheet = page.locator('[data-set-sheet-slot]')
   const form = sheet.getByRole('form', { name: `Log set 1 of ${exercise}`, exact: true })
   await expect(form).toBeVisible()

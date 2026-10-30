@@ -30,6 +30,7 @@ import {
   Check,
   Checkbox,
   EmptyState,
+  IconButton,
   Input,
   Pencil,
   Plus,
@@ -161,13 +162,11 @@ export function LocationSettings() {
         title="Places and equipment"
         header={{
           actions: (
-            <Button
-              variant="quiet"
+            <IconButton
+              label="Settings"
               icon={<ArrowLeft size={20} />}
               onClick={backToSettings}
-            >
-              Settings
-            </Button>
+            />
           ),
         }}
         pinnedFoot={

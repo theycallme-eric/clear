@@ -2,13 +2,14 @@
  * The gallery as a route: the two sections REQ-029 names, and the two switchers
  * that make it a review surface rather than a screenshot.
  */
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 
 import { SKINS } from '../design-system/skin'
 import { renderApp } from '../test/render'
 import { ATMOSPHERE_LEVELS } from './gallery-atmosphere'
+import { GALLERY_ENTRIES } from './gallery-registry'
 import { SPECIMENS } from './specimens'
 
 describe('/dev/gallery', () => {
@@ -52,6 +53,40 @@ describe('/dev/gallery', () => {
     expect(
       screen.getByRole('heading', { level: 3, name: 'CollapsibleSection' }),
     ).toBeInTheDocument()
+    expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(GALLERY_ENTRIES.length)
+  })
+
+  it.each(['Input', 'CollapsibleSection'])('serves all states of the selected %s entry', async (component) => {
+    renderApp([`/dev/gallery/app?component=${component}`])
+
+    await screen.findByRole('heading', { level: 3, name: component })
+    const groups = document.querySelectorAll('.clr-dev-gallery__group')
+    expect(groups).toHaveLength(1)
+    const entry = GALLERY_ENTRIES.find((candidate) => candidate.component === component)!
+    expect(entry).toBeDefined()
+    const group = within(groups[0] as HTMLElement)
+    expect(groups[0]?.querySelectorAll('.clr-dev-gallery__specimen')).toHaveLength(entry.specimens.length)
+    for (const specimen of entry.specimens) {
+      expect(group.getByRole('heading', { name: specimen.state })).toBeInTheDocument()
+    }
+    expect(screen.queryByRole('heading', {
+      level: 3,
+      name: component === 'Input' ? 'CollapsibleSection' : 'Input',
+    })).not.toBeInTheDocument()
+  })
+
+  it.each(['not-registered', ''])('keeps the full gallery for an unknown or empty component (%s)', async (component) => {
+    renderApp([`/dev/gallery/app?component=${component}`])
+
+    await screen.findByRole('heading', { level: 3, name: 'Input' })
+    const groups = document.querySelectorAll('.clr-dev-gallery__group')
+    expect(groups.length).toBeGreaterThan(1)
+    expect(groups).toHaveLength(GALLERY_ENTRIES.length)
+    for (const [index, entry] of GALLERY_ENTRIES.entries()) {
+      expect(within(groups[index] as HTMLElement).getByRole('heading', {
+        name: entry.component,
+      })).toBeInTheDocument()
+    }
   })
 
   it('cycles all four skins live through setSkin()', async () => {

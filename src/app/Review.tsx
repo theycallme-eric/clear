@@ -91,7 +91,7 @@ import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ExerciseSwapControls } from '../ui/exercise-swap'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionButton,
   LoadSuggestionDialog,
@@ -408,9 +408,9 @@ interface SuggestionProps {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A glyph beside each fact. The label is the cue and the glyph is the
- * shorthand — never the other way round, which is why every one of them is
- * rendered next to its own `<dt>` rather than in place of it.
+ * A glyph beside each fact. The glyph is shorthand, never the only cue: each
+ * reading keeps its own `<dt>`, visible wherever the value alone would not
+ * say what it is.
  */
 const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
   [INTENSITY_LABEL]: <Gauge size={16} />,
@@ -449,12 +449,39 @@ const DATA_STYLE: CSSProperties = {
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
 /**
- * The facts, in one card under its own heading. No generated overview sits
- * above them (REQ-010): the card states what the workout was composed under,
- * not a narrative about it. The facts are a description list, because that is what they are: terms and
- * their values. A grid of divs would render the same and say nothing about
- * which value belongs to which label. Inside the card `MetricFrame` is a bare
- * readout, so the card is the only frame here.
+ * The order the compact row reads in: B05-03's duration, focus and intensity
+ * first, then the two real facts the pictured demo row did not carry. Both stay
+ * — the goal and the movement count are accepted facts of this workout, and a
+ * compact row is not a reason to drop them.
+ */
+const FACT_ORDER: readonly string[] = [DURATION_LABEL, ANCHOR_LABEL, INTENSITY_LABEL, GOAL_LABEL]
+
+/** Unknown labels keep their given order, after the known ones. */
+function factRank(label: string): number {
+  const rank = FACT_ORDER.indexOf(label)
+  return rank === -1 ? FACT_ORDER.length : rank
+}
+
+/**
+ * Facts whose glyph and value already say what they are (`45 min`, `Lower
+ * body`); their term stays for assistive technology. Intensity, goal and the
+ * movement count keep a visible term: `7 of 10`, `Not set` and `5` are not
+ * readable without one.
+ */
+const SELF_DESCRIBING_FACTS: ReadonlySet<string> = new Set([DURATION_LABEL, ANCHOR_LABEL])
+
+export const MOVEMENTS_LABEL = 'Movements'
+
+/**
+ * The facts, in one card under its own heading, directly beneath the page's
+ * title — the workout's own name. No generated overview sits above them
+ * (REQ-010): the card states what the workout was composed under, not a
+ * narrative about it.
+ *
+ * B05-03: the compact workout-facts row, a glyph beside each reading, in
+ * place of the tall metric grid. It is still a description list, so every
+ * value keeps its term. Inside the card the row is bare; the card is the only
+ * frame here.
  */
 function BriefingOverview({
   facts,
@@ -467,23 +494,22 @@ function BriefingOverview({
   movementCount: number
   equipment: readonly string[]
 }) {
+  const ordered = [...facts].sort((a, b) => factRank(a.label) - factRank(b.label))
   return (
     <Card heading={OVERVIEW_LABEL}>
-      <MetricGrid as="dl" aria-label={FACTS_LABEL} style={{ margin: 0 }}>
-        {facts.map((fact) => (
-          <MetricFrame key={fact.label}>
-            <dt style={LABEL_STYLE}>
-              {FACT_GLYPHS[fact.label]}
-              {fact.label}
-            </dt>
-            <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{fact.value}</dd>
-          </MetricFrame>
+      <SummaryFacts aria-label={FACTS_LABEL}>
+        {ordered.map((fact) => (
+          <SummaryFact
+            key={fact.label}
+            glyph={FACT_GLYPHS[fact.label]}
+            term={fact.label}
+            termHidden={SELF_DESCRIBING_FACTS.has(fact.label)}
+          >
+            {fact.value}
+          </SummaryFact>
         ))}
-        <MetricFrame>
-          <dt style={LABEL_STYLE}>Movements</dt>
-          <dd style={{ ...VALUE_STYLE, marginInlineStart: 0 }}>{movementCount}</dd>
-        </MetricFrame>
-      </MetricGrid>
+        <SummaryFact term={MOVEMENTS_LABEL}>{movementCount}</SummaryFact>
+      </SummaryFacts>
 
       <RequiredEquipment equipment={equipment} />
 
@@ -676,10 +702,12 @@ function ReviewBlockRows({
   overrides,
   onExplain,
 }: { block: ReviewBlockView } & SuggestionProps) {
+  const inRounds = block.roundSequence !== null
   const row = (exercise: ReviewExerciseView, ordinal: string | null) => (
     <ReviewExerciseRow
       key={exercise.key}
       ordinal={ordinal}
+      inRounds={inRounds}
       exercise={exercise}
       suggestion={suggestions.get(exercise.key) ?? null}
       override={overrides.get(exercise.key) ?? null}
@@ -706,7 +734,6 @@ function ReviewBlockRows({
     .filter(Boolean)
     .join(', ')
 
-  const inRounds = block.roundSequence !== null
   const last = block.exercises.length - 1
 
   return (
@@ -736,6 +763,77 @@ function ReviewBlockRows({
 }
 
 /**
+ * B05-04: the movement's name row leads. A wrapped name keeps its own column,
+ * and Swap stays at the far end of that row rather than under the readings.
+ */
+const NAME_ROW_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 'var(--spacing-300)',
+}
+
+/**
+ * The name in the heading ink B05-04 selected, not the action colour: Swap
+ * beside it is the only thing on the row that acts.
+ */
+const NAME_STYLE: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  display: 'flex',
+  alignItems: 'baseline',
+  margin: 0,
+  fontFamily: 'var(--font-display)',
+  fontSize: 'var(--heading-h5-size)',
+  lineHeight: 'var(--heading-h5-line-height)',
+  fontWeight: 'var(--font-weight-bold)',
+  textTransform: 'uppercase',
+  color: 'var(--ink)',
+}
+
+/**
+ * The ordinal has its own column, on the name's first baseline, so a long
+ * name wraps under itself rather than pushing the whole name below `02`.
+ */
+const ORDINAL_STYLE: CSSProperties = {
+  ...DATA_STYLE,
+  flex: 'none',
+  marginInlineEnd: 'var(--spacing-200)',
+}
+
+const NAME_TEXT_STYLE: CSSProperties = { minWidth: 0, overflowWrap: 'anywhere' }
+
+/**
+ * Swap's 40px target, centred on the name's first line: the control is taller
+ * than that line, so it is pulled up by half the difference. The row's gap
+ * below clears the other half.
+ */
+const SWAP_SLOT_STYLE: CSSProperties = {
+  flex: '0 1 auto',
+  maxWidth: '50%',
+  marginBlock: 'calc((var(--heading-h5-line-height) - var(--control-height)) / 2)',
+}
+
+const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE, gap: 'var(--spacing-200)' }
+
+const PRESCRIPTION_STYLE: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 'var(--spacing-100) var(--spacing-300)',
+  margin: 0,
+  fontFamily: 'var(--font-data)',
+  fontSize: 'var(--label-md-size)',
+  lineHeight: 'var(--label-md-line-height)',
+  letterSpacing: 'var(--tracking-data)',
+  color: 'var(--text-paragraph)',
+}
+
+const EQUIPMENT_STYLE: CSSProperties = {
+  ...DATA_STYLE,
+  color: 'var(--text-secondary)',
+  textTransform: 'capitalize',
+}
+
+/**
  * One prescription, in three tiers: the movement, then what it asks (one
  * round's target inside a counted superset or circuit, the whole prescription
  * otherwise), then the equipment. Every reading is a separate element rather
@@ -743,9 +841,16 @@ function ReviewBlockRows({
  * string anything would want to parse back, and the load and the rest are
  * different facts that a screen reader should be able to stop between. Tempo
  * is not on the row; the section's tempo detail carries it.
+ *
+ * Inside a superset or circuit the movement's own rest is not shown: the group
+ * rests once, after the round, and states that rest once beneath its list —
+ * the transition between members is not a rest the athlete takes. A
+ * `Bodyweight` load beside `bodyweight` equipment says the same thing twice,
+ * so there the equipment line carries it alone.
  */
 function ReviewExerciseRow({
   ordinal,
+  inRounds,
   exercise,
   suggestion,
   override,
@@ -753,30 +858,39 @@ function ReviewExerciseRow({
 }: {
   /** `01`, `02` — the movement's place in its group, or null outside one. */
   ordinal: string | null
+  /** A superset or circuit member: the group, not the row, states the rest. */
+  inRounds: boolean
   exercise: ReviewExerciseView
   /** Null where there is no anchor — a state, and it renders nothing. */
   suggestion: LoadSuggestionView | null
   override: LoadOverride | null
   onExplain: () => void
 }) {
+  const repeatsEquipment =
+    exercise.load !== null && exercise.load.toLowerCase() === exercise.equipment.toLowerCase()
+  const load = inRounds && repeatsEquipment ? null : exercise.load
+  const rest = inRounds ? null : exercise.rest
   return (
-    <div style={STACK_STYLE}>
-      <p style={{ ...VALUE_STYLE, textTransform: 'capitalize' }}>
-        {ordinal !== null && <span style={DATA_STYLE}>{ordinal} </span>}
-        {exercise.name}
-      </p>
-      <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
-        <span style={DATA_STYLE}>{exercise.roundTarget ?? exercise.prescription}</span>
-        {exercise.load !== null && <span style={DATA_STYLE}>{exercise.load}</span>}
-        {exercise.rest !== null && <span style={DATA_STYLE}>{exercise.rest}</span>}
+    <div style={MOVEMENT_STYLE}>
+      <div style={NAME_ROW_STYLE}>
+        <p style={NAME_STYLE}>
+          {ordinal !== null && <span style={ORDINAL_STYLE}>{ordinal} </span>}
+          <span style={NAME_TEXT_STYLE}>{exercise.name}</span>
+        </p>
+        <div style={SWAP_SLOT_STYLE}>
+          <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="swap" />
+        </div>
       </div>
-      <span style={{ ...DATA_STYLE, color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
-        {exercise.equipment}
-      </span>
+      <p style={PRESCRIPTION_STYLE}>
+        <span>{exercise.roundTarget ?? exercise.prescription}</span>
+        {load !== null && <span>{load}</span>}
+        {rest !== null && <span>{rest}</span>}
+      </p>
+      <span style={EQUIPMENT_STYLE}>{exercise.equipment}</span>
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}
-      <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} />
+      <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="undo" />
     </div>
   )
 }

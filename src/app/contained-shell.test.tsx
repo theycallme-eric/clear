@@ -4,6 +4,7 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { renderApp, renderWithProviders } from '../test/render'
+import { ErrorBoundary } from './ErrorBoundary'
 import { Screen } from './Screen'
 
 afterEach(() => {
@@ -94,7 +95,9 @@ describe('CLEAR 0.14.3 contained shell', () => {
   it('runs header, band and pinned-action rules edge to edge, insetting content within each layer (U01)', () => {
     const css = readFileSync('src/styles/shell.css', 'utf8')
     const shell = css.match(/\.clr-shell--contained > \.clr-shell__content \{[^}]*\}/s)?.[0]
-    const header = css.match(/\.clr-shell--contained > \.clr-shell__content > header \{[^}]*\}/s)?.[0]
+    const header = css.match(
+      /\.clr-screen > \.clr-scroll-region > \.clr-scroll-region__head > header \{[^}]*\}/s,
+    )?.[0]
 
     // No side padding on the shell, so nothing inside it stops short of the edge.
     expect(shell).toMatch(/padding-right: 0;/)
@@ -113,12 +116,34 @@ describe('CLEAR 0.14.3 contained shell', () => {
 
   it('separates the fixed header from content with a rule while the header stays outside the scroller (U02)', () => {
     const { container } = renderApp(['/login'])
-    const header = container.querySelector('.clr-shell__content > header')
+    // B05 REQ-003: the header is the region's pinned head, never scrolled content.
+    const header = container.querySelector('.clr-scroll-region__head > header')
     const scroller = container.querySelector('.clr-scroll-region__scroller')
 
     expect(header).not.toBeNull()
     expect(scroller?.contains(header ?? null)).toBe(false)
     expect(container.querySelector('.clr-scroll-region__foot .clr-footer')).not.toBeNull()
+  })
+
+  it('renders the crash fallback inside the contained shell with a still atmosphere (B05)', () => {
+    const Crash = () => {
+      throw new Error('synthetic render fault')
+    }
+    const logger = { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() }
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const { container } = renderWithProviders(
+      <ErrorBoundary logger={logger as never} onReload={() => undefined}>
+        <Crash />
+      </ErrorBoundary>,
+    )
+    quiet.mockRestore()
+
+    expect(container.querySelector('.clr-shell')).toHaveClass('clr-shell--fixed', 'clr-shell--contained')
+    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute('data-static', 'true')
+    expect(container.querySelectorAll('main')).toHaveLength(1)
+    expect(container.querySelector('.clr-scroll-region__scroller')).not.toBeNull()
+    expect(screen.getByRole('alert')).toHaveTextContent('Display error')
+    expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument()
   })
 
   it('keeps one owner even when screen content is long', () => {

@@ -41,6 +41,23 @@ export const REQ_007_REST_DAY_CASE =
 export const REQ_007_NEXT_WORKOUT_CASE =
   'REQ-007 Home: first use guidance, one next workout entry and prefilled Generate without generating'
 
+function isLocalBrowserTarget(baseURL: string): boolean {
+  const hostname = new URL(baseURL).hostname.toLowerCase()
+  return hostname === 'localhost' || hostname.endsWith('.localhost') ||
+    /^127(?:\.\d{1,3}){3}$/.test(hostname) || hostname === '[::1]'
+}
+
+/**
+ * These synthetic proofs are already local-only. Exclude their files before
+ * module loading on deployments: title grep runs after imports, when a local
+ * proof may already have read its staged visual references.
+ */
+export function browserTestIgnoreForTarget(baseURL: string): string[] {
+  return isLocalBrowserTarget(baseURL)
+    ? []
+    : ['**/ui-polish-b05-*.spec.ts', '**/ui-polish-integrated.spec.ts']
+}
+
 /**
  * TASK-027: keep the original browser command, selecting cases for its target.
  * BEFORE assertions belong to 0.9.7; deployed assertions need a deployed origin.
@@ -56,15 +73,15 @@ export function browserTestsForTarget(packageVersion: string, baseURL: string): 
       String.raw`design-0143[\\/]task-040-home-review\.spec\.ts(?!.*(?:${REQ_011_REVIEW_CASE}|${REQ_007_REST_DAY_CASE}|${REQ_007_NEXT_WORKOUT_CASE})$)`,
     )
   }
-  const hostname = new URL(baseURL).hostname.toLowerCase()
-  if (hostname === 'localhost' || hostname.endsWith('.localhost') ||
-      /^127(?:\.\d{1,3}){3}$/.test(hostname) || hostname === '[::1]') {
+  if (isLocalBrowserTarget(baseURL)) {
     exclusions.push(String.raw`generation-deployed-matrix\.spec\.ts`)
   } else {
     // TASK-018 is an explicitly local synthetic proof. Keep ordinary preview
     // discovery on its existing cases; directly selecting only this file on
     // an external target finds no cases and retains Playwright's failure.
     exclusions.push(String.raw`(?:^|[\\/\s])ui-polish-integrated\.spec\.ts(?:$|[\s:])`)
+    // B05 fixtures intercept synthetic data and must never target a deployment.
+    exclusions.push(String.raw`(?:^|[\\/\s])ui-polish-b05-[a-z0-9-]+\.spec\.ts(?:$|[\s:])`)
   }
   return exclusions.length ? new RegExp(`^(?!.*(?:${exclusions.join('|')})).*$`) : /.*/
 }
@@ -121,6 +138,7 @@ export default defineConfig({
   // `.spec.ts` only. Vitest owns `*.test.ts(x)` under `src/`, and a runner that
   // picks up the other one's files is the first thing that goes wrong here.
   testMatch: /.*\.spec\.ts$/,
+  testIgnore: browserTestIgnoreForTarget(e2e.baseURL),
   grep: browserTestsForTarget(designSystemPackage.version, e2e.baseURL),
 
   // A run that finds no test is a broken harness reporting success.

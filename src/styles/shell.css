@@ -20,6 +20,18 @@
    the outer edge the header's controls already sit on; the header does not
    move inward. Gutters are page geometry only: card padding and in-card row
    rules keep their own card-internal values below.
+
+   B05 REQ-001/REQ-002: the safe areas belong to the system, the gaps to the
+   page, and the two are not traded against each other.
+   - Top: the page's own gap starts *below* the top inset instead of being
+     absorbed into it, keeping titles and controls away from that boundary.
+     The installed-device wash's cause is unproven; device UAT is still needed.
+   - Bottom: the shell reserves nothing. The screen runs to the viewport
+     bottom and its last layer — the pinned footer, or the scrolling content
+     when there is none — keeps its bottom gap or the bottom inset, whichever
+     is larger. No empty strip sits under the last action or the last card.
+   One pair of properties carries this for every routed screen, the boot
+   shell and the crash fallback alike; no route states an offset.
    ============================================================================= */
 
 html,
@@ -36,28 +48,44 @@ body,
   --shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));
   --page-gutter-left: var(--shell-inset-left);
   --page-gutter-right: var(--shell-inset-right);
+  /* A composition that must reclaim height (a keyboard-short window) narrows
+     these gaps; the insets themselves are never reduced. */
+  --shell-gap-top: var(--spacing-500);
+  --shell-gap-bottom: var(--spacing-300);
+  --shell-inset-top: calc(env(safe-area-inset-top) + var(--shell-gap-top));
+  --shell-inset-bottom: max(var(--shell-gap-bottom), env(safe-area-inset-bottom));
   width: 100%;
   height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: max(var(--spacing-500), env(safe-area-inset-top));
+  padding-top: var(--shell-inset-top);
   padding-right: 0;
-  padding-bottom: max(var(--spacing-500), env(safe-area-inset-bottom));
+  padding-bottom: 0;
   padding-left: 0;
+}
+
+/* B05 REQ-003: the fixed header is the ScrollRegion's pinned head (Screen),
+   so the region measures it and lights its top streak on the header's rule
+   while the content scrolls. The head adds nothing of its own around the
+   header: no padding, and no cap or clip, so the header sits exactly where it
+   did and a menu panel can still drop over the content below. */
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head:has(> header) {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
 }
 
 /* The fixed header closes on the same full-width rule the pinned footer
    opens with, so both chrome layers read as separate from the content. */
-.clr-shell--contained > .clr-shell__content > header {
-  flex: 0 0 auto;
+.clr-screen > .clr-scroll-region > .clr-scroll-region__head > header {
   padding: 0 var(--shell-inset-right) var(--spacing-300) var(--shell-inset-left);
   border-bottom: var(--border-width) solid var(--border-region-rule);
 }
 
 /* REQ-001: the page title is the header's title, in the h1's own display
    type. A long title wraps beside the actions instead of pushing them off. */
-.clr-shell__content > header .clr-screen__title {
+.clr-scroll-region__head > header .clr-screen__title {
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -80,6 +108,21 @@ body,
   gap: var(--spacing-400);
   min-height: 100%;
   padding: var(--spacing-100) var(--page-gutter-right) var(--spacing-300) var(--page-gutter-left);
+}
+
+/* B05 REQ-002: with no pinned footer the scrolling content is the screen's
+   last layer, so it carries the bottom inset — content scrolls to the
+   viewport edge and its end still clears the home indicator. */
+.clr-screen > .clr-scroll-region:not(:has(> .clr-scroll-region__foot)) .clr-screen__content {
+  padding-bottom: var(--shell-inset-bottom, var(--spacing-300));
+}
+
+/* B05 REQ-003 (08.2): an overflowing screen with no footer action still
+   clips its content at a lower edge. Screen gives it a bare pinned foot: the
+   region's own foot rule and bottom streak, over the bottom inset. Nothing
+   else is drawn and no action is added; content that fits gets no edge. */
+.clr-screen__edge {
+  height: var(--shell-inset-bottom, var(--spacing-300));
 }
 
 /* With its title in the header, a screen's first card opens one group gap
@@ -136,11 +179,13 @@ body,
 
 /* ScrollRegion already owns the measured foot, its hard edge, and its side
    inset. Keep the public footer vocabulary without drawing that structure a
-   second time inside the slot. */
+   second time inside the slot. B05 REQ-002: the footer is the screen's last
+   layer, so its bottom gap is the shell's bottom inset — the home indicator
+   area is the action's clearance, not an extra strip beneath it. */
 .clr-scroll-region__foot > .clr-footer {
   position: static;
   margin: 0;
-  padding: var(--spacing-300) 0;
+  padding: var(--spacing-300) 0 var(--shell-inset-bottom, var(--spacing-300));
   border-top: 0;
 }
 
@@ -148,8 +193,9 @@ body,
    step. Every role that draws from it — row meta, counts, streaks, field
    units, choice hints, text actions — enlarges together, so no route restates
    a size. Body text keeps the package's own steps and 1.25 line height.
-   Dialogs and toasts sit outside Screen and are unchanged. */
-.clr-screen {
+   Dialogs and toasts sit outside Screen, and the header in its pinned head
+   keeps the package's own tier, so both are unchanged. */
+.clr-screen > .clr-scroll-region > :is(.clr-scroll-region__scroller, .clr-scroll-region__foot) {
   --label-xs-size: var(--label-sm-size);
   --label-xs-line-height: var(--label-sm-line-height);
 }
@@ -186,6 +232,14 @@ body,
   display: flex;
 }
 
+/* A toggle chip sharing the row with buttons (Generate's Recovery beside
+   Change focus, B05-02.7) fills its cell as a button does, label centred,
+   so the pair's frames meet at the group's gap rather than leaving slack. */
+.clr-action-group > .clr-bleed > .clr-chip {
+  flex-grow: 1;
+  justify-content: center;
+}
+
 /* U25: a paired confirm/cancel is two equal halves or two full rows, never
    two ragged cells. Each starts at half the row and refuses to shrink below
    its label, so a label that does not fit its half wraps the pair onto full
@@ -196,9 +250,21 @@ body,
   min-width: fit-content;
 }
 
-/* Review facts and completed-session results are the same visual object:
-   short labelled values, each in its own small frame. Keeping this in the
-   shared shell layer prevents route-specific copies of the stat grid. */
+/* B05-02.7: the selected semantic pair stays on one control row. Cells
+   shrink only to their whole-word content, so the public controls keep
+   their padding, typography and selection tick while labels wrap naturally.
+   Single, multi-action and confirm/cancel groups keep their own fallback. */
+.clr-action-group--paired-labels {
+  flex-wrap: nowrap;
+}
+
+.clr-action-group--paired-labels > * {
+  min-width: min-content;
+}
+
+/* Completed-session results and readouts: short labelled values, each in its
+   own small frame. Keeping this in the shared shell layer prevents
+   route-specific copies of the stat grid. */
 .clr-metric-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -215,4 +281,60 @@ body,
 
 .clr-metric-frame > :last-child {
   overflow-wrap: anywhere;
+}
+
+/* The compact workout-facts row (B05-03): every reading stays whole on one
+   aligned line. The public OverflowRail owns containment and reachability
+   under width pressure; result and score metric grids keep their own layout. */
+.clr-summary-facts-rail:has(:focus-visible) {
+  /* The focused track is wider than its viewport. Keep the system's focus
+     ring on the visible app-owned boundary while that track is scrolled. */
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.clr-summary-facts {
+  display: flex;
+  flex-wrap: nowrap;
+  flex: none;
+  width: max-content;
+  align-items: center;
+  gap: var(--spacing-300);
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.clr-summary-fact {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--spacing-100);
+  min-width: 0;
+}
+
+.clr-summary-fact > dt,
+.clr-summary-fact > dd {
+  margin: 0;
+}
+
+.clr-summary-fact > dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-100);
+}
+
+.clr-summary-fact > dt,
+.clr-summary-fact > dd {
+  white-space: nowrap;
+}
+
+.clr-summary-fact__glyph {
+  display: inline-flex;
+  flex: none;
+  color: var(--text-card-label);
 }

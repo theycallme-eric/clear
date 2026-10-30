@@ -16,8 +16,8 @@
  *     a ticked movement with blank fields is performed and unmeasured (nulls),
  *     blank fields and prefills alone log nothing, the partner stays missing,
  *     and nothing requires both (AC-059);
- *   · the block's one rest is raised once per round, and the session clock
- *     runs on through it untouched (AC-060).
+ *   · the block's one rest is started by its Rest action, never by Log round
+ *     (REQ-012), and the session clock runs on through it untouched (AC-060).
  *
  * The refused-write path — entered values kept when the shell cannot accept
  * the round — is held at the renderer, where the profile's unit can be absent.
@@ -151,7 +151,7 @@ function roundForm(round: number) {
 
 async function openRound(user: ReturnType<typeof userEvent.setup>, round: number) {
   if (screen.queryByRole('form', { name: /^Log round \d+ of / }) === null) {
-    await user.click(screen.getByRole('button', { name: 'Log round' }))
+    await user.click(screen.getByRole('button', { name: 'Rest' }))
   }
   return roundForm(round)
 }
@@ -187,7 +187,7 @@ describe('one combined Log round (AC-058)', () => {
   it('offers the pair one Log round, and no per-movement Log set', async () => {
     await shell()
 
-    expect(screen.getAllByRole('button', { name: 'Log round' })).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: 'Rest' })).toHaveLength(1)
     expect(screen.queryByRole('button', { name: 'Log set' })).toBeNull()
   })
 
@@ -262,7 +262,8 @@ describe('partial rounds, without a both-movements gate (AC-059)', () => {
     await user.click(submit(form, 1))
 
     expect(double.loggedSets()).toEqual([])
-    expect(restBars()).toEqual([])
+    // Rest started the block's one rest when it opened the sheet; nothing more.
+    expect(restBars()).toHaveLength(1)
   })
 
   it('saves an explicitly entered result alone, and leaves the partner missing', async () => {
@@ -534,7 +535,7 @@ describe('a grouped correction returns keyboard focus to an available control', 
     await user.click(within(confirmation).getByRole('button', { name: 'Clear set' }))
     await waitFor(() => expect(double.clearedSets()).toHaveLength(1))
     expect(row.queryByRole('list', { name: 'Logged sets' })).toBeNull()
-    const logRound = screen.getByRole('button', { name: 'Log round' })
+    const logRound = screen.getByRole('button', { name: 'Rest' })
     expect(logRound).not.toHaveFocus()
     await waitFor(() => expect(close).toHaveBeenCalledOnce())
     expect(confirmation).toHaveAttribute('open')
@@ -544,51 +545,60 @@ describe('a grouped correction returns keyboard focus to an available control', 
 })
 
 describe('shared rest and the global clock (AC-060)', () => {
-  it('raises the block’s one rest once per round, after the pair, and keeps the session clock', async () => {
+  it('starts the block’s one rest from Rest, runs it through Log round, and keeps the session clock', async () => {
     const user = userEvent.setup()
-    await shell()
+    const double = await shell()
     expect(sessionClock()).toHaveTextContent('10:00')
     expect(restBars()).toEqual([])
 
+    // REQ-012: Rest opens the round and starts its one rest — the block's 60
+    // seconds, not either movement's own 90 — before anything is logged.
     const form = await openRound(user, 1)
+    expect(restBars()).toHaveLength(1)
+    expect(screen.getAllByText('Rest after round 1').length).toBeGreaterThan(0)
+    expect(restTimer()).toHaveTextContent('01:00')
+    expect(double.loggedSets()).toEqual([])
+
+    advance(10)
     await retype(user, movement(form, 'A1 bench press, set 1').getByLabelText('Reps'), '8')
     await retype(user, movement(form, 'A2 plank, set 1').getByLabelText('Seconds'), '30')
     await user.click(submit(form, 1))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(2))
 
-    // One rest, the block's 60 seconds — not either movement's own 90.
-    await waitFor(() => expect(restBars()).toHaveLength(1))
-    expect(screen.getAllByText('Rest after round 1').length).toBeGreaterThan(0)
-    expect(restTimer()).toHaveTextContent('01:00')
-
-    advance(20)
+    // Log round saves only: the rest runs on from where it was.
+    expect(restBars()).toHaveLength(1)
+    expect(restTimer()).toHaveTextContent('00:50')
+    advance(10)
     expect(restTimer()).toHaveTextContent('00:40')
     // The session clock is the same one, still counting up through the rest.
     expect(screen.getAllByRole('timer', { name: 'Session time' })).toHaveLength(1)
     expect(sessionClock()).toHaveTextContent('10:20')
 
-    // A partial round still closes the round, and rests once.
+    // A partial round still saves as one round, and starts no second rest.
     const next = roundForm(2)
     await retype(user, movement(next, 'A2 plank, set 2').getByLabelText('Seconds'), '25')
     await user.click(submit(next, 2))
-    await waitFor(() => expect(screen.getAllByText('Rest after round 2').length).toBeGreaterThan(0))
+    await waitFor(() => expect(double.loggedSets()).toHaveLength(3))
     expect(restBars()).toHaveLength(1)
-    expect(restTimer()).toHaveTextContent('01:00')
+    expect(screen.queryAllByText('Rest after round 2')).toEqual([])
+    expect(restTimer()).toHaveTextContent('00:40')
     expect(sessionClock()).toHaveTextContent('10:20')
   })
 
-  it('starts no rest and no clock before a round is logged', async () => {
+  it('starts the rest, and no movement clock, before a round is logged', async () => {
     const user = userEvent.setup()
-    await shell()
+    const double = await shell()
 
     await openRound(user, 1)
     advance(5)
-    expect(restBars()).toEqual([])
+    expect(restTimer()).toHaveTextContent('00:55')
     expect(sessionClock()).toHaveTextContent('10:05')
+    expect(double.loggedSets()).toEqual([])
   })
 })
 
 describe('a round the shell cannot accept keeps what was entered', () => {
-  it('refuses with no unit to stamp, starts no rest, and leaves every field as typed', async () => {
+  it('refuses with no unit to stamp, starts no further rest, and leaves every field as typed', async () => {
     const user = userEvent.setup()
     const snapshot = snapshotFixture({ sections: SECTIONS })
     const double = createWorkoutDouble({ session: snapshot })
@@ -617,12 +627,14 @@ describe('a round the shell cannot accept keeps what was entered', () => {
     )
 
     const form = await openRound(user, 1)
+    // Rest asked for the block's one rest as it opened the round.
+    expect(start).toHaveBeenCalledTimes(1)
     const a1 = movement(form, 'A1 bench press, set 1')
     await retype(user, a1.getByLabelText('Reps'), '9')
     await user.click(submit(form, 1))
 
     expect(onFailure).toHaveBeenCalled()
-    expect(start).not.toHaveBeenCalled()
+    expect(start).toHaveBeenCalledTimes(1)
     expect(double.loggedSets()).toEqual([])
     // Still round 1, with the athlete's own number and tick.
     const same = roundForm(1)

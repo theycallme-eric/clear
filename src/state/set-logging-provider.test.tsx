@@ -321,7 +321,7 @@ describe('the unit is the profile’s, stamped per row at write time', () => {
     const unit = priorWeight === null ? 'kg' : 'lb'
     // The entry is in the half-sheet the card's Log set opens; its reps start
     // at the prescription's 8 as a suggestion.
-    await user.click(screen.getByRole('button', { name: 'Log set' }))
+    await user.click(screen.getByRole('button', { name: 'Rest' }))
     expect(screen.getByLabelText('Weight')).toHaveValue(priorWeight)
     expect(screen.getByRole('combobox', { name: 'Unit' })).toHaveValue(unit)
     await user.click(screen.getByRole('button', { name: 'Log set 2' }))
@@ -343,7 +343,7 @@ describe('the unit is the profile’s, stamped per row at write time', () => {
   it('writes the real logger’s explicitly selected unit without converting its number', async () => {
     const user = userEvent.setup()
     const { workout } = mount({ realLogger: true, weightUnit: 'kg' })
-    await user.click(screen.getByRole('button', { name: 'Log set' }))
+    await user.click(screen.getByRole('button', { name: 'Rest' }))
     await user.type(screen.getByLabelText('Weight'), '135')
     await user.selectOptions(screen.getByRole('combobox', { name: 'Unit' }), 'lb')
     await user.clear(screen.getByLabelText('Reps'))

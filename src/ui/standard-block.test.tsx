@@ -135,7 +135,7 @@ function mount(options: MountOptions = {}): Mounted {
 function formFor(name: string, setNumber = 1) {
   if (screen.queryByRole('form', { name: new RegExp(`^Log set \\d+ of ${name}$`) }) === null) {
     const movement = screen.getByRole('heading', { name: new RegExp(`${name}$`) }).closest('section')!
-    fireEvent.click(within(movement).getByRole('button', { name: 'Log set' }))
+    fireEvent.click(within(movement).getByRole('button', { name: 'Rest' }))
   }
   return within(screen.getByRole('form', { name: `Log set ${setNumber} of ${name}` }))
 }
@@ -177,7 +177,7 @@ describe('a standard block is one card of the shared frame', () => {
     ])
     for (const row of rows) {
       // Each movement has its own explicit Log set; the fields are in the sheet.
-      expect(within(row).getAllByRole('button', { name: 'Log set' })).toHaveLength(1)
+      expect(within(row).getAllByRole('button', { name: 'Rest' })).toHaveLength(1)
       expect(within(row).queryByRole('form')).toBeNull()
       // A row, not a frame: no movement is a card or a chamfered panel.
       expect(row).not.toHaveClass('clr-card', 'clr-chamfer')

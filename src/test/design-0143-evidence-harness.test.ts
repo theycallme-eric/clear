@@ -143,7 +143,7 @@ describe('authenticated routes are reached before they are captured', () => {
     expect(spec.match(/page\.route\(/g)).toHaveLength(1)
     expect(spec).toContain("page.route('**/rest/v1/workout_sessions?*'")
     expect(spec).toContain("if (route.request().method() !== 'GET') return route.continue()")
-    expect(spec).toContain(`rejects.toThrow('expected the heading "Generate workout"')`)
+    expect(spec).toContain(`rejects.toThrow('expected the heading "Generate"')`)
     expect(spec).toContain('expect(screenshots).toBe(0)')
     // Actual browser proof must retain these files, not lose body-only attachments with stdout.
     expect(spec).toContain('const path = testInfo.outputPath(name)')

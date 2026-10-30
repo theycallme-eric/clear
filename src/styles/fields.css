@@ -1,0 +1,19 @@
+/* =============================================================================
+   REQ-006 — unit-field fit: the app's contract for the public Input `unit`.
+
+   The public end cap (`.clr-field__unit`) sits beside a control whose basis is
+   the whole field, so on a phone it shrank below its own text and the field's
+   frame cut the unit off (B05-02.9, "M…UTES"). The cap is sized by its text
+   instead: it never shrinks or wraps, and the control gives up the room. The
+   cap keeps the package's own padding, rule and surface — more room, not a
+   narrower cap.
+
+   Every public Input with a `unit` inherits this, so no consumer sets a width.
+   Logging's Unit choice is a Select (EXC-04), not this end cap, and is not
+   touched. Tokens only; no raw hex, px, or font names.
+   ============================================================================= */
+
+.clr-field > .clr-field__unit {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}

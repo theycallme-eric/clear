@@ -31,6 +31,16 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   // CORE-05 structural mechanisms: they have no appearance of their own, and
   // what they produce is the outline of every other specimen on the page.
   Heading: 'CORE-05 — renders h1…h6 from section depth; no visual surface',
+  // B05: the markup AtmosphereLayer renders, split out so the crash fallback
+  // can pass `still` without reading the preference store. Its appearance is
+  // exactly the framed AtmosphereLayer specimen.
+  AtmosphereGround: 'B05 — AtmosphereLayer’s own markup; framed through AtmosphereLayer',
+  // B05-06: MovementCountdown's own markup, drawn from a clock its owner
+  // holds. Its appearance is exactly the framed MovementCountdown specimen.
+  MovementCountdownView: 'B05-06 — MovementCountdown’s own markup; framed through MovementCountdown',
+  // B05 REQ-003: a sizing host around the public ScrollRegion. It draws
+  // nothing of its own; its appearance is the region's, specimened upstream.
+  FittedScrollRegion: 'B05 REQ-003 — sizes the public ScrollRegion to its content; no visual surface',
   HeadingLevelProvider: 'CORE-05 — context only, renders nothing',
   HeadingSection: 'CORE-05 — a <section> that deepens the outline',
   Nav: 'CORE-05 — a <nav> landmark that requires a name; no visual surface',
@@ -70,7 +80,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   SetLoggingSheet:
     'REQ-009 — the set-logging half-sheet, opened from a live movement’s Log set and fed its draft',
   SetLoggingSheetHost: 'REQ-009 — structural: which movement’s sheet the workout shell has open',
-  SetLoggingSheetSlot: 'REQ-009 — structural: the pinned-foot slot the open sheet is drawn into',
+  SetLoggingSheetSlot: 'REQ-009 — structural: the slot the open sheet is drawn into',
+  SetLoggingSheetOverlay: 'B05-07.4 — structural: the workout layer the open sheet floats in, over its dim/blur backdrop',
   SetMeasurementRow: 'REQ-009 — the sheet’s Weight / Unit / measure row, drawn only inside it',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
   SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
