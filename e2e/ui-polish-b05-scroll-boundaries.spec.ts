@@ -674,7 +674,9 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
 
   for (const { viewport, overflowing } of [
     { viewport: { width: 320, height: 360 }, overflowing: true },
-    { viewport: SHORT, overflowing: false },
+    // At 390x480 the overlay keeps a dimmed band above the sheet, so the
+    // sheet with its running rest scrolls rather than covering the header.
+    { viewport: SHORT, overflowing: true },
     { viewport: PHONE, overflowing: false },
   ]) {
     test(`capped workout entry area holds the sheet through a public region at ${viewport.width}x${viewport.height} (B05-07)`, async ({ page, visit }, testInfo) => {
@@ -686,11 +688,73 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
       await content.getByRole('button', { name: /^(log set|rest)/i }).first().click()
       const sheet = page.locator('.clr-set-sheet')
       await expect(sheet).toBeVisible()
-      const region = page.locator('.clr-workout-footer__entry > .clr-scroll-region')
+      // B05-07.4 (TASK-013): the sheet floats in its own overlay region now,
+      // over the navigation rather than inside the pinned foot.
+      const region = page.locator('.clr-set-sheet-layer__entry > .clr-scroll-region')
       await expect(region).toHaveAttribute('data-measured', '')
       await page.evaluate(() => document.fonts.ready)
       await expect.poll(async () => (await regionState(region)).overflow.client).toBeGreaterThan(0)
+      // Cue opacity settles independently of the fitted host's ResizeObserver.
+      // Wait for its actual allowance and edge reservation to agree before
+      // taking the snapshot; do not measure a removed pair of transient rules.
+      await expect.poll(() => region.evaluate(async (wrap) => {
+        const host = wrap.parentElement!
+        const scroller = wrap.querySelector(':scope > .clr-scroll-region__scroller')! as HTMLElement
+        const content = scroller.firstElementChild!
+        const read = () => {
+          const height = host.getBoundingClientRect().height
+          const contentHeight = content.getBoundingClientRect().height
+          const edges = wrap.querySelectorAll('[data-fitted-scroll-edge]').length
+          const head = wrap.querySelector(':scope > .clr-scroll-region__head') !== null
+          const foot = wrap.querySelector(':scope > .clr-scroll-region__foot') !== null
+          const overflowing = contentHeight > host.clientHeight + 1
+          const style = getComputedStyle(wrap)
+          const reserved = parseFloat(style.getPropertyValue('--head-h')) + parseFloat(style.getPropertyValue('--foot-h'))
+          return { height, contentHeight, client: scroller.clientHeight, edges, head, foot, reserved,
+            ready: height > 0 && head === overflowing && foot === overflowing && edges === (overflowing ? 2 : 0) &&
+              Math.abs(scroller.clientHeight + reserved - host.clientHeight) <= 1 }
+        }
+        const before = read()
+        await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+        const after = read()
+        return before.ready && after.ready && JSON.stringify(before) === JSON.stringify(after)
+      }), { message: 'the fitted sheet allowance and measured edges settle' }).toBe(true)
       const rest = await settle(region)
+      // Retain the actual content/allowance/edge boxes when a fitting case fails.
+      await testInfo.attach('sheet-fit-measurements', {
+        contentType: 'application/json',
+        body: JSON.stringify(await region.evaluate((wrap) => {
+          const host = wrap.parentElement!
+          const scroller = wrap.querySelector(':scope > .clr-scroll-region__scroller')!
+          const content = scroller.firstElementChild!
+          const measure = (element: Element | null) => {
+            if (!element) return null
+            const el = element as HTMLElement
+            const style = getComputedStyle(el)
+            return {
+              rect: el.getBoundingClientRect().toJSON(), client: el.clientHeight, scroll: el.scrollHeight,
+              scrollTop: el.scrollTop, inlineHeight: el.style.height,
+              height: style.height, maxHeight: style.maxHeight, minHeight: style.minHeight,
+              flexShrink: style.flexShrink, boxSizing: style.boxSizing,
+              padding: [style.paddingTop, style.paddingBottom],
+              border: [style.borderTopWidth, style.borderBottomWidth],
+              margin: [style.marginTop, style.marginBottom],
+              head: style.getPropertyValue('--head-h'), foot: style.getPropertyValue('--foot-h'),
+            }
+          }
+          return {
+            host: measure(host), region: measure(wrap), scroller: measure(scroller), content: measure(content),
+            slot: measure(content.querySelector('[data-set-sheet-slot]')),
+            sheet: measure(content.querySelector('.clr-set-sheet')),
+            bleed: measure(content.querySelector('.clr-set-sheet > .clr-bleed')),
+            frame: measure(content.querySelector('.clr-set-sheet__frame')),
+            head: measure(wrap.querySelector(':scope > .clr-scroll-region__head')),
+            foot: measure(wrap.querySelector(':scope > .clr-scroll-region__foot')),
+            edgeCount: wrap.querySelectorAll('[data-fitted-scroll-edge]').length,
+            overlay: measure(host.parentElement),
+          }
+        }), null, 2),
+      })
       expectHardEdges(rest)
       expectAtRest(rest)
       // The navigation below stays fully on screen.
@@ -698,14 +762,14 @@ test.describe('B05 REQ-003 scroll boundaries', () => {
       expect(nav.y + nav.height).toBeLessThanOrEqual(viewport.height + 0.5)
       const id = `workout-sheet-${viewport.width}x${viewport.height}`
       await capture(page, testInfo, `${id}-rest`, {
-        reference: reference('B05-07'), consumer: 'Workout footer entry FittedScrollRegion + SetLoggingSheet',
+        reference: reference('B05-07'), consumer: 'Workout sheet overlay FittedScrollRegion + SetLoggingSheet',
         state: overflowing ? 'overflowing, at rest' : 'non-overflowing' })
       if (overflowing) {
         expect(rest.overflow.scroll).toBeGreaterThan(rest.overflow.client)
         const { state: lit, png: litPng } = await wheelWhileCapturing(page, region, 200)
         expectLitWhileScrolling(lit)
         await capture(page, testInfo, `${id}-scrolling`, {
-          reference: reference('B05-07'), consumer: 'Workout footer entry FittedScrollRegion', state: 'scrolling', rendered: lit }, litPng)
+          reference: reference('B05-07'), consumer: 'Workout sheet overlay FittedScrollRegion', state: 'scrolling', rendered: lit }, litPng)
         const barBox = await region.locator(':scope > .clr-scroll-region__bar').boundingBox()
         const contrast = await cueContrast(page, region, litPng, { x: barBox!.x, y: barBox!.y, width: 2, height: barBox!.height })
         testInfo.annotations.push({ type: 'pixel-comparison', description: `sheet scrollbar settled ${contrast.rest.toFixed(1)} -> scrolling ${contrast.lit.toFixed(1)}` })

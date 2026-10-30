@@ -44,7 +44,7 @@
  * prevent — populated is the shell, and empty is n/a: a session with no
  * sections is a validation failure, not an empty state.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useBlocker, useNavigate } from 'react-router-dom'
 
 import { useAuth } from '../state/auth-context'
@@ -85,7 +85,7 @@ import { ErrorDialog } from '../ui/blocking-dialog'
 import { FittedScrollRegion } from '../ui/fitted-scroll-region'
 import { PhoneFooter } from '../ui/composition'
 import { SectionLabelContext } from '../ui/section-label-context'
-import { SetLoggingSheetHost, SetLoggingSheetSlot } from '../ui/set-logging-sheet'
+import { SetLoggingSheetHost, SetLoggingSheetOverlay } from '../ui/set-logging-sheet'
 import { useSetLoggingSheetOpen } from '../ui/set-logging-sheet-context'
 import { SetSyncNotice } from '../ui/set-sync-notice'
 import { ErrorView, LoadingView } from '../ui/view-state'
@@ -434,20 +434,19 @@ function WorkoutShell({
             }}
             pinnedFoot={
               <PhoneFooter className="clr-workout-footer">
-                <div className="clr-workout-footer__content">
+                <FooterContent>
                   {/*
                     B05 REQ-003: the capped entry area scrolls through the
-                    public region, so a sheet taller than its allowance keeps
+                    public region, so a rest taller than its allowance keeps
                     the hard clip and the transient scroll cues.
                   */}
                   <FittedScrollRegion className="clr-workout-footer__entry">
                     {/*
-                      REQ-009: one set-logging half-sheet for the whole screen.
-                      While it is open it draws the running rest itself, so the
-                      footer's copy steps aside rather than drawing a second.
+                      While the set-logging sheet is open it draws the running
+                      rest itself, so the footer's copy steps aside rather than
+                      drawing a second.
                     */}
                     <FooterRest />
-                    <SetLoggingSheetSlot />
                   </FittedScrollRegion>
                   <SectionNavigation
                     section={current}
@@ -462,7 +461,7 @@ function WorkoutShell({
                     advancing={advancing}
                     onSavingChange={setAdvancing}
                   />
-                </div>
+                </FooterContent>
               </PhoneFooter>
             }
           >
@@ -503,6 +502,13 @@ function WorkoutShell({
             </div>
           </Screen>
 
+          {/*
+            REQ-009: one set-logging half-sheet for the whole screen. B05-07.4:
+            it floats over the lower content and the navigation, outside the
+            pinned foot that would clip it, over a dim/blur backdrop.
+          */}
+          <SetLoggingSheetOverlay />
+
           <AbandonConfirmDialog
             open={exiting}
             onConfirm={() => void confirmAbandon()}
@@ -521,6 +527,19 @@ function WorkoutShell({
         </RestTimerProvider>
       </SetLoggingProvider>
     </BlockCompletionProvider>
+  )
+}
+
+/**
+ * The footer's rest and navigation. B05-07.4: while the set-logging sheet
+ * floats over them they are out of sight, so they leave the focus order too;
+ * collapsing the sheet restores them as they were.
+ */
+function FooterContent({ children }: { children: ReactNode }) {
+  return (
+    <div className="clr-workout-footer__content" inert={useSetLoggingSheetOpen()}>
+      {children}
+    </div>
   )
 }
 

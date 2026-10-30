@@ -1,6 +1,6 @@
 /* =============================================================================
    SET-LOGGING HALF-SHEET — REQ-009. The one surface where a set is entered or
-   corrected, docked in the workout's pinned foot (src/ui/set-logging-sheet.tsx).
+   corrected, floating over the workout's lower screen (src/ui/set-logging-sheet.tsx).
 
    The frame is the normal structural element frame; the collapse chevron is a
    normal secondary IconButton, so its border is the action colour; a running
@@ -18,10 +18,12 @@
 
 .clr-set-sheet > .clr-bleed {
   display: flex;
-  flex-direction: column;
+  align-items: stretch;
 }
 
 .clr-set-sheet__frame {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-300);
@@ -29,6 +31,21 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--spacing-300);
+}
+
+/* B05-07.3: the shipped accent bar joins the frame's left edge in every mode
+   (ledger EXC-06). It reads the structural border, as a structural card's
+   bar does. B05-07.4: bar and panel are plain and opaque — the frame's own
+   surface drops the CRT line texture. Only the frame's own layers change;
+   the fields, buttons and timer card inside keep theirs. */
+.clr-set-sheet__bar {
+  --brd: var(--border-frame-structure);
+  background-color: var(--base);
+}
+
+.clr-set-sheet .clr-set-sheet__frame::before {
+  background-color: var(--base);
+  background-image: none;
 }
 
 .clr-set-sheet__head {
@@ -42,6 +59,68 @@
   font-size: var(--label-md-size);
   letter-spacing: var(--tracking-data);
   text-transform: uppercase;
+}
+
+/* B05-07.4: the overlay layer (SetLoggingSheetOverlay). It covers the whole
+   screen and anchors the panel to its foot inside the shell's own side and
+   bottom insets, so the sheet keeps the page gutters and safe-area clearance
+   and covers Previous/Next instead of pushing them down. */
+.clr-set-sheet-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding:
+    var(--shell-inset-top, var(--spacing-500))
+    var(--shell-inset-right, var(--spacing-400))
+    var(--shell-inset-bottom, var(--spacing-300))
+    var(--shell-inset-left, var(--spacing-400));
+  pointer-events: none;
+}
+
+.clr-set-sheet-layer:not([data-open]) {
+  visibility: hidden;
+}
+
+/* The Dialog backdrop's dim and slight blur (foundation.css, .clr-dialog::backdrop:
+   --surface-backdrop and 0.75px) without its scanline and static layers. A
+   picture only: taps pass through, as they did before the sheet floated. */
+.clr-set-sheet-layer__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--surface-backdrop);
+  backdrop-filter: blur(calc(var(--border-width) * 0.375));
+}
+
+/* About half the screen; it scrolls through the public region beyond that. */
+.clr-set-sheet-layer__entry {
+  position: relative;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 60%;
+}
+
+.clr-set-sheet-layer[data-open] > .clr-set-sheet-layer__entry {
+  pointer-events: auto;
+}
+
+/* The region is the sheet's one scroller: the frame's own capped scroll box
+   sat under the finger without overflowing, so on a short phone a swipe
+   stopped at it and the fields below stayed out of reach. */
+.clr-set-sheet-layer__entry .clr-set-sheet__frame {
+  max-height: none;
+  overflow-y: visible;
+  overscroll-behavior: auto;
+}
+
+/* A short window may be a keyboard-like resize: the focused entry takes more
+   of the screen, still inside the gutters and leaving the dimmed screen above. */
+@media (max-height: 30rem) {
+  .clr-set-sheet-layer__entry {
+    max-height: calc(100% - var(--control-height));
+  }
 }
 
 /* Weight / Unit / Reps on one compact row: equal columns that may shrink

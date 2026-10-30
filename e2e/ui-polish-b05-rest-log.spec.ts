@@ -695,6 +695,9 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
 
       // ── Expiry with a draft open saves nothing ───────────────────────────
+      // TASK-013: the saved correction leaves the current sheet open over
+      // Rest. Use its real Minimize action before returning to that card.
+      await collapseSheet(page)
       await rest.click()
       const form3 = page.getByRole('form', { name: 'Log set 3 of back squat' })
       await form3.getByLabel('Reps').fill('3')
@@ -728,6 +731,8 @@ for (const { name: size, viewport } of VIEWPORTS) {
       })
       await expect(restBars(page)).toHaveCount(0)
       // Only the explicit Rest activation may start the next prescribed rest.
+      await collapseSheet(page)
+      await expect(restBars(page)).toHaveCount(0)
       await expect(rest).toBeVisible()
       await rest.click()
       await expectRestFrom(page, SQUAT_REST)

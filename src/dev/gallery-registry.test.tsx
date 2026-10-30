@@ -77,7 +77,8 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   SetLoggingSheet:
     'REQ-009 — the set-logging half-sheet, opened from a live movement’s Log set and fed its draft',
   SetLoggingSheetHost: 'REQ-009 — structural: which movement’s sheet the workout shell has open',
-  SetLoggingSheetSlot: 'REQ-009 — structural: the pinned-foot slot the open sheet is drawn into',
+  SetLoggingSheetSlot: 'REQ-009 — structural: the slot the open sheet is drawn into',
+  SetLoggingSheetOverlay: 'B05-07.4 — structural: the workout layer the open sheet floats in, over its dim/blur backdrop',
   SetMeasurementRow: 'REQ-009 — the sheet’s Weight / Unit / measure row, drawn only inside it',
   StandardBlock: 'EXE-02 — a standard block of a live session, logged set by set',
   SupersetBlock: 'EXE-02 — a paired block of a live session, alternated and logged set by set',
