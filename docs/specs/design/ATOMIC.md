@@ -361,13 +361,13 @@ comparison against the 0.14.3 package (`docs/design/evidence-0143/`).
 
 ### 9.3 Public visual library
 
-The owner-approved library plan opens `/gallery` as an independent public review
-entry. It reuses the same app components/register and the stylesheet order in
-`src/main.tsx`, outside product account startup. `/gallery/ds` labels the unchanged
-0.14.3 archive references separately from app-styled examples. Their versioned
-static publication is not a vendor edit or foundation authoring source. Review
-uses isolated branches and actual components; a source snapshot does not imply
-visual approval. See `docs/design/library/README.md` for ownership and handoff.
+`/gallery` and `/gallery/app` render the actual shared app components outside
+product account startup, using the same register and stylesheet authority.
+Historical archive pages remain development-only references, not recommended
+app examples. Keep the 0.14.3 import immutable. Read
+`docs/design/library/README.md` for reuse and gap requests and
+`docs/design/library/PLAN.md` for the active checklist. Source snapshots do not
+imply visual approval; material design changes use isolated review first.
 
 ---
 

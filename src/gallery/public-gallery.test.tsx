@@ -5,8 +5,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PUBLIC_LIBRARY_ROUTES } from '../../e2e/required-routes'
 import { AppEntry } from '../AppEntry'
 import { GALLERY_ENTRIES } from '../dev/gallery-registry'
-import { SPECIMENS } from '../dev/specimens'
-import { PUBLIC_SPECIMEN_BASE } from '../dev/specimen-url'
 
 const { initializeClients } = vi.hoisted(() => ({
   initializeClients: vi.fn(() => { throw new Error('Public gallery initialized real clients') }),
@@ -50,15 +48,12 @@ describe('public actual-component gallery', () => {
     expect(initializeClients).not.toHaveBeenCalled()
   })
 
-  it('publishes distinct sandboxed upstream references at versioned URLs', async () => {
+  it('keeps archived specimens out of public navigation and rendering', async () => {
     await open('/gallery/ds')
-    expect(await screen.findByRole('heading', { level: 2, name: 'Upstream references' })).toBeInTheDocument()
-    const frames = [...document.querySelectorAll('iframe')]
-    expect(frames).toHaveLength(SPECIMENS.length)
-    expect(frames.map((frame) => frame.getAttribute('src')).sort()).toEqual(
-      SPECIMENS.map((specimen) => PUBLIC_SPECIMEN_BASE + specimen.file).sort(),
-    )
-    for (const frame of frames) expect(frame.getAttribute('sandbox')).toBe('allow-scripts')
+    expect(screen.getByRole('heading', { level: 2, name: 'App-composed' })).toBeInTheDocument()
+    expect(document.querySelectorAll('iframe')).toHaveLength(0)
+    expect(screen.queryByRole('link', { name: 'Design system' })).not.toBeInTheDocument()
+    expect(window.location.pathname).toBe('/gallery/app')
   })
 
   it('changes skins without persisting preferences and focuses the screen after section navigation', async () => {

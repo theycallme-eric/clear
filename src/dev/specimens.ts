@@ -10,9 +10,7 @@
  *
  * Reading the raw text is not importing a component internal: the cards are
  * mandatory *visual references* (ATOMIC.md §1), never production modules, and
- * the public gallery labels sandboxed archive references separately from the
- * app-styled specimens. scripts/gallery/specimen-assets.ts publishes their
- * static dependencies byte-identically while this catalogue stays shared.
+ * the whole of `src/dev/` is excluded from production bundles.
  *
  * Discovery is a glob over the vendored tree, so the next export's cards are
  * whatever the next export ships. Of the 40 specimen files it carries, 38 —

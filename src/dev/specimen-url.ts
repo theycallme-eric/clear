@@ -11,8 +11,5 @@
 /** Dev-only URL prefix the specimen middleware answers on. */
 export const SPECIMEN_BASE = '/dev/specimens/'
 
-/** Versioned, read-only upstream references emitted for the public gallery. */
-export const PUBLIC_SPECIMEN_BASE = '/gallery-reference/0.14.3/'
-
 /** The vendored export's folder, relative to the project root. */
 export const VENDOR_DIR = 'src/design-system'

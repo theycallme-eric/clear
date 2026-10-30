@@ -1,0 +1,106 @@
+# CLEAR visual library plan
+
+CLEAR will have a public visual library that accurately represents the reusable UI the application consumes. Design work happens in isolated branches and comparison previews. Approved visual decisions become explicit inputs to requirements, DAG tasks and implementation. Shared changes flow through the same component implementations, and the library stays accurate as the product evolves.
+
+This is the active North Star and delivery checklist. The detailed audit remains supporting reference. Work through the three deliveries below; research counts and old work-package lists are not additional shipping prerequisites.
+
+Version 2.0 · Updated 30 October 2026, America/Chicago. Eric approved this simplification after considering an external review. The goal is unchanged: consistent real UI, a useful public gallery and a dependable design-to-implementation path.
+
+# What stays true
+
+- Gallery and app consume the same actual components, variables and shared presentation recipes. A shared change reaches the appropriate consumers.
+- Related Review, History and Favorites presentations are shown together so their similarities and intentional differences can be reviewed. Preserve distinct prescription, logging and recorded-result behavior.
+- Design experiments use isolated branches and previews. Show accurate current/proposed states; review material visual changes before requirements and integration. Merge and production release remain separate events.
+- Search existing patterns first. A gap request states the need, existing options, smallest addition and affected consumers. New components, variables and variants remain possible through a concrete design decision.
+- Provide public visual access without an account, an organized repository home and concise instructions that help agents find and reuse the library.
+- Keep meaningful screen/state coverage and explicit exceptions. The owner reviews consequential designs; agents perform source mapping, reuse checks and relevant verification.
+- Maintain the gallery with the shared implementation through ordinary changes. Foundation 0.14.3 stays a pinned immutable import for now; app-owned presentation is edited in src/ui and src/styles.
+
+# Three deliveries
+
+## 1 Accessible app gallery and clear agent guidance
+
+Make /gallery and /gallery/app render the existing registered app components with the same styles and synthetic examples, without account startup or live writes. Prioritize current app presentation. Historical archive documents remain developer references; serving all 43 pages publicly is deferred.
+
+Give agents one short route: AGENTS.md → docs/design/library/README.md → the existing gallery registry and src/ui. Keep implementation guidance in the repository. Generate a compact component index from the registry where useful, rather than maintain a competing catalog. State important coverage gaps and when a pattern should not be reused.
+
+- [ ] Public direct links and reloads work without authentication or backend configuration.
+- [ ] Gallery and app use the same implementations and ordered styles; product route protection remains correct.
+- [ ] Skin controls, meaningful keyboard/focus behavior, accessibility and narrow fit pass relevant checks.
+- [ ] Agent instructions point directly to existing patterns and a simple gap-request rule.
+- [ ] Current-source verification is honest; publish a reviewable PR/preview with remaining findings clearly identified before owner acceptance.
+
+## 2 One real consistency improvement shown in context
+
+Start with the verified repeated metadata text role in Review, History, Favorites and saved detail. Evaluate one small app-owned typography recipe using existing tokens; add only the variants demonstrated by the actual consumers. A shared CSS class may be sufficient. Do not create a new component merely to remove an inline object.
+
+Show related real presentations together using existing gallery specimens and safe owner fixtures. Compare workout-entry summaries with summaries and movement rows with movement rows. Keep context-specific actions and behavior with their owners. Foundational buttons, fields and text states remain in scope as real app-styled examples, added in useful slices.
+
+- [ ] Identify the selected recipe, its consumers and intentional differences.
+- [ ] Consolidate the verified equivalent uses; investigate every unexpected appearance or behavior change.
+- [ ] Gallery examples render actual owners with comparable data where meaning permits, not look-alike copies.
+- [ ] Check relevant 320px/390px, state and skin contexts; record a concrete exception when a real owner cannot yet be rendered safely.
+- [ ] Stop at a bounded, reviewable improvement. Re-scope new token/component/behavior needs rather than silently expand the refactor.
+
+## 3 One real design-to-delivery pilot
+
+Use the wanted workout-prompt/experience work to demonstrate the full path. Reuse the existing superset shape when that work touches it; do not invent a design simply for proof. The completed spacing probe proves mechanical propagation. It does not prove that an approved visual decision survives requirements and integration.
+
+- [ ] Prepare accurate current/proposed visuals on an isolated branch using actual shared components and named fixture states.
+- [ ] Review and approve the meaningful design choice and intended consumers before requirements consume it.
+- [ ] Link canonical components/registry entries, approved source and states, comparison evidence and intentional exceptions in the existing issue/PR and requirements/task inputs.
+- [ ] Integrate the same approved implementation; verify both the shared owner and affected screens. Material departures return to review.
+- [ ] Update the gallery and ordinary documentation with the change. Record merge/release accurately and retain only maintenance checks that prevent demonstrated drift.
+
+# Ordinary workflow
+
+1. Find the existing pattern and its current implementation; map the consumers relevant to this change.
+2. Prepare a small isolated proposal and actual-component examples. Request a missing contract when necessary.
+3. Review material visual decisions using source-labeled current/proposed evidence. A refactor that preserves appearance needs verification, not invented design approval.
+4. Carry the approved component/source/state references through the existing requirements, issue, DAG and PR workflow.
+5. Verify the integrated result and update the shared example/documentation. Use existing coverage, build, behavior and accessibility checks; add targeted checks when a real gap justifies them.
+
+A PR/issue can hold the source, fixtures, comparison evidence and approval links. No separate approval-state system, twelve-field sidecar or new supervisor is required.
+
+# Supporting research and deferred work
+
+The [released UI audit](https://chatgpt.com/space/page_815f7176f3248191a07acf770c485f5a) and the expanded element/cascade register remain evidence and a backlog of reuse questions. The original source inventory is complete for its declared scope. Per-pattern rendered-state and cascade review remains bounded work, prioritized by repeated patterns, important gaps and UAT findings.
+
+The 1,488 source rendering occurrences are not 1,488 missing components or mandatory user-review rows. Resolve meaningful patterns and owner exceptions as the library grows. Preserve intentional differences and legacy data meaning.
+
+The [earlier ownership specification](https://chatgpt.com/space/page_aad0a08cae6c819196b34d1a47a10e48) and [proof/fixture contract](https://chatgpt.com/space/page_63ae8eab69488191a7a9576ca2c06235) are reference drafts superseded by this active checklist wherever their process or sequencing conflicts. Their old G/O packages, sidecar and proposed gate counts are not active requirements.
+
+Deferred until a concrete need justifies them:
+
+- Public historical-archive delivery; additional route families, ID alias infrastructure and branch-comparison routing.
+- Foundation authoring migration, an external reusable toolkit, a separate repository and Storybook migration. Revisit foundation ownership when an actual foundation edit is wanted.
+- A formal approval-state machine, separate visual-decision schema and thirteen prospective maintenance gates.
+- Exhaustive source/region ledgers and all missing fixtures as prerequisites to a useful first release. Keep the existing coverage findings, then add safe fixtures when priority or a changed owner warrants them.
+
+The external review informed this simplification. Its typography recommendation is a useful starting point, not the complete answer to consistency. Direct agent routing improves an existing indirect path. Removing archive delivery does not automatically resolve unrelated evidence checks.
+
+# Current status
+
+Released audit baseline: 14acb2cc549b482e2fb5466a2402bbe5a34029c3. The existing gallery has 49 entries and 131 initial examples. Important live/session surfaces still need owner fixtures; registration counts do not certify state completeness or visual approval.
+
+[Implementation issue 590](https://github.com/theycallme-eric/clear/issues/590) tracks delivery 1. A local public-gallery proposal and repository review guidance exist. The first proposal's source-bound verification checks remain unresolved; its archive-only accessibility findings will be retained as deferred reference findings when public archive delivery is removed. Existing failures must receive an honest disposition, not be relabeled passing.
+
+Owner UAT of the recent released batch can proceed alongside this work. The workout-experience handoff is prepared; an external review was supplied by the owner. No in-thread reviewer or new agent should be launched without the owner's request.
+
+# Working rules for agents
+
+Read the repository's project instructions and the short library README before UI work. Search the existing registry and src/ui before creating presentation. Use the same components, style authority and real state owners in gallery examples; supply deterministic data/controllers without live writes.
+
+Keep code and rendered evidence tied to the version they actually represent. Current, proposed, approved, merged and released are distinct facts recorded through the ordinary workflow. Never mix an old/partial preview into a current baseline or infer approval from a screenshot.
+
+Use the source and pattern maps to find affected consumers. Do not merge unrelated state machines, impose a universal inline-style ban, edit immutable vendor mirrors or treat coverage discovery as proof of correctness.
+
+# Active checklist
+
+- [x] Establish the released-source inventory and retain its evidence and limits.
+- [x] Consider the outside review and replace the immediate process with these three deliveries.
+- [ ] Delivery 1: finish the focused public app gallery and agent guidance; verify and publish for review.
+- [ ] Delivery 2: consolidate one verified metadata recipe and compare related actual presentations.
+- [ ] Delivery 3: demonstrate the approved workout-experience design through requirements and integration.
+
+Next action: resume delivery 1 on codex/lib-001-public-gallery under issue 590, then proceed to delivery 2. Keep research as reference and update this checklist when a delivery is demonstrated.

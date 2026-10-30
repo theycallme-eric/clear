@@ -12,7 +12,6 @@
  */
 import { OverflowRail } from '../design-system/index'
 import { Heading, HeadingSection } from '../ui/Heading'
-import { PUBLIC_SPECIMEN_BASE } from './specimen-url'
 import {
   DESCRIBED_SPECIMENS,
   SPECIMEN_GROUPS,
@@ -20,7 +19,7 @@ import {
   type Specimen,
 } from './specimens'
 
-function SpecimenCard({ specimen, publicView }: { specimen: Specimen; publicView: boolean }) {
+function SpecimenCard({ specimen }: { specimen: Specimen }) {
   return (
     <HeadingSection className="clr-dev-gallery__card">
       <Heading>{specimen.name}</Heading>
@@ -38,39 +37,32 @@ function SpecimenCard({ specimen, publicView }: { specimen: Specimen; publicView
       }}>
         <iframe
           className="clr-dev-gallery__frame"
-          src={publicView ? PUBLIC_SPECIMEN_BASE + specimen.file : specimen.url}
+          src={specimen.url}
           title={`${specimen.group} — ${specimen.name}`}
           width={specimen.width}
           height={specimen.height}
           loading="lazy"
-          sandbox={publicView ? 'allow-scripts' : undefined}
         />
       </OverflowRail>
     </HeadingSection>
   )
 }
 
-export function DesignSystemSpecimens({ publicView = false }: { publicView?: boolean }) {
+export function DesignSystemSpecimens() {
   return (
     <div className="clr-dev-gallery__section">
-      <Heading>{publicView ? 'Upstream references' : 'Design system'}</Heading>
+      <Heading>Design system</Heading>
       <p>
         {SPECIMENS.length} specimen files from the vendored export,{' '}
         {DESCRIBED_SPECIMENS.length} of them carrying a <code>@dsCard</code>{' '}
         descriptor. Served unmodified — each frame is the file itself.
       </p>
-      {publicView && (
-        <p>
-          Upstream 0.14.3 archive styling and illustrative content. These references
-          are separate from the app-styled components and their visual approvals.
-        </p>
-      )}
       {SPECIMEN_GROUPS.map(({ group, specimens }) => (
         <HeadingSection key={group} className="clr-dev-gallery__group">
           <Heading>{group}</Heading>
           <div className="clr-dev-gallery__cards">
             {specimens.map((specimen) => (
-              <SpecimenCard key={specimen.file} specimen={specimen} publicView={publicView} />
+              <SpecimenCard key={specimen.file} specimen={specimen} />
             ))}
           </div>
         </HeadingSection>

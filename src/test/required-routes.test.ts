@@ -96,9 +96,9 @@ describe('the inventory states the requirement, not the router (REQ-010)', () =>
   it('records all independent public-library routes documented in IA.md §5', () => {
     const ia = read('docs/specs/IA.md')
     const section = ia.slice(ia.indexOf('\n## 5.'), ia.indexOf('\n## 6.'))
-    const documented = [...section.matchAll(/^\| (Library overview|App-composed|Upstream references) \| `([^`]+)` \|$/gm)]
+    const documented = [...section.matchAll(/^\| (Library overview|App-composed) \| `([^`]+)` \|$/gm)]
       .map((match) => ({ screen: match[1], path: match[2] }))
-    expect(documented).toHaveLength(3)
+    expect(documented).toHaveLength(2)
     expect(PUBLIC_LIBRARY_ROUTES.map(({ screen, path }) => ({ screen, path }))).toEqual(documented)
   })
 

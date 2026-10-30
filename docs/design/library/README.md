@@ -1,101 +1,50 @@
 # CLEAR visual library
 
-The public entry is `/gallery`. `/gallery/app` renders the same registered app
-components as the development gallery. `/gallery/ds` shows original 0.14.3
-archive specimens labeled as upstream references. These are distinct style
-contexts; upstream illustrative content is not current app behavior or blanket
-visual approval.
+Use `/gallery` or `/gallery/app` for actual app components. Both use the same
+register and styles as the development gallery. This branch is a source
+proposal; deployment and visual approval are recorded separately.
 
-## Source and ownership
+## Find and reuse
 
-Canonical app presentation remains in `src/ui/`, with route/state owners in
-`src/app/` and `src/state/`. Both entries use the existing register and renderers
-in `src/dev/`. A later organization change must move that owner rather than
-create competing copies.
+- Start with [the component index](COMPONENTS.md), generated from
+  `src/dev/gallery-registry.tsx`. Read the linked implementation for its API.
+- App presentation lives in `src/ui/`; screens/state owners live in `src/app/`
+  and `src/state/`. Keep related visual parts shared and distinct behavior with
+  its owner. Existing private parts are not automatically new public components.
+- Follow [the active three-delivery plan](PLAN.md). The first consolidation and
+  comparison targets related Review, History and Favorites presentations.
+- Regenerate the index with `node scripts/gallery-index.mjs` after register
+  changes; `--check` verifies that the generated file is current.
 
-`src/main.tsx` loads the public style entry and all app styles once in their
-existing order. `AppEntry` lazily selects the library or product runtime. Only
-`/gallery` and its path segments select the public library. It mounts no auth,
-BootGate, active-session prompts, data clients or test providers. The product
-runtime retains its existing provider/cache hierarchy.
+## Request a gap
 
-Examples use real components with existing synthetic display data and state
-controllers. Skin changes use `persist: false` and do not overwrite the person's
-device preference. Toast/dialog/timer examples remain interactive.
+Record four things in the issue/PR before requirements consume a new contract:
 
-## Immutable upstream references
+1. The user need, screen/state and existing options checked.
+2. Why those options do not fit and the smallest proposed extension.
+3. The owning source and affected consumers or intentional variants.
+4. An actual-component preview and the relevant acceptance checks.
 
-The owner-supplied 0.14.3 runtime/evidence copies remain byte-identical and
-immutable. `scripts/gallery/specimen-assets.ts` publishes the 43 review pages
-and actual static dependencies at `/gallery-reference/0.14.3/`, preserving
-relative paths and bytes. It does not publish the entire archive, historical
-`_source`, uploads, templates, repository files or test helpers.
+Design experiments use isolated branches. Show source-labeled current/proposed
+examples, review material visual changes, then carry the approved component,
+source/state and evidence links through requirements and integration. An
+appearance-preserving refactor needs verification, not invented design approval.
+Use the existing issue/PR for these references; no separate sidecar is required.
 
-Public upstream frames allow scripts in an opaque sandbox; they cannot read
-app storage or the parent document. Original CDN React/font dependencies and
-offline fallback remain the archive's behavior. Compiled app/gallery fonts
-remain self-hosted. Version upgrades require a reviewed import and identity
-checks, never patches to mirrored vendor files.
+## Examples and limits
 
-The first actual mobile scan found archive defects: FormField's example input
-has no accessible label, and OverflowRail's example tab references a missing
-panel. These are upstream findings, not current-app approval or waivers. The
-public-reference browser case retains the failures until an explicit resolution
-preserves the archive/ownership contract. Gallery-owned reference rails provide
-a named keyboard focus target through the existing `trackProps` API.
+The current register has 49 entries and 131 initial examples. It covers 48 app
+UI exports plus contextual Input; important live/session owners still need safe
+fixtures. Use actual implementations with deterministic data/controllers, no
+live account writes and no shipped test harness. Add coverage in useful slices.
+Do not copy a historical pattern merely because it has an example.
 
-The service worker leaves `/gallery-reference/` on the network path. A reference
-iframe must never replace the cached app document used for offline product
-navigation. App navigation and fingerprinted app assets retain their policies.
+The 0.14.3 foundation remains an immutable import. App-owned styles/components
+are editable; revisit foundation authoring when a real foundation edit is
+wanted. Historical archive pages stay at `/dev/gallery/ds` in development.
+Their FormField/OverflowRail accessibility findings remain reference findings;
+public archive delivery is deferred.
 
-## Review and promotion
-
-Design experiments use isolated branches and previews. Current/proposed views
-state source and named fixtures/states. Approve the actual shared implementation
-before requirements and DAG integration, then carry source and consumer evidence
-forward. Merge and production release are separate events. This first slice
-labels a source snapshot; branch/deployment does not imply visual approval.
-
-Search existing components and variables first. If insufficient, record the need,
-options considered, smallest extension, preview, owner and downstream impact.
-Obtain the applicable design decision before requirements consume a new contract.
-
-## Coverage and next work
-
-The released audit mapped 88 app UI exports. The shared gallery currently has
-49 entries and 131 initial examples: 48 directly registered exports plus the
-contextual Input specimen. Important session surfaces still need 25 planned owner
-fixtures. Fourteen owner/context exemptions and one dormant export are classified
-separately; these counts are not complete state or visual approval.
-
-Next slices add stable IDs/source-status navigation, safe Workout/logging/timer
-fixtures, the existing superset pilot, handoff and maintenance checks. Cover
-MovementCountdownView and SetLoggingSheetOverlay through their real owners.
-Preserve released Rest entry/internal Log and floating-sheet behavior; do not
-restore the older pinned-foot/log-entry pattern.
-
-The owner also wants related workout presentations in Review, History and
-Favorites displayed together with matching fixture assumptions. Use that
-comparison to identify shared visual patterns and explicit variants while
-preserving each context's behavior. The expanded element audit supports those
-decisions; it is not a requirement to turn every source occurrence into a new
-component. This comparison view is planned, not implemented by the public-entry
-slice. A separate external-model scope review is requested before broadening it.
-
-Foundation authoring ownership is a separate decision. Using the pinned package
-here does not depend on the deferred external repository/Storybook initiative239.
-
-## Planning authority and evidence
-
-- [Review guide: released UAT and gallery review](REVIEW-GUIDE.md)
-- [Workout-prompt/experience agent handoff](WORKOUT-EXPERIENCE-PILOT.md)
-- [North Star plan](https://chatgpt.com/space/page_48193bb4d7dc8191b9e4e55f837fee89)
-- [Released inventory and accuracy report](https://chatgpt.com/space/page_815f7176f3248191a07acf770c485f5a)
-- [Ownership and public gallery specification](https://chatgpt.com/space/page_aad0a08cae6c819196b34d1a47a10e48)
-- [Fixtures and operating contract](https://chatgpt.com/space/page_63ae8eab69488191a7a9576ca2c06235)
-
-`src/gallery/public-gallery.test.tsx` checks actual public routing and controls.
-`src/dev/production-gallery.test.ts` inspects real build dependencies and emitted
-upstream bytes. Existing registry/API/identity/font/accessibility checks remain
-relevant. Browser proof uses the built entry and actual styles, not test render
-providers.
+[Released-batch UAT guide](REVIEW-GUIDE.md). Shared implementation changes should
+update the relevant examples and check actual consumers using existing tests.
+Merge and production release remain separate from visual approval.

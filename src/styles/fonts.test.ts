@@ -21,7 +21,6 @@ import { build } from 'vite'
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import { localVendorFontParser } from '../../vite.config.ts'
-import { PUBLIC_SPECIMEN_BASE } from '../dev/specimen-url'
 
 const srcDir = resolve(import.meta.dirname, '..')
 const projectDir = resolve(srcDir, '..')
@@ -115,9 +114,31 @@ describe('the vendor font parser is narrowly scoped', () => {
   })
 })
 
-describe('no font is requested from Google', () => {
+describe('compiled font and public-entry contract', () => {
   let builtCss = ''
   let builtHtml = ''
+  let emittedNames: string[] = []
+  const chunks = new Map<string, { imports: string[]; modules: string[]; facade: string | null; isEntry: boolean }>()
+
+  function entry(suffix: string): string {
+    const found = [...chunks].find(([, chunk]) => chunk.facade?.endsWith(suffix)
+      || (chunk.isEntry && chunk.modules.some(module => module.endsWith(suffix))))
+    if (!found) throw new Error('Missing production entry: ' + suffix)
+    return found[0]
+  }
+
+  function staticModules(start: string): string[] {
+    const visited = new Set<string>(), modules = new Set<string>(), pending = [start]
+    while (pending.length) {
+      const file = pending.pop()!
+      if (visited.has(file)) continue
+      visited.add(file)
+      const chunk = chunks.get(file)
+      for (const module of chunk?.modules ?? []) modules.add(module)
+      pending.push(...(chunk?.imports ?? []))
+    }
+    return [...modules]
+  }
 
   beforeAll(async () => {
     // Use the actual app/config/import graph, not a hand-reassembled CSS list
@@ -130,11 +151,15 @@ describe('no font is requested from Google', () => {
       build: { write: false, minify: false, cssMinify: false },
     })
     if (!('output' in result) && !Array.isArray(result)) throw new Error('Expected build output')
-    const assets = (Array.isArray(result) ? result : [result]).flatMap((output) => output.output)
-      // Raw, sandboxed upstream references intentionally retain their archive
-      // CSS. The app/gallery stylesheet contract applies to compiled assets.
-      .filter((output) => output.type === 'asset')
-      .filter((output) => !output.fileName.startsWith(PUBLIC_SPECIMEN_BASE.slice(1)))
+    const outputs = (Array.isArray(result) ? result : [result]).flatMap((output) => output.output)
+    emittedNames = outputs.map(output => output.fileName)
+    for (const output of outputs) {
+      if (output.type === 'chunk') chunks.set(output.fileName, {
+        imports: output.imports, modules: Object.keys(output.modules),
+        facade: output.facadeModuleId, isEntry: output.isEntry,
+      })
+    }
+    const assets = outputs.filter(output => output.type === 'asset')
     builtCss = assets.filter((asset) => asset.fileName.endsWith('.css'))
       .map((asset) => String(asset.source)).join('\n')
     builtHtml = assets.filter((asset) => asset.fileName.endsWith('.html'))
@@ -142,6 +167,32 @@ describe('no font is requested from Google', () => {
     expect(builtCss.length).toBeGreaterThan(0)
     expect(builtHtml.length).toBeGreaterThan(0)
   }, 30_000)
+
+  it('emits distinct product and public gallery runtimes without publishing archived documents', () => {
+    expect(entry('/src/main.tsx')).toBeTruthy()
+    expect(entry('/src/app/AppRuntime.tsx')).toBeTruthy()
+    expect(entry('/src/gallery/PublicGalleryApp.tsx')).toBeTruthy()
+    expect(emittedNames.filter(file => file.endsWith('.html'))).toEqual(['index.html'])
+    expect(emittedNames.some(file => /^(?:gallery-reference|dev\/specimens)\//.test(file))).toBe(false)
+  })
+
+  it('keeps account startup and test infrastructure outside the shared entry and gallery dependency graph', () => {
+    for (const start of [entry('/src/main.tsx'), entry('/src/gallery/PublicGalleryApp.tsx')]) {
+      const modules = staticModules(start)
+      expect(modules.some(module => module.endsWith('/src/app/auth-client.ts'))).toBe(false)
+      expect(modules.some(module => module.endsWith('/src/app/BootSequence.tsx'))).toBe(false)
+      expect(modules.some(module => module.includes('/src/test/'))).toBe(false)
+    }
+    expect(staticModules(entry('/src/app/AppRuntime.tsx'))
+      .some(module => module.endsWith('/src/app/auth-client.ts'))).toBe(true)
+  })
+
+  it('uses the actual shared register without loading examples into the product runtime', () => {
+    expect(staticModules(entry('/src/gallery/PublicGalleryApp.tsx'))
+      .some(module => module.endsWith('/src/dev/gallery-registry.tsx'))).toBe(true)
+    expect(staticModules(entry('/src/app/AppRuntime.tsx'))
+      .some(module => module.endsWith('/src/dev/gallery-registry.tsx'))).toBe(false)
+  })
 
   it('finds the stylesheets to check', () => {
     // Guards the regex above: a rewritten import style must not silently empty

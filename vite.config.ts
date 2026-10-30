@@ -9,7 +9,6 @@ import { defineConfig } from 'vitest/config'
 import { specimenServer } from './src/dev/specimen-server.ts'
 // PWA-01's icons are rendered by the build rather than committed as binaries.
 import { pwaIcons } from './scripts/generate-pwa-icons.mjs'
-import { publicSpecimenAssets } from './scripts/gallery/specimen-assets.ts'
 
 const vendoredSkinPath = resolve(import.meta.dirname, 'src/design-system/css/skin-clear.css')
 const appSkinPath = resolve(import.meta.dirname, 'src/styles/skin-clear.css')
@@ -46,9 +45,8 @@ export const localVendorFontParser: Parser<Root> = (css, options) => {
 }
 
 export default defineConfig({
-  // Keep the legacy dev specimen URLs; publish only the reviewed static
-  // dependency closure under a separate, versioned public reference prefix.
-  plugins: [react(), specimenServer(), publicSpecimenAssets(), pwaIcons()],
+  // Archived reference specimens stay behind the development-only middleware.
+  plugins: [react(), specimenServer(), pwaIcons()],
   css: {
     postcss: { parser: localVendorFontParser },
   },

@@ -320,15 +320,14 @@ Development alias for the shared registry and renderer. The public library has a
 
 ## 5. Cross-cutting
 
-**Public design-library routes.** These reference screens use an independent public bootstrap outside product auth, BootGate and the product-journey inventory in §4. All three must open directly and on reload without an account. `e2e/required-routes.ts` records their independent inventory as `PUBLIC_LIBRARY_ROUTES`.
+**Public design-library routes.** These reference screens use an independent public bootstrap outside product auth, BootGate and the product-journey inventory in §4. Both must open directly and on reload without an account. `e2e/required-routes.ts` records their independent inventory as `PUBLIC_LIBRARY_ROUTES`.
 
 | Public library screen | Route |
 | --- | --- |
 | Library overview | `/gallery` |
 | App-composed | `/gallery/app` |
-| Upstream references | `/gallery/ds` |
 
-The public library and development alias use the same registry and renderer. App-composed examples use actual shared components and app styles. The 43 unmodified upstream reference pages use versioned asset URLs and opaque script-enabled iframes. Skin switching is nonpersisting. Upstream styling/illustrative content is labeled separately from app-styled source snapshots and visual approval. See `docs/design/library/README.md` and the owner-approved visual-library plan.
+The public library and development alias use the same registry and renderer. App-composed examples use actual shared components and app styles. Historical archive pages remain development-only references at `/dev/gallery/ds`. Skin switching is nonpersisting. Upstream styling/illustrative content is labeled separately from app-styled source snapshots and visual approval. See `docs/design/library/README.md` and `docs/design/library/PLAN.md`.
 
 **Error boundary (CORE-04).** Wraps the router. A render crash produces a recoverable screen, never a white page.
 

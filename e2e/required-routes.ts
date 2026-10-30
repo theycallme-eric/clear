@@ -73,9 +73,8 @@ export type RequiredGuard = 'public-only' | 'protected' | 'onboarding' | 'dev-on
 
 /** IA.md §5: public reference screens, outside the product account journeys. */
 export const PUBLIC_LIBRARY_ROUTES = [
-  { screen: 'Library overview', path: '/gallery', section: null },
+  { screen: 'Library overview', path: '/gallery', section: 'App-composed' },
   { screen: 'App-composed', path: '/gallery/app', section: 'App-composed' },
-  { screen: 'Upstream references', path: '/gallery/ds', section: 'Upstream references' },
 ] as const
 
 export interface RequiredScreen {

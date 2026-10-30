@@ -8,15 +8,15 @@
  *
  * PublicGalleryApp reaches the same renderer outside account clients and
  * BootGate. The legacy product-router entry remains development-only.
- * production-gallery.test.ts verifies account/test-code isolation and the
- * byte-identical upstream references in actual production output.
+ * fonts.test.ts verifies account/test-code isolation alongside the actual
+ * compiled style/font contract; archive delivery stays development-only.
  *
  * Motion (IA.md §4): a specimen stays still until a reviewer triggers it. That
  * is why a toast, a dialog and the `slow` loading state are behind controls
  * rather than playing at once.
  */
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { resolveAtmosphere, type AtmosphereLevel } from '../app/atmosphere'
 import { Screen } from '../app/Screen'
@@ -110,10 +110,10 @@ function GalleryNav({ publicView }: { publicView: boolean }) {
   return (
     <Nav label="Gallery sections">
       <ul className="clr-dev-gallery__nav-list">
-        {SECTIONS.map((section) => (
+        {SECTIONS.filter((section) => !publicView || section.to === 'app').map((section) => (
           <li key={section.label}>
             <NavLink to={section.to} end={section.end}>
-              {publicView && section.to === 'ds' ? 'Upstream references' : section.label}
+              {section.label}
             </NavLink>
           </li>
         ))}
@@ -147,7 +147,8 @@ function GalleryLayout({ publicView }: { publicView: boolean }) {
         </div>
         {publicView && (
           <p className="clr-dev-gallery__meta" role="status">
-            App source snapshot · visual approvals tracked separately
+            App source snapshot · synthetic examples · no account required.
+            Visual approvals tracked separately.
           </p>
         )}
         <Outlet />
@@ -156,12 +157,12 @@ function GalleryLayout({ publicView }: { publicView: boolean }) {
   )
 }
 
-function GalleryOverview({ publicView }: { publicView: boolean }) {
+function GalleryOverview() {
   return (
     <div className="clr-dev-gallery__section">
-      <Heading>{publicView ? 'CLEAR visual library' : 'Two sections'}</Heading>
+      <Heading>Two sections</Heading>
       <p>
-        <strong>{publicView ? 'Upstream references' : 'Design system'}</strong> — {SPECIMENS.length} original
+        <strong>Design system</strong> — {SPECIMENS.length} original
         specimen pages, displayed unmodified from the 0.14.3 archive.
       </p>
       <p>
@@ -170,9 +171,7 @@ function GalleryOverview({ publicView }: { publicView: boolean }) {
         Session-dependent surfaces have documented coverage gaps and are being added.
       </p>
       <p className="clr-dev-gallery__meta">
-        {publicView
-          ? 'Public reference · synthetic example data · no account required'
-          : 'Development reference'}
+        Development reference
       </p>
     </div>
   )
@@ -186,11 +185,11 @@ export function GalleryRoute({ publicView = false }: { publicView?: boolean }) {
   return (
     <Routes>
       <Route element={<GalleryLayout publicView={publicView} />}>
-        <Route index element={<GalleryOverview publicView={publicView} />} />
-        <Route path="ds" element={<DesignSystemSpecimens publicView={publicView} />} />
+        <Route index element={publicView ? <AppComposedParts /> : <GalleryOverview />} />
+        <Route path="ds" element={publicView ? <Navigate to="/gallery/app" replace /> : <DesignSystemSpecimens />} />
         <Route path="app" element={<AppComposedParts />} />
         {/* A mistyped section is the overview, not a 404 inside a dev tool. */}
-        <Route path="*" element={<GalleryOverview publicView={publicView} />} />
+        <Route path="*" element={publicView ? <Navigate to="/gallery/app" replace /> : <GalleryOverview />} />
       </Route>
     </Routes>
   )

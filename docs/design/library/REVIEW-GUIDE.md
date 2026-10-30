@@ -54,24 +54,24 @@ the smallest change there and list affected consumers.
 
 ## Gallery review
 
-Review `/gallery`, `/gallery/app` and `/gallery/ds` in a fresh logged-out browser.
+Review `/gallery` and `/gallery/app` in a fresh logged-out browser.
 Check direct reloads, four skins, a narrow phone, keyboard section navigation,
 one dialog, and a few familiar parent components. The App-composed view uses the
-actual component implementations; the Upstream references view preserves the
-original 0.14.3 documents and is labeled separately.
+actual component implementations. Historical archive pages remain development
+references and are outside this public delivery.
 
 The first delivery has 49 entries and 131 initial examples. That count does not
 cover every interaction or screen. The released report still identifies 25
 missing owner-fixture candidates, 14 context exemptions and one dormant export.
 Do not use a missing live workout example as a reason to recreate that UI.
 
-Before publication, resolve the source-bound evidence refresh and the two known
-upstream accessibility defects documented in README. Automated results and
+Before publication, resolve the applicable source-bound evidence checks. The
+archive accessibility defects remain documented reference findings. Automated results and
 local captures support review; they do not replace your visual decision.
 
 ## Test the design-first workflow with the workout proposal
 
-Use [the agent handoff](WORKOUT-EXPERIENCE-PILOT.md). Ask for one small comparison
+Use [delivery 3 in the active plan](PLAN.md) and the README gap-request rule. Ask for one small comparison
 first: a real, source-labeled current screen on the left and one proposed screen
 on the right, with the same fixture and viewport. Include the components being
 reused, changes to shared owners, and any requested new token or component.
