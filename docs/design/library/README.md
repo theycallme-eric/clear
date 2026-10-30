@@ -12,6 +12,11 @@ existing visual choice. Material proposed changes receive their own review.
 
 ## Find and reuse
 
+- Selected visual inputs awaiting scoped integration live in
+  [the Phosphor Echo intake](intake/phosphor-echo/README.md): one shared effect,
+  owner-selected preset, source/application rules and Augmented UI aesthetic
+  reference. Preservation is separate from runtime adoption.
+
 - Start with [the component index](COMPONENTS.md), generated from
   `src/dev/gallery-registry.tsx`. Read the linked implementation for its API.
 - App presentation lives in `src/ui/`; screens/state owners live in `src/app/`
