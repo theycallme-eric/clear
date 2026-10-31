@@ -1716,3 +1716,16 @@ fresh criterion validation and protected exact-head delivery remain pending.
 Previous audit binding retained as history (not rebound):
 
 | Runtime source hash of this audit's tree | `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` (TASK-036 below, on `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
+
+
+## Effects TASK-001 source-bound evidence recovery — 31 October 2026
+
+The existing authenticated Format Preview collector passed **4/4 skin cases and eight genuine PNGs in 12.8 seconds**, with no skipped cases. New group: `docs/design/evidence-0143/task034-format-preview-effects-602-a2/`. The complete 390×844/390×320 matrix covers CLEAR, Vapour, Signal and Mono; the original assertions and validator remain unchanged.
+
+Actual frozen source `60ab3427de1eb3c269a626fc9f1a3dca079d4814`, runtime `d8541e79196aaaabcc21bcacff672eedda7a9267ac0fd0e077ab9176a6621bde`, capture driver `ffcca1b002ecd4c3cca0afc8bf44432b09772e201d986c63136c8f1f3467f0b5` and unchanged 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all records. Observations span 2026-10-31T05:25:57.904Z through 2026-10-31T05:25:58.979Z, processes 77233, 77234, 77235, 77236, loopback origin `http://localhost:5173`. At least one record has a clean checkout; subsequent evidence-created dirty statuses are preserved as collected. Actual PNG bytes, hashes, sizes and IHDR dimensions were independently checked.
+
+Every preview/session generation, blocked generation, attempted-write and forwarded-write counter is zero. The existing fixture's authorized disposable-account provisioning/onboarding/cleanup writes are separate from that preview walk; OTP delivery was intercepted. No model generation, personal account, schema or production setting was used.
+
+Existing v1 source-only provenance names actual Task001 revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-001`, run `54169bd8-70e5-4ac5-be6e-9ff1de26b17d`, attempt2, retained branch `agent-runner/task-001-a2-54169bd8`, tested build base `65522e93d60d439ad82a545833812a58095f2216` and actual payload `c1ce18de435af4bcd340a2c959a746742f4b7f4c64dba2f061db32a37cf7d303`, derived by unchanged `capturePayloadSha256()`. The audit call site identifies this new group's actual owner; all earlier Task015 and other provenance/PNG/record bytes and audit sections remain unchanged. The generic lineage helper, all validators, assertions, hashing, immutable vendor and protected workflows are unchanged.
+
+This is local source-bound capture evidence only. Pre/post-squash source-continuity rehearsal, native recovery/receipt, exact-head CI and protected build-branch delivery remain pending at this checkpoint. No owner visual approval, hosted/deployed proof, physical-phone proof, merge, release or native completion is claimed.

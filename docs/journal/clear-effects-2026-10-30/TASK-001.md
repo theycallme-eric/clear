@@ -90,3 +90,10 @@ Pre-freeze runtime candidate SHA-256 values (these bytes must stay unchanged):
 - `src/styles/shell.css`: `3f1d1dee134eaf82be4b25a9f5927c279c21defeeaa4da537a11ecd9a88f3e61`
 
 The collector will use the existing authorized disposable account fixture and private process environment, with account setup/cleanup separate from the read-only preview. Real capture, post-squash source-continuity rehearsal, native recovery, exact-head CI and protected build-branch delivery are still pending at this checkpoint.
+
+
+## Genuine capture complete — 31 October 2026
+
+Frozen source `60ab3427de1eb3c269a626fc9f1a3dca079d4814`; existing collector `CLEAR_TASK034_RECORD_AFTER=1 npx playwright test e2e/design-0143/format-preview.spec.ts --project=mobile` exited0: four passed skin cases/eight PNGs in12.8seconds, no skips. Group `docs/design/evidence-0143/task034-format-preview-effects-602-a2`. Runtime `d8541e79196aaaabcc21bcacff672eedda7a9267ac0fd0e077ab9176a6621bde`, driver `ffcca1b002ecd4c3cca0afc8bf44432b09772e201d986c63136c8f1f3467f0b5`, pinned package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`, payload `c1ce18de435af4bcd340a2c959a746742f4b7f4c64dba2f061db32a37cf7d303`. Actual PNG bytes/hash/dimensions and complete matrix were independently checked.
+
+Actual source-only provenance uses Task001 revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-001`, run `54169bd8-70e5-4ac5-be6e-9ff1de26b17d`, a2, tested base `65522e93d60d439ad82a545833812a58095f2216` and retained branch `agent-runner/task-001-a2-54169bd8`. Zero preview/session generation and preview writes; existing disposable account setup/cleanup is separate. Historical evidence and audit contents remain unchanged. Next: source-continuity rehearsal and native full verification; no native receipt, CI, delivery, phone/UAT or owner visual approval is claimed here.
