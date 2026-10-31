@@ -1,0 +1,66 @@
+{
+  "status": "ready_for_owner_design_review",
+  "previewId": "workout-library-refresh-2026-10-31",
+  "preview": "http://127.0.0.1:8789/",
+  "updatedAt": "2026-10-31T05:43:58.900463+00:00",
+  "current": {
+    "commit": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+    "kind": "released source with synthetic display data",
+    "errorFixPR": 611
+  },
+  "proposal": {
+    "branch": "codex/workout-library-refresh-2026-10-31",
+    "commit": "f51a62fdbf688300154368e2d11e31c90e5689d2",
+    "ownerApproved": false,
+    "published": false,
+    "runtimeDiffSha256": "6970719ccbf2e480b3f270768022dc428d49dafa8527f6422f89f6667683c23e"
+  },
+  "previousComparison": {
+    "proposalCommit": "4bc4e52704e177e82914dfb7af162cb09079375d",
+    "currentCommit": "ba19701efc7cec93c8168b81e6112a37c4f6d571",
+    "url": "http://127.0.0.1:8788/",
+    "kind": "historical, preserved"
+  },
+  "groups": 7,
+  "examples": 41,
+  "verification": {
+    "renderedPanes": {
+      "passed": 82,
+      "total": 82
+    },
+    "focusedChecks": {
+      "passed": 61,
+      "total": 61
+    },
+    "a11ySamples": {
+      "checked": 7,
+      "violations": 0
+    },
+    "browserExceptions": 0,
+    "externalRequests": 0,
+    "typecheck": "passed",
+    "previewBuild": "passed",
+    "designLint": "passed",
+    "changedSourceLint": {
+      "errors": 0,
+      "warnings": 3
+    },
+    "restTimerCompatibility": {
+      "passed": 15,
+      "unrelatedExcluded": 24
+    },
+    "baselineTrackedBlobs": {
+      "checked": 5773,
+      "mismatches": 0
+    },
+    "fullAppUnitSuite": "not run for this prototype"
+  },
+  "runnerInvoked": false,
+  "nextAction": "Owner reviews material design choices; reconcile contracts before requirements/integration.",
+  "hostedPreview": {
+    "status": "deployment_pending",
+    "kind": "static design comparison, preview only",
+    "path": "/workout-review/",
+    "sourceCommit": "f51a62fdbf688300154368e2d11e31c90e5689d2"
+  }
+}
