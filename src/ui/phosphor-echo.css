@@ -1,0 +1,66 @@
+/* =============================================================================
+   PHOSPHOR ECHO — Effects TASK-003 (REQ-003), the shared rear-image effect.
+
+   One filter, installed once by the root effects host, referenced by every
+   rear source. A rear source is a decorative filled silhouette behind its real
+   component; the filter emits only the part of its blurred, shifted copy that
+   lies outside the source's own footprint, so the component's translucent
+   ground and interior are never painted over. No value here restates the
+   preset — that lives in `phosphor-echo-preset.ts`.
+   ============================================================================= */
+
+/* The definition takes no space and no pointer. */
+.clr-echo-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/* A framed target: the rear layer sits under the real component. A public
+   frame's root (`.clr-bleed`) is itself positioned, so drawing the rear layer
+   first in tree order is enough, and the wrapper adds no stacking context of
+   its own — as round 3's card host did not. */
+.clr-echo {
+  position: relative;
+}
+
+.clr-echo__rear {
+  position: absolute;
+  /* The exposed echo lies outside the silhouette; it must not be clipped. */
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* A glyph is not positioned, so its rear layer goes beneath it explicitly. */
+.clr-echo--glyph {
+  isolation: isolate;
+}
+
+.clr-echo--glyph > .clr-echo__rear {
+  z-index: -1;
+}
+
+/* Only the rear source is filtered — never a component, never nested content. */
+.clr-echo__source {
+  filter: url(#clr-phosphor-echo);
+}
+
+/* A text target: the duplicate text behind the original, as round 3 drew it. */
+.clr-echo-text {
+  position: relative;
+  isolation: isolate;
+}
+
+.clr-echo-text__rear {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.clr-echo-text__foreground {
+  position: relative;
+  z-index: 1;
+}

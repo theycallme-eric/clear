@@ -14,15 +14,17 @@
  * interaction — a chosen option, an open modal, a queued toast — can own the
  * state that produces it.
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 import {
+  ArrowLeft,
   Button,
   Checkbox,
   Chip,
   Clock,
   Crosshair,
   Gauge,
+  IconButton,
   Input,
   Target,
 } from '../design-system/index'
@@ -107,6 +109,12 @@ import {
 import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
+import { PhosphorEchoFrame, PhosphorEchoGlyph, PhosphorEchoText } from '../ui/phosphor-echo'
+import {
+  setVisualEffects,
+  useVisualEffects,
+  VisualEffectsProvider,
+} from '../state/visual-effects'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
@@ -1708,6 +1716,108 @@ const ATMOSPHERE_SPECIMENS: readonly GallerySpecimen[] = ATMOSPHERE_LEVELS.map(
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Effects TASK-003 — Phosphor Echo on real components
+// ─────────────────────────────────────────────────────────────────────────────
+
+const ECHO_STACK_STYLE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 'var(--spacing-600)',
+}
+
+const ECHO_HEADER_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 'var(--spacing-400)',
+}
+
+/**
+ * The round-3 composition on the app's own owners: the screen heading, the
+ * framed back action, the outer Card and the CTA. Effect on and off is the
+ * device's Visual effects choice, so the toggle here is that real setting.
+ */
+function PhosphorEchoRealComponentsView() {
+  const { effectsEnabled } = useVisualEffects()
+
+  return (
+    <div style={ECHO_STACK_STYLE}>
+      <Checkbox
+        label="Visual effects"
+        checked={effectsEnabled}
+        onChange={(checked) => setVisualEffects(checked)}
+      />
+      <div data-echo-sample="header" style={ECHO_HEADER_STYLE}>
+        <Heading style={{ margin: 0 }}>
+          <PhosphorEchoText>Generate</PhosphorEchoText>
+        </Heading>
+        <PhosphorEchoFrame>
+          <IconButton label="Back" icon={<ArrowLeft />} />
+        </PhosphorEchoFrame>
+      </div>
+      <div data-echo-sample="card">
+        <PhosphorEchoFrame>
+          <Card heading="Workout selections">
+            <p style={{ margin: 0 }}>Goal: Balanced</p>
+            <p style={{ margin: 0 }}>Focus: Full body</p>
+          </Card>
+        </PhosphorEchoFrame>
+      </div>
+      <div data-echo-sample="cta">
+        <PhosphorEchoFrame>
+          <Button variant="primary">Generate Workout</Button>
+        </PhosphorEchoFrame>
+      </div>
+    </div>
+  )
+}
+
+/** One filled square, the same CSS size or not, in its own viewBox. */
+const ECHO_GLYPHS = [
+  { label: '24 in 0 0 24 24', size: 24, viewBox: '0 0 24 24', d: 'M0 0H24V24H0Z' },
+  { label: '48 in 0 0 24 24', size: 48, viewBox: '0 0 24 24', d: 'M0 0H24V24H0Z' },
+  { label: '48 in 0 0 240 240', size: 48, viewBox: '0 0 240 240', d: 'M0 0H240V240H0Z' },
+] as const
+
+/**
+ * The same apparent softness and displacement whatever a target's size or
+ * viewBox: the filter works in CSS px, never in a glyph's own units.
+ */
+function PhosphorEchoAcrossSizesView() {
+  return (
+    <div style={{ ...ECHO_HEADER_STYLE, justifyContent: 'flex-start', color: 'var(--interaction)' }}>
+      {ECHO_GLYPHS.map(({ label, size, viewBox, d }) => (
+        <span key={label} data-echo-sample={label}>
+          <PhosphorEchoGlyph viewBox={viewBox} d={d}>
+            <svg viewBox={viewBox} width={size} height={size} aria-hidden="true" focusable="false">
+              <path d={d} fill="currentColor" fillOpacity={0.4} />
+            </svg>
+          </PhosphorEchoGlyph>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// The register is also mounted outside the app shell (its own test does), so
+// each example resolves the same device policy the root does for itself.
+function PhosphorEchoRealComponents() {
+  return (
+    <VisualEffectsProvider>
+      <PhosphorEchoRealComponentsView />
+    </VisualEffectsProvider>
+  )
+}
+
+function PhosphorEchoAcrossSizes() {
+  return (
+    <VisualEffectsProvider>
+      <PhosphorEchoAcrossSizesView />
+    </VisualEffectsProvider>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXE-04a — the ladder's rungs, read-only and interactive
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2582,5 +2692,24 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     summary:
       'The export’s five-layer ground. One mount serves every screen and there are no modes; under reduced motion the layer drops its drift and its scanlines.',
     specimens: ATMOSPHERE_SPECIMENS,
+  },
+  {
+    component: 'PhosphorEchoFrame',
+    requirement: 'REQ-003',
+    module: 'src/ui/phosphor-echo.tsx',
+    summary:
+      'Phosphor Echo: one shared rear image behind a real heading, framed back action, outer Card or CTA. The blurred silhouette shifts left and down in the target’s own role colour and shows only outside its footprint; Visual effects off removes it.',
+    specimens: [
+      {
+        state: 'real components, Visual effects on and off',
+        note: 'Interiors, top and right edges are unchanged with the effect on; only the exposed left and bottom edges gain the echo. The checkbox is the device’s Visual effects setting.',
+        Render: PhosphorEchoRealComponents,
+      },
+      {
+        state: 'across sizes and viewBoxes',
+        note: 'The same softness and offset in CSS pixels for a small and a large glyph, and for a 24-unit and a 240-unit viewBox.',
+        Render: PhosphorEchoAcrossSizes,
+      },
+    ],
   },
 ]
