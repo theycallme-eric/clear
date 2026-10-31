@@ -1,0 +1,19 @@
+{
+  "baseline": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+  "proposalSource": "272d38708eea6baa151635ebd47f15047f1d5c90",
+  "branch": "codex/workout-review-r2-2026-10-31",
+  "purpose": "Isolated owner design review: B05-04 and R24-R29",
+  "revision": "R2",
+  "views": 80,
+  "examples": 40,
+  "areas": 7,
+  "verification": {
+    "unitTests": 409,
+    "focusedChecks": 69,
+    "renderedPanes": 80,
+    "a11ySamples": 7,
+    "a11yViolations": 0
+  },
+  "data": "Deterministic synthetic clients and presentation inputs; no live account or generation",
+  "limits": "Guide/range/report/default contracts remain proposed. No wholesale merge approval."
+}

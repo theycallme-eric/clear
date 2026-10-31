@@ -1,0 +1,2 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/current-DCmOIWFw.js","assets/iso-DX_Fn_FA.js","assets/preload-helper-QuqZC3nL.js","assets/current-jGk64kp2.css","assets/proposed-CD2f6Rzf.js","assets/proposed-g769VJIc.css"])))=>i.map(i=>d[i]);
+import"./modulepreload-polyfill-P2Xu9kJm.js";import{t as e}from"./preload-helper-QuqZC3nL.js";new URLSearchParams(location.search).get(`side`)===`current`?await e(()=>import(`./current-DCmOIWFw.js`),__vite__mapDeps([0,1,2,3])):await e(()=>import(`./proposed-CD2f6Rzf.js`),__vite__mapDeps([4,1,2,5]));
