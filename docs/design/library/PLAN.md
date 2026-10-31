@@ -117,9 +117,9 @@ The external review informed this simplification. Its typography recommendation 
 
 Released audit baseline: 14acb2cc549b482e2fb5466a2402bbe5a34029c3. Delivery 1 has 49 entries and 131 initial examples; delivery 2's proposal expands the same register to 52 entries and 138 examples. Important live/session surfaces still need owner fixtures; registration counts do not certify state completeness or visual approval.
 
-Delivery 1 is implemented and verified in [PR 593](https://github.com/theycallme-eric/clear/pull/593), linked to [issue 590](https://github.com/theycallme-eric/clear/issues/590). The branch includes main ba19701 and preserves its PWA fix. All 5,891 unit tests, both public-route browser cases, twelve width/skin contexts and the existing authenticated collector pass. Required GitHub checks and Vercel preview succeeded. Owner acceptance, merge and release remain pending.
+Eric explicitly approved merging and publishing PRs 593, 595, 597 and 599 on 30 October 2026. Delivery 1 merged through [PR 593](https://github.com/theycallme-eric/clear/pull/593) at `953d13df46ba4aef596d39dd4da9b13d3fc11e0a`, linked to [issue 590](https://github.com/theycallme-eric/clear/issues/590). Its public gallery deployment is verified. The integrated gallery is at https://clear-peach.vercel.app/gallery; PR records and deployment checks distinguish approved, merged and released sources.
 
-Delivery 2 is implemented in [PR 595](https://github.com/theycallme-eric/clear/pull/595), tracking [issue 594](https://github.com/theycallme-eric/clear/issues/594), stacked on PR 593. Six repeated metadata recipes share one app-owned stylesheet; actual Review, live movement, saved-detail and workout-summary presentations are compared in the gallery. All 5,894 unit tests pass; 208 component-state PNG comparisons are identical at 320/390px across four skins. Three public browser cases and four current-source collector cases pass. See PR 595 for current remote-check results; owner acceptance remains pending. Recent-batch owner UAT can proceed independently. Delivery 3 needs the current workout-prompt proposal selected; paused mixed-source Refine previews remain historical references. No in-thread reviewer or new agent should be launched without the owner's request.
+Delivery 2 is implemented in [PR 595](https://github.com/theycallme-eric/clear/pull/595), tracking [issue 594](https://github.com/theycallme-eric/clear/issues/594). Six repeated metadata recipes share one app-owned stylesheet; actual Review, live movement, saved-detail and workout-summary presentations are compared in the gallery. All 5,894 unit tests pass; 208 component-state PNG comparisons are identical at 320/390px across four skins. Three public browser cases and four current-source collector cases pass. Owner merge/publication approval is recorded. [PR 599](https://github.com/theycallme-eric/clear/pull/599) is the final protected integration of the remaining approved stack, retaining PR 595's exact head and PR 597's source-preservation commits. Its final checks apply to the combined tree; the PR records the merge/deployment outcome. Recent-batch owner UAT can proceed independently. Delivery 3 needs the current workout-prompt proposal selected; paused mixed-source Refine previews remain historical references. No in-thread reviewer or new agent should be launched without the owner's request.
 
 # Working rules for agents
 
@@ -144,10 +144,10 @@ Use the source and pattern maps to find affected consumers. Do not merge unrelat
 
 - [x] Consider the outside review and replace the immediate process with these three deliveries.
 
-- [x] Delivery 1 implementation: focused app gallery and agent guidance published as PR 593/preview; required checks pass, owner acceptance remains pending.
+- [x] Delivery 1: focused app gallery and agent guidance approved, merged through PR 593 and publicly deployed.
 
-- [x] Delivery 2 implementation: verified shared metadata recipe and actual-context comparison published as PR 595; owner acceptance remains pending; the PR records current remote checks.
+- [x] Delivery 2 implementation and owner merge/publication approval: shared metadata recipe and actual-context comparison in PR 595; final protected integration recorded on PR 599.
 
 - [ ] Delivery 3: demonstrate the approved workout-experience design through requirements and integration.
 
-Next action: review PR 593 and PR 595 and select the current workout-prompt/experience proposal for delivery 3. Prepare accurate current/proposed visuals from that source; meaningful design approval precedes requirements and integration. Completing implementation checks does not authorize main merge or release.
+Next action: complete the approved protected integration recorded on PR 599, then select the current workout-prompt/experience proposal for delivery 3. Prepare accurate current/proposed visuals from that source; meaningful design approval precedes requirements and integration. Shared application scroll integration (#600) remains separate from the approved library publication.

@@ -7,8 +7,9 @@ to send changes back there; do not wait for its export to author approved shared
 app components/styles here. The historical 0.14.3 import remains intact.
 
 Use `/gallery` or `/gallery/app` for actual app components. Both use the same
-register and styles as the development gallery. This branch is a source
-proposal; deployment and visual approval are recorded separately.
+register and styles as the development gallery. The production library is at
+https://clear-peach.vercel.app/gallery. Isolated branches remain proposals;
+deployment and visual approval are recorded separately in their PRs.
 
 The public navigation separates All components, History and Favorites, and
 Movement across workout screens. The comparison views show existing app UI
@@ -28,8 +29,8 @@ existing visual choice. Material proposed changes receive their own review.
 - The Motion view also compares the actual hard-edge ScrollRegion with an
   scoped dissolve preview (22.1 CSS pixels after the owner's 15% reduction).
   Both use the same real component
-  and content. Eric selected dissolve with visible glow; its final appearance
-  and versioned foundation integration remain open. A gallery-only adapter
+  and content. Eric approved the 22.1px dissolve with the existing visible glow;
+  shared app integration remains separate in #600. A gallery-only adapter
   preserves the token's milliseconds when compiled CSS uses seconds (#600).
   Hold glow for inspection shows the existing shared CSS state continuously.
   This preview correction is not a production Home fix.
