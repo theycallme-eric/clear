@@ -62,14 +62,6 @@ export const SUGGESTIONS_LOADING_LABEL = 'Reading load history'
 export const SUGGESTIONS_ERROR_TITLE = 'Suggested weights didn’t load'
 export const SUGGESTIONS_RETRY_LABEL = 'Retry'
 
-const DATA_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const VALUE_STYLE: CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontSize: 'var(--heading-h6-size)',
@@ -117,9 +109,6 @@ const ACTION_STYLE: CSSProperties = {
 /** A weight keeps the case its unit is written in, inside an uppercase label. */
 const UNIT_CASE_STYLE: CSSProperties = { textTransform: 'none' }
 
-/** The low-confidence number: the label face, so the tier outweighs it. */
-const MUTED_VALUE_STYLE: CSSProperties = { ...DATA_STYLE, ...UNIT_CASE_STYLE }
-
 /**
  * One prescription's suggestion, as the control that explains it: the public
  * `TextAction`, the quietest action a card holds, so it adds no frame inside
@@ -159,13 +148,13 @@ export function LoadSuggestionButton({ suggestion, override, onOpen }: LoadSugge
       ) : (
         <>
           <span>{SUGGESTION_LABEL}</span>
-          <span style={low ? MUTED_VALUE_STYLE : VALUE_STYLE}>
+          <span className={low ? 'clr-text-data-xs' : undefined} style={low ? UNIT_CASE_STYLE : VALUE_STYLE}>
             {weightText(suggestion.weight, suggestion.unit)}
           </span>
           {delta !== null && <span style={UNIT_CASE_STYLE}>{delta}</span>}
         </>
       )}
-      <span style={DATA_STYLE}>{sessionCountText(suggestion.sessionCount)}</span>
+      <span className="clr-text-data-xs">{sessionCountText(suggestion.sessionCount)}</span>
     </TextAction>
   )
 }
@@ -249,7 +238,7 @@ export function LoadSuggestionDialog({
         </p>
 
         <section style={STACK_STYLE} aria-label={LAST_SESSION_LABEL}>
-          <p style={{ ...DATA_STYLE, textTransform: 'uppercase' }}>
+          <p className="clr-text-data-xs clr-text-data-xs--upper">
             {lastSession === null ? LAST_SESSION_LABEL : `${LAST_SESSION_LABEL} · ${lastSession.date}`}
           </p>
           {lastSession === null ? (
@@ -267,7 +256,7 @@ export function LoadSuggestionDialog({
         </section>
 
         <section style={STACK_STYLE} aria-label={RULE_LABEL}>
-          <p style={{ ...DATA_STYLE, textTransform: 'uppercase' }}>{RULE_LABEL}</p>
+          <p className="clr-text-data-xs clr-text-data-xs--upper">{RULE_LABEL}</p>
           <p style={{ margin: 0 }}>{suggestion.reason}</p>
         </section>
 

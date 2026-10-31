@@ -8,16 +8,17 @@ It is a review process, not evidence that either activity has been approved.
 
 | Review | Starting point | What an approval means |
 | --- | --- | --- |
-| Recent batch UAT | Last verified released main `14acb2cc549b482e2fb5466a2402bbe5a34029c3`; confirm the deployment still has that source | Acceptance of the tested released behavior and visuals |
-| Gallery delivery | Isolated `codex/lib-001-public-gallery` proposal based on that release | Acceptance of the library entry and its documented coverage; separate from approving every example |
+| Recent batch UAT | Audit baseline `14acb2c`; main has since advanced to `ba19701` with the PWA hotfix. Confirm the actual deployed source before testing | Acceptance of the tested released behavior and visuals |
+| Gallery delivery | PR593, `codex/lib-001-public-gallery`, based on main ba19701 | Acceptance of the library entry and its documented coverage; separate from approving every example |
+| Metadata and comparison delivery | Issue594, `codex/lib-002-text-roles`, stacked on PR593 | Acceptance of the shared role and useful real-owner comparisons; existing visual differences remain visible |
 | Workout-prompt/experience proposal | A separately pinned design branch and preview, using the same library contracts | Approval of the named proposal, states and shared component changes before requirements |
 
-The last verified released deployment is
-https://clear-iwsnlehye-erics-projects-0ade0dda.vercel.app. Its successful deployment
-does not mean owner UAT has passed. The local gallery preview is
-http://127.0.0.1:4179/gallery while its preview process is running; this is a local
-proposal, not a production deployment. A durable shared preview remains a
-publication step.
+The public gallery proposal is available from [PR593](https://github.com/theycallme-eric/clear/pull/593)
+and its [Vercel preview](https://clear-git-codex-lib-001-public-gallery-erics-projects-0ade0dda.vercel.app/gallery).
+The app gallery requires no CLEAR account; the preview host retains its normal
+Vercel deployment protection. The older deployment
+https://clear-iwsnlehye-erics-projects-0ade0dda.vercel.app is historical evidence,
+not an automatically current UAT target. Deployment success is separate from UAT.
 
 For each session record source commit, deployment URL, phone/browser, skin,
 scenario/fixture and date. Do not put an old or partly implemented mockup on the
@@ -55,18 +56,33 @@ the smallest change there and list affected consumers.
 ## Gallery review
 
 Review `/gallery` and `/gallery/app` in a fresh logged-out browser.
+Use History and Favorites or Movement across workout screens in the top
+navigation for a focused comparison; All components returns to the full
+register. These show current UI across contexts, not competing proposals or
+before/after changes. A positive initial accuracy/usability pass is sufficient
+for this library checkpoint; detailed design decisions follow with the pilot.
 Check direct reloads, four skins, a narrow phone, keyboard section navigation,
 one dialog, and a few familiar parent components. The App-composed view uses the
 actual component implementations. Historical archive pages remain development
 references and are outside this public delivery.
 
-The first delivery has 49 entries and 131 initial examples. That count does not
-cover every interaction or screen. The released report still identifies 25
+The first delivery has 49 entries/131 examples. Delivery 2 adds the real Review
+row and two comparison groups, bringing the register to 52 entries/138 examples.
+Use `?component=WorkoutEntryComparison` and `?component=MovementIdentityComparison`
+on its branch preview to see related owners together. Check Swap/Escape and the
+saved-section disclosure. Compare their roles and intentional differences;
+the metadata refactor is expected to preserve the existing appearance.
+
+[PR595](https://github.com/theycallme-eric/clear/pull/595) has the focused diff
+against PR593 and its [comparison preview](https://clear-git-codex-lib-002-text-roles-erics-projects-0ade0dda.vercel.app/gallery/app?component=MovementIdentityComparison).
+Switch the query to `WorkoutEntryComparison` for History/Favorites summaries.
+
+These counts do not cover every interaction or screen. The released report identifies 25
 missing owner-fixture candidates, 14 context exemptions and one dormant export.
 Do not use a missing live workout example as a reason to recreate that UI.
 
-Before publication, resolve the applicable source-bound evidence checks. The
-archive accessibility defects remain documented reference findings. Automated results and
+Keep applicable source-bound evidence current. The archive accessibility
+defects remain documented reference findings. Automated results and
 local captures support review; they do not replace your visual decision.
 
 ## Test the design-first workflow with the workout proposal
@@ -90,3 +106,11 @@ The pilot passes when the integrated result matches the approved proposal,
 reuses the identified shared owners, and introduces no unrecorded old patterns.
 Record where the handoff loses information and correct that process before
 scaling it to the rest of the library.
+
+Delivery 3 needs the current workout-prompt proposal or branch selected by the
+owner. The old Refine previews are paused, mixed-source references; do not use
+them as a current baseline or silently restart their design. Once selected,
+use the ordinary issue/PR to name the canonical component and registry entry,
+current/proposed source and fixture state, and meaningful design approval.
+Keep that same implementation and those references through requirements and
+the DAG; return material departures to review.

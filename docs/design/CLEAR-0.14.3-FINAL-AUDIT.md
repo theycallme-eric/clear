@@ -1,6 +1,27 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current integrated LIB-001 and PWA source reverification — 30 October 2026
+## LIB-002 metadata source reverification — 30 October 2026
+
+The existing authenticated Format Preview collector passed 4/4 skin cases,
+eight fresh images, in 26.45 seconds for issue 594. Current group:
+`docs/design/evidence-0143/task034-format-preview-library-594/`.
+Frozen source `c03f67ce10a71c2e7d6dccba099111db8659aa30`, runtime
+`e171102df42bfcadd27f94aa080165feca5f336b9ea9d1d51a0d9dcff70be273`
+and driver `743efe04fd37317a34fb846438dad3ba57fa34735ad8d4db7b1348056ca1bb4f`
+agree across all records. The pinned package is unchanged. Both phone heights,
+all four skins, actual PNG identity, disclosure/navigation/accessibility and
+read-only preview assertions retain the unchanged validator. Prior capture
+groups and histories remain preserved below.
+
+The application ran at loopback port 4185 with the existing disposable authenticated
+fixture and cleanup; OTP delivery was intercepted. Account setup/cleanup writes
+are separate from the preview's zero generation/write observations. This is
+current local source evidence, not a new native Runner receipt, hosted frontend
+UAT, owner design approval or production release. Metadata consolidation's
+separate 208 fixture PNG comparisons are recorded under
+`docs/design/library/evidence/lib-002/pixel-comparison.json`.
+
+## Prior integrated LIB-001 and PWA source reverification — 30 October 2026
 
 After integrating main ba19701/PR592 unchanged, the existing authenticated Format Preview collector passed **4/4 skin cases and eight fresh screenshots in28.71 seconds**. Group: `docs/design/evidence-0143/task034-format-preview-library-590-integrated/`. The initial library590, PWA-hotfix591 and all older groups remain unchanged. This is manual issue590 source verification, not a new native Task015 attempt, receipt or merge/deployment approval.
 

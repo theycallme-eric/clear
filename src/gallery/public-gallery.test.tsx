@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
 import { PUBLIC_LIBRARY_ROUTES } from '../../e2e/required-routes'
 import { AppEntry } from '../AppEntry'
@@ -10,6 +10,10 @@ const { initializeClients } = vi.hoisted(() => ({
   initializeClients: vi.fn(() => { throw new Error('Public gallery initialized real clients') }),
 }))
 vi.mock('../app/auth-client', () => ({ appAuthClients: initializeClients }))
+
+// Keep cold module transformation out of the DOM readiness deadline under CI
+// load. Browser tests still exercise the real lazy entry on direct navigation.
+beforeAll(async () => { await import('./PublicGalleryApp') })
 
 afterEach(() => {
   window.history.replaceState(null, '', '/')
@@ -56,6 +60,41 @@ describe('public actual-component gallery', () => {
     expect(window.location.pathname).toBe('/gallery/app')
   })
 
+  it('opens motion from the public navigation and returns to components', async () => {
+    const user = userEvent.setup()
+    await open('/gallery')
+    const nav = screen.getByRole('navigation', { name: 'Gallery sections' })
+    await user.click(within(nav).getByRole('link', { name: 'Motion and behavior' }))
+    expect(window.location.pathname).toBe('/gallery/motion')
+    expect(screen.getByRole('heading', { level: 2, name: 'Motion and behavior' })).toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Motion and behavior' })).toHaveAttribute('aria-current', 'page')
+    await user.click(within(nav).getByRole('link', { name: 'All components' }))
+    expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(GALLERY_ENTRIES.length)
+    expect(initializeClients).not.toHaveBeenCalled()
+  })
+
+  it('switches between named comparisons and the full library without losing the selected view', async () => {
+    const user = userEvent.setup()
+    await open('/gallery')
+    const nav = screen.getByRole('navigation', { name: 'Gallery sections' })
+    for (const [name, component, count] of [
+      ['History and Favorites', 'WorkoutEntryComparison', 2],
+      ['Movement across workout screens', 'MovementIdentityComparison', 3],
+    ] as const) {
+      await user.click(within(nav).getByRole('link', { name }))
+      expect(window.location.pathname).toBe('/gallery/app')
+      expect(window.location.search).toBe(`?component=${component}`)
+      expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(1)
+      expect(document.querySelectorAll('.clr-dev-gallery__specimen')).toHaveLength(count)
+      expect(within(nav).getByRole('link', { name })).toHaveAttribute('aria-current', 'page')
+      await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus())
+    }
+    await user.click(within(nav).getByRole('link', { name: 'All components' }))
+    expect(window.location.search).toBe('')
+    expect(document.querySelectorAll('.clr-dev-gallery__group')).toHaveLength(GALLERY_ENTRIES.length)
+    expect(initializeClients).not.toHaveBeenCalled()
+  })
+
   it('changes skins without persisting preferences and focuses the screen after section navigation', async () => {
     const user = userEvent.setup()
     localStorage.setItem('clear.skin', 'clear')
@@ -64,7 +103,7 @@ describe('public actual-component gallery', () => {
     await user.click(within(chrome).getByRole('radio', { name: 'mono' }))
     expect(document.documentElement.dataset.skin).toBe('mono')
     expect(localStorage.getItem('clear.skin')).toBe('clear')
-    await user.click(screen.getByRole('link', { name: 'App-composed' }))
+    await user.click(screen.getByRole('link', { name: 'All components' }))
     await screen.findByRole('heading', { level: 2, name: 'App-composed' })
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus())
   })

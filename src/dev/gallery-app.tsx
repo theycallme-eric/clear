@@ -13,11 +13,14 @@ import { GALLERY_ENTRIES, type GalleryEntry } from './gallery-registry'
 function EntrySection({ entry }: { entry: GalleryEntry }) {
   return (
     <HeadingSection className="clr-dev-gallery__group">
-      <Heading>{entry.component}</Heading>
+      <Heading>{entry.title ?? entry.component}</Heading>
       <p className="clr-dev-gallery__meta">
         {entry.requirement} · {entry.module}
       </p>
       <p>{entry.summary}</p>
+      {entry.title !== undefined && (
+        <p>These are current app presentations, not before-and-after design proposals. For this pass, flag anything inaccurate, stale or misleading.</p>
+      )}
       <div className="clr-dev-gallery__cards">
         {entry.specimens.map((specimen) => (
           <HeadingSection

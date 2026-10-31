@@ -16,7 +16,7 @@
  * rather than playing at once.
  */
 import { useEffect, useRef, useState } from 'react'
-import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { resolveAtmosphere, type AtmosphereLevel } from '../app/atmosphere'
 import { Screen } from '../app/Screen'
@@ -30,6 +30,8 @@ import { AppComposedParts } from './gallery-app'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { DesignSystemSpecimens } from './gallery-ds'
 import { SPECIMENS } from './specimens'
+import { GALLERY_ENTRIES } from './gallery-registry'
+import { GalleryMotion } from './gallery-motion'
 
 import './gallery.css'
 
@@ -104,15 +106,41 @@ const SECTIONS = [
   { to: '.', end: true, label: 'Overview' },
   { to: 'ds', end: false, label: 'Design system' },
   { to: 'app', end: false, label: 'App-composed' },
+  { to: 'motion', end: false, label: 'Motion and behavior' },
 ]
 
 function GalleryNav({ publicView }: { publicView: boolean }) {
+  const { pathname, search } = useLocation()
+  const motion = pathname.endsWith('/motion')
+  const component = new URLSearchParams(search).get('component')
+  const comparisons = GALLERY_ENTRIES.filter(entry =>
+    entry.component === 'WorkoutEntryComparison' || entry.component === 'MovementIdentityComparison',
+  )
+  if (publicView) {
+    return (
+      <Nav label="Gallery sections">
+        <ul className="clr-dev-gallery__nav-list">
+          <li>
+            <Link to="/gallery/app" aria-current={motion || comparisons.some(entry => entry.component === component) ? undefined : 'page'}>All components</Link>
+          </li>
+          {comparisons.map(entry => (
+            <li key={entry.component}>
+              <Link to={`/gallery/app?component=${entry.component}`} aria-current={!motion && component === entry.component ? 'page' : undefined}>
+                {entry.title}
+              </Link>
+            </li>
+          ))}
+          <li><Link to="/gallery/motion" aria-current={motion ? 'page' : undefined}>Motion and behavior</Link></li>
+        </ul>
+      </Nav>
+    )
+  }
   return (
     <Nav label="Gallery sections">
       <ul className="clr-dev-gallery__nav-list">
-        {SECTIONS.filter((section) => !publicView || section.to === 'app').map((section) => (
+        {SECTIONS.map((section) => (
           <li key={section.label}>
-            <NavLink to={section.to} end={section.end}>
+            <NavLink to={section.to === '.' ? '/dev/gallery' : '/dev/gallery/' + section.to} end={section.end}>
               {section.label}
             </NavLink>
           </li>
@@ -129,14 +157,15 @@ function GalleryNav({ publicView }: { publicView: boolean }) {
  * skin in the other.
  */
 function GalleryLayout({ publicView }: { publicView: boolean }) {
-  const { pathname } = useLocation()
-  const previousPath = useRef(pathname)
+  const { pathname, search } = useLocation()
+  const location = pathname + search
+  const previousPath = useRef(location)
   useEffect(() => {
-    if (publicView && previousPath.current !== pathname) {
+    if (publicView && previousPath.current !== location) {
       document.querySelector<HTMLElement>('main h1')?.focus()
     }
-    previousPath.current = pathname
-  }, [pathname, publicView])
+    previousPath.current = location
+  }, [location, publicView])
   return (
     <Screen title="Component Gallery">
       <div className="clr-dev-gallery">
@@ -160,7 +189,7 @@ function GalleryLayout({ publicView }: { publicView: boolean }) {
 function GalleryOverview() {
   return (
     <div className="clr-dev-gallery__section">
-      <Heading>Two sections</Heading>
+      <Heading>Gallery sections</Heading>
       <p>
         <strong>Design system</strong> — {SPECIMENS.length} original
         specimen pages, displayed unmodified from the 0.14.3 archive.
@@ -173,6 +202,7 @@ function GalleryOverview() {
       <p className="clr-dev-gallery__meta">
         Development reference
       </p>
+      <p><strong>Motion and behavior</strong> restores the effect lab, use cases and scroll comparison using current shared components.</p>
     </div>
   )
 }
@@ -188,6 +218,7 @@ export function GalleryRoute({ publicView = false }: { publicView?: boolean }) {
         <Route index element={publicView ? <AppComposedParts /> : <GalleryOverview />} />
         <Route path="ds" element={publicView ? <Navigate to="/gallery/app" replace /> : <DesignSystemSpecimens />} />
         <Route path="app" element={<AppComposedParts />} />
+        <Route path="motion" element={<GalleryMotion />} />
         {/* A mistyped section is the overview, not a 404 inside a dev tool. */}
         <Route path="*" element={publicView ? <Navigate to="/gallery/app" replace /> : <GalleryOverview />} />
       </Route>

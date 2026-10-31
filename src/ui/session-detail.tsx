@@ -38,14 +38,6 @@ import { StructureBadge } from './workout-chrome'
 // Shared type
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DATA_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const VALUE_STYLE: CSSProperties = {
   fontFamily: 'var(--font-data)',
   fontSize: 'var(--label-sm-size)',
@@ -94,7 +86,7 @@ export interface SessionProvenanceProps {
  */
 export function SessionProvenance({ provenance }: SessionProvenanceProps) {
   return (
-    <p style={DATA_STYLE}>
+    <p className="clr-text-data-xs">
       {provenance.label}
       {' · '}
       {provenance.asOf === null ? 'no resolved moment' : `read at ${provenance.asOf}`}
@@ -137,7 +129,7 @@ export function StructureResultBadge({ block }: StructureResultBadgeProps) {
           )}
         </>
       ) : (
-        <span style={DATA_STYLE}>Not scored</span>
+        <span className="clr-text-data-xs">Not scored</span>
       )}
     </div>
   )
@@ -165,7 +157,7 @@ function Measurement({ label, value }: { label: string; value: ReactNode }) {
           : { ...MEASUREMENT_STYLE, padding: 'var(--spacing-50) var(--spacing-200)' }
       }
     >
-      <span style={DATA_STYLE}>{label}</span>
+      <span className="clr-text-data-xs">{label}</span>
       <span style={VALUE_STYLE}>{value}</span>
     </span>
   )
@@ -203,7 +195,7 @@ export function LoggedSetTable({ sets, label }: LoggedSetTableProps) {
         textAlign: 'left',
       }}
     >
-      <caption style={{ ...DATA_STYLE, textAlign: 'left', paddingBottom: 'var(--spacing-100)' }}>
+      <caption className="clr-text-data-xs" style={{ textAlign: 'left', paddingBottom: 'var(--spacing-100)' }}>
         {label}
       </caption>
       <thead>
@@ -219,7 +211,7 @@ export function LoggedSetTable({ sets, label }: LoggedSetTableProps) {
       <tbody>
         {sets.map((set) => (
           <tr key={set.key}>
-            <th scope="row" style={{ ...cellStyle, ...DATA_STYLE }}>
+            <th scope="row" className="clr-text-data-xs" style={{ ...cellStyle }}>
               {set.setNumber}
               {showsWarmup && set.isWarmup && ' · warm-up'}
             </th>
@@ -243,7 +235,7 @@ const cellStyle: CSSProperties = {
 
 function HeaderCell({ children }: { children: ReactNode }) {
   return (
-    <th scope="col" style={{ ...cellStyle, ...DATA_STYLE, textTransform: 'uppercase' }}>
+    <th scope="col" className="clr-text-data-xs clr-text-data-xs--upper" style={{ ...cellStyle }}>
       {children}
     </th>
   )
@@ -338,7 +330,7 @@ function LoggedExercise({ exercise }: { exercise: ExerciseDetailView }) {
     <div style={STACK_STYLE}>
       <div className="clr-row" style={{ flexWrap: 'wrap', gap: 'var(--spacing-200)' }}>
         <p style={MOVEMENT_STYLE}>{exercise.name}</p>
-        <span style={DATA_STYLE}>{exercise.prescription}</span>
+        <span className="clr-text-data-xs">{exercise.prescription}</span>
         <span style={GLYPH_ROW_STYLE}>
           {STATUS_GLYPH[exercise.status]}
           {exercise.statusLabel}
@@ -351,7 +343,7 @@ function LoggedExercise({ exercise }: { exercise: ExerciseDetailView }) {
         )}
       </div>
       {exercise.sets.length === 0 ? (
-        <p style={DATA_STYLE}>No sets logged</p>
+        <p className="clr-text-data-xs">No sets logged</p>
       ) : (
         <LoggedSetTable sets={exercise.sets} label={`Sets logged for ${exercise.name}`} />
       )}

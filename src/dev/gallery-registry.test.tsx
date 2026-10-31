@@ -233,7 +233,7 @@ describe('the app-composed section', () => {
 
     GALLERY_ENTRIES.forEach((entry, index) => {
       const group = within(groups[index] as HTMLElement)
-      expect(group.getByRole('heading', { name: entry.component })).toBeInTheDocument()
+      expect(group.getByRole('heading', { name: entry.title ?? entry.component })).toBeInTheDocument()
       for (const specimen of entry.specimens) {
         expect(
           group.getByRole('heading', { name: specimen.state }),

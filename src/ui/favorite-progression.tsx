@@ -69,14 +69,6 @@ const DIRECTION_WORDS: Readonly<Record<ProgressionDirection, string>> = {
   unjudged: 'Compared with',
 }
 
-const META_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
-  margin: 0,
-}
-
 const LIST_STYLE: CSSProperties = {
   listStyle: 'none',
   margin: 0,
@@ -136,7 +128,7 @@ export function FavoriteProgressionCard({
     // One card, headed inside at the screen's own level. Each group below is
     // a ruled sub-group one level down, never a second frame.
     <Card heading={PROGRESSION_TITLE}>
-      <p style={META_STYLE}>
+      <p className="clr-text-data-xs">
         {timesCompletedText(timesCompleted)}
         {/* The headline of the most recent run, sourced to its day. A
             favorite never completed has neither, and says nothing. */}
@@ -145,7 +137,7 @@ export function FavoriteProgressionCard({
       {lastRunHeadline !== null && <p style={ROW_STYLE}>{lastRunHeadline}</p>}
 
       {note !== null && (
-        <p style={META_STYLE} role="note">
+        <p className="clr-text-data-xs" role="note">
           {note}
         </p>
       )}
@@ -165,7 +157,7 @@ export function FavoriteProgressionCard({
                       without depending on the glyph beside it — and it names
                       the workout and the day it was set in, because a record
                       whose source is not stated cannot be checked. */}
-                  <span style={META_STYLE}>
+                  <span className="clr-text-data-xs">
                     {PB_BADGE_LABEL} · set {best.setOn} · {best.workoutTitle}
                   </span>
                 </li>
@@ -200,7 +192,7 @@ export function FavoriteProgressionCard({
                   </span>
                   <span>{weight.label}</span>
                   <span style={VALUE_STYLE}>{weight.display}</span>
-                  <span style={META_STYLE}>on {weight.setOn}</span>
+                  <span className="clr-text-data-xs">on {weight.setOn}</span>
                 </li>
               ))}
             </ul>
@@ -219,7 +211,7 @@ export function FavoriteProgressionCard({
                   {/* The other end of the record's source: the run that holds
                       it says so, in the same word the badge above uses. */}
                   {entry.holdsBest && (
-                    <span style={META_STYLE}>
+                    <span className="clr-text-data-xs">
                       <span aria-hidden="true" style={GLYPH_STYLE}>
                         <Trophy size={16} />
                       </span>{' '}
@@ -253,7 +245,7 @@ function DeltaRow({ delta }: { delta: ProgressionDelta }) {
       <span>{delta.label}</span>
       <span style={VALUE_STYLE}>{delta.current}</span>
       <span>{delta.change}</span>
-      <span style={META_STYLE}>
+      <span className="clr-text-data-xs">
         {DIRECTION_WORDS[delta.direction]} {delta.previous} {delta.against}
       </span>
     </p>

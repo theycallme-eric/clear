@@ -80,7 +80,6 @@ import {
   type LoadOverride,
   type LoadOverrides,
   type LoadSuggestions,
-  type LoadSuggestionView,
 } from '../state/load-suggestions'
 import { useQueryClient } from '../state/query'
 import type { SessionAcceptance, SessionSnapshot } from '../state/schemas'
@@ -90,10 +89,9 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
-import { ExerciseSwapControls } from '../ui/exercise-swap'
+import { ReviewExerciseRow } from '../ui/review-exercise-row'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
-  LoadSuggestionButton,
   LoadSuggestionDialog,
   LoadSuggestionsStatus,
 } from '../ui/load-suggestion'
@@ -420,12 +418,6 @@ const FACT_GLYPHS: Readonly<Record<string, ReactNode>> = {
 }
 
 const LABEL_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  textTransform: 'uppercase',
-  color: 'var(--text-card-label)',
-  margin: 0,
   display: 'flex',
   alignItems: 'center',
   gap: 'var(--spacing-100)',
@@ -435,14 +427,6 @@ const VALUE_STYLE: CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontSize: 'var(--heading-h6-size)',
   color: 'var(--text-card-header)',
-  margin: 0,
-}
-
-const DATA_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-label)',
   margin: 0,
 }
 
@@ -515,7 +499,7 @@ function BriefingOverview({
 
       {/* A clamp that moved the session says so in words and with a glyph. */}
       {adjustment !== null && (
-        <p style={{ ...DATA_STYLE, display: 'flex', gap: 'var(--spacing-200)' }}>
+        <p className="clr-text-data-xs" style={{ display: 'flex', gap: 'var(--spacing-200)' }}>
           <Info size={16} />
           {adjustment}
         </p>
@@ -549,7 +533,7 @@ function RequiredEquipment({ equipment }: { equipment: readonly string[] }) {
     <div className="clr-stack--tight" style={STACK_STYLE}>
       {/* A label and a value rather than paragraphs: the overview carries no
           prose (REQ-010), and this is a reading, not a sentence. */}
-      <span id={labelId} style={LABEL_STYLE}>
+      <span id={labelId} className="clr-text-data-xs clr-text-data-xs--upper" style={LABEL_STYLE}>
         {EQUIPMENT_LABEL}
       </span>
       {equipment.length === 0 ? (
@@ -637,7 +621,7 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
         {cadence.map((entry) => (
           <li key={entry.key} className="clr-row" style={{ gap: 'var(--spacing-200)' }}>
             <span style={{ textTransform: 'capitalize' }}>{entry.name}</span>
-            <span style={DATA_STYLE}>{entry.tempo}</span>
+            <span className="clr-text-data-xs">{entry.tempo}</span>
           </li>
         ))}
       </ul>
@@ -673,7 +657,6 @@ const MEMBER_RULE_STYLE: CSSProperties = {
  * wear, and with the rest glyph so the colour is never the only cue.
  */
 const ROUND_REST_STYLE: CSSProperties = {
-  ...DATA_STYLE,
   color: 'var(--text-card-header)',
   display: 'flex',
   alignItems: 'center',
@@ -720,7 +703,7 @@ function ReviewBlockRows({
     return (
       <div className="clr-stack--tight" style={STACK_STYLE}>
         {badged && <StructureBadge identity={block.identity} />}
-        {block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>}
+        {block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>}
         {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
         {block.exercises.map((exercise) => row(exercise, null))}
       </div>
@@ -740,9 +723,9 @@ function ReviewBlockRows({
     <div className="clr-stack--tight" style={GROUP_STYLE}>
       <StructureBadge identity={block.identity} />
       {inRounds ? (
-        <p style={DATA_STYLE}>{block.roundSequence}</p>
+        <p className="clr-text-data-xs">{block.roundSequence}</p>
       ) : (
-        block.roundRest !== null && <span style={DATA_STYLE}>{block.roundRest}</span>
+        block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>
       )}
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
       <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
@@ -753,144 +736,11 @@ function ReviewBlockRows({
         ))}
       </ol>
       {inRounds && block.roundRest !== null && (
-        <p style={ROUND_REST_STYLE}>
+        <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
           <Rest size={16} />
           {block.roundRest}
         </p>
       )}
-    </div>
-  )
-}
-
-/**
- * B05-04: the movement's name row leads. A wrapped name keeps its own column,
- * and Swap stays at the far end of that row rather than under the readings.
- */
-const NAME_ROW_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 'var(--spacing-300)',
-}
-
-/**
- * The name in the heading ink B05-04 selected, not the action colour: Swap
- * beside it is the only thing on the row that acts.
- */
-const NAME_STYLE: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
-  display: 'flex',
-  alignItems: 'baseline',
-  margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h5-size)',
-  lineHeight: 'var(--heading-h5-line-height)',
-  fontWeight: 'var(--font-weight-bold)',
-  textTransform: 'uppercase',
-  color: 'var(--ink)',
-}
-
-/**
- * The ordinal has its own column, on the name's first baseline, so a long
- * name wraps under itself rather than pushing the whole name below `02`.
- */
-const ORDINAL_STYLE: CSSProperties = {
-  ...DATA_STYLE,
-  flex: 'none',
-  marginInlineEnd: 'var(--spacing-200)',
-}
-
-const NAME_TEXT_STYLE: CSSProperties = { minWidth: 0, overflowWrap: 'anywhere' }
-
-/**
- * Swap's 40px target, centred on the name's first line: the control is taller
- * than that line, so it is pulled up by half the difference. The row's gap
- * below clears the other half.
- */
-const SWAP_SLOT_STYLE: CSSProperties = {
-  flex: '0 1 auto',
-  maxWidth: '50%',
-  marginBlock: 'calc((var(--heading-h5-line-height) - var(--control-height)) / 2)',
-}
-
-const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE, gap: 'var(--spacing-200)' }
-
-const PRESCRIPTION_STYLE: CSSProperties = {
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: 'var(--spacing-100) var(--spacing-300)',
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-md-size)',
-  lineHeight: 'var(--label-md-line-height)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-paragraph)',
-}
-
-const EQUIPMENT_STYLE: CSSProperties = {
-  ...DATA_STYLE,
-  color: 'var(--text-secondary)',
-  textTransform: 'capitalize',
-}
-
-/**
- * One prescription, in three tiers: the movement, then what it asks (one
- * round's target inside a counted superset or circuit, the whole prescription
- * otherwise), then the equipment. Every reading is a separate element rather
- * than one assembled sentence: `prescriptionText` already refuses to produce a
- * string anything would want to parse back, and the load and the rest are
- * different facts that a screen reader should be able to stop between. Tempo
- * is not on the row; the section's tempo detail carries it.
- *
- * Inside a superset or circuit the movement's own rest is not shown: the group
- * rests once, after the round, and states that rest once beneath its list —
- * the transition between members is not a rest the athlete takes. A
- * `Bodyweight` load beside `bodyweight` equipment says the same thing twice,
- * so there the equipment line carries it alone.
- */
-function ReviewExerciseRow({
-  ordinal,
-  inRounds,
-  exercise,
-  suggestion,
-  override,
-  onExplain,
-}: {
-  /** `01`, `02` — the movement's place in its group, or null outside one. */
-  ordinal: string | null
-  /** A superset or circuit member: the group, not the row, states the rest. */
-  inRounds: boolean
-  exercise: ReviewExerciseView
-  /** Null where there is no anchor — a state, and it renders nothing. */
-  suggestion: LoadSuggestionView | null
-  override: LoadOverride | null
-  onExplain: () => void
-}) {
-  const repeatsEquipment =
-    exercise.load !== null && exercise.load.toLowerCase() === exercise.equipment.toLowerCase()
-  const load = inRounds && repeatsEquipment ? null : exercise.load
-  const rest = inRounds ? null : exercise.rest
-  return (
-    <div style={MOVEMENT_STYLE}>
-      <div style={NAME_ROW_STYLE}>
-        <p style={NAME_STYLE}>
-          {ordinal !== null && <span style={ORDINAL_STYLE}>{ordinal} </span>}
-          <span style={NAME_TEXT_STYLE}>{exercise.name}</span>
-        </p>
-        <div style={SWAP_SLOT_STYLE}>
-          <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="swap" />
-        </div>
-      </div>
-      <p style={PRESCRIPTION_STYLE}>
-        <span>{exercise.roundTarget ?? exercise.prescription}</span>
-        {load !== null && <span>{load}</span>}
-        {rest !== null && <span>{rest}</span>}
-      </p>
-      <span style={EQUIPMENT_STYLE}>{exercise.equipment}</span>
-      {suggestion !== null && (
-        <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
-      )}
-      <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="undo" />
     </div>
   )
 }

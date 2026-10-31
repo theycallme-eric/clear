@@ -1,0 +1,648 @@
+{
+  "baseline": "4089a55c1e10190c25730712980181a0a443ad26",
+  "baselineInstrumentation": "export existing private ReviewExerciseRow only",
+  "widths": [
+    320,
+    390
+  ],
+  "skins": [
+    "clear",
+    "vapour",
+    "signal",
+    "mono"
+  ],
+  "startedAt": "2026-10-30T18:13:57.660Z",
+  "finishedAt": "2026-10-30T18:14:54.403Z",
+  "passed": true,
+  "method": "Actual-owner fixture PNG byte comparison in Chromium; reduced motion, settled local fonts, decoration animations disabled equally. Baseline only exports the existing private Review row for the isolated harness. This is component/state evidence, not whole-screen UAT.",
+  "candidateInputs": [
+    {
+      "path": "src/main.tsx",
+      "sha256": "b654970a56630d7f31c3109b1d67d1ee15b33d1ca8186bdfa0ec8fc1176d1e11"
+    },
+    {
+      "path": "src/styles/text-roles.css",
+      "sha256": "96876ab69e2b951fb33aba2c45a00bd62cabf5348d34cac85aa7d80a10b78fd2"
+    },
+    {
+      "path": "src/app/Review.tsx",
+      "sha256": "fdc08d8ef40fbdce04f04a11158dbfef88b0e5ca49fd7f3c51b8cd97c3c992e4"
+    },
+    {
+      "path": "src/ui/review-exercise-row.tsx",
+      "sha256": "4ea8b45b1784bc3078b081f30c653709d15bc40df0e0c667927c15d183f345f3"
+    },
+    {
+      "path": "src/ui/history-list.tsx",
+      "sha256": "67c4a3c2001c3ca13ddd617c80fa9a746080db120d7643630ff54bfa7f942b32"
+    },
+    {
+      "path": "src/ui/favorite-list.tsx",
+      "sha256": "e4634982ae44e0e7364f0133d7d86235a0fae71a7536b62e52b0153e2e0dc740"
+    },
+    {
+      "path": "src/ui/favorite-progression.tsx",
+      "sha256": "d77add4e7c43324f98f42ac647442ca62ccc21c9759155957499ed46c817bd4c"
+    },
+    {
+      "path": "src/ui/load-suggestion.tsx",
+      "sha256": "933c4ae7345e720bb817c931295e7bfa4e915f48fe107d79bb0c1caa533639e3"
+    },
+    {
+      "path": "src/ui/session-detail.tsx",
+      "sha256": "5d8699ad52d6cf3b7dae1ee6720ed92b7bccdf04123b83e7ce5873bda8e7a014"
+    }
+  ],
+  "contexts": [
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "clear",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "vapour",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "signal",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 320,
+      "skin": "mono",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "clear",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "vapour",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "signal",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "WorkoutListItem",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "FavoriteListItem",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "FavoriteProgressionCard",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "LoadSuggestionButton",
+      "states": 4,
+      "identical": 4
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "LoadSuggestionDialog",
+      "states": 3,
+      "identical": 3
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "SessionSectionCard",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "LoggedSetTable",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "SessionProvenance",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "ReviewMovement",
+      "states": 2,
+      "identical": 2
+    },
+    {
+      "width": 390,
+      "skin": "mono",
+      "component": "HistoryRecent",
+      "states": 1,
+      "identical": 1
+    }
+  ],
+  "stateComparisons": 208,
+  "differences": 0,
+  "pageErrors": 0,
+  "accountRequests": 0,
+  "sampleImages": [
+    {
+      "path": "390-clear-ReviewMovement-0-before.png",
+      "sha256": "60069f44ca20599082bf63bce91d1b33866021e202bb6d1b76665dfd3817c1ef"
+    },
+    {
+      "path": "390-clear-ReviewMovement-0-after.png",
+      "sha256": "60069f44ca20599082bf63bce91d1b33866021e202bb6d1b76665dfd3817c1ef"
+    },
+    {
+      "path": "390-clear-WorkoutListItem-0-before.png",
+      "sha256": "c75c1c80fc48a756156e57290119cdd547ce08a5ae7959c2a7ba9b7bf8cdafa7"
+    },
+    {
+      "path": "390-clear-WorkoutListItem-0-after.png",
+      "sha256": "c75c1c80fc48a756156e57290119cdd547ce08a5ae7959c2a7ba9b7bf8cdafa7"
+    },
+    {
+      "path": "390-clear-FavoriteListItem-0-before.png",
+      "sha256": "8418fbc830731e7ad66be0fc2d7a00763a5e5bc6fb5f009aaff4a2e809d13617"
+    },
+    {
+      "path": "390-clear-FavoriteListItem-0-after.png",
+      "sha256": "8418fbc830731e7ad66be0fc2d7a00763a5e5bc6fb5f009aaff4a2e809d13617"
+    }
+  ]
+}

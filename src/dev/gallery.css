@@ -7,18 +7,18 @@
    than restyled.
    ============================================================================= */
 
-/* Reclaims the cockpit column's horizontal padding: a review surface wants the
-   width, and a specimen card declares its own. */
+/* Explanatory copy keeps the screen gutters. Only review frames reclaim the
+   column's padding; their own padding already contains the specimen content. */
 .clr-dev-gallery {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-700);
-  margin-inline: calc(-1 * var(--spacing-400));
 }
 
 /* ── Chrome: the switchers and the section links ─────────────────────────── */
 
 .clr-dev-gallery__chrome {
+  margin-inline: calc(-1 * var(--spacing-400));
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-600);
@@ -52,6 +52,7 @@
 }
 
 .clr-dev-gallery__cards {
+  margin-inline: calc(-1 * var(--spacing-400));
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-500);

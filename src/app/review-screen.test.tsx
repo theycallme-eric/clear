@@ -504,7 +504,7 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
       expect(within(swapSlot).getByRole('button', { name: /^Swap / })).toBeInTheDocument()
       expect(prescription.tagName).toBe('P')
       expect(prescription.style.fontSize).toBe('var(--label-md-size)')
-      expect(equipment.style.color).toBe('var(--text-secondary)')
+      expect(equipment).toHaveClass('clr-text-data-xs', 'clr-text-data-xs--quiet')
     }
   })
 

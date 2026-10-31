@@ -1,0 +1,72 @@
+{
+  "round": 3,
+  "date": "2026-10-30",
+  "browser": "local Chrome",
+  "url": "http://127.0.0.1:8794/round-3/",
+  "shared_filter_count": 1,
+  "shared_source_count": 4,
+  "shared_source_filter_url": "url(#screen-echo)",
+  "foreground_and_nested_filtered_count": 0,
+  "kernel_occlusion": {
+    "operator": "out",
+    "mask": "SourceAlpha"
+  },
+  "off_hides_all_source_layers": true,
+  "individual_frame_toggle_hides_source": true,
+  "phone_widths_without_body_overflow": [
+    320,
+    375
+  ],
+  "comparison_workbench_checked": true,
+  "temporary_viewport_reset": true,
+  "pixel_check": {
+    "method": "aligned effect-on/off browser captures at the same dimensions; absolute RGB channel differences",
+    "results": {
+      "card_interior": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0
+      },
+      "top_inside": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0
+      },
+      "right_inside": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0
+      },
+      "left_echo": {
+        "mean": 41.8027,
+        "p99": 82.0,
+        "max": 83
+      },
+      "bottom_echo": {
+        "mean": 50.6394,
+        "p99": 84.0,
+        "max": 85
+      },
+      "cta_interior": {
+        "mean": 0.0,
+        "p99": 0.0,
+        "max": 0
+      }
+    },
+    "finding": "sampled card interior, top/right interior and CTA interior are pixel-identical; exposed left and bottom regions change"
+  },
+  "scope": "isolated preview; no app integration or physical phone test",
+  "initial_geometry_check_settings": {
+    "opacity": 0.34,
+    "blur": 1.4,
+    "x": -5.5,
+    "y": 6.6
+  },
+  "preferred_preset_saved_from_user_screenshot": {
+    "opacity": 0.29,
+    "blur": 3.2,
+    "x": -4.7,
+    "y": 5.64
+  },
+  "preferred_preset_status": "parameter-only update; earlier geometry/masking checks used the initial settings"
+}

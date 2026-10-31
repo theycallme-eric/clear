@@ -1,0 +1,26 @@
+{
+  "id": "home-narrow-rest",
+  "sha256": "01a248bb69fd6fc682c6b02f143198576f980aac9aa8bc55d931296a03cc466a",
+  "viewport": {
+    "width": 320,
+    "height": 568
+  },
+  "pixels": {
+    "width": 320,
+    "height": 568,
+    "scale": "css"
+  },
+  "source": {
+    "head": "c141aed5c43d26cc3966b0d9a624be3950d1df46",
+    "dirty": false
+  },
+  "path": "http://localhost:5390/",
+  "reference": {
+    "id": "B05-01",
+    "file": "sources/source-04-B05-01-home.jpg",
+    "region": "01.2 content clipped at the header rule",
+    "sha256": null
+  },
+  "consumer": "page ScrollRegion + AppHeader head",
+  "state": "overflowing, at rest"
+}

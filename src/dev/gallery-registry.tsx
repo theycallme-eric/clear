@@ -109,6 +109,7 @@ import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
+import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -123,6 +124,8 @@ export interface GallerySpecimen {
 export interface GalleryEntry {
   /** Exported component name — what the coverage gate matches on. */
   component: string
+  /** Human-readable heading when a registered comparison needs a plain name. */
+  title?: string
   /** The DAG node that owns it. */
   requirement: string
   /** Module path, so a reviewer can go and read it. */
@@ -1821,6 +1824,39 @@ function AppearancePickerChosenSkin() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  {
+    component: 'WorkoutEntryComparison',
+    title: 'History and Favorites',
+    requirement: 'LIB-002',
+    module: 'src/dev/gallery-registry.tsx',
+    summary: 'The same workout as two current summaries. History shows the dated result; Favorites offers restart and removal. Compare how the title, metadata and spacing relate while their actions stay specific to each screen.',
+    specimens: [
+      { state: 'History · completed session', Render: WorkoutListItemCompleted },
+      { state: 'Favorites · saved workout', Render: FavoriteListItemRestorable },
+    ],
+  },
+  {
+    component: 'ReviewExerciseRow',
+    requirement: 'REV-01',
+    module: 'src/ui/review-exercise-row.tsx',
+    summary: 'The actual Review movement row, extracted unchanged from the screen. Safe in-memory swap controller opens the real empty-state dialog; no account or catalog requests.',
+    specimens: [
+      { state: 'standalone prescription', Render: ReviewMovementStandalone },
+      { state: 'round member', note: 'One-round target; group rest belongs to the surrounding group, not this row.', Render: ReviewMovementInRounds },
+    ],
+  },
+  {
+    component: 'MovementIdentityComparison',
+    title: 'Movement across workout screens',
+    requirement: 'LIB-002',
+    module: 'src/dev/gallery-registry.tsx',
+    summary: 'Back squat before, during and after a workout, using the current Review row, live movement presentation and saved detail. Compare the movement name, prescription and supporting text; live counters and recorded results keep their own meaning.',
+    specimens: [
+      { state: 'Review · before starting', Render: ReviewMovementStandalone },
+      { state: 'Workout · movement identity', note: 'Actual presentation only; session logging controls and state remain a documented fixture gap.', Render: LiveMovementIdentity },
+      { state: 'Saved detail · recorded sets', note: 'The section owns its real disclosure and table. The saved circuit outcome is historical context, not a current target.', Render: () => <SessionSectionCard section={{ ...SAMPLE_DETAIL_SECTION, title: 'Saved detail · primary work' }} /> },
+    ],
+  },
   {
     component: 'WorkoutListItem',
     requirement: 'HIST-01',
