@@ -25,6 +25,7 @@ import { Outlet } from 'react-router-dom'
 import { FocusBrackets } from '../design-system/index'
 import { useVisualEffects, VisualEffectsProvider } from '../state/visual-effects'
 import { AtmosphereLayer } from '../ui/atmosphere'
+import { PhosphorEchoDefinition } from '../ui/phosphor-echo'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
 
 export interface ContainedShellProps {
@@ -52,6 +53,9 @@ export function ContainedShell({ atmosphere, children }: ContainedShellProps) {
  * The one decorative host optional effects render into. Hidden from assistive
  * tech and inert to the pointer; it carries the resolved policy so an effect's
  * CSS and its markup read the same answer.
+ *
+ * Effects TASK-003: it installs the document's one Phosphor Echo filter
+ * definition. Rear sources hide themselves when the policy reports effects off.
  */
 function EffectsHost() {
   const { effectsEnabled, motionAllowed } = useVisualEffects()
@@ -62,7 +66,9 @@ function EffectsHost() {
       className="clr-effects-host"
       data-effects={effectsEnabled ? 'on' : 'off'}
       data-motion={motionAllowed ? 'allowed' : 'still'}
-    />
+    >
+      <PhosphorEchoDefinition />
+    </div>
   )
 }
 
