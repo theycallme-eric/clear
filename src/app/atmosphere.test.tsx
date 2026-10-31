@@ -269,3 +269,82 @@ describe('atmosphere rendering', () => {
     expect(vendored).toContain('.clr-atmosphere__blob { animation: none !important; }')
   })
 })
+
+describe('Visual effects policy at the root (effects TASK-001)', () => {
+  afterEach(() => {
+    localStorage.removeItem('clear.visual-effects')
+  })
+
+  it('mounts one aria-hidden decorative host beside the one atmosphere', () => {
+    const { container } = renderApp(['/'])
+    const hosts = container.querySelectorAll('.clr-effects-host')
+
+    expect(hosts).toHaveLength(1)
+    expect(hosts[0]).toHaveAttribute('aria-hidden', 'true')
+    expect(hosts[0]).toBeEmptyDOMElement()
+    // Outside the shell, so it never sits in a screen's own tree…
+    expect(container.querySelector('.clr-shell .clr-effects-host')).toBeNull()
+    // …and the atmosphere is still the one ground, unchanged.
+    expect(container.querySelectorAll('.clr-atmosphere')).toHaveLength(1)
+    expect(container.querySelector('.clr-atmosphere')).not.toHaveAttribute('data-static')
+  })
+
+  it('carries the default resolved policy: effects on, motion allowed', () => {
+    const { container } = renderApp(['/'])
+    const host = container.querySelector('.clr-effects-host')
+
+    expect(host).toHaveAttribute('data-effects', 'on')
+    expect(host).toHaveAttribute('data-motion', 'allowed')
+  })
+
+  it('reads the same OS signal as the atmosphere under reduced motion', () => {
+    setReducedMotion(true)
+    const { container } = renderApp(['/'])
+    const host = container.querySelector('.clr-effects-host')
+
+    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute('data-static', 'true')
+    expect(host).toHaveAttribute('data-effects', 'on')
+    expect(host).toHaveAttribute('data-motion', 'still')
+  })
+
+  it('reports effects off and motion still when Visual effects is off', () => {
+    localStorage.setItem('clear.visual-effects', 'off')
+    const { container } = renderApp(['/'])
+    const host = container.querySelector('.clr-effects-host')
+
+    expect(host).toHaveAttribute('data-effects', 'off')
+    expect(host).toHaveAttribute('data-motion', 'still')
+  })
+
+  it('ignores an unknown stored value and resolves to effects on', () => {
+    localStorage.setItem('clear.visual-effects', 'sometimes')
+    const { container } = renderApp(['/'])
+
+    expect(container.querySelector('.clr-effects-host')).toHaveAttribute('data-effects', 'on')
+  })
+
+  it('keeps the host mounted across navigation, as the atmosphere is', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/welcome'] })
+    const { container } = render(
+      <AppProviders>
+        <RouterProvider router={router} />
+      </AppProviders>,
+    )
+    const host = container.querySelector('.clr-effects-host')
+
+    await act(async () => {
+      await router.navigate('/login')
+    })
+
+    expect(host).not.toBeNull()
+    expect(container.querySelector('.clr-effects-host')).toBe(host)
+  })
+
+  it('resolves the policy in the shell every surface shares, not per screen', () => {
+    const shell = readFileSync('src/app/RootLayout.tsx', 'utf8')
+
+    expect(shell).toContain("from '../state/visual-effects'")
+    expect(shell).toContain('<VisualEffectsProvider>')
+    expect(shell.match(/className="clr-effects-host"/g)).toHaveLength(1)
+  })
+})
