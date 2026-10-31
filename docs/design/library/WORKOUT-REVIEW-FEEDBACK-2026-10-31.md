@@ -30,6 +30,20 @@ For supersets, circuits and related grouped blocks, explore one coaching-notes a
 
 Retrieve the earlier superset comparison, map these notes to existing shared owners, and make one coherent isolated preview revision. Show the relevant changed examples together. Owner visual acceptance precedes requirements changes. The library and manually released ErrorView pilot remain complete; no additional Runner test or invocation is part of this work.
 
-## Retrieval checkpoint
+## Recovered source and owner clarification
 
-Personal Context is unavailable in this conversation, and ChatGPT history lookup is unavailable to this durable task. The former Sprout delegation source does not return readable turns on the available hosts. Local project review notes and accessible CLEAR task histories are being checked. Do not claim that the earlier preferred superset comparison has been found or ask an unrelated build task to start work.
+The comparison is recovered. Eric identified **Batch 05 — annotated visual decisions**, specifically **B05-04 — Review circuit/superset hierarchy**, and explicitly selected the right-hand pane. Primary source: `/Users/eric/Documents/Projects/support-tooling/project-workspaces/clear/inputs/ui-polish-batch-05-2026-10-28/VISUAL-REFERENCE.md`, with `sources/B05-04-review-grouping.jpg`. Its `GLOBAL-PATTERNS.md` requires correction through shared compositions and relevant consumers. The earlier October 26 comparison and written brief are supporting history, not replacement authority.
+
+Earlier context lookup limitations are resolved by the recovered handoff and Eric's specific source. Do not continue treating the missing reference as a blocker. Eric's latest notes govern refinements. The separate numbering-column suggestion was not selected and is withdrawn.
+
+## Shared presentation contract: the right-hand layout
+
+- **Section/group owns context:** section name and movement count; one content-sized structure badge with its existing glyph and round count; one round-rest reading below the movement list. Keep the card's normal outer frame/accent. Remove the extra internal grouping rail and unused-width badge outline.
+- **Movement row owns a stable hierarchy:** prominent name; prescription on a separate line; quieter equipment on a third line, with the same left alignment. Equipment must not migrate into the name line in this selected pattern. Keep tight spacing within a movement and a larger, consistent gap between movements, using existing tokens.
+- **Action has its own slot:** Review's Swap aligns to the right of the movement-name row. A long name wraps in its own column without pushing Swap below the prescription or equipment. Only actions use the action treatment; a movement name does not imply an unprovided action.
+- **Group data is not repeated by children:** round count/rest belong to the group; each row shows its per-round work and relevant equipment. Avoid duplicated Bodyweight/load/equipment and repeated per-movement round rest.
+- **Rules separate peers:** use a restrained horizontal separator between movement rows. No final list-item divider and no nested vertical rule creating a second visual frame.
+- **Keep execution semantics:** B05-04 explicitly preserves accepted numbered one-round semantics and structure glyphs that the older right-hand mockup omits. Preserve those meanings compactly in existing row/group metadata; do not create the separate numbering-column design Eric did not select or reintroduce a rail to carry order.
+- **Share presentation, preserve behaviors:** Review supplies Swap, live workout supplies its actual logging/rest/state and the requested one bottom coaching-notes disclosure, and saved views supply recorded results. Reuse the layout and semantic text roles without moving all those behaviors into one state owner or copying an old mockup/controller.
+
+Existing owners to reconcile are `ReviewExerciseRow`/Review grouping, `BlockPanel` movement/group composition and saved-detail movement rows. Shared tokens alone do not enforce this layout: the shared presentation must own the slot order, alignment, grouping, separator and rest placement. The real-component gallery and affected-context previews should exercise those owners with long names, multiple group sizes and relevant phone widths. Requirements should point to that canonical implementation/example, not reinterpret a screenshot.
