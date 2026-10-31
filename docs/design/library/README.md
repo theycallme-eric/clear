@@ -82,7 +82,7 @@ Use the existing issue/PR for these references; no separate sidecar is required.
 
 ## Examples and limits
 
-The current register has 52 entries and 138 initial examples. It covers 49 app
+The current register has 52 entries and 140 initial examples. It covers 49 app
 UI exports, contextual Input and two related-context comparison groups; important live/session owners still need safe
 fixtures. Use actual implementations with deterministic data/controllers, no
 live account writes and no shipped test harness. Add coverage in useful slices.
