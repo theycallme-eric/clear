@@ -213,3 +213,10 @@ The attempted evidence-refresh operation was twice rejected by automatic approva
 The previously noted Settings empty state does not require an additional current-screen decision: router.tsx wraps /settings in Protected; guards.tsx redirects an absent profile to onboarding; guards.test.tsx contains the explicit protected/no-row -> onboarding case, and Settings.tsx itself documents that its empty branch is defensive. No Settings change or new category is inferred. An eventual route change exposing that branch would need the existing rule then.
 
 Final status: source application candidate retained; authentic source-evidence refresh and native recovery are pending the specific metadata approval. Hosted preview CI reference provisioning, owner visual review and future combined-effects/phone gates remain open. No production change occurred.
+
+
+## Specific capture-binding approval received — 31 October 2026
+
+The owner explicitly approved the previously presented narrow patch: a fresh capture-directory selector and the current task/revision/run/tested-base values. It has now been applied. The earlier two automatic-review denials remain history; neither denied command executed. No validation function, assertion predicate, matrix, hashing, historical record, generic lineage helper, preset or runtime source changed. All21 preserved application/test file digests still match the saved candidate.
+
+Freeze this approved source/binding state before invoking the unchanged real collector into a new group. This is still current native claim2 in the retained a1 source branch; v1 source-only attempt1 identifies that branch slot, not acceptance of the native first claim. Fresh native recovery and acceptance remain separately required. The owner approval grants no third coding attempt, profile/Runner change, private-reference publication, main merge or production release.
