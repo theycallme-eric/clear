@@ -199,10 +199,17 @@ function sameGeometry<T extends object>(a: T | null, b: T | null): boolean {
   return (Object.keys(a) as (keyof T)[]).every((key) => a[key] === b[key])
 }
 
+/** How long a frame keeps re-measuring after a state change: past any state transition. */
+const SETTLE_MS = 1000
+
+/** The attributes a frame's painted colour or corner follows. */
+const STATE_ATTRIBUTES = ['class', 'disabled', 'aria-busy', 'aria-pressed', 'aria-checked', 'aria-invalid']
+
 /**
  * Measures while the effect is on. A frame's corner can change after its own
- * resize observer runs and its colour follows the skin, so a class change, a
- * skin change and a finished colour transition re-measure as well as a resize.
+ * resize observer runs and its colour follows the skin and its state, so a
+ * class or state change, a skin change, focus and a finished colour transition
+ * re-measure as well as a resize.
  */
 function useEchoGeometry<T extends object>(
   ref: RefObject<HTMLElement | null>,
@@ -226,15 +233,36 @@ function useEchoGeometry<T extends object>(
     for (const child of wrapper.querySelectorAll('.clr-chamfer, .clr-card')) resize?.observe(child)
     if (wrapper.lastElementChild) resize?.observe(wrapper.lastElementChild)
 
-    const mutation = typeof MutationObserver === 'undefined' ? null : new MutationObserver(update)
-    mutation?.observe(wrapper, { subtree: true, attributes: true, attributeFilter: ['class'] })
+    // A state change starts the frame's colour transition, and the rear must
+    // land on where it ends, whatever its duration or whether it fires an
+    // event: measure now and on every frame for a settling window. Focus
+    // changes no attribute, so it does the same.
+    let disposed = false
+    let frame = 0
+    const updateSettled = () => {
+      update()
+      const until = performance.now() + SETTLE_MS
+      cancelAnimationFrame(frame)
+      const step = () => {
+        if (disposed) return
+        update()
+        if (performance.now() < until) frame = requestAnimationFrame(step)
+      }
+      frame = requestAnimationFrame(step)
+    }
+
+    const mutation = typeof MutationObserver === 'undefined' ? null : new MutationObserver(updateSettled)
+    mutation?.observe(wrapper, { subtree: true, attributes: true, attributeFilter: STATE_ATTRIBUTES })
     mutation?.observe(document.documentElement, { attributes: true })
 
-    wrapper.addEventListener('transitionend', update)
+    const events = ['transitionend', 'focusin', 'focusout'] as const
+    for (const event of events) wrapper.addEventListener(event, updateSettled)
     return () => {
+      disposed = true
+      cancelAnimationFrame(frame)
       resize?.disconnect()
       mutation?.disconnect()
-      wrapper.removeEventListener('transitionend', update)
+      for (const event of events) wrapper.removeEventListener(event, updateSettled)
     }
   }, [ref, active, measure])
 
@@ -329,6 +357,8 @@ export function PhosphorEchoGlyph({ viewBox, d, children }: PhosphorEchoGlyphPro
  * Standalone text — a screen heading — with its rear image: a duplicate of
  * the text silhouette, hidden from assistive technology, behind the original.
  * Place it inside the real heading so the heading keeps its level and name.
+ * The duplicate is generated content (`data-echo-text`), so the heading's own
+ * text — what `textContent` and `innerText` read — is still said once.
  */
 export function PhosphorEchoText({ children }: { children: string }) {
   const { effectsEnabled } = useVisualEffects()
@@ -336,9 +366,11 @@ export function PhosphorEchoText({ children }: { children: string }) {
   return (
     <span className="clr-echo-text" data-echo="text">
       {effectsEnabled && (
-        <span className="clr-echo__source clr-echo-text__rear" aria-hidden="true">
-          {children}
-        </span>
+        <span
+          className="clr-echo__source clr-echo-text__rear"
+          aria-hidden="true"
+          data-echo-text={children}
+        />
       )}
       <span className="clr-echo-text__foreground">{children}</span>
     </span>

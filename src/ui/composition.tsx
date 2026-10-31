@@ -8,11 +8,20 @@
  * Containment: inside a Card the list and metric wrappers are bare rows and
  * readouts, because the card is already the frame. They never add a card.
  */
-import { createElement, type ElementType, type HTMLAttributes, type ReactNode } from 'react'
+import {
+  Children,
+  createElement,
+  Fragment,
+  isValidElement,
+  type ElementType,
+  type HTMLAttributes,
+  type ReactNode,
+} from 'react'
 
 import { EmptyState, OverflowRail } from '../design-system/index'
 
 import { useInsideCard } from './card-context'
+import { ForegroundEchoFrame } from './foreground-echo'
 
 interface CompositionProps extends HTMLAttributes<HTMLElement> {
   as?: ElementType
@@ -30,9 +39,22 @@ function composition(
   })
 }
 
-/** Responsive button group: stacked on phones, equal-width row when wider. */
-export function ActionRow(props: CompositionProps) {
-  return composition('div', 'clr-actions', props)
+/**
+ * Responsive button group: stacked on phones, equal-width row when wider.
+ * REQ-004: on the background — a screen's footer — each action is an outer
+ * button surface and echoes; inside a card none does.
+ */
+export function ActionRow({ children, ...props }: CompositionProps) {
+  return composition('div', 'clr-actions', { ...props, children: echoEach(children) })
+}
+
+/** Each action its own echo target; a fragment's actions are each one too. */
+function echoEach(children: ReactNode): ReactNode {
+  return Children.map(children, (child) => {
+    if (!isValidElement<{ children?: ReactNode }>(child)) return child
+    if (child.type === Fragment) return echoEach(child.props.children)
+    return <ForegroundEchoFrame>{child}</ForegroundEchoFrame>
+  })
 }
 
 /**
@@ -51,10 +73,12 @@ export function ActionGroup(props: CompositionProps) {
  */
 export function ListFrame(props: CompositionProps) {
   const insideCard = useInsideCard()
-  return composition(
-    'div',
-    insideCard ? 'clr-list clr-list--in-card' : 'clr-list clr-chamfer clr-chamfer--md',
-    props,
+  if (insideCard) return composition('div', 'clr-list clr-list--in-card', props)
+  // REQ-004: the closed frame is on the background; its rows are inside it.
+  return (
+    <ForegroundEchoFrame>
+      {composition('div', 'clr-list clr-chamfer clr-chamfer--md', props)}
+    </ForegroundEchoFrame>
   )
 }
 
@@ -75,7 +99,13 @@ export function ListMessage({
   message?: ReactNode
 }) {
   const insideCard = useInsideCard()
-  if (!insideCard) return <EmptyState title={title} message={message} />
+  if (!insideCard) {
+    return (
+      <ForegroundEchoFrame>
+        <EmptyState title={title} message={message} />
+      </ForegroundEchoFrame>
+    )
+  }
   return (
     <div className="clr-stack clr-stack--tight">
       <p style={{ margin: 0 }}>{title}</p>
@@ -99,10 +129,12 @@ export function MetricGrid(props: CompositionProps) {
 /** One readout within a MetricGrid: a small element frame, unframed inside a card. */
 export function MetricFrame(props: CompositionProps) {
   const insideCard = useInsideCard()
-  return composition(
-    'div',
-    insideCard ? 'clr-metric-frame' : 'clr-metric-frame clr-chamfer clr-chamfer--sm',
-    props,
+  if (insideCard) return composition('div', 'clr-metric-frame', props)
+  // REQ-004: the small frame is on the background; its readout is inside it.
+  return (
+    <ForegroundEchoFrame>
+      {composition('div', 'clr-metric-frame clr-chamfer clr-chamfer--sm', props)}
+    </ForegroundEchoFrame>
   )
 }
 

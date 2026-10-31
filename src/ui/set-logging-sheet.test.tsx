@@ -23,6 +23,7 @@ import { RestTimerProvider } from '../state/rest-provider'
 import type { WorkoutExerciseRow } from '../state/schemas'
 import type { PerformedSet, SetLogEntry } from '../state/set-logging'
 import { SetLoggingProvider } from '../state/set-logging-provider'
+import { VisualEffectsProvider } from '../state/visual-effects'
 import { sessionProgress } from '../state/workout-progress'
 import { AppProviders } from '../test/render'
 import {
@@ -44,6 +45,8 @@ interface MountOptions {
   logger?: Partial<ExerciseSetLoggerProps>
   /** Draw the logger directly rather than through the dispatched block. */
   bare?: boolean
+  /** Mount under the root Visual effects provider, as the app does. */
+  effects?: boolean
 }
 
 function mount(options: MountOptions = {}) {
@@ -88,7 +91,7 @@ function mount(options: MountOptions = {}) {
     </SectionLabelContext>
   )
 
-  render(
+  const tree = (
     <AppProviders workout={clients}>
       <BlockCompletionContext value={completion}>
         <SetLoggingProvider
@@ -108,8 +111,9 @@ function mount(options: MountOptions = {}) {
           </RestTimerProvider>
         </SetLoggingProvider>
       </BlockCompletionContext>
-    </AppProviders>,
+    </AppProviders>
   )
+  render(options.effects ? <VisualEffectsProvider>{tree}</VisualEffectsProvider> : tree)
 
   return { attempts, onFailure, base }
 }
@@ -465,6 +469,17 @@ describe('AC-035: borders and the countdown', () => {
     // The sheet is an overlay, not a card: the rest's timer card inside it is not nested.
     expect(sheet.closest('.clr-card')).toBeNull()
     expect(frame).not.toHaveClass('clr-card__body')
+  })
+
+  it('gives the rest timer card inside the sheet no Phosphor Echo: the sheet is not the background', async () => {
+    const user = userEvent.setup()
+    mount({ effects: true })
+    const sheet = await openSheet(user)
+    await user.click(form(1).getByRole('button', { name: 'Log set 1' }))
+
+    const rest = await within(sheet).findByRole('region', { name: 'Rest' })
+    expect(rest.querySelector('.clr-card')).not.toBeNull()
+    expect(sheet.querySelector('[data-echo], .clr-echo__source')).toBeNull()
   })
 
   it('draws a running rest with the timer card inside the sheet, without recolouring it', async () => {

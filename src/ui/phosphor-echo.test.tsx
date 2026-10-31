@@ -208,7 +208,9 @@ describe('rear sources', () => {
     const rear = heading.querySelector('.clr-echo__source')
 
     expect(rear).toHaveAttribute('aria-hidden', 'true')
-    expect(rear).toHaveTextContent('Generate')
+    // Drawn as generated content, so the heading's own text is said once.
+    expect(rear).toHaveAttribute('data-echo-text', 'Generate')
+    expect(heading.textContent).toBe('Generate')
     expect(heading.querySelectorAll('.clr-echo__source')).toHaveLength(1)
   })
 

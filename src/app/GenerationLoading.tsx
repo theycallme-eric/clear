@@ -58,6 +58,7 @@ import { showErrorToast, toastQueue } from '../state/toasts'
 import { SLOW_THRESHOLD_MS } from '../state/view-state'
 import { SLOW_LOADING_LABEL } from '../ui/view-state'
 import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { useInterfaceLoop } from '../ui/motion'
 import { screenAtmosphere } from './atmosphere'
 import { Screen } from './Screen'
@@ -179,18 +180,20 @@ export function GenerationLoading({
             alignItems: 'stretch',
           }}
         >
-          <ScanLoader
-            label={
-              view.status === 'failed'
-                ? GENERATION_FAILED_LABEL
-                : view.status === 'slow'
-                  ? SLOW_LOADING_LABEL
-                  : view.label
-            }
-            status={view.status}
-            lines={[...view.lines]}
-            {...loop}
-          />
+          <ForegroundEchoFrame>
+            <ScanLoader
+              label={
+                view.status === 'failed'
+                  ? GENERATION_FAILED_LABEL
+                  : view.status === 'slow'
+                    ? SLOW_LOADING_LABEL
+                    : view.label
+              }
+              status={view.status}
+              lines={[...view.lines]}
+              {...loop}
+            />
+          </ForegroundEchoFrame>
         </div>
       </Screen>
     </div>

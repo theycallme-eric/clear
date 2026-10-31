@@ -60,6 +60,11 @@
   pointer-events: none;
 }
 
+/* The duplicate is drawn, not written: the heading's text stays said once. */
+.clr-echo-text__rear::before {
+  content: attr(data-echo-text);
+}
+
 .clr-echo-text__foreground {
   position: relative;
   z-index: 1;
