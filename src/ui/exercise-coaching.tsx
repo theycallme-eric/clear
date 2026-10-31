@@ -22,9 +22,9 @@
  * It draws nothing when the workout clients are absent — a block renderer
  * previewed on its own has no row to read or write.
  *
- * Optional and per movement (U38): closed until asked for, named for the one
- * movement it belongs to, and drawn inside that movement's row, so in a
- * superset or circuit each panel's cues sit with their own exercise.
+ * Optional and per movement (U38): a standard movement keeps its disclosure.
+ * Grouped work uses GroupExerciseCoaching (R29), one bottom disclosure with
+ * separately labelled guidance and note writers for every movement.
  *
  * Containment, from 0.14.3: the panel is one group and every label is inside
  * it. On an exercise's card it is that card's content; on its own it is one
@@ -34,7 +34,7 @@
  * save each take the view's one loop in turn, so neither animates against a
  * low rest timer; both stay marked busy while they are stilled.
  */
-import { use, useState } from 'react'
+import { createContext, use, useState } from 'react'
 
 import { AlertTriangle, Button, CircleCheck, Input } from '../design-system/index'
 import type { AppError } from '../state/errors'
@@ -67,12 +67,44 @@ export interface ExerciseCoachingProps {
   exercise: ExerciseProgress
 }
 
+/** The shared compound-block host owns disclosure placement, never note data. */
+export const GroupCoachingContext = createContext(false)
+
 export function ExerciseCoaching({ exercise }: ExerciseCoachingProps) {
+  const grouped = use(GroupCoachingContext)
   const clients = use(WorkoutClientsContext)
   const cache = use(QueryClientContext)
-  if (clients === null || cache === null) return null
+  if (grouped || clients === null || cache === null) return null
 
   return <CoachingPanel exercise={exercise} />
+}
+
+/** One disclosure for grouped work; each movement keeps its own reads/writes. */
+export function GroupExerciseCoaching({ exercises }: { exercises: readonly ExerciseProgress[] }) {
+  const clients = use(WorkoutClientsContext)
+  const cache = use(QueryClientContext)
+  if (clients === null || cache === null || exercises.length === 0) return null
+  return <GroupCoachingPanel exercises={exercises} />
+}
+
+function GroupCoachingPanel({ exercises }: { exercises: readonly ExerciseProgress[] }) {
+  const [expanded, setExpanded] = useState(false)
+  const [opened, setOpened] = useState(false)
+  return (
+    <Card>
+      <CollapsibleSection label="Coaching and notes" expanded={expanded} onExpandedChange={next => { setExpanded(next); if (next) setOpened(true) }}>
+        <div className="clr-stack">
+          {exercises.map(exercise => {
+            const name = exerciseName(exercise.prescription.exercise_id)
+            return <Card key={exercise.exerciseId} heading={name}>
+              {opened ? <Guidance exerciseId={exercise.prescription.exercise_id} name={name} /> : null}
+              <ExerciseNotesField exercise={exercise} name={name} />
+            </Card>
+          })}
+        </div>
+      </CollapsibleSection>
+    </Card>
+  )
 }
 
 function CoachingPanel({ exercise }: ExerciseCoachingProps) {

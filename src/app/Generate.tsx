@@ -594,45 +594,14 @@ function GenerateForm({
         {/* Goal and Focus at the top, said alike (B05-02.6/02.7). The Goal is
             the profile's standing one, as context (U26); it is changed in
             Settings, never asked per workout (REQ-001). */}
-        <div className={presentation ? 'clr-v4-program-summary' : 'clr-stack clr-stack--tight'}>
-          <p style={{ margin: 0 }}>
-            Goal: <strong>{standingGoal?.label}</strong>
-          </p>
-          {focused && (
-            <p style={{ margin: 0 }}>
-              Focus:{' '}
-              <strong>
-                {ANCHORS.find((anchor) => anchor.value === resolved.focus)?.label}
-              </strong>
-              {override !== null && ` — ${OVERRIDE_SCOPE}`}
-            </p>
-          )}
-        </div>
-
-        {/* V4 design proposal: one entry beneath the recommended Focus.
-            Recovery stays a separate one-workout toggle inside the choices;
-            it does not become another Anchor value. */}
-        <div className="clr-stack clr-stack--tight">
-          {focused && (
-            <ActionGroup className={presentation ? 'clr-v4-focus-action' : undefined}>
-              {presentation?.focusAction === 'text' ? (
-                <TextAction aria-label={CHANGE_FOCUS_LABEL} aria-expanded={expanded} aria-controls={expanded ? focusChoices : undefined} onClick={toggleChanging}>{CHANGE_FOCUS_LABEL}</TextAction>
-              ) : <Button
-                variant={presentation ? 'secondary' : 'quiet'}
-                aria-expanded={expanded}
-                aria-controls={expanded ? focusChoices : undefined}
-                onClick={toggleChanging}
-              >
-                {CHANGE_FOCUS_LABEL}
-              </Button>}
-            </ActionGroup>
-          )}
-          {draft.recovery && (
-            <p style={{ margin: 0 }}>
-              {RECOVERY_NOTE} {POWER_REFUSAL}
-            </p>
-          )}
-        </div>
+        {presentation ? <div className="clr-v4-program-summary">
+          <div className="clr-stack clr-stack--tight"><span className="clr-text-data-xs clr-text-data-xs--upper">Goal</span><strong className="clr-v4-program-value">{standingGoal?.label}</strong></div>
+          {focused ? <div className="clr-stack clr-stack--tight"><span className="clr-text-data-xs clr-text-data-xs--upper">Focus</span><TextAction className="clr-v4-focus-value" aria-label={CHANGE_FOCUS_LABEL} aria-expanded={expanded} aria-controls={expanded ? focusChoices : undefined} onClick={toggleChanging}>{ANCHORS.find(anchor => anchor.value === resolved.focus)?.label}</TextAction>{override !== null && <span className="clr-text-data-xs">{OVERRIDE_SCOPE}</span>}</div> : null}
+        </div> : <>
+          <div className="clr-stack clr-stack--tight"><p style={{margin:0}}>Goal: <strong>{standingGoal?.label}</strong></p>{focused && <p style={{margin:0}}>Focus: <strong>{ANCHORS.find(anchor => anchor.value === resolved.focus)?.label}</strong>{override !== null && ` — ${OVERRIDE_SCOPE}`}</p>}</div>
+          {focused && <div className="clr-stack clr-stack--tight"><ActionGroup className="clr-action-group--paired-labels"><Chip selected={draft.recovery} onClick={toggleRecovery}>{RECOVERY_LABEL}</Chip><Button variant="quiet" aria-expanded={expanded} aria-controls={expanded ? focusChoices : undefined} onClick={toggleChanging}>{CHANGE_FOCUS_LABEL}</Button></ActionGroup></div>}
+        </>}
+        {draft.recovery && <p style={{margin:0}}>{RECOVERY_NOTE} {POWER_REFUSAL}</p>}
 
         {/* Focus — recommended from history when history can, asked for when it
             cannot, and never drawn before the read has answered */}
@@ -671,11 +640,11 @@ function GenerateForm({
                 ))}
               </div>
             )}
-            <div className="clr-row" style={CHIP_ROW}>
+            {presentation && <div className="clr-row" style={CHIP_ROW}>
               <Chip selected={draft.recovery} onClick={toggleRecovery}>
                 {RECOVERY_LABEL}
               </Chip>
-            </div>
+            </div>}
           </div>
           )
         ) : (

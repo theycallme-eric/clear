@@ -253,7 +253,7 @@ export function ExerciseSetLogger({
       title={title}
       counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
       detail={prescriptionText(prescription)}
-      context={`Equipment · ${equipment}`}
+      context={equipment}
     >
       {/*
         Tempo stays in the prescription's structured columns; it is not

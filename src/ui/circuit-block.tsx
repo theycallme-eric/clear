@@ -369,7 +369,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
           title={`${exercise.position}. ${name}`}
           detail={targetText(prescription)}
           // The same equipment tier the open logger shows (B05-04).
-          context={`Equipment · ${equipmentName(prescription.equipment_used)}`}
+          context={equipmentName(prescription.equipment_used)}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

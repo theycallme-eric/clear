@@ -31,6 +31,7 @@ import type { Enums } from '../data/database.types'
 import { formatDay, formatFocus } from './history'
 import { moodStep, type MoodStep } from './mood'
 import { prescriptionText, exerciseName } from './prescription'
+import { equipmentName } from './review'
 import type {
   BlockResultRow,
   ExerciseSetLogRow,
@@ -91,6 +92,8 @@ export interface ExerciseDetailView {
   readonly name: string
   /** `3 × 8`, from the structured target the row carries. */
   readonly prescription: string
+  /** Historical equipment when available; absent fixture/legacy values stay absent. */
+  readonly equipment?: string
   readonly status: Enums<'execution_status'>
   readonly statusLabel: string
   readonly lineage: PrescriptionLineage
@@ -334,6 +337,7 @@ function exerciseDetail(
     id: exercise.id,
     name: exerciseName(exercise.exercise_id),
     prescription: prescriptionText(exercise),
+    equipment: equipmentName(exercise.equipment_used),
     status: exercise.execution_status,
     statusLabel: STATUS_LABELS[exercise.execution_status],
     lineage,

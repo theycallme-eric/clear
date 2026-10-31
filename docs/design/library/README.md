@@ -82,9 +82,9 @@ Use the existing issue/PR for these references; no separate sidecar is required.
 
 ## Examples and limits
 
-The current register has 52 entries and 140 initial examples. It covers 49 app
-UI exports, contextual Input and two related-context comparison groups; important live/session owners still need safe
-fixtures. Use actual implementations with deterministic data/controllers, no
+The generated component index records the registered parts and examples, including
+contextual Input and related-context comparison groups. Important live/session
+owners still need safe fixtures. Use actual implementations with deterministic data/controllers, no
 live account writes and no shipped test harness. Add coverage in useful slices.
 Do not copy a historical pattern merely because it has an example.
 
@@ -126,3 +126,24 @@ Compare real owners at `/gallery/app?component=WorkoutEntryComparison` and
 actual Review row with an in-memory swap dialog, live movement presentation,
 and saved detail with its real disclosure/table. It preserves existing visual
 differences for review; it does not certify complete session logging fixtures.
+
+## Shared movement presentation (B05-04, revised owner review)
+
+`src/ui/movement-presentation.tsx` owns `MovementIdentity` and `MovementList`.
+Use the same name → prescription → quiet equipment hierarchy, with the action
+or counter in its own trailing slot. Names wrap in their own column. Lists
+separate peers horizontally; the card supplies the outer frame/accent. Keep
+round/rest context at group level, with no internal rail or final-item rule.
+ReviewExerciseRow, BlockPanel.Movement and saved-detail rows consume this owner.
+Compare the actual owners at `?component=MovementIdentityComparison`; the
+MovementIdentity entry also covers a long name and the actual Review Swap.
+
+Compound BlockPanel hosts place one GroupExerciseCoaching at the bottom.
+The existing per-movement guidance and notes writers keep their data, draft,
+save/error and lazy-read behavior; standard movements keep their own disclosure.
+A safe standalone gallery fixture for these live coaching clients remains a
+coverage gap; real compound owners are exercised in the workout comparison.
+
+SummaryFacts wraps complete readings across rows. New UI should reuse that
+composition rather than create an overflow carousel or drop accepted facts.
+The broader preparation/report presentation interfaces remain labeled proposals.

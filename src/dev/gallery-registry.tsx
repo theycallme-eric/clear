@@ -15,6 +15,13 @@
  * state that produces it.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { MovementIdentity, MovementList } from '../ui/movement-presentation'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { CountdownBar } from '../ui/workout-chrome'
+import { TrainingProgressReport } from '../ui/training-progress-report'
+import { WorkoutExperiencePresentationProvider, type WorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
+import { EMPTY_DRAFT } from '../state/onboarding'
+
 
 import {
   Button,
@@ -825,6 +832,7 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
       id: 'gallery-detail-exercise',
       name: 'Back squat',
       prescription: '3 × 8',
+      equipment: 'Barbell',
       status: 'completed',
       statusLabel: 'Done',
       lineage: 'prescribed',
@@ -1854,7 +1862,30 @@ function AppearancePickerChosenSkin() {
 // The register
 // ─────────────────────────────────────────────────────────────────────────────
 
+const PROPOSED_EXPERIENCE: WorkoutExperiencePresentation = {
+  focusAction: 'text',
+  guides: {warmup:{title:'Warm-up',minutes:4,movements:['Arm circles','Scapular push-ups']},cooldown:{title:'Cooldown',minutes:3,movements:['Chest stretch']}},
+  suggestedLoads:{}, equipmentSetupDraft:EMPTY_DRAFT, showTrainingReport:true,
+  report:[{movement:'Bicep curl',equipment:'Dumbbell',previous:'20 lb · 12 / 12 / 12',latest:'25 lb · 10 / 10 / 10',next:'25 lb · 3 × 8–12',evidence:'Synthetic comparison example'}],
+}
+
+function SharedMovementExample() {
+  return <MovementIdentity name="Dumbbell thruster with a deliberately long movement name" ordinal="01" prescription="8 reps · 20–25 lb per hand" equipment="Dumbbell" counter="Set 1/3" />
+}
+function SharedMovementGroupExample() {
+  return <MovementList label="Movements in one round"><li><MovementIdentity name="Dumbbell thruster" ordinal="01" prescription="8 reps" equipment="Dumbbell" /></li><li><MovementIdentity name="Mountain climber" ordinal="02" prescription="12 reps" equipment="Bodyweight" /></li></MovementList>
+}
+function SharedCountdownExample() {
+  const [remaining,setRemaining] = useState(75)
+  return <CountdownBar label="Rest after round 1" remainingSeconds={remaining} totalSeconds={90} onExtend={() => setRemaining(value => value+30)} onSkip={() => setRemaining(0)} />
+}
+
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  {component:'MovementIdentity',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'One shared name, prescription, equipment and trailing-action hierarchy. Review, live blocks and saved rows use this implementation; counters/actions retain their own meaning.',specimens:[{state:'long name and counter',Render:SharedMovementExample},{state:'Review with real Swap interaction',Render:ReviewMovementStandalone}]},
+  {component:'MovementList',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'Ordered peer rows with horizontal separators only between movements; no inner rail or final divider.',specimens:[{state:'one round, two movements',Render:SharedMovementGroupExample},{state:'one movement, no separator',Render:() => <MovementList label="Remaining movement"><li><MovementIdentity name="Mountain climber" prescription="12 reps" equipment="Bodyweight" /></li></MovementList>}]},
+  {component:'PreparationGuide',requirement:'V4 proposal / R01',module:'src/ui/preparation-guide.tsx',summary:'Proposed actual guide component; synthetic movement names and independent optional clock. Data contract remains a design proposal.',specimens:[{state:'optional independent timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.warmup} withTimer />},{state:'cooldown without timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.cooldown} />}]},
+  {component:'CountdownBar',requirement:'V4 proposal / R15',module:'src/ui/workout-chrome.tsx',summary:'Shared countdown presentation; real rest/preparation owners keep separate clocks. This example supplies controlled readings and working actions.',specimens:[{state:'controlled rest readout',Render:SharedCountdownExample},{state:'rest elapsed',Render:() => <CountdownBar label="Rest complete" remainingSeconds={0} totalSeconds={90} />}]},
+  {component:'TrainingProgressReport',requirement:'V4 proposal / F18',module:'src/ui/training-progress-report.tsx',summary:'Proposed report using synthetic presentation inputs. No adaptation calculation or account data is claimed.',specimens:[{state:'synthetic recorded versus next',Render:() => <WorkoutExperiencePresentationProvider value={PROPOSED_EXPERIENCE}><TrainingProgressReport /></WorkoutExperiencePresentationProvider>},{state:'two synthetic movement records',Render:() => <WorkoutExperiencePresentationProvider value={{...PROPOSED_EXPERIENCE,report:[...PROPOSED_EXPERIENCE.report,{movement:'Dumbbell thruster with a longer name',equipment:'Dumbbell',previous:'20 lb · 8 / 8',latest:'20 lb · 10 / 10',next:'20 lb · 2 × 8–12',evidence:'Synthetic layout example'}]}}><TrainingProgressReport /></WorkoutExperiencePresentationProvider>}]},
   {
     component: 'WorkoutEntryComparison',
     title: 'History and Favorites',
@@ -2339,7 +2370,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'REQ-008',
     module: 'src/ui/composition.tsx',
     summary:
-      'The compact workout-facts row: every glyph-led reading on one line, with public horizontal containment and keyboard reachability.',
+      'Compact workout facts: each glyph-led reading stays whole and wraps into additional visible rows. No carousel or hidden facts.',
     specimens: [
       { state: 'pictured facts', Render: () => summaryFactsExample(false) },
       { state: 'widest real facts', Render: () => summaryFactsExample(true) },

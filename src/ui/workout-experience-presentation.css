@@ -10,3 +10,11 @@
 .clr-v4-progress-facts dt { color:var(--text-secondary); }.clr-v4-progress-facts dd{margin:0;}
 .clr-v4-experience [role="group"][aria-label="Round clock"] { display:flex; flex-direction:column; align-items:stretch; gap:var(--spacing-200); }
 .clr-v4-experience ol[aria-label="Round times"] { margin-block:var(--spacing-200); }
+
+/* One coherent summary, with the Focus value owning its visible action. */
+.clr-v4-program-summary { align-items:start; }
+.clr-v4-program-value, .clr-v4-program-summary .clr-v4-focus-value { font-family:var(--font-display); font-size:var(--heading-h5-size); line-height:var(--heading-h5-line-height); font-weight:var(--font-weight-bold); }
+.clr-v4-program-summary .clr-v4-focus-value { justify-content:flex-start; min-height:var(--control-height); margin-block:calc((var(--heading-h5-line-height) - var(--control-height)) / 2); }
+.clr-setup-progress { padding:var(--spacing-200) var(--spacing-400) var(--spacing-300); }
+
+.clr-setup-header { border-block-end:0; }

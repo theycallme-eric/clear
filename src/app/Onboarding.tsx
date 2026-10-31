@@ -173,6 +173,8 @@ export function Onboarding() {
   return (
     <Screen
       title={ONBOARDING_TITLE}
+      header={presentation ? { className: 'clr-setup-header' } : undefined}
+      pinnedHead={presentation ? <div className="clr-setup-progress"><Progress value={index + 1} max={steps.length} label={`Step ${index + 1} of ${steps.length}`} /></div> : undefined}
       pinnedFoot={
         <PhoneFooter>
           {/* U03: equivalent actions share one size; the forward step is the
@@ -219,11 +221,11 @@ export function Onboarding() {
       }
     >
       <div className="clr-stack">
-        <Progress
+        {presentation ? null : <Progress
           value={index + 1}
           max={steps.length}
           label={`Step ${index + 1} of ${steps.length}`}
-        />
+        />}
 
         <div
           // Keyed so each step enters on its own; never a full-screen replay.

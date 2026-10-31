@@ -38,7 +38,7 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../design-system/index'
 import { SetLoggingConfirmation } from './set-logging-sheet'
@@ -139,19 +139,16 @@ function SupersetRound({ block }: BlockRendererProps) {
       */}
       {movements.length > 1 && (
         <BlockPanel.Label>
-          Alternate{' '}
-          {movements.map((exercise) => supersetOrdinal(exercise.position)).join(' → ')}{' '}
-          — no rest between movements
+          One round:{' '}
+          {movements.map((exercise) => supersetOrdinal(exercise.position)).join(' → ')} — no rest between movements
         </BlockPanel.Label>
       )}
 
       {/*
-        The connector: one rule down the left of the pair, so A1 and A2
-        read as one linked unit. Inset from the card's own accent bar
-        rather than replacing it, and it shifts no text — the padding it
-        sits in is the component's, not the card's.
+        The shared ordered rows communicate the pair without an additional
+        vertical frame. The card keeps its own normal accent bar.
       */}
-      <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
+      <div>
         <BlockPanel.MovementList label="Movements in this superset">
           {movements.map((exercise) => (
             <BlockPanel.MovementItem key={exercise.exerciseId}>
@@ -199,9 +196,4 @@ function SupersetRound({ block }: BlockRendererProps) {
       )}
     </>
   )
-}
-
-const PAIR_STYLE: CSSProperties = {
-  borderLeft: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingLeft: 'var(--spacing-200)',
 }
