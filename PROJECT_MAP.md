@@ -5,6 +5,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | Path | Boundary | New files belong here when… |
 |---|---|---|
 | `src/app/` | App composition and routing | adding a route, screen, or route-level boundary |
+| `src/gallery/` | Independent public visual-library entry; no account/session clients or test providers | mounting shared component examples outside product startup; the existing register/renderers in `src/dev/` stay shared |
 | `src/data/` | External data and persistence | talking to Supabase, the catalog, or another backend |
 | `src/state/` | Client state, and the cross-process contracts it is parsed from | adding a query hook, state machine, cross-screen workflow, or the schema a payload crossing a boundary is validated by |
 | `src/ui/` | App-owned presentation | adding a reusable domain component not supplied by the design system |
@@ -12,6 +13,7 @@ This is the honest ENV-01 scaffold. Update it only when a directory boundary or 
 | `src/styles/` | App-owned CSS the export does not ship | composing the shipped motion vocabulary or skin; never new visual ideas or raw values |
 | `src/test/` | Shared test setup | adding test-only configuration or helpers |
 | `docs/` | Frozen baseline and deep specs | recording product/design/process knowledge, not runtime code |
+| `docs/design/library/` | Visual-library ownership, source and review workflow | documenting canonical component use, gallery coverage and approved visual handoff |
 | `docs/backend/` | REQ-008 backend gate: live inventory, dispositions, rollback, post-cutover checks, and read-only evidence from the previous app | recording reused-Supabase-project audit state; never runtime code |
 | `public/` | Files served verbatim at the origin root: the web app manifest, the scalable icon, the SET-01 per-skin favicons in `icons/`, and the PWA-01 service worker | a browser or platform must fetch it by a fixed URL, unhashed — never for anything the bundle can import |
 | `supabase/` | The Supabase CLI's project root: `config.toml`, the migration series, and the Deno functions it deploys | changing how the CLI reaches the project or what it deploys; never a contract, a schema, or anything both runtimes share — those live under `src/` and are imported from here |
@@ -525,7 +527,9 @@ It is read-only by construction: it holds no client and reads no query, and its 
 (structure and prescription columns, never a whole session) is declared in that file and drawn through
 History's `SessionSectionCard`, the read-only `LadderRungs` and the ladder renderer's
 `timingSummary`, with every label derived by `structureIdentity`/`prescriptionText`. It is not the
-developer gallery, which stays behind `import.meta.env.DEV`.
+development reference gallery. The independent public `/gallery` entry uses the
+same app-component register without account startup; archived specimens stay
+development-only. See `docs/design/library/README.md`.
 
 OVR-01a adds the first derived athlete state, and its split is SES-01c's split rather than a new one.
 `supabase/migrations/20260921000011_load_anchors.sql` owns the `load_anchors` table, the `is_deload`

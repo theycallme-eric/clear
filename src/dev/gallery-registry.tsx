@@ -119,7 +119,7 @@ export interface GallerySpecimen {
   Render: () => ReactNode
 }
 
-/** One app-composed part, with every state it can be in. */
+/** One app-composed part and its registered review states. */
 export interface GalleryEntry {
   /** Exported component name — what the coverage gate matches on. */
   component: string
@@ -901,7 +901,12 @@ function SessionSectionCardExpanded() {
 }
 
 function SessionSectionCardCollapsed() {
-  return <SessionSectionCard section={SAMPLE_DETAIL_SECTION} defaultExpanded={false} />
+  return (
+    <SessionSectionCard
+      section={{ ...SAMPLE_DETAIL_SECTION, id: 'gallery-detail-section-collapsed', title: 'Primary work — collapsed example' }}
+      defaultExpanded={false}
+    />
+  )
 }
 
 function MoodReadingRecorded() {
@@ -1292,7 +1297,7 @@ function SectionContent() {
 
 function CollapsedSection() {
   return (
-    <CollapsibleSection label="Main lift">
+    <CollapsibleSection label="Main lift — collapsed example">
       <SectionContent />
     </CollapsibleSection>
   )
@@ -1300,7 +1305,7 @@ function CollapsedSection() {
 
 function ExpandedSection() {
   return (
-    <CollapsibleSection label="Main lift" defaultExpanded>
+    <CollapsibleSection label="Main lift — expanded example" defaultExpanded>
       <SectionContent />
     </CollapsibleSection>
   )
@@ -1315,7 +1320,7 @@ function ControlledSection() {
         {expanded ? 'Collapse from outside' : 'Expand from outside'}
       </Button>
       <CollapsibleSection
-        label="Main lift"
+        label="Main lift — controlled example"
         expanded={expanded}
         onExpandedChange={setExpanded}
       >

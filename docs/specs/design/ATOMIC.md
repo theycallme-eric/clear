@@ -359,6 +359,16 @@ These names are gone from the package. They must not appear in production code.
 Passing lint proves vocabulary compliance, not visual fidelity. Route work still requires rendered
 comparison against the 0.14.3 package (`docs/design/evidence-0143/`).
 
+### 9.3 Public visual library
+
+`/gallery` and `/gallery/app` render the actual shared app components outside
+product account startup, using the same register and stylesheet authority.
+Historical archive pages remain development-only references, not recommended
+app examples. Keep the 0.14.3 import immutable. Read
+`docs/design/library/README.md` for reuse and gap requests and
+`docs/design/library/PLAN.md` for the active checklist. Source snapshots do not
+imply visual approval; material design changes use isolated review first.
+
 ---
 
 ## 10. Non-negotiables

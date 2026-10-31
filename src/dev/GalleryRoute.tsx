@@ -1,22 +1,22 @@
 /**
- * DS-07 — `/dev/gallery`, the visual review surface. Dev only.
+ * Shared review surface: public `/gallery` and legacy `/dev/gallery`.
  *
  * Screens get approved rendered, not drawn, so this is where they are looked
  * at. Two sections, both reachable from the chrome that stays mounted across
  * them: `/dev/gallery/ds` serves the export's specimen cards unmodified, and
- * `/dev/gallery/app` frames every app-composed part in every state.
+ * `/dev/gallery/app` frames registered app-composed parts and states.
  *
- * Nothing here ships. The route is reached only through the
- * `import.meta.env.DEV` branch in `src/app/router.tsx`, which folds to an empty
- * list in a build and takes this module's whole chunk with it —
- * `prod-exclusion.test.ts` is the proof.
+ * PublicGalleryApp reaches the same renderer outside account clients and
+ * BootGate. The legacy product-router entry remains development-only.
+ * fonts.test.ts verifies account/test-code isolation alongside the actual
+ * compiled style/font contract; archive delivery stays development-only.
  *
  * Motion (IA.md §4): a specimen stays still until a reviewer triggers it. That
  * is why a toast, a dialog and the `slow` loading state are behind controls
  * rather than playing at once.
  */
-import { useEffect, useState } from 'react'
-import { NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 
 import { resolveAtmosphere, type AtmosphereLevel } from '../app/atmosphere'
 import { Screen } from '../app/Screen'
@@ -24,7 +24,7 @@ import { ChoiceGroup } from '../design-system/index'
 // The skin initialiser is a public entry of the export alongside index.js, and
 // it owns skin persistence — the list of skins is never written out by hand.
 import { currentSkin, setSkin, SKINS } from '../design-system/skin'
-import { Heading, HeadingSection } from '../ui/Heading'
+import { Heading } from '../ui/Heading'
 import { Nav } from '../ui/Nav'
 import { AppComposedParts } from './gallery-app'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
@@ -106,11 +106,11 @@ const SECTIONS = [
   { to: 'app', end: false, label: 'App-composed' },
 ]
 
-function GalleryNav() {
+function GalleryNav({ publicView }: { publicView: boolean }) {
   return (
     <Nav label="Gallery sections">
       <ul className="clr-dev-gallery__nav-list">
-        {SECTIONS.map((section) => (
+        {SECTIONS.filter((section) => !publicView || section.to === 'app').map((section) => (
           <li key={section.label}>
             <NavLink to={section.to} end={section.end}>
               {section.label}
@@ -128,15 +128,29 @@ function GalleryNav() {
  * above the `Outlet` is what lets a skin chosen in one section still be the
  * skin in the other.
  */
-function GalleryLayout() {
+function GalleryLayout({ publicView }: { publicView: boolean }) {
+  const { pathname } = useLocation()
+  const previousPath = useRef(pathname)
+  useEffect(() => {
+    if (publicView && previousPath.current !== pathname) {
+      document.querySelector<HTMLElement>('main h1')?.focus()
+    }
+    previousPath.current = pathname
+  }, [pathname, publicView])
   return (
     <Screen title="Component Gallery">
       <div className="clr-dev-gallery">
         <div className="clr-dev-gallery__chrome">
           <SkinSwitcher />
           <AtmosphereSwitcher />
-          <GalleryNav />
+          <GalleryNav publicView={publicView} />
         </div>
+        {publicView && (
+          <p className="clr-dev-gallery__meta" role="status">
+            App source snapshot · synthetic examples · no account required.
+            Visual approvals tracked separately.
+          </p>
+        )}
         <Outlet />
       </div>
     </Screen>
@@ -145,39 +159,37 @@ function GalleryLayout() {
 
 function GalleryOverview() {
   return (
-    <HeadingSection className="clr-dev-gallery__section">
+    <div className="clr-dev-gallery__section">
       <Heading>Two sections</Heading>
       <p>
-        <strong>Design system</strong> serves the {SPECIMENS.length} specimen
-        cards the export ships, unmodified, straight from the vendored folder —
-        they are not recreated here and never will be.
+        <strong>Design system</strong> — {SPECIMENS.length} original
+        specimen pages, displayed unmodified from the 0.14.3 archive.
       </p>
       <p>
-        <strong>App-composed</strong> frames every part CLEAR builds on top of
-        the export — DS-04, DS-05 and each atmosphere level — in every state it
-        can be in. A part missing from it fails review, and fails the test suite.
+        <strong>App-composed</strong> renders the registered components CLEAR
+        builds on top of the export, using the same implementation as the app.
+        Session-dependent surfaces have documented coverage gaps and are being added.
       </p>
       <p className="clr-dev-gallery__meta">
-        Dev only · excluded from production bundles
+        Development reference
       </p>
-    </HeadingSection>
+    </div>
   )
 }
 
 /**
- * The gallery's own routes, below the `dev/gallery/*` route the app router
- * declares. Descendant routes rather than data routes: the whole subtree is one
- * dev-only chunk, and the app router should know one path, not four.
+ * Descendant routes shared by the public and development entry points. The
+ * registry and renderer have one owner, rather than one copy per URL.
  */
-export function GalleryRoute() {
+export function GalleryRoute({ publicView = false }: { publicView?: boolean }) {
   return (
     <Routes>
-      <Route element={<GalleryLayout />}>
-        <Route index element={<GalleryOverview />} />
-        <Route path="ds" element={<DesignSystemSpecimens />} />
+      <Route element={<GalleryLayout publicView={publicView} />}>
+        <Route index element={publicView ? <AppComposedParts /> : <GalleryOverview />} />
+        <Route path="ds" element={publicView ? <Navigate to="/gallery/app" replace /> : <DesignSystemSpecimens />} />
         <Route path="app" element={<AppComposedParts />} />
         {/* A mistyped section is the overview, not a 404 inside a dev tool. */}
-        <Route path="*" element={<GalleryOverview />} />
+        <Route path="*" element={publicView ? <Navigate to="/gallery/app" replace /> : <GalleryOverview />} />
       </Route>
     </Routes>
   )

@@ -45,8 +45,7 @@ export const localVendorFontParser: Parser<Root> = (css, options) => {
 }
 
 export default defineConfig({
-  // DS-07's specimen middleware declares `apply: 'serve'`, so the export's
-  // cards are reachable while developing and nothing of it exists in a build.
+  // Archived reference specimens stay behind the development-only middleware.
   plugins: [react(), specimenServer(), pwaIcons()],
   css: {
     postcss: { parser: localVendorFontParser },

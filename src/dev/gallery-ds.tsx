@@ -30,7 +30,11 @@ function SpecimenCard({ specimen }: { specimen: Specimen }) {
       <p className="clr-dev-gallery__meta">{specimen.file}</p>
       {/* The card declares its own viewport; the rail is what keeps it reachable
           when the column is narrower, without scaling it or overflowing the page. */}
-      <OverflowRail>
+      <OverflowRail trackProps={{
+        tabIndex: 0,
+        role: 'group',
+        'aria-label': `${specimen.group} — ${specimen.name} reference viewport`,
+      }}>
         <iframe
           className="clr-dev-gallery__frame"
           src={specimen.url}

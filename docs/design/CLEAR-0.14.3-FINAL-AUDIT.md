@@ -1,6 +1,22 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
-## Current PWA hotfix #591 source-bound recapture — 30 October 2026
+## Current integrated LIB-001 and PWA source reverification — 30 October 2026
+
+After integrating main ba19701/PR592 unchanged, the existing authenticated Format Preview collector passed **4/4 skin cases and eight fresh screenshots in28.71 seconds**. Group: `docs/design/evidence-0143/task034-format-preview-library-590-integrated/`. The initial library590, PWA-hotfix591 and all older groups remain unchanged. This is manual issue590 source verification, not a new native Task015 attempt, receipt or merge/deployment approval.
+
+Actual frozen application commit `8ef47ad28d5b79c83135fcb79c5a8e5e61fb72d6`, runtime `aeb59beef09d49cd435eb0bf5269a8d7c892f58783a9b27f33fd61f230d21c07`, driver `7a06b5e2677019a9eb81b98591b9260c93ae64ea80e463ee1f52a6ac6964529c` and package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all four records. The unchanged validator checks the complete390×844/390×320 matrix in all four skins, real authenticated journey, Settings/disclosures and Back/direct-entry Back, accessibility, settled layout, storage and actual PNG bytes/hash/dimensions. The captured commit is genuine ancestry of this branch; no native Runner identity is rebound.
+
+The app ran on loopback http://127.0.0.1:4181 with the existing configured Supabase disposable fixture. Its only account/setup writes belonged to its namespaced example.com user and were cleaned up; OTP delivery was intercepted. During the preview every generation, attempted-write and forwarded-write count is zero. No hosted frontend or installed-device/UAT result is claimed. The incoming PWA runtime fix remains unchanged.
+
+## Prior LIB-001 startup reverification before main integration — 30 October 2026
+
+Under issue590, the existing authenticated Format Preview collector passed **4/4 skin cases and eight new screenshots in25.96 seconds**. Actual group: `docs/design/evidence-0143/task034-format-preview-library-590/`. The prior Task015/Batch05 group remains unchanged. This is manual current-source reverification for LIB-001, not a new native Task015 attempt, Runner receipt, merge approval or production deployment.
+
+All records identify application commit `59e8ce362b0f65ade59d8558e064370cbfc2af64`, runtime `d3c0fc8fbabde5b7ce1c0ce3ee7065a2ae0e4f136fae0278b590bcd30bfb8e32`, capture driver `2931112d163e7cadf7a101927be2dd3401018f8c0636264f615ffe5c0c518231` and pinned0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. The complete390×844/390×320 matrix covers CLEAR, Vapour, Signal and Mono. Settings entry, all format disclosures, Back/direct-entry Back, accessibility, storage, settled layout and read-only network assertions passed. The unchanged record validator and PNG bytes/hashes still apply. Git ancestry of the actual new captured commit establishes source continuity; historical native-task metadata is not a claim about this manual session.
+
+The app was served on loopback http://127.0.0.1:4181 using the existing configured Supabase test fixture. The fixture provisioned/onboarded and automatically deleted only its disposable namespaced example.com user; OTP delivery was intercepted. Setup/cleanup writes are separate from the preview walk. Every record reports zero generation, attempted preview write and forwarded preview write requests. This is not a no-backend-write setup or hosted frontend/UAT proof. The first record's clean checkout and later evidence-created dirty states remain as actually collected.
+
+## Prior PWA hotfix #591 source-bound recapture — 30 October 2026
 
 This is ordinary hotfix evidence for PR #592, not a new native Task015 run, receipt or delivery claim. The owner reported that the separate installed-PWA preview worked and explicitly authorized merging this fix so it is live. That is owner-reported verification of the preview at c39bf03; no remote device inspection or individual keyboard/launch measurements are invented here.
 

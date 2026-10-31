@@ -11,6 +11,16 @@ skill `clear-dag-runner` and its canonical loop in `docs/process/DAG_RUNNER.md`.
 An approved ready issue authorizes routine implementation through a tested, pushed pull request.
 Do not repeatedly ask for permission to branch, edit, verify, commit, push, or open that PR.
 
+## UI work
+
+Before UI work, read `docs/design/library/README.md`. Search the generated
+`docs/design/library/COMPONENTS.md`, `src/dev/gallery-registry.tsx` and `src/ui/`
+for an existing pattern before building one. Reuse shared owners and variables;
+record a gap using the README when they do not fit. Render real components in
+the gallery and check affected screens. Update the register and regenerate its
+index when examples change. `docs/design/library/PLAN.md` is the active delivery
+checklist; older detailed research is reference, not extra shipping gates.
+
 ## Process journal
 
 For every material work session, maintain `docs/journal/YYYY-MM-DD.md` at meaningful checkpoints

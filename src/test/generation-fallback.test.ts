@@ -10,8 +10,8 @@
  *
  * Test files are exempt, and that is the whole point of the rule rather than a
  * hole in it: fixtures belong to tests. `src/test/` is the harness itself and
- * ships nowhere, which `src/dev/prod-exclusion.test.ts` proves against real
- * build output for the one dev surface a bundle could otherwise reach.
+ * ships nowhere, which `src/styles/fonts.test.ts` also proves against
+ * real build output now that the gallery has a public entry.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'

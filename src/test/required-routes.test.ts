@@ -5,6 +5,7 @@ import { matchPath, matchRoutes, type RouteObject } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
 import {
+  PUBLIC_LIBRARY_ROUTES,
   REQUIRED_JOURNEYS,
   REQUIRED_SCREENS,
   type RequiredScreen,
@@ -90,6 +91,15 @@ describe('the inventory states the requirement, not the router (REQ-010)', () =>
       expect(REQUIRED_SCREENS.find((entry) => entry.screen === host)?.route).not.toBeNull()
     }
     expect(loading?.renderedWithin).toEqual(['Home', 'Generate', 'Review'])
+  })
+
+  it('records all independent public-library routes documented in IA.md §5', () => {
+    const ia = read('docs/specs/IA.md')
+    const section = ia.slice(ia.indexOf('\n## 5.'), ia.indexOf('\n## 6.'))
+    const documented = [...section.matchAll(/^\| (Library overview|App-composed) \| `([^`]+)` \|$/gm)]
+      .map((match) => ({ screen: match[1], path: match[2] }))
+    expect(documented).toHaveLength(2)
+    expect(PUBLIC_LIBRARY_ROUTES.map(({ screen, path }) => ({ screen, path }))).toEqual(documented)
   })
 
   it('records the journeys REQ-010 names, over screens the inventory holds', () => {
