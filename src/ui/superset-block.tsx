@@ -38,9 +38,11 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 
 import { Button } from '../design-system/index'
+import { SetLoggingConfirmation } from './set-logging-sheet'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import { useSetLogging } from '../state/set-logging'
 import type { BlockRendererProps } from './block-renderers'
@@ -106,6 +108,10 @@ function SupersetRound({ block }: BlockRendererProps) {
   const [entry, setEntry] = useState<RoundDraft | null>(null)
   const round = supersetRound(movements.map((exercise) => loggedSets(exercise.exerciseId)))
   const restTimer = useRestTimer()
+  const presentation=useWorkoutExperiencePresentation()
+  const [savedRound,setSavedRound]=useState<number|null>(null)
+  const setSheetOpen=sheet.setOpen
+  useEffect(()=>{if(savedRound===null||restTimer.remainingSeconds>0)return;const id=setTimeout(()=>{setSavedRound(null);setEntry(null);setSheetOpen(false)},0);return()=>clearTimeout(id)},[savedRound,restTimer.remainingSeconds,setSheetOpen])
 
   // The block's Rest action (REQ-012): open the round sheet and, when no rest
   // is running, start the block's one rest. Log round N only saves.
@@ -179,13 +185,14 @@ function SupersetRound({ block }: BlockRendererProps) {
       </ActionGroup>
 
       {sheet.place(
-        <SupersetRoundSheet
+        savedRound !== null ? <SetLoggingConfirmation label={`Round ${savedRound} logged`} onCollapse={collapse}/> : <SupersetRoundSheet
           movements={movements.map((exercise) => ({
             exercise,
             ordinal: supersetOrdinal(exercise.position),
           }))}
           round={round}
           held={entry}
+          onLogged={presentation ? ()=>setSavedRound(round) : undefined}
           onHeld={setEntry}
           onCollapse={collapse}
         />,

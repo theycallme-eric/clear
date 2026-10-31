@@ -5,6 +5,7 @@ import type { ReviewExerciseView } from '../state/review'
 import type { LoadOverride, LoadSuggestionView } from '../state/load-suggestions'
 import { ExerciseSwapControls } from './exercise-swap'
 import { LoadSuggestionButton } from './load-suggestion'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
@@ -109,6 +110,8 @@ export function ReviewExerciseRow({
   override: LoadOverride | null
   onExplain: () => void
 }) {
+  const presentation = useWorkoutExperiencePresentation()
+  const guidance = presentation?.suggestedLoads[exercise.exerciseId]
   const repeatsEquipment =
     exercise.load !== null && exercise.load.toLowerCase() === exercise.equipment.toLowerCase()
   const load = inRounds && repeatsEquipment ? null : exercise.load
@@ -118,7 +121,7 @@ export function ReviewExerciseRow({
       <div style={NAME_ROW_STYLE}>
         <p style={NAME_STYLE}>
           {ordinal !== null && <span className="clr-text-data-xs" style={ORDINAL_STYLE}>{ordinal} </span>}
-          <span style={NAME_TEXT_STYLE}>{exercise.name}</span>
+          <span style={NAME_TEXT_STYLE}>{exercise.name}{presentation && !exercise.name.toLowerCase().includes(exercise.equipment.toLowerCase()) && <span className="clr-v4-equipment">{exercise.equipment}</span>}</span>
         </p>
         <div style={SWAP_SLOT_STYLE}>
           <ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="swap" />
@@ -126,10 +129,10 @@ export function ReviewExerciseRow({
       </div>
       <p style={PRESCRIPTION_STYLE}>
         <span>{exercise.roundTarget ?? exercise.prescription}</span>
-        {load !== null && <span>{load}</span>}
+        {(guidance === undefined ? load : guidance) !== null && <span>{guidance === undefined ? load : guidance}</span>}
         {rest !== null && <span>{rest}</span>}
       </p>
-      <span className="clr-text-data-xs clr-text-data-xs--quiet" style={EQUIPMENT_STYLE}>{exercise.equipment}</span>
+      {!presentation && <span className="clr-text-data-xs clr-text-data-xs--quiet" style={EQUIPMENT_STYLE}>{exercise.equipment}</span>}
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}

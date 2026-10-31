@@ -203,7 +203,7 @@ export function LoggedSetTable({ sets, label }: LoggedSetTableProps) {
           <HeaderCell>Set</HeaderCell>
           <HeaderCell>Weight</HeaderCell>
           <HeaderCell>Reps</HeaderCell>
-          <HeaderCell>RPE</HeaderCell>
+          <HeaderCell>Effort</HeaderCell>
           {showsDuration && <HeaderCell>Time</HeaderCell>}
           {showsDistance && <HeaderCell>Distance</HeaderCell>}
         </tr>

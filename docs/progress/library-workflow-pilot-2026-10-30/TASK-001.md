@@ -54,3 +54,8 @@ The eight named browser cases cover: released mismatch in a safe isolated baseli
 [Draft PR 611](https://github.com/theycallme-eric/clear/pull/611) is published. Observe its exact-head CI; the PR is the live check/review status record. Review the ErrorView entry, especially Signal, contained content and the dialog specimen. Merge remains an owner decision. The larger workout proposal and application ScrollRegion #600 remain separate.
 
 This pilot demonstrates approved design reuse through Builder, DAG, implementation and a correctly enforced evidence hold. Final operator completion does **not** establish end-to-end native Runner delivery. That limit is recorded, not converted into a new Runner task under the owner's no-Runner instruction.
+
+
+## 31 October owner approval and release
+
+Eric approved the ErrorView correction and publishing. PR 611 merged by protected normal merge at `94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2`; GitHub reports production deployment complete. The public ErrorView gallery independently renders five states, including card/dialog, with the semantic error border hooks. Prior unmerged/draft statements above describe their checkpoint, not the current state. No further Runner invocation occurred, and the original native failure remains unchanged. Manual release does not create a native completion receipt. The broader workout comparison is separate design work awaiting review.

@@ -84,6 +84,8 @@ import { BlockSlot } from '../ui/block-renderers'
 import { ErrorDialog } from '../ui/blocking-dialog'
 import { FittedScrollRegion } from '../ui/fitted-scroll-region'
 import { PhoneFooter } from '../ui/composition'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { SectionLabelContext } from '../ui/section-label-context'
 import { SetLoggingSheetHost, SetLoggingSheetOverlay } from '../ui/set-logging-sheet'
 import { useSetLoggingSheetOpen } from '../ui/set-logging-sheet-context'
@@ -206,6 +208,7 @@ function WorkoutShell({
   onSessionEnded,
   storage,
 }: WorkoutShellProps) {
+  const presentation = useWorkoutExperiencePresentation()
   const { sessions } = useWorkoutClients()
   const { user } = useAuth()
   const cache = useQueryClient()
@@ -492,9 +495,11 @@ function WorkoutShell({
                     />
                   </div>
                   <SectionLabelContext value={current.title}>
+                    {presentation && (current.sectionType === 'warmup' || current.sectionType === 'cooldown') ? <PreparationGuide guide={presentation.guides[current.sectionType]} withTimer /> : <>
                     {current.blocks.map((block) => (
                       <BlockSlot key={block.blockId} block={block} />
                     ))}
+                    </>}
                   </SectionLabelContext>
                 </>
               )}

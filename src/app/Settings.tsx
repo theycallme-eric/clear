@@ -91,6 +91,7 @@ import {
   type ViewState,
 } from '../state/view-state'
 import { AppearancePicker } from '../ui/appearance-picker'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Card } from '../ui/card'
 import { ActionRow, PhoneFooter } from '../ui/composition'
 import { SaveStatusLine, useInlineSave } from '../ui/inline-save'
@@ -218,6 +219,7 @@ function SettingsCard({
  * answered during onboarding, editable one tap at a time.
  */
 function PreferencesSection({ profile }: { profile: Profile }) {
+  const presentation = useWorkoutExperiencePresentation()
   const { user } = useAuth()
   const userData = useUserData()
   const cache = useQueryClient()
@@ -247,6 +249,7 @@ function PreferencesSection({ profile }: { profile: Profile }) {
 
   return (
     <SettingsCard id="settings-training" heading="Training">
+      {!presentation && <>
       <ChoiceGroup
         legend="Goal"
         options={goalOptions().map((goal) => ({
@@ -277,6 +280,7 @@ function PreferencesSection({ profile }: { profile: Profile }) {
         }}
       />
 
+      </>}
       <CheckboxGroup legend="Sections">
         {locked && <p style={{ margin: 0 }}>{LOCKED_SECTIONS_REASON}</p>}
         {SECTIONS.map((section) => (

@@ -696,20 +696,19 @@ const REST_URGENT_SECONDS = 10
  * the word, the digits and the colour all unchanged.
  */
 export function RestTimerBar() {
-  const { rest, remainingSeconds, extend, skip } = useRestTimer()
+ const {rest,remainingSeconds,extend,skip}=useRestTimer()
+ if(rest===null || remainingSeconds<=0)return null
+ return <CountdownBar regionLabel="Rest" label={`Rest after ${rest.label}`} remainingSeconds={remainingSeconds} totalSeconds={rest.totalSeconds} urgent={remainingSeconds<=REST_URGENT_SECONDS} onExtend={()=>extend()} onSkip={skip}/>
+}
 
-  const running = rest !== null && remainingSeconds > 0
-  const urgent = running && remainingSeconds <= REST_URGENT_SECONDS
-  const loop = useInterfaceLoop('urgent', urgent)
-
-  if (!running) return null
-
-  const fraction = rest.totalSeconds > 0 ? remainingSeconds / rest.totalSeconds : 0
-
+/** Same presentation for real set rest and an independent preparation clock. */
+export function CountdownBar({regionLabel,label,remainingSeconds,totalSeconds,urgent=false,actions,onExtend,onSkip}:{regionLabel?:string;label:string;remainingSeconds:number;totalSeconds:number;urgent?:boolean;actions?:ReactNode;onExtend?:()=>void;onSkip?:()=>void}) {
+ const loop=useInterfaceLoop('urgent',urgent)
+ const fraction=totalSeconds>0?Math.min(1,Math.max(0,remainingSeconds/totalSeconds)):0
   return (
     // The pulse runs on the wrapper so bar and body dim together.
     <section
-      aria-label="Rest"
+      aria-label={regionLabel ?? `${label} timer`}
       className={urgent ? 'clr-rest-bar clr-pulse-micro' : 'clr-rest-bar'}
       data-urgent={urgent ? 'true' : 'false'}
       {...loop}
@@ -727,7 +726,7 @@ export function RestTimerBar() {
             <span aria-hidden="true" style={{ display: 'flex' }}>
               <Rest />
             </span>
-            Rest after {rest.label}
+            {label}
           </p>
           {/* Labelled once and not live: the milestone below is what speaks. */}
           <div role="timer" aria-label="Time remaining" style={{ display: 'inline-flex' }}>
@@ -757,12 +756,14 @@ export function RestTimerBar() {
         </div>
 
         <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-          <Button variant="secondary" icon={<Plus />} onClick={() => extend()}>
+          {actions ?? <>
+          <Button variant="secondary" icon={<Plus />} onClick={onExtend}>
             Add {REST_EXTENSION_SECONDS}s
           </Button>
-          <Button variant="quiet" icon={<X />} onClick={skip}>
+          <Button variant="quiet" icon={<X />} onClick={onSkip}>
             Skip rest
           </Button>
+          </>}
         </div>
       </Card>
     </section>

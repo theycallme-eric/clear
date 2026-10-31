@@ -110,6 +110,7 @@ export type SetSheetMode = 'new' | 'edit'
 
 export interface SetLoggingSheetProps {
   mode: SetSheetMode
+  confirmation?: string
   setNumber: number
   /**
    * What the entry is called in the title and on its action, where it is not
@@ -159,6 +160,7 @@ const CONTEXT_STYLE: CSSProperties = {
 
 export function SetLoggingSheet({
   mode,
+  confirmation,
   setNumber,
   entryName = `set ${setNumber}`,
   formLabel,
@@ -207,7 +209,7 @@ export function SetLoggingSheet({
           <div className="clr-row clr-set-sheet__head">
             <HeadingLevelProvider level={2}>
               <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {mode === 'edit' ? 'Edit' : 'Log'} {entryName}
+                {confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`}
               </Heading>
             </HeadingLevelProvider>
             <IconButton
@@ -219,11 +221,11 @@ export function SetLoggingSheet({
             />
           </div>
 
-          <p style={CONTEXT_STYLE}>{context}</p>
+          {confirmation === undefined && <p style={CONTEXT_STYLE}>{context}</p>}
 
           {rest === undefined ? <RestTimerBar /> : rest}
 
-          <form
+          {confirmation === undefined && <form
             aria-label={formLabel}
             onSubmit={submitWith(onSubmit)}
             className="clr-stack clr-stack--tight"
@@ -254,7 +256,7 @@ export function SetLoggingSheet({
                 </Button>
               </ActionGroup>
             )}
-          </form>
+          </form>}
         </div>
       </div>
     </section>
@@ -265,4 +267,10 @@ export function SetLoggingSheet({
 /** Weight / Unit / Reps — or Seconds, or only the measure — on one row. */
 export function SetMeasurementRow({ children }: { children: ReactNode }) {
   return <div className="clr-set-sheet__measures">{children}</div>
+}
+
+
+/** Same sheet/frame and actual rest; no next-entry form after a saved set. */
+export function SetLoggingConfirmation({label,onCollapse}:{label:string;onCollapse:()=>void}){
+ return <SetLoggingSheet mode="new" setNumber={0} confirmation={label} formLabel={label} context={null} measures={null} onSubmit={()=>false} onCollapse={onCollapse}/>
 }

@@ -90,6 +90,8 @@ import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
 import { ReviewExerciseRow } from '../ui/review-exercise-row'
+import { PreparationGuide } from '../ui/preparation-guide'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionDialog,
@@ -134,6 +136,7 @@ export function Review({
   onStarted,
   progression = null,
 }: ReviewProps) {
+  const presentation = useWorkoutExperiencePresentation()
   const navigate = useNavigate()
   const { user } = useAuth()
   const { sessions } = useWorkoutClients()
@@ -328,7 +331,8 @@ export function Review({
           />
         ) : null}
 
-        {briefing.sections.map((section) => (
+        {presentation && <PreparationGuide guide={presentation.guides.warmup} />}
+        {briefing.sections.filter(section => !presentation || !['warmup','cooldown'].includes(section.type)).map((section) => (
           <ReviewSectionCard
             key={section.key}
             section={section}
@@ -337,6 +341,8 @@ export function Review({
             onExplain={setExplaining}
           />
         ))}
+
+        {presentation && <PreparationGuide guide={presentation.guides.cooldown} />}
 
         {/* REQ-006: the way out of this composition, once it has been read.
             Discarding is confirmed and irreversible, so it is a framed button
@@ -744,6 +750,7 @@ function ReviewBlockRows({
     </div>
   )
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Discarding

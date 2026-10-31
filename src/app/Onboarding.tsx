@@ -61,7 +61,6 @@ import {
   onboardingReducer,
   SECTIONS,
   STEP_TITLES,
-  stepNumber,
   TIERS,
   toAnswers,
   type OnboardingAction,
@@ -72,6 +71,7 @@ import {
 import { useQueryClient } from '../state/query'
 import type { Location } from '../state/schemas'
 import { locationsQueryKey, profileQueryKey, useUserData } from '../state/user-queries'
+import { useWorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { Card } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { ActionRow, ListFrame, ListRow, PhoneFooter } from '../ui/composition'
@@ -110,12 +110,14 @@ export function Onboarding() {
   const cache = useQueryClient()
   const navigate = useNavigate()
 
-  const [draft, dispatch] = useReducer(onboardingReducer, EMPTY_DRAFT)
+  const presentation = useWorkoutExperiencePresentation()
+  const steps = presentation ? (['location','confirm'] as const) : ONBOARDING_STEPS
+  const [draft, dispatch] = useReducer(onboardingReducer, presentation?.equipmentSetupDraft ?? EMPTY_DRAFT)
   const [index, setIndex] = useState(0)
   const [direction, setDirection] = useState<Direction>('forward')
   const [commit, setCommit] = useState<Commit>({ status: 'idle' })
 
-  const step = ONBOARDING_STEPS[index] ?? 'confirm'
+  const step = steps[index] ?? 'confirm'
   const blocked = blockedReason(step, draft)
   const answers = toAnswers(draft)
   // The reducer answers the same object for an edit that changes nothing, so
@@ -128,7 +130,7 @@ export function Onboarding() {
 
   function go(to: number, towards: Direction) {
     setDirection(towards)
-    setIndex(Math.min(Math.max(to, 0), ONBOARDING_STEPS.length - 1))
+    setIndex(Math.min(Math.max(to, 0), steps.length - 1))
   }
 
   async function submit() {
@@ -218,9 +220,9 @@ export function Onboarding() {
     >
       <div className="clr-stack">
         <Progress
-          value={stepNumber(step)}
-          max={ONBOARDING_STEPS.length}
-          label={`Step ${stepNumber(step)} of ${ONBOARDING_STEPS.length}`}
+          value={index + 1}
+          max={steps.length}
+          label={`Step ${index + 1} of ${steps.length}`}
         />
 
         <div
@@ -399,6 +401,7 @@ function SectionPreview({ sections }: { sections: OnboardingDraft['sections'] })
 
 /** What will be stored, read back once before it is. */
 function Summary({ draft }: { draft: OnboardingDraft }) {
+  const presentation = useWorkoutExperiencePresentation()
   const rows: [string, string][] = [
     ['Setup', draft.tier === null ? 'Not chosen' : locationName(draft.tier)],
     ['Equipment', listOf(EQUIPMENT, draft.equipment)],
@@ -410,7 +413,7 @@ function Summary({ draft }: { draft: OnboardingDraft }) {
 
   return (
     <ListFrame as="dl">
-      {rows.map(([term, value]) => (
+      {rows.filter(([term]) => !presentation || ['Setup','Equipment'].includes(term)).map(([term, value]) => (
         <ListRow key={term}>
           <dt className="label">{term}</dt>
           <dd>{value}</dd>

@@ -31,6 +31,7 @@ import {
   type HistorySessionEntry,
   type HistorySessionStatus,
 } from '../state/history'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { ListFrame, ListRow } from './composition'
 import { Heading } from './Heading'
 
@@ -148,6 +149,18 @@ function SessionItem({
   opening: boolean
   as?: ElementType
 }) {
+  const presentation = useWorkoutExperiencePresentation()
+  const statusNode = (
+        <span
+          data-part="status"
+          style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)', flexShrink: 0 }}
+        >
+          <span aria-hidden="true" style={{ display: 'flex' }}>
+            {STATUS_GLYPH[entry.status]}
+          </span>
+          {HISTORY_STATUS_LABELS[entry.status]}
+        </span>
+  )
   return (
     // A list row is a top-level section of both History and Home's recent
     // panel. `Screen` has already established h2 for this content; deepening
@@ -177,21 +190,16 @@ function SessionItem({
             </Link>
           )}
         </Heading>
-        <span
-          data-part="status"
-          style={{ ...GLYPH_STYLE, color: 'var(--text-card-header)', flexShrink: 0 }}
-        >
-          <span aria-hidden="true" style={{ display: 'flex' }}>
-            {STATUS_GLYPH[entry.status]}
-          </span>
-          {HISTORY_STATUS_LABELS[entry.status]}
-        </span>
+        {!presentation && statusNode}
       </div>
-      <p data-part="context" className="clr-text-data-xs" style={{ marginTop: 'var(--spacing-100)' }}>
-        {`${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
+      <p data-part="context" className="clr-text-data-xs" style={{ ...(presentation ? ROW_STYLE : {}), marginTop: 'var(--spacing-100)' }}>
+        {presentation && statusNode}
+        {presentation ? formatDay(entry.day) : `${formatDay(entry.day)} · ${formatFocus(entry.focus)}`}
       </p>
       {/* A count never wraps away from its unit. */}
       <p data-part="metrics" className="clr-text-data-xs" style={{ ...ROW_STYLE, marginTop: 'var(--spacing-100)' }}>
+        {presentation && <span className="clr-nowrap">{formatFocus(entry.focus)}</span>}
+
         <span className="clr-nowrap">{`${REQUESTED_DURATION_LABEL} ${entry.requestedMins} min`}</span>
         {entry.durationMins !== null && (
           <span className="clr-nowrap">{`${ACTUAL_DURATION_LABEL} ${entry.durationMins} min`}</span>

@@ -65,6 +65,7 @@ import {
 } from '../state/prescription'
 import { incrementFor } from '../state/progression'
 import { movementCountdownSeconds } from '../state/movement-countdown'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
 import { equipmentName } from '../state/review'
 import {
@@ -83,7 +84,7 @@ import { ExerciseCoaching } from './exercise-coaching'
 import { MovementCountdown } from './movement-countdown'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
-import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
+import { SetLoggingConfirmation, SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
 import { useSetLoggingSheetPlacement } from './set-logging-sheet-context'
 
 type WeightUnit = Enums<'weight_unit'>
@@ -155,7 +156,10 @@ export function ExerciseSetLogger({
   const { logSet, loggedSets, isSaving, weightUnit, correctSet, clearSet } = useSetLogging()
   const correctable = onCorrectSet !== undefined || correctSet !== undefined
   const restTimer = useRestTimer()
+  const presentation = useWorkoutExperiencePresentation()
+  const [savedEntry,setSavedEntry] = useState<number|null>(null)
   const sheet = useSetLoggingSheetPlacement(exercise.exerciseId)
+  const setSheetOpen=sheet.setOpen
   const logButton = useRef<HTMLButtonElement>(null)
   const editButton = useRef<HTMLButtonElement>(null)
   const returnAfterClear = useRef(false)
@@ -214,6 +218,7 @@ export function ExerciseSetLogger({
       ? null
       : { set: correctedSet, draft: correction }
   const mode = edit === null ? 'new' : 'edit'
+  useEffect(()=>{if(savedEntry===null||restTimer.remainingSeconds>0)return;const id=setTimeout(()=>{setSavedEntry(null);if(mode==='new')setSheetOpen(false)},0);return()=>clearTimeout(id)},[savedEntry,restTimer.remainingSeconds,setSheetOpen,mode])
   const sheetSetNumber = edit === null ? setNumber : edit.set.setNumber
   const sheetModality = edit === null ? prescription.modality : edit.draft.modality
 
@@ -304,7 +309,7 @@ export function ExerciseSetLogger({
       ) : null}
 
       {(logsSelf || edit !== null) && sheet.place(
-        <SetSheetForm
+        savedEntry !== null && edit === null ? <SetLoggingConfirmation label={`Set ${savedEntry} logged`} onCollapse={collapse}/> : <SetSheetForm
           key={mode}
           mode={mode}
           setNumber={sheetSetNumber}
@@ -339,6 +344,7 @@ export function ExerciseSetLogger({
             }
             // The save only: a running rest carries on, and none is started.
             logSet(exercise.exerciseId, performed)
+            if(presentation)setSavedEntry(setNumber)
           }}
           onCancel={() => {
             setCorrection(null)
@@ -979,6 +985,7 @@ export interface SupersetRoundSheetProps {
   /** The entry so far, or `null` before anything was entered. */
   held: RoundDraft | null
   onHeld: (draft: RoundDraft) => void
+  onLogged?:()=>void
   onCollapse: () => void
 }
 
@@ -987,6 +994,7 @@ export function SupersetRoundSheet({
   round,
   held,
   onHeld: setHeld,
+  onLogged,
   onCollapse,
 }: SupersetRoundSheetProps) {
   const { logSet, loggedSets, isSaving, weightUnit } = useSetLogging()
@@ -1046,6 +1054,7 @@ export function SupersetRoundSheet({
     for (const { part, reading } of chosen) {
       if (reading.performed !== null) logSet(part.exercise.exerciseId, reading.performed)
     }
+    onLogged?.()
     return true
   }
 

@@ -1,0 +1,12 @@
+/* App-owned V4 proposal, shared by actual consumers and their isolated fixtures. */
+.clr-v4-program-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--spacing-200); }
+.clr-v4-program-summary p { font-size:var(--heading-h5-size); line-height:var(--heading-h5-line-height); overflow-wrap:normal; }
+.clr-v4-focus-action { margin-inline-start:calc(50% + var(--spacing-100)); width:fit-content; max-width:50%; }
+.clr-v4-focus-action .clr-text-action { font-size:var(--label-xs-size); }
+.clr-v4-equipment { display:inline-block; margin-inline-start:var(--spacing-200); font-family:var(--font-body); font-size:var(--paragraph-sm-size); line-height:var(--paragraph-sm-line-height); color:var(--text-secondary); text-transform:capitalize; font-weight:var(--font-weight-medium); }
+.clr-v4-guide-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:var(--spacing-200); }
+.clr-v4-guide-list li { font-family:var(--font-body); font-size:var(--paragraph-md-size); line-height:var(--paragraph-md-line-height); }
+.clr-v4-progress-facts { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:var(--spacing-200) var(--spacing-300); margin:var(--spacing-200) 0; }
+.clr-v4-progress-facts dt { color:var(--text-secondary); }.clr-v4-progress-facts dd{margin:0;}
+.clr-v4-experience [role="group"][aria-label="Round clock"] { display:flex; flex-direction:column; align-items:stretch; gap:var(--spacing-200); }
+.clr-v4-experience ol[aria-label="Round times"] { margin-block:var(--spacing-200); }
