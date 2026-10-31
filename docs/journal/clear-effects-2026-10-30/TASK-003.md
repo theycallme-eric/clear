@@ -114,3 +114,14 @@ evidence recovery.
 - The desktop viewport is 1280×800 CSS inside the mobile project (touch/mobile emulation kept).
 - Next safe action: owner-authorized Format Preview re-capture and audit rebind (or an owner
   decision to scope that binding), then controller verification. TASK-004 opts screens in.
+
+
+## Owner-authorized evidence recovery — 31 October 2026
+
+The native ledger confirms the current worker claim is attempt2, continued in the original `agent-runner/task-003-a1-9bce6feb` workspace/branch after attempt1 hit the configured turn limit. No third model attempt or counter change is used. Its 16-case unit suite and five real-browser fidelity cases passed independently in both criterion and task verification; the full project `npm test` stopped only at the two source-bound audit cases.
+
+The completed Settings sibling was merged from live build base `ea6a5e915a78248e934a2ab838f67aabc77e29dd` into this retained candidate before capture; all ten preserved Echo candidate source/test/index file digests still match their pre-recovery values. The later native recovery must independently reverify the combined head and bind its receipt to the current native claim2 and live base.
+
+Source-only lineage uses the actual retained branch slot a1 (v1 metadata `attempt:1`), run `9bce6feb-37c4-4d0e-b0c5-077112f3cf4e`, Task003 revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-003`, and the live tested base. This is explicitly not a claim that native attempt1 accepted the continued code; native acceptance remains separate and pending. The new group is `docs/design/evidence-0143/task034-format-preview-effects-604-source-a1`. No older group/provenance is rebound.
+
+Correction to the earlier Task001 comparison: Task001 attempt1 was interrupted during the owner-requested pause; its verification cause is unproven. Its known audit failure was on attempt2. The non-secret, git-ignored runner-reference configuration created by the worker remains in place for the existing local harness; it contains no test credential and is not committed. A new owned loopback server and dedicated disposable capture namespace will avoid other test servers. Genuine capture and native full recovery are pending.
