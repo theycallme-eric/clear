@@ -1638,6 +1638,37 @@ function ErrorViewWithRequestId() {
   )
 }
 
+/** Content of its host card: the card keeps its own frame and bar. */
+function ErrorViewInsideCard() {
+  return (
+    <Card heading="Recent workouts">
+      <ErrorView
+        error={SAMPLE_ERROR_WITH_ID}
+        title="History didn't load"
+        onRetry={() => undefined}
+      />
+    </Card>
+  )
+}
+
+/** The swap dialog's failure: the dialog's own --brd is inherited above it. */
+function ErrorViewInsideDialog() {
+  return (
+    <DialogTrigger label="Show failure in a dialog">
+      {(open, close) => (
+        <AppDialog open={open} title="Swap exercise" onClose={close}>
+          <ErrorView
+            error={SAMPLE_ERROR_WITH_ID}
+            title="Alternatives didn't load"
+            actionLabel="Try again"
+            onRetry={() => undefined}
+          />
+        </AppDialog>
+      )}
+    </DialogTrigger>
+  )
+}
+
 const SWITCH_STATES: readonly ViewState<readonly string[]>[] = [
   viewLoading(),
   viewEmpty(),
@@ -2483,6 +2514,8 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
       { state: 'with onRetry', Render: ErrorViewWithRetry },
       { state: 'without onRetry', Render: ErrorViewWithoutRetry },
       { state: 'with a requestId', Render: ErrorViewWithRequestId },
+      { state: 'inside a card', Render: ErrorViewInsideCard },
+      { state: 'inside an AppDialog', Render: ErrorViewInsideDialog },
     ],
   },
   {
