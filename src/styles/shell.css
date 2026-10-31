@@ -70,6 +70,15 @@ body,
   }
 }
 
+/* Effects TASK-001: the one decorative host, between the ground and the shell.
+   Empty until an optional effect renders into it; it never takes layout or a
+   pointer event from the screen above it. */
+.clr-effects-host {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
 .clr-shell--contained > .clr-shell__content {
   --shell-inset-left: max(var(--spacing-400), env(safe-area-inset-left));
   --shell-inset-right: max(var(--spacing-400), env(safe-area-inset-right));
