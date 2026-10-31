@@ -78,3 +78,10 @@ Preserved candidate SHA-256 values:
 - `src/app/visual-effects-settings.test.tsx`: `4bca33f8829aacb083db113d679c28cc6225a41243e31eb3fac244e6d791cc16`
 
 The existing authenticated collector will use a fresh owned loopback source server on a separate port, with browser-safe configuration only in that server and private test credentials confined to the collector. Existing disposable setup/cleanup is separate from zero preview writes/generation. Capture, local source-continuity rehearsal and native recovery/receipt, CI and build-branch delivery are pending. No extra model attempt is requested.
+
+
+## Genuine recapture complete — 31 October 2026
+
+The unchanged collector exited0 with4/4 passed skin cases/eight genuine PNGs in13.3seconds, no skips. Frozen source `b99ef9773978ae48320853b9e5fa571bb4ce3425`; group `docs/design/evidence-0143/task034-format-preview-effects-603-a2`; runtime `47b14b8dcd3528283e9162a46263c35f3ff96ea2e4c83ad101cc03250a9f7869`; driver `210ab83ba11543daa93e408414f64d3ebd6781f30293e7d50c2bb91ff6bae498`; package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`; actual payload `8a48b8dd0f0b7dfad76bd507f28f29a667ca01e35e4312f261fcdab4c09b9d10`. The matrix and each PNG's bytes/hash/dimensions were checked independently. The fresh owned loopback server and separate disposable fixture namespace were cleaned up after collection. Preview/session generation and preview-write counters are zero; disposable setup/cleanup writes are separate.
+
+Current Task002/a2 source-only provenance uses actual native revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-002`, run `d40e6763-2c26-496e-b6d2-c61dfb99d158`, retained branch `agent-runner/task-002-a2-d40e6763` and tested base `26885c920f10b9c79c358b34789deab7d68bdb8c`. Every prior evidence and audit byte is preserved. Next: source-continuity rehearsal and existing native model-free full verification; no native receipt/CI/delivery, owner design approval or phone proof is claimed at this checkpoint.
