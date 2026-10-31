@@ -1,0 +1,1705 @@
+{
+  "canonicalOwner": "src/ui/view-state.tsx#ErrorView",
+  "registryEntry": "src/dev/gallery-registry.tsx · ErrorView",
+  "releasedBase": "65522e93d60d439ad82a545833812a58095f2216",
+  "correctedPrototype": "c0d5782bf9bec8065b5e224c9d3b4f35a9dded17",
+  "server": "http://127.0.0.1:61636",
+  "contexts": [
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "clear",
+      "width": 320,
+      "appliedSkin": "clear",
+      "appliedWidth": 320,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "clear",
+      "width": 320,
+      "appliedSkin": "clear",
+      "appliedWidth": 320,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "clear",
+      "width": 320,
+      "appliedSkin": "clear",
+      "appliedWidth": 320,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "clear",
+      "width": 320,
+      "appliedSkin": "clear",
+      "appliedWidth": 320,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "vapour",
+      "width": 320,
+      "appliedSkin": "vapour",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "vapour",
+      "width": 320,
+      "appliedSkin": "vapour",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "vapour",
+      "width": 320,
+      "appliedSkin": "vapour",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "vapour",
+      "width": 320,
+      "appliedSkin": "vapour",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "signal",
+      "width": 320,
+      "appliedSkin": "signal",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "signal",
+      "width": 320,
+      "appliedSkin": "signal",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "signal",
+      "width": 320,
+      "appliedSkin": "signal",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "signal",
+      "width": 320,
+      "appliedSkin": "signal",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "mono",
+      "width": 320,
+      "appliedSkin": "mono",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "mono",
+      "width": 320,
+      "appliedSkin": "mono",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "mono",
+      "width": 320,
+      "appliedSkin": "mono",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "mono",
+      "width": 320,
+      "appliedSkin": "mono",
+      "appliedWidth": 320,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "clear",
+      "width": 390,
+      "appliedSkin": "clear",
+      "appliedWidth": 390,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "clear",
+      "width": 390,
+      "appliedSkin": "clear",
+      "appliedWidth": 390,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "clear",
+      "width": 390,
+      "appliedSkin": "clear",
+      "appliedWidth": 390,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "clear",
+      "width": 390,
+      "appliedSkin": "clear",
+      "appliedWidth": 390,
+      "frame": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "bar": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "barTint": [
+        205,
+        25,
+        87,
+        102
+      ],
+      "emission": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "expected": [
+        205,
+        25,
+        88,
+        255
+      ],
+      "icon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "expectedIcon": [
+        221,
+        97,
+        124,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "vapour",
+      "width": 390,
+      "appliedSkin": "vapour",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "vapour",
+      "width": 390,
+      "appliedSkin": "vapour",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "vapour",
+      "width": 390,
+      "appliedSkin": "vapour",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "vapour",
+      "width": 390,
+      "appliedSkin": "vapour",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "bar": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "barTint": [
+        255,
+        57,
+        32,
+        102
+      ],
+      "emission": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "expected": [
+        255,
+        58,
+        32,
+        255
+      ],
+      "icon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        118,
+        95,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "signal",
+      "width": 390,
+      "appliedSkin": "signal",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "signal",
+      "width": 390,
+      "appliedSkin": "signal",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "signal",
+      "width": 390,
+      "appliedSkin": "signal",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "signal",
+      "width": 390,
+      "appliedSkin": "signal",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "bar": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "barTint": [
+        255,
+        92,
+        30,
+        102
+      ],
+      "emission": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "expected": [
+        255,
+        92,
+        31,
+        255
+      ],
+      "icon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        136,
+        97,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with onRetry",
+      "skin": "mono",
+      "width": 390,
+      "appliedSkin": "mono",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery without onRetry",
+      "skin": "mono",
+      "width": 390,
+      "appliedSkin": "mono",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery with a requestId",
+      "skin": "mono",
+      "width": 390,
+      "appliedSkin": "mono",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    },
+    {
+      "source": "candidate",
+      "context": "gallery inside an AppDialog",
+      "skin": "mono",
+      "width": 390,
+      "appliedSkin": "mono",
+      "appliedWidth": 390,
+      "frame": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "bar": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "barTint": [
+        255,
+        255,
+        255,
+        102
+      ],
+      "emission": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expected": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "icon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "expectedIcon": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "matches": true,
+      "iconMatches": true,
+      "fits": true
+    }
+  ]
+}

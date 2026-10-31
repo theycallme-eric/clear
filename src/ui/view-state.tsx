@@ -138,6 +138,12 @@ const REQUEST_ID_STYLE: CSSProperties = {
  * glitches once on arrival; the requestId, when present, is shown for support
  * correlation. Standalone the failure frame speaks urgency on both layers
  * (surface and border); inside a card it is that card's content.
+ *
+ * The root scopes both existing border hooks to the error role. The accent
+ * bar and the emission are siblings of the body, so a body-only `--brd` never
+ * reaches them, and the bar falls back through an inherited `--brd` (an
+ * AppDialog's, already resolved) before `--border-card`. Scoping both keeps
+ * body, bar and emission on one role without repainting the public recipe.
  */
 export function ErrorView({
   error,
@@ -160,7 +166,16 @@ export function ErrorView({
   )
 
   return (
-    <div role="alert" className="clr-stack clr-stack--tight clr-glitch">
+    <div
+      role="alert"
+      className="clr-stack clr-stack--tight clr-glitch"
+      style={
+        {
+          '--border-card': 'var(--border-toast-negative)',
+          '--brd': 'var(--border-toast-negative)',
+        } as CSSProperties
+      }
+    >
       {insideCard ? (
         <>
           {icon}

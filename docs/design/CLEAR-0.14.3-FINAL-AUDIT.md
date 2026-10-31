@@ -1,5 +1,30 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## LIB-003 ErrorView source reverification — 30 October 2026 (America/Chicago)
+
+Under issue 601, the established authenticated Format Preview collector passed
+**4/4 skin cases, eight fresh screenshots, in 25.9 seconds**. Current group:
+`docs/design/evidence-0143/task034-format-preview-library-601/`.
+Frozen application source `55843bdbb889a1066d0ea691ea520398177084e0`, runtime
+`6ee55d1f00a40177574be3eaaab313ee90fa15adee4151ecb6a5fa4da3a44da3`,
+driver `c1ad60740985a9bbcf5d259d3bc399a4780707d2017539aa8d5de0f8058b6fb7`
+and pinned 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+agree across all four records. Actual PNG bytes, SHA-256 and IHDR dimensions
+were independently checked; normal Signal and short CLEAR images were visually
+inspected. The unchanged collector checks both phone heights, all four skins,
+real authenticated navigation, disclosures, accessibility, storage and settled
+layout. Historical capture groups and audit entries remain unchanged below.
+
+The app ran at loopback `http://127.0.0.1:60420`. Eric explicitly authorized
+the disposable account setup/cleanup exception, conditional on no further Runner
+invocation. That existing fixture completed separately from the preview's zero
+generation, blocked-generation, attempted-write and forwarded-write observations.
+This is direct operator verification of the candidate source. The original
+Runner attempt remains failed at its stale-evidence gate; no native recovery,
+completion receipt or end-to-end Runner delivery is claimed. PR review, merge
+and production release remain separate.
+
 ## LIB-002 metadata source reverification — 30 October 2026
 
 The existing authenticated Format Preview collector passed 4/4 skin cases,

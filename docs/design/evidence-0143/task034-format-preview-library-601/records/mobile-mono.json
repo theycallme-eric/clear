@@ -1,0 +1,154 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 469,
+  "consumer": "task034-format-preview-mobile",
+  "scope": "mobile-only-2026-10-22",
+  "sourceFile": "e2e/design-0143/format-preview.spec.ts",
+  "status": "passed",
+  "project": "mobile",
+  "skin": "mono",
+  "caseTitle": "mono: Settings entry, read-only formats, Back and direct-entry Back",
+  "observedAt": "2026-10-31T04:38:26.257Z",
+  "captureProcessId": 2806,
+  "identity": {
+    "packageName": "clear-design-system",
+    "packageVersion": "0.14.3",
+    "packageHash": "e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8",
+    "runtimeSourceHash": "6ee55d1f00a40177574be3eaaab313ee90fa15adee4151ecb6a5fa4da3a44da3",
+    "applicationCommit": "55843bdbb889a1066d0ea691ea520398177084e0",
+    "testedDeployment": "http://127.0.0.1:60420"
+  },
+  "sourceCheckout": {
+    "dirty": true,
+    "statusSha256": "7998c704aa477ea7fd4aec8d4b42d9373cd344b02e2473953e20bdab24dba8a8"
+  },
+  "driverSourceHash": "c1ad60740985a9bbcf5d259d3bc399a4780707d2017539aa8d5de0f8058b6fb7",
+  "baselineAbsence": {
+    "kind": "route-introduced-after-baseline",
+    "commit": "c31ef865f60811df076db396a40f90517701380e",
+    "route": "/settings/formats",
+    "sources": [
+      {
+        "path": "src/app/router.tsx",
+        "sha256": "4e862af4cba382d372628bee2b5232b49fc8fb231489063ece78be259d45fbba"
+      },
+      {
+        "path": "e2e/required-routes.ts",
+        "sha256": "d172f7c08236ead7078e14b9ffdc74d1358653c68031dce0f3d9f49d91b9554a"
+      }
+    ],
+    "before": null
+  },
+  "session": {
+    "fixture": "authenticatedSession",
+    "realSession": true,
+    "codeRequests": 1,
+    "verificationRequests": 1,
+    "generationRequests": 0,
+    "screens": [
+      "Welcome",
+      "OTP Login",
+      "Home",
+      "Generate"
+    ]
+  },
+  "observations": {
+    "settingsEntry": true,
+    "settingsBack": true,
+    "directEntryBack": true,
+    "allDisclosures": true,
+    "formatsAndStates": true,
+    "accessibility": true,
+    "storageUnchanged": true
+  },
+  "network": {
+    "generationRequests": 0,
+    "blockedGenerations": 0,
+    "attemptedWrites": 0,
+    "forwardedWrites": 0
+  },
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "captures": [
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "mono",
+      "viewport": {
+        "id": "phone",
+        "width": 390,
+        "height": 844
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 844,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-phone-mono.png",
+        "sha256": "81776cc89278def55e088b2fe1ca3f65f7e9f603680c3346d2009cc9ae1ff9f8",
+        "bytes": 108527,
+        "width": 390,
+        "height": 844,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    },
+    {
+      "phase": "after",
+      "route": "/settings/formats",
+      "state": "expanded-read-only-formats",
+      "skin": "mono",
+      "viewport": {
+        "id": "short",
+        "width": 390,
+        "height": 320
+      },
+      "before": null,
+      "reached": {
+        "pathname": "/settings/formats",
+        "heading": "Workout formats",
+        "stateVisible": true
+      },
+      "motion": {
+        "reducedMotion": true,
+        "running": [],
+        "settled": true
+      },
+      "layout": {
+        "noHorizontalOverflow": true,
+        "documentHeight": 320,
+        "scrollTop": 0,
+        "scrollLeft": 0,
+        "headingVisibleAtCapture": true
+      },
+      "screenshot": {
+        "name": "task034-format-preview-short-mono.png",
+        "sha256": "c6fde89c231c01d0eb6bf401caafe07fb111680bdb9e5e92165cec4fd3ed850d",
+        "bytes": 43181,
+        "width": 390,
+        "height": 320,
+        "explicit": true,
+        "fullPage": true,
+        "scale": "css"
+      }
+    }
+  ]
+}
