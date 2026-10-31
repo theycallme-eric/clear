@@ -160,7 +160,11 @@ export function ErrorView({
   )
 
   return (
-    <div role="alert" className="clr-stack clr-stack--tight clr-glitch">
+    <div
+      role="alert"
+      className="clr-stack clr-stack--tight clr-glitch"
+      style={{ '--border-card': 'var(--border-toast-negative)' } as CSSProperties}
+    >
       {insideCard ? (
         <>
           {icon}
