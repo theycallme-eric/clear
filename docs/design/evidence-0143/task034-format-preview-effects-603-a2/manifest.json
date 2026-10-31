@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "task": "TASK-034",
+  "issue": 469,
+  "consumer": "task034-format-preview-mobile",
+  "scope": "mobile-only-2026-10-22",
+  "phase": "after",
+  "status": "complete",
+  "deterministic": true,
+  "liveGeneration": false,
+  "deployedProof": false,
+  "cases": [
+    {
+      "project": "mobile",
+      "skin": "clear",
+      "caseTitle": "clear: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "mono",
+      "caseTitle": "mono: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "signal",
+      "caseTitle": "signal: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    },
+    {
+      "project": "mobile",
+      "skin": "vapour",
+      "caseTitle": "vapour: Settings entry, read-only formats, Back and direct-entry Back",
+      "status": "passed"
+    }
+  ],
+  "matrix": {
+    "captures": 8,
+    "withBeforePicture": 0,
+    "introducedWithoutBeforePicture": 8,
+    "byViewport": {
+      "phone": 4,
+      "short": 4
+    },
+    "bySkin": {
+      "clear": 2,
+      "vapour": 2,
+      "signal": 2,
+      "mono": 2
+    }
+  }
+}
