@@ -129,6 +129,7 @@ import { AppDialog } from '../ui/app-dialog'
 import { Card } from '../ui/card'
 import { ActionGroup, ActionRow, PhoneFooter } from '../ui/composition'
 import { DeloadBanner } from '../ui/deload-banner'
+import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { Select } from '../ui/select'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
@@ -316,11 +317,13 @@ export function Generate() {
             </PhoneFooter>
           }
         >
-          <EmptyState
-            icon={<AlertCircle />}
-            title={GOAL_CORRECTION_TITLE}
-            message={goalPreset === null ? MISSING_GOAL_MESSAGE : LEGACY_GOAL_MESSAGE}
-          />
+          <ForegroundEchoFrame>
+            <EmptyState
+              icon={<AlertCircle />}
+              title={GOAL_CORRECTION_TITLE}
+              message={goalPreset === null ? MISSING_GOAL_MESSAGE : LEGACY_GOAL_MESSAGE}
+            />
+          </ForegroundEchoFrame>
         </Screen>
       ) : state.status === 'loading' ? (
         <Screen title="Generate" header={header}>
@@ -368,7 +371,9 @@ export function Generate() {
           }
         >
           {/* U08: the fact, with Add a place pinned as the way on. */}
-          <EmptyState title="No places yet" />
+          <ForegroundEchoFrame>
+            <EmptyState title="No places yet" />
+          </ForegroundEchoFrame>
         </Screen>
       ) : (
         <GenerateForm

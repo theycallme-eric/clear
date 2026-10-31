@@ -323,7 +323,7 @@ async function readAppProbe(page: Page): Promise<AppProbe> {
     text.setAttribute('data-echo-keep', '')
     return {
       frame: { ...rect(cta), cut, color: getComputedStyle(cta).color },
-      text: { ...rect(text), content: text.textContent ?? '', color: textStyle.color, style },
+      text: { ...rect(text), content: text.dataset.echoText ?? '', color: textStyle.color, style },
       fontFaces,
     }
   })

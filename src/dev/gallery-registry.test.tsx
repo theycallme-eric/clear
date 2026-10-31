@@ -46,6 +46,14 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
     'REQ-003 — the heading’s rear image; framed in PhosphorEchoFrame’s real-component example',
   PhosphorEchoGlyph:
     'REQ-003 — a glyph’s rear image; framed in PhosphorEchoFrame’s sizes-and-viewBoxes specimen',
+  // Effects TASK-004: where the echo applies. They decide eligibility and draw
+  // nothing of their own; what an eligible owner shows is PhosphorEchoFrame's
+  // real-component example.
+  ForegroundEchoFrame:
+    'REQ-004 — PhosphorEchoFrame for an owner on the background, nothing otherwise; framed through PhosphorEchoFrame',
+  ForegroundEchoText:
+    'REQ-004 — PhosphorEchoText for a heading on the background; framed through PhosphorEchoFrame’s real-component example',
+  EchoExcluded: 'REQ-004 — context only: marks a surface that is not the background; renders nothing',
   // B05 REQ-003: a sizing host around the public ScrollRegion. It draws
   // nothing of its own; its appearance is the region's, specimened upstream.
   FittedScrollRegion: 'B05 REQ-003 — sizes the public ScrollRegion to its content; no visual surface',

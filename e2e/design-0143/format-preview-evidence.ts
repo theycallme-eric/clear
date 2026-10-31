@@ -22,7 +22,9 @@ export const FORMAT_EFFECTS_TASK001_EVIDENCE_DIR = 'docs/design/evidence-0143/ta
 // Effects #603/a2: retain Task001 evidence; capture this Settings source.
 export const FORMAT_EFFECTS_TASK002_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-603-a2'
 // Task003 continued in its retained a1 source branch; collect the combined source.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-604-source-a1'
+export const FORMAT_EFFECTS_TASK003_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-604-source-a1'
+// Task004 continued in the retained a1 branch; collect its final application source.
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-605-source-a1'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

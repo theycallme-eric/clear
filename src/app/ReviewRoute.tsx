@@ -66,6 +66,7 @@ import {
 import { useWorkoutClients } from '../state/workout-queries'
 import { FavoriteProgressionCard } from '../ui/favorite-progression'
 import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { ViewStateSwitch } from '../ui/view-state'
 import { GenerationLoadingHost } from './GenerationLoadingHost'
 import { Screen } from './Screen'
@@ -122,11 +123,13 @@ export function ReviewRoute() {
               </PhoneFooter>
             }
           >
-            <EmptyState
-              title={NO_REVIEW_TITLE}
-              message={NO_REVIEW_MESSAGE}
-              icon={<Zap size={24} />}
-            />
+            <ForegroundEchoFrame>
+              <EmptyState
+                title={NO_REVIEW_TITLE}
+                message={NO_REVIEW_MESSAGE}
+                icon={<Zap size={24} />}
+              />
+            </ForegroundEchoFrame>
           </Screen>
         </>
       ) : (

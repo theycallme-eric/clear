@@ -20,6 +20,7 @@
 import { useLayoutEffect, useRef } from 'react'
 
 import { Dialog, type DialogProps } from '../design-system/index'
+import { EchoExcluded } from './foreground-echo'
 
 export interface AppDialogProps extends DialogProps {
   /** Runs after native closure, including a controlled close. */
@@ -42,9 +43,12 @@ export function AppDialog({ open = false, onClose, onAfterClose, ...props }: App
     return () => dialog.removeEventListener('close', reportClose)
   }, [open, onClose, onAfterClose])
 
+  // REQ-004: a dialog's surface is not the background; nothing in it echoes.
   return (
     <span ref={hostRef} style={{ display: 'contents' }}>
-      <Dialog {...props} open={open} />
+      <EchoExcluded>
+        <Dialog {...props} open={open} />
+      </EchoExcluded>
     </span>
   )
 }
