@@ -51,6 +51,6 @@ The eight named browser cases cover: released mismatch in a safe isolated baseli
 
 ## Remaining review and workflow limit
 
-Publish the ordinary PR and observe its exact-head CI. Review the ErrorView entry, especially Signal, contained content and the dialog specimen. Merge remains an owner decision. The larger workout proposal and application ScrollRegion #600 remain separate.
+[Draft PR 611](https://github.com/theycallme-eric/clear/pull/611) is published. Observe its exact-head CI; the PR is the live check/review status record. Review the ErrorView entry, especially Signal, contained content and the dialog specimen. Merge remains an owner decision. The larger workout proposal and application ScrollRegion #600 remain separate.
 
 This pilot demonstrates approved design reuse through Builder, DAG, implementation and a correctly enforced evidence hold. Final operator completion does **not** establish end-to-end native Runner delivery. That limit is recorded, not converted into a new Runner task under the owner's no-Runner instruction.
