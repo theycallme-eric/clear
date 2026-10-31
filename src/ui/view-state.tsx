@@ -163,7 +163,12 @@ export function ErrorView({
     <div
       role="alert"
       className="clr-stack clr-stack--tight clr-glitch"
-      style={{ '--border-card': 'var(--border-toast-negative)' } as CSSProperties}
+      style={
+        {
+          '--border-card': 'var(--border-toast-negative)',
+          '--brd': 'var(--border-toast-negative)',
+        } as CSSProperties
+      }
     >
       {insideCard ? (
         <>
