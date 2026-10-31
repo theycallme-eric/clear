@@ -130,3 +130,8 @@ Correction to the earlier Task001 comparison: Task001 attempt1 was interrupted d
 ### Actual capture completed
 
 Four genuine cases/eight PNGs passed in13.9s from frozen `ddcaac65e9dd086f4dd2a579d29db7ac09d373af` at `http://127.0.0.1:5186`, using a dedicated disposable-fixture namespace. All image digests/lengths/IHDR dimensions, four clean source observations and zero preview write/generation counters were checked. Runtime `5deafd1a8e71537ed8b97f0877c1a64815b2e32c2c286726b12836c295cbec85`; driver `7baaef4ee2a93528f2dd28d49b9b85ccdb955cd5df1544d55a06855b845a4f5d`; payload `fa5dd4366f9c89cea980095a843f21092039014a82872e9ed30bc2ce14be547c`. Existing v1 source-only metadata identifies the actual retained a1 branch; current native continuation remains claim2. Native recovery/receipt and protected delivery are still pending. All ten preserved Echo candidate source/test/index file hashes remain unchanged.
+
+
+### Source-continuity consumer rehearsal
+
+All38 unchanged final-audit cases passed on the recorded candidate. A disposable local clone then made a single-parent squash onto live build base ea6a5e9 with an identical full tree and retained actual a1 source ref; all38 audit cases passed again. Removing only that clone’s exact retained ref made the selected lineage case reject it as missing/invalid, as required. No real ref was removed and nothing was pushed. These are source-continuity checks, not native acceptance or delivery proof; current native claim2 remains to be independently recovered. The final documentation head will be checked with the same consumer before recovery.
