@@ -82,6 +82,7 @@ import {
 } from '../state/settings'
 import { useAppearance } from '../state/appearance'
 import { profileQueryKey, useProfileQuery, useUserData } from '../state/user-queries'
+import { setVisualEffects, useVisualEffects } from '../state/visual-effects'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import {
   viewEmpty,
@@ -503,13 +504,23 @@ function LimitationsEditor({
  * Every option — each skin in `SKINS`, and no System one — comes from the
  * picker's derived list; none is named here. The favicon follows `data-skin`
  * through `startFaviconSync`, so choosing here moves it with nothing to call.
+ *
+ * Visual effects is the device's too, and the only effect control there is:
+ * checked means on, `setVisualEffects` stores it, and the root policy hands it
+ * straight back — so like the skin it owns no save and no failure state.
  */
 function AppearanceSection() {
   const [appearance, choose] = useAppearance()
+  const { effectsEnabled } = useVisualEffects()
 
   return (
     <SettingsCard id="settings-appearance" heading="Appearance">
       <AppearancePicker legend="Skin" value={appearance} onChange={choose} />
+      <Checkbox
+        label="Visual effects"
+        checked={effectsEnabled}
+        onChange={() => setVisualEffects(!effectsEnabled)}
+      />
     </SettingsCard>
   )
 }
