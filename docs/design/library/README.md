@@ -45,7 +45,7 @@ existing visual choice. Material proposed changes receive their own review.
 - App presentation lives in `src/ui/`; screens/state owners live in `src/app/`
   and `src/state/`. Keep related visual parts shared and distinct behavior with
   its owner. Existing private parts are not automatically new public components.
-- Track workout refinements in [the running R01–R37 list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md), including accepted, previewed, superseded and open decisions. This is the handoff list for requirements; do not rebuild an older superseded visual.
+- Track workout refinements in [the running R01–R38 list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md), including accepted, previewed, superseded and open decisions. This is the handoff list for requirements; do not rebuild an older superseded visual.
 - Follow [the active three-delivery plan](PLAN.md). The first consolidation and
   comparison targets related Review, History and Favorites presentations.
 - Regenerate the index with `node scripts/gallery-index.mjs` after register
@@ -150,3 +150,5 @@ composition rather than create an overflow carousel or drop accepted facts.
 The broader preparation/report presentation interfaces remain labeled proposals.
 
 R3 uses MovementGroupHeader plus the shared movement-group rhythm for static Review and live headers. MovementIdentity owns the prescription/load/equipment hierarchy. EquipmentSummary is the candidate read-only equipment pattern. Compact live navigation retains the existing section-jump state and focus path. The generated index and actual gallery examples expose these owners.
+
+General Review/Workout alignment includes all structure families. R38 records the actual per-format reuse gaps and corrected matched examples. An existing shared frame or a passing render does not certify that every private renderer consumes the shared movement/load/equipment roles. Preserve distinct minute, window/score, race/cap and rung behavior while reconciling presentation.

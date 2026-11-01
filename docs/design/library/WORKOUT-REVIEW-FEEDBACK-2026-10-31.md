@@ -4,7 +4,7 @@
 
 North Star: one executable visual library, with the same shared implementations in gallery and product. This workout refinement is the practical test of that reuse and the design → requirements → implementation workflow. It is not a new independent design system.
 
-All 37 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
+All 38 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
 
 <!-- refinement-index:start -->
 | ID | Decision / refinement | Current status | Shared owner / follow-through |
@@ -38,14 +38,15 @@ All 37 recorded comments are indexed below. **Previewed is not released or blank
 | R27 | Required-equipment names uppercase; do not invent a complete icon catalog. | Previewed; refined by R34 | EquipmentSummary |
 | R28 | Selected B05-04 hierarchy: distinct name/prescription/equipment, no inner rail, separators only between peers. | Selected direction; revised preview pending | MovementIdentity / MovementList / MovementGroupHeader |
 | R29 | One bottom grouped coaching disclosure with separately labeled movement cues/notes and independent writers/drafts. | Visually accepted (R36) | GroupExerciseCoaching / BlockPanel |
-| R30 | Use workout layout as the Review/live base; Swap only in Review, progress/Rest only live. Preserve planned work. | Implemented in R3 preview; visual review pending | Shared movement/header/layout owners |
-| R31 | Restore prescribed load in live movement rows; do not confuse target and actual or guess units. | Implemented in R3 preview; visual review pending | MovementIdentity load slot / loadText / live rows |
+| R30 | Use workout layout as the Review/live base; Swap only in Review, progress/Rest only live. Preserve planned work. | R3 common cases previewed; remaining format gaps in R38 | Shared movement/header/layout owners |
+| R31 | Restore prescribed load in live movement rows; do not confuse target and actual or guess units. | Previewed standard/superset/circuit; remaining families in R38 | MovementIdentity load slot / loadText / live rows |
 | R32 | Overview intensity omits redundant of 10; values and scale unchanged. | Implemented in R3 preview | Review fact derivation / saved Overview |
 | R33 | Movement count gets a fitting existing glyph and an accessible term. | R3 first pass: Log/list glyph, label retained; selection pending | SummaryFact |
 | R34 | Required equipment gets deliberate grouping, spacing and neutral read-only items. | R3 first pass; visual selection pending | EquipmentSummary |
 | R35 | Replace the clunky duplicate section card with compact navigation; preserve position/status, jumping and focus. | R3 first pass; visual selection pending | SectionHeader compact variant / existing jump owner |
 | R36 | Keep the reviewed warm-up appearance and grouped Coaching and notes treatment. | Visually accepted; appearance preserved | PreparationGuide / GroupExerciseCoaching |
 | R37 | Review headers are static, compact and always expanded, matching workout header layout. | Implemented in R3 preview; visual review pending | MovementGroupHeader / Review |
+| R38 | General Review/Workout alignment covers every format; inspect matched EMOM, AMRAP, plain For Time and real timed-ladder examples. | Coverage examples added; timed presentation gaps remain open | Shared frame/rows plus EMOM, AMRAP, ForTime and Ladder owners |
 <!-- refinement-index:end -->
 
 The next visual review focuses on **R30–R35 and R37**. Accepted warm-up/coaching treatments remain in place. After selection, Requirements Builder should name these canonical owners and examples, preserve their distinct state/data behavior, and carry every active row forward or explicitly defer it. Report/guide/range/default contracts are open work, not invisible assumptions. The later Runner/UAT stage is conditional on that approved implementation scope; this preview pass does not start it.
@@ -147,3 +148,21 @@ Next revision: common Review/live group composition based on the workout layout,
 ### R37 — Review uses static workout-style headers
 
 Eric explicitly requested removing Review section-header collapsing because it consumes space, and using the cleaner workout header for consistency. Review section content stays visible. Reuse the compact shared header arrangement: section identity on the left, the relevant structure/rounds badge on the right. Remove the disclosure chevron, toggle hit area, expanded/collapsed state and hidden-content behavior from those Review headers; preserve semantic headings and the planned workout information. Related Review/live cards should inherit the same spacing and header presentation, with context-specific controls in their existing slots. This does not remove the separately accepted grouped Coaching and notes disclosure. Include this in R3 alongside R30–R36.
+
+### R38 — Scope is all workout formats, not just supersets
+
+Eric clarified that the objective is general Review/Workout consistency and asked to see EMOM, AMRAP, For Time and ladders. The superset screenshot is an example, not a scope limit. Follow-up inspection found that inherited preview coverage overstated the format distinction: the For Time option selected a For Time block with ladder_down, which dispatches LadderBlock; the Ladder option selected a standard ladder-up prescription, not the explicit timed ladder renderer. Correct the examples without labeling those earlier screenshots as a plain For Time test.
+
+Added matched Review/live fixtures for the four requested families. The plain For Time sample has a fixed target and uses ForTimeBlock. The ladder sample uses the existing makeLadderTimingBlock capped-window fixture, including its explicit ladder_timing through snapshotFixture. Review fixtures validate with the actual generationOutputSchema. These are synthetic examples of current R3 components, not new runtime implementations or approval of all format-specific visuals.
+
+| Family | Shared presentation already consumed | Remaining consistency work |
+| --- | --- | --- |
+| Standard | BlockPanel header/frame; MovementIdentity/MovementList; prescribed load/equipment | Review next to live with context-specific controls |
+| Superset | Shared header/frame, peer rows, load/equipment, grouped coaching | Owner visual review of R3 |
+| Circuit | Shared header/frame, peer rows, load/equipment, grouped coaching | Circuit clock/action hierarchy still needs visual review (R18) |
+| EMOM | BlockPanel header/frame and shared movement/list presentation | Row does not yet supply the common load/equipment readings; retain its minute assignment and now/next state |
+| AMRAP | Its own Card/header and private work-list composition | Reconcile with shared group/header/row owners; preserve window, rounds/reps scoring and conditioning-history behavior |
+| Plain For Time | BlockPanel header/frame and shared movement/list presentation | Row does not yet supply common load/equipment readings; preserve race/cap and result controls |
+| Timed ladder | BlockPanel frame and dedicated rung/timing presentation | Align applicable movement/load/equipment roles; retain rung schedule/companion work and whole-block timing |
+
+Do not claim the general reconciliation complete while these gaps are open. The inherited render sweep proves that a named scene rendered, not that its format/fixture represented every intended renderer or that its presentation was fully reconciled. The new format verification checks the actual renderer's distinguishing controls/content as well as the matching Review data. These remaining items belong in the same feedback/requirements handoff; do not build a single universal timing/scoring state machine.
