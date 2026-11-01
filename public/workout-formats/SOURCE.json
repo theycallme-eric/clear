@@ -1,0 +1,29 @@
+{
+  "applicationSource": "a538f763dae6a491205469aa76386ad5205fef2c",
+  "feedbackSource": "f48d401352bb239549e21b2411ae5eb6e30fb668",
+  "branch": "codex/workout-format-coverage-2026-11-01",
+  "baseline": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+  "purpose": "Correct matched Review/live format coverage; no application runtime changes",
+  "date": "2026-11-01",
+  "formats": [
+    "emom",
+    "amrap",
+    "for_time",
+    "ladder"
+  ],
+  "feedbackIds": "R01-R38",
+  "verification": {
+    "scenes": 16,
+    "proposedAccessibilitySamples": 8,
+    "accessibilityViolations": 0,
+    "browserErrors": 0,
+    "externalRequests": 0,
+    "rendererAssertions": [
+      "EMOM minute renderer",
+      "AMRAP window/score renderer",
+      "plain fixed-target ForTimeBlock, no ladder",
+      "explicit capped LadderBlock with four rounds"
+    ]
+  },
+  "remainingWork": "R38: AMRAP private header/work-list consolidation; common load/equipment readings in timed formats; owner visual review."
+}
