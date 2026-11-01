@@ -55,3 +55,39 @@ Branch `codex/workout-review-r2-2026-10-31` implements the shared selected hiera
 R24: setup title/progress pinned together, one divider below. R25: Focus value is the accessible Change focus control in the proposal. R26: shared SummaryFacts wraps; no carousel. R27: required-equipment names uppercase using existing roles; no new icon catalog. R28: shared three-tier row, no internal rail or final separator. R29: one grouped coaching disclosure, independent notes. These are implemented review candidates; acceptance of the broad proposal and production contract resolution remain next.
 
 Verification: 409 selected unit tests, 80 rendered panes, 69 focused checks, seven accessibility samples without violations; typecheck, app/preview builds and design lint pass. Review, live logging/rest, saved results and coaching-note writers retain their separate behavior. The comparison uses deterministic in-memory data, so live backend behavior is a later integration check.
+
+## Owner review of R2 — 1 November 2026
+
+Reviewed source: `f519268024e7f61d62e73c01a02c936e5213bd2a`, shared implementation `272d38708eea6baa151635ebd47f15047f1d5c90`. Eric supplied four screenshots and selected the live workout layout as the cleaner common direction. Preserve that published R2 preview while preparing the next revision on `codex/workout-review-r3-2026-11-01`.
+
+### R30 — One layout, context-specific slots
+
+Use the cleaner workout card as the common presentation for related Review and live blocks. Share group-header/badge placement, movement hierarchy, spacing, separators and rest description. Sharing MovementIdentity/MovementList alone has not removed the surrounding group/header and prescription differences. Extend the existing shared composition rather than copying one screen into another.
+
+Review supplies Swap; live workout supplies set/round progress and Rest/logging controls. Do not show Swap during the workout or a live `Set 1/3` progress counter/Rest button in Review. **Do not interpret this as removing prescribed sets, reps, rounds or rest information from Review**: those describe the planned workout. Preserve accepted ordinal/consecutive-execution meanings. Keep behavior/state owners separate.
+
+### R31 — Prescribed load remains visible in the workout
+
+Show the relevant load beside the prescription in both contexts, using one shared reading/formatter. Verify the same movement and data on both sides. `ExerciseSetLogger` currently passes only `prescriptionText(prescription)` to BlockPanel.Movement; Review includes its separate load. Circuit movement presentation also supplies target text without a load reading. The existing `loadText` formatter covers absolute load, percent-1RM, RIR, last-session and Bodyweight semantics; reuse established unit/data ownership. Do not substitute logged actual weight for a prescribed target, guess a missing unit, or promote synthetic rough-load inputs into a production data contract. Suppress duplicated Bodyweight/equipment text.
+
+### R32 — Intensity Overview copy
+
+Remove visible `of 10` from the Overview intensity reading; the fixed ten-point scale does not need repeating here. Preserve the actual value and meaning. Apply through the relevant shared fact presentation/consumers, not string replacement over unrelated effort scores or stored data.
+
+### R33 — Movement-count fact
+
+Eric requested a matching icon treatment for the Movements fact. Check existing public glyphs for a clear semantic fit and retain an accessible term. An icon has not been selected or approved. Do not silently use a circuit/superset-only symbol for all movement counts.
+
+### R34 — Required equipment still needs design attention
+
+Uppercase names are closer but the flat label/list remains visually unresolved. Prepare a deliberate shared equipment group aligned with Overview's fact hierarchy and spacing; use the same first pass in related contexts. The public glyph set includes Dumbbell/WeightPlate, not complete equipment coverage. Do not invent one icon per equipment type or pretend those two represent every kind. Exact revised treatment still needs owner review.
+
+### R35 — Live section navigator
+
+Eric finds the separate top card (`Accessory`, section/status, repeated structure badge, All sections) clunky. Explore a compact navigation treatment that avoids repeating the active card's identity. Preserve current position/status meaning and access to section jumping; this feedback does not authorize deleting navigation or tracking behavior. Show a first pass in context rather than introducing a new route or framework.
+
+### R36 — Accepted visual choices
+
+**Warm-up:** Eric says the concise presentation is perfect. **Coaching and notes:** Eric says the single bottom grouped disclosure is perfect. Preserve those selected visual treatments. This approves their reviewed appearance/placement, not unresolved synthetic guide content, generation, persistence or setup defaults.
+
+Next revision: common Review/live group composition based on the workout layout, complete prescribed-load reading, Overview cleanup and a simpler live navigator. Keep the accepted warm-up and grouped coaching appearance. Review with identical sample movements, long names and relevant phone widths; exercise existing Swap/logging/rest/notes behaviors. Owner visual review comes before requirements consume the revised contract.
