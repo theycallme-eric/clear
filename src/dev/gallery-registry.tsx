@@ -15,9 +15,10 @@
  * state that produces it.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { MovementIdentity, MovementList } from '../ui/movement-presentation'
+import { EquipmentSummary } from '../ui/equipment-summary'
+import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/movement-presentation'
 import { PreparationGuide } from '../ui/preparation-guide'
-import { CountdownBar } from '../ui/workout-chrome'
+import { CountdownBar, StructureBadge } from '../ui/workout-chrome'
 import { TrainingProgressReport } from '../ui/training-progress-report'
 import { WorkoutExperiencePresentationProvider, type WorkoutExperiencePresentation } from '../ui/workout-experience-presentation'
 import { EMPTY_DRAFT } from '../state/onboarding'
@@ -1881,6 +1882,15 @@ function SharedCountdownExample() {
 }
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  { component: 'MovementGroupHeader', requirement: 'R30 / R37', module: 'src/ui/movement-presentation.tsx', summary: 'One static group-header owner used by actual Review and live BlockPanel: title left, compact structure badge right, no Review disclosure.', specimens: [
+    { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
+    { state: 'long section without structure badge', Render: () => <Card><MovementGroupHeader title="Primary strength work with a longer section name" /></Card> },
+  ]},
+  { component: 'EquipmentSummary', requirement: 'R27 / R34', module: 'src/ui/equipment-summary.tsx', summary: 'Read-only equipment group composed from existing tokens and a shared equipment glyph; no new per-equipment icon vocabulary. R3 visual first pass.', specimens: [
+    { state: 'multiple equipment names', Render: () => <Card><EquipmentSummary equipment={['Barbell','Dumbbell','Resistance bands']} /></Card> },
+    { state: 'bodyweight only', Render: () => <Card><EquipmentSummary equipment={[]} /></Card> },
+  ]},
+
   {component:'MovementIdentity',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'One shared name, prescription, equipment and trailing-action hierarchy. Review, live blocks and saved rows use this implementation; counters/actions retain their own meaning.',specimens:[{state:'long name and counter',Render:SharedMovementExample},{state:'Review with real Swap interaction',Render:ReviewMovementStandalone}]},
   {component:'MovementList',requirement:'B05-04 / R28',module:'src/ui/movement-presentation.tsx',summary:'Ordered peer rows with horizontal separators only between movements; no inner rail or final divider.',specimens:[{state:'one round, two movements',Render:SharedMovementGroupExample},{state:'one movement, no separator',Render:() => <MovementList label="Remaining movement"><li><MovementIdentity name="Mountain climber" prescription="12 reps" equipment="Bodyweight" /></li></MovementList>}]},
   {component:'PreparationGuide',requirement:'V4 proposal / R01',module:'src/ui/preparation-guide.tsx',summary:'Proposed actual guide component; synthetic movement names and independent optional clock. Data contract remains a design proposal.',specimens:[{state:'optional independent timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.warmup} withTimer />},{state:'cooldown without timer',Render:() => <PreparationGuide guide={PROPOSED_EXPERIENCE.guides.cooldown} />}]},

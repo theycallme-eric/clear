@@ -1,6 +1,6 @@
 /** The existing Review movement presentation; state and handoffs stay in Review. */
 
-import type { ReviewExerciseView } from '../state/review'
+import { distinctLoadText, type ReviewExerciseView } from '../state/review'
 import type { LoadOverride, LoadSuggestionView } from '../state/load-suggestions'
 import { ExerciseSwapControls } from './exercise-swap'
 import { LoadSuggestionButton } from './load-suggestion'
@@ -42,23 +42,19 @@ export function ReviewExerciseRow({
 }) {
   const presentation = useWorkoutExperiencePresentation()
   const guidance = presentation?.suggestedLoads[exercise.exerciseId]
-  const repeatsEquipment =
-    exercise.load !== null && exercise.load.toLowerCase() === exercise.equipment.toLowerCase()
-  const load = repeatsEquipment ? null : exercise.load
+  const load = distinctLoadText(guidance === undefined ? exercise.load : guidance, exercise.equipment)
   const rest = inRounds ? null : exercise.rest
   return (
     <div className="clr-stack clr-stack--tight">
       <MovementIdentity
         name={exercise.name}
         ordinal={ordinal}
-        prescription={<>
-          <span>{exercise.roundTarget ?? exercise.prescription}</span>
-          {(guidance === undefined ? load : guidance) == null ? null : <span>{guidance === undefined ? load : guidance}</span>}
-          {rest === null ? null : <span>{rest}</span>}
-        </>}
+        prescription={exercise.roundTarget ?? exercise.prescription}
+        load={load}
         equipment={exercise.equipment}
         action={<ExerciseSwapControls slot={exercise.key} exerciseId={exercise.exerciseId} actions="swap" />}
       />
+      {rest === null ? null : <p style={{ margin: 0 }}>{rest}</p>}
       {suggestion !== null && (
         <LoadSuggestionButton suggestion={suggestion} override={override} onOpen={onExplain} />
       )}

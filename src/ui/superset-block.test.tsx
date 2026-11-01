@@ -392,7 +392,7 @@ describe('every set persists its unit and its exercise and block attribution', (
       },
     })
 
-    expect(screen.getByText('3 × 8–10 reps')).toBeInTheDocument()
+    expect(screen.getByText('8–10 reps')).toBeInTheDocument()
     expect(screen.getByText('5 rungs · 15-12-9-6-3 reps')).toBeInTheDocument()
   })
 })

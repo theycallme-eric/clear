@@ -46,7 +46,6 @@ import {
   type FakeSummaryClient,
 } from '../test/summary-double'
 import {
-  CATALOG_SOURCE_TEXT,
   NO_CUES_TEXT,
   NO_REGRESSION_TEXT,
   NOTE_FAILED_TEXT,
@@ -1126,7 +1125,7 @@ describe('Workout — no swap during the session (U37)', () => {
 
     for (const next of [null, 'Next section', 'Next section']) {
       if (next !== null) await user.click(screen.getByRole('button', { name: next }))
-      await screen.findAllByRole('button', { name: /^Coaching and notes — / })
+      await screen.findAllByRole('button', { name: /^Coaching and notes/ })
       expect(screen.queryByRole('button', { name: /swap/i })).toBeNull()
       expect(screen.queryByText(/^Swap$/)).toBeNull()
       expect(screen.queryByRole('dialog')).toBeNull()
@@ -1197,7 +1196,7 @@ describe('Workout — coaching and notes', () => {
     expect(document.body).not.toHaveTextContent(SECTION_NOTE)
   })
 
-  it('opens one movement’s coaching on demand, inside that movement, and closes it (U38)', async () => {
+  it('groups coaching under one disclosure, preserving separate movement drafts (R29)', async () => {
     const user = userEvent.setup()
     await shell({
       session: activeSession([{
@@ -1215,31 +1214,23 @@ describe('Workout — coaching and notes', () => {
       definitions: { 'back-squat': definitionFixture() },
     })
 
-    const squat = screen.getByRole('button', { name: PANEL })
-    const row = screen.getByRole('button', { name: 'Coaching and notes — barbell row' })
-    expect(squat).toHaveAttribute('aria-expanded', 'false')
-    expect(row).toHaveAttribute('aria-expanded', 'false')
-
-    // Each panel is inside its own movement, so the cues cannot be read as
-    // the partner's: the movements' rows do not contain each other's panel.
-    let movement: HTMLElement | null = squat.parentElement
-    while (movement !== null && within(movement).queryAllByRole('heading').length === 0) {
-      movement = movement.parentElement
-    }
-    if (movement === null) throw new Error('the coaching panel sits under no movement')
-    expect(within(movement).getAllByRole('heading')[0]).toHaveTextContent(/back squat/i)
-    expect(movement).not.toContainElement(row)
-
-    await user.click(squat)
-    const panel = screen.getByRole('region', { name: PANEL })
+    const toggle = screen.getByRole('button', { name: 'Coaching and notes' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    expect(screen.queryByRole('button', { name: PANEL })).not.toBeInTheDocument()
+    await user.click(toggle)
+    const panel = screen.getByRole('region', { name: 'Coaching and notes' })
     expect(await within(panel).findByText('Brace before you descend')).toBeInTheDocument()
-    expect(within(panel).getByText(CATALOG_SOURCE_TEXT)).toBeInTheDocument()
-    // Opening one movement's coaching opens nothing else.
-    expect(row).toHaveAttribute('aria-expanded', 'false')
-
-    await user.click(squat)
-    expect(squat).toHaveAttribute('aria-expanded', 'false')
+    expect(within(panel).getByRole('heading', { name: 'back squat' })).toBeInTheDocument()
+    expect(within(panel).getByRole('heading', { name: 'barbell row' })).toBeInTheDocument()
+    const squat = within(panel).getByLabelText('Notes — back squat')
+    const row = within(panel).getByLabelText('Notes — barbell row')
+    await user.type(squat, 'Keep my stance')
+    await user.type(row, 'Keep my back stable')
+    await user.click(toggle)
     expect(panel).toHaveAttribute('data-expanded', 'false')
+    await user.click(toggle)
+    expect(squat).toHaveValue('Keep my stance')
+    expect(row).toHaveValue('Keep my back stable')
   })
 
   it('shows no broken panel when the catalog has nothing for a movement', async () => {

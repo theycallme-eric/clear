@@ -302,7 +302,7 @@ describe('Session Detail populated state', () => {
     const headers = within(table)
       .getAllByRole('columnheader')
       .map((cell) => cell.textContent)
-    expect(headers).toEqual(['Set', 'Weight', 'Reps', 'RPE'])
+    expect(headers).toEqual(['Set', 'Weight', 'Reps', 'Effort'])
 
     const rows = within(table).getAllByRole('row').slice(1)
     expect(rows.map((row) => within(row).getAllByRole('cell').map((c) => c.textContent))).toEqual([

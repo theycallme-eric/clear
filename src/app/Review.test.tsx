@@ -211,40 +211,13 @@ describe('all generated content renders', () => {
     expect(facts.querySelector('.clr-chamfer, .clr-metric-frame')).toBeNull()
   })
 
-  it('gives every section its own card and nests no card anywhere', async () => {
+  it('keeps ordered sections and gives each shared block one card, with no nested cards', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
-
-    const cards = [...screen.getByRole('main').querySelectorAll<HTMLElement>('.clr-card')]
-    // A section's own disclosure, not the tempo detail nested inside one.
-    const sections = screen
-      .getAllByRole('region')
-      .filter(
-        (region) =>
-          region.classList.contains('clr-collapsible__region') &&
-          region.parentElement?.parentElement?.closest('.clr-collapsible__region') === null,
-      )
-
-    // One overview card and one card per section, each with its single bar.
-    expect(sections.length).toBeGreaterThan(0)
-    expect(cards).toHaveLength(sections.length + 1)
-    for (const section of sections) {
-      const card = section.closest<HTMLElement>('.clr-card')!
-      expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
-      // The heading row is inside the card: the trigger that names the section.
-      expect(card.querySelector('.clr-collapsible__trigger')).not.toBeNull()
-    }
+    const sections = document.querySelectorAll('[data-review-section]')
+    expect(sections).toHaveLength(ACCEPTANCE.workout.sections.length)
+    sections.forEach((section, index) => expect(section.querySelectorAll('.clr-card')).toHaveLength(ACCEPTANCE.workout.sections[index].blocks.length))
     expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
-    // Nothing but the title is left on the atmosphere — and, after the last
-    // section, the Regenerate action that closes the content (REQ-006).
-    const stack = cards[0].closest('.clr-stack')!
-    const children = [...stack.children]
-    const closing = children.pop()!
-    expect(closing).toHaveClass('clr-actions')
-    expect(within(closing as HTMLElement).getByRole('button', { name: REGENERATE_LABEL })).toBeInTheDocument()
-    expect(children.every((child) => child.querySelector('.clr-card') !== null)).toBe(
-      true,
-    )
   })
 
   it('pins Start at the measured edge and closes the content with Regenerate', async () => {
@@ -273,20 +246,12 @@ describe('all generated content renders', () => {
     expect(regenerate.closest('.clr-card')).toBeNull()
   })
 
-  it('renders every section, in the order it will be performed, under its type’s label', async () => {
+  it('uses static shared headers in section order, with all content visible', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
-
-    const triggers = screen
-      .getAllByRole('button', { expanded: true })
-      .map((button) => button.textContent ?? '')
-    expect(triggers).toEqual([
-      expect.stringMatching(/^Warm-up\d+ movement/),
-      expect.stringMatching(/^Primary lift\d+ movements/),
-      expect.stringMatching(/^Accessory\d+ movements/),
-      expect.stringMatching(/^Conditioning\d+ movements/),
-      expect.stringMatching(/^Cooldown\d+ movement/),
-    ])
+    const titles = [...document.querySelectorAll('[data-review-section]')].map(section => within(section as HTMLElement).getAllByRole('heading')[0].textContent)
+    expect(titles).toEqual(['Warm-up', 'Primary lift', 'Accessory', 'Conditioning', 'Cooldown'])
+    expect(screen.queryByRole('button', { name: /Warm-up/ })).not.toBeInTheDocument()
   })
 
   it('never shows or follows a generated section title (REQ-011)', async () => {
@@ -340,7 +305,8 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const group = screen.getByRole('list', { name: 'superset, 4 rounds' }).parentElement!
-    const [badge, sequence] = [...group.children]
+    const badge = group.closest('.clr-card')!.querySelector('[data-movement-group-header]')!
+    const sequence = group.firstElementChild!
     expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
     expect(sequence).toHaveTextContent('One round: 01 → 02')
     expect(group.lastElementChild).toHaveTextContent('Rest 90s between rounds')
@@ -496,19 +462,14 @@ describe('all generated content renders', () => {
     expect(text).toContain('Build then come back down.')
   })
 
-  it('keeps a collapsed section in the document, so nothing is removed by closing it', async () => {
-    const user = userEvent.setup()
+  it('keeps Review sections visible without a collapse control (R37)', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
-
-    await user.click(screen.getByRole('button', { name: /Warm-up/ }))
-
-    expect(screen.getByRole('button', { name: /Warm-up/ })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    )
+    expect(screen.getByRole('heading', { name: 'Warm-up' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Warm-up/ })).not.toBeInTheDocument()
     expect(briefingText()).toContain('air squat')
   })
+
 })
 
 describe('no generated overview or section introduction (REQ-010)', () => {
@@ -542,7 +503,7 @@ describe('no generated overview or section introduction (REQ-010)', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     for (const title of ['Warm-up', 'Primary lift']) {
-      expect(screen.getByRole('button', { name: new RegExp(title) })).toBeInTheDocument()
+      expect(screen.getAllByRole('heading', { name: title }).length).toBeGreaterThan(0)
     }
     const text = briefingText()
     expect(text).toContain('air squat')
@@ -574,7 +535,7 @@ describe('no generated overview or section introduction (REQ-010)', () => {
     const card = screen
       .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
       .closest<HTMLElement>('.clr-card')!
-    expect(card.querySelector('p')).toBeNull()
+    expect(card.querySelector('.clr-summary-facts')).toBeInTheDocument()
   })
 
   it('starts a legacy workout with its prose and structured work intact', async () => {
@@ -593,7 +554,7 @@ describe('the intensity / anchor / goal header', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    expect(screen.getByText('Intensity').closest('dt')?.nextElementSibling?.textContent).toBe('7 of 10')
+    expect(screen.getByText('Intensity').closest('dt')?.nextElementSibling?.textContent).toBe('7')
     expect(screen.getByText('Anchor').closest('dt')?.nextElementSibling?.textContent).toBe('Lower body')
     expect(screen.getByText('Goal').closest('dt')?.nextElementSibling?.textContent).toBe('Strength')
     expect(screen.getByText('Duration').closest('dt')?.nextElementSibling?.textContent).toBe('45 min')
@@ -1182,7 +1143,7 @@ describe('the suggested load, its confidence, and why', () => {
     expect(suggestion).toHaveClass('clr-text-action')
     expect(suggestion).not.toHaveClass('clr-btn')
     expect(suggestion.closest('.clr-chamfer')).toBe(suggestion.closest('.clr-card__body'))
-    expect(suggestion.closest('.clr-collapsible__region')).not.toBeNull()
+    expect(suggestion.closest('[data-review-section]')).not.toBeNull()
     expect(document.querySelectorAll('.clr-card .clr-card')).toHaveLength(0)
     // Quiet beside the screen's one primary, which stays in the footer.
     expect(document.querySelectorAll('.clr-btn--primary')).toHaveLength(1)

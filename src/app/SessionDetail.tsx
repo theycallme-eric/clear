@@ -224,7 +224,7 @@ function SessionDetailBody({
     ['Status', view.stateLabel],
     // A session nobody timed has no duration, and no term for one.
     ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
-    ['Intensity', `${view.intensity}/10`],
+    ['Intensity', String(view.intensity)],
   ]
 
   return (

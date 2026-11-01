@@ -19,10 +19,9 @@
  *     the clock lives, once, so the two members cannot disagree about it
  *     (DATA-01c §5) — and a block with no rest renders no rest line at all,
  *     never `Rest: 0s`.
- *   · **The pair is one unit.** The movements are connected by a rule down
- *     their left edge rather than separated by a divider (§4), and the
- *     alternation is stated in words above them, because a line is a colour cue
- *     and colour is never the only cue.
+ *   · **The pair is one unit.** The shared card/badge and explicit round
+ *     order carry the grouping. Owner-selected B05-04/R28 replaces the older
+ *     inner rail with shared peer separators; no final divider is drawn.
  *
  *   · **The round is logged once** (REQ-016). The block's Rest action opens one
  *     sheet with each movement's own fields and effort (`SupersetRoundSheet`)

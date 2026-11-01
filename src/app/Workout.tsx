@@ -241,7 +241,7 @@ function WorkoutShell({
   const header = useRef<HTMLDivElement>(null)
   const moved = useRef(false)
   const focusSectionHeader = useCallback(() => {
-    const heading = header.current?.querySelector('h2, h3, h4, h5, h6')
+    const heading = header.current?.querySelector('h2, h3, h4, h5, h6') ?? header.current?.parentElement?.querySelector('[data-movement-group-header] h2, [data-movement-group-header] h3')
     if (heading instanceof HTMLElement) {
       if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1')
       heading.focus()
@@ -486,6 +486,7 @@ function WorkoutShell({
                   */}
                   <div ref={header}>
                     <SectionHeader
+                      compact={presentation !== null}
                       section={current}
                       position={index + 1}
                       total={progress.total}

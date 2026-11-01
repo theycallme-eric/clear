@@ -332,6 +332,8 @@ function SectionChip({
   onSelect,
 }: {
   section: SectionProgress
+  /** Compact design-library candidate; actual navigation state is unchanged. */
+  compact?: boolean
   current: boolean
   onSelect?: (index: number) => void
 }) {
@@ -371,6 +373,8 @@ function StatusGlyph({ status }: { status: SectionStatus }) {
 
 export interface SectionHeaderProps {
   section: SectionProgress
+  /** Compact design-library candidate; actual navigation state is unchanged. */
+  compact?: boolean
   /** Position in the session, one-based, for the terse `3 / 6` readout. */
   position: number
   total: number
@@ -405,6 +409,7 @@ export interface SectionHeaderProps {
  */
 export function SectionHeader({
   section,
+  compact = false,
   position,
   total,
   progress,
@@ -420,6 +425,15 @@ export function SectionHeader({
           setJumping(false)
           onSelect(index)
         }
+
+  if (compact && progress !== undefined) return (
+    <div className="clr-workout-section-nav" data-section-navigation="">
+      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta">{position} / {total} · {STATUS_WORDS[section.status]}</span></>} expanded={jumping} onExpandedChange={setJumping}>
+        <SectionJumpList progress={progress} currentIndex={section.index} onSelect={select} inert={!jumping} />
+      </CollapsibleSection>
+      {children}
+    </div>
+  )
 
   return (
     // `Screen` already establishes level two for its top-level content. This

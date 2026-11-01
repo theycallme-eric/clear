@@ -62,12 +62,13 @@ import {
   prescriptionText,
   restText,
   targetForSet,
+  targetText,
 } from '../state/prescription'
 import { incrementFor } from '../state/progression'
 import { movementCountdownSeconds } from '../state/movement-countdown'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
-import { equipmentName } from '../state/review'
+import { distinctLoadText, equipmentName, loadText } from '../state/review'
 import {
   prefillFrom,
   useSetLogging,
@@ -182,6 +183,9 @@ export function ExerciseSetLogger({
   const name = exerciseName(prescription.exercise_id)
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
+  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
+
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restOnEntry = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
@@ -252,7 +256,8 @@ export function ExerciseSetLogger({
     <BlockPanel.Movement
       title={title}
       counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
-      detail={prescriptionText(prescription)}
+      detail={statesRest || prescription.target_kind === 'sequence' ? prescriptionText(prescription) : targetText(prescription)}
+      load={load}
       context={equipment}
     >
       {/*

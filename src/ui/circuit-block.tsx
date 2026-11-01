@@ -67,7 +67,8 @@ import {
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
-import { equipmentName } from '../state/review'
+import { distinctLoadText, equipmentName, loadText } from '../state/review'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -325,10 +326,15 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
  * how many sets are already logged, so a closed row never hides a record.
  */
 function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
-  const { loggedSets } = useSetLogging()
+  const { loggedSets, weightUnit } = useSetLogging()
+  const presentation = useWorkoutExperiencePresentation()
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
+  const equipment = equipmentName(prescription.equipment_used)
+  const guidance = presentation?.suggestedLoads[prescription.exercise_id]
+  const load = distinctLoadText(guidance === undefined ? (prescription.load_type === null ? null : loadText(prescription.load_type, prescription.load_value, weightUnit)) : guidance, equipment)
+
   const sets = loggedSets(exercise.exerciseId)
   const logged = sets.length
   const taken = new Set(sets.map((set) => set.setNumber))
@@ -368,8 +374,9 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
         <BlockPanel.Movement
           title={`${exercise.position}. ${name}`}
           detail={targetText(prescription)}
+          load={load}
           // The same equipment tier the open logger shows (B05-04).
-          context={equipmentName(prescription.equipment_used)}
+          context={equipment}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

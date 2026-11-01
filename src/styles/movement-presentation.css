@@ -9,3 +9,13 @@
 .clr-movement-identity__equipment { text-transform:capitalize; }
 .clr-movement-list { display:flex; flex-direction:column; gap:var(--spacing-400); list-style:none; margin:0; padding:0; min-width:0; }
 .clr-movement-list > li:not(:last-child) { padding-block-end:var(--spacing-400); border-block-end:var(--border-width) solid var(--border-region-rule); }
+
+.clr-movement-group-header { display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:var(--spacing-200) var(--spacing-300); min-width:0; }
+.clr-movement-group-header__title { margin:0; min-width:0; }
+.clr-movement-group-header__badge { display:flex; max-width:100%; min-width:0; }
+.clr-movement-identity__ordinal { margin-inline-end:var(--spacing-100); }
+.clr-workout-section-nav { padding-inline:var(--spacing-200); }
+.clr-workout-section-nav__meta { margin-inline-start:auto; color:var(--text-secondary); }
+
+/* Review and live blocks inherit one vertical rhythm around the shared rows. */
+.clr-movement-group { display:flex; flex-direction:column; gap:var(--spacing-400); min-width:0; }

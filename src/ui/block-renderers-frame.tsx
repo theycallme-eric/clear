@@ -23,7 +23,8 @@
  * because none of them is a surface: each is only ever a piece of one block's
  * card, and is reviewed where that card is.
  *
- * Nothing here reads a clock, a prescription or a seam. The outcome a block
+ * Display identity uses the same groupRounds reading as Review. No clock or
+ * writer is created here. The outcome a block
  * records is still the renderer's to observe and `BlockCompletionControl`'s to
  * hand to the shell; `BlockPanel` only guarantees there is exactly one of it.
  */
@@ -35,8 +36,10 @@ import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
 import { GroupCoachingContext, GroupExerciseCoaching } from './exercise-coaching'
-import { MovementIdentity, MovementList as SharedMovementList } from './movement-presentation'
+import { MovementGroupHeader, MovementIdentity, MovementList as SharedMovementList } from './movement-presentation'
 import { HeadingSection } from './Heading'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
+import { groupRounds } from '../state/review'
 import { useSectionLabel } from './section-label-context'
 import { StructureBadge } from './workout-chrome'
 
@@ -114,25 +117,20 @@ export function BlockPanel({
   children,
 }: BlockPanelProps) {
   const sectionLabel = useSectionLabel()
+  const presentation = useWorkoutExperiencePresentation()
   const groupedCoaching = block.structureType !== 'standard' && block.exercises.length > 1
+  const rounds = groupRounds({ structure_type: block.structureType, rounds: block.rounds, exercises: block.exercises.map(exercise => ({ sets: exercise.prescription.sets })) })
+  const identity = rounds !== null && block.identity.detail === null ? { ...block.identity, detail: `${rounds} ROUNDS` } : block.identity
+
   const card = (
     <Card role={role}>
-      <div className="clr-stack" style={STACK_STYLE}>
+      <div className="clr-movement-group">
         {/*
           REQ-008: a secondary label on the left and the compact structure
           badge on the right, so the badge never competes with the movement
           heading below it.
         */}
-        <div className="clr-row" data-block-top-row="" style={{ justifyContent: 'space-between' }}>
-          <span style={LABEL_STYLE}>
-            {sectionLabel ?? (
-              <>
-                {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-              </>
-            )}
-          </span>
-          <StructureBadge identity={block.identity} />
-        </div>
+        <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} />} />
         <GroupCoachingContext value={groupedCoaching}>
           {children}
           {groupedCoaching && <GroupExerciseCoaching exercises={block.exercises} />}
@@ -246,6 +244,7 @@ export interface BlockMovementProps {
   title: ReactNode
   /** The prescription as read from its columns — `3 × 8 reps`. */
   detail?: ReactNode
+  load?: ReactNode
   /**
    * A subordinate readout beside the heading — the logger's `Set 2/3`. A
    * label, never a second heading.
@@ -261,10 +260,10 @@ export interface BlockMovementProps {
  * beside it in the label face, then its prescription in the data face and its
  * equipment context — B05-04's three tiers, the name leading.
  */
-function Movement({ title, detail, counter, context, children }: BlockMovementProps) {
+function Movement({ title, detail, load, counter, context, children }: BlockMovementProps) {
   return (
     <HeadingSection className="clr-stack--tight" style={MOVEMENT_STYLE}>
-      <MovementIdentity name={title} prescription={detail} equipment={context} counter={counter} heading />
+      <MovementIdentity name={title} prescription={detail} load={load} equipment={context} counter={counter} heading />
       {children}
     </HeadingSection>
   )
