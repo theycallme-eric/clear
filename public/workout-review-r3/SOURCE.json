@@ -1,0 +1,22 @@
+{
+  "baseline": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+  "proposalSource": "a538f763dae6a491205469aa76386ad5205fef2c",
+  "branch": "codex/workout-review-r3-2026-11-01",
+  "revision": "R3",
+  "date": "2026-11-01",
+  "purpose": "Owner visual review of shared Review/live layout and preserved R01-R37 refinements",
+  "feedbackSource": "docs/design/library/WORKOUT-REVIEW-FEEDBACK-2026-10-31.md",
+  "feedbackArchive": "docs/design/library/archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md",
+  "areas": 7,
+  "examples": 40,
+  "views": 80,
+  "verification": {
+    "selectedUnitTests": 409,
+    "focusedChecks": 85,
+    "renderedPanes": 80,
+    "a11ySamples": 9,
+    "a11yViolations": 0,
+    "galleryEntries": 59
+  },
+  "limits": "In-memory fixture clients; no live backend/generation or physical-keyboard proof. Guide/range/report/default contracts remain open. New visuals await review; whole branch is not a production merge candidate."
+}
