@@ -21,6 +21,7 @@ import {
 
 import { CardContainmentContext, useInsideCard } from './card-context'
 import { ActionRow } from './composition'
+import { ForegroundEchoFrame } from './foreground-echo'
 import { Heading } from './Heading'
 
 export type { CardRole } from '../design-system/index'
@@ -84,13 +85,17 @@ export function Card({ heading, meta, role, padding, className, children, ...pro
     )
   }
 
+  // REQ-004: an outer card is on the background, so its frame echoes; nothing
+  // inside it does.
   return (
-    <PublicCard role={role} padding={padding} className={className} {...props} cornerSize="auto">
-      <CardContainmentContext.Provider value>
-        <CardHeading heading={heading} meta={meta} />
-        {children}
-      </CardContainmentContext.Provider>
-    </PublicCard>
+    <ForegroundEchoFrame>
+      <PublicCard role={role} padding={padding} className={className} {...props} cornerSize="auto">
+        <CardContainmentContext.Provider value>
+          <CardHeading heading={heading} meta={meta} />
+          {children}
+        </CardContainmentContext.Provider>
+      </PublicCard>
+    </ForegroundEchoFrame>
   )
 }
 

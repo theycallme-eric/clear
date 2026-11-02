@@ -281,7 +281,10 @@ describe('Visual effects policy at the root (effects TASK-001)', () => {
 
     expect(hosts).toHaveLength(1)
     expect(hosts[0]).toHaveAttribute('aria-hidden', 'true')
-    expect(hosts[0]).toBeEmptyDOMElement()
+    // Effects TASK-003: it holds only the one Phosphor Echo filter definition.
+    expect(hosts[0].children).toHaveLength(1)
+    expect(hosts[0].querySelectorAll('filter')).toHaveLength(1)
+    expect(hosts[0].querySelector('filter')).toHaveAttribute('id', 'clr-phosphor-echo')
     // Outside the shell, so it never sits in a screen's own tree…
     expect(container.querySelector('.clr-shell .clr-effects-host')).toBeNull()
     // …and the atmosphere is still the one ground, unchanged.

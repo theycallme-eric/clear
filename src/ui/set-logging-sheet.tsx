@@ -37,6 +37,7 @@ import { Button, ChevronDown, IconButton } from '../design-system/index'
 import { CardContainmentContext } from './card-context'
 import { ActionGroup } from './composition'
 import { FittedScrollRegion } from './fitted-scroll-region'
+import { EchoExcluded } from './foreground-echo'
 import { useInvalidFocus } from './formFocus'
 import { Heading, HeadingLevelProvider } from './Heading'
 import {
@@ -189,8 +190,10 @@ export function SetLoggingSheet({
   return (
     // Portalled out of the block's card, the sheet is not inside it: React
     // context would otherwise carry that card's containment along, and the
-    // rest's timer card would lose its own frame.
+    // rest's timer card would lose its own frame. It is still not on the
+    // background (REQ-004), so nothing in it echoes.
     <CardContainmentContext.Provider value={false}>
+    <EchoExcluded>
     <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
       <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
         {/*
@@ -258,6 +261,7 @@ export function SetLoggingSheet({
         </div>
       </div>
     </section>
+    </EchoExcluded>
     </CardContainmentContext.Provider>
   )
 }

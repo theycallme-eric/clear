@@ -1,0 +1,44 @@
+/* =============================================================================
+   FOREGROUND ECHO — Effects TASK-004 (REQ-004), the app's echo bindings.
+
+   An echoed owner sits in the shared `.clr-echo` wrapper. Where a layout rule
+   addresses the owner as a direct child, the wrapper passes that layout on so
+   the owner is placed exactly as it was without the effect. The screen action
+   row and the metric grid need this; a Card's root, a header action, a list
+   frame and the standalone state cards size themselves.
+   ============================================================================= */
+
+/* A metric grid cell: the wrapper is the cell, and the frame still fills its row. */
+.clr-metric-grid > .clr-echo {
+  display: flex;
+}
+
+.clr-metric-grid > .clr-echo > :not(.clr-echo__rear) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* A button row: the wrapper is the row's cell, and the button still fills it. */
+.clr-actions > .clr-echo {
+  display: flex;
+}
+
+.clr-actions > .clr-echo > :not(.clr-echo__rear) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.clr-actions > .clr-echo > .clr-bleed > .clr-btn {
+  width: 100%;
+}
+
+/* The main action keeps its place: on top when stacked, right in a row. */
+.clr-actions > .clr-echo:has(> .clr-bleed > :is(.clr-btn--primary, .clr-btn--critical)) {
+  order: -1;
+}
+
+@media (min-width: 560px) {
+  .clr-actions > .clr-echo:has(> .clr-bleed > :is(.clr-btn--primary, .clr-btn--critical)) {
+    order: 2;
+  }
+}

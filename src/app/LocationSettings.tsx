@@ -65,6 +65,7 @@ import { ConfirmDialog } from '../ui/blocking-dialog'
 import { Card, CardActions } from '../ui/card'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import { ActionRow, PhoneFooter } from '../ui/composition'
+import { ForegroundEchoFrame } from '../ui/foreground-echo'
 import { useInvalidFocus } from '../ui/formFocus'
 import { SaveStatusLine, useInlineSave, type SaveStatus } from '../ui/inline-save'
 import { useArrivalStagger } from '../ui/motion'
@@ -218,10 +219,12 @@ export function LocationSettings() {
         ) : (
           <div className="clr-stack">
             {locations.length === 0 ? (
-              <EmptyState
-                title="No places yet"
-                message="Add where you train and what equipment is available there."
-              />
+              <ForegroundEchoFrame>
+                <EmptyState
+                  title="No places yet"
+                  message="Add where you train and what equipment is available there."
+                />
+              </ForegroundEchoFrame>
             ) : (
               <LocationList>
                 {locations.map((location) => (

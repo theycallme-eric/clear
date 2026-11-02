@@ -29,6 +29,7 @@ import type { AppError } from '../state/errors'
 import { useSlowThreshold, type ViewState } from '../state/view-state'
 
 import { useInsideCard } from './card-context'
+import { ForegroundEchoFrame } from './foreground-echo'
 import { useInterfaceLoop } from './motion'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -99,15 +100,18 @@ export function LoadingView({
     )
   }
 
+  // REQ-004: standalone, the loader is its own card on the background.
   return (
-    <ScanLoader
-      label={shown}
-      status={slow ? 'slow' : 'ok'}
-      lines={lines}
-      value={value}
-      max={max}
-      {...loop}
-    />
+    <ForegroundEchoFrame>
+      <ScanLoader
+        label={shown}
+        status={slow ? 'slow' : 'ok'}
+        lines={lines}
+        value={value}
+        max={max}
+        {...loop}
+      />
+    </ForegroundEchoFrame>
   )
 }
 
@@ -168,22 +172,27 @@ export function ErrorView({
           <p style={{ margin: 0, color: 'var(--text-secondary)' }}>{message}</p>
         </>
       ) : (
-        <EmptyState
-          icon={icon}
-          title={title}
-          message={message}
-          style={
-            {
-              '--surface': 'var(--surface-toast-negative)',
-              '--brd': 'var(--border-toast-negative)',
-            } as CSSProperties
-          }
-        />
+        // REQ-004: standalone, the failure card and its action are each on the background.
+        <ForegroundEchoFrame>
+          <EmptyState
+            icon={icon}
+            title={title}
+            message={message}
+            style={
+              {
+                '--surface': 'var(--surface-toast-negative)',
+                '--brd': 'var(--border-toast-negative)',
+              } as CSSProperties
+            }
+          />
+        </ForegroundEchoFrame>
       )}
       {onRetry === undefined ? null : (
-        <Button variant="secondary" onClick={onRetry}>
-          {actionLabel}
-        </Button>
+        <ForegroundEchoFrame>
+          <Button variant="secondary" onClick={onRetry}>
+            {actionLabel}
+          </Button>
+        </ForegroundEchoFrame>
       )}
     </div>
   )

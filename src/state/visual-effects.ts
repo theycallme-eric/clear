@@ -162,3 +162,11 @@ export function useVisualEffects(): VisualEffectsPolicy {
   }
   return policy
 }
+
+/**
+ * The resolved policy, or null outside the root provider. For shared owners
+ * (a Card, a Screen) that also render alone, where no effect applies.
+ */
+export function useOptionalVisualEffects(): VisualEffectsPolicy | null {
+  return useContext(VisualEffectsContext)
+}
