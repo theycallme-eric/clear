@@ -118,6 +118,7 @@ import { WeekStrip } from '../ui/week-strip'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
+import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow } from './gallery-timed-fixtures'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -1882,6 +1883,17 @@ function SharedCountdownExample() {
 }
 
 export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
+  { component: 'QuantitySelector', requirement: 'R4 / R52–R57', module: 'src/ui/quantity-selector.tsx', summary: 'Proposed single framed quantity input. Blank differs from an explicit zero; shared by timed-work results. Compact and wide are review alternatives.', specimens: [
+    { state: 'unanswered, compact', Render: () => <GalleryQuantity /> },
+    { state: 'recorded zero', Render: () => <GalleryQuantity initial={0} /> },
+    { state: 'wide alternative', Render: () => <GalleryQuantity initial={5} wide /> },
+  ] },
+  { component: 'TimedResultLog', requirement: 'R4 / R43, R54–R69', module: 'src/ui/timed-result-log.tsx', summary: 'Proposed shared end log: format-specific result plus optional categorical effort, actual weights and notes. This safe specimen saves in memory; runtime adoption/persistence follows reviewed requirements.', specimens: [
+    { state: 'AMRAP score, loaded movement and optional feedback', Render: GalleryTimedLog },
+  ] },
+  { component: 'TimedWorkoutFlow', requirement: 'R4 / R38–R69', module: 'src/ui/timed-workout-flow.tsx', summary: 'Isolated timed-work proposal consuming shared clock arithmetic and existing format contracts. App BlockSlot uses the same owner when the comparison presentation is enabled; prior renderer behavior remains separately reviewable.', specimens: [
+    { state: 'AMRAP Start, Pause/Resume, Finish and local results', Render: () => <GalleryTimedFlow presentation={PROPOSED_EXPERIENCE} /> },
+  ] },
   { component: 'MovementGroupHeader', requirement: 'R30 / R37', module: 'src/ui/movement-presentation.tsx', summary: 'One static group-header owner used by actual Review and live BlockPanel: title left, compact structure badge right, no Review disclosure.', specimens: [
     { state: 'superset and rounds', Render: () => <Card><MovementGroupHeader title="Accessory" badge={<StructureBadge identity={{label:'SUPERSET', detail:'3 ROUNDS',repScheme:null,glyph:'Superset'}} />} /></Card> },
     { state: 'long section without structure badge', Render: () => <Card><MovementGroupHeader title="Primary strength work with a longer section name" /></Card> },

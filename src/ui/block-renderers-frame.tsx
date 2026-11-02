@@ -130,7 +130,7 @@ export function BlockPanel({
           badge on the right, so the badge never competes with the movement
           heading below it.
         */}
-        <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} />} />
+        <MovementGroupHeader heading={presentation !== null} title={sectionLabel ?? `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`} badge={<StructureBadge identity={identity} formatOnly={presentation?.timedWorkflows !== undefined} />} />
         <GroupCoachingContext value={groupedCoaching}>
           {children}
           {groupedCoaching && <GroupExerciseCoaching exercises={block.exercises} />}

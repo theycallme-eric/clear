@@ -517,11 +517,13 @@ export const NO_EQUIPMENT_LABEL = 'None — bodyweight only'
  * group header as live blocks. Optional tempo detail keeps its own disclosure.
  */
 function ReviewSectionCard({ section, ...suggestion }: { section: ReviewSectionView } & SuggestionProps) {
+  const presentation = useWorkoutExperiencePresentation()
   return <div className="clr-stack" data-review-section="">
     {section.blocks.map((block, index) => {
       const badged = block.grouped || block.identity.detail !== null || block.identity.repScheme !== null
       return <Card key={block.key}><div className="clr-movement-group">
-        <MovementGroupHeader title={section.title} badge={badged ? <StructureBadge identity={block.identity} /> : null} />
+        <MovementGroupHeader title={section.title} badge={badged ? <StructureBadge identity={block.identity} formatOnly={presentation?.timedWorkflows !== undefined} /> : null} />
+        {presentation?.timedWorkflows && <p className="clr-text-data-xs clr-timed-meta">{[block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')}</p>}
         <ReviewBlockRows block={block} {...suggestion} />
         {index === section.blocks.length - 1 && section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}
       </div></Card>
@@ -591,7 +593,7 @@ function ReviewBlockRows({
     <ReviewExerciseRow
       key={exercise.key}
       ordinal={ordinal}
-      inRounds={inRounds}
+      inRounds={inRounds || ['EMOM', 'AMRAP', 'FOR TIME'].includes(block.identity.label)}
       exercise={exercise}
       suggestion={suggestions.get(exercise.key) ?? null}
       override={overrides.get(exercise.key) ?? null}

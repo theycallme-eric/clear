@@ -5,9 +5,11 @@
 import './workout-experience-presentation.css'
 import {createContext,use,type ReactNode} from 'react'
 import type {OnboardingDraft} from '../state/onboarding'
+import type { TimedResultReceipt } from './timed-result-log'
 export interface PreparationGuideView {title:'Warm-up'|'Cooldown';minutes:number;movements:readonly string[]}
 export interface TrainingProgressView {movement:string;equipment:string;previous:string;latest:string;next:string;evidence:string}
 export interface WorkoutExperiencePresentation {
+ timedWorkflows?: { logPresentation: 'inline' | 'sheet'; counterStyle: 'compact' | 'wide'; saveResult: (result: TimedResultReceipt) => Promise<void> }
  focusAction:'text'|'framed'
  guides:{warmup:PreparationGuideView;cooldown:PreparationGuideView}
  suggestedLoads:Readonly<Record<string,string|null>>

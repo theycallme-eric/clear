@@ -52,6 +52,7 @@ import { CollapsibleSection } from './collapsible-section'
 import { HeadingSection } from './Heading'
 import { useInterfaceLoop } from './motion'
 import { ErrorView, LoadingView } from './view-state'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
 export const NO_CUES_TEXT = 'No coaching cues are written for this movement.'
 export const NO_REGRESSION_TEXT = 'No regression is written for this movement.'
@@ -154,6 +155,7 @@ interface GuidanceViewProps {
 
 /** The guidance in its four states; the empty ones are answers, not gaps. */
 function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
+  const proposal = useWorkoutExperiencePresentation()?.timedWorkflows !== undefined
   switch (state.status) {
     case 'loading':
       return <LoadingView label={`Reading coaching for ${name}`} />
@@ -167,7 +169,7 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
         />
       )
     case 'ready':
-      if (state.data === null) return <p style={{ margin: 0 }}>{NO_DEFINITION_TEXT}</p>
+      if (state.data === null) return proposal ? null : <p style={{ margin: 0 }}>{NO_DEFINITION_TEXT}</p>
       return <Definition definition={state.data} />
   }
 }
@@ -180,8 +182,10 @@ function GuidanceView({ state, name, onRetry }: GuidanceViewProps) {
  * an answer rather than drawn as an empty bullet or box.
  */
 function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
+  const proposal = useWorkoutExperiencePresentation()?.timedWorkflows !== undefined
   const cues = definition.coaching_cues.filter((cue) => cue.trim() !== '')
   const regression = definition.regression?.trim() ? definition.regression : null
+  if (proposal && cues.length === 0 && regression === null) return null
 
   return (
     <>
@@ -189,7 +193,7 @@ function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
         {CATALOG_SOURCE_TEXT}
       </p>
 
-      <Card heading="Cues">
+      {(!proposal || cues.length > 0) && <Card heading="Cues">
         {cues.length === 0 ? (
           <p style={{ margin: 0 }}>{NO_CUES_TEXT}</p>
         ) : (
@@ -199,11 +203,11 @@ function Definition({ definition }: { definition: ExerciseDefinitionRow }) {
             ))}
           </ul>
         )}
-      </Card>
+      </Card>}
 
-      <Card heading="Regression">
+      {(!proposal || regression !== null) && <Card heading="Regression">
         <p style={{ margin: 0 }}>{regression ?? NO_REGRESSION_TEXT}</p>
-      </Card>
+      </Card>}
     </>
   )
 }

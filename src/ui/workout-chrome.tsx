@@ -99,6 +99,8 @@ export function GlobalTimer({ seconds }: GlobalTimerProps) {
 }
 
 export interface TimerFrameProps {
+  /** Fill the available timer width without a narrow nested readout. */
+  fullWidth?: boolean
   /** The timer's accessible name, said once — "Session time", "Countdown". */
   label: string
   /** The digits, `mm:ss`. Decorative. */
@@ -137,6 +139,7 @@ export function TimerFrame({
   caption,
   low = false,
   pulse,
+  fullWidth = false,
 }: TimerFrameProps) {
   const insideCard = useInsideCard()
   const role = low ? 'clr-chamfer--timer-low' : 'clr-chamfer--timer'
@@ -156,6 +159,9 @@ export function TimerFrame({
         justifyContent: 'center',
         gap: 'var(--spacing-200)',
         padding: 'var(--spacing-100) var(--spacing-300)',
+        minHeight: 'var(--control-height)',
+        flex: fullWidth ? '1 1 0' : undefined,
+        minWidth: fullWidth ? 0 : undefined,
       }}
     >
       {caption === undefined ? null : (
@@ -174,13 +180,13 @@ export function TimerFrame({
   return (
     <span
       className={pulse === undefined ? 'clr-bleed' : 'clr-bleed clr-pulse-micro'}
-      style={low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE}
+      style={{ ...(low ? TIMER_LOW_BLEED_STYLE : TIMER_BLEED_STYLE), display: fullWidth ? 'flex' : undefined, width: fullWidth ? '100%' : undefined }}
       {...pulse}
     >
       {insideCard ? (
         readout
       ) : (
-        <span className="clr-card">
+        <span className="clr-card" style={fullWidth ? { display: 'flex', width: '100%' } : undefined}>
           <span className="clr-card__bar" aria-hidden="true" />
           {readout}
         </span>
@@ -428,7 +434,7 @@ export function SectionHeader({
 
   if (compact && progress !== undefined) return (
     <div className="clr-workout-section-nav" data-section-navigation="">
-      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta">{position} / {total} · {STATUS_WORDS[section.status]}</span></>} expanded={jumping} onExpandedChange={setJumping}>
+      <CollapsibleSection label={<><span>All sections</span><span className="clr-workout-section-nav__meta">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
         <SectionJumpList progress={progress} currentIndex={section.index} onSelect={select} inert={!jumping} />
       </CollapsibleSection>
       {children}
@@ -483,6 +489,7 @@ export function SectionHeader({
 
 export interface StructureBadgeProps {
   identity: StructureIdentity
+  formatOnly?: boolean
 }
 
 /**
@@ -498,8 +505,9 @@ export interface StructureBadgeProps {
  * unused group width (B05-04). The wrapper is sized to its frame instead, in
  * every parent, and capped at the parent so a long label wraps inside it.
  */
-export function StructureBadge({ identity }: StructureBadgeProps) {
-  const detail = [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+export function StructureBadge({ identity, formatOnly = false }: StructureBadgeProps) {
+  const detail = formatOnly ? '' : [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+  const label = formatOnly && identity.glyph === 'Ladder' ? 'LADDER' : identity.label
 
   return (
     <span className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
@@ -514,7 +522,7 @@ export function StructureBadge({ identity }: StructureBadgeProps) {
         }}
       >
         <StructureGlyphIcon glyph={identity.glyph} />
-        {detail === '' ? identity.label : `${identity.label} · ${detail}`}
+        {detail === '' ? label : `${label} · ${detail}`}
       </span>
     </span>
   )

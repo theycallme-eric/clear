@@ -1,6 +1,6 @@
 # CLEAR visual library
 
-**Feedback consolidated, 2 November 2026:** Eric closed intake. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) groups all 74 source comments into 24 items, records accepted/superseded choices, and identifies three pending timing/logging/effort questions before the next isolated preview iteration. Follow PLAN.md for the delivery sequence.
+**Feedback consolidated, 2 November 2026:** Eric closed intake. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) groups all 74 source comments into 24 items, records accepted/superseded choices, and records the confirmed pause, shared end-log and categorical-effort decisions for the next isolated preview iteration. Follow PLAN.md for the delivery sequence.
 
 Owner clarification, 30 October 2026: this repository and executable gallery are
 the design-library source of truth going forward. Claude Design is maintained
@@ -154,3 +154,11 @@ The broader preparation/report presentation interfaces remain labeled proposals.
 R3 uses MovementGroupHeader plus the shared movement-group rhythm for static Review and live headers. MovementIdentity owns the prescription/load/equipment hierarchy. EquipmentSummary is the candidate read-only equipment pattern. Compact live navigation retains the existing section-jump state and focus path. The generated index and actual gallery examples expose these owners.
 
 General Review/Workout alignment includes all structure families. R38 records the actual per-format reuse gaps and corrected matched examples. An existing shared frame or a passing render does not certify that every private renderer consumes the shared movement/load/equipment roles. Preserve distinct minute, window/score, race/cap and rung behavior while reconciling presentation.
+
+
+## Timed-work proposal gap (Round 4)
+
+- Need: one end log and consistent clock/action presentation across timed formats.
+- Existing parts: TimerFrame, public Button/ChoiceGroup/Input/Checkbox, existing effort vocabulary, BlockPanel/MovementIdentity and format/rung derivations.
+- Small addition: shared QuantitySelector/TimedResultLog, active-time pause arithmetic and an isolated timed-flow composition. Registered safe examples use those same owners; no new foundation or persistence schema is implied.
+- Consumers: the four timed families in the workout comparison; scheduled-start ladders retain their existing schedule owner. The [single list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) records settled intent, alternatives and production-contract follow-through.
