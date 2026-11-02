@@ -1,6 +1,6 @@
 # CLEAR visual library
 
-**Feedback consolidated, 2 November 2026:** Eric closed intake. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) groups all 74 source comments into 24 items, records accepted/superseded choices, and records the confirmed pause, shared end-log and categorical-effort decisions for the next isolated preview iteration. Follow PLAN.md for the delivery sequence.
+**Round 4 intake, 2 November 2026:** Eric requested notes only while he reviews. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) retains 24 consolidated items covering 75 source comments, including R75's repeated rejection of the inner vertical grouping rail. Keep the hosted preview fixed until he resumes work; follow the active hold in PLAN.md.
 
 Owner clarification, 30 October 2026: this repository and executable gallery are
 the design-library source of truth going forward. Claude Design is maintained
