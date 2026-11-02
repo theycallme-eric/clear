@@ -138,6 +138,10 @@ Keep code and rendered evidence tied to the version they actually represent. Cur
 
 Use the source and pattern maps to find affected consumers. Do not merge unrelated state machines, impose a universal inline-style ban, edit immutable vendor mirrors or treat coverage discovery as proof of correctness.
 
+# Current intake hold — 2 November 2026
+
+Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM requests/questions in R39–R44, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold.
+
 # Active checklist
 
 - [x] Establish the released-source inventory and retain its evidence and limits.
@@ -156,6 +160,6 @@ Use the source and pattern maps to find affected consumers. Do not merge unrelat
 
   - [ ] Owner visual review of the broader workout proposal, including the revised shared grouped layout, tappable Focus, report placement/content and setup/settings simplifications. Resolve guide/range/read-model and saved-state contract gaps before implementation.
 
-Next action: review the R3 design revision from Eric's 1 November review, recorded in the running R01–R38 list in [the feedback record](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md). Use the cleaner workout layout as the common Review/live composition with context-specific actions and static, always-expanded Review headers; restore prescribed load in live rows. Refine Overview and the live section navigator. Warm-up presentation and the grouped coaching disclosure are visually accepted. Keep the published R2 comparison fixed. The broader guide/range/report/default contracts remain unresolved; approved visual choices do not settle those data contracts. Carry the next accepted canonical components/examples into requirements. The bounded ErrorView pilot is complete. Eric expects the accepted refinement to proceed through Requirements Builder, a scoped implementation and UAT afterward; do not start Runner during preview work or treat the entire prototype branch as an approved implementation task.
+Next action after the intake hold is lifted: reconcile the complete feedback round, then review the R3 design revision from Eric's 1 November review, recorded in the running R01–R38 list in [the feedback record](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md). Use the cleaner workout layout as the common Review/live composition with context-specific actions and static, always-expanded Review headers; restore prescribed load in live rows. Refine Overview and the live section navigator. Warm-up presentation and the grouped coaching disclosure are visually accepted. Keep the published R2 comparison fixed. The broader guide/range/report/default contracts remain unresolved; approved visual choices do not settle those data contracts. Carry the next accepted canonical components/examples into requirements. The bounded ErrorView pilot is complete. Eric expects the accepted refinement to proceed through Requirements Builder, a scoped implementation and UAT afterward; do not start Runner during preview work or treat the entire prototype branch as an approved implementation task.
 
 Format coverage follow-up (R38): inspect matched EMOM/AMRAP/plain For Time/timed-ladder examples too. Superset is the pilot visual, not the limit of the work. AMRAP still owns a separate card/work list; EMOM/plain For Time and ladder movement/load/equipment readings are not fully reconciled. Keep those explicit before declaring general consistency complete.

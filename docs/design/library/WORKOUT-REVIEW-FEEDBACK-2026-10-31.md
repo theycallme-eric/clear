@@ -1,10 +1,16 @@
 # Workout review feedback — 31 October 2026
 
-## Running refinement list — updated 1 November 2026
+
+
+## Active intake — 2 November 2026
+
+**Eric explicitly requested intake only until he says all notes are entered.** Save feedback and answer factual questions with read-only inspection. Do not implement, revise/rebuild/publish the reviewed previews, reconcile notes into primary requirements, invoke Builder/Runner or treat the round as closed. This applies to the current EMOM notes and subsequent entries until Eric explicitly resumes work. Current reviewed preview: `7832150c1370525a42a561603020a87e0060d04b`, application source `a538f763dae6a491205469aa76386ad5205fef2c`, `/workout-formats/FORMATS.html`.
+
+## Running refinement list — updated 2 November 2026
 
 North Star: one executable visual library, with the same shared implementations in gallery and product. This workout refinement is the practical test of that reuse and the design → requirements → implementation workflow. It is not a new independent design system.
 
-All 38 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
+All 44 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
 
 <!-- refinement-index:start -->
 | ID | Decision / refinement | Current status | Shared owner / follow-through |
@@ -47,6 +53,12 @@ All 38 recorded comments are indexed below. **Previewed is not released or blank
 | R36 | Keep the reviewed warm-up appearance and grouped Coaching and notes treatment. | Visually accepted; appearance preserved | PreparationGuide / GroupExerciseCoaching |
 | R37 | Review headers are static, compact and always expanded, matching workout header layout. | Implemented in R3 preview; visual review pending | MovementGroupHeader / Review |
 | R38 | General Review/Workout alignment covers every format; inspect matched EMOM, AMRAP, plain For Time and real timed-ladder examples. | Coverage examples added; timed presentation gaps remain open | Shared frame/rows plus EMOM, AMRAP, ForTime and Ladder owners |
+| R39 | EMOM Start fills the responsive card width; place it below work content and above coaching. After starting, show a secondary Pause action. | Intake only; broader Start placement is tentative | Existing action composition / EMOM clock owner |
+| R40 | Remove redundant EMOM Not started and Work captions shown in the annotations. | Intake only; minute progress and now/next not requested for removal | EMOM status presentation |
+| R41 | Omit the per-movement rest-time line from EMOM Review. | Intake only; no change to the actual minute schedule selected | Review EMOM presentation |
+| R42 | Fix the responsive timer frame so time uses its full framed area rather than a narrow inner frame inside empty width. | Intake only; use the shared timer owner | Shared timer composition / MinuteCountdown |
+| R43 | At the prescribed EMOM end, provide a Log action instead of only the completion message. | Intake only; actual results/fields and interaction still open | EMOM end state / existing logging and completion owners |
+| R44 | Clarify the movement ordinal: it identifies position in a multi-movement rotation; one movement currently still shows 1. | Question answered; hiding it for one movement not yet selected | EMOM movement identity |
 <!-- refinement-index:end -->
 
 The next visual review focuses on **R30–R35 and R37**. Accepted warm-up/coaching treatments remain in place. After selection, Requirements Builder should name these canonical owners and examples, preserve their distinct state/data behavior, and carry every active row forward or explicitly defer it. Report/guide/range/default contracts are open work, not invisible assumptions. The later Runner/UAT stage is conditional on that approved implementation scope; this preview pass does not start it.
@@ -166,3 +178,42 @@ Added matched Review/live fixtures for the four requested families. The plain Fo
 | Timed ladder | BlockPanel frame and dedicated rung/timing presentation | Align applicable movement/load/equipment roles; retain rung schedule/companion work and whole-block timing |
 
 Do not claim the general reconciliation complete while these gaps are open. The inherited render sweep proves that a named scene rendered, not that its format/fixture represented every intended renderer or that its presentation was fully reconciled. The new format verification checks the actual renderer's distinguishing controls/content as well as the matching Review data. These remaining items belong in the same feedback/requirements handoff; do not build a single universal timing/scoring state machine.
+
+## EMOM feedback intake — 2 November 2026
+
+Source: Eric’s message and four annotated screenshots, in order: before Start, running minute, Review, prescribed window complete. Preserve the frozen reviewed preview while collecting the entire round. These are recorded requests/questions, not implemented changes or finalized requirements.
+
+### R39 — Start/Pause action: width and placement
+
+- Before starting, Start EMOM should fill the card’s available width responsively (screenshot 1 annotation 1).
+- Move Start below the movement/work content and other relevant readings, directly above Coaching and notes.
+- After starting, the action should become a **secondary Pause** button. The current preview has no Pause action; this requests real interaction/state behavior, not just a label substitution. Exact resume, persistence and end-state details are not selected in this intake.
+- Eric adds: “this will likely be true everywhere.” Record common Start-action placement as a **candidate cross-format rule** to reconcile when the whole feedback round is closed. Do not silently move every logging/finish/undo control or label this a finalized universal rule.
+
+### R40 — Remove redundant phase captions
+
+Screenshot 1 annotation 2 crosses out **NOT STARTED**. Screenshot 2 annotation 2 crosses out **WORK**. Remove these redundant captions in the next authorized revision. Minute position (MIN 1 OF 10) and NOW/NEXT movement cues were not crossed out; preserve their meaning pending further notes. The completed-state screenshot is separately covered by R43.
+
+### R41 — Review EMOM rest reading
+
+Drop the Review movement’s **Rest 60s** line for EMOM (screenshot 3 and accompanying text). A generic between-set rest reading does not describe the EMOM minute pattern. This is a Review display request; no instruction changes the actual minute length, within-minute work/rest contract or global workout timer.
+
+### R42 — Timer frame fills its responsive space
+
+Screenshot 2 annotation 1: “Timer frame is broke, the time should take up this whole framed space.” The illustrated 00:59 occupies a narrow inner cut frame while a much wider outer frame remains empty. Correct containment and responsive width through the applicable **shared timer composition** after intake closes, rather than making an isolated EMOM timer or patching the immutable vendor. No exact digit size is selected here.
+
+### R43 — End of EMOM and a real Log action
+
+Eric asks what happens when the prescribed EMOM ends and whether there is somewhere to log results. Screenshot 4 annotation 1 crosses out “The clock has run every prescribed minute. Continue when you are ready.” and requests: “Make this the log button rather than just saying it’s done.”
+
+Verified current implementation at application source a538f76: after the final minute, the EMOM view enters finished, shows COMPLETE and the informational message, and provides **no dedicated EMOM performance-results form**. The existing footer forward action saves block/section completion. EmomBlock passes no observed outcome into BlockPanel; scheduled elapsed minutes are not athlete-reported minutes/work, so the results path does not fabricate performed reps, load or minutes_completed from the timer. Coaching notes are a separate existing writer.
+
+Record the requested end-of-window **Log action**. Which performed results it collects, exact button label/placement, save/error/reopen behavior and any relationship to the footer are **open**, to resolve after the full intake round. Do not implement a guessed form or auto-log performance because the clock elapsed.
+
+### R44 — What the movement number means
+
+Screenshot 1 annotation 3 asks whether “1.” is for EMOMs with multiple movements. Verified: EmomMovement builds the prefix from ExerciseProgress.position, the movement’s one-based position in the rotation. Minute progress is a separate reading; a single movement still renders as 1. This answers the question. Eric has not explicitly requested hiding the ordinal for the single-movement case, so do not convert that possible refinement into an approved change.
+
+### Intake continuation
+
+Keep collecting subsequent format notes in this same running list. Do not start the next revision until Eric explicitly says all notes are entered and work may continue. Previously accepted warm-up and grouped coaching presentation remain accepted; this EMOM intake does not reopen those decisions.

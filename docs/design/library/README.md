@@ -1,5 +1,7 @@
 # CLEAR visual library
 
+**Active intake, 2 November 2026:** Eric is collecting format notes. Follow the intake hold in PLAN.md; wait for his explicit round-close instruction before a preview revision, requirements reconciliation or execution. Pending notes remain in the running feedback document.
+
 Owner clarification, 30 October 2026: this repository and executable gallery are
 the design-library source of truth going forward. Claude Design is maintained
 for older files. Use [the maintenance prompt](CLAUDE-DESIGN-MAINTENANCE-PROMPT.md)
@@ -45,7 +47,7 @@ existing visual choice. Material proposed changes receive their own review.
 - App presentation lives in `src/ui/`; screens/state owners live in `src/app/`
   and `src/state/`. Keep related visual parts shared and distinct behavior with
   its owner. Existing private parts are not automatically new public components.
-- Track workout refinements in [the running R01–R38 list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md), including accepted, previewed, superseded and open decisions. This is the handoff list for requirements; do not rebuild an older superseded visual.
+- Track workout refinements in [the running workout refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md), including accepted, previewed, superseded and open decisions. This is the handoff list for requirements; do not rebuild an older superseded visual.
 - Follow [the active three-delivery plan](PLAN.md). The first consolidation and
   comparison targets related Review, History and Favorites presentations.
 - Regenerate the index with `node scripts/gallery-index.mjs` after register
