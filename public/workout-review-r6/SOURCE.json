@@ -1,0 +1,116 @@
+{
+  "applicationSource": "3d208f2a3e5a3ba7f98be4d1bc6151092e9e9b09",
+  "reviewedReference": "db59bf8f9d28446fffdfa54a1609fd807c7fe1d0",
+  "branch": "codex/workout-review-r6-2026-11-02",
+  "route": "/workout-review-r6/",
+  "date": "2026-11-02",
+  "status": "prepared_for_visual_review",
+  "alternatives": [
+    "dialog",
+    "rising sheet"
+  ],
+  "loggingContexts": [
+    {
+      "key": "anchor",
+      "name": "Anchor / primary lift",
+      "query": "view=logging&state=standard"
+    },
+    {
+      "key": "other",
+      "name": "Other lift",
+      "query": "view=logging&state=other"
+    },
+    {
+      "key": "time",
+      "name": "Timed movement set",
+      "query": "view=logging&state=time"
+    },
+    {
+      "key": "distance",
+      "name": "Distance movement set",
+      "query": "view=logging&state=distance"
+    },
+    {
+      "key": "extra",
+      "name": "Extra set",
+      "query": "view=logging&state=extra"
+    },
+    {
+      "key": "correction",
+      "name": "Saved-set correction",
+      "query": "view=logging&state=correction"
+    },
+    {
+      "key": "grouped",
+      "name": "Superset round",
+      "query": "view=logging&state=logging"
+    },
+    {
+      "key": "circuit",
+      "name": "Circuit round / undo",
+      "query": "view=logging&state=circuit-round"
+    },
+    {
+      "key": "circuit-entry",
+      "name": "Circuit movement entry",
+      "query": "view=logging&state=circuit-entry"
+    },
+    {
+      "key": "notes",
+      "name": "Movement note",
+      "query": "view=notes"
+    },
+    {
+      "key": "debrief",
+      "name": "Workout feedback",
+      "query": "view=summary"
+    },
+    {
+      "key": "rest-day",
+      "name": "Rest day / reason change",
+      "query": "view=rest-day"
+    },
+    {
+      "key": "emom",
+      "name": "EMOM results",
+      "query": "view=timed&state=emom&stage=capped"
+    },
+    {
+      "key": "amrap",
+      "name": "AMRAP results",
+      "query": "view=timed&state=amrap&stage=capped&multi=1"
+    },
+    {
+      "key": "for-time",
+      "name": "For Time results",
+      "query": "view=timed&state=for_time&stage=capped&multi=1"
+    },
+    {
+      "key": "ladder",
+      "name": "Ladder results \u00b7 12 rounds",
+      "query": "view=timed&state=ladder&stage=capped&rounds=12"
+    }
+  ],
+  "decisionRecord": "docs/design/library/WORKOUT-REVIEW-FEEDBACK-2026-10-31.md",
+  "numberedDecisionSources": 100,
+  "consolidatedItems": 24,
+  "verification": {
+    "browserScenarios": 36,
+    "visualRenders": 35,
+    "narrowAndSkinCases": 16,
+    "accessibilityViolations": 0,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "galleryOwners": 6,
+    "galleryEntries": 65,
+    "buildAndTypecheck": "passed",
+    "designLint": "passed"
+  },
+  "data": "synthetic in-memory transports and result receipts; reload resets",
+  "remainingProductionContracts": [
+    "richer timed-result persistence and categorical block effort mapping",
+    "reload recovery of proposed timed pause/result state",
+    "conditioning-history integration",
+    "section/footer completion coordination"
+  ]
+}

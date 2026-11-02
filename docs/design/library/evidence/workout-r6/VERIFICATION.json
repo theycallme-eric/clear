@@ -312,5 +312,19 @@
     "section/footer completion coordination"
   ],
   "harness": "/Users/eric/Documents/Codex/2026-10-29/task/workout-review-r6-2026-11-02",
-  "vitest": "prior worker-startup limitation retained; changed interactions checked in browser"
+  "vitest": "prior worker-startup limitation retained; changed interactions checked in browser",
+  "applicationSource": "3d208f2a3e5a3ba7f98be4d1bc6151092e9e9b09",
+  "exactPackage": {
+    "hubContexts": 16,
+    "comparisonImagesLoaded": 32,
+    "ladderAndHeaderImagesLoaded": 3,
+    "hubAccessibilityViolations": 0,
+    "phone320": true,
+    "packagedLadderDraftAndSave": true,
+    "packagedLiftWriter": true,
+    "packagedDebrief": true,
+    "fonts": "loaded",
+    "errors": [],
+    "externalRequests": []
+  }
 }

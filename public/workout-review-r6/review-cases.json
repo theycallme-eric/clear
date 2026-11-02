@@ -1,0 +1,18 @@
+[
+ {"key":"anchor","name":"Anchor / primary lift","query":"view=logging&state=standard"},
+ {"key":"other","name":"Other lift","query":"view=logging&state=other"},
+ {"key":"time","name":"Timed movement set","query":"view=logging&state=time"},
+ {"key":"distance","name":"Distance movement set","query":"view=logging&state=distance"},
+ {"key":"extra","name":"Extra set","query":"view=logging&state=extra"},
+ {"key":"correction","name":"Saved-set correction","query":"view=logging&state=correction"},
+ {"key":"grouped","name":"Superset round","query":"view=logging&state=logging"},
+ {"key":"circuit","name":"Circuit round / undo","query":"view=logging&state=circuit-round"},
+ {"key":"circuit-entry","name":"Circuit movement entry","query":"view=logging&state=circuit-entry"},
+ {"key":"notes","name":"Movement note","query":"view=notes"},
+ {"key":"debrief","name":"Workout feedback","query":"view=summary"},
+ {"key":"rest-day","name":"Rest day / reason change","query":"view=rest-day"},
+ {"key":"emom","name":"EMOM results","query":"view=timed&state=emom&stage=capped"},
+ {"key":"amrap","name":"AMRAP results","query":"view=timed&state=amrap&stage=capped&multi=1"},
+ {"key":"for-time","name":"For Time results","query":"view=timed&state=for_time&stage=capped&multi=1"},
+ {"key":"ladder","name":"Ladder results · 12 rounds","query":"view=timed&state=ladder&stage=capped&rounds=12"}
+]
