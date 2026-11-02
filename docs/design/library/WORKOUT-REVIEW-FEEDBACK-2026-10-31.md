@@ -210,3 +210,12 @@ This clarification changes how the earlier “only pairs” observation should b
 Eric confirmed the working assumption: selecting a completed ladder rung marks preceding rungs complete, with partial work in the next rung recorded separately. He explicitly requested continued refinement. This resolves the remaining interaction assumption; no non-contiguous completion model is needed.
 
 The next isolated review applies the selected inline log, roomier framed-action counter, existing three-face effort control, paired Complete/Incomplete with editable defaults, and removal of the EMOM minutes counter. Two independent visual comparisons remain: simple versus grouped log hierarchy, and round-first versus rep-first wrapping ladder tiles. Both tile options use the same confirmed ordered progress. Preserve the pinned Round 4 review and focused-sheet fallback. Source branch: codex/workout-review-r5-2026-11-02. Publishing this refinement is an isolated preview, not production adoption or a Runner task.
+
+
+## Round 5 hosted review — ready
+
+[Open the visual refinement](https://clear-491hto4bx-erics-projects-0ade0dda.vercel.app/workout-review-r5/). Shared source f23fa6481b9665ea750e2a60dff5cb9c7e0dfb7f; hosted package db59bf8f9d28446fffdfa54a1609fd807c7fe1d0 on codex/workout-review-r5-2026-11-02. Deployment Cy8qRGzVRSgQfjogBokPTJzdUyYU is Ready (2m 28s). The previous pinned R4 package is unchanged.
+
+Compare A simple versus B grouped log hierarchy, and A round-first versus B rep-first wrapping tiles. Simple and round-first are recommended starting points, not owner selections yet. Inline location, roomier framed-action counter, face effort, no EMOM counter and paired completion controls are applied rather than reopened. Both tile variants follow the confirmed ordered-progress behavior. The focused-sheet fallback remains linked under Preserved fallback.
+
+Verified build/typecheck, design lint, 63 gallery entries, 7 browser flows, 19 visual cases, 8 narrow/four-skin cases, 4 built gallery owners and the exact packaged hub/log/fallback. Final axe violations/page errors/external requests are zero. Hosted hub images and a three-rung result with effort/notes were verified through the authenticated browser. Samples reset on reload; production persistence/recovery/history/footer contracts remain separate. Next action is owner visual review, not Builder/Runner or production adoption.

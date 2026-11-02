@@ -67,5 +67,16 @@
     "focusedFallback": true,
     "fonts": "loaded",
     "errors": []
+  },
+  "hosted": {
+    "status": "hosted_ready_for_review",
+    "preview": "https://clear-491hto4bx-erics-projects-0ade0dda.vercel.app/workout-review-r5/",
+    "deployment": "https://vercel.com/erics-projects-0ade0dda/clear/Cy8qRGzVRSgQfjogBokPTJzdUyYU",
+    "applicationSource": "f23fa6481b9665ea750e2a60dff5cb9c7e0dfb7f",
+    "publishedCommit": "db59bf8f9d28446fffdfa54a1609fd807c7fe1d0",
+    "branch": "codex/workout-review-r5-2026-11-02",
+    "buildDuration": "2m 28s",
+    "hostedVerification": "hub images loaded; ordered 3-rung result, effort and notes saved in authenticated browser",
+    "data": "synthetic preview only"
   }
 }

@@ -1,5 +1,7 @@
 # CLEAR visual library
 
+**Round 5 is ready for review:** [open the visual refinement](https://clear-491hto4bx-erics-projects-0ade0dda.vercel.app/workout-review-r5/). Source f23fa64; hosted package db59bf8. Compare simple/grouped log hierarchy and round/rep-first tiles. Selected inline logging, roomier framed actions and existing effort faces are applied; ordered ladder progress is confirmed. The shared gallery and app owners match.
+
 **Round 4 intake closed, 2 November 2026:** The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) retains 24 consolidated items covering 89 source comments. Inline logging and the roomier counter with framed actions are selected; reuse the existing effort faces, remove EMOM minutes entry, and pair Complete/Incomplete in one row. The next visual refinement concerns log-heading hierarchy and wrapping ladder tiles that distinguish round numbers from reps. Ordered ladder progress is now confirmed (R89), and Eric requested continued refinement. The isolated Round 5 branch applies the corrections and compares log hierarchy and tile emphasis. Preserve the pinned reviewed preview and focused-log fallback; the closure in the refinement list governs older intake holds. Broader logging/copy/empty-state work remains retained separately.
 
 Owner clarification, 30 October 2026: this repository and executable gallery are
