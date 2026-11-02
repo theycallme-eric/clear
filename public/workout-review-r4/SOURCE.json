@@ -1,0 +1,39 @@
+{
+  "applicationSource": "30735b101a2ff0aa0a072e890bec910270efe703",
+  "baseline": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+  "priorReviewedCandidate": "a538f763dae6a491205469aa76386ad5205fef2c",
+  "branch": "codex/workout-review-r4-2026-11-02",
+  "route": "/workout-review-r4/",
+  "date": "2026-11-02",
+  "status": "prepared_for_visual_review",
+  "alternatives": {
+    "logging": [
+      "inline",
+      "focused panel"
+    ],
+    "counter": [
+      "compact",
+      "roomier"
+    ]
+  },
+  "verification": {
+    "matchedAndAlternativeRenders": 30,
+    "renderFailures": 0,
+    "accessibilityViolations": 0,
+    "phone320AndSkinCases": 8,
+    "interactiveFlowsPassed": 5,
+    "nativeClockAssertionsPassed": 4,
+    "typecheck": "pass",
+    "designLint": "pass",
+    "newComponentLint": "pass",
+    "vitest": "worker startup timeout; no test pass claimed"
+  },
+  "data": "synthetic in-memory receipts only; reload resets samples",
+  "remainingProductionContracts": [
+    "categorical block effort persistence",
+    "movement measurements/partial-result mapping",
+    "pause/result reload recovery",
+    "conditioning-history integration",
+    "footer and end-log coordination"
+  ]
+}
