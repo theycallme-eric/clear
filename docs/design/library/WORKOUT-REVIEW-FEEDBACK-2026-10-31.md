@@ -1,6 +1,6 @@
 # Workout experience — consolidated refinement list
 
-Updated 2 November 2026, America/Chicago. **Round 5 intake is closed and consolidated.** Eric accepted Sections 3 and 4, then explicitly ended intake and requested collection/preparation for another iteration centered on logging behavior and ladder tweaks. **24 items cover 100 source comments**, including R90–R96 refinements, R97/R98 acceptance and R99/R100 follow-up choices. Preserve reviewed package db59bf8 as the reference. This turn prepares the next design round; it does not build/publish a new preview, change primary requirements or invoke Builder/Runner. The Round 5 consolidation below governs older intake holds and superseded inline-placement statements.
+Updated 2 November 2026, America/Chicago. **Round 5 intake is closed and consolidated.** Eric accepted Sections 3 and 4, then explicitly ended intake and requested collection/preparation for another iteration centered on logging behavior and ladder tweaks. **24 items cover 100 source comments**, including R90–R96 refinements, R97/R98 acceptance and R99/R100 follow-up choices. Preserve reviewed package db59bf8 as the reference. Eric subsequently authorized another isolated comparison. Round 6 is implemented and locally verified; package/host verification is pending. Primary requirements, production integration and Builder/Runner remain downstream. The Round 5 consolidation below governs older intake holds and superseded inline-placement statements.
 
 North Star: gallery and app consume the same shared implementations. Design on an isolated branch using real components, review the coherent experience, then carry accepted component/state references through Requirements Builder, scoped implementation and UAT.
 
@@ -71,7 +71,7 @@ The preparation questions are answered: B/rep-first tiles are selected (R99). Er
 7. **Shared workout header alignment.** Align Workout title, timer and menu precisely; center the timer digits within its frame using the existing clock.
 8. **Verify the coherent review.** Exercise representative log contexts and all four timed families, loaded/bodyweight and complete/partial/capped cases, draft/retry/edit states, narrow fit, keyboard/focus, reduced motion and relevant skins. Preserve the accepted Section 3/4 controls and behavior.
 
-The broader copy, empty-state and adaptive-report work remains tracked separately. The current task is scope preparation; no new preview or production integration is created by this checklist.
+The broader copy, empty-state and adaptive-report work remains tracked separately. Eric has authorized the next isolated visual comparison. This checklist governs Round 6; production integration remains downstream.
 
 ## Patterns and next refinements
 
@@ -351,4 +351,13 @@ When requirements are written, carry each active master item's source IDs, accep
 | Saved result/history readback | SessionDetail/session-detail owners; existing observed values and historical scales. | Reference/readback coverage; do not turn old numeric effort into new categories or invent a new history-edit writer. |
 | Planned load/anchor suggestion | Review/load-suggestion owner changes a target, not a performed observation. Actual anchor-lift results use the set logger above. | Accounted for in the inventory; preserve this distinction in requirements instead of presenting target edits as performance logs. |
 
-The next comparison uses the actual shared owners with safe synthetic data, one modal focus contract, and two visual appearances (dialog / rising sheet). It is under construction on codex/workout-review-r6-2026-11-02. Verification and hosted-source identity will be appended after completion; no production adoption or Builder/Runner is implied by this preparation.
+The next comparison uses the actual shared owners with safe synthetic data, one modal focus contract, and two visual appearances (dialog / rising sheet). It is implemented and locally verified on codex/workout-review-r6-2026-11-02. Hosted-source identity will be appended after package verification; no production adoption or Builder/Runner is implied by this preparation.
+
+
+## Round 6 local verification and shared-owner handoff — 2 November 2026
+
+The authorized comparison implements the eight-item checklist with the same actual owners used in the app and gallery. LoggingOverlay is the smallest shared addition over AppDialog: existing set sheet geometry/interaction was non-modal, and the existing timed fallback did not provide both proposed appearances across all consumers. The addition owns modal geometry/header/close and reuses native Dialog focus, backdrop and exit plus the shipped stepped entrance for the sheet. Existing forms keep fields, drafts, rest clocks and writers. Consumers are SetLoggingSheet (anchor/other/extra/correction/grouped/circuit movement), TimedWorkoutFlow, ExerciseNotesField, Summary Debrief, Home RestDayControl, and CircuitBlock's recorded-boundary confirmation. The gallery registers LoggingOverlay and LadderPrescription alongside their app consumers.
+
+Locally verified 36 interaction scenarios, 35 visual cases and 16 narrow/four-skin cases with zero final axe violations, page errors or external traffic. The six built gallery owners pass independently, the generated index verifies 65 entries, and build/typecheck/design lint pass. Existing set/group draft/rest/correction paths are preserved; partial grouped confirmation states that entries were logged rather than implying the entire round was completed. Session feeling stays five-choice; set/timed effort stays categorical three-face; stored Away remains the existing vacation reason. Reduced motion and native modal keyboard/Escape behavior are checked.
+
+The shared header's 2.5px inline-meta descender offset was measured and removed: title, timer and menu share top/height, and digits center in the timer body. Compact ladder prescription is read-only and derives the actual sequence/companion work; rep-first result tiles remain ordered/selectable and wrap through 12 rounds with an explicit count instead of tile ticks. See evidence/workout-r6/VERIFICATION.json for exact owners, fixtures and checks. These implementation/evidence facts support the next visual review; they are not a new owner approval or production-persistence claim.

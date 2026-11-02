@@ -45,6 +45,8 @@ import {
   type SetLoggingSheetHostApi,
 } from './set-logging-sheet-context'
 import { RestTimerBar } from './workout-chrome'
+import { LoggingOverlay } from './logging-overlay'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import './set-logging-sheet.css'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -92,6 +94,8 @@ export function SetLoggingSheetSlot() {
  */
 export function SetLoggingSheetOverlay() {
   const open = useSetLoggingSheetOpen()
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  if (proposal) return <SetLoggingSheetSlot />
   return (
     <div className="clr-set-sheet-layer" data-open={open ? '' : undefined}>
       {open ? <div aria-hidden="true" className="clr-set-sheet-layer__backdrop" /> : null}
@@ -175,6 +179,7 @@ export function SetLoggingSheet({
   onClear,
   onCollapse,
 }: SetLoggingSheetProps) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
   const titleId = useId()
   const bodyId = useId()
   const submitWith = useInvalidFocus()
@@ -188,40 +193,7 @@ export function SetLoggingSheet({
     document.getElementById(titleId)?.focus({ preventScroll: hosted })
   }, [titleId, hosted])
 
-  return (
-    // Portalled out of the block's card, the sheet is not inside it: React
-    // context would otherwise carry that card's containment along, and the
-    // rest's timer card would lose its own frame.
-    <CardContainmentContext.Provider value={false}>
-    <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
-      <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
-        {/*
-          B05-07.3: the frame carries the shipped accent bar in every mode.
-          Overlays otherwise carry none; this app-owned sheet is the owner's
-          scoped exception (ledger EXC-06). The sheet is still not a card, so
-          the rest's timer card inside it is not a nested one.
-        */}
-        <span className="clr-card__bar clr-set-sheet__bar" aria-hidden="true" />
-        <div
-          id={bodyId}
-          className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame"
-        >
-          <div className="clr-row clr-set-sheet__head">
-            <HeadingLevelProvider level={2}>
-              <Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
-                {confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`}
-              </Heading>
-            </HeadingLevelProvider>
-            <IconButton
-              label="Minimize"
-              icon={<ChevronDown />}
-              aria-expanded
-              aria-controls={bodyId}
-              onClick={onCollapse}
-            />
-          </div>
-
-          {confirmation === undefined && <p style={CONTEXT_STYLE}>{context}</p>}
+  const body = <>          {confirmation === undefined && <p style={CONTEXT_STYLE}>{context}</p>}
 
           {rest === undefined ? <RestTimerBar /> : rest}
 
@@ -256,10 +228,26 @@ export function SetLoggingSheet({
                 </Button>
               </ActionGroup>
             )}
-          </form>}
+          </form>}</>
+  if (proposal) return <LoggingOverlay open title={confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`} onClose={onCollapse}>
+    <div className="clr-stack clr-stack--tight">{body}</div>
+  </LoggingOverlay>
+  return (
+    <CardContainmentContext.Provider value={false}>
+      <section aria-labelledby={titleId} className="clr-set-sheet" data-mode={mode}>
+        <div className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
+          <span className="clr-card__bar clr-set-sheet__bar" aria-hidden="true" />
+          <div id={bodyId} className="clr-chamfer clr-chamfer--md clr-chamfer--structure clr-set-sheet__frame">
+            <div className="clr-row clr-set-sheet__head">
+              <HeadingLevelProvider level={2}><Heading id={titleId} tabIndex={-1} className="clr-set-sheet__title">
+                {confirmation ?? `${mode === 'edit' ? 'Edit' : 'Log'} ${entryName}`}
+              </Heading></HeadingLevelProvider>
+              <IconButton label="Minimize" icon={<ChevronDown />} aria-expanded aria-controls={bodyId} onClick={onCollapse} />
+            </div>
+            {body}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
     </CardContainmentContext.Provider>
   )
 }

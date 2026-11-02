@@ -25,15 +25,19 @@
  *     cues, and no page-level overflow (ATOMIC.md §11, DS-001).
  */
 import { useId } from 'react'
+import type { ExerciseProgress } from '../state/workout-progress'
+import type { Enums } from '../data/database.types'
+import { exerciseName, modalityLabel } from '../state/prescription'
+import { distinctLoadText, equipmentName, loadText } from '../state/review'
 
 import { Check, Chip, OverflowRail } from '../design-system/index'
-import { rungLabel, rungNumbers, type LadderRung } from '../state/ladder'
+import { ladderRungs, rungLabel, rungNumbers, type LadderRung } from '../state/ladder'
 import './ladder-rungs.css'
 
 /** End-log variant: ordered completion, wrapping week-strip-style element frames.
  * Existing live/read-only and highest-reached radio owners remain unchanged.
  */
-export function LadderCompletion({ rungs, unit, completedThrough, onChange, emphasis = 'round' }: {
+export function LadderCompletion({ rungs, unit, completedThrough, onChange, emphasis = 'reps' }: {
   rungs: readonly LadderRung[]
   unit: string
   completedThrough: number | null
@@ -48,17 +52,18 @@ export function LadderCompletion({ rungs, unit, completedThrough, onChange, emph
         const selected = completedThrough !== null && rung.number <= completedThrough
         const target = rungNumbers(rung)
         return <Chip key={rung.number} className="clr-ladder-completion__tile" selected={selected}
-          style={{ width: '100%', minHeight: 'calc(var(--control-height) * 2)', padding: 'var(--spacing-400) var(--spacing-100) var(--spacing-200)', justifyContent: 'center' }}
+          style={{ width: '100%', minHeight: 'calc(var(--control-height) * 2)', padding: 'var(--spacing-200) var(--spacing-100)', justifyContent: 'center' }}
           aria-label={`Round ${rung.number}: ${rungLabel(rung, unit)}`}
           onClick={() => onChange(selected ? rung.number - 1 : rung.number)}>
           <span className="clr-ladder-completion__content" aria-hidden="true">
-            <span className="clr-ladder-completion__round">Round {emphasis === 'reps' ? rung.number : ''}</span>
+            <span className="clr-ladder-completion__round">R{emphasis === 'reps' ? rung.number : ''}</span>
             <span className="clr-ladder-completion__number">{emphasis === 'round' ? rung.number : target}</span>
             <span className="clr-ladder-completion__target">{emphasis === 'round' ? `${target} ` : ''}{unit}</span>
           </span>
         </Chip>
       })}
     </div>
+    <p className="clr-ladder-completion__status" aria-live="polite">{completedThrough ?? 0} of {rungs.length} rounds completed</p>
   </fieldset>
 }
 
@@ -187,4 +192,35 @@ export function LadderRungs({
       {selection}
     </fieldset>
   )
+}
+
+/** Compact live prescription; all targets remain read-only and movement-owned. */
+export function LadderPrescription({ exercises, weightUnit }: {
+  exercises: readonly ExerciseProgress[]; weightUnit: Enums<'weight_unit'> | null
+}) {
+  const rungs = ladderRungs(exercises)
+  return <div className="clr-ladder-prescription">
+    <div className="clr-ladder-prescription__summary">
+      {exercises.map(exercise => {
+        const p = exercise.prescription
+        const sequence = p.target_sequence
+        const difference = sequence && sequence.length > 1 ? sequence[1] - sequence[0] : null
+        const linear = sequence && difference !== null && sequence.every((n, i) => i === 0 || n - sequence[i - 1] === difference)
+        const target = sequence
+          ? linear ? `${sequence[0]} → ${sequence.at(-1)} ${modalityLabel(p).toLowerCase()} · ${difference! > 0 ? '+' : ''}${difference} per round` : `${sequence.join('–')} ${modalityLabel(p).toLowerCase()}`
+          : `${p.target_value ?? '—'} ${modalityLabel(p).toLowerCase()}`
+        const load = p.load_type === null ? null : distinctLoadText(loadText(p.load_type, p.load_value, weightUnit), equipmentName(p.equipment_used))
+        return <p key={exercise.exerciseId}><strong>{exerciseName(p.exercise_id)}</strong> · {target}{load ? ` · ${load}` : ''}</p>
+      })}
+    </div>
+    <ol className="clr-ladder-prescription__grid" aria-label="Prescribed ladder rounds">
+      {rungs.map((rung, index) => <li key={rung.number} className="clr-chamfer clr-chamfer--sm clr-chamfer--structure">
+        <span className="label">R{rung.number}</span>
+        {exercises.map(exercise => {
+          const p = exercise.prescription
+          return <span key={exercise.exerciseId}>{p.target_sequence?.[index] ?? p.target_value ?? '—'}{p.modality === 'reps' ? ' ×' : ` ${modalityLabel(p).toLowerCase()}`} {exerciseName(p.exercise_id)}</span>
+        })}
+      </li>)}
+    </ol>
+  </div>
 }

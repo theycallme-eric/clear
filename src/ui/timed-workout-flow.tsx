@@ -10,9 +10,10 @@ import { SetLoggingContext } from '../state/set-logging'
 import { EMPTY_TIMED_ATTEMPT, moveTimedAttempt, timedAttemptView } from '../state/timed-attempt'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import type { BlockProgress } from '../state/workout-progress'
-import { AppDialog } from './app-dialog'
+import { LoggingOverlay } from './logging-overlay'
 import { BlockPanel } from './block-renderers-frame'
 import { GroupExerciseCoaching } from './exercise-coaching'
+import { LadderPrescription } from './ladder-rungs'
 import { MovementIdentity } from './movement-presentation'
 import { TimerFrame } from './workout-chrome'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
@@ -36,7 +37,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
   const elapsed = useElapsedSeconds(adjustedStart, () => attempt.finishedAt ?? attempt.pausedAt ?? Date.now())
   const view = timedAttemptView(attempt, (attempt.startedAt ?? 0) + attempt.pausedMs + elapsed * 1000, cap)
   const ended = view.phase === 'finished' || view.phase === 'capped'
-  const sheet = options?.logPresentation === 'sheet'
+  const sheet = Boolean(presentation?.loggingOverlay) || options?.logPresentation === 'sheet'
   const showLog = ended && (receipt === null || editing)
   const rungs = ladderRungs(block.exercises)
   const shape = emomShape(block)
@@ -80,7 +81,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
   const summary = format === 'ladder'
     ? `${rungs.length} rounds${cap === null ? '' : ` · ${formatElapsed(cap)} cap`}`
     : [block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')
-  const log = showLog && <TimedResultLog block={block} format={format} weightUnit={weightUnit}
+  const log = showLog && <TimedResultLog embedded={sheet} block={block} format={format} weightUnit={weightUnit}
     finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
     initial={receipt?.result} onSave={async result => {
       if (!options) throw new Error('No result adapter configured')
@@ -99,18 +100,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
       {block.exercises.length === 0 ? <BlockPanel.EmptyNote /> : <>
         <p className="clr-text-data-xs clr-timed-meta">{summary}</p>
         {format === 'ladder' && actions}
-        {format === 'ladder' ? <BlockPanel.MovementList label="Ladder rounds">
-          {rungs.map((rung, index) => <BlockPanel.MovementItem key={rung.number}>
-            <div className="clr-timed-rung"><p className="label">Round {rung.number}</p>
-              {block.exercises.map(exercise => {
-                const p = exercise.prescription
-                const quantity = p.target_sequence?.[index] ?? p.target_value
-                const load = p.load_type === null ? null : distinctLoadText(loadText(p.load_type, p.load_value, weightUnit), equipmentName(p.equipment_used))
-                return <p key={exercise.exerciseId}>{quantity ?? '—'}{p.modality === 'reps' ? '' : ` ${modalityLabel(p)}`} × {exerciseName(p.exercise_id)}{load === null ? '' : ` · ${load}`}</p>
-              })}
-            </div>
-          </BlockPanel.MovementItem>)}
-        </BlockPanel.MovementList> : <BlockPanel.MovementList label={`Movements in this ${block.identity.label}`}>
+        {format === 'ladder' ? <LadderPrescription exercises={block.exercises} weightUnit={weightUnit} /> : <BlockPanel.MovementList label={`Movements in this ${block.identity.label}`}>
           {block.exercises.map(exercise => {
             const p = exercise.prescription
             const equipment = equipmentName(p.equipment_used)
@@ -135,10 +125,9 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
         {showLog && !sheet && <div ref={logHost}>{log}</div>}
         {showLog && sheet && <>
           <div className="clr-timed-actions"><Button variant="primary" onClick={() => setLogOpen(true)}>Log results</Button></div>
-          <AppDialog className="clr-timed-dialog" title="Section results" open={logOpen} onClose={() => setLogOpen(false)}
-            actions={<Button variant="secondary" onClick={() => setLogOpen(false)}>Back to workout</Button>}>
+          <LoggingOverlay title="Log results" open={logOpen} onClose={() => setLogOpen(false)}>
             {log}
-          </AppDialog>
+          </LoggingOverlay>
         </>}
         {receipt !== null && !editing && <div className="clr-timed-log" data-timed-saved="">
           <div className="clr-timed-saved" role="status"><Check /><p>Log saved</p></div>

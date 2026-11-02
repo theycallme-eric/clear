@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { Fragment, useState, type ReactNode } from 'react'
 import { Button, ChoiceGroup, Input } from '../design-system/index'
 import type { Enums } from '../data/database.types'
 import { exerciseName, modalityLabel } from '../state/prescription'
@@ -38,11 +38,11 @@ function ResultGroup({ title, children }: { title?: string; children: ReactNode 
 }
 
 export function TimedResultLog({ block, format, finished, weightUnit, onSave, initial,
-  hierarchy = 'simple', rungEmphasis = 'round', accessibleName = 'Log section results',
+  hierarchy = 'simple', rungEmphasis = 'reps', accessibleName = 'Log section results', embedded = false,
 }: {
   block: BlockProgress; format: TimedFormat; finished: boolean; weightUnit: Enums<'weight_unit'> | null
   onSave: (result: TimedResultDraft) => Promise<void>; initial?: TimedResultDraft
-  hierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; accessibleName?: string
+  hierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; accessibleName?: string; embedded?: boolean
 }) {
   const rungs = ladderRungs(block.exercises)
   const [draft, setDraft] = useState<TimedResultDraft>(() => initial ?? {
@@ -89,14 +89,15 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
         onChange={value => field(exercise.exerciseId, 'weight', value)} />}
     </ResultGroup>]
   })
-  return <HeadingSection>
+  const Container = embedded ? Fragment : HeadingSection
+  return <Container>
     <form className="clr-timed-log" data-log-hierarchy={hierarchy} aria-label={accessibleName} onSubmit={event => {
       event.preventDefault()
       if (saving) return
       setSaving(true); setFailure(null)
       void onSave(draft).catch(() => setFailure('Your log didn’t save. Try again.')).finally(() => setSaving(false))
     }}>
-      <Heading className="clr-timed-log__title">Log results</Heading>
+      {!embedded && <Heading className="clr-timed-log__title">Log results</Heading>}
       <ResultGroup title={hierarchy === 'grouped' && format !== 'emom' ? 'Result' : undefined}>
         {(format === 'ladder' || format === 'for_time') && <ChoiceGroup className="clr-timed-completion" legend="Work completed"
           value={draft.completed ? 'complete' : 'partial'}
@@ -119,5 +120,5 @@ export function TimedResultLog({ block, format, finished, weightUnit, onSave, in
       {failure !== null && <p role="alert">{failure}</p>}
       <div className="clr-timed-actions"><Button type="submit" variant="primary" loading={saving}>Save log</Button></div>
     </form>
-  </HeadingSection>
+  </Container>
 }

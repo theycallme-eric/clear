@@ -43,6 +43,8 @@
  * slot — `TimerDisplay` is already a card, and is never put inside another.
  */
 import { useState } from 'react'
+import { LoggingOverlay } from './logging-overlay'
+import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
 import {
   Button,
@@ -68,7 +70,6 @@ import {
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
 import { distinctLoadText, equipmentName, loadText } from '../state/review'
-import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -224,6 +225,8 @@ function RoundRecord({
   onEndRest: () => void
   onTakeBack: () => void
 }) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  const [recorded, setRecorded] = useState<{round:number; seconds:number|null}|null>(null)
   return (
     <div
       role="group"
@@ -251,7 +254,7 @@ function RoundRecord({
       {view.phase === 'work' && roundClock !== null && (
         <>
           <RoundElapsed round={view.round} seconds={roundClock} />
-          <Button variant="secondary" size="lg" icon={<Check />} onClick={onFinishRound}>
+          <Button variant="secondary" size="lg" icon={<Check />} onClick={() => { if (proposal) setRecorded({round:view.round,seconds:roundClock}); onFinishRound() }}>
             Finish round {view.round}
           </Button>
         </>
@@ -261,6 +264,11 @@ function RoundRecord({
         <BlockPanel.Note>Every prescribed round is recorded.</BlockPanel.Note>
       )}
 
+      {proposal && <LoggingOverlay open={recorded !== null} title={`Round ${recorded?.round ?? ''} recorded`} onClose={() => setRecorded(null)}>
+        <p role="status">{recorded?.seconds === null ? 'Round recorded' : `${formatElapsed(recorded?.seconds ?? 0)} round time recorded`}</p>
+        {view.phase === 'rest' && <div aria-label="Rest between rounds"><TimerDisplay seconds={view.restRemaining} /></div>}
+        <Button variant="secondary" onClick={() => { onTakeBack(); setRecorded(null) }}>Take back this round</Button>
+      </LoggingOverlay>}
       {view.roundsCompleted > 0 && (
         <TextAction onClick={onTakeBack}>Take back a round</TextAction>
       )}

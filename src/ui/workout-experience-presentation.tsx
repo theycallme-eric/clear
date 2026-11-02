@@ -9,6 +9,7 @@ import type { TimedResultReceipt } from './timed-result-log'
 export interface PreparationGuideView {title:'Warm-up'|'Cooldown';minutes:number;movements:readonly string[]}
 export interface TrainingProgressView {movement:string;equipment:string;previous:string;latest:string;next:string;evidence:string}
 export interface WorkoutExperiencePresentation {
+ loggingOverlay?: 'dialog' | 'sheet'
  timedWorkflows?: { logPresentation: 'inline' | 'sheet'; counterStyle: 'compact' | 'wide'; logHierarchy?: 'simple' | 'grouped'; rungEmphasis?: 'round' | 'reps'; saveResult: (result: TimedResultReceipt) => Promise<void> }
  focusAction:'text'|'framed'
  guides:{warmup:PreparationGuideView;cooldown:PreparationGuideView}
@@ -18,5 +19,5 @@ export interface WorkoutExperiencePresentation {
  report:readonly TrainingProgressView[]
 }
 const Context=createContext<WorkoutExperiencePresentation|null>(null)
-export function WorkoutExperiencePresentationProvider({value,children}:{value:WorkoutExperiencePresentation;children:ReactNode}){return <Context value={value}><div className="clr-v4-experience" style={{display:'contents'}}>{children}</div></Context>}
+export function WorkoutExperiencePresentationProvider({value,children}:{value:WorkoutExperiencePresentation;children:ReactNode}){return <Context value={value}><div className="clr-v4-experience" data-logging-overlay={value.loggingOverlay} style={{display:'contents'}}>{children}</div></Context>}
 export function useWorkoutExperiencePresentation(){return use(Context)}

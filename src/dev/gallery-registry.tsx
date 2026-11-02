@@ -118,7 +118,7 @@ import { WeekStrip } from '../ui/week-strip'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
-import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow, GalleryLadderCompletion } from './gallery-timed-fixtures'
+import { GalleryQuantity, GalleryTimedLog, GalleryTimedFlow, GalleryLadderCompletion, GalleryLoggingOverlay, GalleryLadderPrescription } from './gallery-timed-fixtures'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -1892,9 +1892,16 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     { state: 'simple hierarchy, existing effort faces', Render: () => <GalleryTimedLog /> },
     { state: 'grouped hierarchy alternative', Render: () => <GalleryTimedLog hierarchy="grouped" /> },
   ] },
-  { component: 'LadderCompletion', requirement: 'R5 / R77, R88', module: 'src/ui/ladder-rungs.tsx', summary: 'End-log ordered completion tiles. Round position and rep target are distinct; selected prefix has ticks. Uses public Chip frames and wraps responsively, preserving the legacy live/radio rail separately.', specimens: [
+  { component: 'LadderCompletion', requirement: 'R5 / R77, R88', module: 'src/ui/ladder-rungs.tsx', summary: 'End-log ordered completion tiles. Round position and rep target are distinct; selected prefix uses frame weight and an explicit completion count. Uses public Chip frames and wraps responsively, preserving the legacy live/radio rail separately.', specimens: [
     { state: 'round first, eight wrapping tiles', Render: () => <GalleryLadderCompletion /> },
     { state: 'rep target first alternative', Render: () => <GalleryLadderCompletion emphasis="reps" /> },
+  ] },
+  { component: 'LoggingOverlay', requirement: 'R6 / R91, R100', module: 'src/ui/logging-overlay.tsx', summary: 'Shared proposed focused log surface: public native Dialog focus, backdrop and close behavior, with dialog versus rising-sheet appearance. Existing log forms retain their fields, drafts, rest clocks and writers.', specimens: [
+    { state: 'dialog appearance', Render: () => <GalleryLoggingOverlay variant="dialog" /> },
+    { state: 'rising sheet appearance', Render: () => <GalleryLoggingOverlay variant="sheet" /> },
+  ] },
+  { component: 'LadderPrescription', requirement: 'R6 / R94–R95', module: 'src/ui/ladder-rungs.tsx', summary: 'Read-only compact ladder summary and wrapping round grid, derived from actual sequences and all movement targets, including fixed companions. Same owner is used in the live comparison.', specimens: [
+    { state: '12 rounds, loaded ladder and bodyweight companion', Render: GalleryLadderPrescription },
   ] },
   { component: 'TimedWorkoutFlow', requirement: 'R4 / R38–R69', module: 'src/ui/timed-workout-flow.tsx', summary: 'Isolated timed-work proposal consuming shared clock arithmetic and existing format contracts. App BlockSlot uses the same owner when the comparison presentation is enabled; prior renderer behavior remains separately reviewable.', specimens: [
     { state: 'AMRAP Start, Pause/Resume, Finish and local results', Render: () => <GalleryTimedFlow presentation={PROPOSED_EXPERIENCE} /> },

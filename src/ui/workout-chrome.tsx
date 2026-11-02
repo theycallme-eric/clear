@@ -155,7 +155,7 @@ export function TimerFrame({
       }
       style={{
         display: 'inline-flex',
-        alignItems: 'baseline',
+        alignItems: 'center',
         justifyContent: 'center',
         gap: 'var(--spacing-200)',
         padding: 'var(--spacing-100) var(--spacing-300)',
@@ -220,6 +220,7 @@ function TimerDigits({
         display: 'inline-flex',
         fontFamily: 'var(--font-data)',
         fontSize: size,
+        lineHeight: 1,
         fontWeight: 'var(--font-weight-bold)',
         letterSpacing: 'var(--tracking-data)',
         color: low ? 'var(--text-timer-low)' : 'var(--text-timer)',

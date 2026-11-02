@@ -52,6 +52,7 @@ import { CollapsibleSection } from './collapsible-section'
 import { HeadingSection } from './Heading'
 import { useInterfaceLoop } from './motion'
 import { ErrorView, LoadingView } from './view-state'
+import { LoggingOverlay } from './logging-overlay'
 import { useWorkoutExperiencePresentation } from './workout-experience-presentation'
 
 export const NO_CUES_TEXT = 'No coaching cues are written for this movement.'
@@ -229,6 +230,8 @@ function ExerciseNotesField({
   exercise: ExerciseProgress
   name: string
 }) {
+  const proposal = useWorkoutExperiencePresentation()?.loggingOverlay
+  const [open, setOpen] = useState(false)
   const notes = useExerciseNotes(exercise.exerciseId)
   const [text, setText] = useState(
     () => notes.stored(exercise.prescription.exercise_notes) ?? '',
@@ -245,7 +248,7 @@ function ExerciseNotesField({
     setStatus(result.ok ? { kind: 'saved' } : { kind: 'failed', error: result.error })
   }
 
-  return (
+  const content = (
     // The field's label is above it and inside the group, so the note needs no
     // heading of its own.
     <div className="clr-stack clr-stack--tight">
@@ -279,6 +282,11 @@ function ExerciseNotesField({
       </div>
     </div>
   )
+  return proposal ? <>
+    <Button variant="secondary" onClick={() => setOpen(true)}>{text.trim() ? 'Edit note' : 'Add note'} — {name}</Button>
+    {!open && <NoteStatusLine status={status} />}
+    <LoggingOverlay open={open} title={`Notes — ${name}`} onClose={() => setOpen(false)}>{content}</LoggingOverlay>
+  </> : content
 }
 
 /** Where the note has got to — a word and a glyph, never colour alone. */

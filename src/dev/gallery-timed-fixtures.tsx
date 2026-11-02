@@ -1,9 +1,11 @@
 /** Safe local data; gallery and workout render the same proposed owners. */
+import { Button } from '../design-system/index'
+import { LoggingOverlay } from '../ui/logging-overlay'
 import { useState } from 'react'
 import { BlockCompletionContext } from '../state/block-completion'
 import type { BlockProgress } from '../state/workout-progress'
 import { Card } from '../ui/card'
-import { LadderCompletion } from '../ui/ladder-rungs'
+import { LadderCompletion, LadderPrescription } from '../ui/ladder-rungs'
 import { QuantitySelector } from '../ui/quantity-selector'
 import { TimedResultLog } from '../ui/timed-result-log'
 import { TimedWorkoutFlow } from '../ui/timed-workout-flow'
@@ -54,4 +56,25 @@ export function GalleryLadderCompletion({ emphasis = 'round' }: { emphasis?: 'ro
   const [completed, setCompleted] = useState<number | null>(3)
   return <Card><LadderCompletion unit="reps" completedThrough={completed} onChange={setCompleted}
     emphasis={emphasis} rungs={[2, 4, 6, 8, 10, 12, 14, 16].map((target, i) => ({ number: i + 1, targets: [target] }))} /></Card>
+}
+
+
+export function GalleryLoggingOverlay({ variant }: { variant: 'dialog' | 'sheet' }) {
+  const [open, setOpen] = useState(false)
+  const [saved, setSaved] = useState(false)
+  return <Card><Button onClick={() => setOpen(true)}>Open {variant} log</Button>
+    <LoggingOverlay open={open} title="Log results" variant={variant} onClose={() => setOpen(false)}>
+      {saved ? <p role="status">Sample log saved</p> : <TimedResultLog embedded block={SAMPLE} format="amrap" finished={false}
+        weightUnit="kg" onSave={async () => setSaved(true)} />}
+    </LoggingOverlay>
+  </Card>
+}
+
+export function GalleryLadderPrescription() {
+  const first = SAMPLE.exercises[0]
+  const sequence = Array.from({ length: 12 }, (_, i) => (i + 1) * 2)
+  return <Card><LadderPrescription weightUnit="kg" exercises={[
+    { ...first, prescription: { ...first.prescription, target_kind: 'sequence', target_value: null, target_sequence: sequence } },
+    { ...first, exerciseId: 'companion', prescription: { ...first.prescription, exercise_id: 'burpee', equipment_used: 'bodyweight', load_type: 'bodyweight', load_value: null, target_value: 4 } },
+  ]} /></Card>
 }

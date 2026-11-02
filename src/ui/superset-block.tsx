@@ -181,7 +181,7 @@ function SupersetRound({ block }: BlockRendererProps) {
       </ActionGroup>
 
       {sheet.place(
-        savedRound !== null ? <SetLoggingConfirmation label={`Round ${savedRound} logged`} onCollapse={collapse}/> : <SupersetRoundSheet
+        savedRound !== null ? <SetLoggingConfirmation label={movements.every(exercise => loggedSets(exercise.exerciseId).some(set => set.setNumber === savedRound)) ? `Round ${savedRound} logged` : `Round ${savedRound} entries logged`} onCollapse={collapse}/> : <SupersetRoundSheet
           movements={movements.map((exercise) => ({
             exercise,
             ordinal: supersetOrdinal(exercise.position),

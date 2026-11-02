@@ -1,0 +1,316 @@
+{
+  "branch": "codex/workout-review-r6-2026-11-02",
+  "reviewedReference": "db59bf8f9d28446fffdfa54a1609fd807c7fe1d0",
+  "decisions": "R90\u2013R100 and next-refinement checklist",
+  "loggingContexts": [
+    {
+      "key": "anchor",
+      "name": "Anchor / primary lift",
+      "query": "view=logging&state=standard"
+    },
+    {
+      "key": "other",
+      "name": "Other lift",
+      "query": "view=logging&state=other"
+    },
+    {
+      "key": "time",
+      "name": "Timed movement set",
+      "query": "view=logging&state=time"
+    },
+    {
+      "key": "distance",
+      "name": "Distance movement set",
+      "query": "view=logging&state=distance"
+    },
+    {
+      "key": "extra",
+      "name": "Extra set",
+      "query": "view=logging&state=extra"
+    },
+    {
+      "key": "correction",
+      "name": "Saved-set correction",
+      "query": "view=logging&state=correction"
+    },
+    {
+      "key": "grouped",
+      "name": "Superset round",
+      "query": "view=logging&state=logging"
+    },
+    {
+      "key": "circuit",
+      "name": "Circuit round / undo",
+      "query": "view=logging&state=circuit-round"
+    },
+    {
+      "key": "circuit-entry",
+      "name": "Circuit movement entry",
+      "query": "view=logging&state=circuit-entry"
+    },
+    {
+      "key": "notes",
+      "name": "Movement note",
+      "query": "view=notes"
+    },
+    {
+      "key": "debrief",
+      "name": "Workout feedback",
+      "query": "view=summary"
+    },
+    {
+      "key": "rest-day",
+      "name": "Rest day / reason change",
+      "query": "view=rest-day"
+    },
+    {
+      "key": "emom",
+      "name": "EMOM results",
+      "query": "view=timed&state=emom&stage=capped"
+    },
+    {
+      "key": "amrap",
+      "name": "AMRAP results",
+      "query": "view=timed&state=amrap&stage=capped&multi=1"
+    },
+    {
+      "key": "for-time",
+      "name": "For Time results",
+      "query": "view=timed&state=for_time&stage=capped&multi=1"
+    },
+    {
+      "key": "ladder",
+      "name": "Ladder results \u00b7 12 rounds",
+      "query": "view=timed&state=ladder&stage=capped&rounds=12"
+    }
+  ],
+  "browserFlows": [
+    {
+      "case": "dialog anchor rest/draft/save/correction",
+      "passed": true
+    },
+    {
+      "case": "dialog grouped round during rest",
+      "passed": true
+    },
+    {
+      "case": "dialog circuit round record/rest/undo",
+      "passed": true
+    },
+    {
+      "case": "dialog movement note draft/retry/save",
+      "passed": true
+    },
+    {
+      "case": "dialog session feeling and note/return Home",
+      "passed": true
+    },
+    {
+      "case": "dialog rest-day mark/change",
+      "passed": true
+    },
+    {
+      "case": "dialog emom results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "dialog amrap results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "dialog for_time results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "dialog ladder results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "sheet anchor rest/draft/save/correction",
+      "passed": true
+    },
+    {
+      "case": "sheet grouped round during rest",
+      "passed": true
+    },
+    {
+      "case": "sheet circuit round record/rest/undo",
+      "passed": true
+    },
+    {
+      "case": "sheet movement note draft/retry/save",
+      "passed": true
+    },
+    {
+      "case": "sheet session feeling and note/return Home",
+      "passed": true
+    },
+    {
+      "case": "sheet rest-day mark/change",
+      "passed": true
+    },
+    {
+      "case": "sheet emom results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "sheet amrap results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "sheet for_time results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "sheet ladder results close/reopen/retry/edit",
+      "passed": true
+    },
+    {
+      "case": "dialog other actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "dialog time actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "dialog distance actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "dialog extra actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "dialog circuit-entry actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "dialog partial grouped entries",
+      "passed": true
+    },
+    {
+      "case": "dialog clear/cancel recovery",
+      "passed": true
+    },
+    {
+      "case": "sheet other actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "sheet time actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "sheet distance actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "sheet extra actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "sheet circuit-entry actual-set writer",
+      "passed": true
+    },
+    {
+      "case": "sheet partial grouped entries",
+      "passed": true
+    },
+    {
+      "case": "sheet clear/cancel recovery",
+      "passed": true
+    },
+    {
+      "case": "reduced-motion native modal keyboard/Chrome boundary and Escape",
+      "passed": true
+    },
+    {
+      "case": "12-round prescription and measured header/timer alignment",
+      "passed": true,
+      "metrics": {
+        "timer": {
+          "x": 241.1875,
+          "y": 20,
+          "w": 80.8125,
+          "h": 40,
+          "cx": 281.59375,
+          "cy": 40
+        },
+        "menu": {
+          "x": 334,
+          "y": 20,
+          "w": 40,
+          "h": 40,
+          "cx": 354,
+          "cy": 40
+        },
+        "digits": {
+          "x": 253.1875,
+          "y": 30,
+          "w": 56.8125,
+          "h": 20,
+          "cx": 281.59375,
+          "cy": 40
+        },
+        "title": {
+          "x": 16,
+          "y": 20,
+          "w": 133.09375,
+          "h": 40,
+          "cx": 82.546875,
+          "cy": 40
+        }
+      }
+    }
+  ],
+  "renderedCases": 35,
+  "narrowFourSkinCases": 16,
+  "accessibilityViolations": 0,
+  "pageErrors": 0,
+  "externalRequests": 0,
+  "publicGalleryOwners": [
+    {
+      "component": "QuantitySelector",
+      "violations": []
+    },
+    {
+      "component": "TimedResultLog",
+      "violations": []
+    },
+    {
+      "component": "TimedWorkoutFlow",
+      "violations": []
+    },
+    {
+      "component": "LadderCompletion",
+      "violations": []
+    },
+    {
+      "component": "LoggingOverlay",
+      "violations": []
+    },
+    {
+      "component": "LadderPrescription",
+      "violations": []
+    }
+  ],
+  "typecheckAndBuild": "passed",
+  "designLint": "passed",
+  "componentLint": "zero errors; existing Home hook-dependency and coaching mixed-export warnings",
+  "galleryIndex": "65 entries verified",
+  "motion": {
+    "dialog": "public Dialog phosphor arrival/closure",
+    "sheet": "public clr-shift-in-up / dur-mode / step-4",
+    "reducedMotion": "no entrance animation; native focus/Escape verified"
+  },
+  "data": "synthetic in-memory transports and result receipts; reload resets",
+  "remainingProductionContracts": [
+    "richer timed-result persistence and categorical block effort mapping",
+    "reload recovery of proposed timed pause/result state",
+    "conditioning-history integration",
+    "section/footer completion coordination"
+  ],
+  "harness": "/Users/eric/Documents/Codex/2026-10-29/task/workout-review-r6-2026-11-02",
+  "vitest": "prior worker-startup limitation retained; changed interactions checked in browser"
+}
