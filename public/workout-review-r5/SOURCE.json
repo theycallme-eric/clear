@@ -1,0 +1,45 @@
+{
+  "applicationSource": "f23fa6481b9665ea750e2a60dff5cb9c7e0dfb7f",
+  "reviewedReference": "c62294ce859e11c3cdbf9ec1adb887ad504f0f90",
+  "branch": "codex/workout-review-r5-2026-11-02",
+  "route": "/workout-review-r5/",
+  "date": "2026-11-02",
+  "status": "prepared_for_visual_review",
+  "selected": {
+    "logging": "inline",
+    "counter": "roomier with framed actions",
+    "effort": "existing three faces",
+    "emom": "completion assumed, no minutes counter",
+    "ladderProgress": "ordered prefix plus partial next round"
+  },
+  "alternatives": {
+    "hierarchy": [
+      "simple",
+      "grouped"
+    ],
+    "ladderTiles": [
+      "round first",
+      "rep target first"
+    ]
+  },
+  "verification": {
+    "renders": 19,
+    "narrowAndSkinCases": 8,
+    "interactiveFlows": 7,
+    "accessibilityViolations": 0,
+    "pageErrors": 0,
+    "externalRequests": 0,
+    "buildAndTypecheck": "passed",
+    "designLint": "passed",
+    "galleryIndex": "63 entries verified",
+    "publicGalleryComponents": 4
+  },
+  "data": "synthetic in-memory receipts; reload resets",
+  "remainingProductionContracts": [
+    "categorical block effort persistence",
+    "movement/partial-result mapping",
+    "pause and result reload recovery",
+    "conditioning-history integration",
+    "footer and end-log coordination"
+  ]
+}

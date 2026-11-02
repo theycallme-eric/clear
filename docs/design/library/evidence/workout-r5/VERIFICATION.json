@@ -57,5 +57,15 @@
     "accessibilityViolations": 0,
     "pageErrors": 0,
     "externalRequests": 0
+  },
+  "applicationSource": "f23fa6481b9665ea750e2a60dff5cb9c7e0dfb7f",
+  "packaged": {
+    "hubImages": 6,
+    "hubAccessibilityViolations": 0,
+    "phone320": true,
+    "packagedOrderedLog": true,
+    "focusedFallback": true,
+    "fonts": "loaded",
+    "errors": []
   }
 }
