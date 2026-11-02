@@ -1,6 +1,6 @@
 # CLEAR visual library
 
-**Active intake, 2 November 2026:** Eric is collecting format notes. Follow the intake hold in PLAN.md; wait for his explicit round-close instruction before a preview revision, requirements reconciliation or execution. Pending notes remain in the running feedback document.
+**Feedback consolidated, 2 November 2026:** Eric closed intake. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) groups all 74 source comments into 24 items, records accepted/superseded choices, and identifies three pending timing/logging/effort questions before the next isolated preview iteration. Follow PLAN.md for the delivery sequence.
 
 Owner clarification, 30 October 2026: this repository and executable gallery are
 the design-library source of truth going forward. Claude Design is maintained

@@ -138,17 +138,13 @@ Keep code and rendered evidence tied to the version they actually represent. Cur
 
 Use the source and pattern maps to find affected consumers. Do not merge unrelated state machines, impose a universal inline-style ban, edit immutable vendor mirrors or treat coverage discovery as proof of correctness.
 
-# Current intake hold — 2 November 2026
+# Current feedback and next iteration — 2 November 2026
 
-Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM, AMRAP, For Time, ladder and platform requests/questions in R39–R74, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold. Eric is still collecting the natural For Time timeout/end-state screenshot (R64); that review remains pending.
+Eric closed intake and requested one consolidated list, pattern review and clarification, then the next iteration. The [active refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) groups all 74 source comments into 24 items and retains collection history separately. Intake-only instructions in archived notes are historical. Three timing/logging/effort questions are pending; do not infer answers from visual consistency goals.
 
-# Requested language/copy pass — pending intake closure
+Preserve the accepted Overview, warm-up, grouped Coaching and notes and Ladder Review layout (apart from its badge). Next focus: shared format headers/badges, timers/actions, prompted results, AMRAP quantity/result grouping, readable ladder copy and compact navigation. Long ladder Start is explicitly near the top. Reproduce/inspect the natural plain For Time cap state in the next pass; do not wait indefinitely for the earlier unsupplied screenshot after intake closure.
 
-R45 explicitly requests a dedicated platform-wide copy audit and agreed terminology/tone rules. Retain it as a follow-up beyond the current workout examples; it is not started during intake and no final product voice is selected. Specific wording requests such as R50 remain in the running feedback record.
-
-# Possible empty-state pass — pending intake closure
-
-R73 proposes a pass on empty states and their shared rules, prompted by repeated missing-coaching messages. Preserve it as exploratory follow-up alongside the explicit copy-audit request, not a started audit or selected hide/replacement rule. R65 accepts the shown Ladder Review apart from its badge; R74 accepts the shown Overview visual treatment. The timed-ladder action/logging requests R66–R69 remain intake for the next coherent revision.
+The platform copy pass is requested; empty-state rules are an exploratory follow-up. Keep both in the consolidated list. Apply specific copy requests and a bounded missing-coaching empty-state proposal in this preview; do not silently expand it into an exhaustive platform audit. Adaptive report and guide/range/data contracts remain retained open work.
 
 # Active checklist
 
@@ -168,6 +164,6 @@ R73 proposes a pass on empty states and their shared rules, prompted by repeated
 
   - [ ] Owner visual review of the broader workout proposal, including the revised shared grouped layout, tappable Focus, report placement/content and setup/settings simplifications. Resolve guide/range/read-model and saved-state contract gaps before implementation.
 
-Next action after the intake hold is lifted: reconcile the complete feedback round, then review the R3 design revision from Eric's 1 November review, recorded in the running R01–R38 list in [the feedback record](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md). Use the cleaner workout layout as the common Review/live composition with context-specific actions and static, always-expanded Review headers; restore prescribed load in live rows. Refine Overview and the live section navigator. Warm-up presentation and the grouped coaching disclosure are visually accepted. Keep the published R2 comparison fixed. The broader guide/range/report/default contracts remain unresolved; approved visual choices do not settle those data contracts. Carry the next accepted canonical components/examples into requirements. The bounded ErrorView pilot is complete. Eric expects the accepted refinement to proceed through Requirements Builder, a scoped implementation and UAT afterward; do not start Runner during preview work or treat the entire prototype branch as an approved implementation task.
+Next action: resolve the three questions in the consolidated list, then prepare one coherent isolated next preview from the reviewed format source. Preserve accepted presentation and earlier regression checks; explicitly demonstrate changed timed interactions and meaningful end states. Review the resulting shared components/examples before Requirements Builder consumes them, then proceed through scoped implementation and UAT. The completed ErrorView pilot is not restarted; the entire old prototype is not an approved implementation task.
 
 Format coverage follow-up (R38): inspect matched EMOM/AMRAP/plain For Time/timed-ladder examples too. Superset is the pilot visual, not the limit of the work. AMRAP still owns a separate card/work list; EMOM/plain For Time and ladder movement/load/equipment readings are not fully reconciled. Keep those explicit before declaring general consistency complete.
