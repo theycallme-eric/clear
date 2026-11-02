@@ -329,3 +329,26 @@ Eric selects B: the rep target should be largest because he counts toward the ne
 Eric leans toward the first interaction option: logging takes focus and background workout controls are unavailable while it is open. He explicitly wants a consistent pattern for all logs, including anchor and other lifts, with logging during their built-in rest as a model to reuse. Cross-application logging is therefore part of the next refinement, rather than a timed-only correction or an indefinitely deferred audit.
 
 He identifies CLEAR's low-tech sci-fi/cyberpunk feel as the key appearance criterion and is unsure whether a dialog or a sheet rising from the bottom best expresses it. Prepare comparable visuals with the same focus/draft/save contract; geometry/entrance style remains open. This is a preferred behavior/design scope, not permission to silently change every writer or restart rest. Inspect actual entry points and reuse existing owners. The subsequent request asks for the concrete refinement work list; the checklist above records that scope.
+
+
+## Requirements handoff and Round 6 coverage — in progress, 2 November 2026
+
+Eric explicitly asked for a durable record so the refinements are not lost in chat. This file is the canonical decision/requirements source: the 24-item master list, R-number source history, closure/checklist and accepted-preview references govern the handoff. The project PLAN tracks delivery status; the journal records implementation findings and verification. An in-progress prototype is not silently promoted to an accepted decision.
+
+When requirements are written, carry each active master item's source IDs, accepted component/example and version, behavior/field semantics, affected consumers, acceptance checks and any unresolved data contract. Preserve superseded directions as history, not competing current requirements. Keep distinct A/simple form hierarchy and B/rep-first tile emphasis explicit. Carry logging consistency across the following actual moments; do not scope the handoff to timed work.
+
+| Logging moment | Current owner and responsibility | Round 6 comparison coverage |
+| --- | --- | --- |
+| Anchor/primary and other lift sets | ExerciseSetLogger / SetLoggingSheet; reps, load/unit, optional effort, actual observations; extra sets and warm-up flags remain owned here. | Same proposed LoggingOverlay around existing fields/writer; anchor, accessory, time and distance fixtures. |
+| Correcting or clearing a saved set | ExerciseSetLogger correction mode and existing clear confirmation / observation mutation. | Enter, correct, cancel and clear recovery checks; preserve historical meaning and distinct destructive confirmation. |
+| Superset/grouped round entry | SupersetRoundSheet; per-movement inclusion/actuals/effort with one round rest. | Shared overlay appearance; partial group entry and correction remain real owner behavior. |
+| Circuit round record and undo | CircuitBlock / circuit state; observed round time/count and boundary rest. | Shared focused confirmation of the recorded boundary, actual circuit rest, and existing take-back action. No invented movement result from a round clock. |
+| Circuit movement logging | ExerciseSetLogger under CircuitBlock; optional movement measurements, separate from round record. | Same entry surface as other set logs; no merger of those writers or clocks. |
+| EMOM / AMRAP / For Time / Ladder results | TimedWorkoutFlow / TimedResultLog; format-specific result, effort/weights/notes with explicit sample save. | Both overlay treatments; accepted lifecycle and richer in-memory results retained. Production mapping/recovery remains separate. |
+| Movement notes | ExerciseNotesField / useExerciseNotes; independent save/clear/error writer. | Both overlay treatments using actual note fields and writer; draft and failed-save text preserved. |
+| Workout debrief | Summary Debrief / summary.saveDebrief; five-choice feeling and session note; Save and close returns Home. | Shared overlay; keep five-choice session feeling distinct from three-choice set effort. |
+| Rest-day mark or reason change | Home RestDayControl / useMarkRestDay; recovery reason record. | Shared overlay for mark/change/save/cancel with the existing writer. |
+| Saved result/history readback | SessionDetail/session-detail owners; existing observed values and historical scales. | Reference/readback coverage; do not turn old numeric effort into new categories or invent a new history-edit writer. |
+| Planned load/anchor suggestion | Review/load-suggestion owner changes a target, not a performed observation. Actual anchor-lift results use the set logger above. | Accounted for in the inventory; preserve this distinction in requirements instead of presenting target edits as performance logs. |
+
+The next comparison uses the actual shared owners with safe synthetic data, one modal focus contract, and two visual appearances (dialog / rising sheet). It is under construction on codex/workout-review-r6-2026-11-02. Verification and hosted-source identity will be appended after completion; no production adoption or Builder/Runner is implied by this preparation.
