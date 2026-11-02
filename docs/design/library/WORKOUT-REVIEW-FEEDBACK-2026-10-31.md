@@ -1,6 +1,6 @@
 # Workout experience — consolidated refinement list
 
-Updated 2 November 2026, America/Chicago. **Round 4 intake is open.** Eric explicitly requested notes only for Section 1 and subsequent review feedback until he resumes work. Save feedback; do not revise/rebuild/publish the reviewed preview, change primary requirements or invoke Builder/Runner during this collection round. The preceding round is consolidated below: **24 items now cover 88 source comments**, including Round 4 notes R75–R88. R-numbers are source references, not separate implementation tasks. Preserve accepted choices; replace superseded directions rather than applying every historical note literally.
+Updated 2 November 2026, America/Chicago. **Round 4 intake is closed.** Eric asked whether his notes resolve the round's questions and assumptions. The main choices are settled; heading hierarchy and ladder tiles need a concrete visual refinement, with ordered ladder progress retained as an explicit working assumption rather than a new confirmed decision. **24 items cover 88 source comments**, including Round 4 notes R75–R88. R-numbers are source references, not separate implementation tasks. The closure below governs current status; later dated intake-only statements preserve collection history. Preserve accepted choices and the pinned Round 4 preview as a reference.
 
 North Star: gallery and app consume the same shared implementations. Design on an isolated branch using real components, review the coherent experience, then carry accepted component/state references through Requirements Builder, scoped implementation and UAT.
 
@@ -47,6 +47,24 @@ Accepted means the specific visual treatment Eric accepted. Refine means a reque
 
 **Keep the next revision coherent.** Focus on shared timed headers/actions, timer geometry, end logs, AMRAP result/counter alternatives, completion alignment, ladder readability and compact navigation. Carry Generate/setup/History/rest/logging decisions as regression checks. Full platform copy audit, broader empty-state rules and adaptive report remain on this list without silently becoming prerequisites for this preview.
 
+## Round 4 closure — decisions and remaining assumptions
+
+Eric closed intake after R88. No further abstract choice questionnaire is needed before a focused visual iteration.
+
+| Review question | Disposition |
+| --- | --- |
+| Inline or focused log? | Inline selected for now; retain the focused version as a fallback reference, not a required user-facing switch. |
+| Compact or roomier counter? | Roomier selected, with the existing framed pink action buttons in the Signal skin, using shared semantic roles. |
+| Effort control? | Reuse the actual existing three-face selector across timed logs. |
+| EMOM result quantity? | Remove the minutes-completed counter; assume completion and allow notes for exceptions. Keep optional effort and applicable weights. |
+| Complete / Incomplete? | One row. Manual Finish before cap defaults Complete; timeout defaults Incomplete but remains correctable to Complete. |
+| Ladder progress readability? | Selectable numbered tiles that wrap, with round position clearly distinct from prescribed reps. Exact tile hierarchy/selection feedback still needs a visual proposal. |
+| Log title hierarchy? | Refine the relationship of the main title, groups, movements and field labels. Show alternatives for this unresolved visual choice instead of asking for abstract type/spacing decisions. |
+
+**Working assumption to demonstrate:** ladder work is ordered. Selecting a completed rung records progress through it, including preceding rungs; partial work in the next rung remains separately enterable. This retains the existing prefix semantics. R88 clarified the meaning of the displayed numbers and did not confirm either arbitrary non-contiguous completion or a new storage model. Make this interaction visible in the next proposal so it can be assessed directly.
+
+The inner grouping rail remains rejected. Keep the remaining shown layouts as the starting point; silence on a surface is not a new blanket approval. Production persistence, recovery and completion coordination still need technical follow-through after visual review; they are not unanswered owner preferences for this round. The platform logging, copy and empty-state passes remain separate retained work. This closure records the review result; it does not invoke Builder/Runner or authorize production integration.
+
 ## Confirmed decisions — 2 November 2026
 
 Eric answered the timing and effort questions and clarified that a common log follows from the consistency goal; treating per-format segmentation as another owner decision was unnecessary. Proceed with the shared layout across all timed formats, keeping their result fields specific.
@@ -61,7 +79,7 @@ Proceed with the next isolated preview. Demonstrate incomplete versus fully comp
 
 ## Next review shape
 
-Use comparable actual Review/Workout owners for all families, multi-movement/loaded cases and meaningful ready/running/paused/completed/natural-cap states. Provide phone-ready interactive Start → Pause/Resume → Finish/cap → results examples, with screenshots for quick comparison. Preserve accepted visuals. Show AMRAP quantity/completion alternatives and compact navigation in context.
+Retain comparable actual Review/Workout owners for all families, multi-movement/loaded cases and meaningful ready/running/paused/completed/natural-cap states. Apply the selected inline/roomier directions and shared-control corrections. Focus comparison options on log-heading hierarchy and ladder tile readability/interaction; do not reopen the settled logging-location or counter-size choices. Preserve accepted visuals and the phone-ready interactive flow.
 
 Reuse semantic tokens, public components and real state/writer adapters with safe synthetic data. Label unsupported interactions. Verify actual renderer/state identity, narrow fit, relevant skins, focus/keyboard, reduced motion and existing logging/rest behavior as appropriate. These are practical checks, not a new gate framework.
 
@@ -74,7 +92,7 @@ The [complete collection snapshot](archive/WORKOUT-REVIEW-R01-R74-2026-11-02.md)
 
 ## Round 4 proposal — 2 November 2026
 
-[Open the mobile visual review](https://clear-hb59rl1a1-erics-projects-0ade0dda.vercel.app/workout-review-r4/). Hosted package `c62294c`; shared application source `30735b1`. Alternatives await owner selection.
+[Open the mobile visual review](https://clear-hb59rl1a1-erics-projects-0ade0dda.vercel.app/workout-review-r4/). Hosted package `c62294c`; shared application source `30735b1`. This is the pinned reviewed version. Inline logging and the roomier counter are now selected, subject to the recorded control/hierarchy corrections.
 
 Branch: `codex/workout-review-r4-2026-11-02`. New review uses the same app-owned `TimedWorkoutFlow`, `TimedResultLog` and `QuantitySelector` registered in the gallery. It is enabled by the isolated comparison presentation; existing renderer routing remains the selection authority. Scheduled-start ladders retain their distinct existing owner.
 
@@ -82,7 +100,7 @@ Compare independent alternatives: **inline versus focused results panel**, and *
 
 The interaction adapter records complete synthetic receipts, including separate categorical effort, movement observations/actual weights and block notes; it supports save failure/retry and editing. The new categorical block feedback/measurements are **not mapped onto numeric historical effort or silently written through incompatible database fields**. Existing shell completion receives only compatible explicitly reported outcomes after a sample save. Production persistence, reload recovery of the proposed pause/result state, conditioning-history integration for the richer partial-result contract, and end-log/footer coordination must be carried through requirements after visual selection. The old domain implementations and observations remain available; this preview is not proof of a production migration.
 
-Verification record is in the current journal and comparison evidence. All 88 source comments are covered by the 24-item list; alternatives remain proposals until reviewed.
+Verification record is in the current journal and comparison evidence. All 88 source comments are covered by the 24-item list; the closure above distinguishes selected choices from remaining visual proposals.
 
 
 ## Round 4 Section 1 intake — R75 — 2 November 2026
