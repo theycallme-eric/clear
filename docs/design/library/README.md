@@ -1,6 +1,6 @@
 # CLEAR visual library
 
-**Round 4 intake, 2 November 2026:** Eric requested notes only while he reviews. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) retains 24 consolidated items covering 83 source comments. The roomier counter is selected to accommodate framed +/− actions (R83). Section 2 notes retain framed action buttons and face-based effort, prefer inline logging with the focused panel saved as fallback, and request a broader logging-consistency pass. Keep the hosted preview fixed until he resumes work; follow the active hold in PLAN.md.
+**Round 4 intake, 2 November 2026:** Eric requested notes only while he reviews. The [single refinement list](WORKOUT-REVIEW-FEEDBACK-2026-10-31.md) retains 24 consolidated items covering 84 source comments. The roomier counter is selected for applicable counts (R83); EMOM omits minutes-completed entry and assumes completion with notes for exceptions (R84). Section 2 notes retain framed action buttons and face-based effort, prefer inline logging with the focused panel saved as fallback, and request a broader logging-consistency pass. Keep the hosted preview fixed until he resumes work; follow the active hold in PLAN.md.
 
 Owner clarification, 30 October 2026: this repository and executable gallery are
 the design-library source of truth going forward. Claude Design is maintained
