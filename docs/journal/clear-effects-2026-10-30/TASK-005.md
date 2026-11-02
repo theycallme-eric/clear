@@ -186,3 +186,37 @@ The owner approved one additional native attempt (ceiling2 to3), preserving the 
 The unchanged authenticated collector passed4/4 skin cases with8 actual PNGs from source `2c0b8e3435bb011a49b34bd6d46f53921d159c0d`. The unchanged audit and lineage suite passed67/67. Runtime `08cb39d402f25971d14ed986052a9f17d95901150c69dd480bdff2ce06e79d5f`, driver `f6ddf9cd597d0df5866425220bf3e80862631c1e8a67213b2dd7fdf915949df5`, payload `869d65dfdd6b0e44afa5051458f538bea0e388d1d05b8641a3f8c38b826b85b3`. Prior groups and all renderer/test implementation digests are retained. This proves local same-source evidence only, with no native acceptance or owner visual approval claimed.
 
 Native continuation should preserve the completed module and focus on the approved remaining checks and a genuine current-attempt criterion report. The source-only lineage `attempt:1` names the retained a1 branch; native attempt3 is separately recorded by Runner. No helper or predicate needs changing to make those ordinals equal. Existing ignored local harness configuration supplies the approved reference paths and test backend.
+
+## Native attempt 3 — controller failure correction and full verification — 2 November 2026
+
+**Controller failure cause.** Attempt 2's controller run of the fidelity spec failed before any
+browser work with `TASK-005 blocker: CLEAR_EFFECTS_REFERENCE_DIR is not set (execution
+prerequisite)`. The spec already reads the exported value first, then the git-ignored
+`.env.runner.local` / `.env.audit.local` / `.env.local`. At that time neither the variable nor the
+local file entry was present. The git-ignored `.env.runner.local` now names both approved
+non-secret paths (`CLEAR_EFFECTS_REFERENCE_DIR`, `CLEAR_EFFECTS_CURRENT_SETTINGS`). It holds no
+credential. No spec logic, assertion, shared Playwright configuration, preset or evidence changed.
+A missing checkpoint still fails loudly and is not skipped.
+
+**Verification in this workspace (exact results).**
+
+- `npx vitest run src/ui/crt-glass/motion-clock.test.ts src/ui/crt-glass/scanline-field.test.tsx`:
+  2 files, 31/31 passed.
+- `npm run build`: exit 0. No CRT/Pixi chunk is emitted because nothing mounts the field yet
+  (TASK-006 owns mounting).
+- `npx vitest run src/ui/crt-glass/bundle-boundary.test.ts`: this exact invocation was held by the
+  session's permission gate and did not run on its own. The same file ran inside `npm test`
+  (`vitest run`) straight after the build above and passed.
+- `npx playwright test --project=mobile e2e/effects/crt-glass-fidelity.spec.ts`: 1/1 passed (10.1 s).
+- `npm run typecheck`: exit 0. `npm run lint`: exit 0, 0 errors and 154 existing warnings.
+  `npm run lint:ds`: exit 0.
+- `npm test`: exit 0, 247/247 files and 6028/6028 tests. The earlier
+  `design-0143-final-audit` runtime-source failures are resolved by the genuine audit refresh
+  recorded above.
+
+**Not done here.** Integrating current `origin/main`, pushing and remote CI. The runner owns
+integration and delivery for this workspace. The host-integration gap and Q-007 notes above are
+unchanged.
+
+**Next safe action.** Controller verification of this candidate with the same local reference
+configuration present.
