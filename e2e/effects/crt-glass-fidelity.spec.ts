@@ -37,6 +37,7 @@ import { resolve, sep } from 'node:path'
 
 import type { Browser, BrowserContext, Page } from '@playwright/test'
 
+import { bundledEffectsInput } from './reference-inputs'
 import { parseEnvFile } from '../../scripts/dev-preflight/env.mjs'
 import { expect, test as base } from '../fixtures'
 import {
@@ -73,6 +74,8 @@ function envValue(name: string): string {
     const value = parseEnvFile(readFileSync(path, 'utf8'))[name]?.trim()
     if (value) return value
   }
+  const bundled = bundledEffectsInput(name)
+  if (bundled) return bundled
   throw new Error(`TASK-005 blocker: ${name} is not set (execution prerequisite)`)
 }
 

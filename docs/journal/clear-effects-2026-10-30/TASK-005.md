@@ -220,3 +220,17 @@ unchanged.
 
 **Next safe action.** Controller verification of this candidate with the same local reference
 configuration present.
+
+## Owner-approved CI setup correction — 2 November 2026
+
+The hosted Test job has its own filesystem and did not contain `dist/assets` from the separate Build job. The bundle boundary test now builds real production output in an owned temporary directory before the same assertions, then removes only that directory. The approved explicit build-and-test command remains valid.
+
+Seven hosted fidelity cases also lacked reference paths. The owner approved the inventoried visual-only reference subset for public fixtures. `e2e/fixtures/effects-reference/SOURCE-MANIFEST.json` records all preserved input and notice hashes; the shared resolver defaults to those files while retaining explicit external overrides. No reference was regenerated or numerical preset changed. The original host imports its earlier working-session module, then the test injects the captured current settings as before.
+
+Public failure reports now redact access headers/cookies and known preview credentials, including nested trace/report archives. Screenshot bytes and test outcomes remain unchanged. The preview job uploads diagnostic reports only after successful sanitization. No new credential, private storage or encryption service is introduced.
+
+Verification is recorded after the final candidate checks. Publishing and build-branch delivery remain owned by native Runner recovery and its existing CI policy.
+
+**CI correction verification:** `npm run typecheck` passed; `npm run lint` passed with zero errors and the same 154 existing warnings; the standalone fresh-build bundle test passed 5/5; `npm test` passed 248 files and 6,029/6,029 tests. All seven previously missing-input fidelity cases passed against the bundled inputs (4.1 minutes): standalone Echo, all four skin pairs, CRT still/motion and SourceGraphic proof. The report redaction regression verifies nested ZIP/embedded HTML reports, unchanged screenshot bytes/results and failure on unsupported credential-bearing binary data. Native recovery repeats the full approved checks on the committed candidate before delivery.
+
+The immutable reference/vendor files retain upstream whitespace, covered by the fixture-only `.gitattributes` entry; app/test source whitespace checks remain active.

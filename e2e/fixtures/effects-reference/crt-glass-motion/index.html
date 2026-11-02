@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLEAR · CRT Glass Motion</title><link rel="stylesheet" href="../round-3/assets/fonts.css"><link rel="stylesheet" href="study.css"></head>
+<body>
+<header><div><p class="eyebrow">CLEAR / MATERIAL STUDY 02 / MOTION</p><h1>CRT glass <span>+ Phosphor Echo</span></h1><p class="intro">A quiet, living texture over steady glass.</p></div><a href="../round-3/">Open Phosphor Echo ↗</a></header>
+<main>
+ <section class="stage" aria-label="CRT comparison">
+  <div class="toolbar"><div class="segmented" role="group" aria-label="Treatment"><button data-mode="current" aria-pressed="false">Current lines</button><button data-mode="glass" aria-pressed="true">CRT glass</button></div><button id="compare" aria-pressed="false">Compare</button></div>
+  <p id="treatment-note">Curved scanlines, a soft edge, and a gentle vignette over the whole image.</p>
+  <div class="screens">
+   <figure id="baseline" hidden><figcaption>Reference <span>Current DS line recipe + Echo</span></figcaption><img src="assets/current-lines.jpg" alt="Preserved CLEAR Generate specimen with the current design-system scanline recipe and Phosphor Echo"></figure>
+   <figure id="proposed"><figcaption id="preview-caption">Proposed <span>CRT glass + Phosphor Echo</span></figcaption><div id="surface" role="img" aria-label="CLEAR Generate specimen with adjustable CRT glass effects"><img id="fallback" src="assets/echo-clean.jpg" alt="CLEAR screen while the CRT renderer loads"></div></figure>
+  </div>
+  <p class="stage-note">The same preserved CLEAR screen in each view. Tune the glass using the controls; the workout form is a visual specimen.</p>
+  <p id="renderer-status" role="status">Loading glass…</p>
+ </section>
+ <aside>
+  <section class="preset-section"><h2>Start here</h2><div class="preset-row"><button data-preset="selected" aria-pressed="true">Your settings</button><button data-preset="demo" aria-pressed="false">Demo feel</button></div><label class="check"><input id="echo" type="checkbox" checked> Phosphor Echo</label><label class="check"><input id="colorProtect" type="checkbox" checked> Protect foreground colors</label><p class="hint">Keep the skin’s bright colors close to their source while the softer light sits behind them.</p></section>
+  <section><h2>Comfort &amp; performance</h2><label class="check"><input id="reduceMotion" type="checkbox"> Reduce motion</label><label class="check"><input id="effectsOff" type="checkbox"> Study effects off</label><p class="hint">The device’s reduced-motion preference also applies. Motion pauses in hidden tabs. Effects off shows the plain specimen and stops animation.</p></section>
+  <section class="motion-section"><h2>Quiet motion</h2><div class="preset-row" role="group" aria-label="Motion treatment"><button data-motion="still" aria-pressed="false">Still</button><button data-motion="drift" aria-pressed="true">Subtle drift</button></div><div id="motion-controls"></div><p id="motion-status" class="hint">Slow scanline drift. Grain stays still.</p></section><section><h2>Scanlines</h2><div id="line-controls"></div><label class="check"><input id="verticalLine" type="checkbox"> Vertical lines</label></section>
+  <section><h2>Glass edges</h2><div id="edge-controls"></div><p class="hint">Softness builds toward the perimeter. The centre stays in focus.</p></section>
+  <section><h2>Vignette</h2><div id="vignette-controls"></div></section>
+  <details><summary>Signal texture</summary><div id="noise-controls"></div><label class="check"><input id="grainAnimate" type="checkbox"> Animate grain</label><div id="grain-motion-controls"></div><p class="hint">Grain feathering: 0.01 is crisper, 0.99 is softer. It smooths only the noise.</p></details>
+  <section class="actions"><button id="reset">Reset your settings</button><a id="export" download="clear-crt-glass-motion-settings.json">Save settings ↓</a></section>
+  <details class="scope"><summary>About this study</summary><p>This uses <a href="https://pixijs.io/filters/docs/CRTFilter.html" target="_blank" rel="noreferrer">PixiJS CRTFilter</a> for vignette. The shared edge pass adds curved scanlines and grain after foreground-color preservation, so it remains visible on the dark ground. Current lines shows the 0.14.3 design-system line recipes on the preserved screen specimen.</p><p>The CRT view replaces those lines rather than stacking both textures. Phosphor Echo is composed first, then the whole image passes through the CRT glass. This motion study starts from your selected appearance. The screen and Echo geometry stay steady; only line phase and optional grain change. Reduced motion and hidden tabs pause the animation. The application and approved Echo package are unchanged.</p></details>
+ </aside>
+</main>
+<script src="vendor/pixi.min.js"></script><script src="vendor/filters.js"></script><script type="module" src="study.mjs"></script>
+</body></html>

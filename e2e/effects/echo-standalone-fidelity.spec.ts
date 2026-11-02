@@ -31,6 +31,7 @@ import { extname, resolve, sep } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import type { Browser, Page, TestInfo } from '@playwright/test'
 
+import { bundledEffectsInput } from './reference-inputs'
 import { parseEnvFile } from '../../scripts/dev-preflight/env.mjs'
 import {
   PHOSPHOR_ECHO_PRESET,
@@ -81,7 +82,7 @@ function referenceDir(): string | undefined {
     const value = parseEnvFile(readFileSync(path, 'utf8'))[REFERENCE_ENV]?.trim()
     if (value) return value
   }
-  return undefined
+  return bundledEffectsInput(REFERENCE_ENV)
 }
 
 function referenceRoot(): string {

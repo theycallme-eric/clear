@@ -41,6 +41,7 @@ import { extname, resolve, sep } from 'node:path'
 
 import type { Page, Route, TestInfo } from '@playwright/test'
 
+import { bundledEffectsInput } from './reference-inputs'
 import { parseEnvFile } from '../../scripts/dev-preflight/env.mjs'
 import { fixtureLocation, onboardedProfile } from '../../src/test/user-data-double'
 import {
@@ -81,6 +82,7 @@ function referenceRoot(): string {
     const path = resolve(process.cwd(), file)
     if (existsSync(path)) dir = parseEnvFile(readFileSync(path, 'utf8'))[REFERENCE_ENV]?.trim()
   }
+  dir ??= bundledEffectsInput(REFERENCE_ENV)
   if (!dir) throw new Error(`${REFERENCE_ENV} must name the preserved effects checkpoint (PRE-001)`)
   const root = resolve(dir)
   for (const file of REFERENCE_FILES) {

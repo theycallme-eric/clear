@@ -3,7 +3,7 @@
  *
  * Two builds are read, because each proves something the other cannot:
  *
- *   1. The real production output in `dist/` (run `npm run build` first). The
+ *   1. Fresh production output built into an owned temporary directory. The
  *      field is not mounted yet (TASK-006 owns that), so not one byte of the
  *      renderer or its shaders may ship. Neither may either prototype library.
  *   2. An in-memory build whose entry is the field component, standing in for
@@ -11,24 +11,39 @@
  *      entry reaches only by dynamic import, never in the entry itself, and
  *      the MIT notice must travel with them.
  */
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
 import react from '@vitejs/plugin-react'
 import { build, type Rolldown } from 'vite'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 
 const projectDir = resolve(import.meta.dirname, '../../..')
-const distAssets = resolve(projectDir, 'dist/assets')
+let productionOutput: string | undefined
+let distAssets: string
 
 /** Text only the renderer chunk carries. */
 const RENDERER_MARKERS = ['uGrainSoftness', 'uVignette', 'WebGL2 is not available']
 /** Code either prototype bundle would bring with it (not words in a comment). */
 const PROTOTYPE_MARKERS = ['_filterGlobalUniforms', 'getOptimalTexture', 'PIXI.filters', 'GpuProgram.from']
 
-describe('the production build (dist/)', () => {
+describe('a fresh production build', () => {
+  beforeAll(async () => {
+    productionOutput = mkdtempSync(resolve(tmpdir(), 'clear-crt-bundle-'))
+    distAssets = resolve(productionOutput, 'assets')
+    await build({
+      root: projectDir,
+      logLevel: 'silent',
+      build: { outDir: productionOutput, emptyOutDir: true },
+    })
+  }, 120_000)
+
+  afterAll(() => {
+    if (productionOutput) rmSync(productionOutput, { recursive: true, force: true })
+  })
   it('exists, so this boundary is checked against real output', () => {
-    expect(existsSync(distAssets), 'run `npm run build` before this test').toBe(true)
+    expect(existsSync(distAssets), 'the fresh production build must emit assets').toBe(true)
   })
 
   it('ships no CRT renderer, shader or prototype library while the field is unmounted', () => {

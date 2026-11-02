@@ -1,0 +1,241 @@
+{
+  "version": 1,
+  "source": "Preserved CLEAR Phosphor Echo round 3 and CRT Glass Motion preview, plus the owner-captured current settings export. Owner approved this visual-only subset for public test fixtures on 2026-11-02.",
+  "policy": "Immutable source bytes; no regenerated references. working-session.mjs is an original import, not the approved numerical preset. Tests inject crt-iab-current-settings.json.",
+  "files": [
+    {
+      "path": "round-3/phosphor-echo.mjs",
+      "sha256": "147ce710ec2385c896807439b0ab3e9449d660bb4f0fc7ba9613aedeb95a9082",
+      "bytes": 1464,
+      "purpose": "Preserved round-3 SVG echo filter/kernel"
+    },
+    {
+      "path": "round-3/preferred-preset.json",
+      "sha256": "9785d72aa9dcc28b6f321d1f3e9289a0a288f66377f2f78b7b248d88e11118c1",
+      "bytes": 368,
+      "purpose": "Owner-selected shared Echo numerical preset"
+    },
+    {
+      "path": "round-3/screen.html",
+      "sha256": "b5985c1990d41d16b2b2c0a8646244dcce4f374c4dec64f5b32e44d1f3e5f87c",
+      "bytes": 3357,
+      "purpose": "Preserved Generate specimen markup and sample form text"
+    },
+    {
+      "path": "round-3/screen.css",
+      "sha256": "8e3b6dbacd152c766300de57cb56b356c8fa30c8bc9f3010952a7c543fda9895",
+      "bytes": 6993,
+      "purpose": "Preserved specimen layout, masking and colors"
+    },
+    {
+      "path": "round-3/screen.mjs",
+      "sha256": "3980d1b422fe601469c39e8bf5185b552e9a70ba74d1a6ce788a3cca72e2640e",
+      "bytes": 3083,
+      "purpose": "Preserved frame geometry and preview behavior"
+    },
+    {
+      "path": "round-3/VERIFICATION.json",
+      "sha256": "44821a6b5cf17db8af4ce4406c5abfafe70de49813da63bc32eb96ff26bc3e27",
+      "bytes": 1838,
+      "purpose": "Historical geometry/masking checks; existence-checked by standalone test"
+    },
+    {
+      "path": "round-3/assets/fonts.css",
+      "sha256": "6cf98c804096ff33933769ac1aaa38f6d13157081ebd5ed0c5fb2846025cbb8e",
+      "bytes": 3431,
+      "purpose": "Preserved font-face declarations used by original hosts"
+    },
+    {
+      "path": "round-3/vendor/foundation.css",
+      "sha256": "7326b43e7adde389ae2ce39e749036d3b58de3cd98197c06273ece471a326cd1",
+      "bytes": 72864,
+      "purpose": "CLEAR 0.14.3 foundation styles"
+    },
+    {
+      "path": "round-3/vendor/skins.css",
+      "sha256": "218f63728a58463c925aa9758ff742811c68eae8af24943b29546d52fe7252eb",
+      "bytes": 6880,
+      "purpose": "CLEAR skin role colors"
+    },
+    {
+      "path": "round-3/assets/oxanium-0.woff2",
+      "sha256": "d2992b4edf87fd1151a63baac85aa4ef4ae8604b1fd2027d101391fdc24c6dec",
+      "bytes": 12340,
+      "purpose": "Oxanium font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/oxanium-1.woff2",
+      "sha256": "d2992b4edf87fd1151a63baac85aa4ef4ae8604b1fd2027d101391fdc24c6dec",
+      "bytes": 12340,
+      "purpose": "Oxanium font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/oxanium-2.woff2",
+      "sha256": "d2992b4edf87fd1151a63baac85aa4ef4ae8604b1fd2027d101391fdc24c6dec",
+      "bytes": 12340,
+      "purpose": "Oxanium font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/oxanium-3.woff2",
+      "sha256": "d2992b4edf87fd1151a63baac85aa4ef4ae8604b1fd2027d101391fdc24c6dec",
+      "bytes": 12340,
+      "purpose": "Oxanium font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/space-grotesk-0.woff2",
+      "sha256": "a0d054c4af557de20afd6ca59f47ab353bcaec49c63ff04b6c9d39d0f8910557",
+      "bytes": 22320,
+      "purpose": "Space Grotesk font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/space-grotesk-1.woff2",
+      "sha256": "a0d054c4af557de20afd6ca59f47ab353bcaec49c63ff04b6c9d39d0f8910557",
+      "bytes": 22320,
+      "purpose": "Space Grotesk font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/space-grotesk-2.woff2",
+      "sha256": "a0d054c4af557de20afd6ca59f47ab353bcaec49c63ff04b6c9d39d0f8910557",
+      "bytes": 22320,
+      "purpose": "Space Grotesk font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/rajdhani-0.woff2",
+      "sha256": "4745b75b6e92d917e2402925dc1a6c1c6300e6e0f607a1ce286da54b33d80d3b",
+      "bytes": 8964,
+      "purpose": "Rajdhani font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/rajdhani-1.woff2",
+      "sha256": "35f7e628ec8e7dd3bf434e95ce28289803401f12d8605c56ca83db2b4b301d33",
+      "bytes": 9400,
+      "purpose": "Rajdhani font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "round-3/assets/rajdhani-2.woff2",
+      "sha256": "7597c31a957ae3d2e1ebc786238752d883c15ce2e6b5da617dc3453a9fd86335",
+      "bytes": 9304,
+      "purpose": "Rajdhani font file referenced by preserved fonts.css"
+    },
+    {
+      "path": "crt-glass-motion/index.html",
+      "sha256": "187b5a0b9d0e1383405e0c5ecef7249c58c466236e8d1f0cb5a8d9acd4c2dcf0",
+      "bytes": 4996,
+      "purpose": "Original CRT controls and specimen host used for still comparison"
+    },
+    {
+      "path": "crt-glass-motion/study.mjs",
+      "sha256": "4babb3171ca9dc8cdd286ed105c3d91968cdd23116d7ed5efb4773253d7938a4",
+      "bytes": 10549,
+      "purpose": "Original host initialization, input loading and loop"
+    },
+    {
+      "path": "crt-glass-motion/study.css",
+      "sha256": "089f6fe9c9edc1d2a732c05cf321c6083fa7ba5820178e57a544be8665f2b951",
+      "bytes": 4827,
+      "purpose": "Original CRT host layout/styles"
+    },
+    {
+      "path": "crt-glass-motion/glass-effect.mjs",
+      "sha256": "34ae8259737cfa0496dbdcf6dbc591b831f68c4e97b7754069c0d0ea9e6757e4",
+      "bytes": 6197,
+      "purpose": "Exact reference shader/effect pipeline"
+    },
+    {
+      "path": "crt-glass-motion/motion-clock.mjs",
+      "sha256": "0f93926d70688fcf85eb705fab6e091be799d2a725440adaa956387d09160002",
+      "bytes": 951,
+      "purpose": "Exact reference elapsed-time clock and grain seed"
+    },
+    {
+      "path": "crt-glass-motion/working-session.mjs",
+      "sha256": "e7bcf30cca8b6e3f77fa8f19b3edf6319b69c107a461e18b0a4633c4ecab0370",
+      "bytes": 640,
+      "purpose": "Static import required to load original host; superseded by captured settings injected by test; not the approved preset"
+    },
+    {
+      "path": "crt-glass-motion/assets/echo-clean.jpg",
+      "sha256": "e264d88b72f9c9691cc2fbaa511ce36a79b36e73bbfbd48248bdaa58d158c904",
+      "bytes": 35695,
+      "purpose": "Generate specimen with Echo and no scanlines"
+    },
+    {
+      "path": "crt-glass-motion/assets/sharp-clean.jpg",
+      "sha256": "b5282aeda6b8b813677c95474402a53070c5908fff817d5a8535cdb0cd553d5b",
+      "bytes": 34934,
+      "purpose": "Same specimen without Echo or scanlines"
+    },
+    {
+      "path": "crt-glass-motion/assets/current-lines.jpg",
+      "sha256": "0a21f32024deb6a96c6431a15f7679f1723147f55be3176603144b2bcf56c623",
+      "bytes": 46225,
+      "purpose": "Same specimen with old scanlines and Echo"
+    },
+    {
+      "path": "crt-glass-motion/assets/current-lines-sharp.jpg",
+      "sha256": "c2d9ade6037687496ae05aa77aa7696d383550b04b62eace8efa0a5dbb3bf985",
+      "bytes": 45728,
+      "purpose": "Same specimen with old scanlines, without Echo"
+    },
+    {
+      "path": "crt-glass-motion/vendor/pixi.min.js",
+      "sha256": "06d9ef9823e743518793083c296d801e752db128cb1f519fbabe37e1259567ea",
+      "bytes": 840663,
+      "purpose": "Preserved PixiJS 8.22.0 reference renderer"
+    },
+    {
+      "path": "crt-glass-motion/vendor/filters.js",
+      "sha256": "3bb1830fe730687c9aa24b331b51f8f2263023ac7c91885e50cf9f339cff36ef",
+      "bytes": 217153,
+      "purpose": "Preserved pixi-filters 6.1.5 reference implementation"
+    },
+    {
+      "path": "crt-iab-current-settings.json",
+      "sha256": "3169d4608c8babe17a20670bd59f53e3110c7ce917641786d33c2713943ca033",
+      "bytes": 799,
+      "purpose": "Exact owner browser export used for approved CRT and Echo numerical values"
+    },
+    {
+      "path": "crt-glass-motion/vendor/pixi-LICENSE.txt",
+      "sha256": "5ce7447bc57f7349ffc48338782fbcabe613696e00712b20d66bc58e780f9473",
+      "bytes": 1092,
+      "purpose": "Redistribution license/provenance; not fetched by tests"
+    },
+    {
+      "path": "crt-glass-motion/vendor/filters-LICENSE.txt",
+      "sha256": "d554721b2cd409d9bc075d743bb34f960e05ba55de1818a62fa60caf21ca6188",
+      "bytes": 1092,
+      "purpose": "Redistribution license/provenance; not fetched by tests"
+    },
+    {
+      "path": "crt-glass-motion/vendor/pixi-version.json",
+      "sha256": "f8122b68a518657b8fc8507fff5e5879bb1625e62d63f24a2cd8e3add2445b4d",
+      "bytes": 122,
+      "purpose": "Redistribution license/provenance; not fetched by tests"
+    },
+    {
+      "path": "crt-glass-motion/vendor/filters-version.json",
+      "sha256": "0afefc7adf1bef1c472c44427f69cf101efe4d9fc35f559bffa1536543a811d7",
+      "bytes": 131,
+      "purpose": "Redistribution license/provenance; not fetched by tests"
+    },
+    {
+      "path": "FONT-NOTICES/oxanium-LICENSE.txt",
+      "sha256": "062fa183baec494d989d5d848f78a5466a537033c40f1b7651c19ca5d140ab7c",
+      "bytes": 4383,
+      "purpose": "Existing public OFL-1.1 family notice for redistribution; not copied or fetched by tests"
+    },
+    {
+      "path": "FONT-NOTICES/space-grotesk-LICENSE.txt",
+      "sha256": "18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943",
+      "bytes": 4401,
+      "purpose": "Existing public OFL-1.1 family notice for redistribution; not copied or fetched by tests"
+    },
+    {
+      "path": "FONT-NOTICES/rajdhani-LICENSE.txt",
+      "sha256": "078e327eb00525214cdce9780cfdf156141f137f1a095bec9798f470703d7d2d",
+      "bytes": 4727,
+      "purpose": "Existing public OFL-1.1 family notice for redistribution; not copied or fetched by tests"
+    }
+  ]
+}
