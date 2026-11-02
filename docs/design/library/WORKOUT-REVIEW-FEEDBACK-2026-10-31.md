@@ -74,6 +74,8 @@ The [complete collection snapshot](archive/WORKOUT-REVIEW-R01-R74-2026-11-02.md)
 
 ## Round 4 proposal — 2 November 2026
 
+[Open the mobile visual review](https://clear-hb59rl1a1-erics-projects-0ade0dda.vercel.app/workout-review-r4/). Hosted package `c62294c`; shared application source `30735b1`. Alternatives await owner selection.
+
 Branch: `codex/workout-review-r4-2026-11-02`. New review uses the same app-owned `TimedWorkoutFlow`, `TimedResultLog` and `QuantitySelector` registered in the gallery. It is enabled by the isolated comparison presentation; existing renderer routing remains the selection authority. Scheduled-start ladders retain their distinct existing owner.
 
 Compare independent alternatives: **inline versus focused results panel**, and **compact versus roomier quantity frame**. Both logging locations use the same form, data and field rules. The panel uses the existing public Dialog adapter. The comparison also shows matched Review/Workout for the four timed families, multi-movement fixtures, a paused ladder, completed ladder, natural For Time cap and EMOM end. Explicitly requested copy removals, concise format-only badges, consistent placement, missing live load/equipment, header timer height and a simpler section navigator are represented. Missing coaching content is omitted in this proposal while notes and loading/error handling remain available.
