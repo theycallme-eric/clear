@@ -12,7 +12,9 @@
  * — unanswered, never the middle face, never zero, never a guess — and once
  * something is chosen a compact Clear puts it back to `null`.
  *
- * This is one set's effort and nothing else. The session's five-choice feeling
+ * The same three-face presentation is reused by the proposed section log with
+ * an explicit scope label; its persistence remains owned by that log. The
+ * session's five-choice feeling
  * (`feeling-row.tsx`) is a different question, stored in a different column,
  * and neither is ever read as the other.
  */
@@ -46,22 +48,22 @@ function isSetEffort(value: string): value is SetEffort {
   return SET_EFFORT_CHOICES.some((choice) => choice.value === value)
 }
 
-export interface SetEffortChoiceProps {
-  /** The set being entered or corrected — it names the Clear control. */
-  readonly setNumber: number
+export type SetEffortChoiceProps = {
   /** The set's answer, or `null` for unanswered. */
   readonly value: SetEffort | null
   readonly onChange: (next: SetEffort | null) => void
-}
+  readonly legend?: string
+} & ({ readonly setNumber: number; readonly scopeLabel?: never }
+  | { readonly setNumber?: never; readonly scopeLabel: string })
 
-export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceProps) {
+export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange }: SetEffortChoiceProps) {
   const rowRef = useRef<HTMLDivElement>(null)
 
   return (
     <div ref={rowRef} className="clr-set-effort">
       <ChoiceGroup
         className="clr-set-effort__choices"
-        legend={SET_EFFORT_LEGEND}
+        legend={legend}
         options={SET_EFFORT_CHOICES.map(({ value: choice, label, Glyph }) => ({
           value: choice,
           label: (
@@ -83,7 +85,7 @@ export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceP
             type="button"
             variant="quiet"
             size="sm"
-            aria-label={`Clear effort for set ${setNumber}`}
+            aria-label={`Clear effort for ${scopeLabel ?? `set ${setNumber}`}`}
             onClick={() => {
               onChange(null)
               // The pressed control is about to go; the question keeps the caret.

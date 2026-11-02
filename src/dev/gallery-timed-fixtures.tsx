@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { BlockCompletionContext } from '../state/block-completion'
 import type { BlockProgress } from '../state/workout-progress'
 import { Card } from '../ui/card'
+import { LadderCompletion } from '../ui/ladder-rungs'
 import { QuantitySelector } from '../ui/quantity-selector'
 import { TimedResultLog } from '../ui/timed-result-log'
 import { TimedWorkoutFlow } from '../ui/timed-workout-flow'
@@ -24,22 +25,22 @@ const SAMPLE: BlockProgress = {
   }],
 }
 
-export function GalleryQuantity({ initial = null, wide = false }: { initial?: number | null; wide?: boolean }) {
+export function GalleryQuantity({ initial = null, wide = true }: { initial?: number | null; wide?: boolean }) {
   const [value, setValue] = useState(initial)
   return <Card><div data-counter-style={wide ? 'wide' : 'compact'}>
     <QuantitySelector label="Rounds completed" value={value} onChange={setValue} />
   </div></Card>
 }
 
-export function GalleryTimedLog() {
+export function GalleryTimedLog({ hierarchy = 'simple' }: { hierarchy?: 'simple' | 'grouped' }) {
   const [saved, setSaved] = useState(false)
-  return <Card><TimedResultLog block={SAMPLE} format="amrap" finished={false} weightUnit="kg"
+  return <Card><TimedResultLog accessibleName={`Log section results: ${hierarchy} hierarchy`} hierarchy={hierarchy} block={SAMPLE} format="amrap" finished={false} weightUnit="kg"
     onSave={async () => { setSaved(true) }} />{saved && <p role="status">Sample log saved</p>}</Card>
 }
 
 export function GalleryTimedFlow({ presentation }: { presentation: WorkoutExperiencePresentation }) {
   return <WorkoutExperiencePresentationProvider value={{ ...presentation, timedWorkflows: {
-    logPresentation: 'inline', counterStyle: 'compact', saveResult: async () => {},
+    logPresentation: 'inline', counterStyle: 'wide', saveResult: async () => {},
   } }}>
     <BlockCompletionContext value={{ reportOutcome: () => {}, isBlockRecorded: () => false }}>
       <TimedWorkoutFlow block={{ ...SAMPLE, exercises: SAMPLE.exercises.map(exercise => ({ ...exercise,
@@ -47,4 +48,10 @@ export function GalleryTimedFlow({ presentation }: { presentation: WorkoutExperi
       })) }} format="amrap" />
     </BlockCompletionContext>
   </WorkoutExperiencePresentationProvider>
+}
+
+export function GalleryLadderCompletion({ emphasis = 'round' }: { emphasis?: 'round' | 'reps' }) {
+  const [completed, setCompleted] = useState<number | null>(3)
+  return <Card><LadderCompletion unit="reps" completedThrough={completed} onChange={setCompleted}
+    emphasis={emphasis} rungs={[2, 4, 6, 8, 10, 12, 14, 16].map((target, i) => ({ number: i + 1, targets: [target] }))} /></Card>
 }

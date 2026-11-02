@@ -26,9 +26,41 @@
  */
 import { useId } from 'react'
 
-import { Check, OverflowRail } from '../design-system/index'
+import { Check, Chip, OverflowRail } from '../design-system/index'
 import { rungLabel, rungNumbers, type LadderRung } from '../state/ladder'
 import './ladder-rungs.css'
+
+/** End-log variant: ordered completion, wrapping week-strip-style element frames.
+ * Existing live/read-only and highest-reached radio owners remain unchanged.
+ */
+export function LadderCompletion({ rungs, unit, completedThrough, onChange, emphasis = 'round' }: {
+  rungs: readonly LadderRung[]
+  unit: string
+  completedThrough: number | null
+  onChange: (number: number) => void
+  emphasis?: 'round' | 'reps'
+}) {
+  if (rungs.length === 0) return null
+  return <fieldset className="clr-ladder-completion" data-rung-emphasis={emphasis}>
+    <legend className="label">Rounds completed</legend>
+    <div className="clr-ladder-completion__tiles">
+      {rungs.map(rung => {
+        const selected = completedThrough !== null && rung.number <= completedThrough
+        const target = rungNumbers(rung)
+        return <Chip key={rung.number} className="clr-ladder-completion__tile" selected={selected}
+          style={{ width: '100%', minHeight: 'calc(var(--control-height) * 2)', padding: 'var(--spacing-400) var(--spacing-100) var(--spacing-200)', justifyContent: 'center' }}
+          aria-label={`Round ${rung.number}: ${rungLabel(rung, unit)}`}
+          onClick={() => onChange(selected ? rung.number - 1 : rung.number)}>
+          <span className="clr-ladder-completion__content" aria-hidden="true">
+            <span className="clr-ladder-completion__round">Round {emphasis === 'reps' ? rung.number : ''}</span>
+            <span className="clr-ladder-completion__number">{emphasis === 'round' ? rung.number : target}</span>
+            <span className="clr-ladder-completion__target">{emphasis === 'round' ? `${target} ` : ''}{unit}</span>
+          </span>
+        </Chip>
+      })}
+    </div>
+  </fieldset>
+}
 
 export interface LadderRungsProps {
   /** The block's ladder, from `target_sequence`. Renders nothing when empty. */

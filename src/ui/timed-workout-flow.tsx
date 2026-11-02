@@ -1,4 +1,4 @@
-/** Isolated R4 proposal: shared presentation/clock, format-specific schedule/results. */
+/** Isolated timed-work proposal: shared presentation/clock, format-specific schedule/results. */
 import { use, useEffect, useRef, useState } from 'react'
 import { Button, Check, Pause, Play, Stop } from '../design-system/index'
 import type { BlockOutcome } from '../state/block-completion'
@@ -53,7 +53,6 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
   const outcome: BlockOutcome = receipt === null ? {} : {
     elapsedSeconds: receipt.elapsedSeconds,
     ...(format === 'amrap' && receipt.result.count !== null ? { roundsCompleted: receipt.result.count } : {}),
-    ...(format === 'emom' && receipt.result.count !== null ? { minutesCompleted: receipt.result.count } : {}),
     ...(format === 'ladder' && receipt.result.highestRung !== null ? { highestRung: receipt.result.highestRung } : {}),
     ...(format === 'for_time' || format === 'ladder' ? { completedUnderCap: receipt.result.completed === true && !receipt.capReached } : {}),
   }
@@ -82,7 +81,8 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
     ? `${rungs.length} rounds${cap === null ? '' : ` · ${formatElapsed(cap)} cap`}`
     : [block.identity.detail, block.identity.repScheme].filter(Boolean).join(' · ')
   const log = showLog && <TimedResultLog block={block} format={format} weightUnit={weightUnit}
-    finished={view.phase === 'finished'} initial={receipt?.result} onSave={async result => {
+    finished={view.phase === 'finished'} hierarchy={options?.logHierarchy} rungEmphasis={options?.rungEmphasis}
+    initial={receipt?.result} onSave={async result => {
       if (!options) throw new Error('No result adapter configured')
       const next: TimedResultReceipt = { blockId: block.blockId, format, result, weightUnit,
         elapsedSeconds: view.elapsed, capReached: view.phase === 'capped' }
@@ -91,7 +91,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
     }} />
 
   return <div className="clr-timed-flow" data-timed-format={format} data-phase={view.phase} data-cap-seconds={cap ?? undefined}
-    data-counter-style={options?.counterStyle ?? 'compact'}>
+    data-counter-style={options?.counterStyle ?? 'wide'}>
     <BlockPanel block={block} completion={{ outcome }} timer={view.phase === 'ready' ? null :
       <div className="clr-timed-clock"><TimerFrame label={`${block.identity.label} time`} text={formatElapsed(clockSeconds)}
         spoken={`${caption}. ${spokenElapsed(clockSeconds)}`} caption={caption} size="var(--heading-h2-size)" fullWidth
@@ -143,7 +143,7 @@ export function TimedWorkoutFlow({ block, format }: { block: BlockProgress; form
         {receipt !== null && !editing && <div className="clr-timed-log" data-timed-saved="">
           <div className="clr-timed-saved" role="status"><Check /><p>Log saved</p></div>
           <p className="clr-timed-meta">{formatElapsed(receipt.elapsedSeconds)} active time
-            {receipt.result.count === null ? '' : ` · ${receipt.result.count} ${format === 'emom' ? 'minutes' : 'rounds'}`}
+            {format !== 'amrap' || receipt.result.count === null ? '' : ` · ${receipt.result.count} rounds`}
             {receipt.result.highestRung === null ? '' : ` · ${receipt.result.highestRung} rungs`}</p>
           {receipt.result.effort === null ? null : <p className="clr-timed-meta">Effort: {SET_EFFORT_CHOICES.find(o => o.value === receipt.result.effort)?.label}</p>}
           {block.exercises.map(exercise => {

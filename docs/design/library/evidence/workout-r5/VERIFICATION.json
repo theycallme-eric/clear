@@ -1,0 +1,61 @@
+{
+  "branch": "codex/workout-review-r5-2026-11-02",
+  "reviewedReference": "c62294ce859e11c3cdbf9ec1adb887ad504f0f90",
+  "decisions": "R75\u2013R89",
+  "renderedCases": 19,
+  "narrowAndSkinCases": 8,
+  "interactiveFlows": [
+    {
+      "case": "emom full lifecycle",
+      "passed": true
+    },
+    {
+      "case": "amrap full lifecycle",
+      "passed": true
+    },
+    {
+      "case": "for_time full lifecycle",
+      "passed": true
+    },
+    {
+      "case": "ladder full lifecycle",
+      "passed": true
+    },
+    {
+      "case": "round ladder ordered progress, correction, partial, retry, timeout override",
+      "passed": true
+    },
+    {
+      "case": "reps ladder ordered progress, correction, partial, retry, timeout override",
+      "passed": true
+    },
+    {
+      "case": "For Time timeout completion correction",
+      "passed": true
+    }
+  ],
+  "accessibilityViolations": 0,
+  "pageErrors": 0,
+  "externalRequests": 0,
+  "typecheckAndBuild": "passed",
+  "designLint": "passed",
+  "changedComponentLint": "zero errors; existing set-effort mixed-export Fast Refresh warning",
+  "galleryIndex": "63 entries verified",
+  "checks": "actual shared owners, four timed formats; ordered progress and correction; partial next round; no EMOM counter; existing face keyboard/clear; explicit weights; retry/edit; timeout override; narrow wrapping; four skins",
+  "harness": "/Users/eric/Documents/Codex/2026-10-29/task/workout-review-r5-2026-11-02",
+  "data": "synthetic in-memory samples; reload resets",
+  "remainingProductionContracts": [
+    "categorical block effort persistence",
+    "movement/partial-result mapping",
+    "pause and result reload recovery",
+    "conditioning-history integration",
+    "footer and end-log coordination"
+  ],
+  "vitest": "not repeated; prior worker-startup limitation retained; browser verification used for changed interactions",
+  "publicGallery": {
+    "components": 4,
+    "accessibilityViolations": 0,
+    "pageErrors": 0,
+    "externalRequests": 0
+  }
+}
