@@ -234,7 +234,7 @@ describe('atmosphere rendering', () => {
     expect(container.querySelector('.clr-atmosphere')).not.toHaveAttribute('data-context')
   })
 
-  it('renders the export five-layer ground and hides it from assistive tech', () => {
+  it('renders the export ground without its retired scan and hides it from assistive tech', () => {
     const { container } = renderApp(['/'])
     const layer = container.querySelector('.clr-atmosphere')
 
@@ -242,7 +242,10 @@ describe('atmosphere rendering', () => {
     expect(layer).toHaveClass('clr-atmosphere--fixed')
     expect(layer?.querySelectorAll('.clr-atmosphere__blob')).toHaveLength(3)
     expect(layer?.querySelector('.clr-atmosphere__overlay')).not.toBeNull()
-    expect(layer?.querySelector('.clr-atmosphere__scan')).not.toBeNull()
+    // Effects TASK-006: the CRT Glass field is the one decorative scanline signal…
+    expect(layer?.querySelector('.clr-atmosphere__scan')).toBeNull()
+    expect(container.querySelectorAll('.clr-effects-host .clr-crt-field')).toHaveLength(1)
+    // …and the blobs still move when motion is allowed.
     expect(layer).not.toHaveAttribute('data-static')
   })
 
@@ -263,8 +266,9 @@ describe('atmosphere rendering', () => {
     const appRule = readFileSync('src/styles/atmosphere.css', 'utf8')
     const vendored = readFileSync('src/design-system/css/motion.css', 'utf8')
 
+    // Paused, not removed: the same blobs hold where they are and resume from there.
     expect(appRule).toMatch(
-      /\.clr-atmosphere\[data-static='true'\] \.clr-atmosphere__blob \{\s*animation: none;/,
+      /\.clr-atmosphere\[data-static='true'\] \.clr-atmosphere__blob \{\s*animation-play-state: paused;/,
     )
     expect(vendored).toContain('.clr-atmosphere__blob { animation: none !important; }')
   })
@@ -281,8 +285,10 @@ describe('Visual effects policy at the root (effects TASK-001)', () => {
 
     expect(hosts).toHaveLength(1)
     expect(hosts[0]).toHaveAttribute('aria-hidden', 'true')
-    // Effects TASK-003: it holds only the one Phosphor Echo filter definition.
-    expect(hosts[0].children).toHaveLength(1)
+    // Effects TASK-003: the one Phosphor Echo filter definition; TASK-006: the
+    // one live CRT Glass field. Nothing else.
+    expect(hosts[0].children).toHaveLength(2)
+    expect(hosts[0].querySelectorAll('.clr-crt-field')).toHaveLength(1)
     expect(hosts[0].querySelectorAll('filter')).toHaveLength(1)
     expect(hosts[0].querySelector('filter')).toHaveAttribute('id', 'clr-phosphor-echo')
     // Outside the shell, so it never sits in a screen's own tree…
@@ -317,6 +323,9 @@ describe('Visual effects policy at the root (effects TASK-001)', () => {
 
     expect(host).toHaveAttribute('data-effects', 'off')
     expect(host).toHaveAttribute('data-motion', 'still')
+    // Off removes the field, and the atmosphere holds still without remounting.
+    expect(host?.querySelector('.clr-crt-field')).toBeNull()
+    expect(container.querySelector('.clr-atmosphere')).toHaveAttribute('data-static', 'true')
   })
 
   it('ignores an unknown stored value and resolves to effects on', () => {

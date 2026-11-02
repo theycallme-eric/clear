@@ -110,6 +110,7 @@ import { ToastHost } from '../ui/toast-host'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { PhosphorEchoFrame, PhosphorEchoGlyph, PhosphorEchoText } from '../ui/phosphor-echo'
+import { CrtField } from '../ui/crt-field/crt-field'
 import {
   setVisualEffects,
   useVisualEffects,
@@ -1818,6 +1819,69 @@ function PhosphorEchoAcrossSizes() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Effects TASK-006 — the live atmosphere, Echo and CRT Glass field together
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The real layers in one frame: the live atmosphere, the Phosphor Echo on the
+ * app's own owners and the CRT Glass field over both, as the root composes
+ * them. The checkbox is the device's Visual effects setting: off removes the
+ * field and the Echo, and leaves the atmosphere and the components as they are.
+ */
+function CrtFieldCompositionView({ still = false }: { still?: boolean }) {
+  const { effectsEnabled, motionAllowed } = useVisualEffects()
+
+  return (
+    <div style={ECHO_STACK_STYLE}>
+      <Checkbox
+        label="Visual effects"
+        checked={effectsEnabled}
+        onChange={(checked) => setVisualEffects(checked)}
+      />
+      <div className="clr-dev-gallery__crt-frame" data-crt-sample={still ? 'still' : 'composition'}>
+        <AtmosphereLayer />
+        <div className="clr-dev-gallery__atmosphere-content">
+          <div style={{ ...ECHO_HEADER_STYLE, alignSelf: 'stretch' }}>
+            <Heading style={{ margin: 0 }}>
+              <PhosphorEchoText>Generate</PhosphorEchoText>
+            </Heading>
+            <PhosphorEchoFrame>
+              <IconButton label="Back" icon={<ArrowLeft />} />
+            </PhosphorEchoFrame>
+          </div>
+          <PhosphorEchoFrame>
+            <Card heading="Workout selections">
+              <p style={{ margin: 0 }}>Goal: Balanced</p>
+            </Card>
+          </PhosphorEchoFrame>
+          <PhosphorEchoFrame>
+            <Button variant="primary">Generate Workout</Button>
+          </PhosphorEchoFrame>
+        </div>
+        {effectsEnabled ? <CrtField motionAllowed={motionAllowed && !still} contained /> : null}
+      </div>
+    </div>
+  )
+}
+
+function CrtFieldComposition() {
+  return (
+    <VisualEffectsProvider>
+      <CrtFieldCompositionView />
+    </VisualEffectsProvider>
+  )
+}
+
+/** The same frame with the field's clocks paused, as reduced motion or a hidden tab hold them. */
+function CrtFieldStill() {
+  return (
+    <VisualEffectsProvider>
+      <CrtFieldCompositionView still />
+    </VisualEffectsProvider>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // EXE-04a — the ladder's rungs, read-only and interactive
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -2690,7 +2754,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'DS-06',
     module: 'src/ui/atmosphere.tsx',
     summary:
-      'The export’s five-layer ground. One mount serves every screen and there are no modes; under reduced motion the layer drops its drift and its scanlines.',
+      'The export’s ground, minus its retired scanlines. One mount serves every screen and there are no modes; when motion is not allowed the blobs hold still.',
     specimens: ATMOSPHERE_SPECIMENS,
   },
   {
@@ -2709,6 +2773,25 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         state: 'across sizes and viewBoxes',
         note: 'The same softness and offset in CSS pixels for a small and a large glyph, and for a 24-unit and a 240-unit viewBox.',
         Render: PhosphorEchoAcrossSizes,
+      },
+    ],
+  },
+  {
+    component: 'CrtField',
+    requirement: 'REQ-006',
+    module: 'src/ui/crt-field/crt-field.tsx',
+    summary:
+      'The live CRT Glass field: curved drifting scanlines, independently refreshed soft grain, perimeter softness and vignette over the real page. It is the only decorative scanline signal; its values live in src/ui/crt-field/config.ts.',
+    specimens: [
+      {
+        state: 'live atmosphere, Echo and field, Visual effects on and off',
+        note: 'The atmosphere keeps moving beneath the glass; the Echo stays one rear image, read through the field. Off removes the field and the Echo, and no old scanline returns.',
+        Render: CrtFieldComposition,
+      },
+      {
+        state: 'field clocks paused',
+        note: 'Reduced motion or a hidden tab pause the line drift and grain refresh where they are; the texture stays, nothing restarts.',
+        Render: CrtFieldStill,
       },
     ],
   },

@@ -25,6 +25,7 @@ import { Outlet } from 'react-router-dom'
 import { FocusBrackets } from '../design-system/index'
 import { useVisualEffects, VisualEffectsProvider } from '../state/visual-effects'
 import { AtmosphereLayer } from '../ui/atmosphere'
+import { CrtField } from '../ui/crt-field/crt-field'
 import { PhosphorEchoDefinition } from '../ui/phosphor-echo'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
 
@@ -56,6 +57,10 @@ export function ContainedShell({ atmosphere, children }: ContainedShellProps) {
  *
  * Effects TASK-003: it installs the document's one Phosphor Echo filter
  * definition. Rear sources hide themselves when the policy reports effects off.
+ *
+ * Effects TASK-006: it also mounts the one live CRT Glass field, over every
+ * route, while Visual effects is on. The field is the only decorative scanline
+ * signal; the old atmosphere, frame and dialog scans are retired.
  */
 function EffectsHost() {
   const { effectsEnabled, motionAllowed } = useVisualEffects()
@@ -68,6 +73,7 @@ function EffectsHost() {
       data-motion={motionAllowed ? 'allowed' : 'still'}
     >
       <PhosphorEchoDefinition />
+      {effectsEnabled ? <CrtField motionAllowed={motionAllowed} /> : null}
     </div>
   )
 }

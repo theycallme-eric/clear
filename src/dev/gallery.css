@@ -122,6 +122,16 @@
   position: absolute;
 }
 
+/* Effects TASK-006: the live atmosphere, Echo and CRT field in one frame. */
+.clr-dev-gallery__crt-frame {
+  position: relative;
+  overflow: hidden;
+}
+
+.clr-dev-gallery__crt-frame .clr-atmosphere--fixed {
+  position: absolute;
+}
+
 .clr-dev-gallery__atmosphere-content {
   position: relative;
   z-index: 1;
