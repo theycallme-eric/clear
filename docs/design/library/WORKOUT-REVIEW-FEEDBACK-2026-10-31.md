@@ -10,7 +10,7 @@
 
 North Star: one executable visual library, with the same shared implementations in gallery and product. This workout refinement is the practical test of that reuse and the design → requirements → implementation workflow. It is not a new independent design system.
 
-All 64 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
+All 74 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
 
 <!-- refinement-index:start -->
 | ID | Decision / refinement | Current status | Shared owner / follow-through |
@@ -47,8 +47,8 @@ All 64 recorded comments are indexed below. **Previewed is not released or blank
 | R30 | Use workout layout as the Review/live base; Swap only in Review, progress/Rest only live. Preserve planned work. | R3 common cases previewed; remaining format gaps in R38 | Shared movement/header/layout owners |
 | R31 | Restore prescribed load in live movement rows; do not confuse target and actual or guess units. | Previewed standard/superset/circuit; remaining families in R38 | MovementIdentity load slot / loadText / live rows |
 | R32 | Overview intensity omits redundant of 10; values and scale unchanged. | Implemented in R3 preview | Review fact derivation / saved Overview |
-| R33 | Movement count gets a fitting existing glyph and an accessible term. | R3 first pass: Log/list glyph, label retained; selection pending | SummaryFact |
-| R34 | Required equipment gets deliberate grouping, spacing and neutral read-only items. | R3 first pass; visual selection pending | EquipmentSummary |
+| R33 | Movement count gets a fitting existing glyph and an accessible term. | Shown Overview visually accepted in R74 | SummaryFact |
+| R34 | Required equipment gets deliberate grouping, spacing and neutral read-only items. | Shown Overview visually accepted in R74; preserve shared treatment | EquipmentSummary |
 | R35 | Replace the clunky duplicate section card with compact navigation; preserve position/status, jumping and focus. | R3 first pass; visual selection pending | SectionHeader compact variant / existing jump owner |
 | R36 | Keep the reviewed warm-up appearance and grouped Coaching and notes treatment. | Visually accepted; appearance preserved | PreparationGuide / GroupExerciseCoaching |
 | R37 | Review headers are static, compact and always expanded, matching workout header layout. | Implemented in R3 preview; visual review pending | MovementGroupHeader / Review |
@@ -79,6 +79,16 @@ All 64 recorded comments are indexed below. **Previewed is not released or blank
 | R62 | Clarify how finishing For Time is logged and what actual work can be recorded. | Current source path verified; desired results-entry contract open | ForTime outcome / section completion / actual-work writers |
 | R63 | Consider effort capture for timed work and whether that feedback can be used. | Exploratory question, not approval to restore collection or change progression | Existing effort storage / conditioning feedback rules |
 | R64 | Natural For Time timeout/end-state screenshot is still pending from Eric. | Awaiting further intake; running screenshot is context only | For Time capped-state review |
+| R65 | Ladder Review is visually accepted apart from moving prescription details out of the badge. | Explicit visual acceptance with badge exception; exact concise badge text open | Shared Review movement/header presentation / ladder badge |
+| R66 | Long ladder card exception: Start near the top, below title/badge and likely above prescription, visible without scrolling through the ladder. | Intake only; refines general bottom-action placement for this case | Shared block action slot / LadderBlock |
+| R67 | Timed ladder needs a functioning visible clock and Start/stop lifecycle like other For Time blocks. | Intake only; missing-timer observation retained | Existing shared timer and ladder timing owner |
+| R68 | After ladder Start, show secondary Pause and primary Finish together. | Explicit requested hierarchy; pause/resume details open | Timed-ladder action composition / clock owner |
+| R69 | Natural timeout or Finish prompts a results log: incomplete progress or all rungs checked when completed, plus effort, notes and applicable weights. | Explicit ladder logging direction; detailed fields/save/confirmation contract open | Ladder results / existing logging and effort owners |
+| R70 | Remove repeated same every round suffix from companion-movement prescriptions. | Intake only; preserve the actual repeated rep targets | Shared ladder rung presentation / copy |
+| R71 | Remove the crossed-out Move through the rounds… explanatory paragraph. | Intake only; relates to platform copy pass R45 | Ladder guidance/helper copy |
+| R72 | Rung lines should omit reps between quantity and movement or use a separator such as × or ·. | Alternative notation requested; exact choice not selected | Shared ladder prescription text |
+| R73 | Consider a dedicated empty-state pass and rules, prompted by repeated missing-coaching messages. | Exploratory follow-up; no replacement behavior selected | Shared empty-state presentation / coaching and notes |
+| R74 | Overview shown here is exactly the desired visual treatment. | Visually accepted; preserve layout, fact/icon treatment and equipment grouping | SummaryFacts / EquipmentSummary / shared Overview consumers |
 <!-- refinement-index:end -->
 
 The next visual review focuses on **R30–R35 and R37**. Accepted warm-up/coaching treatments remain in place. After selection, Requirements Builder should name these canonical owners and examples, preserve their distinct state/data behavior, and carry every active row forward or explicitly defer it. Report/guide/range/default contracts are open work, not invisible assumptions. The later Runner/UAT stage is conditional on that approved implementation scope; this preview pass does not start it.
@@ -344,3 +354,50 @@ Retain as an exploratory product/data question for the next reconciliation: what
 ### R64 — Natural timeout evidence remains pending
 
 Screenshot 2 shows the running For Time view without annotations. Preserve it as context only; do not turn its unmarked elements into accepted designs or new requested changes. Screenshot 3 is an early/manual finish at 00:03, not the natural cap end. Eric is leaving another clock running and will supply the naturally timed-out screen later. Keep that state review explicitly pending; do not change, restart or operate his running attempt, accelerate the timer or substitute a generated cap screenshot for his observation.
+
+
+## Ladder, empty-state and Overview intake — 2 November 2026
+
+Source: Eric's message describing timed-ladder action placement, Pause/Finish and end logging, plus five annotated screenshots: Ladder Review, lower live ladder, upper live ladder, expanded coaching/notes empty states and the Overview. Continue intake; Eric has not closed the round. The separate natural plain For Time timeout screen in R64 remains pending.
+
+### R65 — Preserve the accepted Ladder Review layout
+
+Screenshot 1 says “Otherwise this is excellent”; its only requested change is taking prescription out of the badge, consistent with R51/R59. Preserve the shown movement hierarchy, equipment placement and separation. Keep cap/duration and ladder prescription meaning outside the concise format label. Do not infer an exact final badge string or silently discard ascending/descending meaning where it matters. Visual acceptance does not claim every data/state variant has been verified or approve the entire prototype.
+
+### R66 — Top action is the long-ladder exception
+
+Because the ladder card can be long, place Start at the top or at least above the fold, below title and label and likely above prescription. This explicitly refines the earlier bottom-of-card Start direction for this case; retain the existing bottom placement request for other formats unless Eric changes it. Use a shared action slot rather than an isolated duplicate control. Eric did not request sticky positioning, duplicated Start controls or a global move of every format's action. Verify visibility at relevant phone sizes in the later preview without treating “above the fold” as an exact fixed pixel offset.
+
+### R67 — Functioning timed-ladder clock
+
+Screenshot 3 annotation 2 reports that there is no timer and asks for the same Start/stop behavior as other For Time work. Record the need for a real visible timed-ladder lifecycle and shared timer presentation, including reaching the prescribed cap. This is a user-observed gap, not a diagnosed root cause. Do not replace an actual clock with manual “Hit the time cap” self-reporting. Other ladder timing modes retain their own contracts; this note is about the shown For Time ladder.
+
+### R68 — Secondary Pause and primary Finish
+
+After Start, replace the Start action with two controls: secondary-styled Pause and primary-styled Finish. Keep the hierarchy explicit. Pause/resume wording, cap-time accounting while paused, reload/background behavior and exact responsive arrangement still need the later interaction contract; do not silently decide them during intake. This explicit ladder request does not automatically alter AMRAP's earlier Finish early direction.
+
+### R69 — End-state logging for completed and incomplete ladders
+
+When the timer expires naturally or Finish is pressed, prompt the user with log options rather than leaving only an outcome statement. For an incomplete ladder, collect how far they got. For a completed ladder, show all ladder rungs checked for them. In either case, include effort and basic logging options such as notes and weights for movements that have them.
+
+This is an explicit requested direction for ladder results, extending the earlier exploratory effort discussion (R63) for this context. The exact effort vocabulary/scale, per-movement weight/unit handling, note scope, partial-rung representation and save/cancel/reopen behavior remain open. Distinguish completion from ending an attempt: the message discusses both completed and incomplete results when an attempt ends; do not assume every Finish press or timeout proves every rung was completed. All-rungs-checked is the completed-case log presentation, not authority to silently persist every prescribed rep/load as actual work. How the prefilled log can be edited and confirmed needs a later design decision; no specific mechanism is selected. Do not automatically extend this contract to every timed format or change adaptive progression now.
+
+### R70 — Remove same every round suffix
+
+Screenshots 2 and 3 cross out the repeated “— same every round” suffix. Remove that explanatory phrase wherever the shared ladder rung presentation adds it. Keep the actual companion movement quantity in each relevant round (e.g. 4 Burpee) and the prescribed repetition pattern; this is a copy cleanup, not a change in the work. Eric calls out this wording as feeling AI-added, which is relevant evidence for R45's copy audit rather than a finalized global tone rule.
+
+### R71 — Remove the extra ladder instruction paragraph
+
+Screenshot 2 annotation 2 crosses out the entire paragraph: “Move through the rounds at your own pace inside the cap. Nothing here moves on by itself — you say how far you got.” Remove it. Do not replace it with equally redundant explanatory prose. The nearby “How did this block end?” buttons are not themselves crossed out; reconcile their role with the requested real clock/end-log flow later rather than treating this annotation as a separate explicit removal of every adjacent control.
+
+### R72 — Cleaner rung prescription notation
+
+Screenshot 3 annotation 1 says the word “reps” between quantity and movement feels odd. Eric offers alternatives: omit it, or use a separator such as “x”/× or a dot. Preserve quantity, movement identity and the applicable unit meaning; the exact notation is not selected. Do not apply this as a blind platform-wide removal of units or change the already accepted Review prescription solely because this live-rung line is being simplified. Carry the wording concern into R45.
+
+### R73 — Empty-state pass and rules
+
+Screenshot 4 shows repeated “The library has no entry for this movement, so there are no cues or regression.” messages above independent movement notes. Eric says it may be worth a pass on empty states and rules. Record a prospective cross-platform empty-state review, with this as an example, rather than an approved replacement string/hide rule or a started audit. Distinguish missing coaching content from the user's still-available notes capability and from loading/error states. Whether these fixture movements reflect real catalog gaps requires later verification; do not diagnose or repair the movement catalog during intake.
+
+### R74 — Overview visual acceptance
+
+Screenshot 5 explicitly says this Overview is perfect and precisely envisioned. Record acceptance of the shown wrapping facts/icons, compact intensity, separator and Required equipment grouping, including the “None — bodyweight only” reading for this fixture. Preserve that visual treatment across its shared consumers. R33/R34's earlier first-pass selection-pending status is resolved by this acceptance for the shown Overview. Actual fact values, equipment truth and other existing data-contract questions still follow their owners; do not invent data from the screenshot or reopen the accepted appearance as undecided.

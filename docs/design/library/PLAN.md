@@ -140,11 +140,15 @@ Use the source and pattern maps to find affected consumers. Do not merge unrelat
 
 # Current intake hold — 2 November 2026
 
-Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM, AMRAP, For Time and platform requests/questions in R39–R64, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold. Eric is still collecting the natural For Time timeout/end-state screenshot (R64); that review remains pending.
+Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM, AMRAP, For Time, ladder and platform requests/questions in R39–R74, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold. Eric is still collecting the natural For Time timeout/end-state screenshot (R64); that review remains pending.
 
 # Requested language/copy pass — pending intake closure
 
 R45 explicitly requests a dedicated platform-wide copy audit and agreed terminology/tone rules. Retain it as a follow-up beyond the current workout examples; it is not started during intake and no final product voice is selected. Specific wording requests such as R50 remain in the running feedback record.
+
+# Possible empty-state pass — pending intake closure
+
+R73 proposes a pass on empty states and their shared rules, prompted by repeated missing-coaching messages. Preserve it as exploratory follow-up alongside the explicit copy-audit request, not a started audit or selected hide/replacement rule. R65 accepts the shown Ladder Review apart from its badge; R74 accepts the shown Overview visual treatment. The timed-ladder action/logging requests R66–R69 remain intake for the next coherent revision.
 
 # Active checklist
 
