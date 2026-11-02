@@ -10,7 +10,7 @@
 
 North Star: one executable visual library, with the same shared implementations in gallery and product. This workout refinement is the practical test of that reuse and the design → requirements → implementation workflow. It is not a new independent design system.
 
-All 58 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
+All 64 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
 
 <!-- refinement-index:start -->
 | ID | Decision / refinement | Current status | Shared owner / follow-through |
@@ -73,6 +73,12 @@ All 58 recorded comments are indexed below. **Previewed is not released or blank
 | R56 | Explore minus/value/plus as one framed quantity-selector component. | Tentative design exploration, not an approved new API | Existing quantity-input owners / smallest shared addition if needed |
 | R57 | Remove Clear rounds and No partial round reset controls; use decrement instead. | Intake only; preserve/reconcile zero versus unreported meaning | AMRAP result controls / recorded-result semantics |
 | R58 | Explore a completion check/time arrangement that aligns cleanly, retaining the liked direction. | Alternative requested; final design not selected | Shared completion readout / AMRAP completed state |
+| R59 | Apply the AMRAP format-only badge and consistent-placement notes to For Time too; cap belongs outside the badge. | Intake only; extends R51 | Shared format badge/header / timed format consumers |
+| R60 | Remove the crossed-out Rest 60s line from For Time Review. | Intake only; preserve actual prescribed-work/timer semantics | Review For Time presentation |
+| R61 | Show/explain grouped For Time shapes, including multiple movements and ladders performed before a cap. | Question and coverage request; current plain example is insufficient | ForTimeBlock / LadderBlock / shared movement presentation |
+| R62 | Clarify how finishing For Time is logged and what actual work can be recorded. | Current source path verified; desired results-entry contract open | ForTime outcome / section completion / actual-work writers |
+| R63 | Consider effort capture for timed work and whether that feedback can be used. | Exploratory question, not approval to restore collection or change progression | Existing effort storage / conditioning feedback rules |
+| R64 | Natural For Time timeout/end-state screenshot is still pending from Eric. | Awaiting further intake; running screenshot is context only | For Time capped-state review |
 <!-- refinement-index:end -->
 
 The next visual review focuses on **R30–R35 and R37**. Accepted warm-up/coaching treatments remain in place. After selection, Requirements Builder should name these canonical owners and examples, preserve their distinct state/data behavior, and carry every active row forward or explicitly defer it. Report/guide/range/default contracts are open work, not invisible assumptions. The later Runner/UAT stage is conditional on that approved implementation scope; this preview pass does not start it.
@@ -298,3 +304,43 @@ Screenshot 5 marker 5: Eric likes the completion-time direction, but the check m
 ### Intake continuation
 
 Continue collecting all formats and platform notes in this list until Eric explicitly closes intake. Keep R39–R44 and these R45–R58 notes alongside the earlier selected and superseded choices. The published preview/checklist remains the reviewed version; this local intake record is the current feedback source.
+
+
+## For Time feedback intake — 2 November 2026
+
+Source: Eric's three screenshots of For Time Review, a running attempt and a manually finished-under-cap attempt, plus his message that he is leaving the clock running separately to inspect natural timeout and will add that screen when complete. Accept these now; do not treat the format or intake round as finished. Reviewed application source remains a538f763dae6a491205469aa76386ad5205fef2c, hosted by 7832150c1370525a42a561603020a87e0060d04b. This inspection describes that source, not an independently verified newer production version.
+
+### R59 — Carry badge simplification across to For Time
+
+Screenshot 1 annotation 1 explicitly repeats the AMRAP notes. Apply R51's format-only badge and consistent placement to For Time: FOR TIME identifies the shape; the 15-minute cap is prescription detail outside it. Preserve the actual cap information. The same conditional placement preference remains unresolved; do not create another per-format location or infer additional unrelated AMRAP changes from this annotation.
+
+### R60 — No generic For Time Review rest line
+
+Screenshot 1 crosses out Rest 60s. Record removal of that line from this For Time Review presentation. Keep intentional prescribed work/rest and clock rules distinct; the annotation is not authority to alter the underlying exercise prescription or timer.
+
+### R61 — Grouped and ladder For Time coverage
+
+Screenshot 1 annotation 2 asks whether this shape can also be a ladder or a circuit-like group of movements trying to finish before the clock ends. Verified in the reviewed source: plain ForTimeBlock renders every block exercise in a movement list, not just the single Wall Ball in this fixture. A For Time block with a ladder rep scheme dispatches to LadderBlock; explicit ladder timing can also select that owner. A circuit-like grouping performed for time is a different clock/scoring contract from automatically selecting CircuitBlock, which remains the circuit structure owner.
+
+Retain a request to show representative grouped/multiple-movement For Time and timed-ladder examples after intake. Source support is not proof that the current multi-movement display or repeated-round explanation is good. Do not claim this single-movement fixture establishes that coverage or implement a new format/taxonomy now.
+
+### R62 — What Finish records, and the missing explicit work log
+
+Screenshot 3 asks: “There's no way to log this work. Is it captured automatically?” Verified path in the source behind this preview:
+
+- ForTimeBlock's Finish stamps the attempt's finish; forTimeOutcome supplies elapsedSeconds and completedUnderCap to the existing BlockPanel completion reporter.
+- Reporting that outcome does not itself write a block_results row. The footer section-forward/Finish workout path calls completeSection, which saves the latest reported result through the shared writer.
+- ForTimeMovement displays prescribed work; this view has no actual per-movement reps/load entry form. A timer result does not demonstrate the actual reps/load performed, especially when the cap is reached.
+- This hosted comparison uses synthetic in-memory data; interaction is not proof of backend persistence.
+
+Keep the owner question/request for a clear logging path and actual-work capture in the complete-round reconciliation. Exact fields, completion confirmation, cap/partial-work reporting and save/reopen behavior are open. Do not infer that every prescribed rep/weight should be auto-logged, or assume a new Log form/API has already been approved.
+
+### R63 — Effort capture and possible use
+
+Screenshot 3 also asks whether there is a way to record effort and whether it could be leveraged. In the reviewed source, BlockCompletionProvider passes perceivedEffort: null: this timed results path does not ask for effort. Existing block result storage still supports nullable perceived_effort, and conditioning.ts contains trend logic using recorded effort alongside completion. This establishes existing capability, not authorization to reinstate a scale, choose a new effort UI or change adaptive-training behavior.
+
+Retain as an exploratory product/data question for the next reconciliation: what, if anything, should be collected, at what level, and how should it affect guidance. Keep historical 1–10 block effort and the separate categorical set-effort vocabulary distinct. Do not infer missing effort as low effort or default a value.
+
+### R64 — Natural timeout evidence remains pending
+
+Screenshot 2 shows the running For Time view without annotations. Preserve it as context only; do not turn its unmarked elements into accepted designs or new requested changes. Screenshot 3 is an early/manual finish at 00:03, not the natural cap end. Eric is leaving another clock running and will supply the naturally timed-out screen later. Keep that state review explicitly pending; do not change, restart or operate his running attempt, accelerate the timer or substitute a generated cap screenshot for his observation.
