@@ -180,3 +180,9 @@ boundary test follows `src/styles/fonts.test.ts` instead.
 ## Owner-authorized native continuation and source evidence refresh — 2 November 2026
 
 The owner approved one additional native attempt (ceiling2 to3), preserving the original run, workspace, branch and attempts1–2, and the existing genuine source-audit refresh. The captured-source selector and task/revision/run/base metadata now name TASK-005 under the amended approved graph; source-only branch slot a1 remains separate from native claim ordinals. No validator, assertion predicate, helper, preset or historical capture changed. The missing nonsecret reference paths were supplied through the existing ignored local test configuration; the exact isolated browser command passed1/1 in11.1s. Fresh native acceptance and delivery remain pending.
+
+### Genuine audit refresh completed before native claim3
+
+The unchanged authenticated collector passed4/4 skin cases with8 actual PNGs from source `2c0b8e3435bb011a49b34bd6d46f53921d159c0d`. The unchanged audit and lineage suite passed67/67. Runtime `08cb39d402f25971d14ed986052a9f17d95901150c69dd480bdff2ce06e79d5f`, driver `f6ddf9cd597d0df5866425220bf3e80862631c1e8a67213b2dd7fdf915949df5`, payload `869d65dfdd6b0e44afa5051458f538bea0e388d1d05b8641a3f8c38b826b85b3`. Prior groups and all renderer/test implementation digests are retained. This proves local same-source evidence only, with no native acceptance or owner visual approval claimed.
+
+Native continuation should preserve the completed module and focus on the approved remaining checks and a genuine current-attempt criterion report. The source-only lineage `attempt:1` names the retained a1 branch; native attempt3 is separately recorded by Runner. No helper or predicate needs changing to make those ordinals equal. Existing ignored local harness configuration supplies the approved reference paths and test backend.
