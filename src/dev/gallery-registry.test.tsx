@@ -54,6 +54,11 @@ const NOT_A_GALLERY_SPECIMEN: Readonly<Record<string, string>> = {
   ForegroundEchoText:
     'REQ-004 — PhosphorEchoText for a heading on the background; framed through PhosphorEchoFrame’s real-component example',
   EchoExcluded: 'REQ-004 — context only: marks a surface that is not the background; renders nothing',
+  // Effects TASK-005: the CRT Glass field. Where it mounts and which texture
+  // feeds it belong to the texture surface (TASK-006); its appearance is proven
+  // against the preserved host by e2e/effects/crt-glass-fidelity.spec.ts.
+  CrtGlassField:
+    'REQ-005 — decorative WebGL field over an app-owned texture, mounted by TASK-006; fidelity proven by its own browser spec',
   // B05 REQ-003: a sizing host around the public ScrollRegion. It draws
   // nothing of its own; its appearance is the region's, specimened upstream.
   FittedScrollRegion: 'B05 REQ-003 — sizes the public ScrollRegion to its content; no visual surface',

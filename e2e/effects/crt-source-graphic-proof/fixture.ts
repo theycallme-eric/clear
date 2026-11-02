@@ -18,6 +18,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
+import { bundledEffectsInput } from '../reference-inputs'
 import { parseEnvFile } from '../../../scripts/dev-preflight/env.mjs'
 
 export const REFERENCE_ENV = 'CLEAR_EFFECTS_REFERENCE_DIR'
@@ -105,7 +106,7 @@ function envValue(name: string): string | undefined {
     const value = parseEnvFile(readFileSync(path, 'utf8'))[name]?.trim()
     if (value) return value
   }
-  return undefined
+  return bundledEffectsInput(name)
 }
 
 const sha256 = (bytes: Buffer) => createHash('sha256').update(bytes).digest('hex')

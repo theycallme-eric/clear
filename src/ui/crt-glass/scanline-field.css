@@ -1,0 +1,15 @@
+/*
+ * Effects TASK-005 — the CRT Glass canvas is decorative: it fills the box the
+ * texture surface (TASK-006) gives it, takes no input and is skipped by
+ * assistive technology (aria-hidden in the markup).
+ */
+.clr-crt-glass {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.clr-crt-glass[hidden] {
+  display: none;
+}

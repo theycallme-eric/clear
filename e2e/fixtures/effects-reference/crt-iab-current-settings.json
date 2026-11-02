@@ -1,0 +1,34 @@
+{
+  "study": "CLEAR CRT glass motion 02",
+  "settings": {
+    "curvature": 0.2,
+    "lineWidth": 2,
+    "lineContrast": 0.02,
+    "edgeBlur": 3.4,
+    "edgeWidth": 0.14,
+    "vignetting": 0.21,
+    "vignettingAlpha": 0.08,
+    "vignettingBlur": 0.18,
+    "noise": 0.01,
+    "noiseSize": 1,
+    "grainSoftness": 0.4,
+    "animate": true,
+    "grainAnimate": true,
+    "cycleSeconds": 0.6,
+    "grainRate": 0.5,
+    "echo": true,
+    "colorProtect": true,
+    "reduceMotion": false,
+    "effectsOff": false,
+    "verticalLine": false,
+    "mode": "glass"
+  },
+  "phosphorEcho": {
+    "opacity": 0.29,
+    "blur": 3.2,
+    "x": -4.7,
+    "y": 5.64
+  },
+  "pipeline": "Echo composed first, CRT scanlines and vignette, then edge softness",
+  "scope": "isolated visual study; no application integration"
+}
