@@ -140,7 +140,11 @@ Use the source and pattern maps to find affected consumers. Do not merge unrelat
 
 # Current intake hold — 2 November 2026
 
-Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM requests/questions in R39–R44, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold.
+Eric is collecting format feedback. Intake only until he explicitly says all notes are entered and work may continue. Record the EMOM, AMRAP and platform requests/questions in R39–R58, answer factual questions read-only, and keep the reviewed preview fixed. No preview/code/primary-requirements changes or Builder/Runner execution during this hold.
+
+# Requested language/copy pass — pending intake closure
+
+R45 explicitly requests a dedicated platform-wide copy audit and agreed terminology/tone rules. Retain it as a follow-up beyond the current workout examples; it is not started during intake and no final product voice is selected. Specific wording requests such as R50 remain in the running feedback record.
 
 # Active checklist
 

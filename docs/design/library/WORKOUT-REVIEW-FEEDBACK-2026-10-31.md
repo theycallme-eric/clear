@@ -10,7 +10,7 @@
 
 North Star: one executable visual library, with the same shared implementations in gallery and product. This workout refinement is the practical test of that reuse and the design → requirements → implementation workflow. It is not a new independent design system.
 
-All 44 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
+All 58 recorded comments are indexed below. **Previewed is not released or blanket approval.** Superseded choices stay visible so future requirements cannot accidentally revive them. R01–R23 detail is preserved in [the historical feedback snapshot](archive/WORKOUT-REVIEW-R01-R23-2026-10-30.md); R24 onward retains the source notes below. The five subpoints of R10 are included together in its row and remain verbatim in that snapshot.
 
 <!-- refinement-index:start -->
 | ID | Decision / refinement | Current status | Shared owner / follow-through |
@@ -59,6 +59,20 @@ All 44 recorded comments are indexed below. **Previewed is not released or blank
 | R42 | Fix the responsive timer frame so time uses its full framed area rather than a narrow inner frame inside empty width. | Intake only; use the shared timer owner | Shared timer composition / MinuteCountdown |
 | R43 | At the prescribed EMOM end, provide a Log action instead of only the completion message. | Intake only; actual results/fields and interaction still open | EMOM end state / existing logging and completion owners |
 | R44 | Clarify the movement ordinal: it identifies position in a multi-movement rotation; one movement currently still shows 1. | Question answered; hiding it for one movement not yet selected | EMOM movement identity |
+| R45 | Dedicated platform-wide copy audit and language/tone rules, beyond the current workout examples. | Explicit future work request; audit not started during intake | Platform copy / shared terminology and action labels |
+| R46 | Show how AMRAP Review and Workout handle multiple movements. | Example request; no new preview during intake | AMRAP work-list / shared movement presentation |
+| R47 | Remove the per-movement Rest 60s line from AMRAP Review. | Intake only; do not change timer/scoring semantics | Review AMRAP presentation |
+| R48 | Start AMRAP and Finish early fill responsive card width below the movement/prescription. | Intake only; EMOM Pause request does not automatically transfer | Existing action composition / AMRAP clock owner |
+| R49 | AMRAP time fills the whole responsive timer frame, like R42. | Intake only; shared timer correction | Shared timer composition |
+| R50 | Replace awkward running AMRAP helper with Log when complete. | Requested wording; broader copy rules remain future work | AMRAP running helper / platform copy |
+| R51 | Badge contains format only; duration/details outside; position consistently, under title if same-row fit cannot be guaranteed. | Intake only; preserve upper-left preference and conditional placement | Shared format badge/header / Review and Workout |
+| R52 | Explore softer quantity-control frame corners matching the referenced menu geometry. | Requested comparison; exact shape not selected | Quantity controls / existing icon-button geometry |
+| R53 | Header timer and menu/icon share height globally; make the timer taller. | Intake only; explicit global request | Shared header timer / menu control |
+| R54 | Put completed AMRAP movement/prescription before rounds-completed controls. | Intake only | AMRAP completed-state content order |
+| R55 | Group/separate rounds and partial-round result areas rather than floating lines of text. | Intake only; containment design not selected | AMRAP results presentation |
+| R56 | Explore minus/value/plus as one framed quantity-selector component. | Tentative design exploration, not an approved new API | Existing quantity-input owners / smallest shared addition if needed |
+| R57 | Remove Clear rounds and No partial round reset controls; use decrement instead. | Intake only; preserve/reconcile zero versus unreported meaning | AMRAP result controls / recorded-result semantics |
+| R58 | Explore a completion check/time arrangement that aligns cleanly, retaining the liked direction. | Alternative requested; final design not selected | Shared completion readout / AMRAP completed state |
 <!-- refinement-index:end -->
 
 The next visual review focuses on **R30–R35 and R37**. Accepted warm-up/coaching treatments remain in place. After selection, Requirements Builder should name these canonical owners and examples, preserve their distinct state/data behavior, and carry every active row forward or explicitly defer it. Report/guide/range/default contracts are open work, not invisible assumptions. The later Runner/UAT stage is conditional on that approved implementation scope; this preview pass does not start it.
@@ -217,3 +231,70 @@ Screenshot 1 annotation 3 asks whether “1.” is for EMOMs with multiple movem
 ### Intake continuation
 
 Keep collecting subsequent format notes in this same running list. Do not start the next revision until Eric explicitly says all notes are entered and work may continue. Previously accepted warm-up and grouped coaching presentation remain accepted; this EMOM intake does not reopen those decisions.
+
+
+## AMRAP and platform-wide feedback intake — 2 November 2026
+
+Source: Eric's message explicitly requesting a platform-wide language/copy pass and continued intake, with six annotated AMRAP screenshots from the same published format comparison. The intake hold remains active. These notes distinguish direct requests, questions and exploratory ideas; they do not authorize a new preview or implementation.
+
+### R45 — Platform-wide language and copy pass
+
+Explicitly add a dedicated pass across the platform, not just AMRAP or the current comparison. Inventory awkward/inconsistent language, terminology, action labels and state/helper messages; agree on compact language/tone rules before applying them. Eric has not selected a final product voice. Preserve this as a future work item for the complete round; do not start the audit or silently rewrite other screens during intake.
+
+### R46 — Multiple-movement AMRAP example
+
+Screenshot 1 asks what this looks like with multiple movements. Retain a request to demonstrate both relevant Review and Workout states with multiple actual movements, including their order/prescriptions and scoring implications. The present single-Burpee example cannot establish that coverage. Do not fabricate a new example while intake is open.
+
+### R47 — No generic AMRAP Review rest line
+
+The Rest 60s line is crossed out in screenshot 1. Record its removal from AMRAP Review, parallel to the EMOM display request. Do not reinterpret this as changing actual clock/scoring behavior or dropping an intentional rest prescription elsewhere.
+
+### R48 — AMRAP action width and order
+
+Screenshot 2: Start AMRAP is full-width/responsive, at the bottom of the card below the movement and prescription. Screenshot 3: Finish early uses the same full-width placement below the prescription. Preserve the earlier action-above-coaching direction where coaching is present, without hiding the work. The EMOM-specific request for a secondary Pause action is not an instruction to replace AMRAP Finish early with Pause.
+
+### R49 — Full-frame AMRAP timer
+
+Screenshot 3 annotation 1 repeats the EMOM timer note: time should occupy the whole responsive framed area, not a narrow inner frame beside empty width. Resolve through the shared timer owner after intake, not a format-specific patch. Exact font sizing is not selected here.
+
+### R50 — Running helper wording
+
+Replace “Nothing to enter now. Record your rounds afterwards if you like.” with the requested wording “log when complete”. Casing and consistency with other action/helper text can be reconciled during the requested copy pass. Do not infer an optional-results policy from the old wording or change the underlying logging behavior from this copy request.
+
+### R51 — Format-only badge and stable placement
+
+Screenshot 4: the label should identify only the section's shape/format, e.g. AMRAP. Duration (8 minutes), rep-scheme and other prescription details belong outside the badge; move their meaning rather than discarding it. This revises earlier mixed-detail badge directions in R28/R30/R37 where they conflict.
+
+Eric wants one consistent badge position across screens, rather than moving beside/below the title according to label length. His exact preference is short enough to stay in the “upper left”; if that cannot be guaranteed without truncation, place it under the title. Preserve that conditional choice for the next revision; do not silently substitute an earlier upper-right preference or treat an exact row arrangement as settled. No truncation is requested.
+
+### R52 — Softer quantity-control geometry
+
+Screenshot 5 marker 1 targets the rounds PLUS control, not the timer. Eric requests a less harsh corner/frame using the referenced menu control's geometry. His text calls the menu upper left while the screenshot shows it at upper right; preserve the intended geometry reference without inventing a different target. Explore matching geometry for the counter controls rather than selecting a new component shape during intake.
+
+### R53 — Header timer/menu height alignment
+
+Screenshot 5 marker 2 targets the global elapsed timer/menu pair. They should share height; the timer should be taller. Eric explicitly describes this as global. Keep this separate from R49's full-width section timer and from the quantity-control corner request.
+
+### R54 — Prescription before results entry
+
+Screenshot 5 marker 3 targets the Burpee name/prescription currently after the scoring controls. Move the movement/work information above Rounds completed. Keep planned work distinct from athlete-reported results.
+
+### R55 — Group the result areas
+
+Screenshot 5 marker 4 boxes the rounds and partial-round controls. Add deliberate grouping/separation/containment so the result UI is not a sequence of floating text lines. The exact visual container and relationship between these groups remain to be designed.
+
+### R56 — Explore one framed quantity selector
+
+Screenshot 6 annotation 2 asks to “entertain” minus/value/plus housed as one framed quantity-selection component. Record this as exploratory, not an approved component/API or permission to introduce a new abstraction before checking the existing controls. Apply any selected shared presentation to relevant counters while retaining their separate result meanings.
+
+### R57 — Remove reset/clear controls
+
+Screenshot 6 annotation 1 removes both Clear rounds and No partial round; users can tap down. Do not replace them with another clear-all action. During reconciliation, explicitly preserve or settle how zero, unreported and no partial round differ; removing a reset control does not authorize auto-recording zero or erasing existing data semantics.
+
+### R58 — Align the completion readout
+
+Screenshot 5 marker 5: Eric likes the completion-time direction, but the check makes the text misaligned. Explore another aligned arrangement. No replacement icon, exact composition or new completion wording is selected yet.
+
+### Intake continuation
+
+Continue collecting all formats and platform notes in this list until Eric explicitly closes intake. Keep R39–R44 and these R45–R58 notes alongside the earlier selected and superseded choices. The published preview/checklist remains the reviewed version; this local intake record is the current feedback source.
