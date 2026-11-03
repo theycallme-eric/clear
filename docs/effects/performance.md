@@ -1,5 +1,32 @@
 # Visual effects performance
 
+## Current front-glass measurement — 3 November 2026, issue #624
+
+The existing comparison passed 1/1, recording six alternating off/on runs on clean source
+`8aaac466e65f7fe4eaafb8182e4832a7404dabdd`. Same runtime as the layer correction; Echo and CRT
+configuration values are unchanged. Full [raw measurements](evidence/front-glass-performance-20261103.json)
+and [generated tables with build hashes](evidence/front-glass-performance-20261103.md) are preserved.
+The earlier identity and results below are **pre-front-layer history**, not measurements of the
+corrected layer. The browser's initial blank-page probe is 980px wide; each actual application run
+independently reports 390×844, DPR 3 and visual viewport scale 1.
+
+- Chromium 153, mobile emulation, SwiftShader software renderer; no physical-phone claim or gate.
+- Both modes fetched 17 resources / 321,523 bytes **on the same effects-enabled build**. This does not
+  compare bundle size against the pre-effects application.
+- Recorded main-thread long tasks: off 0, on 0. A 50 ms long-task cutoff does not rule
+  out shorter main-thread work or establish a compositor cause for 33 ms frame gaps.
+- Across the 15 pacing phases per mode: off 0 gaps over 20 ms;
+  on 29. Maximum gap off 16.8 ms,
+  on 33.4 ms. Lowest phase rate off 60.3 fps,
+  on 57.3 fps. These are observed browser costs, not pass/fail thresholds.
+- First Anchor taps: off 34.4, 33.2, 48.4 ms;
+  on 57.3, 61.1, 58.8 ms. Later input overlaps
+  between modes. The raw timing measures event-to-second-next-frame, not field-validated INP.
+
+No appearance fallback, phone test or performance budget was introduced. Final owner visual and
+performance acceptance remain pending. Main is unchanged.
+
+
 Effects TASK-009 · REQ-008 · issue #610. This is the browser-based engineering comparison of the
 same app flows with Visual effects **off** and **on**, on the same build. Under the owner
 amendment, it replaces mandatory owner-run testing on a real phone.
@@ -292,9 +319,9 @@ These describe this environment only. None is a pass or a fail.
    - No gap exceeded 50 ms in either mode.
    - The worst phase rate was 57.3 fps on, against 60.7 fps off. Pacing spread (sd) rose from
      about 0.2–1.6 ms off to about 1.1–4.3 ms on.
-   - The missed frames are not on the main thread: there were no long tasks. They fit the
-     software compositor painting the continuously animated field. Whether a hardware GPU shows
-     the same is **not proven**.
+   - No main-thread task of 50 ms or more was recorded. Shorter main-thread work and compositor
+     cost are not separated by this measurement; neither the cause nor hardware-GPU behaviour
+     is proven.
 4. **Main-thread work over the flow: higher with effects on.**
    - Style recalculations: 1,029–1,033 on against 478–483 off (about 2.1×). Recalculation time
      about +0.045 s.
@@ -341,8 +368,8 @@ and the owner's review. Options that change the appearance are marked; none may 
 
 - **No appearance change is supported by this evidence alone.** There are no long tasks, no
   material load cost and no extra resources. The pacing regression is single missed frames on a
-  software compositor. That is not enough to justify a fallback that changes the look, and none
-  is made.
+  software-rendered browser, without attributing the cause. That is not enough to justify an
+  appearance-changing fallback, and none is made.
 - **Investigation without an appearance change:**
   - Rerun this spec on a hardware-GPU browser (headed Chromium, or a CI runner with a GPU) to see
     whether the missed frames remain.

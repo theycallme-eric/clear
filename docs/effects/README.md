@@ -30,7 +30,9 @@ Both effects read one policy. They keep no on/off state of their own.
 - **Setting:** one *Visual effects* checkbox in the Settings Appearance card (`src/app/Settings.tsx`,
   TASK-002). Checked means on. It is on by default, and an unknown stored value falls back to on.
   The choice is device-local (`localStorage['clear.visual-effects']`, like `clear.skin`). There is
-  no account write, no save status, no extra Reduce motion checkbox and no tuning control.
+  no account write, no save status and no tuning control. This is current implementation. The
+  owner selected keeping Visual effects and adding a separate Reduce motion checkbox; that app
+  control is pending and is not implemented by the front-glass correction.
 - **Off wins.** With Visual effects off, neither effect renders, no field clocks run, the atmosphere
   blobs hold still and no retired scanline comes back.
 - **Reduced motion** (OS `prefers-reduced-motion`, honoured live). Line drift, grain refresh and the
@@ -215,8 +217,9 @@ Both upstream licence files and `*-version.json` records are preserved unchanged
 `e2e/fixtures/effects-reference/crt-glass-motion/vendor/`.
 
 **What actually loads.** The live `CrtField` and the Echo use only browser features: SVG filters,
-inline SVG, `backdrop-filter` and Web Animations. They add no request and no bytes to the load
-(TASK-009). The `src/ui/crt-glass/` port has a plain-WebGL2 renderer that would load as one lazy,
+inline SVG, `backdrop-filter` and Web Animations. Off/on measurements fetched the same resources
+and bytes on the same effects-enabled build; this is not a comparison with the pre-effects app
+(TASK-009 and the issue#624 front-glass refresh). The `src/ui/crt-glass/` port has a plain-WebGL2 renderer that would load as one lazy,
 idle-time chunk, but nothing mounts it. The production build therefore emits no CRT/Pixi chunk, and
 `src/ui/crt-glass/bundle-boundary.test.ts` proves it.
 
@@ -233,7 +236,7 @@ idle-time chunk, but nothing mounts it. The production build therefore emits no 
 | TASK-007 | `e2e/effects/comfort-transitions.spec.ts`, `src/app/visual-effects-journey.test.tsx` | Off, reduced-motion and hidden-tab end states with no reload and no catch-up |
 | TASK-009 | `e2e/effects/performance-comparison.spec.ts` → [`performance.md`](performance.md) | Browser engineering comparison (see below) |
 
-**Performance (TASK-009).** The comparison ran in desktop Chromium 153 with Playwright mobile
+**Performance (TASK-009, refreshed for issue#624).** [The current front-glass record](performance.md) keeps the new measured source separate from pre-front-layer history. The earlier comparison ran in desktop Chromium 153 with Playwright mobile
 emulation (390 × 844, DPR 3) on the **SwiftShader software renderer**.
 
 - Load: no material difference, and the same resources and bytes.
