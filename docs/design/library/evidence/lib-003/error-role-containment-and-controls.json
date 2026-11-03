@@ -1,0 +1,1640 @@
+{
+  "canonicalOwner": "src/ui/view-state.tsx#ErrorView",
+  "registryEntry": "src/dev/gallery-registry.tsx · ErrorView",
+  "releasedBase": "65522e93d60d439ad82a545833812a58095f2216",
+  "correctedPrototype": "c0d5782bf9bec8065b5e224c9d3b4f35a9dded17",
+  "comparisons": [
+    {
+      "skin": "clear",
+      "width": 320,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+          "bar": "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #F87823 r g b / 0.9)",
+          "expected": "rgb(from #F87823 r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(0, 169, 244) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.5) | rgb(23, 23, 23)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#00A9F4",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+          "bar": "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #F87823 r g b / 0.9)",
+          "expected": "rgb(from #F87823 r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(0, 169, 244) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.5) | rgb(23, 23, 23)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#00A9F4",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "vapour",
+      "width": 320,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.705882 0.490196 1 / 0.9)",
+          "bar": "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #B47DFF r g b / 0.9)",
+          "expected": "rgb(from #B47DFF r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 229, 199) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.5) | rgb(10, 20, 19)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00E5C7",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.705882 0.490196 1 / 0.9)",
+          "bar": "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #B47DFF r g b / 0.9)",
+          "expected": "rgb(from #B47DFF r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 229, 199) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.5) | rgb(10, 20, 19)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00E5C7",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "signal",
+      "width": 320,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.776471 1 0.180392 / 0.9)",
+          "bar": "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #C6FF2E r g b / 0.9)",
+          "expected": "rgb(from #C6FF2E r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(255, 46, 166) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.5) | rgb(21, 10, 18)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#FF2EA6",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.776471 1 0.180392 / 0.9)",
+          "bar": "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #C6FF2E r g b / 0.9)",
+          "expected": "rgb(from #C6FF2E r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(255, 46, 166) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.5) | rgb(21, 10, 18)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#FF2EA6",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "mono",
+      "width": 320,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.415686 0.415686 0.415686 / 0.9)",
+          "bar": "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #6A6A6A r g b / 0.9)",
+          "expected": "rgb(from #6A6A6A r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(142, 142, 142) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.5) | rgb(10, 10, 10)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#8E8E8E",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.415686 0.415686 0.415686 / 0.9)",
+          "bar": "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #6A6A6A r g b / 0.9)",
+          "expected": "rgb(from #6A6A6A r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(142, 142, 142) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.5) | rgb(10, 10, 10)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#8E8E8E",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "clear",
+      "width": 390,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+          "bar": "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #F87823 r g b / 0.9)",
+          "expected": "rgb(from #F87823 r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(0, 169, 244) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.5) | rgb(23, 23, 23)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#00A9F4",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.972549 0.470588 0.137255 / 0.9)",
+          "bar": "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #F87823 r g b / 0.9)",
+          "expected": "rgb(from #F87823 r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(0, 169, 244) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.5) | rgb(23, 23, 23)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#00A9F4",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | rgb(23, 23, 23)",
+              "rgb(153, 221, 57) | rgb(23, 23, 23)",
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) | color(srgb 0.0901961 0.0901961 0.0901961 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.972549 0.470588 0.137255 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.972549 0.470588 0.137255 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "rgb(from #F87823 r g b / 0.9)",
+              "#99DD39",
+              "rgb(from #F87823 r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "vapour",
+      "width": 390,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.705882 0.490196 1 / 0.9)",
+          "bar": "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #B47DFF r g b / 0.9)",
+          "expected": "rgb(from #B47DFF r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 229, 199) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.5) | rgb(10, 20, 19)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00E5C7",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.705882 0.490196 1 / 0.9)",
+          "bar": "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #B47DFF r g b / 0.9)",
+          "expected": "rgb(from #B47DFF r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 229, 199) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)",
+              "color(srgb 0.705882 0.490196 1 / 0.5) | rgb(10, 20, 19)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00E5C7",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | rgb(10, 20, 19)",
+              "rgb(0, 198, 255) | rgb(10, 20, 19)",
+              "color(srgb 0.705882 0.490196 1 / 0.9) | color(srgb 0.0392157 0.0784314 0.0745098 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.705882 0.490196 1 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.705882 0.490196 1 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "rgb(from #B47DFF r g b / 0.9)",
+              "#00C6FF",
+              "rgb(from #B47DFF r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "signal",
+      "width": 390,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.776471 1 0.180392 / 0.9)",
+          "bar": "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #C6FF2E r g b / 0.9)",
+          "expected": "rgb(from #C6FF2E r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(255, 46, 166) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.5) | rgb(21, 10, 18)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#FF2EA6",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.776471 1 0.180392 / 0.9)",
+          "bar": "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #C6FF2E r g b / 0.9)",
+          "expected": "rgb(from #C6FF2E r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(255, 46, 166) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)",
+              "color(srgb 0.776471 1 0.180392 / 0.5) | rgb(21, 10, 18)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#FF2EA6",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | rgb(21, 10, 18)",
+              "rgb(0, 224, 106) | rgb(21, 10, 18)",
+              "color(srgb 0.776471 1 0.180392 / 0.9) | color(srgb 0.0823529 0.0392157 0.0705882 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.776471 1 0.180392 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.776471 1 0.180392 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)",
+              "#00E06A",
+              "rgb(from #C6FF2E r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "skin": "mono",
+      "width": 390,
+      "baseline": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.415686 0.415686 0.415686 / 0.9)",
+          "bar": "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #6A6A6A r g b / 0.9)",
+          "expected": "rgb(from #6A6A6A r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(142, 142, 142) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.5) | rgb(10, 10, 10)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#8E8E8E",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          }
+        }
+      },
+      "candidate": {
+        "contained": {
+          "nested": 0,
+          "frame": "color(srgb 0.415686 0.415686 0.415686 / 0.9)",
+          "bar": "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+          "emission": "rgb(from #6A6A6A r g b / 0.9)",
+          "expected": "rgb(from #6A6A6A r g b / 0.9)"
+        },
+        "ordinary": {
+          "LoadingView": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          },
+          "Card": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(142, 142, 142) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.5) | rgb(10, 10, 10)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#8E8E8E",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.50)"
+            ]
+          },
+          "ViewStateSwitch": {
+            "frames": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "rgb(212, 212, 212) | rgb(10, 10, 10)",
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) | color(srgb 0.0392157 0.0392157 0.0392157 / 0.7)"
+            ],
+            "bars": [
+              "color(srgb 0.415686 0.415686 0.415686 / 0.9) 0px 0px 0px 2px inset, color(srgb 0.415686 0.415686 0.415686 / 0.4) 0px 0px 0px 844px inset"
+            ],
+            "bleeds": [
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "rgb(from #6A6A6A r g b / 0.9)",
+              "#D4D4D4",
+              "#D4D4D4",
+              "rgb(from #6A6A6A r g b / 0.9)"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

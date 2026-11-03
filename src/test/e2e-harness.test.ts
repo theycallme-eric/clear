@@ -99,6 +99,7 @@ describe('the suite runs locally and in CI (ENV-07)', () => {
     expect(browserTestIgnoreForTarget(baseURL)).toEqual([
       '**/ui-polish-b05-*.spec.ts',
       '**/ui-polish-integrated.spec.ts',
+      '**/library-error-role.spec.ts',
     ])
   })
 

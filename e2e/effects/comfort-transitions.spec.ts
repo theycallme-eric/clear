@@ -420,7 +420,7 @@ async function exerciseFeedback(page: Page, app: Awaited<ReturnType<typeof synth
 // ---------------------------------------------------------------------------
 
 test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
-  test('app Reduce motion persists independently, keeps static effects and honors the OS', async ({ page, comfortOrigin }) => {
+  test('app Reduce motion persists independently, keeps static effects and honors the OS', async ({ page, comfortOrigin }, testInfo) => {
     const app = await syntheticApp(page, comfortOrigin)
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await page.goto('/generate')
@@ -434,6 +434,7 @@ test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
     await expect(page.locator('.clr-crt-field')).toHaveAttribute('data-motion', 'paused')
     expect(await page.locator('.clr-echo__source').count()).toBeGreaterThan(0)
     expect(await page.evaluate(() => localStorage.getItem('clear.reduce-motion'))).toBe('on')
+    await testInfo.attach('settings-app-reduce-motion.png', { body: await page.screenshot(), contentType: 'image/png' })
     await page.reload()
     await expect(motion).toBeChecked()
     await expect(effects).toBeChecked()
@@ -443,6 +444,7 @@ test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
     await expect(motion).toBeChecked()
     await expect(motion).toBeDisabled()
     await expect(page.getByText('Your device’s Reduce motion setting is on.')).toBeVisible()
+    await testInfo.attach('settings-system-reduce-motion.png', { body: await page.screenshot(), contentType: 'image/png' })
     expect(await page.evaluate(() => localStorage.getItem('clear.reduce-motion'))).toBe('off')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
     await expect(motion).not.toBeChecked()

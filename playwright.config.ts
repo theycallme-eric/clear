@@ -51,11 +51,20 @@ function isLocalBrowserTarget(baseURL: string): boolean {
  * These synthetic proofs are already local-only. Exclude their files before
  * module loading on deployments: title grep runs after imports, when a local
  * proof may already have read its staged visual references.
+ *
+ * TASK-001 (library pilot): the error-role regression starts its own Vite
+ * servers over this checkout, reads the released owner from git at import and
+ * serves `e2e/fixtures/`, none of which a deployed origin has. It is local
+ * candidate-source proof, never deployed proof.
  */
 export function browserTestIgnoreForTarget(baseURL: string): string[] {
   return isLocalBrowserTarget(baseURL)
     ? []
-    : ['**/ui-polish-b05-*.spec.ts', '**/ui-polish-integrated.spec.ts']
+    : [
+        '**/ui-polish-b05-*.spec.ts',
+        '**/ui-polish-integrated.spec.ts',
+        '**/library-error-role.spec.ts',
+      ]
 }
 
 /**
