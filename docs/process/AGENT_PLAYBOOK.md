@@ -70,14 +70,21 @@ already exist. The order is deliberate:
    archived repo.
 3. **`PROJECT_MAP.md`** — how the codebase is currently arranged. Read before writing a
    file, so the file lands where the project's conventions put it.
-4. **`docs/specs/design/ATOMIC.md`** — for any UI issue, always. It lists every token,
-   component, prop and icon that exists, plus the *only three* things that legitimately
-   need building (`Card`, `Select`, `CollapsibleSection`). If an agent is about to write a
-   component, ATOMIC.md decides whether it already ships.
+4. **[ATOMIC.md](../specs/design/ATOMIC.md)** — for any UI or design-system issue, always.
+   Read the version/provenance and source precedence first, then the reconciliation ledger and
+   task-to-reference table. Follow those pointers to the public API, tokens, patterns, specimens
+   and app-owned adapters. `Card` already ships; do not infer missing components from older
+   build lists or treat the package README as the final ruling.
 5. **`docs/specs/IA.md`** — for a screen issue: route, guard, states, composition, atmosphere.
 
 Do **not** read `docs/requirements/REQUIREMENTS.md` to work an issue. Once issues exist it is a
 frozen baseline; the issue body already contains everything it said.
+
+Before applying this reading order, verify the checkout's repository, working `HEAD`, cached
+remote-tracking ref and live remote revision separately (see ATOMIC.md §1.2). Read the governing
+guide from the product revision being reviewed. Keep old coordination checkouts and their pins
+as history; do not update them merely to make their documentation look current. Source identity
+does not establish deployment or service-worker freshness.
 
 ---
 
@@ -189,9 +196,11 @@ if one cannot be checked by looking, it was written badly and that is worth sayi
 build on a raw hex). What is left is judgement: pacing, density, whether the motion reads as
 mechanical or decorative, whether the copy sounds like a training partner or a product.
 
-**Screens get approved rendered, not drawn.** `/dev/gallery` is the review surface — the
-export's 38 specimen cards plus every app-composed part, with live skin and atmosphere
-switching. Review the running thing.
+**Screens get approved rendered, not drawn.** The existing dev-only review surfaces are
+`/dev/gallery/ds` for the shipped specimens and `/dev/gallery/app` for app-composed parts.
+ATOMIC.md §1.3 points to their inventories; counts come from the current export, not an older
+requirement. These routes are absent from production. Review the running thing when rendered
+verification is in the authorized scope.
 
 ---
 
