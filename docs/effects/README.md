@@ -12,7 +12,7 @@ completion, unrelated library PRs or a new foundation release. The immutable 0.1
 
 | | Phosphor Echo | CRT Glass |
 | --- | --- | --- |
-| Status | Delivered on the effects build branch. **Owner visual approval not yet recorded.** | Delivered on the effects build branch. **Owner visual approval and performance acceptance not yet recorded.** |
+| Status | **Owner approved the November 3 live-review preset.** Applied on the review branch; engineering closeout remains. | **Owner selected the November 3 scanlines and accepted front-glass placement.** Applied on the review branch; engineering and performance closeout remain. |
 | Canonical code owner (one each) | `src/ui/phosphor-echo.tsx` | `src/ui/crt-field/crt-field.tsx` |
 | Preset owner (one each) | `src/ui/phosphor-echo-preset.ts` | `src/ui/crt-field/config.ts` |
 | Demo | `/gallery/app?component=PhosphorEchoFrame` | `/gallery/app?component=CrtField` |
@@ -286,12 +286,8 @@ No other public integration gap was found.
 - **Browser engineering performance results are not physical phone evidence or a performance
   approval.** Hardware-GPU behaviour, compositor-presented frames, GPU time and memory, touch-fling
   scroll and INP are unmeasured or not proven.
-- **Final visual approval is not claimed until recorded.** It is pending the owner's comparison at
-  matching state and settings, for both effects and their composition. Points for that review:
-  - the live field is lighter than the raster reference (lines at 0.12, a lighter vignette);
-  - the Echo silhouette is drawn at full-alpha role hue;
-  - the heading's rear copy inherits the body `text-shadow`;
-  - under reduced motion, the field stays as still glass.
+- **Owner visual approval is recorded for the November 3 exported presets and current front-glass treatment.** The alternative rear-text cleanup is still a proposal. Main merge is authorized after the remaining engineering and verification closeout; this is not a claim that unfinished work or production performance has passed.
+
 - Dialog and sheet content sits above the field, so it is not covered by the field.
 - Echo rears re-measure one frame after their owner resizes.
 

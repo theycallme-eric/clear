@@ -151,7 +151,7 @@
     "physicalPhoneEvidence": false,
     "performanceApproval": false
   },
-  "finalVisualApproval": false,
+  "finalVisualApproval": true,
   "ownerVisualApproval": {
     "date": "2026-11-03",
     "scope": "The two exported presets and existing front-glass treatment; rear text cleanup remains a proposal",
