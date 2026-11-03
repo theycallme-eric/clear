@@ -8,10 +8,27 @@ import { expect, keepPng, openGenerate, setEffects, settle, syntheticApp, test }
 async function expectPaintedOver(page: Page, surface: Locator) {
   await surface.scrollIntoViewIfNeeded()
   await settle(page)
-  const withGlass = await surface.screenshot({ animations: 'disabled' })
-  await page.locator('.clr-crt-field').evaluate((field) => { field.style.visibility = 'hidden' })
-  const withoutGlass = await surface.screenshot({ animations: 'disabled' })
-  await page.locator('.clr-crt-field').evaluate((field) => { field.style.visibility = '' })
+  // Compare an interior patch of the actual opaque owner. Whole-element shots
+  // encoded millions of unnecessary pixels and repeatedly scrolled the owner;
+  // its transparent frame fringe could also give a misleading behind-glass hit.
+  const clip = await surface.evaluate((node) => {
+    const r = node.getBoundingClientRect()
+    const left = Math.max(0, r.left + 8), right = Math.min(innerWidth, r.right - 8)
+    const top = Math.max(0, r.top + 8), bottom = Math.min(innerHeight, r.bottom - 8)
+    const width = Math.floor(Math.min(160, right - left))
+    const height = Math.floor(Math.min(48, bottom - top))
+    return { x: Math.floor((left + right - width) / 2), y: Math.floor((top + bottom - height) / 2), width, height }
+  })
+  expect(clip.width).toBeGreaterThan(0)
+  expect(clip.height).toBeGreaterThan(0)
+  const withGlass = await page.screenshot({ clip, animations: 'disabled' })
+  let withoutGlass: Buffer
+  try {
+    await page.locator('.clr-crt-field').evaluate((field) => { field.style.visibility = 'hidden' })
+    withoutGlass = await page.screenshot({ clip, animations: 'disabled' })
+  } finally {
+    await page.locator('.clr-crt-field').evaluate((field) => { field.style.visibility = '' })
+  }
   const changed = await page.evaluate(async (images) => {
     const pixels = await Promise.all(images.map(async (base64) => {
       const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0))
@@ -33,7 +50,7 @@ async function expectPaintedOver(page: Page, surface: Locator) {
 }
 
 for (const width of [390, 1280]) {
-  test(`one front glass covers cards, CTA and native dialog without taking input at ${width}px`, async ({ page, crtOrigin, checkA11y }, info) => {
+  test(`one front glass covers opaque cards and CTA without taking input at ${width}px`, async ({ page, crtOrigin, checkA11y }, info) => {
     await page.setViewportSize({ width, height: 844 })
     await page.emulateMedia({ reducedMotion: 'reduce' })
     const app = await syntheticApp(page, crtOrigin, { skin: 'signal', effects: 'on' })
@@ -49,7 +66,7 @@ for (const width of [390, 1280]) {
     // a translucent card could otherwise give a misleading positive result.
     const opaqueProof = await page.addStyleTag({ content: '.clr-card__body, button.clr-btn { --surface: var(--base) !important; }' })
     const card = page.locator('.clr-card').first()
-    await expectPaintedOver(page, card)
+    await expectPaintedOver(page, card.locator('.clr-card__body').first())
     const anchor = page.getByRole('group', { name: 'Anchor' }).getByRole('button').first()
     await anchor.tap()
     await expect(anchor).toHaveAttribute('aria-pressed', 'true')
@@ -59,7 +76,18 @@ for (const width of [390, 1280]) {
     await opaqueProof.evaluate((node) => (node as Element).remove())
     await checkA11y()
     await keepPng(info, `front-glass-generate-${width}.png`, await page.screenshot())
+    app.assertReadOnly()
+  })
 
+  // Keep the existing modal lifecycle checks in their own standard 30s case;
+  // independent screen checks do not share a timing budget or mutable state.
+  test(`one front glass covers native modal lifecycle without taking input at ${width}px`, async ({ page, crtOrigin, checkA11y }, info) => {
+    await page.setViewportSize({ width, height: 844 })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    const app = await syntheticApp(page, crtOrigin, { skin: 'signal', effects: 'on' })
+    await openGenerate(page)
+    const field = page.locator('.clr-crt-field')
+    await expect(field).toHaveCount(1)
     await page.goto('/settings/locations')
     const trigger = page.getByRole('button', { name: /^delete$/i }).last()
     await trigger.tap()
