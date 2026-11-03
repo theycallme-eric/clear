@@ -174,7 +174,7 @@ and the public test fixtures hold a second copy (`e2e/fixtures/effects-reference
 | Reference | Role |
 | --- | --- |
 | `round-3/phosphor-echo.mjs` | Phosphor Echo kernel source. Ported once into `src/ui/phosphor-echo.tsx`. |
-| `round-3/preferred-preset.json` | **The** Phosphor Echo preset (0.29 / 3.2 / −4.7 / +5.64). The kernel defaults agree. |
+| `round-3/preferred-preset.json` | **Historical** Phosphor Echo preferred preset (0.29 / 3.2 / −4.7 / +5.64). The archived kernel defaults agree; the November 3 live-review export now owns the app's numbers. |
 | `round-3/VERIFICATION.json`, early on/off images | Masking-method evidence at the earlier 0.34 / 1.4 / −5.5 / +6.6 values. Not selected-preset golden images. |
 | `crt-iab-current-settings.json` (SHA-256 `3169d460…a033`) | Current-session CRT reference export. It is the identity in `CRT_GLASS_REFERENCE` and `CRT_FIELD_REFERENCE` and the input to the TASK-005 fidelity proof. Not the shipping field values. |
 | `crt-glass-motion/glass-effect.mjs`, `motion-clock.mjs`, `study.mjs`, `study.css`, `index.html` | Preserved CRT motion host. `glass-effect.mjs` is authoritative for pass order. |
@@ -288,7 +288,7 @@ No other public integration gap was found.
   scroll and INP are unmeasured or not proven.
 - **Owner visual approval is recorded for the November 3 exported presets and current front-glass treatment.** The alternative rear-text cleanup is still a proposal. Main merge is authorized after the remaining engineering and verification closeout; this is not a claim that unfinished work or production performance has passed.
 
-- Dialog and sheet content sits above the field, so it is not covered by the field.
+- The corrected viewport field covers native dialog and sheet content once, with pointer and keyboard interaction passing through. Dialog/sheet outer-frame Echo opt-in is a separate pending consumer change.
 - Echo rears re-measure one frame after their owner resizes.
 
 Record the owner's visual decision and performance decision here, with their dates, when they are
