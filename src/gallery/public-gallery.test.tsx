@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 
@@ -23,7 +23,12 @@ afterEach(() => {
 
 async function open(path: string) {
   window.history.replaceState(null, '', path)
-  render(<AppEntry pathname={window.location.pathname} />)
+  // Flush the real lazy-entry promise and its React retry before starting
+  // the DOM readiness deadline; a cold first entry still renders AppEntry.
+  await act(async () => {
+    render(<AppEntry pathname={window.location.pathname} />)
+    await import('./PublicGalleryApp')
+  })
   // The shared loading screen has the same h1; wait for the actual gallery.
   await screen.findByRole('navigation', { name: 'Gallery sections' })
   await screen.findByRole('heading', { level: 1, name: 'Component Gallery' })
