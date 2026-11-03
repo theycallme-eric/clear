@@ -1,5 +1,19 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Final combined effects source checkpoint — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in 34.0 seconds**
+on frozen source `20cd5c950a6d4a8a43ba721d4ca9e6c74da225b9`. Current group:
+`docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103`. All four generated
+records agree on runtime `dae8b3184ab7971796bf023d260afbce774fcfb362673ed74df9df14fd10da04`, driver
+`2d6a19eae2ff9750f8829246a539cdf074142d5666368aa0e7659bbdbd7fcb2d` and unchanged 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The validator retains real disposable-fixture authentication, both phone heights, all four skins,
+accessibility, disclosure/navigation/storage and actual PNG bytes/dimensions. Preview generation
+and writes remain zero. The source includes current main's ErrorView pilot, the two independent
+comfort settings, phase restoration and stable heading names. All earlier groups and native
+receipts remain unchanged. This is genuine local-source proof, not a hosted CI or production claim.
+
 ## Combined-source checkpoint before final heading verification — 3 November 2026
 
 The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in32.2seconds**

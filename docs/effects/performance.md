@@ -1,6 +1,6 @@
 # Visual effects performance
 
-## Current front-glass measurement — 3 November 2026, issue #624
+## Archived front-glass measurement — 3 November 2026, issue #624
 
 The existing comparison passed 1/1, recording six alternating off/on runs on clean source
 `8aaac466e65f7fe4eaafb8182e4832a7404dabdd`. Same runtime as the layer correction; Echo and CRT
@@ -23,8 +23,11 @@ independently reports 390×844, DPR 3 and visual viewport scale 1.
   on 57.3, 61.1, 58.8 ms. Later input overlaps
   between modes. The raw timing measures event-to-second-next-frame, not field-validated INP.
 
-No appearance fallback, phone test or performance budget was introduced. Final owner visual and
-performance acceptance remain pending. Main is unchanged.
+No appearance fallback, phone test or performance budget was introduced. At this measurement
+checkpoint, visual review and main merge were pending. The owner subsequently approved the
+November 3 live Echo/scanline selections and authorized release after the engineering checks.
+These historical numbers are not measurements of the later selected preset or a claim of
+physical-device performance approval. Current presets and release policy are in the effects index.
 
 
 Effects TASK-009 · REQ-008 · issue #610. This is the browser-based engineering comparison of the

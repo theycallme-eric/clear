@@ -21,7 +21,7 @@
     {
       "id": "phosphor-echo",
       "name": "Phosphor Echo",
-      "status": "Owner-approved numeric preset applied on the review branch; engineering closeout remains before main",
+      "status": "Owner-approved November 3 live-review preset implemented in the shared app preset",
       "owner": "src/ui/phosphor-echo.tsx",
       "api": [
         "PhosphorEchoDefinition",
@@ -66,7 +66,7 @@
     {
       "id": "crt-glass",
       "name": "CRT Glass",
-      "status": "Owner-selected scanline preset applied on the review branch; engineering closeout and performance acceptance remain separate",
+      "status": "Owner-approved November 3 scanlines and front-glass placement implemented; browser performance evidence documented separately",
       "owner": "src/ui/crt-field/crt-field.tsx",
       "composition": "One pointer-transparent, aria-hidden viewport glass in the nonmodal browser top layer, re-promoted above newly opened native dialogs/popovers; no duplicated per-dialog field. Contained gallery specimens remain in their own frames.",
       "api": [
@@ -163,5 +163,5 @@
       "docs/effects/scanline-selection-20261103.json"
     ]
   },
-  "mergeAuthorization": "Owner authorized main merge once remaining engineering and verification are complete; not yet merged"
+  "mergeAuthorization": "Owner authorized main merge after engineering completion and the required final-head repository checks"
 }

@@ -12,7 +12,7 @@ completion, unrelated library PRs or a new foundation release. The immutable 0.1
 
 | | Phosphor Echo | CRT Glass |
 | --- | --- | --- |
-| Status | **Owner approved the November 3 live-review preset.** Applied on the review branch; engineering closeout remains. | **Owner selected the November 3 scanlines and accepted front-glass placement.** Applied on the review branch; engineering and performance closeout remain. |
+| Status | **Owner approved the November 3 live-review preset.** Applied in the shared app preset; release uses the required repository checks. | **Owner selected the November 3 scanlines and accepted front-glass placement.** Applied in the shared app preset; browser performance evidence is documented separately. |
 | Canonical code owner (one each) | `src/ui/phosphor-echo.tsx` | `src/ui/crt-field/crt-field.tsx` |
 | Preset owner (one each) | `src/ui/phosphor-echo-preset.ts` | `src/ui/crt-field/config.ts` |
 | Demo | `/gallery/app?component=PhosphorEchoFrame` | `/gallery/app?component=CrtField` |
@@ -67,7 +67,7 @@ target's own role colour, visible only outside the foreground footprint. It adds
 **Preset** (`PHOSPHOR_ECHO_PRESET`, `PHOSPHOR_ECHO_PRESET_PROVENANCE`). Identity *Phosphor Echo ·
 approved 2026-11-03*, from [the owner-approved live-review export](echo-selection-20261103.json):
 opacity 0.21, softness 1.8 CSS px (Gaussian standard deviation), x −7.12 CSS px (left), y +6.75
-CSS px (down). Applied to the single shared preset on the review branch. The existing text-glow
+CSS px (down). Applied to the single shared app preset. The existing text-glow
 treatment is retained; the alternative rear-text cleanup remains comparison-only. Historical
 round-3 preferred values 0.29 / 3.2 / −4.7 / +5.64 and earlier geometry-check values
 0.34 / 1.4 / −5.5 / +6.6 remain archived references, not current numeric settings.
@@ -118,13 +118,13 @@ drift 0.7 s per period; grain opacity 0.07, frequency 0.85, feather 0.4, refresh
 160 tile; vignette clear fraction 0.62, opacity 0.3; perimeter blur 1.6, width fraction 0.14 (CSS px
 and seconds). `crtFieldCustomProperties`, `crtFieldLinePath` and `crtFieldGrainTile` derive
 everything else from it. To tune: change a value, bump the `id`, rerun the composition and overhead
-specs, and get the owner's review. Status: the owner-selected scanline values on the review branch,
+specs, and get the owner's review. Status: the owner-approved scanline values in the shared app preset,
 recorded in [the November 3 control export](scanline-selection-20261103.json). This changes only
 the scanline preset; grain, vignette, perimeter and layering stay unchanged. The export also
 records the Echo values separately approved in the live-review export above; it does not approve
 the proposed rear text-glow cleanup. The earlier shipping interpretation
-`clr-crt-field/shipping-2026-11-02.3` remains identified in its historical evidence. Main and the
-effects build branch are not updated by this review-branch selection. These are live-field values,
+`clr-crt-field/shipping-2026-11-02.3` remains identified in its historical evidence. The review
+branch preserves its temporary controls; they are omitted from the release candidate. These are live-field values,
 distinct from the old raster reference export's slider numbers (owner clarification, 2 November 2026).
 
 **Reference port, not a second owner.** `src/ui/crt-glass/` (TASK-005) is a pixel-exact port of the
