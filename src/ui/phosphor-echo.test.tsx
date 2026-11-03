@@ -53,11 +53,11 @@ afterEach(() => {
 })
 
 describe('the preset owner', () => {
-  it('holds the owner-preferred round-3 preset and nothing else', () => {
-    expect(PHOSPHOR_ECHO_PRESET).toEqual({ opacity: 0.29, blur: 3.2, x: -4.7, y: 5.64 })
+  it('holds the owner-approved live-review preset and nothing else', () => {
+    expect(PHOSPHOR_ECHO_PRESET).toEqual({ opacity: 0.21, blur: 1.8, x: -7.12, y: 6.75 })
     expect(Object.isFrozen(PHOSPHOR_ECHO_PRESET)).toBe(true)
-    expect(PHOSPHOR_ECHO_PRESET_DISPLAY).toBe('4.7 left / 5.6 down')
-    expect(PHOSPHOR_ECHO_PRESET_PROVENANCE.source).toBe('round-3/preferred-preset.json')
+    expect(PHOSPHOR_ECHO_PRESET_DISPLAY).toBe('7.12 left / 6.75 down')
+    expect(PHOSPHOR_ECHO_PRESET_PROVENANCE.source).toBe('docs/effects/echo-selection-20261103.json')
   })
 
   it('is not the earlier geometry-check values', () => {
@@ -107,14 +107,14 @@ describe('the kernel', () => {
     ])
     const [blur, offset, transfer, composite] = primitives
     expect(blur).toHaveAttribute('in', 'SourceGraphic')
-    expect(blur).toHaveAttribute('stdDeviation', '3.2')
+    expect(blur).toHaveAttribute('stdDeviation', '1.8')
     expect(offset).toHaveAttribute('in', blur.getAttribute('result'))
-    expect(offset).toHaveAttribute('dx', '-4.7')
-    expect(offset).toHaveAttribute('dy', '5.64')
+    expect(offset).toHaveAttribute('dx', '-7.12')
+    expect(offset).toHaveAttribute('dy', '6.75')
     expect(transfer).toHaveAttribute('in', offset.getAttribute('result'))
     expect([...transfer.children].map((node) => node.tagName)).toEqual(['feFuncA'])
     expect(transfer.children[0]).toHaveAttribute('type', 'linear')
-    expect(transfer.children[0]).toHaveAttribute('slope', '0.29')
+    expect(transfer.children[0]).toHaveAttribute('slope', '0.21')
     expect(transfer.children[0]).not.toHaveAttribute('intercept')
     expect(composite).toHaveAttribute('in', transfer.getAttribute('result'))
     expect(composite).toHaveAttribute('in2', 'SourceAlpha')

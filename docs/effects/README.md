@@ -65,10 +65,12 @@ target's own role colour, visible only outside the foreground footprint. It adds
   and the error card with its Retry button).
 
 **Preset** (`PHOSPHOR_ECHO_PRESET`, `PHOSPHOR_ECHO_PRESET_PROVENANCE`). Identity *Phosphor Echo ·
-preferred*, from `round-3/preferred-preset.json`: opacity 0.29, softness 3.2 CSS px (Gaussian
-standard deviation), x −4.7 CSS px (left), y +5.64 CSS px (down, displayed as 5.6). Status: the
-owner selected it in the reference study. The owner has not yet approved it on the integrated app.
-The earlier geometry-check values 0.34 / 1.4 / −5.5 / +6.6 are **not** this preset.
+approved 2026-11-03*, from [the owner-approved live-review export](echo-selection-20261103.json):
+opacity 0.21, softness 1.8 CSS px (Gaussian standard deviation), x −7.12 CSS px (left), y +6.75
+CSS px (down). Applied to the single shared preset on the review branch. The existing text-glow
+treatment is retained; the alternative rear-text cleanup remains comparison-only. Historical
+round-3 preferred values 0.29 / 3.2 / −4.7 / +5.64 and earlier geometry-check values
+0.34 / 1.4 / −5.5 / +6.6 remain archived references, not current numeric settings.
 
 **Application, occlusion and colour rules.**
 
@@ -119,8 +121,8 @@ everything else from it. To tune: change a value, bump the `id`, rerun the compo
 specs, and get the owner's review. Status: the owner-selected scanline values on the review branch,
 recorded in [the November 3 control export](scanline-selection-20261103.json). This changes only
 the scanline preset; grain, vignette, perimeter and layering stay unchanged. The export also
-records the existing Echo draft used by the review tools; it does not approve the proposed rear
-text-glow cleanup or change the app's Echo preset. The earlier shipping interpretation
+records the Echo values separately approved in the live-review export above; it does not approve
+the proposed rear text-glow cleanup. The earlier shipping interpretation
 `clr-crt-field/shipping-2026-11-02.3` remains identified in its historical evidence. Main and the
 effects build branch are not updated by this review-branch selection. These are live-field values,
 distinct from the old raster reference export's slider numbers (owner clarification, 2 November 2026).

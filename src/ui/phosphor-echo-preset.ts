@@ -8,11 +8,10 @@
  * visual verification (`e2e/effects/echo-standalone-fidelity.spec.ts`), and is
  * never called the exact latest preset until the owner has reviewed it.
  *
- * Provenance: the owner-preferred preset saved in the preserved effects
- * checkpoint as `round-3/preferred-preset.json` ("Phosphor Echo · preferred",
- * selected by the owner from a control screenshot, shared across all targets).
- * Its kernel is `round-3/phosphor-echo.mjs`, whose `EFFECT_DEFAULTS` carry the
- * same four values.
+ * Provenance: the owner-approved November 3 live-review export, preserved as
+ * `docs/effects/echo-selection-20261103.json`. The earlier round-3 preferred
+ * preset remains historical evidence. The kernel is still the unchanged
+ * `round-3/phosphor-echo.mjs`; only its shared numeric inputs are updated.
  *
  * Not this preset: the earlier round-3 geometry check and the old Chrome Echo
  * tab used opacity 0.34, blur 1.4, x −5.5, y +6.6. Those values only describe
@@ -32,24 +31,21 @@ export interface PhosphorEchoPreset {
   readonly y: number
 }
 
-/** The single shared parameter set — round-3/preferred-preset.json. */
+/** The single shared parameter set — owner-approved live review, November 3. */
 export const PHOSPHOR_ECHO_PRESET: PhosphorEchoPreset = Object.freeze({
-  opacity: 0.29,
-  blur: 3.2,
-  x: -4.7,
-  y: 5.64,
+  opacity: 0.21,
+  blur: 1.8,
+  x: -7.12,
+  y: 6.75,
 })
 
-/**
- * How the preset reads in the owner's control: the offset control derives
- * y = |x| × 1.2, so 5.64 displays as 5.6.
- */
-export const PHOSPHOR_ECHO_PRESET_DISPLAY = '4.7 left / 5.6 down'
+/** Independent CSS-pixel offsets from the owner's live review controls. */
+export const PHOSPHOR_ECHO_PRESET_DISPLAY = '7.12 left / 6.75 down'
 
 /** Where the numbers came from, so a reviewer can trace them. */
 export const PHOSPHOR_ECHO_PRESET_PROVENANCE = Object.freeze({
-  name: 'Phosphor Echo · preferred',
-  source: 'round-3/preferred-preset.json',
+  name: 'Phosphor Echo · approved 2026-11-03',
+  source: 'docs/effects/echo-selection-20261103.json',
   kernel: 'round-3/phosphor-echo.mjs',
   selectedBy: 'owner',
 })

@@ -411,16 +411,24 @@ test.describe('Phosphor Echo — app module against the preserved round-3 kernel
         dy: document.querySelector('#screen-echo feOffset')?.getAttribute('dy'),
         slope: document.querySelector('#screen-echo feFuncA')?.getAttribute('slope'),
       }))
-      // The round-3 host installs its own defaults, which are the preferred preset.
+      // The archive keeps its original defaults. Verify those independently,
+      // then feed the unchanged kernel the newly approved numeric inputs.
       expect(host).toEqual({
         skin: SKIN,
         mode: 'echo',
         filters: 1,
-        stdDeviation: String(PHOSPHOR_ECHO_PRESET.blur),
-        dx: String(PHOSPHOR_ECHO_PRESET.x),
-        dy: String(PHOSPHOR_ECHO_PRESET.y),
-        slope: String(PHOSPHOR_ECHO_PRESET.opacity),
+        stdDeviation: '3.2',
+        dx: '-4.7',
+        dy: '5.64',
+        slope: '0.29',
       })
+      await page.evaluate((preset) => {
+        const filter = document.querySelector('#screen-echo')!
+        filter.querySelector('feGaussianBlur')!.setAttribute('stdDeviation', String(preset.blur))
+        filter.querySelector('feOffset')!.setAttribute('dx', String(preset.x))
+        filter.querySelector('feOffset')!.setAttribute('dy', String(preset.y))
+        filter.querySelector('feFuncA')!.setAttribute('slope', String(preset.opacity))
+      }, PHOSPHOR_ECHO_PRESET)
       await stageReference(page, probe)
       await isolate(page)
       const referenceShot = await capture(page, clip)
@@ -557,6 +565,10 @@ test.describe('Phosphor Echo — gallery on versus off', () => {
         // Init scripts run in order, so this capture's choice is the last one written.
         await prepare(page, effects)
         await visit(GALLERY)
+        // This is the Echo-only masking proof. CRT Glass follows the same
+        // global switch and would otherwise change the on/off captures too.
+        // Its combined composition is checked in crt-composition-fidelity.
+        await page.addStyleTag({ content: '.clr-crt-field { display: none !important; }' })
         await scrollToExample(page)
         const sources = await page.locator('.clr-echo__source').count()
         if (effects === 'on') expect(sources, 'every rear source renders').toBeGreaterThanOrEqual(4)
