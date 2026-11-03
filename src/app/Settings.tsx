@@ -82,7 +82,7 @@ import {
 } from '../state/settings'
 import { useAppearance } from '../state/appearance'
 import { profileQueryKey, useProfileQuery, useUserData } from '../state/user-queries'
-import { setVisualEffects, useVisualEffects } from '../state/visual-effects'
+import { setReduceMotion, setVisualEffects, useReducedMotionPreference, useVisualEffects } from '../state/visual-effects'
 import { CheckboxGroup } from '../ui/checkbox-group'
 import {
   viewEmpty,
@@ -505,13 +505,14 @@ function LimitationsEditor({
  * picker's derived list; none is named here. The favicon follows `data-skin`
  * through `startFaviconSync`, so choosing here moves it with nothing to call.
  *
- * Visual effects is the device's too, and the only effect control there is:
- * checked means on, `setVisualEffects` stores it, and the root policy hands it
- * straight back — so like the skin it owns no save and no failure state.
+ * Both comfort controls are device-local and immediate. Reduce motion keeps
+ * static effects, with OS-required stillness shown without overwriting the
+ * independently stored app choice. Neither control changes functional time.
  */
 function AppearanceSection() {
   const [appearance, choose] = useAppearance()
   const { effectsEnabled } = useVisualEffects()
+  const { enabled: reducedMotion, systemReducedMotion } = useReducedMotionPreference()
 
   return (
     <SettingsCard id="settings-appearance" heading="Appearance">
@@ -521,6 +522,14 @@ function AppearanceSection() {
         checked={effectsEnabled}
         onChange={() => setVisualEffects(!effectsEnabled)}
       />
+      <Checkbox
+        label="Reduce motion"
+        checked={reducedMotion}
+        disabled={systemReducedMotion}
+        aria-describedby={systemReducedMotion ? 'system-reduced-motion-note' : undefined}
+        onChange={setReduceMotion}
+      />
+      {systemReducedMotion && <p id="system-reduced-motion-note" className="clr-text-data-xs">Your device’s Reduce motion setting is on.</p>}
     </SettingsCard>
   )
 }

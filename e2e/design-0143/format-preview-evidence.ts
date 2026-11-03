@@ -29,8 +29,9 @@ export const FORMAT_EFFECTS_TASK004_EVIDENCE_DIR = 'docs/design/evidence-0143/ta
 export const FORMAT_EFFECTS_TASK005_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-606-source-a1'
 // Preserve the authentic Task006 group and native source history separately.
 export const FORMAT_EFFECTS_TASK006_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-607-source-a5'
-// Owner-requested direct front-glass correction; not a new native task attempt.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-front-glass-20261103'
+// Retain the completed front-glass correction; merge-prep captures a fresh source.
+export const FORMAT_FRONT_GLASS_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-front-glass-20261103'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-20261103'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

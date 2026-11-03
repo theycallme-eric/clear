@@ -477,7 +477,7 @@ test('TASK-201 SourceGraphic candidate against the preserved CRT Glass pass: sti
     const per = (a: Rgba, b: Rgba) => Object.fromEntries(Object.entries(masksLive).map(([n, m]) => [n, diffStats(a, b, m)]))
     expect(onState.echo, 'exactly one Echo, unchanged, while the candidate renders').toEqual(before.echo)
     expect(onState.layout, 'the candidate moved no layout').toEqual(before.layout)
-    expect(onState.scan, 'no candidate line over the atmosphere scan: it is suppressed test-locally').toBe('hidden')
+    expect(['absent', 'hidden'], 'no old atmosphere scan is painted: retired or suppressed test-locally').toContain(onState.scan)
     expect(onState.frameScan.startsWith('none'), 'no candidate line over a decorative frame scan').toBe(true)
 
     // Motion: line only (grain seed fixed), then grain only (line phase fixed).

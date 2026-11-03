@@ -19,13 +19,13 @@
  * resolved (`src/state/visual-effects.ts`) and where the single decorative
  * host for optional effects sits, so every surface inside reads one answer.
  */
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { FocusBrackets } from '../design-system/index'
 import { useVisualEffects, VisualEffectsProvider } from '../state/visual-effects'
 import { AtmosphereLayer } from '../ui/atmosphere'
-import { CrtField } from '../ui/crt-field/crt-field'
+import { CrtField, type CrtFieldClockState } from '../ui/crt-field/crt-field'
 import { PhosphorEchoDefinition } from '../ui/phosphor-echo'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
 
@@ -64,6 +64,7 @@ export function ContainedShell({ atmosphere, children }: ContainedShellProps) {
  */
 function EffectsHost() {
   const { effectsEnabled, motionAllowed } = useVisualEffects()
+  const clockState = useRef<CrtFieldClockState | null>(null)
 
   return (
     <div
@@ -73,7 +74,7 @@ function EffectsHost() {
       data-motion={motionAllowed ? 'allowed' : 'still'}
     >
       <PhosphorEchoDefinition />
-      {effectsEnabled ? <CrtField motionAllowed={motionAllowed} /> : null}
+      {effectsEnabled ? <CrtField motionAllowed={motionAllowed} clockState={clockState} /> : null}
     </div>
   )
 }

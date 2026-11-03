@@ -27,15 +27,15 @@ Both effects read one policy. They keep no on/off state of their own.
   provider. `setVisualEffects(on)` writes the choice. `resolveVisualEffectsPolicy()` is the pure
   rule. `VisualEffectsProvider` wraps `ContainedShell` in `src/app/RootLayout.tsx`, which also
   renders the one `aria-hidden` `.clr-effects-host`.
-- **Setting:** one *Visual effects* checkbox in the Settings Appearance card (`src/app/Settings.tsx`,
-  TASK-002). Checked means on. It is on by default, and an unknown stored value falls back to on.
-  The choice is device-local (`localStorage['clear.visual-effects']`, like `clear.skin`). There is
-  no account write, no save status and no tuning control. This is current implementation. The
-  owner selected keeping Visual effects and adding a separate Reduce motion checkbox; that app
-  control is pending and is not implemented by the front-glass correction.
+- **Settings:** *Visual effects* and *Reduce motion* are independent checkboxes in the Appearance
+  card (`src/app/Settings.tsx`). Visual effects defaults on; Reduce motion defaults off. Choices
+  persist device-locally under `clear.visual-effects` and `clear.reduce-motion`, with invalid
+  values falling back to their defaults. No account write, save step or tuning controls. When the
+  OS requires reduced motion, the second checkbox is checked and disabled with a device-setting
+  note; the independently stored app choice stays intact.
 - **Off wins.** With Visual effects off, neither effect renders, no field clocks run, the atmosphere
   blobs hold still and no retired scanline comes back.
-- **Reduced motion** (OS `prefers-reduced-motion`, honoured live). Line drift, grain refresh and the
+- **Reduced motion** (app choice or OS `prefers-reduced-motion`, honoured live). Line drift, grain refresh and the
   atmosphere blobs stop together. The static Echo and the CRT field as still glass stay, because
   they are readable. The old atmosphere scan layer is never drawn.
 - **Hidden tab:** the field's clocks are paused in place, not cancelled. When the tab is shown again
@@ -147,6 +147,11 @@ ships none of it. Do not mount it beside `CrtField`.
   pixel receives one coordinated glass treatment; dialogs do not mount their own copy.
 - Echo is composed beneath the field. The live role-coloured atmosphere stays live behind both. It
   is not frozen into a texture or remounted on navigation.
+
+**Clock continuity:** the persistent root host retains the line and grain positions independently
+when Visual effects removes the field. Re-enabling restores those positions before playback, with
+no restart or catch-up. Hidden-tab and reduced-motion pauses retain the existing clock objects.
+Functional workout/countdown time continues; the comfort policy controls decorative motion only.
 
 ### Scanline replacement map (TASK-006)
 

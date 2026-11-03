@@ -11,13 +11,17 @@ import { createElement, type ReactNode } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { applyAppearance } from './appearance'
+import { useMovementCountdown } from './movement-countdown'
 import {
   currentVisualEffects,
+  currentReduceMotion,
   DEFAULT_VISUAL_EFFECTS,
   resolveVisualEffectsPolicy,
   setVisualEffects,
+  setReduceMotion,
   storedVisualEffects,
   useVisualEffects,
+  useReducedMotionPreference,
   VisualEffectsProvider,
 } from './visual-effects'
 
@@ -73,6 +77,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   vi.restoreAllMocks()
   localStorage.clear()
 })
@@ -116,6 +121,10 @@ describe('stored Visual effects choice', () => {
 })
 
 describe('resolveVisualEffectsPolicy', () => {
+  it('keeps static effects while the independent app preference stops motion', () => {
+    expect(resolveVisualEffectsPolicy({ visualEffects: true, reduceMotion: true, prefersReducedMotion: false, documentVisible: true }))
+      .toEqual({ effectsEnabled: true, motionAllowed: false })
+  })
   it('allows motion only when effects are on, the OS allows it and the tab is visible', () => {
     expect(
       resolveVisualEffectsPolicy({
@@ -160,6 +169,53 @@ describe('resolveVisualEffectsPolicy', () => {
 })
 
 describe('useVisualEffects', () => {
+  it('keeps a real functional countdown counting while decorative motion and effects are disabled', () => {
+    vi.useFakeTimers()
+    controllableReducedMotion(false)
+    controllableVisibility('visible')
+    const clock = renderHook(() => ({ policy: useVisualEffects(), countdown: useMovementCountdown(30) }), { wrapper })
+    act(() => clock.result.current.countdown.start())
+    act(() => setReduceMotion(true))
+    act(() => vi.advanceTimersByTime(2000))
+    expect(clock.result.current.policy).toEqual({ effectsEnabled: true, motionAllowed: false })
+    expect(clock.result.current.countdown.remainingSeconds).toBe(28)
+    act(() => setVisualEffects(false))
+    act(() => vi.advanceTimersByTime(2000))
+    expect(clock.result.current.countdown.remainingSeconds).toBe(26)
+    expect(clock.result.current.countdown.status).toBe('running')
+  })
+  it('persists motion separately and retains the app choice while the OS requires stillness', () => {
+    const setOs = controllableReducedMotion(false)
+    controllableVisibility('visible')
+    const policy = renderPolicy()
+    const choice = renderHook(() => useReducedMotionPreference())
+    expect(currentReduceMotion()).toBe(false)
+    act(() => setReduceMotion(true))
+    expect(localStorage.getItem('clear.reduce-motion')).toBe('on')
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    expect(policy.result.current).toEqual({ effectsEnabled: true, motionAllowed: false })
+    act(() => setOs(true))
+    act(() => setReduceMotion(false))
+    expect(choice.result.current).toEqual({ enabled: true, systemReducedMotion: true })
+    expect(policy.result.current.motionAllowed).toBe(false)
+    expect(localStorage.getItem('clear.reduce-motion')).toBe('off')
+    act(() => setOs(false))
+    expect(choice.result.current.enabled).toBe(false)
+    expect(policy.result.current.motionAllowed).toBe(true)
+  })
+
+  it('restores a persisted motion choice and reacts to another tab independently of effects', () => {
+    controllableReducedMotion(false)
+    controllableVisibility('visible')
+    localStorage.setItem('clear.reduce-motion', 'on')
+    const policy = renderPolicy()
+    expect(policy.result.current).toEqual({ effectsEnabled: true, motionAllowed: false })
+    act(() => {
+      localStorage.setItem('clear.reduce-motion', 'off')
+      window.dispatchEvent(new StorageEvent('storage', { key: 'clear.reduce-motion' }))
+    })
+    expect(policy.result.current.motionAllowed).toBe(true)
+  })
   it('resolves the default policy for a fresh device', () => {
     controllableReducedMotion(false)
     controllableVisibility('visible')

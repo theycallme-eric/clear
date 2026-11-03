@@ -8,11 +8,14 @@
       "useOptionalVisualEffects",
       "setVisualEffects",
       "resolveVisualEffectsPolicy",
-      "VisualEffectsProvider"
+      "VisualEffectsProvider",
+      "setReduceMotion",
+      "useReducedMotionPreference"
     ],
-    "setting": "Visual effects checkbox, Settings Appearance card (src/app/Settings.tsx); on by default; device-local",
-    "reducedMotion": "OS prefers-reduced-motion, live; stops line drift, grain and atmosphere blobs; static Echo and still glass remain",
-    "hiddenTab": "Field clocks paused in place; resume without catch-up"
+    "setting": "Independent Visual effects (default on) and Reduce motion (default off) checkboxes in Settings Appearance; device-local",
+    "reducedMotion": "App choice or OS preference, live; static Echo/glass remain; decorative line/grain/atmosphere motion stops; functional time continues",
+    "hiddenTab": "Field clocks paused in place; resume without catch-up",
+    "effectsOffOn": "Root host retains line/grain phases separately while the field is removed; re-enable restores without restart or catch-up"
   },
   "effects": [
     {

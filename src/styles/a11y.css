@@ -91,3 +91,16 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* The independent app choice has the same end-state guarantee as the OS.
+   Functional clocks are state, not CSS animations, and keep counting. */
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  animation-duration: 0.01ms !important;
+  animation-delay: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  transition-delay: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

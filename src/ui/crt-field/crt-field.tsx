@@ -39,7 +39,11 @@ export interface CrtFieldProps {
   motionAllowed: boolean
   /** Fill the nearest positioned ancestor rather than the viewport (the gallery's frame). */
   contained?: boolean
+  /** Owned by the persistent host, so an effects-off unmount retains both phases. */
+  clockState?: RefObject<CrtFieldClockState | null>
 }
+
+export interface CrtFieldClockState { lines: number; grain: number }
 
 const FIELD_STYLE = crtFieldCustomProperties() as CSSProperties
 const GRAIN_STYLE: CSSProperties = { backgroundImage: crtFieldGrainTile() }
@@ -147,6 +151,7 @@ function useFieldClocks(
   lines: RefObject<SVGSVGElement | null>,
   grain: RefObject<HTMLDivElement | null>,
   motionAllowed: boolean,
+  clockState?: RefObject<CrtFieldClockState | null>,
 ) {
   const clocks = useRef<Animation[]>([])
 
@@ -175,12 +180,22 @@ function useFieldClocks(
       { duration: (placements.length / refreshHz) * 1000, iterations: Infinity },
     )
     refresh.id = CRT_FIELD_ANIMATIONS.grain
+    if (clockState?.current) {
+      drift.currentTime = clockState.current.lines
+      refresh.currentTime = clockState.current.grain
+    }
     clocks.current = [drift, refresh]
     return () => {
+      if (clockState) {
+        clockState.current = {
+          lines: typeof drift.currentTime === 'number' ? drift.currentTime : 0,
+          grain: typeof refresh.currentTime === 'number' ? refresh.currentTime : 0,
+        }
+      }
       for (const clock of clocks.current) clock.cancel()
       clocks.current = []
     }
-  }, [lines, grain])
+  }, [lines, grain, clockState])
 
   useEffect(() => {
     for (const clock of clocks.current) {
@@ -190,13 +205,13 @@ function useFieldClocks(
   }, [motionAllowed])
 }
 
-export function CrtField({ motionAllowed, contained = false }: CrtFieldProps) {
+export function CrtField({ motionAllowed, contained = false, clockState }: CrtFieldProps) {
   const ref = useRef<HTMLDivElement>(null)
   const linesRef = useRef<SVGSVGElement>(null)
   const grainRef = useRef<HTMLDivElement>(null)
   const { width, height } = useFieldSize(ref)
   useFrontGlass(ref, contained)
-  useFieldClocks(linesRef, grainRef, motionAllowed)
+  useFieldClocks(linesRef, grainRef, motionAllowed, clockState)
   const { periodPx, thicknessPx } = CRT_FIELD_CONFIG.lines
   const linesHeight = height + periodPx * 2
 

@@ -3,20 +3,21 @@
  *
  * Every optional effect (Phosphor Echo, CRT Glass), the atmosphere's motion,
  * scanline drift and grain refresh ask this module one question instead of
- * keeping toggles of their own that could disagree. It has three inputs:
+ * keeping toggles of their own that could disagree. It has four inputs:
  *
  *   1. The device's Visual effects choice, stored under
  *      `localStorage['clear.visual-effects']` by the same convention as
  *      `clear.skin`: an explicit value wins, an unknown value is ignored, and
  *      with nothing valid stored the product default — on — applies.
- *   2. The live OS `prefers-reduced-motion` preference.
- *   3. Document visibility, so a hidden tab does no decorative motion.
+ *   2. The independent device-local Reduce motion choice.
+ *   3. The live OS `prefers-reduced-motion` preference; the app cannot override it.
+ *   4. Document visibility, so a hidden tab does no decorative motion.
  *
  * Off always wins. With Visual effects off the policy reports effects
  * disabled and motion disallowed, and nothing else — no motion setting, no
  * skin, no appearance preset — is an input that could say otherwise.
  *
- * All three inputs are external stores, read through `useSyncExternalStore`,
+ * All inputs are external stores, read through `useSyncExternalStore`,
  * so a change to any of them re-resolves the policy for every subscriber
  * without a reload. `VisualEffectsProvider` resolves it once at the root and
  * `useVisualEffects` is how a surface reads it.
@@ -25,11 +26,13 @@ import {
   createContext,
   createElement,
   useContext,
+  useEffect,
   useSyncExternalStore,
   type ReactNode,
 } from 'react'
 
 const KEY = 'clear.visual-effects'
+const MOTION_KEY = 'clear.reduce-motion'
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
@@ -52,19 +55,21 @@ export interface VisualEffectsPolicy {
 /** What the policy is resolved from. */
 export interface VisualEffectsInputs {
   visualEffects: boolean
+  reduceMotion?: boolean
   prefersReducedMotion: boolean
   documentVisible: boolean
 }
 
-/** Pure resolution. Off wins over everything; motion needs all three to agree. */
+/** Pure resolution. Off wins; both motion preferences and visibility must allow motion. */
 export function resolveVisualEffectsPolicy({
   visualEffects,
+  reduceMotion = false,
   prefersReducedMotion,
   documentVisible,
 }: VisualEffectsInputs): VisualEffectsPolicy {
   return {
     effectsEnabled: visualEffects,
-    motionAllowed: visualEffects && !prefersReducedMotion && documentVisible,
+    motionAllowed: visualEffects && !reduceMotion && !prefersReducedMotion && documentVisible,
   }
 }
 
@@ -86,7 +91,19 @@ export function currentVisualEffects(): boolean {
   return storedVisualEffects() ?? DEFAULT_VISUAL_EFFECTS
 }
 
+/** Independent device-local preference; invalid/missing values mean motion is allowed. */
+export function currentReduceMotion(): boolean {
+  try { return localStorage.getItem(MOTION_KEY) === 'on' } catch { return false }
+}
+
+export function setReduceMotion(reduced: boolean): void {
+  try { localStorage.setItem(MOTION_KEY, reduced ? 'on' : 'off') } catch { /* Device default applies. */ }
+  for (const listener of listeners) listener()
+}
+
 const listeners = new Set<() => void>()
+let stopPreferenceEvents: (() => void) | undefined
+const notifyPreferences = () => { for (const listener of listeners) listener() }
 
 /**
  * Store a choice. It survives a reload, and every subscriber re-resolves
@@ -104,6 +121,7 @@ export function setVisualEffects(enabled: boolean): void {
 function readInputs(): VisualEffectsInputs {
   return {
     visualEffects: currentVisualEffects(),
+    reduceMotion: currentReduceMotion(),
     prefersReducedMotion:
       typeof window.matchMedia === 'function' &&
       window.matchMedia(REDUCED_MOTION_QUERY).matches,
@@ -123,33 +141,55 @@ function readPolicy(): VisualEffectsPolicy {
   return policy
 }
 
-function subscribe(onChange: () => void) {
-  const query =
-    typeof window.matchMedia === 'function'
-      ? window.matchMedia(REDUCED_MOTION_QUERY)
-      : null
-  const onStorage = (event: StorageEvent) => {
-    if (event.key === KEY || event.key === null) onChange()
-  }
-
+export function subscribeMotionPreferences(onChange: () => void) {
   listeners.add(onChange)
-  query?.addEventListener('change', onChange)
-  document.addEventListener('visibilitychange', onChange)
-  window.addEventListener('storage', onStorage)
+  if (!stopPreferenceEvents) {
+    const query = typeof window.matchMedia === 'function' ? window.matchMedia(REDUCED_MOTION_QUERY) : null
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === KEY || event.key === MOTION_KEY || event.key === null) notifyPreferences()
+    }
+    query?.addEventListener('change', notifyPreferences)
+    document.addEventListener('visibilitychange', notifyPreferences)
+    window.addEventListener('storage', onStorage)
+    stopPreferenceEvents = () => {
+      query?.removeEventListener('change', notifyPreferences)
+      document.removeEventListener('visibilitychange', notifyPreferences)
+      window.removeEventListener('storage', onStorage)
+    }
+  }
 
   return () => {
     listeners.delete(onChange)
-    query?.removeEventListener('change', onChange)
-    document.removeEventListener('visibilitychange', onChange)
-    window.removeEventListener('storage', onStorage)
+    if (listeners.size === 0) {
+      stopPreferenceEvents?.()
+      stopPreferenceEvents = undefined
+    }
   }
 }
 
 const VisualEffectsContext = createContext<VisualEffectsPolicy | null>(null)
 
+function readMotionChoice(): string {
+  const { reduceMotion, prefersReducedMotion } = readInputs()
+  return `${reduceMotion ? 1 : 0}:${prefersReducedMotion ? 1 : 0}`
+}
+
+/** The OS may require stillness, without overwriting the independently stored app choice. */
+export function useReducedMotionPreference() {
+  const choice = useSyncExternalStore(subscribeMotionPreferences, readMotionChoice)
+  const [app, system] = choice.split(':')
+  return { enabled: app === '1' || system === '1', systemReducedMotion: system === '1' }
+}
+
 /** Resolves the policy once at the root, live, for everything beneath it. */
 export function VisualEffectsProvider({ children }: { children: ReactNode }) {
-  const policy = useSyncExternalStore(subscribe, readPolicy)
+  const policy = useSyncExternalStore(subscribeMotionPreferences, readPolicy)
+  const appReduced = useSyncExternalStore(subscribeMotionPreferences, currentReduceMotion)
+  useEffect(() => {
+    // This is a device preference, shared by nested gallery providers too.
+    // An unmount must not clear another mounted provider's global preference.
+    document.documentElement.toggleAttribute('data-reduce-motion', appReduced)
+  }, [appReduced])
 
   return createElement(VisualEffectsContext.Provider, { value: policy }, children)
 }

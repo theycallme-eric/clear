@@ -420,6 +420,42 @@ async function exerciseFeedback(page: Page, app: Awaited<ReturnType<typeof synth
 // ---------------------------------------------------------------------------
 
 test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
+  test('app Reduce motion persists independently, keeps static effects and honors the OS', async ({ page, comfortOrigin }) => {
+    const app = await syntheticApp(page, comfortOrigin)
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await page.goto('/generate')
+    await onGenerate(page)
+    await generateToSettings(page)
+    const effects = page.getByRole('checkbox', { name: 'Visual effects', exact: true })
+    const motion = page.getByRole('checkbox', { name: 'Reduce motion', exact: true })
+    await expect(effects).toBeChecked()
+    await expect(motion).not.toBeChecked()
+    await motion.check()
+    await expect(page.locator('.clr-crt-field')).toHaveAttribute('data-motion', 'paused')
+    expect(await page.locator('.clr-echo__source').count()).toBeGreaterThan(0)
+    expect(await page.evaluate(() => localStorage.getItem('clear.reduce-motion'))).toBe('on')
+    await page.reload()
+    await expect(motion).toBeChecked()
+    await expect(effects).toBeChecked()
+    await motion.uncheck()
+    await expect(page.locator('.clr-crt-field')).toHaveAttribute('data-motion', 'running')
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await expect(motion).toBeChecked()
+    await expect(motion).toBeDisabled()
+    await expect(page.getByText('Your device’s Reduce motion setting is on.')).toBeVisible()
+    expect(await page.evaluate(() => localStorage.getItem('clear.reduce-motion'))).toBe('off')
+    await page.emulateMedia({ reducedMotion: 'no-preference' })
+    await expect(motion).not.toBeChecked()
+    await expect(motion).toBeEnabled()
+    await motion.check()
+    await effects.uncheck()
+    await expect(page.locator('.clr-crt-field')).toHaveCount(0)
+    await effects.check()
+    await expect(motion).toBeChecked()
+    await expect(page.locator('.clr-crt-field')).toHaveAttribute('data-motion', 'paused')
+    app.assertReadOnly()
+  })
+
   test('hidden tab, reduced motion and Visual effects off/on keep the preset identities and the preserved clock, and off shows no old scanlines', async ({ page, comfortOrigin }, testInfo) => {
     test.setTimeout(180_000)
     const app = await syntheticApp(page, comfortOrigin)
@@ -492,6 +528,7 @@ test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
     await generateToSettings(page)
     const box = page.getByRole('checkbox', { name: 'Visual effects' })
     await expect(box).toBeChecked()
+    const beforeOff = await readEffects(page)
     await box.uncheck()
     await expect(box).not.toBeChecked()
     await expect(page.locator('.clr-crt-field')).toHaveCount(0)
@@ -532,7 +569,7 @@ test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
     expect(offReduced.blobLooks).toEqual(looks)
     await exerciseFeedback(page, app, 'effects off, reduced motion')
     await page.emulateMedia({ reducedMotion: 'no-preference' })
-    record.off = { offSettings, offHome, off, stillOff, offReduced }
+    record.off = { beforeOff, offSettings, offHome, off, stillOff, offReduced }
 
     // ── Visual effects on again, without a reload. ─────────────────────────
     const heldBlobs = await readEffects(page)
@@ -543,10 +580,15 @@ test.describe('JOURNEY-004 comfort transitions on actual app screens', () => {
     const restored = await readEffects(page)
     expectPresetIdentities(restored, 'restored on Settings')
     expectNoOldScans(restored, 'restored on Settings')
-    // The field's clocks start from their own beginning, never from the time
-    // they would have reached; the blobs continue from where they were held.
-    expect(restored.field!.lines!.time, 'restored: no line catch-up').toBeLessThanOrEqual(restored.now - onAt + FRAME_SLACK_MS)
-    expect(restored.field!.grain!.time, 'restored: no grain catch-up').toBeLessThanOrEqual(restored.now - onAt + FRAME_SLACK_MS)
+    // Both independent clocks retain phase across the off/unmounted period.
+    // Allow only the active windows around the UI toggles, never the off time.
+    for (const name of ['lines', 'grain'] as const) {
+      const moved = restored.field![name]!.time - beforeOff.field![name]!.time
+      expect(moved, `restored: ${name} did not restart`).toBeGreaterThanOrEqual(0)
+      expect(moved, `restored: ${name} has no catch-up`).toBeLessThanOrEqual(
+        offSettings.now - beforeOff.now + restored.now - onAt + FRAME_SLACK_MS,
+      )
+    }
     for (const blob of restored.blobs) {
       const before = heldBlobs.blobs.find((b) => b.key === blob.key)
       expect(before, blob.key).toBeDefined()

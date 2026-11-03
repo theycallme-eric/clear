@@ -50,6 +50,9 @@ export const test = base.extend<Fixtures>({
       // The heading is the screen: `Screen` renders it, so waiting for it is
       // waiting for the route to have resolved rather than for a fixed delay.
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      // Route shells may be visible before their heading resolves. Scan the
+      // meaningful screen, while a permanently empty heading still fails.
+      await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(/\S/)
       await checkA11y()
     })
   },

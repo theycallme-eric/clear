@@ -96,6 +96,7 @@ function layOut() {
 
 interface FakeClock {
   id: string
+  currentTime: number
   /** Each play/pause/cancel, in order. */
   calls: string[]
   playState: 'running' | 'paused' | 'idle'
@@ -105,7 +106,7 @@ interface FakeClock {
 function installAnimate() {
   const clocks: FakeClock[] = []
   const animate = vi.fn(function (this: Element) {
-    const clock: FakeClock = { id: '', calls: [], playState: 'running' }
+    const clock: FakeClock = { id: '', currentTime: 0, calls: [], playState: 'running' }
     clocks.push(clock)
     return {
       get id() {
@@ -114,6 +115,8 @@ function installAnimate() {
       set id(value: string) {
         clock.id = value
       },
+      get currentTime() { return clock.currentTime },
+      set currentTime(value: number) { clock.currentTime = value },
       play: () => {
         clock.calls.push('play')
         clock.playState = 'running'
@@ -293,6 +296,20 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('JOURNEY-004: Visual effects off in Settings, then the other screens', () => {
+  it('restores each field clock at its own saved phase after an off/on unmount', async () => {
+    installReducedMotion(false)
+    const { user } = renderJourney('/settings')
+    await screen.findByRole('checkbox', { name: 'Visual effects' })
+    const before = animations.live()
+    before.find(clock => clock.id === CRT_FIELD_ANIMATIONS.lines)!.currentTime = 1234
+    before.find(clock => clock.id === CRT_FIELD_ANIMATIONS.grain)!.currentTime = 5678
+    await user.click(visualEffects())
+    expect(animations.live()).toHaveLength(0)
+    await user.click(visualEffects())
+    expect(animations.live().find(clock => clock.id === CRT_FIELD_ANIMATIONS.lines)!.currentTime).toBe(1234)
+    expect(animations.live().find(clock => clock.id === CRT_FIELD_ANIMATIONS.grain)!.currentTime).toBe(5678)
+    expectMotion('running')
+  })
   it('shows no Echo, no CRT field and no old scans on Settings, Home and /generate; the blobs stay, still', async () => {
     const setReducedMotion = installReducedMotion(false)
     const { user, generation } = renderJourney('/settings')
