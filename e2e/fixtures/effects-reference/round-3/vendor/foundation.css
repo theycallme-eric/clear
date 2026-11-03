@@ -1,0 +1,1040 @@
+/* =============================================================================
+   FOUNDATION — the bones. Hue-agnostic.
+   Nothing in this file names a colour. Every colour is a ROLE fed by a skin
+   file (see css/skin-clear.css). Swap the skin, keep the system.
+   ============================================================================= */
+
+:root {
+  /* ===========================================================================
+     ROLE SLOTS — a skin sets these six values. Everything else derives.
+     =========================================================================== */
+  --structure: #F87823;   /* frames, borders, labels — things that ARE */
+  --interaction: #00A9F4; /* CTAs, links, tappables — things that ACT */
+  --selection: #99DD39;   /* "you chose this" — role-independent */
+  --urgency: #CD1958;     /* demands attention NOW — time pressure or failure */
+  --info: #A368FF;        /* neutral information — atmosphere and info states */
+  --base: #171717;        /* the dark ground everything is emissive against */
+  --ink: #F1F1F1;
+
+  /* ===========================================================================
+     DERIVED RAMPS — a skin may pin these to exact brand hexes instead.
+     Tints climb toward the ink, shades fall toward the base.
+
+     The scale is exactly 100 · 300 · 400 · 500 · 600 · 900. There is no 200,
+     700 or 800 — six steps cover every use in the system and adding more
+     invites arbitrary choices. A reference to a missing step falls back
+     silently, so use only these six.
+     =========================================================================== */
+  --structure-100: color-mix(in oklab, var(--structure) 22%, var(--ink));
+  --structure-300: color-mix(in oklab, var(--structure) 58%, var(--ink));
+  --structure-400: color-mix(in oklab, var(--structure) 80%, var(--ink));
+  --structure-500: var(--structure);
+  --structure-600: color-mix(in oklab, var(--structure) 78%, var(--base));
+  --structure-900: color-mix(in oklab, var(--structure) 20%, var(--base));
+
+  --interaction-100: color-mix(in oklab, var(--interaction) 22%, var(--ink));
+  --interaction-300: color-mix(in oklab, var(--interaction) 58%, var(--ink));
+  --interaction-400: color-mix(in oklab, var(--interaction) 80%, var(--ink));
+  --interaction-500: var(--interaction);
+  --interaction-600: color-mix(in oklab, var(--interaction) 78%, var(--base));
+  --interaction-900: color-mix(in oklab, var(--interaction) 20%, var(--base));
+
+  /* Alpha ladder — the emissive mechanism. Colour over dark, never flat fill. */
+  --structure-a050: rgb(from var(--structure) r g b / 0.05);
+  --structure-a100: rgb(from var(--structure) r g b / 0.10);
+  --structure-a150: rgb(from var(--structure) r g b / 0.15);
+  --structure-a200: rgb(from var(--structure) r g b / 0.20);
+  --structure-a300: rgb(from var(--structure) r g b / 0.30);
+  --structure-a400: rgb(from var(--structure) r g b / 0.40);
+  --structure-a500: rgb(from var(--structure) r g b / 0.50);
+  --structure-a600: rgb(from var(--structure) r g b / 0.60);
+  --structure-a800: rgb(from var(--structure) r g b / 0.80);
+
+  --interaction-a050: rgb(from var(--interaction) r g b / 0.05);
+  --interaction-a100: rgb(from var(--interaction) r g b / 0.10);
+  --interaction-a150: rgb(from var(--interaction) r g b / 0.15);
+  --interaction-a200: rgb(from var(--interaction) r g b / 0.20);
+  --interaction-a300: rgb(from var(--interaction) r g b / 0.30);
+  --interaction-a400: rgb(from var(--interaction) r g b / 0.40);
+  --interaction-a500: rgb(from var(--interaction) r g b / 0.50);
+  --interaction-a600: rgb(from var(--interaction) r g b / 0.60);
+  --interaction-a800: rgb(from var(--interaction) r g b / 0.80);
+
+  /* Selection, urgency and info get the same treatment as the two main roles.
+     Before 0.3 these were partial — urgency had two alpha steps, info had none,
+     so a skin could not put its neutral hue on a surface without inlining
+     rgb(from …). Every role now carries a full ladder and a full ramp. */
+  --selection-a050: rgb(from var(--selection) r g b / 0.05);
+  --selection-a100: rgb(from var(--selection) r g b / 0.10);
+  --selection-a150: rgb(from var(--selection) r g b / 0.15);
+  --selection-a200: rgb(from var(--selection) r g b / 0.20);
+  --selection-a300: rgb(from var(--selection) r g b / 0.30);
+  --selection-a400: rgb(from var(--selection) r g b / 0.40);
+  --selection-a500: rgb(from var(--selection) r g b / 0.50);
+  --selection-a600: rgb(from var(--selection) r g b / 0.60);
+  --selection-a800: rgb(from var(--selection) r g b / 0.80);
+  --selection-100: color-mix(in oklab, var(--selection) 22%, var(--ink));
+  --selection-300: color-mix(in oklab, var(--selection) 58%, var(--ink));
+  --selection-400: color-mix(in oklab, var(--selection) 80%, var(--ink));
+  --selection-600: color-mix(in oklab, var(--selection) 78%, var(--base));
+  --selection-900: color-mix(in oklab, var(--selection) 20%, var(--base));
+  --selection-500: var(--selection);
+
+  --urgency-a050: rgb(from var(--urgency) r g b / 0.05);
+  --urgency-a100: rgb(from var(--urgency) r g b / 0.10);
+  --urgency-a150: rgb(from var(--urgency) r g b / 0.15);
+  --urgency-a200: rgb(from var(--urgency) r g b / 0.20);
+  --urgency-a300: rgb(from var(--urgency) r g b / 0.30);
+  --urgency-a400: rgb(from var(--urgency) r g b / 0.40);
+  --urgency-a500: rgb(from var(--urgency) r g b / 0.50);
+  --urgency-a600: rgb(from var(--urgency) r g b / 0.60);
+  --urgency-a800: rgb(from var(--urgency) r g b / 0.80);
+  --urgency-100: color-mix(in oklab, var(--urgency) 22%, var(--ink));
+  --urgency-300: color-mix(in oklab, var(--urgency) 58%, var(--ink));
+  --urgency-400: color-mix(in oklab, var(--urgency) 80%, var(--ink));
+  --urgency-600: color-mix(in oklab, var(--urgency) 78%, var(--base));
+  --urgency-900: color-mix(in oklab, var(--urgency) 20%, var(--base));
+  --urgency-500: var(--urgency);
+
+  --info-a050: rgb(from var(--info) r g b / 0.05);
+  --info-a100: rgb(from var(--info) r g b / 0.10);
+  --info-a150: rgb(from var(--info) r g b / 0.15);
+  --info-a200: rgb(from var(--info) r g b / 0.20);
+  --info-a300: rgb(from var(--info) r g b / 0.30);
+  --info-a400: rgb(from var(--info) r g b / 0.40);
+  --info-a500: rgb(from var(--info) r g b / 0.50);
+  --info-a600: rgb(from var(--info) r g b / 0.60);
+  --info-a800: rgb(from var(--info) r g b / 0.80);
+  --info-100: color-mix(in oklab, var(--info) 22%, var(--ink));
+  --info-300: color-mix(in oklab, var(--info) 58%, var(--ink));
+  --info-400: color-mix(in oklab, var(--info) 80%, var(--ink));
+  --info-600: color-mix(in oklab, var(--info) 78%, var(--base));
+  --info-900: color-mix(in oklab, var(--info) 20%, var(--base));
+  --info-500: var(--info);
+
+  /* Neutrals — grey is grey in every skin. */
+  --neutral-50: #F1F1F1;
+  --neutral-100: #E3E3E3;
+  --neutral-400: #8E8E90;
+  --neutral-500: #727274;
+  --neutral-800: #2E2E2E;
+  --neutral-900: #171717;
+  --neutral-a100: rgba(114, 114, 116, 0.10);
+  --neutral-a200: rgba(114, 114, 116, 0.20);
+  --neutral-a300: rgba(114, 114, 116, 0.30);
+
+  /* ===========================================================================
+     SPACING — 4px base.
+     =========================================================================== */
+  --spacing-0: 0px;
+  --spacing-25: 1px;
+  --spacing-50: 2px;
+  --spacing-100: 4px;
+  --spacing-200: 8px;
+  --spacing-300: 12px;
+  --spacing-400: 16px;
+  --spacing-500: 20px;
+  --spacing-600: 24px;
+  --spacing-700: 32px;
+  --spacing-800: 40px;
+  --spacing-1000: 48px;
+  --spacing-1200: 64px;
+  --spacing-1300: 96px;
+  --spacing-1400: 128px;
+
+  /* ===========================================================================
+     SHAPE — radius zero, chamfer is the signature.
+     =========================================================================== */
+  --radius: 0px;
+  --radius-logo: 16px; /* @kind radius */      /* the one documented exception */
+  --chamfer-sm: 8px;
+  --chamfer-md: 12px;
+  --chamfer-lg: 24px;
+  --border-width: 2px;
+  --accent-bar-width: 12px; /* one width everywhere */
+
+  /* Atmosphere — one intensity, on every screen. */
+  --atmosphere-blur: 64px;
+  --atmosphere-opacity: 0.40; /* @kind other */
+  --atmosphere-dim: 0.50; /* @kind other */
+  --atmosphere-grain: 0.05; /* @kind other */
+  --atmosphere-scan: 0.04; /* @kind other */
+  /* A card's dark ground is 70% opaque, so the atmosphere shows through it
+     slightly. Element frames (buttons, chips, fields) stay solid. */
+  --card-ground-alpha: 0.7; /* @kind other */
+
+  /* ===========================================================================
+     TYPE — three font ROLES. A skin assigns the families.
+     display = headings · data = labels/CTAs/readouts · body = prose
+     =========================================================================== */
+  --font-display: system-ui, sans-serif;
+  --font-data: ui-monospace, monospace;
+  --font-body: system-ui, sans-serif;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --tracking-display: 0.02em;
+  --tracking-data: 0.05em;
+  --tracking-wordmark: 0.18em;
+
+  --heading-h1-size: 32px;   --heading-h1-line-height: 40px;
+  --heading-h2-size: 28px;   --heading-h2-line-height: 32px;
+  --heading-h3-size: 24px;   --heading-h3-line-height: 28px;
+  --heading-h4-size: 22px;   --heading-h4-line-height: 28px;
+  --heading-h5-size: 20px;   --heading-h5-line-height: 24px;
+  --heading-h6-size: 20px;   --heading-h6-line-height: 24px;
+
+  --label-xs-size: 12px;  --label-xs-line-height: 14px;
+  --label-sm-size: 14px;  --label-sm-line-height: 16px;
+  --label-md-size: 16px;  --label-md-line-height: 20px;
+  --label-lg-size: 20px;  --label-lg-line-height: 24px;
+  --label-xl-size: 24px;  --label-xl-line-height: 28px;
+
+  --paragraph-xs-size: 12px; --paragraph-xs-line-height: 15px; /* body text is 1.25 (decided) */
+  --paragraph-sm-size: 14px; --paragraph-sm-line-height: 17.5px;
+  --paragraph-md-size: 16px; --paragraph-md-line-height: 20px;
+  --paragraph-lg-size: 20px; --paragraph-lg-line-height: 24px;
+  --paragraph-xl-size: 24px; --paragraph-xl-line-height: 28px;
+
+  /* ===========================================================================
+     FRAME ROLE PAIRS — a frame's two layers, derived from one role.
+
+     A frame has a border and a surface, and they must speak for the same role.
+     Choosing a semantic border while leaving the surface on --surface-card is
+     what produced orange-tinted panels inside red, green and blue frames: the
+     two layers disagreed about who was talking. These pairs exist so that
+     stating the role once is the SHORTEST path, not the careful one.
+
+     Use the default 10% rung. -quiet (5%) and -strong (15%) are defined for
+     the unselected chip and the timer, and nothing else uses them.
+     =========================================================================== */
+  --surface-frame-structure-quiet: var(--structure-a050);
+  --surface-frame-structure: var(--structure-a100);
+  --surface-frame-structure-strong: var(--structure-a150);
+  --border-frame-structure: rgb(from var(--structure) r g b / 0.9); /* frames at rest: 90% */
+
+  --surface-frame-interaction-quiet: var(--interaction-a050);
+  --surface-frame-interaction: var(--interaction-a100);
+  --surface-frame-interaction-strong: var(--interaction-a150);
+  --border-frame-interaction: var(--interaction-500);
+
+  --surface-frame-selection-quiet: var(--selection-a050);
+  --surface-frame-selection: var(--selection-a100);
+  --surface-frame-selection-strong: var(--selection-a150);
+  --border-frame-selection: var(--selection-500);
+
+  --surface-frame-urgency-quiet: var(--urgency-a050);
+  --surface-frame-urgency: var(--urgency-a100);
+  --surface-frame-urgency-strong: var(--urgency-a150);
+  --border-frame-urgency: var(--urgency-500);
+
+  --surface-frame-info-quiet: var(--info-a050);
+  --surface-frame-info: var(--info-a100);
+  --surface-frame-info-strong: var(--info-a150);
+  --border-frame-info: var(--info-500);
+
+  /* ===========================================================================
+     SEMANTIC TOKENS — what components actually consume.
+     Structure builds. Interaction acts. Selection confirms.
+
+     Component-level frame tokens below read from the role pairs above rather
+     than from a rung directly, so the role a component claims is visible in its
+     token definition and a skin that re-points a role moves both layers at
+     once. Where a component sits deliberately off the rung, the exception is
+     annotated — an unannotated bare rung on a frame token is drift.
+     =========================================================================== */
+  --bg: var(--base);
+  --fg: var(--ink);
+
+  --surface-card: var(--surface-frame-structure);
+  --surface-card-accent: var(--structure-a400);
+  --surface-cta-primary: var(--interaction-a400);
+  --surface-cta-primary-hover: var(--interaction-a600);
+  --surface-cta-primary-accent: var(--interaction-a600);
+  --surface-cta-secondary: var(--interaction-a050);
+  --surface-cta-secondary-hover: var(--interaction-a200);
+  /* Pressed is one rung above hover. It's a hard cut (--dur-press), so it has
+     to read as a distinct step, not a continuation of the hover. */
+  --surface-cta-secondary-pressed: var(--interaction-a400);
+  --surface-cta-primary-pressed: var(--interaction-a800);
+  --surface-input: var(--surface-frame-structure);
+  --surface-input-active: var(--structure-a200); /* pressed-in, one rung up */
+  /* Invalid inputs were borrowing --border-toast-negative over a structure
+     surface: a red border around an orange field, and an input reaching into
+     the toast namespace for its own state. Both layers now come from urgency. */
+  --surface-input-invalid: var(--surface-frame-urgency);
+  --border-input-invalid: var(--border-frame-urgency);
+  /* Selected controls: strong surface + dark text. 60% surface with a 20% text
+     mix measured 2.93:1 before 0.3 — below AA for the small uppercase labels
+     that sit on it. Glow does not count toward contrast. */
+  --surface-selected: var(--selection-a400); /* 40% tint + full border + light text: 5.4–6.2:1 across skins */
+  --surface-unselected: var(--structure-a050);
+  /* Readouts invert the pairing: quiet surface, bright text. Timer digits are
+     24–40px, so the 3:1 large-text threshold applies, but this clears 7:1
+     anyway. Low-time stays the more aggressive state through hue and the
+     80% pulse, not through a louder surface. */
+  --surface-timer: var(--surface-frame-selection-strong);
+  /* Off-rung on purpose: the low state is the one place a frame tint carries
+     alarm, and 20% is what separates it from the rest state at a glance. */
+  --surface-timer-low: var(--urgency-a200);
+  --surface-track: var(--structure-a300);
+  --surface-thumb: var(--interaction-500);
+  --surface-empty: var(--surface-frame-structure-quiet);
+  /* The info role, as the name says. This read from --structure until 0.5.1,
+     which put an orange frame on an informational toast in CLEAR and made the
+     info hue decorative-only by accident rather than by decision. */
+  --surface-toast-info: var(--surface-frame-info);
+  /* Off-rung on purpose: a positive toast is the quietest of the three and needs
+     the extra step to register at all against the atmosphere. */
+  --surface-toast-positive: var(--selection-a200);
+  --surface-toast-negative: var(--surface-frame-urgency-strong);
+  --surface-disabled: transparent; /* disabled is border only */
+
+  --border-card: var(--border-frame-structure);
+  --border-cta-primary: var(--interaction-500);
+  --border-cta-primary-hover: var(--interaction-400);
+  --border-cta-secondary: var(--interaction-500);
+  --border-selected: var(--selection);
+  --border-unselected: var(--border-frame-structure);
+  --border-input: var(--structure-a500);
+  --border-timer: var(--selection);
+  --border-timer-low: var(--urgency);
+  --border-tab-rail: var(--structure-a300);
+  /* Rail overflow cue. The surface reads --ground so a rail inside a panel masks
+     content against that panel rather than against the page; --ground is the
+     documented extension hook and this is its canonical in-system use. */
+  --surface-rail-cue: var(--ground, var(--base));
+  /* Full strength, not the a500 rung it started on: measured against the cue
+     surface that read 2.5:1 in Clear and 1.74:1 in Mono, which is under the 3:1
+     a non-text indicator needs. The chevron cleared easily either way — it was
+     the structural rule, the half of the cue that carries CLEAR's vocabulary,
+     that was nearly invisible in the grey skin. */
+  --border-rail-cue: var(--structure-500); /* 3:1 minimum as a non-text indicator; 90% would fall under it in Mono */
+  --text-rail-cue: var(--structure-300);
+  /* Scroll region. Rule at the quiet structure rung, like the tab rail; streak
+     at full strength, because it's the only motion signal. */
+  --border-region-rule: var(--structure-a300);
+  --border-region-streak: var(--structure-500); /* motion signal: full strength */
+  --border-tab-active: var(--interaction-500);
+  --border-empty: var(--structure-a500); /* half-strength: an empty frame recedes */
+  --border-toast-info: var(--border-frame-info);
+  --border-toast-positive: var(--border-frame-selection);
+  --border-toast-negative: var(--border-frame-urgency);
+  --border-disabled: var(--neutral-400);
+
+  --text-header: var(--interaction-100);
+  --text-card-header: var(--interaction-300);
+  --text-paragraph: var(--interaction-100);
+  --text-card-label: var(--structure-100);
+  --text-cta: var(--interaction-100);
+  --text-on-cta: var(--structure-100);
+  --text-selected: var(--selection-100);
+  --text-unselected: var(--structure-100);
+  --text-timer: color-mix(in oklab, var(--selection) 92%, var(--ink));
+  --text-timer-low: color-mix(in oklab, var(--urgency) 92%, var(--ink));
+  --text-input: var(--interaction-100);
+  --text-tab-active: var(--interaction-100);
+  --text-tab-inactive: color-mix(in oklab, var(--ink) 62%, var(--base));
+  --text-empty-title: var(--interaction-300);
+  --text-empty-body: color-mix(in srgb, var(--interaction-100) 65%, transparent);
+  --text-scan-line: var(--structure-300);
+  --text-negative: color-mix(in oklab, var(--urgency) 75%, var(--ink));
+  --text-disabled: var(--neutral-400);
+  /* Supporting text next to a title or value. */
+  --text-secondary: color-mix(in srgb, var(--text-paragraph) 70%, transparent);
+  /* Only the primary action glows. */
+  --glow-spread: 6px;
+  /* Sizes picked in calibration. Components read these rather than literals. */
+  --control-height: 40px;
+  --icon-size: 16px;
+  /* Emission: every stroke and every letter gives off a little light, like
+     phosphor. Lines stay crisp; the fuzz comes from light, not from blur. */
+  --emit-near: 1.5px; /* @kind other */
+  --emit-far: 5px; /* @kind other */
+  --bleed-spread: var(--emit-near); /* @kind other */
+  --glow-color: var(--interaction-a300);
+  /* CRT line texture, drawn in a frame's surface layer only: under text, inside the border. */
+  --frame-scan: repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.18) 0 1px, transparent 1px 3px); /* @kind other */
+  --surface-backdrop: rgb(from var(--base) r g b / 0.45);
+
+  --icon-empty: var(--structure-300);
+  /* Severity glyphs. Semantic, not primitives: Mono re-points its info toast at
+     the structure rung, and the glyph has to follow the frame it sits in. */
+  --icon-toast-info: var(--info-300);
+  --icon-toast-positive: var(--selection-400);
+  --icon-toast-negative: var(--text-negative);
+  --icon-cta: var(--interaction-500);
+  --icon-on-cta: var(--structure-500);
+  --icon-selected: var(--selection-900);
+  --icon-unselected: var(--structure-100);
+}
+
+/* =============================================================================
+   ELEMENT STYLES
+   ============================================================================= */
+
+/* Border-box everywhere. Every sizing value in this system — the 40px touch
+   minimums, the 64px toast row, .clr-shell__content's max-width — was written
+   assuming padding sits INSIDE the declared size. Without this the browser's
+   content-box default adds padding on top, so a "40px" control renders at 56
+   and a "64px" toast at 88. The system already takes ownership of bare elements
+   (body, headings, p, label), so owning the box model is the same posture, and
+   it replaces the per-rule box-sizing patches that were papering over it. */
+*, *::before, *::after { box-sizing: border-box; }
+
+body { background: var(--bg); color: var(--text-paragraph); font-family: var(--font-body); font-weight: var(--font-weight-medium); -webkit-font-smoothing: antialiased;
+  /* Text emits too, at the same strength as strokes, so nothing looks sharper than the lines. */
+  text-shadow: 0 0 2px color-mix(in srgb, currentColor 45%, transparent), 0 0 6px color-mix(in srgb, currentColor 18%, transparent); }
+
+h1, .h1, h2, .h2, h3, .h3, h4, .h4, h5, h6 { font-family: var(--font-display); font-weight: var(--font-weight-bold); text-transform: uppercase; color: var(--text-header); margin: 0; }
+h1, .h1 { font-size: var(--heading-h1-size); line-height: var(--heading-h1-line-height); letter-spacing: var(--tracking-display); }
+h2, .h2 { font-size: var(--heading-h2-size); line-height: var(--heading-h2-line-height); letter-spacing: var(--tracking-display); }
+h3, .h3 { font-size: var(--heading-h3-size); line-height: var(--heading-h3-line-height); }
+h4, .h4 { font-size: var(--heading-h4-size); line-height: var(--heading-h4-line-height); color: var(--text-card-header); }
+h5, h6 { font-size: var(--heading-h5-size); line-height: var(--heading-h5-line-height); }
+
+p { font-family: var(--font-body); font-size: var(--paragraph-md-size); line-height: var(--paragraph-md-line-height); font-weight: var(--font-weight-medium); color: var(--text-paragraph); }
+
+.label, label { font-family: var(--font-data); font-size: var(--label-sm-size); line-height: var(--label-sm-line-height); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-data); color: var(--text-card-label); }
+.cta { font-family: var(--font-data); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: var(--tracking-data); }
+.mono, code { font-family: var(--font-data); font-weight: var(--font-weight-medium); }
+em, i { font-style: italic; color: color-mix(in srgb, currentColor 75%, transparent); }
+
+a { color: var(--interaction-300); text-decoration: none; border-bottom: 1px solid var(--interaction-a500); transition: color var(--dur-fast, 150ms) linear, border-color var(--dur-fast, 150ms) linear; }
+a:hover { color: var(--interaction-100); border-bottom-color: var(--interaction-500); }
+
+/* =============================================================================
+   CHAMFER — the signature shape, as one portable class.
+   Border colour lives on the element, surface on ::before inset by the border
+   width. A 45° cut inset by `bw` shortens the leg by bw·(√2−1) ≈ 0.414·bw.
+   ============================================================================= */
+.clr-chamfer {
+  --c: var(--chamfer-md);
+  --bw: var(--border-width);
+  --surface: var(--surface-card);
+  --brd: var(--border-card);
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+  /* The element carries the shape. Size variants below replace this polygon.
+     Anything that must draw outside the shape (glow, focus) does so from an
+     unclipped layer: .clr-glow for glow, <FocusBrackets> for focus. */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%);
+}
+/* Border layer, then surface layer — both behind content, so bare text nodes
+   need no wrapper element. isolation:isolate keeps the negative z-indexes in. */
+.clr-chamfer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-color: var(--brd);
+  transition: background-color var(--dur-hover) var(--ease-mech);
+}
+.clr-chamfer::before {
+  content: '';
+  position: absolute;
+  inset: var(--bw);
+  z-index: -1;
+  /* The tint is composited over the dark ground, not over the border colour
+     underneath it — that is what keeps a 10% surface reading as 10%. */
+  /* Painted as an inset shadow over a ground colour, not a gradient: both are
+     plain colours, so a change of state transitions. A gradient can't be
+     interpolated, which is why hover used to cut. */
+  background-color: var(--ground, var(--base));
+  background-image: var(--frame-scan);
+  box-shadow: inset 0 0 0 100vmax var(--surface);
+  transition: box-shadow var(--dur-hover) var(--ease-mech);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--c) - var(--bw) * 0.414)), calc(100% - (var(--c) - var(--bw) * 0.414)) 100%, 0 100%);
+}
+
+
+/* Size variants set clip-path directly rather than redeclaring --c, so the
+   variant selectors carry no custom properties. They read the --chamfer-*
+   tokens, so retuning a size is one edit. Inner leg = c − 0.414·bw. */
+.clr-chamfer--sm { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--chamfer-sm)), calc(100% - var(--chamfer-sm)) 100%, 0 100%); }
+.clr-chamfer--sm::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--chamfer-sm) - var(--border-width) * 0.414)), calc(100% - (var(--chamfer-sm) - var(--border-width) * 0.414)) 100%, 0 100%); }
+.clr-chamfer--md { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--chamfer-md)), calc(100% - var(--chamfer-md)) 100%, 0 100%); }
+.clr-chamfer--md::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--chamfer-md) - var(--border-width) * 0.414)), calc(100% - (var(--chamfer-md) - var(--border-width) * 0.414)) 100%, 0 100%); }
+.clr-chamfer--lg { clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--chamfer-lg)), calc(100% - var(--chamfer-lg)) 100%, 0 100%); }
+.clr-chamfer--lg::before { clip-path: polygon(0 0, 100% 0, 100% calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)), calc(100% - (var(--chamfer-lg) - var(--border-width) * 0.414)) 100%, 0 100%); }
+/* The border layer is a RING, not a full fill: an even-odd polygon with the
+   outer shape and the surface's inner shape. As a full fill it sat under the
+   surface, so a see-through ground showed border colour instead of the
+   atmosphere. Ring and surface meet exactly, so a solid frame looks the same. */
+.clr-chamfer::after { clip-path: polygon(evenodd, 0 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 0, var(--bw) var(--bw), var(--bw) calc(100% - var(--bw)), calc(100% - var(--bw) - (var(--c) - var(--bw) * 0.414)) calc(100% - var(--bw)), calc(100% - var(--bw)) calc(100% - var(--bw) - (var(--c) - var(--bw) * 0.414)), calc(100% - var(--bw)) var(--bw), var(--bw) var(--bw)); }
+.clr-chamfer--sm::after { clip-path: polygon(evenodd, 0 0, 100% 0, 100% calc(100% - var(--chamfer-sm)), calc(100% - var(--chamfer-sm)) 100%, 0 100%, 0 0, var(--bw) var(--bw), var(--bw) calc(100% - var(--bw)), calc(100% - var(--bw) - (var(--chamfer-sm) - var(--bw) * 0.414)) calc(100% - var(--bw)), calc(100% - var(--bw)) calc(100% - var(--bw) - (var(--chamfer-sm) - var(--bw) * 0.414)), calc(100% - var(--bw)) var(--bw), var(--bw) var(--bw)); }
+.clr-chamfer--md::after { clip-path: polygon(evenodd, 0 0, 100% 0, 100% calc(100% - var(--chamfer-md)), calc(100% - var(--chamfer-md)) 100%, 0 100%, 0 0, var(--bw) var(--bw), var(--bw) calc(100% - var(--bw)), calc(100% - var(--bw) - (var(--chamfer-md) - var(--bw) * 0.414)) calc(100% - var(--bw)), calc(100% - var(--bw)) calc(100% - var(--bw) - (var(--chamfer-md) - var(--bw) * 0.414)), calc(100% - var(--bw)) var(--bw), var(--bw) var(--bw)); }
+.clr-chamfer--lg::after { clip-path: polygon(evenodd, 0 0, 100% 0, 100% calc(100% - var(--chamfer-lg)), calc(100% - var(--chamfer-lg)) 100%, 0 100%, 0 0, var(--bw) var(--bw), var(--bw) calc(100% - var(--bw)), calc(100% - var(--bw) - (var(--chamfer-lg) - var(--bw) * 0.414)) calc(100% - var(--bw)), calc(100% - var(--bw)) calc(100% - var(--bw) - (var(--chamfer-lg) - var(--bw) * 0.414)), calc(100% - var(--bw)) var(--bw), var(--bw) var(--bw)); }
+
+.clr-chip { --surface: var(--surface-unselected); --brd: var(--border-unselected); display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-200); min-height: 40px; padding: var(--spacing-200) var(--spacing-400); border: 0; background: transparent; cursor: pointer; font-family: var(--font-data); font-size: var(--label-sm-size); line-height: var(--label-sm-line-height); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-data); text-transform: uppercase; color: var(--text-unselected); }
+.clr-chip:is([aria-pressed="true"], .clr-chamfer--selected) { color: var(--text-selected); }
+.clr-chip:is([aria-pressed="true"], .clr-chamfer--selected)::before { box-shadow: inset 0 0 0 100vmax var(--surface-selected); }
+.clr-chip:is([aria-pressed="true"], .clr-chamfer--selected)::after { background-color: var(--border-selected); }
+
+/* Interaction timing: hover over --dur-hover (above), press is a hard cut, a
+   control holding a toggle state changes over --dur-state. Linear, never eased. */
+.clr-chamfer:active::before, .clr-chamfer:active::after { transition-duration: var(--dur-press); }
+.clr-chamfer:is([aria-pressed], [aria-selected], [aria-checked])::before,
+.clr-chamfer:is([aria-pressed], [aria-selected], [aria-checked])::after { transition-duration: var(--dur-state); }
+
+/* Role variants paint the two layers directly, for the same reason. */
+.clr-chamfer--cta::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-primary); }
+.clr-chamfer--cta::after { background: var(--border-cta-primary); }
+.clr-chamfer--selected::before { box-shadow: inset 0 0 0 100vmax var(--surface-selected); }
+.clr-chamfer--selected::after { background: var(--border-selected); }
+.clr-chamfer--timer::before { box-shadow: inset 0 0 0 100vmax var(--surface-timer); }
+.clr-chamfer--timer::after { background: var(--border-timer); }
+.clr-chamfer--timer-low::before { box-shadow: inset 0 0 0 100vmax var(--surface-timer-low); }
+.clr-chamfer--timer-low::after { background-color: var(--border-timer-low); }
+/* Crossing into (or out of) the low state is an alert, not an interaction: it
+   steps through four states over --dur-alert so it registers without easing.
+   The only frame change on this schedule. */
+.clr-chamfer:is(.clr-chamfer--timer, .clr-chamfer--timer-low)::before,
+.clr-chamfer:is(.clr-chamfer--timer, .clr-chamfer--timer-low)::after { transition-duration: var(--dur-alert); transition-timing-function: var(--step-4); }
+
+/* Role variants — both layers from one role, for frames with no component of
+   their own. `class="clr-chamfer clr-chamfer--urgency"` is the whole decision. */
+.clr-chamfer--structure::before { box-shadow: inset 0 0 0 100vmax var(--surface-frame-structure); }
+.clr-chamfer--structure::after { background: var(--border-frame-structure); }
+.clr-chamfer--interaction::before { box-shadow: inset 0 0 0 100vmax var(--surface-frame-interaction); }
+.clr-chamfer--interaction::after { background: var(--border-frame-interaction); }
+.clr-chamfer--selection::before { box-shadow: inset 0 0 0 100vmax var(--surface-frame-selection); }
+.clr-chamfer--selection::after { background: var(--border-frame-selection); }
+.clr-chamfer--urgency::before { box-shadow: inset 0 0 0 100vmax var(--surface-frame-urgency); }
+.clr-chamfer--urgency::after { background: var(--border-frame-urgency); }
+.clr-chamfer--info::before { box-shadow: inset 0 0 0 100vmax var(--surface-frame-info); }
+.clr-chamfer--info::after { background: var(--border-frame-info); }
+
+/* =============================================================================
+   OVERFLOW RAIL — peer items stay reachable when the width can't hold them.
+
+   The scrollbar is hidden because the rail draws its own cue: a hard structural
+   edge rule and a stepped chevron, in the same angular vocabulary as everything
+   else. Hiding a scrollbar is only safe BECAUSE that cue exists and because the
+   items remain in normal focus order — never hide one without both.
+   ============================================================================= */
+.clr-rail__scroller { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior-x: contain; }
+.clr-rail__scroller::-webkit-scrollbar { display: none; }
+/* The rail scrolls itself rather than pushing the page wide. */
+.clr-rail { max-width: 100%; }
+.clr-rail__cue:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring); outline-offset: calc(var(--focus-ring-width) * -1); }
+
+/* =============================================================================
+   SCROLL REGION: a vertical area inside a fixed shell, with pinned layers.
+
+   Hard edges, no fade. The scroller starts at --head-h and ends at --foot-h,
+   so content never passes under a pinned layer. That is why the layers carry
+   no surface: nothing is behind them to hide, and the atmosphere shows
+   through. --head-h / --foot-h are measured by <ScrollRegion>. Using the
+   classes without the component, publish them yourself and add
+   data-measured when you have.
+   ============================================================================= */
+.clr-scroll-region { position: relative; height: 100%; min-height: 0; min-width: 0; overflow: hidden; }
+.clr-scroll-region__scroller {
+  position: absolute; left: 0; right: 0;
+  top: var(--head-h, 0px); bottom: var(--foot-h, 0px);
+  /* Both axes stated: overflow-y alone computes overflow-x to auto, and
+     children then scroll sideways under a neighbouring panel. */
+  overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  /* No fallback length: a guessed inset collides with the layer on first paint. */
+  visibility: hidden;
+}
+.clr-scroll-region[data-measured] > .clr-scroll-region__scroller { visibility: visible; }
+/* Zero specificity, so a component's own min-width (inline or class) still
+   wins. Everything else inside shrinks instead of widening the region. */
+:where(.clr-scroll-region__scroller *) { min-width: 0; }
+
+.clr-scroll-region__head, .clr-scroll-region__foot {
+  position: absolute; left: 0; right: 0; z-index: 2;
+  /* Capped, so a layer that grows at narrow widths scrolls itself instead of
+     squeezing the region. */
+  max-height: 45%; overflow-y: auto; overflow-x: hidden;
+  padding: 0 var(--spacing-300);
+}
+.clr-scroll-region__head { top: 0; padding-top: var(--spacing-300); }
+.clr-scroll-region__foot { bottom: 0; border-top: var(--border-width) solid var(--border-region-rule); }
+.clr-scroll-region__head[data-rule] { border-bottom: var(--border-width) solid var(--border-region-rule); }
+/* Actions sit the same distance from the top as from the side, and the row is
+   exactly one control tall, so a 40px button and the title share a centre. */
+.clr-scroll-region__title-row { display: flex; align-items: center; gap: var(--spacing-300); min-height: var(--control-height); }
+.clr-scroll-region__title { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clr-scroll-region__actions { flex: 0 0 auto; display: flex; align-items: center; gap: var(--spacing-200); }
+
+/* Streak: 1px on each edge. Below the layers in z-order, so an active tab
+   indicator stays on top of the glow. Absolute children are placed from the
+   padding box, which is already inside any frame border, so 0 is flush. */
+.clr-scroll-region__streak {
+  position: absolute; left: 0; right: 0; height: var(--border-width); z-index: 1;
+  /* On the head's closing rule, not beside it. */
+  top: max(0px, calc(var(--head-h, 0px) - var(--border-width)));
+  background: var(--border-region-streak);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--dur-enter) var(--step-3), box-shadow var(--dur-enter) var(--step-3);
+}
+.clr-scroll-region__streak--bottom { top: auto; bottom: max(0px, calc(var(--foot-h, 0px) - var(--border-width))); }
+/* Drawn scrollbar: 2px in the margin, only while scrolling, same signal as the streaks. */
+.clr-scroll-region__bar { position: absolute; right: var(--bar-right, 3px); width: 2px; z-index: 1; pointer-events: none; top: var(--bar-top, 0px); height: var(--bar-h, 0px); background: var(--border-region-streak); opacity: 0; transition: opacity var(--dur-enter) var(--step-3), box-shadow var(--dur-enter) var(--step-3); }
+.clr-scroll-region[data-scrolling] > .clr-scroll-region__bar { opacity: 0.7; box-shadow: 0 0 7px var(--border-region-streak); }
+@media (prefers-reduced-motion: reduce) { .clr-scroll-region__bar { transition: none; } .clr-scroll-region[data-scrolling] > .clr-scroll-region__bar { opacity: 0.5; box-shadow: none; } }
+.clr-scroll-region[data-scrolling] > .clr-scroll-region__streak { opacity: 0.7; box-shadow: 0 0 7px var(--border-region-streak); }
+@media (prefers-reduced-motion: reduce) {
+  .clr-scroll-region__streak { transition: none; }
+  .clr-scroll-region[data-scrolling] > .clr-scroll-region__streak { opacity: 0.5; box-shadow: none; }
+}
+
+/* =============================================================================
+   ACCENT CARD — a decorative column joined to a card's left edge.
+   The column has no colour of its own: it reads the card's own --surface and
+   --brd, at a stronger tint, so it follows every state the card has (role,
+   selected, disabled, focus) with no extra tokens. The card keeps all four of
+   its edges; the column sits against the outside of the left one.
+   <div class="clr-card">
+     <span class="clr-card__bar"></span>
+     <div class="clr-chamfer clr-chamfer--md clr-card__body">…</div>
+   </div>
+   ============================================================================= */
+.clr-card { display: flex; align-items: stretch; }
+.clr-card__bar { flex: 0 0 var(--accent-bar-width); margin-right: calc(var(--border-width) * -1); background-color: var(--ground, var(--base)); box-shadow: inset 0 0 0 var(--border-width) var(--brd, var(--border-card)), inset 0 0 0 100vmax rgb(from var(--brd, var(--border-card)) r g b / 0.4); }
+.clr-card__body { flex: 1; min-width: 0; padding: var(--spacing-300); }
+.clr-card__body::before { background-color: rgb(from var(--base) r g b / var(--card-ground-alpha)); }
+.clr-card__bar { background-color: rgb(from var(--base) r g b / var(--card-ground-alpha)); }
+/* The bar follows the body's state. Painted directly, so no state redeclares a variable. */
+.clr-card:has(> .clr-card__body:is(.clr-chamfer--selected, [aria-pressed="true"])) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-selected), inset 0 0 0 100vmax rgb(from var(--border-selected) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--structure) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-frame-structure), inset 0 0 0 100vmax rgb(from var(--border-frame-structure) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--interaction) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-frame-interaction), inset 0 0 0 100vmax rgb(from var(--border-frame-interaction) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--selection) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-frame-selection), inset 0 0 0 100vmax rgb(from var(--border-frame-selection) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--urgency) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-frame-urgency), inset 0 0 0 100vmax rgb(from var(--border-frame-urgency) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--info) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-frame-info), inset 0 0 0 100vmax rgb(from var(--border-frame-info) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--timer) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-timer), inset 0 0 0 100vmax rgb(from var(--border-timer) r g b / 0.4); }
+.clr-card:has(> .clr-card__body.clr-chamfer--timer-low) > .clr-card__bar { box-shadow: inset 0 0 0 var(--border-width) var(--border-timer-low), inset 0 0 0 100vmax rgb(from var(--border-timer-low) r g b / 0.4); }
+
+/* =============================================================================
+   BUTTON — chamfered, interaction-coloured. Compose with .clr-chamfer:
+   <button class="clr-chamfer clr-chamfer--sm clr-btn">Initiate</button>
+   ============================================================================= */
+.clr-btn {
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-data);
+  color: var(--text-cta);
+  background: transparent;
+  border: 0;
+  padding: var(--spacing-200) var(--spacing-300);
+  cursor: pointer;
+  transition: color var(--dur-hover) var(--ease-mech);
+}
+/* States paint the frame's two layers directly, so no state redeclares a
+   custom property. The chamfer's layer transitions carry the timing. */
+.clr-btn::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-secondary); }
+.clr-btn::after { background-color: var(--border-cta-secondary); }
+.clr-btn:hover::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-secondary-hover); }
+.clr-btn:active::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-secondary-pressed); }
+.clr-btn--primary::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-primary); }
+.clr-btn--primary::after { background-color: var(--border-cta-primary); }
+.clr-btn--primary:hover::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-primary-hover); }
+.clr-btn--primary:active::before { box-shadow: inset 0 0 0 100vmax var(--surface-cta-primary-pressed); }
+/* Text action (DS-009): quieter than any button. The label style in the action
+   colour, ending in a chevron, with no frame. The chevron is the non-colour cue.
+   Keeps a 40px tap target. Not brackets: those mean focus. */
+.clr-text-action { display: inline-flex; align-items: center; gap: 6px; min-height: var(--control-height); padding: 0 var(--spacing-100); background: transparent; border: 0; cursor: pointer; text-decoration: none; font-family: var(--font-data); font-size: var(--label-xs-size); font-weight: var(--font-weight-bold); letter-spacing: var(--tracking-data); text-transform: uppercase; color: var(--interaction-300); transition: color var(--dur-hover) linear; }
+.clr-text-action::after { content: '›'; font-size: 14px; line-height: 1; }
+.clr-text-action:hover { color: var(--interaction-100); }
+.clr-text-action:active { color: var(--interaction-500); transition-duration: var(--dur-press); }
+.clr-text-action:disabled, .clr-text-action[aria-disabled="true"] { color: var(--text-disabled); cursor: not-allowed; }
+.clr-text-action--block { display: flex; width: 100%; justify-content: center; }
+/* Quiet is empty at rest: no ground, no scanlines, no tint. Its solid ground
+   showed as a dark block once cards became see-through. */
+.clr-btn--quiet::before { background-color: transparent; background-image: none; box-shadow: none; }
+.clr-btn--quiet::after { background-color: transparent; }
+.clr-btn--quiet:hover::before { box-shadow: inset 0 0 0 100vmax var(--interaction-a100); }
+.clr-btn--quiet:active::before { box-shadow: inset 0 0 0 100vmax var(--interaction-a200); }
+.clr-btn--critical::before { box-shadow: inset 0 0 0 100vmax var(--surface-toast-negative); }
+.clr-btn--critical::after { background-color: var(--border-toast-negative); }
+.clr-btn--critical { color: var(--text-negative); }
+.clr-btn--critical:hover::before { box-shadow: inset 0 0 0 100vmax var(--urgency-a300); }
+.clr-btn--critical:active::before { box-shadow: inset 0 0 0 100vmax var(--urgency-a400); }
+.clr-btn:is([aria-pressed="true"], .is-on)::before { box-shadow: inset 0 0 0 100vmax var(--surface-selected); }
+.clr-btn:is([aria-pressed="true"], .is-on)::after { background-color: var(--border-selected); }
+.clr-btn:is([aria-pressed="true"], .is-on) { color: var(--text-selected); }
+.clr-btn:disabled::before { box-shadow: inset 0 0 0 100vmax var(--surface-disabled); }
+.clr-btn:disabled::after { background-color: var(--border-disabled); }
+.clr-btn:disabled { cursor: not-allowed; color: var(--text-disabled); }
+/* Glow. A filter on a clipped element is cut off by its own clip, so the glow
+   lives on an unclipped wrapper; drop-shadow on the wrapper then follows the
+   chamfered shape exactly. <Button variant="primary"> adds the wrapper. In
+   plain CSS: <span class="clr-glow"><button class="clr-chamfer clr-btn clr-btn--primary">. */
+/* Bleed: every border glows very faintly, like phosphor on glass, outside the
+   line, inside it and along the cut. A chamfer clips anything drawn outside it,
+   so the bleed comes from an unclipped wrapper. Components add the wrapper
+   themselves; with plain classes, wrap each frame:
+   <span class="clr-bleed" style="--bleed: var(--border-card)">…frame…</span>
+   A frame without the wrapper renders with no bleed; nothing else breaks. */
+/* The glow is cast by the STROKE only. A drop-shadow on the wrapper was cast by
+   everything inside it, surface included, so a see-through ground showed the
+   glow's own colour under the card instead of the atmosphere. Here ::before
+   redraws just the outline (four edges and the 45° cut, as backgrounds, so
+   nothing clips it) and only that layer carries the filter. */
+.clr-bleed { display: inline-flex; position: relative; isolation: isolate; }
+.clr-bleed::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / 100% var(--border-width) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / var(--border-width) 100% no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) right top / var(--border-width) calc(100% - var(--chamfer-md)) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left bottom / calc(100% - var(--chamfer-md)) var(--border-width) no-repeat,
+    linear-gradient(to bottom right, transparent calc(50% - var(--border-width)), var(--bleed, var(--structure)) calc(50% - var(--border-width)), var(--bleed, var(--structure)) 50%, transparent 50%) right bottom / var(--chamfer-md) var(--chamfer-md) no-repeat;
+  filter: drop-shadow(0 0 var(--emit-near) rgb(from var(--bleed, var(--structure)) r g b / 0.8)) drop-shadow(0 0 var(--emit-far) rgb(from var(--bleed, var(--structure)) r g b / 0.35));
+}
+.clr-bleed:has(> .clr-chamfer--sm, > .clr-card > .clr-chamfer--sm)::before { background:
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / 100% var(--border-width) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / var(--border-width) 100% no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) right top / var(--border-width) calc(100% - var(--chamfer-sm)) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left bottom / calc(100% - var(--chamfer-sm)) var(--border-width) no-repeat,
+    linear-gradient(to bottom right, transparent calc(50% - var(--border-width)), var(--bleed, var(--structure)) calc(50% - var(--border-width)), var(--bleed, var(--structure)) 50%, transparent 50%) right bottom / var(--chamfer-sm) var(--chamfer-sm) no-repeat; }
+.clr-bleed:has(> .clr-chamfer--lg, > .clr-card > .clr-chamfer--lg)::before { background:
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / 100% var(--border-width) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left top / var(--border-width) 100% no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) right top / var(--border-width) calc(100% - var(--chamfer-lg)) no-repeat,
+    linear-gradient(var(--bleed, var(--structure)), var(--bleed, var(--structure))) left bottom / calc(100% - var(--chamfer-lg)) var(--border-width) no-repeat,
+    linear-gradient(to bottom right, transparent calc(50% - var(--border-width)), var(--bleed, var(--structure)) calc(50% - var(--border-width)), var(--bleed, var(--structure)) 50%, transparent 50%) right bottom / var(--chamfer-lg) var(--chamfer-lg) no-repeat; }
+.clr-bleed--block { display: flex; flex-direction: column; }
+/* Plain-bordered fields aren't clipped, so they bleed directly. */
+/* A bare .clr-input (no field frame) emits directly; framed fields emit through .clr-bleed. */
+.clr-input:not(.clr-field > .clr-input) { box-shadow: 0 0 var(--emit-near) rgb(from var(--structure) r g b / 0.8), 0 0 var(--emit-far) rgb(from var(--structure) r g b / 0.35); }
+.clr-glow { display: inline-flex; filter: drop-shadow(0 0 var(--glow-spread) var(--glow-color)); }
+.clr-glow:has(> :disabled) { filter: none; }
+/* Primary: the 2px bleed under its 6px glow. */
+.clr-bleed.clr-glow { filter: drop-shadow(0 0 var(--glow-spread) var(--glow-color)); }
+.clr-bleed.clr-glow:has(> :disabled) { filter: none; }
+/* Loading text inside a busy frame ends in a blinking block cursor, like a
+   terminal. Use on the one line that says what's happening. */
+.clr-cursor::after { content: "_"; display: inline-block; margin-left: 2px; color: var(--text-header); animation: clr-cursor-blink 1s steps(1) infinite; }
+@keyframes clr-cursor-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .clr-cursor::after { animation: none; } }
+/* Loading: a scan sweeps the surface, on a button or on any frame marked
+   aria-busy. One loading signal. The label stays. */
+.clr-chamfer[aria-busy="true"]:not(.clr-btn)::before { background-image: linear-gradient(to bottom, transparent, rgb(from var(--brd) r g b / 0.28), transparent), var(--frame-scan); background-size: 100% 40%, auto; background-repeat: no-repeat, repeat; animation: clr-btn-scan 1.4s var(--step-10, steps(10, end)) infinite; }
+@media (prefers-reduced-motion: reduce) { .clr-chamfer[aria-busy="true"]:not(.clr-btn)::before { animation: none; background-position: 0 50%, 0 0; } }
+
+.clr-btn[aria-busy="true"]::before { background-image: linear-gradient(to bottom, transparent, rgb(from var(--interaction) r g b / 0.35), transparent), var(--frame-scan); background-size: 100% 40%, auto; background-repeat: no-repeat, repeat; animation: clr-btn-scan 1.2s var(--step-8) infinite; }
+@keyframes clr-btn-scan { from { background-position: 0 -70%, 0 0; } to { background-position: 0 170%, 0 0; } }
+@media (prefers-reduced-motion: reduce) { .clr-btn[aria-busy="true"]::before { animation: none; background-position: 0 50%, 0 0; } }
+
+/* =============================================================================
+   CHECKBOX / RADIO — a real native input, visually hidden, with a drawn box.
+   The input keeps focus, keyboard, form participation and the indeterminate
+   property; the box is decoration driven by :checked and :focus-visible.
+   ============================================================================= */
+.clr-check { position: relative; display: inline-flex; align-items: center; gap: var(--spacing-200); }
+.clr-check input {
+  position: absolute;
+  /* Sized and placed over the box rather than 1px-hidden, so the real hit area
+     is the 40px target and coarse pointers land on the input itself. */
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 40px; height: 40px; margin: 0;
+  opacity: 0; cursor: pointer; z-index: 1;
+}
+@media (pointer: coarse) { .clr-check input { width: 44px; height: 44px; } }
+.clr-check:has(> input:first-child) { padding-left: 0; }
+.clr-check input:disabled { cursor: not-allowed; }
+.clr-check__box {
+  position: relative;
+  flex: 0 0 auto;
+  width: 20px; height: 20px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-input);
+  border: var(--border-width) solid var(--border-input);
+  transition: background var(--dur-state) var(--ease-mech), border-color var(--dur-state) var(--ease-mech);
+}
+.clr-check__dash { opacity: 0; }
+.clr-check__dash { position: absolute; width: 10px; height: var(--border-width); background: var(--border-selected); }
+.clr-check input:checked ~ .clr-check__box { border-color: var(--border-selected); }
+.clr-check input:checked ~ .clr-check__box::after { content: ''; position: absolute; inset: 0; margin: auto; width: 10px; height: 10px; background: var(--border-selected); }
+.clr-check input:indeterminate ~ .clr-check__box { border-color: var(--border-selected); }
+.clr-check input:indeterminate ~ .clr-check__box::after { content: none; }
+.clr-check input:indeterminate ~ .clr-check__box .clr-check__dash { opacity: 1; }
+.clr-check input:disabled ~ .clr-check__box {
+  background: var(--surface-disabled);
+  border-color: var(--border-disabled);
+}
+.clr-check input:focus-visible ~ .clr-check__box {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+.clr-check__label {
+  font-family: var(--font-data);
+  font-size: var(--label-sm-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-card-label);
+  cursor: pointer;
+}
+.clr-check input:disabled ~ .clr-check__label { color: var(--text-disabled); cursor: not-allowed; }
+
+/* =============================================================================
+   DIALOG — the element is the full-viewport top-layer box; the panel inside is
+   what looks like a dialog. Border and padding are cleared so the chamfered
+   child owns the whole appearance, and the backdrop stays flat (no blur — this
+   system has no soft focus anywhere).
+   ============================================================================= */
+.clr-dialog { border: 0; padding: 0; background: transparent; max-width: none; max-height: none; color: inherit; }
+/* Backdrop: 45% dim, scanlines, faint static, and a slight blur, so the screen
+   behind reads as an out-of-focus tube. The static doesn't move. */
+.clr-dialog::backdrop { background: var(--frame-scan), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"), var(--surface-backdrop); backdrop-filter: blur(0.75px); }
+/* Arriving and leaving: the backdrop fades over 200ms in four hard steps while
+   the panel glows in (phosphor). Leaving reverses both. <Dialog> adds
+   .clr-dialog--closing and closes the element when the 200ms are up. */
+.clr-dialog[open]:not(.clr-dialog--closing)::backdrop { animation: clr-fade-in var(--dur-base) var(--step-4) both; }
+.clr-dialog[open]:not(.clr-dialog--closing) > .clr-bleed { animation: clr-phosphor-in var(--dur-base) var(--step-6) both; }
+.clr-dialog--closing::backdrop { animation: clr-fade-out var(--dur-base) var(--step-4) both; }
+.clr-dialog--closing > .clr-bleed { animation: clr-phosphor-out var(--dur-base) var(--step-6) both; }
+@keyframes clr-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes clr-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .clr-dialog[open]::backdrop, .clr-dialog[open] > .clr-bleed, .clr-dialog--closing::backdrop, .clr-dialog--closing > .clr-bleed { animation: none; } }
+
+/* =============================================================================
+   FOCUS — visible by default, on every interactive thing.
+
+   Two mechanisms, because chamfered elements clip their own outline away:
+
+   · Unclipped controls get a real outline, offset so it reads against the dark
+     ground.
+   · Chamfered elements express focus as a DOUBLED border in the focus hue. The
+     width change is the point — a colour change alone is not a focus indicator,
+     and it would be invisible to anyone who cannot separate the two hues.
+
+   The ring is a near-white tint of the interaction role: unmistakable on all
+   three skins, still skin-tinted rather than generic browser blue.
+   ============================================================================= */
+:root {
+  --focus-ring: var(--interaction-100);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  /* Text fields show focus by lighting their own border. Fields have no
+     selected state, so this can't collide with one, and it measures 3.9:1 or
+     better against the resting field border in every skin. */
+  --border-field-focus: var(--interaction-300);
+}
+
+/* Text fields: the border lights up. No outline, on any device. */
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="color"], [type="file"]), textarea, select, .clr-input):focus-visible,
+:where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="color"], [type="file"]), textarea, select, .clr-input):focus {
+  outline: none;
+  border-color: var(--border-field-focus);
+}
+
+/* Everything else, until corner brackets land (see README, Focus). Text
+   fields are excluded: they use the rule above. */
+button:focus-visible, a:focus-visible, summary:focus-visible, [tabindex]:not(input, textarea, select):focus-visible,
+input:is([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"]):focus-visible,
+[role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Chamfered: doubled border, focus hue. Also fires when a focusable child is
+   focused, so a frame wrapping a native control still shows the state.
+   The layers are painted directly rather than through --bw / --brd, so this
+   selector declares no custom properties of its own. */
+.clr-chamfer:focus-visible,
+.clr-chamfer:has(:focus-visible) { outline: none; }
+.clr-chamfer:focus-visible::after,
+.clr-chamfer:has(:focus-visible)::after { background: var(--focus-ring); }
+.clr-chamfer:focus-visible::before,
+.clr-chamfer:has(:focus-visible)::before { inset: calc(var(--border-width) * 2); }
+
+/* Corner brackets. <FocusBrackets> sets data-clr-focus on <html> and draws one
+   bracket layer over whatever has keyboard focus. Selectable controls then drop
+   their fallback, so focus never touches a border that selected also uses.
+   Text fields keep their lit border in both modes. */
+.clr-focus-brackets { position: fixed; left: 0; top: 0; z-index: 2147483000; pointer-events: none; opacity: 0; --k: 8px; --t: 2px;
+  background:
+    linear-gradient(var(--focus-ring), var(--focus-ring)) top left / var(--k) var(--t), linear-gradient(var(--focus-ring), var(--focus-ring)) top left / var(--t) var(--k),
+    linear-gradient(var(--focus-ring), var(--focus-ring)) top right / var(--k) var(--t), linear-gradient(var(--focus-ring), var(--focus-ring)) top right / var(--t) var(--k),
+    linear-gradient(var(--focus-ring), var(--focus-ring)) bottom left / var(--k) var(--t), linear-gradient(var(--focus-ring), var(--focus-ring)) bottom left / var(--t) var(--k),
+    linear-gradient(var(--focus-ring), var(--focus-ring)) bottom right / var(--k) var(--t), linear-gradient(var(--focus-ring), var(--focus-ring)) bottom right / var(--t) var(--k);
+  background-repeat: no-repeat; }
+html[data-clr-focus="brackets"] :is(button, a, summary, [role="tab"], [role="checkbox"], [role="radio"], [tabindex]:not(input, textarea, select)):focus-visible,
+html[data-clr-focus="brackets"] input:is([type="checkbox"], [type="radio"], [type="button"], [type="submit"], [type="reset"]):focus-visible,
+html[data-clr-focus="brackets"] .clr-check input:focus-visible ~ .clr-check__box { outline: none; }
+html[data-clr-focus="brackets"] .clr-chamfer:is(:focus-visible, :has(:focus-visible))::after { background-color: var(--brd); }
+html[data-clr-focus="brackets"] .clr-chamfer:is(:focus-visible, :has(:focus-visible))::before { inset: var(--bw); }
+
+/* Range thumbs need their own selectors — they are not the focused element. */
+.clr-slider:focus-visible { outline: none; }
+.clr-slider:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring); }
+.clr-slider:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 var(--focus-ring-width) var(--focus-ring); }
+
+/* Forced-colors / high-contrast: hand geometry back to the OS. Surfaces and
+   tints carry no meaning there, so borders must come from system colours. */
+@media (forced-colors: active) {
+  .clr-chamfer::after { background: CanvasText; }
+  .clr-chamfer::before { background-color: Canvas; box-shadow: none; }
+  button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible,
+  [role="tab"]:focus-visible, [role="checkbox"]:focus-visible, [role="radio"]:focus-visible {
+    outline: var(--focus-ring-width) solid Highlight;
+  }
+  .clr-atmosphere { display: none; }
+}
+
+/* =============================================================================
+   TOUCH TARGETS — visible control stays compact, hit area grows to ≥ 40px.
+   A centred pseudo-element rather than padding, so layout does not shift.
+   ============================================================================= */
+.clr-hit { position: relative; }
+.clr-hit::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, 40px);
+  height: max(100%, 40px);
+  transform: translate(-50%, -50%);
+}
+@media (pointer: coarse) {
+  .clr-hit::after { width: max(100%, 44px); height: max(100%, 44px); }
+}
+
+/* =============================================================================
+   FORM CONTROLS — pseudo-element styling that cannot be expressed inline.
+   These live here rather than being injected by a component at render time:
+   a component that appends a <style> tag is unusable in SSR and racy in tests.
+   ============================================================================= */
+.clr-input::placeholder { color: color-mix(in srgb, var(--text-input) 55%, transparent); font-style: italic; }
+
+.clr-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 4px; background: var(--surface-track); outline: none; cursor: pointer; border: none; }
+.clr-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; background: var(--surface-thumb); border: none; border-radius: 0; cursor: pointer; }
+.clr-slider::-moz-range-thumb { width: 16px; height: 16px; background: var(--surface-thumb); border: none; border-radius: 0; cursor: pointer; }
+.clr-slider:disabled { cursor: not-allowed; background: var(--neutral-a300); }
+.clr-slider:disabled::-webkit-slider-thumb { background: var(--border-disabled); }
+.clr-slider:disabled::-moz-range-thumb { background: var(--border-disabled); }
+
+
+/* =============================================================================
+   LAYOUT — the cockpit. Narrow content on wide screens; the app is an
+   instrument panel, not a dashboard. Breakpoints: 768 / 834 / 1440.
+   ============================================================================= */
+.clr-shell { position: relative; min-height: 100vh; }
+/* A shell that owns the viewport, for layouts where only inner regions scroll.
+   dvh, not vh: on mobile browsers 100vh includes the collapsed address bar, so
+   it overshoots and the bottom of the layout is cut off. vh is the fallback
+   for browsers without dvh. */
+.clr-shell--fixed { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+.clr-shell__content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; padding: var(--spacing-500) var(--spacing-400) var(--spacing-800); }
+@media (min-width: 1440px) { .clr-shell__content { max-width: 960px; } }
+.clr-stack { display: flex; flex-direction: column; gap: var(--spacing-400); }
+.clr-stack--tight { gap: var(--spacing-200); }
+.clr-row { display: flex; align-items: center; gap: var(--spacing-300); }
+.clr-atmosphere--fixed { position: fixed; }
+/* Pinned footer: the screen's primary action, always reachable. A full-width
+   line above it; it sits on the atmosphere with no surface of its own. */
+.clr-footer { position: sticky; bottom: 0; z-index: 2; margin: auto calc(var(--spacing-400) * -1) 0; padding: var(--spacing-300) var(--spacing-400); border-top: var(--border-width) solid var(--border-region-rule); display: grid; gap: var(--spacing-200); }
+/* margin-top:auto drops it to the bottom when content is short; sticky keeps it
+   there when content is long. No surface: pinned layers are transparent. A
+   screen whose content can scroll under it should use <ScrollRegion foot>,
+   which clips content at the footer's rule instead of filling behind it. */
+.clr-shell:has(> .clr-shell__content > .clr-footer) { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+.clr-shell__content:has(> .clr-footer) { flex: 1 1 auto; width: 100%; display: flex; flex-direction: column; padding-bottom: 0; }
+/* Full-width band, e.g. around a tab bar: a line above and below, edge to edge,
+   so the band reads as a panel across the screen. */
+.clr-band { margin: 0 calc(var(--spacing-400) * -1); padding: 0 var(--spacing-400); box-shadow: inset 0 var(--border-width) 0 var(--border-tab-rail), inset 0 calc(var(--border-width) * -1) 0 var(--border-tab-rail); }
+.clr-band .clr-rail { box-shadow: none !important; }
+/* Layer lines emit like every other stroke. */
+/* The glow takes the line's own colour, so it never outshines the line, and on
+   the footer it's a top-edge-only shadow (negative spread), so the layer never
+   reads as a box. */
+.clr-footer { box-shadow: 0 calc(var(--emit-near) * -1) var(--emit-near) calc(var(--emit-near) * -1) var(--border-region-rule); }
+.clr-band { filter: drop-shadow(0 0 var(--emit-near) var(--border-tab-rail)); }
+/* A list: one frame, rules between rows, inset to line up with the row text. */
+.clr-list { display: flex; flex-direction: column; }
+.clr-list__row { position: relative; padding: var(--spacing-300) var(--spacing-300); }
+.clr-list__row + .clr-list__row::before { content: ''; position: absolute; top: 0; left: var(--spacing-300); right: var(--spacing-300); height: 1px; background: var(--structure-a300); box-shadow: 0 0 var(--emit-near) var(--structure-a300); }
+/* A button row: stacked full width on phones with the primary first; an
+   equal-width row on wider screens with the primary on the right. */
+.clr-actions { display: grid; gap: var(--spacing-200); }
+.clr-actions > * { min-width: 0; }
+/* Buttons inside a row fill their cell, including through their glow wrapper.
+   The main action is a primary or critical button; stacked, it goes on top. */
+.clr-actions > .clr-bleed { display: flex; }
+.clr-actions > .clr-bleed > .clr-btn, .clr-actions > .clr-btn { width: 100%; }
+.clr-actions > :is(.clr-btn--primary, .clr-btn--critical, [data-primary], :has(> .clr-btn--primary, > .clr-btn--critical)) { order: -1; }
+@media (min-width: 560px) {
+  .clr-actions { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .clr-actions > :is(.clr-btn--primary, .clr-btn--critical, [data-primary], :has(> .clr-btn--primary, > .clr-btn--critical)) { order: 2; }
+}
+/* A unit inside a field: a tinted end cap behind a divider, so it reads as fixed. */
+/* A field is an element frame like a button or chip: one 8px cut, bottom right.
+   Markup: <span class="clr-bleed clr-bleed--block"><div class="clr-chamfer clr-chamfer--sm clr-field"><input class="clr-input"></div></span>.
+   Square fields were the only square framed control, and their corner sat
+   awkwardly against a card's cut. */
+.clr-field { --surface: var(--surface-input); --brd: var(--border-input); display: flex; align-items: stretch; min-height: var(--control-height); }
+/* The control inside a field. Padding and type live here too, so a plain-class
+   field matches <Input> exactly instead of rendering browser-default text. */
+.clr-field > .clr-input { flex: 1; min-width: 0; border: 0 !important; background: transparent !important; box-shadow: none; padding: var(--spacing-200) var(--spacing-300); font-family: var(--font-body); font-size: var(--paragraph-md-size); line-height: var(--paragraph-md-line-height); font-weight: var(--font-weight-medium); color: var(--text-input); outline: none; }
+/* No native resize grip: it's a browser glyph, not a CLEAR one, and it sat in
+   the field's corner. The field grows with its content instead. */
+.clr-field > textarea.clr-input { align-self: stretch; resize: none; field-sizing: content; min-height: calc(var(--paragraph-sm-line-height) * 3 + var(--spacing-200) * 2); }
+textarea.clr-input { resize: none; }
+.clr-field__glyph { display: flex; align-items: center; padding-right: var(--spacing-300); color: var(--text-negative); flex: 0 0 auto; }
+.clr-field__glyph svg { width: var(--icon-size); height: var(--icon-size); fill: currentColor; }
+.clr-field:focus-within::after { background-color: var(--border-field-focus); }
+.clr-field__unit { display: flex; align-items: center; padding: 0 var(--spacing-300); border-left: var(--border-width) solid var(--brd); background: var(--structure-a200); font-family: var(--font-data); font-size: var(--label-xs-size); letter-spacing: var(--tracking-data); text-transform: uppercase; color: var(--text-secondary); user-select: none; }
+
+/* =============================================================================
+   ATMOSPHERE — the five-layer ground everything sits on.
+   Blob colours come from the role layer, so the space a product lives in
+   changes with its skin. Never a flat background.
+
+   <div class="clr-atmosphere">
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--structure"></span>
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--interaction"></span>
+     <span class="clr-atmosphere__blob clr-atmosphere__blob--info"></span>
+     <span class="clr-atmosphere__overlay"></span>
+     <span class="clr-atmosphere__scan"></span>
+   </div>
+   ============================================================================= */
+/* Blobs are sized from the screen's LONGER side (cqmax), so a tall phone gets
+   the same glow as a wide screen. Sized from width alone, a portrait phone's
+   blobs were small and mostly off the top and bottom edges, leaving it dark. */
+.clr-atmosphere { position: absolute; inset: 0; overflow: hidden; z-index: 0; background: var(--base); container-type: size; }
+.clr-atmosphere__blob { position: absolute; border-radius: 50%; filter: blur(var(--atmosphere-blur)); opacity: var(--atmosphere-opacity); }
+.clr-atmosphere__blob--structure { background: var(--structure); width: 62cqmax; aspect-ratio: 1; top: -26%; left: -12%; }
+.clr-atmosphere__blob--interaction { background: var(--interaction); width: 54cqmax; aspect-ratio: 1; bottom: -28%; right: -8%; }
+.clr-atmosphere__blob--info { background: var(--info); width: 34cqmax; aspect-ratio: 1; top: 34%; left: 38%; opacity: calc(var(--atmosphere-opacity) * 0.55); }
+.clr-atmosphere__blob--selection { background: var(--selection); width: 28cqmax; aspect-ratio: 1; top: 6%; right: 24%; opacity: calc(var(--atmosphere-opacity) * 0.45); }
+.clr-atmosphere__blob--dark { background: var(--base); width: 60cqmax; aspect-ratio: 1; bottom: -18%; left: 16%; opacity: 0.7; }
+.clr-atmosphere__overlay { position: absolute; inset: 0; z-index: 1; background: rgb(from var(--base) r g b / var(--atmosphere-dim)); }
+.clr-atmosphere__scan { position: absolute; inset: 0; z-index: 2; pointer-events: none; background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgb(255 255 255 / var(--atmosphere-scan, 0.04)) 2px, rgb(255 255 255 / var(--atmosphere-scan, 0.04)) 4px); }
+
+/* =============================================================================
+   ATMOSPHERE
+   ============================================================================= */
+
+.scanlines-overlay { position: relative; }
+.scanlines-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.12;
+  background: repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(255,255,255,0.08) 2px, rgba(255,255,255,0.08) 4px);
+}
+
+.grain-overlay { position: relative; }
+.grain-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}

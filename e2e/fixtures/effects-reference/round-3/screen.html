@@ -1,0 +1,23 @@
+<!doctype html><html lang="en" data-skin="signal"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLEAR Generate · isolated effect specimen</title><link rel="stylesheet" href="assets/fonts.css"><link rel="stylesheet" href="vendor/foundation.css"><link rel="stylesheet" href="vendor/skins.css"><link rel="stylesheet" href="screen.css"></head><body>
+<svg class="filter-definitions" aria-hidden="true"><defs id="echo-defs"></defs></svg>
+<main id="screen" data-mode="echo">
+ <div class="atmosphere" aria-hidden="true"></div>
+ <div class="scan" aria-hidden="true"></div>
+ <div class="status" aria-hidden="true"><strong>10:26</strong><span>▮▮▮  ⌁  ▰</span></div>
+ <header class="screen-header"><h1 data-echo-for="heading"><span class="echo-source" data-part="heading" aria-hidden="true">GENERATE</span><span class="heading-foreground">GENERATE</span></h1><button class="back action-shell" aria-label="Back (preview only)"><svg class="frame-art" data-echo-for="back" data-frame="8" aria-hidden="true"></svg><svg class="back-icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21 9H11V4L3 10.5V13.5L11 20V15H21Z"/></svg></button></header>
+ <div class="header-rule" aria-hidden="true"></div>
+ <section class="form-card" aria-label="Workout selections">
+  <div class="card-ground" aria-hidden="true"></div>
+  <svg class="frame-art" data-echo-for="frame" data-frame="22" data-accent="10" aria-hidden="true"></svg>
+  <div class="card-content" data-sharp="true">
+   <p>Goal: <strong>Balanced</strong></p><p>Focus: <strong>Full body</strong></p>
+   <div class="recovery-row"><button type="button" class="clr-chamfer clr-chamfer--sm clr-chamfer--structure recovery">RECOVERY SESSION</button><button type="button" class="focus-action">CHANGE FOCUS</button></div>
+   <div class="field intensity-field"><label for="intensity">INTENSITY <output id="intensity-value">8</output></label><input type="range" id="intensity" min="1" max="10" value="8" aria-label="Intensity"></div>
+   <div class="field"><label for="place">PLACE</label><div class="clr-chamfer clr-chamfer--sm clr-chamfer--structure field-frame select-wrap"><select id="place"><option>Building gym</option><option>Home gym</option><option>Outdoors</option></select><span aria-hidden="true">⌄</span></div><small>Uses this place’s equipment.</small></div>
+   <div class="field"><label for="minutes">TIME AVAILABLE</label><div class="clr-chamfer clr-chamfer--sm clr-chamfer--structure field-frame duration"><input id="minutes" type="number" min="10" max="120" value="45"><span>MINUTES</span></div></div>
+   <div class="field"><label for="notes">NOTES</label><div class="clr-chamfer clr-chamfer--sm clr-chamfer--structure field-frame notes-wrap"><textarea id="notes" placeholder="Tight hamstrings today."></textarea></div><small>Optional, today only. Ongoing limits go in Settings.</small></div>
+  </div>
+ </section>
+ <footer><button class="generate action-shell" type="button"><span class="cta-surface" aria-hidden="true"></span><svg class="frame-art" data-echo-for="cta" data-frame="20" aria-hidden="true"></svg><span class="cta-label">GENERATE WORKOUT</span></button></footer>
+ <p class="preview-message" role="status" hidden>Visual preview only.</p>
+</main><script type="module" src="screen.mjs"></script></body></html>

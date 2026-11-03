@@ -1,0 +1,2 @@
+# Preserved reference/vendor bytes are fingerprinted; retain their original whitespace.
+e2e/fixtures/effects-reference/** -whitespace

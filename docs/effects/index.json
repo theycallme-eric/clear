@@ -1,0 +1,182 @@
+{
+  "index": "CLEAR effects index",
+  "docs": "docs/effects/README.md",
+  "comfortPolicy": {
+    "owner": "src/state/visual-effects.ts",
+    "api": [
+      "useVisualEffects",
+      "useOptionalVisualEffects",
+      "setVisualEffects",
+      "resolveVisualEffectsPolicy",
+      "VisualEffectsProvider",
+      "setReduceMotion",
+      "useReducedMotionPreference"
+    ],
+    "setting": "Independent Visual effects (default on) and Reduce motion (default off) checkboxes in Settings Appearance; device-local",
+    "reducedMotion": "App choice or OS preference, live; static Echo/glass remain; decorative line/grain/atmosphere motion stops; functional time continues",
+    "hiddenTab": "Field clocks paused in place; resume without catch-up",
+    "effectsOffOn": "Root host retains line/grain phases separately while the field is removed; re-enable restores without restart or catch-up"
+  },
+  "effects": [
+    {
+      "id": "phosphor-echo",
+      "name": "Phosphor Echo",
+      "status": "Owner-approved November 3 live-review preset implemented in the shared app preset",
+      "owner": "src/ui/phosphor-echo.tsx",
+      "api": [
+        "PhosphorEchoDefinition",
+        "PhosphorEchoFrame",
+        "PhosphorEchoText",
+        "PhosphorEchoGlyph",
+        "PHOSPHOR_ECHO_FILTER_ID"
+      ],
+      "eligibility": "src/ui/foreground-echo.tsx",
+      "requestedEligibilityExtension": {
+        "status": "Pending shared eligibility support and library consumer opt-in; not implemented by the front-glass correction",
+        "include": [
+          "Standalone timer outer artwork/frame directly on the background",
+          "Dialog and sheet outer frame"
+        ],
+        "exclude": [
+          "Timers inside cards or already echoed surfaces",
+          "Dialog and sheet inner text, controls and timers"
+        ],
+        "rule": "Latest approved owner handoff governs intended eligibility; current blanket dialog exclusion is implementation status, not final policy"
+      },
+      "presetOwner": "src/ui/phosphor-echo-preset.ts",
+      "preset": {
+        "identity": "Phosphor Echo \u00b7 approved 2026-11-03",
+        "source": "docs/effects/echo-selection-20261103.json",
+        "values": {
+          "opacity": 0.21,
+          "blurPx": 1.8,
+          "xPx": -7.12,
+          "yPx": 6.75
+        },
+        "approval": "Owner explicitly approved the live-review export on November 3; current rear-text glow retained; cleanup proposal not applied"
+      },
+      "preservedSource": [
+        "docs/design/library/intake/phosphor-echo/phosphor-echo.mjs",
+        "docs/design/library/intake/phosphor-echo/preferred-preset.json"
+      ],
+      "dependencies": [],
+      "demo": "/gallery/app?component=PhosphorEchoFrame",
+      "referenceHost": "e2e/fixtures/effects-reference/round-3/"
+    },
+    {
+      "id": "crt-glass",
+      "name": "CRT Glass",
+      "status": "Owner-approved November 3 scanlines and front-glass placement implemented; browser performance evidence documented separately",
+      "owner": "src/ui/crt-field/crt-field.tsx",
+      "composition": "One pointer-transparent, aria-hidden viewport glass in the nonmodal browser top layer, re-promoted above newly opened native dialogs/popovers; no duplicated per-dialog field. Contained gallery specimens remain in their own frames.",
+      "api": [
+        "CrtField",
+        "CRT_FIELD_ANIMATIONS"
+      ],
+      "presetOwner": "src/ui/crt-field/config.ts",
+      "preset": {
+        "identity": "clr-crt-field/review-2026-11-03.1",
+        "export": "CRT_FIELD_CONFIG",
+        "source": "docs/effects/scanline-selection-20261103.json",
+        "lines": {
+          "periodPx": 4,
+          "thicknessPx": 2,
+          "opacity": 0.16,
+          "curvaturePx": 6,
+          "driftSecondsPerPeriod": 0.7
+        },
+        "approval": "Owner selected the live scanline controls on November 3; grain, vignette and perimeter unchanged"
+      },
+      "reference": {
+        "port": "src/ui/crt-glass/",
+        "role": "Fidelity proof only; not mounted, not shipped",
+        "settingsFile": "crt-iab-current-settings.json",
+        "settingsSha256": "3169d4608c8babe17a20670bd59f53e3110c7ce917641786d33c2713943ca033",
+        "settingsStatus": "Current-session numeric evidence; not final-at-pause storage, not shipping approval",
+        "passOrder": "crt-glass-motion/glass-effect.mjs",
+        "earlierReferences": [
+          "crt-glass-motion/working-session.mjs",
+          "crt-glass-motion/default-preset.json",
+          "PRESETS.selected in crt-glass-motion/glass-effect.mjs"
+        ],
+        "workbenchControls": {
+          "productSettings": false,
+          "driftCycleSeconds": {
+            "min": 0.1,
+            "max": 180,
+            "precision": 0.1
+          },
+          "still": "Freezes line phase; grain continues if enabled",
+          "grainAnimationHz": {
+            "min": 0.5,
+            "max": 6
+          },
+          "grainFeathering": {
+            "min": 0.01,
+            "max": 0.99,
+            "step": 0.01,
+            "decimals": 2
+          }
+        }
+      },
+      "replaces": [
+        ".clr-atmosphere__scan",
+        ".clr-chamfer::before idle frame scan",
+        ".clr-dialog::backdrop --frame-scan"
+      ],
+      "keeps": [
+        "busy and loading sweeps",
+        "live atmosphere blobs"
+      ],
+      "dependencies": [
+        {
+          "package": "pixi.js",
+          "version": "8.22.0",
+          "license": "MIT",
+          "adopted": false,
+          "use": "Reference host in tests; vertex program carried verbatim in src/ui/crt-glass/shaders.ts"
+        },
+        {
+          "package": "pixi-filters",
+          "version": "6.1.5",
+          "license": "MIT",
+          "adopted": false,
+          "use": "Reference host in tests; CRTFilter fragment carried verbatim in src/ui/crt-glass/shaders.ts"
+        }
+      ],
+      "demo": "/gallery/app?component=CrtField",
+      "referenceHost": "e2e/fixtures/effects-reference/crt-glass-motion/index.html"
+    }
+  ],
+  "performance": {
+    "record": "docs/effects/performance.md",
+    "kind": "Browser engineering comparison (Chromium mobile emulation, SwiftShader software renderer)",
+    "physicalPhoneEvidence": false,
+    "performanceApproval": false
+  },
+  "finalVisualApproval": true,
+  "ownerVisualApproval": {
+    "date": "2026-11-03",
+    "scope": "The two exported presets and existing front-glass treatment; rear text cleanup remains a proposal",
+    "sources": [
+      "docs/effects/echo-selection-20261103.json",
+      "docs/effects/scanline-selection-20261103.json"
+    ]
+  },
+  "mergeAuthorization": "Owner authorized main merge after engineering completion and the required final-head repository checks",
+  "manualDiagnostics": [
+    {
+      "id": "TASK-201",
+      "owner": "e2e/effects/crt-source-graphic-proof.spec.ts",
+      "status": "Unadopted SourceGraphic research; not product-fidelity proof or a release gate",
+      "optIn": "CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC=1",
+      "shippingChecksRetained": [
+        "Echo standalone/applied fidelity",
+        "TASK-005 CRT module fidelity",
+        "TASK-006 live composition/front glass",
+        "TASK-007 comfort integration",
+        "TASK-009 performance comparison"
+      ]
+    }
+  ]
+}

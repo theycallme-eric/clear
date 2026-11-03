@@ -200,7 +200,8 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
     const rect = layer.getBoundingClientRect()
     const content = document.querySelector('.clr-shell--contained > .clr-shell__content')
     const shell = document.querySelector('.clr-shell--fixed')
-    const scan = layer.querySelector('.clr-atmosphere__scan')
+    // TASK-006 replaces the retired atmosphere scan with one root glass field.
+    const scan = document.querySelector('.clr-crt-field')
     const main = content?.querySelector('main.clr-screen')
     const region = main?.querySelector(':scope > .clr-scroll-region')
     const head = region?.querySelector(':scope > .clr-scroll-region__head')
@@ -230,7 +231,10 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
       x: rect.x, y: rect.y, width: rect.width, height: rect.height,
       viewport: { width: innerWidth, height: innerHeight },
       scan: { x: scanRect.x, y: scanRect.y, width: scanRect.width, height: scanRect.height,
-        image: getComputedStyle(scan).backgroundImage },
+        position: getComputedStyle(scan).position,
+        path: scan.querySelector('svg path')?.getAttribute('d'),
+        count: document.querySelectorAll('.clr-crt-field').length,
+        oldScanCount: document.querySelectorAll('.clr-atmosphere__scan').length },
       coloredBlobs: [...layer.querySelectorAll('.clr-atmosphere__blob')].map((blob) => getComputedStyle(blob).backgroundColor),
       overlayCount: layer.querySelectorAll('.clr-atmosphere__overlay').length,
       shellHeight: shell.getBoundingClientRect().height,
@@ -258,7 +262,10 @@ async function frame(page: Page, viewport: Viewport, insets: Insets) {
   expect(geometry.scan.y).toBeCloseTo(0, 0)
   expect(geometry.scan.width).toBeCloseTo(viewport.width, 0)
   expect(geometry.scan.height).toBeCloseTo(viewport.height, 0)
-  expect(geometry.scan.image).toContain('repeating-linear-gradient')
+  expect(geometry.scan.position).toBe('fixed')
+  expect(geometry.scan.count).toBe(1)
+  expect(geometry.scan.oldScanCount).toBe(0)
+  expect(geometry.scan.path).toBeTruthy()
   expect(geometry.coloredBlobs).toHaveLength(3)
   for (const color of geometry.coloredBlobs) expect(color).not.toBe('rgba(0, 0, 0, 0)')
   expect(geometry.overlayCount).toBe(1)

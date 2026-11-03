@@ -14,12 +14,19 @@
  * (rendered above both) all use it, so the safe-area, header-clearance and
  * bottom-edge geometry in src/styles/shell.css reaches every one of them
  * instead of each keeping its own copy — or, for the fallback, none.
+ *
+ * Effects TASK-001: the shell is also where the Visual effects policy is
+ * resolved (`src/state/visual-effects.ts`) and where the single decorative
+ * host for optional effects sits, so every surface inside reads one answer.
  */
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import { FocusBrackets } from '../design-system/index'
+import { useVisualEffects, VisualEffectsProvider } from '../state/visual-effects'
 import { AtmosphereLayer } from '../ui/atmosphere'
+import { CrtField, type CrtFieldClockState } from '../ui/crt-field/crt-field'
+import { PhosphorEchoDefinition } from '../ui/phosphor-echo'
 import { DEFAULT_ATMOSPHERE } from './atmosphere'
 
 export interface ContainedShellProps {
@@ -30,15 +37,45 @@ export interface ContainedShellProps {
 
 export function ContainedShell({ atmosphere, children }: ContainedShellProps) {
   return (
-    <>
+    <VisualEffectsProvider>
       {atmosphere ?? <AtmosphereLayer />}
+      <EffectsHost />
       <div
         className="clr-shell clr-shell--fixed clr-shell--contained"
         data-atmosphere={DEFAULT_ATMOSPHERE}
       >
         <div className="clr-shell__content">{children}</div>
       </div>
-    </>
+    </VisualEffectsProvider>
+  )
+}
+
+/**
+ * The one decorative host optional effects render into. Hidden from assistive
+ * tech and inert to the pointer; it carries the resolved policy so an effect's
+ * CSS and its markup read the same answer.
+ *
+ * Effects TASK-003: it installs the document's one Phosphor Echo filter
+ * definition. Rear sources hide themselves when the policy reports effects off.
+ *
+ * Effects TASK-006: it also mounts the one live CRT Glass field, over every
+ * route, while Visual effects is on. The field is the only decorative scanline
+ * signal; the old atmosphere, frame and dialog scans are retired.
+ */
+function EffectsHost() {
+  const { effectsEnabled, motionAllowed } = useVisualEffects()
+  const clockState = useRef<CrtFieldClockState | null>(null)
+
+  return (
+    <div
+      aria-hidden="true"
+      className="clr-effects-host"
+      data-effects={effectsEnabled ? 'on' : 'off'}
+      data-motion={motionAllowed ? 'allowed' : 'still'}
+    >
+      <PhosphorEchoDefinition />
+      {effectsEnabled ? <CrtField motionAllowed={motionAllowed} clockState={clockState} /> : null}
+    </div>
   )
 }
 

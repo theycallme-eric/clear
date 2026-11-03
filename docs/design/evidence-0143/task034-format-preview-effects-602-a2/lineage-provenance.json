@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "kind": "capture-input-provenance",
+  "repository": "theycallme-eric/clear",
+  "taskId": "TASK-001",
+  "taskRevision": "477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-001",
+  "runId": "54169bd8-70e5-4ac5-be6e-9ff1de26b17d",
+  "attempt": 2,
+  "groupPath": "docs/design/evidence-0143/task034-format-preview-effects-602-a2",
+  "retainedBranch": "agent-runner/task-001-a2-54169bd8",
+  "testedBase": "65522e93d60d439ad82a545833812a58095f2216",
+  "capturedSourceCommits": [
+    "60ab3427de1eb3c269a626fc9f1a3dca079d4814"
+  ],
+  "payloadSha256": "c1ce18de435af4bcd340a2c959a746742f4b7f4c64dba2f061db32a37cf7d303"
+}

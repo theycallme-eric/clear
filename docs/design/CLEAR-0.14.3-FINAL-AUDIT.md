@@ -1,5 +1,68 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Final combined effects source checkpoint — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in 34.0 seconds**
+on frozen source `20cd5c950a6d4a8a43ba721d4ca9e6c74da225b9`. Current group:
+`docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103`. All four generated
+records agree on runtime `dae8b3184ab7971796bf023d260afbce774fcfb362673ed74df9df14fd10da04`, driver
+`2d6a19eae2ff9750f8829246a539cdf074142d5666368aa0e7659bbdbd7fcb2d` and unchanged 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The validator retains real disposable-fixture authentication, both phone heights, all four skins,
+accessibility, disclosure/navigation/storage and actual PNG bytes/dimensions. Preview generation
+and writes remain zero. The source includes current main's ErrorView pilot, the two independent
+comfort settings, phase restoration and stable heading names. All earlier groups and native
+receipts remain unchanged. This is genuine local-source proof, not a hosted CI or production claim.
+
+## Combined-source checkpoint before final heading verification — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in32.2seconds**
+on synchronized source `80596e4a097761129fa9200cdd33b044d3316974`, which retains current main's ErrorView pilot.
+Current group: `docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103`. Runtime
+`48c2ee1c8cdc5e350de4141b32a07f573e4b0eb6fe7311972ba3cb7e34b0f9c9`, driver
+`24229b5b457ddff03c99e1fc2c085f751f977295ce42bcd397c2e23480455c8b` and unchanged0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+come from the generated records. The collector/validator retain both phone heights, all four
+skins, actual disposable-fixture authentication, accessibility, disclosure/navigation/storage
+and PNG bytes/dimensions checks. Preview generation and writes remain zero. Earlier captures,
+including the pre-synchronization checkpoint and main's library pilot, are preserved unchanged.
+This is current local-source proof, not hosted CI, a new Runner receipt or a production release.
+
+
+## Merge-prep source checkpoint before main synchronization — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight PNGs in32.8seconds**
+on source `9e23420ea649b9005ab48e4c2b27f903ed7816fb`. The generated group
+`docs/design/evidence-0143/task034-format-preview-merge-prep-20261103` preserves runtime
+`dc06910ffde7e6d6d7ac59181f3a7d3d92fec23f9201ee41e3c553c14306412c` and driver
+`86de0b152120005cb32298def07be960fce501f4a781c9c4fc2a5c9efd719c99` with the unchanged0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+This is a real read-only disposable-fixture checkpoint, not the final combined-main evidence.
+Main's already-delivered library pilot must also be retained; its subsequent synchronization
+requires a fresh group. No prior records or PNGs are overwritten or rebound.
+
+
+## Front-glass correction #624 source reverification — 3 November 2026
+
+The unchanged authenticated Format Preview collector passed **4/4 skin cases / eight genuine PNGs
+in33.1seconds**, on frozen source `ced9357fe075e7746c9212e09763d780584a4fee`. New group:
+`docs/design/evidence-0143/task034-format-preview-front-glass-20261103`. The original1738 evidence files were independently checked byte-identical
+against the build baseline. No prior group, native task identity, attempt counter or receipt was
+rewritten. This is the owner's directly authorized correction, outside a new Runner cycle.
+
+All four records identify current runtime `18b5b80c82f854796423dbc0d5aa1cdd9c0bb8310749f5b57f75ee3746eea739`, driver
+`95d23f483a913174b5ea09468f57e4e72a5b801398dd121262bacaa8c59272dd` and unchanged0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The unchanged record validator checks the complete390×844/390×320 matrix across four skins, real
+authenticated fixture journey, settings/disclosures, Back/direct-entry Back, accessibility, storage,
+layout and PNG bytes/hash/dimensions. The original Task006 native lineage remains asserted against
+its original group. This correction's capture commit is preserved as actual Git ancestry.
+
+The collector used the existing authorized disposable test account fixture, with setup/cleanup
+separate from the read-only preview. Every capture records zero generation and attempted/forwarded
+preview writes. No personal-account data, native Runner receipt, owner UAT approval or production
+release is claimed. Exact-head checks and build-branch delivery remain pending at this checkpoint.
+
+
 ## LIB-003 ErrorView source reverification — 30 October 2026 (America/Chicago)
 
 Under issue 601, the established authenticated Format Preview collector passed
@@ -1741,3 +1804,65 @@ fresh criterion validation and protected exact-head delivery remain pending.
 Previous audit binding retained as history (not rebound):
 
 | Runtime source hash of this audit's tree | `9046ded96a63de27b86f176627737fade8c82341dabc65dc8fbec815b6a79c1e` (TASK-036 below, on `718ed686c533fb00082ed23516ff8603ccabc79df905a8ff942e656d2c1a79c0`, audited at `a8838839392987358ad668cf0a3f6c6fde193a8fb226674823107cef36feedf9`, plus TASK-029, TASK-001, TASK-037, TASK-002, TASK-003, TASK-018, TASK-019, TASK-022, TASK-024, TASK-026, TASK-004, TASK-006, TASK-007, TASK-025, TASK-008, TASK-009, TASK-010, TASK-011, TASK-015, TASK-023, TASK-027, TASK-017, TASK-038, TASK-012, TASK-028, TASK-013, TASK-039, TASK-032, TASK-014, TASK-020, TASK-021, TASK-033 and TASK-034 changes below) |
+
+
+## Effects TASK-001 source-bound evidence recovery — 31 October 2026
+
+The existing authenticated Format Preview collector passed **4/4 skin cases and eight genuine PNGs in 12.8 seconds**, with no skipped cases. New group: `docs/design/evidence-0143/task034-format-preview-effects-602-a2/`. The complete 390×844/390×320 matrix covers CLEAR, Vapour, Signal and Mono; the original assertions and validator remain unchanged.
+
+Actual frozen source `60ab3427de1eb3c269a626fc9f1a3dca079d4814`, runtime `d8541e79196aaaabcc21bcacff672eedda7a9267ac0fd0e077ab9176a6621bde`, capture driver `ffcca1b002ecd4c3cca0afc8bf44432b09772e201d986c63136c8f1f3467f0b5` and unchanged 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all records. Observations span 2026-10-31T05:25:57.904Z through 2026-10-31T05:25:58.979Z, processes 77233, 77234, 77235, 77236, loopback origin `http://localhost:5173`. At least one record has a clean checkout; subsequent evidence-created dirty statuses are preserved as collected. Actual PNG bytes, hashes, sizes and IHDR dimensions were independently checked.
+
+Every preview/session generation, blocked generation, attempted-write and forwarded-write counter is zero. The existing fixture's authorized disposable-account provisioning/onboarding/cleanup writes are separate from that preview walk; OTP delivery was intercepted. No model generation, personal account, schema or production setting was used.
+
+Existing v1 source-only provenance names actual Task001 revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-001`, run `54169bd8-70e5-4ac5-be6e-9ff1de26b17d`, attempt2, retained branch `agent-runner/task-001-a2-54169bd8`, tested build base `65522e93d60d439ad82a545833812a58095f2216` and actual payload `c1ce18de435af4bcd340a2c959a746742f4b7f4c64dba2f061db32a37cf7d303`, derived by unchanged `capturePayloadSha256()`. The audit call site identifies this new group's actual owner; all earlier Task015 and other provenance/PNG/record bytes and audit sections remain unchanged. The generic lineage helper, all validators, assertions, hashing, immutable vendor and protected workflows are unchanged.
+
+This is local source-bound capture evidence only. Pre/post-squash source-continuity rehearsal, native recovery/receipt, exact-head CI and protected build-branch delivery remain pending at this checkpoint. No owner visual approval, hosted/deployed proof, physical-phone proof, merge, release or native completion is claimed.
+
+
+## Effects TASK-002 source-bound evidence recovery — 31 October 2026
+
+The existing authenticated collector passed **4/4 skin cases/eight actual PNGs in13.3seconds**, no skipped case, for frozen source `b99ef9773978ae48320853b9e5fa571bb4ce3425`. New group `docs/design/evidence-0143/task034-format-preview-effects-603-a2/` covers the complete390×844/390×320 matrix in CLEAR, Vapour, Signal and Mono. Current runtime `47b14b8dcd3528283e9162a46263c35f3ff96ea2e4c83ad101cc03250a9f7869`, driver `210ab83ba11543daa93e408414f64d3ebd6781f30293e7d50c2bb91ff6bae498` and unchanged0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across the records. Actual PNG bytes, sizes, SHA-256 and IHDR dimensions were independently checked; the unchanged validator remains mandatory.
+
+Observed 2026-10-31T06:01:24.096Z through 2026-10-31T06:01:24.899Z, capture processes 62669, 62670, 62671, 62672, on fresh owned source origin `http://127.0.0.1:5186`. Its separate loopback port and dedicated disposable fixture namespace avoid collision with the concurrent fidelity workers; the browser server received public configuration only, and private test credentials stayed in the collector process. At least one source checkout is clean; later evidence-created dirty statuses are retained as collected.
+
+Every preview/session generation, blocked generation, attempted-write and forwarded-write counter is zero. Existing namespaced disposable account provisioning/onboarding/cleanup writes are separate; OTP is intercepted. No model generation, personal account, migration, production setting, hosted frontend or device proof is claimed.
+
+Actual existing-v1 source-only provenance names revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-002`, run `d40e6763-2c26-496e-b6d2-c61dfb99d158`, a2, retained branch `agent-runner/task-002-a2-d40e6763`, tested base `26885c920f10b9c79c358b34789deab7d68bdb8c` and derived payload `8a48b8dd0f0b7dfad76bd507f28f29a667ca01e35e4312f261fcdab4c09b9d10`. Only this new group's expected source-owner metadata is updated; all older records, PNGs, provenance and audit sections, the generic helper, validators/assertions, immutable vendor and protected workflows remain unchanged.
+
+Local source-continuity rehearsal and independent native recovery/receipt, exact-head CI and protected build-branch delivery are pending at this checkpoint. This capture is local source evidence, with no owner visual approval, native completion, hosted UAT, physical-phone result, merge or production release claim.
+
+
+## Effects TASK-003 source-bound evidence recovery — 31 October 2026
+
+The unchanged authenticated Format Preview collector passed **4/4 skin cases and eight actual PNGs in 13.9 seconds**, with no skipped cases. New group `docs/design/evidence-0143/task034-format-preview-effects-604-source-a1/` covers CLEAR, Vapour, Signal and Mono at 390×844 and 390×320. All actual PNG bytes, SHA-256 digests, lengths and IHDR dimensions were independently checked. The strict validator, assertions and generic lineage helper remain unchanged.
+
+Frozen source `ddcaac65e9dd086f4dd2a579d29db7ac09d373af`, runtime `5deafd1a8e71537ed8b97f0877c1a64815b2e32c2c286726b12836c295cbec85`, driver `7baaef4ee2a93528f2dd28d49b9b85ccdb955cd5df1544d55a06855b845a4f5d` and unchanged 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all four records. Actual observations span 2026-10-31T06:46:12.757Z through 2026-10-31T06:46:12.941Z, processes 66248, 66250, 66249, 66251, on owned fresh loopback origin `http://127.0.0.1:5186`. All four checkout observations are clean. The browser server received public configuration only; private fixture credentials remained in the collector process. Every preview/session generation, blocked generation, attempted-write and forwarded-write counter is zero. Existing namespaced disposable-account provisioning/onboarding/cleanup writes are separate and OTP is intercepted. No personal-account, schema or production-setting change was made.
+
+The existing v1 **source-only** provenance names Task003 revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-003`, run `9bce6feb-37c4-4d0e-b0c5-077112f3cf4e`, actual retained branch `agent-runner/task-003-a1-9bce6feb`, tested live build base `ea6a5e915a78248e934a2ab838f67aabc77e29dd` and derived payload `fa5dd4366f9c89cea980095a843f21092039014a82872e9ed30bc2ce14be547c`. Its `attempt:1` names the retained source branch slot, reused by the native continuation; **the current native worker claim is attempt2**. This does not attribute acceptance of continued code to native attempt1. A native exact-head receipt for claim2 remains separately required. All earlier groups, provenance, images and audit text remain preserved; no generic validator/helper, immutable vendor or protected workflow changed.
+
+This is local source-bound capture evidence only. Source-continuity rehearsal, independent native full verification/receipt, exact-head CI and protected build-branch delivery remain pending at this checkpoint. No owner visual acceptance, hosted/deployed proof, physical-phone result, native completion or production release is claimed.
+
+
+## Effects TASK-004 source-bound evidence recovery — 31 October 2026
+
+The existing authenticated Format Preview collector passed **4/4 skin cases and eight genuine PNGs in12.9seconds**, with no skips, from frozen source `5154569c9a8bacf05107579a591372a2eb51906a`. New group `docs/design/evidence-0143/task034-format-preview-effects-605-source-a1/` covers CLEAR, Signal, Vapour and Mono at390×844 and390×320. Actual PNG bytes, lengths, SHA-256 and IHDR dimensions were independently checked; the strict validator remains unchanged.
+
+Runtime `ddc29a08ec6cd21a40dff347cc903623f2ec6e1b47331d3553f8d17cd5001c86`, driver `ad19c57e64be79a70402281158c5efa775403b2c545f6494e57711d8153c06e6` and unchanged0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8` agree across all four records. Observations span 2026-10-31T08:25:56.042Z through 2026-10-31T08:25:57.602Z, processes 18422, 18423, 18420, 18421, on owned fresh loopback origin `http://127.0.0.1:5186`. At least one source observation is clean; checkout state is preserved exactly as collected. Private fixture credentials were confined to the collector process; the browser server received public configuration only. Every preview/session generation, blocked generation, attempted-write and forwarded-write count is zero. Existing namespaced disposable-account provisioning/onboarding/cleanup writes are separate, and OTP is intercepted. No personal account, schema or production setting was changed.
+
+The owner-approved current capture bindings name revision `477c2ea9f34d52fb76ec3643154963f574f8c50dc2a54c2d0152e441ecabd33b:TASK-004`, run `e1c7c91a-e424-4a27-9303-c50ce12282bb`, actual retained source branch `agent-runner/task-004-a1-e1c7c91a`, tested live base `a77e074d86364630b5fbe5ebd02a4669a44cad4c` and derived payload `b9408d151f78eb864952f2e3850bacad45e95b371eb611a76f6d770f96596674`. Existing-v1 source-only `attempt:1` identifies that retained a1 branch slot, reused by current native claim2. It is not a native attempt1 acceptance or receipt. All previous groups/provenance/audit text, generic validators, assertions, hash algorithms, lineage helper, preset, package files and protected workflows remain unchanged; only the explicitly approved current source-owner binding data changed before collection.
+
+This is local source-bound evidence, with no claim of owner visual acceptance, native completion, exact-head CI, hosted/deployed proof, physical-phone result or production release. Final source-continuity consumer rehearsal and native recovery/receipt remain required on the committed recovery head. The separate hosted preview-reference provisioning limitation is not waived by this capture.
+
+
+## Effects TASK-005 same-source refresh
+
+The unchanged authenticated Format Preview collector passed four skin cases and wrote eight actual screenshots into `docs/design/evidence-0143/task034-format-preview-effects-606-source-a1` from frozen source `2c0b8e3435bb011a49b34bd6d46f53921d159c0d`. Runtime source `08cb39d402f25971d14ed986052a9f17d95901150c69dd480bdff2ce06e79d5f`; driver `f6ddf9cd597d0df5866425220bf3e80862631c1e8a67213b2dd7fdf915949df5`; package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`; actual capture payload `869d65dfdd6b0e44afa5051458f538bea0e388d1d05b8641a3f8c38b826b85b3`. All prior capture groups are retained. This records local source-continuity verification; deployed proof, final owner visual approval and native task completion are not claimed.
+
+
+## Effects TASK-006 live-source refresh — 2 November 2026
+
+The original authenticated Format Preview collector passed four skin cases with no skips or retries and wrote eight genuine PNGs into `docs/design/evidence-0143/task034-format-preview-effects-607-source-a5` from frozen source `9aba9e75138dc5d2c433d47e84e3a987d4c28e3b`. Runtime source `a894639de2084efe51c680e8ad5fe40f797b155bd05d8a6e29a30fbeb47a8c7f`; driver `ac7015ef783edc84f35d81995ba63365cd8cd3dc3676e58c3ddbc088d0c19565`; unchanged 0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`; actual capture payload `235a6764877ee62c933b11a452ec4ccbddf3ac184e52db03f51887dca9ba12c0`. The complete 390×844/390×320 matrix covers CLEAR, Signal, Vapour and Mono. All 1724 prior evidence files remain byte-identical. The existing validator checks the actual runtime/driver identities and every screenshot byte count, SHA-256 and IHDR dimension.
+
+Existing v1 source-only provenance names actual TASK-006 revision `6391cb85ac440d471616ea5664d9807c2956ae4d8c4962427476b4af1837f547:TASK-006`, run `fc2ea285-e45d-4c09-971c-8afc61f1f099`, source attempt5 and retained branch `agent-runner/task-006-a5-fc2ea285`, with tested build base `3b5eab5103b8e961f73881c07d0743507f2a5983`. This is source continuity only. The test-only helper accepts positive safe-integer source attempts, including the actual attempt5, while retaining its exact run, revision, branch, payload, base and ancestry checks. No helper result certifies native completion or delivery. Earlier groups and records are retained; no immutable vendor file or protected workflow changed.
+
+The existing authorized disposable-account fixture supplied authentication; no credential value is recorded. These are current local source-bound audit captures, separate from the reference/new-app Echo/CRT comparisons. Native complete verification and exact-head CI remain required. Owner visual/UAT approval, physical-phone proof, main merge and production release are not claimed.

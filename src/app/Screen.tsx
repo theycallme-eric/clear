@@ -18,9 +18,19 @@
  * gets a bare lower edge layer: the foot's rule, and the bottom inset beneath
  * it, with no action added. Content that fits gets neither.
  */
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
+import {
+  isValidElement,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type AriaAttributes,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 
 import { AppHeader, ScrollRegion, type AppHeaderProps } from '../design-system/index'
+import { ForegroundEchoFrame, ForegroundEchoText } from '../ui/foreground-echo'
 import { Heading, HeadingLevelProvider } from '../ui/Heading'
 import { useScreenRegistry } from './screen-registry'
 
@@ -87,6 +97,11 @@ function useOverflow(content: RefObject<HTMLElement | null>, watch: boolean): bo
   return watch && overflowing
 }
 
+/** A header slot's one framed action, as its echo target; anything else as given. */
+function echoedAction(slot: ReactNode): ReactNode {
+  return isValidElement(slot) ? <ForegroundEchoFrame>{slot}</ForegroundEchoFrame> : slot
+}
+
 export function Screen({
   title,
   heading,
@@ -104,13 +119,26 @@ export function Screen({
     registry?.register(title)
   }, [title, registry])
 
+  // REQ-004: the heading and the header's framed actions stand on the
+  // background, so each echoes; the actions' glyphs are inside their frames.
+  const shownHeading = heading ?? title
+  // Keep a stable name on the heading itself, including a branded image whose
+  // animated descendants may not supply visible text during the first paint.
+  const headingLabel = typeof shownHeading === 'string'
+    ? shownHeading
+    : isValidElement<AriaAttributes>(shownHeading) ? shownHeading.props['aria-label'] : undefined
   const pageTitle = (
     <HeadingLevelProvider level={1}>
-      <Heading className="clr-screen__title" tabIndex={-1}>
-        {heading ?? title}
+      <Heading className="clr-screen__title" tabIndex={-1} aria-label={headingLabel}>
+        <ForegroundEchoText>{shownHeading}</ForegroundEchoText>
       </Heading>
     </HeadingLevelProvider>
   )
+  const headerSlots: ScreenHeader | undefined = header && {
+    ...header,
+    left: echoedAction(header.left),
+    actions: echoedAction(header.actions),
+  }
 
   const contentRef = useRef<HTMLDivElement>(null)
   const overflowing = useOverflow(contentRef, !pinnedFoot)
@@ -120,7 +148,7 @@ export function Screen({
       pinnedHead
     ) : (
       <>
-        <AppHeader {...header}>{pageTitle}</AppHeader>
+        <AppHeader {...headerSlots}>{pageTitle}</AppHeader>
         {pinnedHead}
       </>
     )

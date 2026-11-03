@@ -21,7 +21,7 @@ export interface ExpectedCaptureGroup {
   taskId: string
   taskRevision: string
   runId: string
-  attempt: 1 | 2
+  attempt: number
   testedBase: string
   groupPath: string
   /** Taken from the already validated real capture records, never inferred. */
@@ -93,7 +93,7 @@ export function capturePayloadSha256(root: string, groupPath: string): string {
 export function assertCaptureSourceLineage(rootPath: string, expected: ExpectedCaptureGroup): CaptureLineage {
   const root = realpathSync(rootPath)
   requireProof(expected.repository === 'theycallme-eric/clear' && /^TASK-\d{3}$/.test(expected.taskId), 'wrong repository/task')
-  requireProof(UUID.test(expected.runId) && [1, 2].includes(expected.attempt), 'wrong run/attempt')
+  requireProof(UUID.test(expected.runId) && Number.isSafeInteger(expected.attempt) && expected.attempt >= 1, 'wrong run/attempt')
   requireProof(new RegExp(`^[a-f0-9]{64}:${expected.taskId}$`).test(expected.taskRevision) && SHA.test(expected.testedBase), 'wrong revision/base')
   requireProof(/^docs\/design\/evidence-0143\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(expected.groupPath), 'unsafe evidence group')
   const captures = [...new Set(expected.capturedSourceCommits)].sort()
@@ -166,8 +166,11 @@ export function assertCaptureSourceLineage(rootPath: string, expected: ExpectedC
   }
   const tree = text(['rev-parse', '--verify', `${input}^{tree}`])
   requireProof(SHA.test(tree), 'invalid input tree')
-  const history = text(['log', '--first-parent', `--max-count=${MAX_HISTORY + 1}`, '--format=%H %T %P', head]).split('\n').filter(Boolean)
-  requireProof(history.length <= MAX_HISTORY, 'first-parent history exceeds bound')
+  // A delivered branch is normally the second parent of a PR/main merge.
+  // Search only HEAD ancestry (not arbitrary refs), retaining the exact input
+  // tree, tested-base parent and unique-witness requirements across that merge.
+  const history = text(['log', `--max-count=${MAX_HISTORY + 1}`, '--format=%H %T %P', head]).split('\n').filter(Boolean)
+  requireProof(history.length <= MAX_HISTORY, 'ancestor history exceeds bound')
   const matches = history.map((row) => row.split(' ')).filter(([, candidateTree, ...parents]) => candidateTree === tree && parents.length === 1 && parents[0] === expected.testedBase)
   requireProof(matches.length === 1 && SHA.test(matches[0][0]), 'missing or ambiguous exact structural incorporation')
   requireProof(text(['rev-parse', '--verify', 'HEAD^{commit}']) === head && retainedInput() === input, 'HEAD/retained input changed during inspection')

@@ -2,7 +2,13 @@
 
 Owner-selected round-3 visual direction, received 30 October 2026. This intake
 preserves one reusable decorative effect under [issue596](https://github.com/theycallme-eric/clear/issues/596).
-Its next step is a scoped, opt-in shared app/gallery integration proposal.
+
+**Status (2 November 2026):** integrated by the effects body. The shared module is
+`src/ui/phosphor-echo.tsx` with the one preset owner `src/ui/phosphor-echo-preset.ts`,
+applied to eligible outer foreground owners and shown at
+`/gallery/app?component=PhosphorEchoFrame`. See [the CLEAR effects index](../../../effects/README.md)
+for owners, rules, evidence and limits. Final owner visual approval is not yet
+recorded. The files below remain the preserved source and are unchanged.
 
 ## Source and selected preset
 
@@ -29,9 +35,9 @@ application-wide enable flags.
 Portable package: `phosphor-echo-design-system-handoff.zip`, already saved in
 Library as `libfile_b475d9b2dfd881918cd2cb8a796c0f93`. Archive SHA-256:
 `1752275a6f5ec2b42974245614aada229ff294067bff53313275ccef06912c3d`.
-Original local source:
-`/Users/eric/Documents/Codex/2026-10-28/task/output/phosphor-echo-design-system-handoff/`.
-Its START-HERE.txt explains how to open the complete isolated study.
+The original local working copy is private and is not referenced here; the
+public test fixtures in `e2e/fixtures/effects-reference/round-3/` hold the
+isolated study for the fidelity specs.
 
 ## Existing-library gap
 

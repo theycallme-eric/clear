@@ -66,10 +66,32 @@ test('motion scroll glow: survives compiled time units, can be held, and respect
   await expect(pair).toHaveCSS('--dur-streak-settle', '420ms')
   const hard = page.locator('[data-gallery-scroll="hard"]')
   const top = hard.locator(':scope > .clr-scroll-region__streak').first()
+  // Observe the brief rendered plateau before sending input. Polling the live
+  // opacity afterward can miss it while the test driver crosses processes.
+  await hard.evaluate(element => {
+    const samples: { active: boolean; opacity: string; shadow: string }[] = []
+    ;(window as unknown as { __scrollGlowSamples: typeof samples }).__scrollGlowSamples = samples
+    const streak = element.querySelector('.clr-scroll-region__streak')!
+    const sample = () => {
+      const active = element.hasAttribute('data-scrolling')
+      const style = getComputedStyle(streak)
+      samples.push({ active, opacity: style.opacity, shadow: style.boxShadow })
+      if (active) requestAnimationFrame(sample)
+    }
+    const observer = new MutationObserver(() => {
+      if (element.hasAttribute('data-scrolling')) requestAnimationFrame(sample)
+      else observer.disconnect()
+    })
+    observer.observe(element, { attributes: true, attributeFilter: ['data-scrolling'] })
+  })
   await page.getByRole('slider', { name: 'Scroll both samples (%)' }).press('PageUp')
-  await expect(hard).toHaveAttribute('data-scrolling', '')
-  await expect(top).toHaveCSS('opacity', '0.7')
-  expect(await top.evaluate(element => getComputedStyle(element).boxShadow)).not.toBe('none')
+  await expect.poll(() => page.evaluate(() =>
+    (window as unknown as { __scrollGlowSamples: { active: boolean; opacity: string; shadow: string }[] })
+      .__scrollGlowSamples.some(sample => sample.active && sample.opacity === '0.7' && sample.shadow !== 'none'),
+  )).toBe(true)
+  await testInfo.attach('scroll-glow-transient.json', { body: JSON.stringify(await page.evaluate(() =>
+    (window as unknown as { __scrollGlowSamples: unknown[] }).__scrollGlowSamples,
+  )), contentType: 'application/json' })
   await expect(hard).not.toHaveAttribute('data-scrolling')
   for (let index = 0; index < 3; index += 1) await page.getByRole('slider', { name: 'Scroll both samples (%)' }).press('PageUp')
   const hold = page.getByRole('button', { name: 'Hold glow for inspection' })

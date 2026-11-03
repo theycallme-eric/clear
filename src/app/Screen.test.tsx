@@ -6,6 +6,11 @@ import { Heading, HeadingSection } from '../ui/Heading'
 import { Screen } from './Screen'
 
 describe('Screen (CORE-05)', () => {
+  it('puts a custom artwork name on the heading itself without changing its title announcement', () => {
+    renderWithProviders(<Screen title="Welcome" heading={<span role="img" aria-label="CLEAR"><svg aria-hidden="true" /></span>} />)
+    expect(screen.getByRole('heading', { level: 1, name: 'CLEAR' })).toHaveAttribute('aria-label', 'CLEAR')
+    expect(document.title).toBe('Welcome · CLEAR')
+  })
   it('renders exactly one main landmark and one h1', () => {
     renderWithProviders(
       <Screen title="Sample">

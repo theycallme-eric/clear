@@ -1,0 +1,18 @@
+{
+  "effect": "CRT scanlines",
+  "enabled": true,
+  "motion": true,
+  "opacity": 0.16,
+  "periodPx": 4,
+  "thicknessPx": 2,
+  "curvaturePx": 6,
+  "driftSecondsPerPeriod": 0.7,
+  "echo": {
+    "opacity": 0.21,
+    "blur": 1.8,
+    "x": -7.12,
+    "y": 6.75
+  },
+  "grain": "unchanged",
+  "vignette": "unchanged"
+}

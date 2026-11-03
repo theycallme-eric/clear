@@ -18,6 +18,7 @@ import {
   type AnimationEvent,
   type RefCallback,
 } from 'react'
+import { currentReduceMotion, subscribeMotionPreferences } from '../state/visual-effects'
 
 /**
  * CORE-05: an app-composed JS animation (rAF loops, timed reveals) must render
@@ -28,8 +29,8 @@ import {
 export function prefersReducedMotion(): boolean {
   return (
     typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    (currentReduceMotion() || (typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches))
   )
 }
 
@@ -277,14 +278,11 @@ export function useArrivalStagger(): ArrivalStagger {
   const [arrived, setArrived] = useState(prefersReducedMotion)
 
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)')
     const finishIfReduced = () => {
-      if (media.matches) setArrived(true)
+      if (prefersReducedMotion()) setArrived(true)
     }
     finishIfReduced()
-    media.addEventListener('change', finishIfReduced)
-    return () => media.removeEventListener('change', finishIfReduced)
+    return subscribeMotionPreferences(finishIfReduced)
   }, [])
 
   const ref = useCallback<RefCallback<HTMLElement>>((element) => {
@@ -395,7 +393,8 @@ export function useInterfaceLoop(kind: InterfaceLoopKind, active = true): Interf
   }, [id, kind, active])
 
   const winner = useSyncExternalStore(subscribeToLoops, () => loopWinner)
-  const runs = active && winner === id && !prefersReducedMotion()
+  const reduced = useSyncExternalStore(subscribeMotionPreferences, prefersReducedMotion)
+  const runs = active && winner === id && !reduced
 
   return { 'data-loop': runs ? 'run' : 'still' }
 }

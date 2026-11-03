@@ -7,7 +7,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { assertCaptureSourceLineage, type ExpectedCaptureGroup, type CaptureInputProvenance } from './capture-source-lineage'
 
-type FixtureOptions = { wrongParent?: boolean; direct?: boolean }
+type FixtureOptions = { wrongParent?: boolean; direct?: boolean; attempt?: number }
 type MutableProvenance = CaptureInputProvenance & Record<string, unknown>
 
 // Disposable synthetic Git repos only: these bytes are NOT screenshots or product evidence.
@@ -17,6 +17,8 @@ const branch = 'agent-runner/task-036-a1-4b51f5c5'
 const digest = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex')
 function fixture(options: FixtureOptions = {}) {
   const root = mkdtempSync(join(tmpdir(), 'clear-lineage-fixture-'))
+  const attempt = options.attempt ?? 1
+  const retainedBranch = `agent-runner/task-036-a${attempt}-${run.slice(0, 8)}`
   const git = (...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
   const write = (path: string, text: string) => { mkdirSync(join(root, path, '..'), { recursive: true }); writeFileSync(join(root, path), text) }
   const commit = (message: string) => { git('add', '.'); git('commit', '-qm', message); return git('rev-parse', 'HEAD') }
@@ -25,7 +27,7 @@ function fixture(options: FixtureOptions = {}) {
   git('config', 'user.email', 'fixture@example.invalid')
   write('runtime.txt', 'base\n')
   const base = commit('base')
-  git('checkout', '-qb', branch)
+  git('checkout', '-qb', retainedBranch)
   write('runtime.txt', 'captured source\n')
   const captured = commit('source')
   const payload: [string, string][] = [
@@ -37,15 +39,15 @@ function fixture(options: FixtureOptions = {}) {
   const payloadSha256 = digest(JSON.stringify(payload.sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([path, bytes]) => ({ path, sha256: digest(bytes) }))))
   const expected: ExpectedCaptureGroup = {
     repository: 'theycallme-eric/clear', taskId: 'TASK-036', taskRevision: `${'a'.repeat(64)}:TASK-036`,
-    runId: run, attempt: 1, testedBase: options.wrongParent ? captured : base, groupPath: group,
+    runId: run, attempt, testedBase: options.wrongParent ? captured : base, groupPath: group,
     capturedSourceCommits: [captured],
   }
-  const provenance: MutableProvenance = { version: 1, kind: 'capture-input-provenance', ...expected, capturedSourceCommits: [...expected.capturedSourceCommits], retainedBranch: branch, payloadSha256 }
+  const provenance: MutableProvenance = { version: 1, kind: 'capture-input-provenance', ...expected, capturedSourceCommits: [...expected.capturedSourceCommits], retainedBranch, payloadSha256 }
   write(`${group}/lineage-provenance.json`, `${JSON.stringify(provenance)}\n`)
   const input = commit('evidence and provenance')
   if (!options.direct) {
     git('checkout', '-q', 'main')
-    git('merge', '--squash', branch)
+    git('merge', '--squash', retainedBranch)
     commit('synthetic incorporation')
   }
   const incorporated = git('rev-parse', 'HEAD')
@@ -73,6 +75,18 @@ withFixture('actual identical-tree single-parent first-parent incorporation succ
   assert.equal(result.treeSha, f.git('rev-parse', `${f.input}^{tree}`))
   assert.equal(result.deliveryProven, false)
 })
+withFixture('later native attempt preserves the exact branch and incorporation proof', (f) => {
+  assert.equal(f.expected.attempt, 5)
+  const result = f.prove()
+  assert.equal(result.mode, 'structural-incorporation')
+  assert.equal(result.inputCommit, f.input)
+  assert.equal(result.deliveryProven, false)
+}, { attempt: 5 })
+for (const attempt of [0, -1, 1.5, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1]) {
+  withFixture(`invalid attempt ${attempt} is rejected before source inspection`, (f) => {
+    assert.throws(() => f.prove({ attempt }), /wrong run\/attempt/)
+  }, { direct: true })
+}
 withFixture('matching exact local and origin refs succeed', (f) => {
   f.git('update-ref', `refs/remotes/origin/${branch}`, f.input)
   assert.equal(f.prove().mode, 'structural-incorporation')
@@ -121,16 +135,27 @@ withFixture('an identical-tree merge commit with two parents is not an incorpora
   assert.notEqual(merge, noCaptureMerge)
   assert.throws(() => f.prove(), /missing or ambiguous exact structural incorporation/)
 })
-withFixture('equivalent incorporation on a side branch does not satisfy first-parent history', (f) => {
-  const unrelated = f.git('commit-tree', f.git('rev-parse', `${f.base}^{tree}`), '-p', f.base, '-m', 'other first parent')
-  const merge = f.git('commit-tree', f.git('rev-parse', `${f.input}^{tree}`), '-p', unrelated, '-p', f.incorporated, '-m', 'side incorporation')
+withFixture('a real PR-style merge preserves exact incorporation through its second parent', (f) => {
+  f.git('branch', 'effects-candidate', f.incorporated)
+  f.git('checkout', '-qb', 'integration-base', f.base)
+  f.write('unrelated-main-doc.txt', 'main advanced independently\n'); f.commit('main docs')
+  f.git('merge', '--no-ff', '-qm', 'PR merge', 'effects-candidate')
+  const result = f.prove()
+  assert.equal(result.mode, 'structural-incorporation')
+  assert.equal(result.incorporationCommit, f.incorporated)
+  assert.equal(result.inputCommit, f.input)
+  assert.equal(result.deliveryProven, false)
+})
+withFixture('two exact incorporation witnesses in merged ancestry are ambiguous and rejected', (f) => {
+  const tree = f.git('rev-parse', `${f.input}^{tree}`)
+  const second = f.git('commit-tree', tree, '-p', f.base, '-m', 'second incorporation')
+  const merge = f.git('commit-tree', tree, '-p', f.incorporated, '-p', second, '-m', 'ambiguous merge')
   f.git('update-ref', 'refs/heads/main', merge)
   assert.throws(() => f.prove(), /missing or ambiguous exact structural incorporation/)
 })
-withFixture('a separate equal-tree side witness is not selected or counted as first-parent history', (f) => {
+withFixture('a separate equal-tree ref outside HEAD ancestry is not selected or counted', (f) => {
   const second = f.git('commit-tree', f.git('rev-parse', `${f.input}^{tree}`), '-p', f.base, '-m', 'second witness')
-  // A single-parent chain cannot contain siblings with the same exact base;
-  // the side witness must not count as a second valid witness either.
+  // Unmerged refs are not evidence of incorporation into this HEAD.
   f.git('branch', 'second-witness', second)
   assert.equal(f.prove().incorporationCommit, f.incorporated)
 })

@@ -408,15 +408,18 @@ test('error-role-consistency: ErrorView keeps alert semantics, glyph, copy, requ
       await expect(buttons).toHaveClass(/\bclr-btn\b/)
       await expect(buttons).not.toHaveClass(/clr-btn--(?:primary|quiet|critical)/)
     }
-    const icon = await alert.evaluate((root) => {
-      const host = root.querySelector('svg')!.parentElement!
+    const icon = await alert.evaluate((root, outline) => {
+      // The decorative Echo can precede the icon; identify the actual glyph,
+      // matching the semantic/shape assertion above, rather than the first SVG.
+      const glyph = [...root.querySelectorAll('svg path')].find(path => path.getAttribute('d')?.startsWith(outline))!
+      const host = glyph.closest('svg')!.parentElement!
       const probe = document.createElement('span')
       probe.style.color = 'var(--icon-toast-negative)'
       root.appendChild(probe)
       const expectedColor = getComputedStyle(probe).color
       probe.remove()
       return { color: getComputedStyle(host).color, expectedColor }
-    })
+    }, ALERT_TRIANGLE)
     expect(icon.color, `${expected.state} glyph colour`).toBe(icon.expectedColor)
   }
 })

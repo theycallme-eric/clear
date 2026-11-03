@@ -15,10 +15,29 @@ export const FORMAT_PRE_LIBRARY_EVIDENCE_DIR = 'docs/design/evidence-0143/task03
 // AppRuntime. Keep the prior Batch05 source/records intact; collect fresh here.
 export const FORMAT_LIBRARY_INITIAL_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-590'
 export const FORMAT_PWA_HOTFIX_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-pwa-hotfix-591'
-// Preserve LIB-002's complete group; the ErrorView pilot collects fresh source evidence.
+// Main's already delivered ErrorView pilot and its prior source remain historical evidence.
 export const FORMAT_PRE_ERROR_ROLE_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-594'
-// Issue #601 manual completion; the established collector and validators are unchanged.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-601'
+export const FORMAT_ERROR_ROLE_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-601'
+// Freeze the integrated PWA + public-entry source before collecting this group.
+export const FORMAT_PRE_EFFECTS_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-library-594'
+// Effects #602/a2: preserve earlier groups and collect the actual current source.
+export const FORMAT_EFFECTS_TASK001_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-602-a2'
+// Effects #603/a2: retain Task001 evidence; capture this Settings source.
+export const FORMAT_EFFECTS_TASK002_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-603-a2'
+// Task003 continued in its retained a1 source branch; collect the combined source.
+export const FORMAT_EFFECTS_TASK003_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-604-source-a1'
+// Task004 continued in the retained a1 branch; collect its final application source.
+export const FORMAT_EFFECTS_TASK004_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-605-source-a1'
+// Task005's genuine source captures remain immutable historical evidence.
+export const FORMAT_EFFECTS_TASK005_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-606-source-a1'
+// Preserve the authentic Task006 group and native source history separately.
+export const FORMAT_EFFECTS_TASK006_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-607-source-a5'
+// Retain the completed front-glass correction; merge-prep captures a fresh source.
+export const FORMAT_FRONT_GLASS_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-front-glass-20261103'
+export const FORMAT_PRE_MAIN_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-20261103'
+// Keep the combined-source checkpoint before the final heading-name correction.
+export const FORMAT_PRE_HEADING_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

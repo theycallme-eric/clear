@@ -1,11 +1,13 @@
 /* =============================================================================
-   ATMOSPHERE — app-owned attachment and reduced-motion fallback (DS-06)
+   ATMOSPHERE — app-owned attachment, still state and decorative-scan
+   retirement (DS-06, effects TASK-006)
 
    The export already stops the blob drift and breathing inside its own
-   `prefers-reduced-motion` media query. This rule states the same thing from
-   the attribute AtmosphereLayer sets, so the static fallback does not depend on
-   the media query and the JS-resolved preference agreeing at every instant —
-   they are read from the same signal, and this makes the DOM the record of it.
+   `prefers-reduced-motion` media query. The rule below states stillness from
+   the attribute AtmosphereLayer sets from the root Visual effects policy, so a
+   hidden tab or Visual effects off hold the blobs too. It pauses rather than
+   removes the animation: the same live blobs stop where they are and resume
+   from there, never restarting, rasterised or remounted.
 
    The viewport modifier is reasserted after the vendor's later base rule.
    Keeping it in CSS lets the existing, more specific gallery review-frame
@@ -21,5 +23,38 @@
 }
 
 .clr-atmosphere[data-static='true'] .clr-atmosphere__blob {
-  animation: none;
+  animation-play-state: paused;
+}
+
+/* -----------------------------------------------------------------------------
+   Retired decorative scanlines (effects TASK-006, REQ-006)
+
+   The live CRT Glass field (`src/ui/crt-field/`) is the one decorative scanline
+   signal, so each exposed pixel receives it once. The 0.14.3 import is never
+   edited; its active decorative scan owners are overridden here instead:
+
+   1. `.clr-atmosphere__scan` — no longer rendered by AtmosphereLayer; hidden
+      here too, should any markup still carry it.
+   2. `--frame-scan` on every framed surface (`.clr-chamfer::before`). The
+      busy rules (`.clr-chamfer[aria-busy='true']:not(.clr-btn)::before`,
+      `.clr-btn[aria-busy='true']::before`) are more specific and keep their
+      sweep: loading feedback is a state signal, not decoration.
+   3. The scan layer of `.clr-dialog::backdrop`. Only the token is emptied on
+      the backdrop itself, so its noise and tint layers stay as they were.
+
+   Bundled classes no app markup uses (`.scanlines-overlay`) are not active
+   layers and are left alone. Retirement does not depend on Visual effects: off
+   removes the field, it does not restore the old scans.
+   ----------------------------------------------------------------------------- */
+
+.clr-atmosphere__scan {
+  display: none;
+}
+
+.clr-chamfer::before {
+  background-image: none;
+}
+
+.clr-dialog::backdrop {
+  --frame-scan: none;
 }
