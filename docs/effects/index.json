@@ -1,0 +1,87 @@
+{
+  "index": "CLEAR effects index",
+  "docs": "docs/effects/README.md",
+  "comfortPolicy": {
+    "owner": "src/state/visual-effects.ts",
+    "api": ["useVisualEffects", "useOptionalVisualEffects", "setVisualEffects", "resolveVisualEffectsPolicy", "VisualEffectsProvider"],
+    "setting": "Visual effects checkbox, Settings Appearance card (src/app/Settings.tsx); on by default; device-local",
+    "reducedMotion": "OS prefers-reduced-motion, live; stops line drift, grain and atmosphere blobs; static Echo and still glass remain",
+    "hiddenTab": "Field clocks paused in place; resume without catch-up"
+  },
+  "effects": [
+    {
+      "id": "phosphor-echo",
+      "name": "Phosphor Echo",
+      "status": "Delivered on the effects build branch; owner visual approval not yet recorded",
+      "owner": "src/ui/phosphor-echo.tsx",
+      "api": ["PhosphorEchoDefinition", "PhosphorEchoFrame", "PhosphorEchoText", "PhosphorEchoGlyph", "PHOSPHOR_ECHO_FILTER_ID"],
+      "eligibility": "src/ui/foreground-echo.tsx",
+      "presetOwner": "src/ui/phosphor-echo-preset.ts",
+      "preset": {
+        "identity": "Phosphor Echo · preferred",
+        "source": "round-3/preferred-preset.json",
+        "values": { "opacity": 0.29, "blurPx": 3.2, "xPx": -4.7, "yPx": 5.64 },
+        "approval": "Owner-selected in the reference study; not yet approved on the integrated app"
+      },
+      "preservedSource": [
+        "docs/design/library/intake/phosphor-echo/phosphor-echo.mjs",
+        "docs/design/library/intake/phosphor-echo/preferred-preset.json"
+      ],
+      "dependencies": [],
+      "demo": "/gallery/app?component=PhosphorEchoFrame",
+      "referenceHost": "e2e/fixtures/effects-reference/round-3/"
+    },
+    {
+      "id": "crt-glass",
+      "name": "CRT Glass",
+      "status": "Delivered on the effects build branch; owner visual approval and performance acceptance not yet recorded",
+      "owner": "src/ui/crt-field/crt-field.tsx",
+      "api": ["CrtField", "CRT_FIELD_ANIMATIONS"],
+      "presetOwner": "src/ui/crt-field/config.ts",
+      "preset": {
+        "identity": "clr-crt-field/shipping-2026-11-02.3",
+        "export": "CRT_FIELD_CONFIG",
+        "approval": "Shipping interpretation; not yet visually approved by the owner"
+      },
+      "reference": {
+        "port": "src/ui/crt-glass/",
+        "role": "Fidelity proof only; not mounted, not shipped",
+        "settingsFile": "crt-iab-current-settings.json",
+        "settingsSha256": "3169d4608c8babe17a20670bd59f53e3110c7ce917641786d33c2713943ca033",
+        "settingsStatus": "Current-session numeric evidence; not final-at-pause storage, not shipping approval",
+        "passOrder": "crt-glass-motion/glass-effect.mjs",
+        "earlierReferences": [
+          "crt-glass-motion/working-session.mjs",
+          "crt-glass-motion/default-preset.json",
+          "PRESETS.selected in crt-glass-motion/glass-effect.mjs"
+        ],
+        "workbenchControls": {
+          "productSettings": false,
+          "driftCycleSeconds": { "min": 0.1, "max": 180, "precision": 0.1 },
+          "still": "Freezes line phase; grain continues if enabled",
+          "grainAnimationHz": { "min": 0.5, "max": 6 },
+          "grainFeathering": { "min": 0.01, "max": 0.99, "step": 0.01, "decimals": 2 }
+        }
+      },
+      "replaces": [
+        ".clr-atmosphere__scan",
+        ".clr-chamfer::before idle frame scan",
+        ".clr-dialog::backdrop --frame-scan"
+      ],
+      "keeps": ["busy and loading sweeps", "live atmosphere blobs"],
+      "dependencies": [
+        { "package": "pixi.js", "version": "8.22.0", "license": "MIT", "adopted": false, "use": "Reference host in tests; vertex program carried verbatim in src/ui/crt-glass/shaders.ts" },
+        { "package": "pixi-filters", "version": "6.1.5", "license": "MIT", "adopted": false, "use": "Reference host in tests; CRTFilter fragment carried verbatim in src/ui/crt-glass/shaders.ts" }
+      ],
+      "demo": "/gallery/app?component=CrtField",
+      "referenceHost": "e2e/fixtures/effects-reference/crt-glass-motion/index.html"
+    }
+  ],
+  "performance": {
+    "record": "docs/effects/performance.md",
+    "kind": "Browser engineering comparison (Chromium mobile emulation, SwiftShader software renderer)",
+    "physicalPhoneEvidence": false,
+    "performanceApproval": false
+  },
+  "finalVisualApproval": false
+}

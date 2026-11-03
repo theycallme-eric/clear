@@ -35,10 +35,12 @@ existing visual choice. Material proposed changes receive their own review.
   Hold glow for inspection shows the existing shared CSS state continuously.
   This preview correction is not a production Home fix.
 
-- Selected visual inputs awaiting scoped integration live in
-  [the Phosphor Echo intake](intake/phosphor-echo/README.md): one shared effect,
-  owner-selected preset, source/application rules and Augmented UI aesthetic
-  reference. Preservation is separate from runtime adoption.
+- Decorative effects: Phosphor Echo and CRT Glass are owned by their app
+  modules and documented in [the CLEAR effects index](../../effects/README.md)
+  (owners, presets, rules, evidence, limits and demos). The index is the
+  reference; it does not wait for library completion or a foundation release.
+  The preserved Echo source, preset and Augmented UI aesthetic reference stay
+  in [the Phosphor Echo intake](intake/phosphor-echo/README.md).
 
 - Start with [the component index](COMPONENTS.md), generated from
   `src/dev/gallery-registry.tsx`. Read the linked implementation for its API.
