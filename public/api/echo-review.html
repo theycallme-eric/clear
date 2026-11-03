@@ -15,6 +15,7 @@ h1 { font-size: 17px; margin: 0; }
 label { display: block; font-size: 14px; margin: 18px 0; }
 .label { margin-bottom: 8px; }
 output { color: #f1bfdf; font-variant-numeric: tabular-nums; }
+a { color: #f1bfdf; }
 input { accent-color: #e492c5; }
 input[type=range] { width: 100%; }
 button { font: inherit; font-size: 13px; color: inherit; background: #302535; border: 1px solid #75617c; border-radius: 4px; padding: 9px 12px; cursor: pointer; }
@@ -36,6 +37,7 @@ p { margin: 12px 0 0; font-size: 12px; line-height: 1.4; color: #c9b8cd; }
  <label><span class="label">Down offset <output id="down-value" for="down">—</output></span><input id="down" aria-label="Echo down offset" type="range" min="0" max="14.4" step="0.01"></label>
  <div class="buttons"><button id="reset">Reset</button><button id="copy">Copy settings</button></div>
  <p id="status" role="status">Loading…</p>
+ <p><a id="compare" href="/api/echo-compare.html">Side-by-side comparison</a> · <a href="/api/scanline-review.html">Scanlines</a></p>
 </section>
 <script type="module">
 const byId = id => document.getElementById(id);
@@ -61,6 +63,7 @@ function apply() {
  byId('left-value').textContent = `${round(-draft.x)} px`;
  byId('down-value').textContent = `${round(draft.y)} px`;
  history.replaceState(null, '', '#' + new URLSearchParams({...draft, echo: enabled ? '1' : '0'}));
+ byId('compare').hash = location.hash;
  byId('status').textContent = 'Echo only. Scanlines stay unchanged.';
 }
 function connect() {

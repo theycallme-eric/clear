@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CLEAR · Echo comparison</title>
+<style>
+:root { color-scheme: dark; font-family: system-ui, sans-serif; color: #f4eaf2; background: #100d14; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+header { max-width: 828px; margin: auto; padding: 18px 12px 12px; }
+h1 { margin: 0 0 8px; font-size: 19px; }
+p { margin: 8px 0; color: #c9b8cd; font-size: 13px; line-height: 1.5; }
+a { color: #f1bfdf; }
+main { display: grid; grid-template-columns: repeat(2, min(390px, calc(100vw - 24px))); justify-content: safe center; gap: 16px; overflow-x: auto; padding: 0 12px 16px; scroll-snap-type: x proximity; }
+section { min-width: 0; scroll-snap-align: center; }
+h2 { margin: 8px 0; font-size: 14px; }
+iframe { display: block; width: 100%; height: 844px; border: 1px solid #47394d; background: #100d14; }
+#status { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<header>
+ <h1>Phosphor Echo · side by side</h1>
+ <p>Same settings and front glass. The right side removes the extra glow from the rear text only; foreground text and frame echoes stay unchanged. On a narrow screen, swipe sideways.</p>
+ <p><a id="controls" href="/api/echo-review.html">Echo controls</a> · <a href="/api/scanline-review.html">Scanline controls</a></p>
+ <p id="status" role="status">Loading both views…</p>
+</header>
+<main>
+ <section><h2>Current · rear text includes glow</h2><iframe id="current" title="Current Echo" src="/generate"></iframe></section>
+ <section><h2>Proposed · cleaner rear text</h2><iframe id="proposed" title="Proposed Echo" src="/generate"></iframe></section>
+</main>
+<script type="module">
+const params = new URLSearchParams(location.hash.slice(1));
+const settings = {opacity: 0.21, blur: 1.8, x: -7.12, y: 6.75};
+const bounds = {opacity: [0, 1], blur: [0, 8], x: [-12, 0], y: [0, 14.4]};
+for (const key of Object.keys(settings)) {
+ const value = Number(params.get(key));
+ if (params.has(key) && Number.isFinite(value) && value >= bounds[key][0] && value <= bounds[key][1]) settings[key] = value;
+}
+const enabled = params.get('echo') !== '0';
+const hash = '#' + new URLSearchParams({...settings, echo: enabled ? '1' : '0'});
+history.replaceState(null, '', hash);
+document.getElementById('controls').hash = hash;
+const connected = new Set();
+const frames = [...document.querySelectorAll('iframe')];
+for (const frame of frames) {
+ let observer;
+ function connect() {
+  const doc = frame.contentDocument;
+  const filter = doc?.getElementById('clr-phosphor-echo');
+  if (!filter) return;
+  filter.querySelector('feGaussianBlur').setAttribute('stdDeviation', settings.blur);
+  filter.querySelector('feOffset').setAttribute('dx', settings.x);
+  filter.querySelector('feOffset').setAttribute('dy', settings.y);
+  filter.querySelector('feFuncA').setAttribute('slope', enabled ? settings.opacity : 0);
+  if (frame.id === 'proposed' && !doc.getElementById('echo-review-cleanup')) {
+   const style = doc.createElement('style');
+   style.id = 'echo-review-cleanup';
+   style.textContent = '.clr-echo-text__rear { text-shadow: none !important; }';
+   doc.head.append(style);
+  }
+  connected.add(frame.id);
+  document.getElementById('status').textContent = connected.size === 2
+   ? `${Math.round(settings.opacity * 100)}% strength · ${settings.blur} px softness · ${-settings.x} px left · ${settings.y} px down. Scroll is linked.`
+   : 'Loading the other view…';
+ }
+ frame.addEventListener('load', () => {
+  observer?.disconnect(); connected.delete(frame.id);
+  try {
+   observer = new MutationObserver(connect);
+   observer.observe(frame.contentDocument, {childList: true, subtree: true});
+   // Synchronize only the live app's scroll region; no animation loop or account writes.
+   frame.contentDocument.addEventListener('scroll', event => {
+    if (!event.target.matches?.('.clr-scroll-region__scroller')) return;
+    const other = frames.find(candidate => candidate !== frame).contentDocument?.querySelector('.clr-scroll-region__scroller');
+    if (other && Math.abs(other.scrollTop - event.target.scrollTop) > 1) other.scrollTop = event.target.scrollTop;
+   }, true);
+   connect();
+  } catch { document.getElementById('status').textContent = 'Sign in to the preview normally, then reopen this comparison.'; }
+ });
+ if (frame.contentDocument?.readyState === 'complete') frame.dispatchEvent(new Event('load'));
+}
+</script>
+</body>
+</html>
