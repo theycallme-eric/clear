@@ -16,6 +16,12 @@
       "owner": "src/ui/phosphor-echo.tsx",
       "api": ["PhosphorEchoDefinition", "PhosphorEchoFrame", "PhosphorEchoText", "PhosphorEchoGlyph", "PHOSPHOR_ECHO_FILTER_ID"],
       "eligibility": "src/ui/foreground-echo.tsx",
+      "requestedEligibilityExtension": {
+        "status": "Pending shared eligibility support and library consumer opt-in; not implemented by the front-glass correction",
+        "include": ["Standalone timer outer artwork/frame directly on the background", "Dialog and sheet outer frame"],
+        "exclude": ["Timers inside cards or already echoed surfaces", "Dialog and sheet inner text, controls and timers"],
+        "rule": "Latest approved owner handoff governs intended eligibility; current blanket dialog exclusion is implementation status, not final policy"
+      },
       "presetOwner": "src/ui/phosphor-echo-preset.ts",
       "preset": {
         "identity": "Phosphor Echo · preferred",
@@ -36,6 +42,7 @@
       "name": "CRT Glass",
       "status": "Delivered on the effects build branch; owner visual approval and performance acceptance not yet recorded",
       "owner": "src/ui/crt-field/crt-field.tsx",
+      "composition": "One pointer-transparent, aria-hidden viewport glass in the nonmodal browser top layer, re-promoted above newly opened native dialogs/popovers; no duplicated per-dialog field. Contained gallery specimens remain in their own frames.",
       "api": ["CrtField", "CRT_FIELD_ANIMATIONS"],
       "presetOwner": "src/ui/crt-field/config.ts",
       "preset": {

@@ -75,7 +75,11 @@ The earlier geometry-check values 0.34 / 1.4 / −5.5 / +6.6 are **not** this pr
   is the representative proof, not a limit.
 - Not eligible: anything inside a Card, dialog (`AppDialog`), sheet or an already-echoed owner. That
   includes nested text, labels, inputs, chips, the back arrow and the CTA label. Each subtree is
-  filtered at most once.
+  filtered at most once. This describes current implementation. The latest owner-approved
+  extension is **pending**: standalone timer artwork/frames on the background and dialog/sheet
+  outer frames should receive the same Echo; their nested content stays excluded. The library
+  workstream owns consumer opt-in, with shared eligibility support coordinated here. Do not
+  interpret the current blanket dialog exclusion as the intended rule for a dialog's outer frame.
 - Kernel, preserved from `round-3/phosphor-echo.mjs`: sRGB interpolation, `userSpaceOnUse`, the full
   filled silhouette → Gaussian blur → offset → alpha → `out` composite against `SourceAlpha`. The
   sharp foreground is drawn separately above. No rear pixel shows through the top/right interior of
@@ -97,8 +101,12 @@ mounted once by the root effects host in `src/app/RootLayout.tsx` while effects 
 `CRT_FIELD_ANIMATIONS` names its two clocks. It is browser-native: four edge-strip `backdrop-filter`
 blurs, one inline SVG path of curved lines (a transform Web Animation drifts it), a feathered noise
 tile (a separate Web Animation steps it) and a static radial vignette. There is no canvas, DOM
-capture or pixel readback. It uses `pointer-events: none` and `z-index` 5: above the shell, below
-the skip link, focus brackets and the browser top layer.
+capture or pixel readback. The viewport field is one transparent, nonmodal manual popover in the
+browser top layer, above the interface and native dialogs. When a dialog/popover opens, the same
+field is promoted above it; no second glass is created. It stays `aria-hidden`, unfocusable and
+`pointer-events: none`, so the underlying interface keeps input and native modal focus. Its
+ordinary stacking fallback is above the shell. The gallery's contained specimen remains local to
+its frame. Appearance values and the two animation clocks are unchanged by this layer correction.
 
 **Preset** (`src/ui/crt-field/config.ts`). `CRT_FIELD_CONFIG` identity
 **`clr-crt-field/shipping-2026-11-02.3`**: lines period 3, thickness 1, opacity 0.12, curvature 6,
@@ -126,8 +134,8 @@ ships none of it. Do not mount it beside `CrtField`.
   controls and feedback stay readable.
 - Grain feathering blurs the grain tile only. It never reaches UI, text, Echo geometry, frames or
   the lines.
-- Dialogs and sheets render in the top layer above the field. The field shows through their
-  backdrop but not over their content.
+- The viewport field is in front of cards, CTAs and native dialog content/backdrops. Each exposed
+  pixel receives one coordinated glass treatment; dialogs do not mount their own copy.
 - Echo is composed beneath the field. The live role-coloured atmosphere stays live behind both. It
   is not frozen into a texture or remounted on navigation.
 

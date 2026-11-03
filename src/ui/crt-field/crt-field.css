@@ -9,13 +9,26 @@
    layers only add light or shade above it.
    ============================================================================= */
 
-/* Above the shell's screens, below the skip link, focus brackets and the top
-   layer. It never takes a pointer event, so input reaches the page beneath. */
+/* One viewport glass, promoted to the top layer without modal behaviour.
+   Reset the UA popover box without changing the effect's appearance. */
 .clr-crt-field {
   position: fixed;
   inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: auto;
+  height: auto;
+  max-width: none;
+  max-height: none;
+  background: transparent;
   z-index: 5;
   overflow: hidden;
+  pointer-events: none;
+}
+
+.clr-crt-field::backdrop {
+  background: transparent;
   pointer-events: none;
 }
 

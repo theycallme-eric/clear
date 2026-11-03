@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { hashTree } from '../../e2e/design-0143/capture'
 import { REQUIRED_SCREENS } from '../../e2e/required-routes'
 import {
   currentFormatRuntimeHash, formatBaselineAbsence, formatDriverHash, formatPreviewManifest,
-  FORMAT_EVIDENCE_DIR, FORMAT_HISTORICAL_COMMIT, FORMAT_HISTORICAL_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
+  FORMAT_EVIDENCE_DIR, FORMAT_EFFECTS_TASK006_EVIDENCE_DIR, FORMAT_HISTORICAL_COMMIT, FORMAT_HISTORICAL_EVIDENCE_DIR, FORMAT_ROUTE, validateFormatPreviewEvidence, type FormatEvidenceRecord,
 } from '../../e2e/design-0143/format-preview-evidence'
 import {
   browserTestsForTarget,
@@ -304,9 +305,12 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
     expect(json(manifestPath)).toEqual(derived)
     expect(new Set(readdirSync(resolve(root, FORMAT_EVIDENCE_DIR, 'screenshots'))))
       .toEqual(new Set(records.flatMap((record) => record.captures.map((capture) => capture.screenshot.name))))
-    // Capture source remains genuine after normal protected squash delivery:
-    // direct ancestry, or exact retained-input/payload/full-tree incorporation.
-    // This is source continuity only; it never certifies merge approval or ACK.
+    // Keep the authentic completed Task006 receipt bound to its original
+    // evidence, rather than relabelling the owner's direct correction as a
+    // new native run. The current plain-branch capture uses real Git ancestry.
+    const nativeRecords = readdirSync(resolve(root, FORMAT_EFFECTS_TASK006_EVIDENCE_DIR, 'records'))
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => json<FormatEvidenceRecord>(`${FORMAT_EFFECTS_TASK006_EVIDENCE_DIR}/records/${name}`))
     assertCaptureSourceLineage(root, {
       repository: 'theycallme-eric/clear',
       taskId: 'TASK-006',
@@ -315,9 +319,17 @@ describe('follow-up TASK-034 — introduced route has real AFTER evidence, not a
       // Actual native attempt-5 source branch; source continuity is not a native ACK.
       attempt: 5,
       testedBase: '3b5eab5103b8e961f73881c07d0743507f2a5983',
-      groupPath: FORMAT_EVIDENCE_DIR,
-      capturedSourceCommits: records.map((record) => record.identity.applicationCommit!),
+      groupPath: FORMAT_EFFECTS_TASK006_EVIDENCE_DIR,
+      capturedSourceCommits: nativeRecords.map((record) => record.identity.applicationCommit!),
     })
+    for (const commit of new Set(records.map((record) => record.identity.applicationCommit!))) {
+      expect(commit).toMatch(/^[a-f0-9]{40}$/)
+      // Preserve this source commit when delivering the direct correction.
+      // This proves source continuity, not owner visual or merge approval.
+      expect(() => execFileSync('git', ['merge-base', '--is-ancestor', commit, 'HEAD'], {
+        cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
+      })).not.toThrow()
+    }
     for (const record of records) {
       expect(record.captures.every((capture) => capture.route === FORMAT_ROUTE && capture.before === null)).toBe(true)
       for (const identity of [record.identity.applicationCommit, record.identity.runtimeSourceHash, record.driverSourceHash]) {

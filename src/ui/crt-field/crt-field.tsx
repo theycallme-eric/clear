@@ -19,8 +19,9 @@
  * the shell, each once; glow and bleed stay with their components. The field
  * paints over all of them as one glass, filters no subtree, and is the only
  * decorative scanline signal — the old atmosphere, frame and dialog-backdrop
- * scans are retired in `src/styles/atmosphere.css`. Dialogs and sheets open in
- * the top layer above the field and see it through their translucent backdrop.
+ * scans are retired in `src/styles/atmosphere.css`. The viewport field uses a
+ * non-interactive manual popover to stay at the front of the browser top layer,
+ * including above a native dialog. It never opens a second copy of the glass.
  *
  * Lifecycle. Visual effects off removes the field. Motion disallowed (reduced
  * motion, hidden tab, or effects off) pauses both clocks in place. The two
@@ -90,6 +91,57 @@ function useFieldSize(ref: RefObject<HTMLDivElement | null>): Size {
   return size
 }
 
+/** One glass in the top layer, without taking focus or making the page inert. */
+function useFrontGlass(ref: RefObject<HTMLDivElement | null>, contained: boolean) {
+  useLayoutEffect(() => {
+    const field = ref.current
+    if (!field || contained || typeof field.showPopover !== 'function') return
+
+    field.setAttribute('popover', 'manual')
+    let disposed = false
+    let queued = false
+    const bringForward = () => {
+      if (disposed || !field.isConnected) return
+      try {
+        // A newly opened dialog/popover enters above older top-layer items.
+        // Re-promote this same node; its two clocks and content stay intact.
+        if (field.matches(':popover-open')) field.hidePopover()
+        field.showPopover()
+      } catch {
+        // Preserve ordinary pointer-transparent composition if this browser
+        // cannot promote the field. Never interfere with the native dialog.
+        field.removeAttribute('popover')
+      }
+    }
+    const queuePromotion = () => {
+      if (queued) return
+      queued = true
+      queueMicrotask(() => {
+        queued = false
+        bringForward()
+      })
+    }
+    const beforeToggle = (event: Event) => {
+      if (event.target !== field && (event as ToggleEvent).newState === 'open') queuePromotion()
+    }
+    // Dialog toggle events are newer than popovers. Observe `open` too so a
+    // browser with showModal() but no dialog toggle events gets the same order.
+    const observer = new MutationObserver((records) => {
+      if (records.some(({ target }) => target instanceof HTMLDialogElement && target.open)) queuePromotion()
+    })
+    observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['open'] })
+    document.addEventListener('beforetoggle', beforeToggle, true)
+    bringForward()
+    return () => {
+      disposed = true
+      observer.disconnect()
+      document.removeEventListener('beforetoggle', beforeToggle, true)
+      if (field.matches(':popover-open')) field.hidePopover()
+      field.removeAttribute('popover')
+    }
+  }, [ref, contained])
+}
+
 /** The two independent clocks, created once and paused or played by the policy. */
 function useFieldClocks(
   lines: RefObject<SVGSVGElement | null>,
@@ -143,6 +195,7 @@ export function CrtField({ motionAllowed, contained = false }: CrtFieldProps) {
   const linesRef = useRef<SVGSVGElement>(null)
   const grainRef = useRef<HTMLDivElement>(null)
   const { width, height } = useFieldSize(ref)
+  useFrontGlass(ref, contained)
   useFieldClocks(linesRef, grainRef, motionAllowed)
   const { periodPx, thicknessPx } = CRT_FIELD_CONFIG.lines
   const linesHeight = height + periodPx * 2

@@ -70,12 +70,14 @@ body,
   }
 }
 
-/* Effects TASK-001: the one decorative host, between the ground and the shell.
+/* The one decorative host, above the shell (and a fallback for browsers
+   without the top-layer popover API used by the viewport CRT field).
    Empty until an optional effect renders into it; it never takes layout or a
    pointer event from the screen above it. */
 .clr-effects-host {
   position: fixed;
   inset: 0;
+  z-index: 5;
   pointer-events: none;
 }
 
