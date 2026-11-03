@@ -1,5 +1,18 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Merge-prep source checkpoint before main synchronization — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight PNGs in32.8seconds**
+on source `9e23420ea649b9005ab48e4c2b27f903ed7816fb`. The generated group
+`docs/design/evidence-0143/task034-format-preview-merge-prep-20261103` preserves runtime
+`dc06910ffde7e6d6d7ac59181f3a7d3d92fec23f9201ee41e3c553c14306412c` and driver
+`86de0b152120005cb32298def07be960fce501f4a781c9c4fc2a5c9efd719c99` with the unchanged0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+This is a real read-only disposable-fixture checkpoint, not the final combined-main evidence.
+Main's already-delivered library pilot must also be retained; its subsequent synchronization
+requires a fresh group. No prior records or PNGs are overwritten or rebound.
+
+
 ## Front-glass correction #624 source reverification — 3 November 2026
 
 The unchanged authenticated Format Preview collector passed **4/4 skin cases / eight genuine PNGs
