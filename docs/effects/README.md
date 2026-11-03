@@ -111,14 +111,19 @@ ordinary stacking fallback is above the shell. The gallery's contained specimen 
 its frame. Appearance values and the two animation clocks are unchanged by this layer correction.
 
 **Preset** (`src/ui/crt-field/config.ts`). `CRT_FIELD_CONFIG` identity
-**`clr-crt-field/shipping-2026-11-02.3`**: lines period 3, thickness 1, opacity 0.12, curvature 6,
-drift 0.6 s per period; grain opacity 0.07, frequency 0.85, feather 0.4, refresh 0.5 Hz, 8 frames,
+**`clr-crt-field/review-2026-11-03.1`**: lines period 4, thickness 2, opacity 0.16, curvature 6,
+drift 0.7 s per period; grain opacity 0.07, frequency 0.85, feather 0.4, refresh 0.5 Hz, 8 frames,
 160 tile; vignette clear fraction 0.62, opacity 0.3; perimeter blur 1.6, width fraction 0.14 (CSS px
 and seconds). `crtFieldCustomProperties`, `crtFieldLinePath` and `crtFieldGrainTile` derive
 everything else from it. To tune: change a value, bump the `id`, rerun the composition and overhead
-specs, and get the owner's review. Status: the shipping interpretation. Its values are **not** the
-reference export's slider numbers (owner clarification, 2 November 2026), and the owner has not yet
-approved them visually.
+specs, and get the owner's review. Status: the owner-selected scanline values on the review branch,
+recorded in [the November 3 control export](scanline-selection-20261103.json). This changes only
+the scanline preset; grain, vignette, perimeter and layering stay unchanged. The export also
+records the existing Echo draft used by the review tools; it does not approve the proposed rear
+text-glow cleanup or change the app's Echo preset. The earlier shipping interpretation
+`clr-crt-field/shipping-2026-11-02.3` remains identified in its historical evidence. Main and the
+effects build branch are not updated by this review-branch selection. These are live-field values,
+distinct from the old raster reference export's slider numbers (owner clarification, 2 November 2026).
 
 **Reference port, not a second owner.** `src/ui/crt-glass/` (TASK-005) is a pixel-exact port of the
 preserved raster pipeline, used only as the fidelity proof against the preserved motion host. It
@@ -132,7 +137,7 @@ ships none of it. Do not mount it beside `CrtField`.
 
 - One field covers the viewport. Each exposed pixel receives it once, and the centre is never
   blurred.
-- Skin role colours stay authoritative. Lines darken lightly (opacity 0.12), so text, icons,
+- Skin role colours stay authoritative. Lines use the selected opacity 0.16, so text, icons,
   controls and feedback stay readable.
 - Grain feathering blurs the grain tile only. It never reaches UI, text, Echo geometry, frames or
   the lines.

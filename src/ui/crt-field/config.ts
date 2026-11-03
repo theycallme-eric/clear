@@ -67,13 +67,13 @@ export interface CrtFieldConfig {
 }
 
 export const CRT_FIELD_CONFIG: CrtFieldConfig = Object.freeze({
-  id: 'clr-crt-field/shipping-2026-11-02.3',
+  id: 'clr-crt-field/review-2026-11-03.1',
   lines: Object.freeze({
-    periodPx: 3,
-    thicknessPx: 1,
-    opacity: 0.12,
+    periodPx: 4,
+    thicknessPx: 2,
+    opacity: 0.16,
     curvaturePx: 6,
-    driftSecondsPerPeriod: 0.6,
+    driftSecondsPerPeriod: 0.7,
   }),
   grain: Object.freeze({
     opacity: 0.07,
