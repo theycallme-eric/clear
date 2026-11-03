@@ -24,6 +24,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type AriaAttributes,
   type ReactNode,
   type RefObject,
 } from 'react'
@@ -120,10 +121,16 @@ export function Screen({
 
   // REQ-004: the heading and the header's framed actions stand on the
   // background, so each echoes; the actions' glyphs are inside their frames.
+  const shownHeading = heading ?? title
+  // Keep a stable name on the heading itself, including a branded image whose
+  // animated descendants may not supply visible text during the first paint.
+  const headingLabel = typeof shownHeading === 'string'
+    ? shownHeading
+    : isValidElement<AriaAttributes>(shownHeading) ? shownHeading.props['aria-label'] : undefined
   const pageTitle = (
     <HeadingLevelProvider level={1}>
-      <Heading className="clr-screen__title" tabIndex={-1}>
-        <ForegroundEchoText>{heading ?? title}</ForegroundEchoText>
+      <Heading className="clr-screen__title" tabIndex={-1} aria-label={headingLabel}>
+        <ForegroundEchoText>{shownHeading}</ForegroundEchoText>
       </Heading>
     </HeadingLevelProvider>
   )

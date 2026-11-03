@@ -146,7 +146,12 @@ async function settle(page: Page) {
 
 /** The same scroll position in every capture: the example's top at the top. */
 async function scrollToExample(page: Page) {
-  await page.locator('[data-echo-sample="header"]').evaluate((element) => element.scrollIntoView({ block: 'start' }))
+  const header = page.locator('[data-echo-sample="header"]')
+  await header.waitFor({ state: 'attached' })
+  // Font metrics must settle before alignment, not only before the screenshot.
+  // Otherwise the first load can shift the whole sample after it was scrolled.
+  await settle(page)
+  await header.evaluate((element) => element.scrollIntoView({ block: 'start' }))
   await settle(page)
 }
 

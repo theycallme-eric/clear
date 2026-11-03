@@ -35,8 +35,9 @@ export const FORMAT_EFFECTS_TASK006_EVIDENCE_DIR = 'docs/design/evidence-0143/ta
 // Retain the completed front-glass correction; merge-prep captures a fresh source.
 export const FORMAT_FRONT_GLASS_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-front-glass-20261103'
 export const FORMAT_PRE_MAIN_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-20261103'
-// Final source combines effects with the library pilot already delivered on main.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103'
+// Keep the combined-source checkpoint before the final heading-name correction.
+export const FORMAT_PRE_HEADING_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

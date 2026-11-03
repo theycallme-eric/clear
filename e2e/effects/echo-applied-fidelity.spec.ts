@@ -287,6 +287,17 @@ interface Owner { name: string; rect: Rect; cut: number; ink: string; rearInk: s
 /** Every owner's footprint, cut, painted role colour and its rear source's colour. */
 async function readOwners(page: Page): Promise<Owner[]> {
   return page.evaluate(() => {
+    // Computed CSS can be OKLab (including signed channels), not only RGB.
+    // Resolve those coordinates through the browser's sRGB canvas before
+    // comparing them with screenshot bytes. This changes measurement only.
+    const normalizeColor = (css: string) => {
+      if (css.startsWith('rgb') || css.startsWith('color(srgb')) return css
+      const context = new OffscreenCanvas(1, 1).getContext('2d', { colorSpace: 'srgb' })!
+      context.fillStyle = css
+      context.fillRect(0, 0, 1, 1)
+      const [r, g, b] = context.getImageData(0, 0, 1, 1).data
+      return `rgb(${r}, ${g}, ${b})`
+    }
     const rect = (element: Element) => {
       const { x, y, width, height } = element.getBoundingClientRect()
       return { x, y, width, height }
@@ -300,8 +311,8 @@ async function readOwners(page: Page): Promise<Owner[]> {
       return {
         rect: rect(outline),
         cut: Number.parseFloat(getComputedStyle(chamfer).getPropertyValue(`--chamfer-${size}`)),
-        ink: getComputedStyle(chamfer, '::after').backgroundColor,
-        rearInk: rear ? getComputedStyle(rear).color : null,
+        ink: normalizeColor(getComputedStyle(chamfer, '::after').backgroundColor),
+        rearInk: rear ? normalizeColor(getComputedStyle(rear).color) : null,
         rears: wrapper?.querySelectorAll('.clr-echo__source').length ?? 0,
       }
     }
@@ -312,8 +323,8 @@ async function readOwners(page: Page): Promise<Owner[]> {
     const cta = [...document.querySelectorAll('button')].find((b) => /generate workout/i.test(b.textContent ?? ''))!
     return [
       {
-        name: 'heading', rect: rect(heading), cut: 0, ink: getComputedStyle(heading).color,
-        rearInk: rearText ? getComputedStyle(rearText).color : null,
+        name: 'heading', rect: rect(heading), cut: 0, ink: normalizeColor(getComputedStyle(heading).color),
+        rearInk: rearText ? normalizeColor(getComputedStyle(rearText).color) : null,
         rears: document.querySelectorAll('h1 .clr-echo__source').length,
       },
       { name: 'back', ...frameOf(back) },
@@ -356,7 +367,8 @@ async function capture(page: Page): Promise<{ png: Buffer; image: Image }> {
 type Rgb = [number, number, number]
 
 function parseRgb(css: string): Rgb {
-  const parts = css.match(/[\d.]+/g)?.map(Number) ?? []
+  if (!css.startsWith('rgb') && !css.startsWith('color(srgb')) throw new Error(`Normalize CSS colour in the browser before pixel comparison: ${css}`)
+  const parts = css.match(/[-+]?(?:\d*\.)?\d+(?:e[-+]?\d+)?/gi)?.map(Number) ?? []
   if (css.startsWith('color(srgb')) return [parts[0]! * 255, parts[1]! * 255, parts[2]! * 255]
   return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0]
 }
@@ -432,8 +444,8 @@ function bands(rect: Rect) {
   return {
     left: { x: x - 12, y: y + 8, width: 10, height: Math.max(1, height - 8) },
     bottom: { x: x + 4, y: y + height + 2, width: Math.max(1, width - 16), height: 8 },
-    // The rear copy sits 5.64 down and 4.7 left; its blur reaches about three
-    // deviations. Past that, above and to the right, nothing may change.
+    // These probes are beyond the preset's shifted/feathered silhouette;
+    // above and to the right, nothing may change.
     above: { x: x + 12, y: y - 16, width: Math.max(1, width - 12), height: 8 },
     right: { x: x + width + 8, y: y - 4, width: 8, height: Math.max(1, height - 8) },
   }
@@ -500,6 +512,9 @@ test.describe('Phosphor Echo on the actual /generate owners — Echo-only pairs'
       }
 
       const { on, off } = shots
+      // Keep the already captured evidence even if a later measurement fails.
+      await keep(testInfo, `echo-applied-${skin}-off.png`, off.png)
+      await keep(testInfo, `echo-applied-${skin}-on.png`, on.png)
       // Same layout on both sides: the effect moved nothing.
       for (const [index, owner] of on.owners.entries()) {
         expect(owner.rect, `${owner.name} moved with the effect`).toEqual(off.owners[index]!.rect)
@@ -572,8 +587,6 @@ test.describe('Phosphor Echo on the actual /generate owners — Echo-only pairs'
       await hostContext.close()
 
       const state = 'populated, first Anchor chosen, CTA enabled (primary), nothing focused, scrolled to top, motion reduced'
-      await keep(testInfo, `echo-applied-${skin}-off.png`, off.png)
-      await keep(testInfo, `echo-applied-${skin}-on.png`, on.png)
       await keep(testInfo, `echo-reference-round-3-host-${skin}-run.png`, hostPng)
       await keepJson(testInfo, `echo-applied-${skin}.json`, {
         purpose: 'Matched Echo-only capture pair for the owner’s visual comparison. Not a visual approval.',
