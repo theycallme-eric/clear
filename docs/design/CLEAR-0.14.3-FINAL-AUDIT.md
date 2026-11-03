@@ -1,5 +1,20 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Combined-source checkpoint before final heading verification — 3 November 2026
+
+The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in32.2seconds**
+on synchronized source `80596e4a097761129fa9200cdd33b044d3316974`, which retains current main's ErrorView pilot.
+Current group: `docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103`. Runtime
+`48c2ee1c8cdc5e350de4141b32a07f573e4b0eb6fe7311972ba3cb7e34b0f9c9`, driver
+`24229b5b457ddff03c99e1fc2c085f751f977295ce42bcd397c2e23480455c8b` and unchanged0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`
+come from the generated records. The collector/validator retain both phone heights, all four
+skins, actual disposable-fixture authentication, accessibility, disclosure/navigation/storage
+and PNG bytes/dimensions checks. Preview generation and writes remain zero. Earlier captures,
+including the pre-synchronization checkpoint and main's library pilot, are preserved unchanged.
+This is current local-source proof, not hosted CI, a new Runner receipt or a production release.
+
+
 ## Merge-prep source checkpoint before main synchronization — 3 November 2026
 
 The existing authenticated collector passed **4/4 skin cases and eight PNGs in32.8seconds**

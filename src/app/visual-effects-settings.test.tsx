@@ -4,8 +4,8 @@
  *
  * Checked means on, nothing stored means checked, and a toggle is the device's
  * choice: stored under `clear.visual-effects` beside the skin, read back by a
- * fresh mount, and never written to the account. It is the only effect control
- * Settings offers.
+ * fresh mount, and never written to the account. The independent Reduce motion
+ * preference is the other comfort control; no workbench knobs ship.
  */
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -172,19 +172,35 @@ describe('the choice is the device’s, not the account’s', () => {
   })
 })
 
-describe('Settings offers no other effect controls', () => {
-  it('has no Reduce motion checkbox and none of the workbench knobs', async () => {
+describe('Settings offers only the two comfort controls', () => {
+  it('has Reduce motion alongside Visual effects and none of the workbench knobs', async () => {
     renderSettings()
-    await appearanceCard()
+    const card = await appearanceCard()
 
-    expect(screen.queryByRole('checkbox', { name: /reduce motion/i })).toBeNull()
+    expect(within(card).getByRole('checkbox', { name: 'Reduce motion' })).not.toBeChecked()
+    expect(within(card).getByRole('checkbox', { name: 'Visual effects' })).toBeChecked()
+    expect(within(card).getAllByRole('checkbox')).toHaveLength(2)
     expect(screen.queryAllByRole('slider')).toHaveLength(0)
     expect(screen.queryAllByRole('spinbutton')).toHaveLength(0)
     const text = (document.body.textContent ?? '').toLowerCase()
-    for (const knob of ['reduce motion', 'drift', 'grain', 'feather', 'curvature', 'echo']) {
+    for (const knob of ['drift', 'grain', 'feather', 'curvature', 'echo']) {
       expect(text, knob).not.toContain(knob)
     }
     expect(screen.getAllByRole('checkbox', { name: /effect/i })).toHaveLength(1)
+  })
+
+  it('stores Reduce motion independently across a fresh mount without an account write', async () => {
+    const user = userEvent.setup()
+    const first = renderSettings()
+    await user.click(within(await appearanceCard()).getByRole('checkbox', { name: 'Reduce motion' }))
+    expect(localStorage.getItem('clear.reduce-motion')).toBe('on')
+    expect(localStorage.getItem(STORAGE_KEY)).toBeNull()
+    expect(await visualEffects()).toBeChecked()
+    expect(first.userData.preferenceWrites).toEqual([])
+    first.unmount()
+    renderSettings()
+    expect(within(await appearanceCard()).getByRole('checkbox', { name: 'Reduce motion' })).toBeChecked()
+    expect(await visualEffects()).toBeChecked()
   })
 })
 
