@@ -135,16 +135,27 @@ withFixture('an identical-tree merge commit with two parents is not an incorpora
   assert.notEqual(merge, noCaptureMerge)
   assert.throws(() => f.prove(), /missing or ambiguous exact structural incorporation/)
 })
-withFixture('equivalent incorporation on a side branch does not satisfy first-parent history', (f) => {
-  const unrelated = f.git('commit-tree', f.git('rev-parse', `${f.base}^{tree}`), '-p', f.base, '-m', 'other first parent')
-  const merge = f.git('commit-tree', f.git('rev-parse', `${f.input}^{tree}`), '-p', unrelated, '-p', f.incorporated, '-m', 'side incorporation')
+withFixture('a real PR-style merge preserves exact incorporation through its second parent', (f) => {
+  f.git('branch', 'effects-candidate', f.incorporated)
+  f.git('checkout', '-qb', 'integration-base', f.base)
+  f.write('unrelated-main-doc.txt', 'main advanced independently\n'); f.commit('main docs')
+  f.git('merge', '--no-ff', '-qm', 'PR merge', 'effects-candidate')
+  const result = f.prove()
+  assert.equal(result.mode, 'structural-incorporation')
+  assert.equal(result.incorporationCommit, f.incorporated)
+  assert.equal(result.inputCommit, f.input)
+  assert.equal(result.deliveryProven, false)
+})
+withFixture('two exact incorporation witnesses in merged ancestry are ambiguous and rejected', (f) => {
+  const tree = f.git('rev-parse', `${f.input}^{tree}`)
+  const second = f.git('commit-tree', tree, '-p', f.base, '-m', 'second incorporation')
+  const merge = f.git('commit-tree', tree, '-p', f.incorporated, '-p', second, '-m', 'ambiguous merge')
   f.git('update-ref', 'refs/heads/main', merge)
   assert.throws(() => f.prove(), /missing or ambiguous exact structural incorporation/)
 })
-withFixture('a separate equal-tree side witness is not selected or counted as first-parent history', (f) => {
+withFixture('a separate equal-tree ref outside HEAD ancestry is not selected or counted', (f) => {
   const second = f.git('commit-tree', f.git('rev-parse', `${f.input}^{tree}`), '-p', f.base, '-m', 'second witness')
-  // A single-parent chain cannot contain siblings with the same exact base;
-  // the side witness must not count as a second valid witness either.
+  // Unmerged refs are not evidence of incorporation into this HEAD.
   f.git('branch', 'second-witness', second)
   assert.equal(f.prove().incorporationCommit, f.incorporated)
 })

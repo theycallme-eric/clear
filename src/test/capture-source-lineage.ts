@@ -166,8 +166,11 @@ export function assertCaptureSourceLineage(rootPath: string, expected: ExpectedC
   }
   const tree = text(['rev-parse', '--verify', `${input}^{tree}`])
   requireProof(SHA.test(tree), 'invalid input tree')
-  const history = text(['log', '--first-parent', `--max-count=${MAX_HISTORY + 1}`, '--format=%H %T %P', head]).split('\n').filter(Boolean)
-  requireProof(history.length <= MAX_HISTORY, 'first-parent history exceeds bound')
+  // A delivered branch is normally the second parent of a PR/main merge.
+  // Search only HEAD ancestry (not arbitrary refs), retaining the exact input
+  // tree, tested-base parent and unique-witness requirements across that merge.
+  const history = text(['log', `--max-count=${MAX_HISTORY + 1}`, '--format=%H %T %P', head]).split('\n').filter(Boolean)
+  requireProof(history.length <= MAX_HISTORY, 'ancestor history exceeds bound')
   const matches = history.map((row) => row.split(' ')).filter(([, candidateTree, ...parents]) => candidateTree === tree && parents.length === 1 && parents[0] === expected.testedBase)
   requireProof(matches.length === 1 && SHA.test(matches[0][0]), 'missing or ambiguous exact structural incorporation')
   requireProof(text(['rev-parse', '--verify', 'HEAD^{commit}']) === head && retainedInput() === input, 'HEAD/retained input changed during inspection')
