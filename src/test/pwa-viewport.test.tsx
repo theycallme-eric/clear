@@ -62,7 +62,9 @@ describe('viewport extends under the status icons (AC-008)', () => {
 })
 
 describe('the atmosphere, not a tint, fills that area (AC-007)', () => {
-  it('renders the gradient blobs, dim overlay and scanlines as one fixed layer', () => {
+  // Effects TASK-006: the atmosphere's own scanlines are retired; the live CRT
+  // Glass field in the root effects host is the one decorative scanline signal.
+  it('renders the gradient blobs and dim overlay as one fixed layer, without the retired scan', () => {
     const { container } = render(<AtmosphereLayer />)
     const layer = container.querySelector('.clr-atmosphere')
 
@@ -71,7 +73,7 @@ describe('the atmosphere, not a tint, fills that area (AC-007)', () => {
     expect(layer).toHaveAttribute('aria-hidden', 'true')
     expect(layer?.querySelectorAll('.clr-atmosphere__blob')).toHaveLength(3)
     expect(layer?.querySelector('.clr-atmosphere__overlay')).not.toBeNull()
-    expect(layer?.querySelector('.clr-atmosphere__scan')).not.toBeNull()
+    expect(layer?.querySelector('.clr-atmosphere__scan')).toBeNull()
   })
 
   it('declares viewport attachment after vendor CSS without defeating the gallery frame', () => {

@@ -25,8 +25,10 @@ export const FORMAT_EFFECTS_TASK002_EVIDENCE_DIR = 'docs/design/evidence-0143/ta
 export const FORMAT_EFFECTS_TASK003_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-604-source-a1'
 // Task004 continued in the retained a1 branch; collect its final application source.
 export const FORMAT_EFFECTS_TASK004_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-605-source-a1'
-// Task005 retains source branch slot a1; native claim history remains separate.
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-606-source-a1'
+// Task005's genuine source captures remain immutable historical evidence.
+export const FORMAT_EFFECTS_TASK005_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-606-source-a1'
+// Task006 uses the actual native attempt-5 branch; collect this final runtime separately.
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-effects-607-source-a5'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'

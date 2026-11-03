@@ -1,16 +1,23 @@
 /**
- * AtmosphereLayer — the export's five-layer ground, mounted once.
+ * AtmosphereLayer — the export's ground, mounted once.
  *
  * The markup is the export's own (`css/foundation.css`, ATMOSPHERE): three
- * role-coloured blobs, the dim overlay and the scanlines, viewport-fixed so
- * scrolling never repaints it. Geometry and motion are the package's too — the
- * blobs are sized from the layer's longer side and drift and breathe by
- * transform alone — so this component carries no sizing and no intensity.
- * Under `prefers-reduced-motion` the layer renders its static fallback: the
- * export's media query already stops the drift and breathing, and the
- * scanlines are dropped entirely.
+ * role-coloured blobs and the dim overlay, viewport-fixed so scrolling never
+ * repaints it. Geometry and motion are the package's too — the blobs are sized
+ * from the layer's longer side and drift and breathe by transform alone — so
+ * this component carries no sizing and no intensity.
+ *
+ * Effects TASK-006: the export's scanline layer (`.clr-atmosphere__scan`) is
+ * retired. The live CRT Glass field mounted by the root effects host is the one
+ * decorative scanline signal, so the atmosphere no longer draws its own. The
+ * layer reads the root Visual effects policy: when decorative motion is not
+ * allowed (reduced motion, a hidden tab, effects off) the blobs hold still in
+ * place — the same live DOM, never rasterised or remounted. Outside the root
+ * provider (a specimen mounted alone) it falls back to the OS preference.
  */
 import { useSyncExternalStore } from 'react'
+
+import { useOptionalVisualEffects } from '../state/visual-effects'
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)'
 
@@ -32,7 +39,10 @@ function usePrefersReducedMotion(): boolean {
 }
 
 export function AtmosphereLayer() {
-  return <AtmosphereGround still={usePrefersReducedMotion()} />
+  const policy = useOptionalVisualEffects()
+  const prefersReducedMotion = usePrefersReducedMotion()
+
+  return <AtmosphereGround still={policy ? !policy.motionAllowed : prefersReducedMotion} />
 }
 
 /**
@@ -51,7 +61,6 @@ export function AtmosphereGround({ still }: { still: boolean }) {
       <span className="clr-atmosphere__blob clr-atmosphere__blob--interaction" />
       <span className="clr-atmosphere__blob clr-atmosphere__blob--info" />
       <span className="clr-atmosphere__overlay" />
-      {still ? null : <span className="clr-atmosphere__scan" />}
     </div>
   )
 }

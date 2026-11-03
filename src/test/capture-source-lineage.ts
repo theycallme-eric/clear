@@ -21,7 +21,7 @@ export interface ExpectedCaptureGroup {
   taskId: string
   taskRevision: string
   runId: string
-  attempt: 1 | 2
+  attempt: number
   testedBase: string
   groupPath: string
   /** Taken from the already validated real capture records, never inferred. */
@@ -93,7 +93,7 @@ export function capturePayloadSha256(root: string, groupPath: string): string {
 export function assertCaptureSourceLineage(rootPath: string, expected: ExpectedCaptureGroup): CaptureLineage {
   const root = realpathSync(rootPath)
   requireProof(expected.repository === 'theycallme-eric/clear' && /^TASK-\d{3}$/.test(expected.taskId), 'wrong repository/task')
-  requireProof(UUID.test(expected.runId) && [1, 2].includes(expected.attempt), 'wrong run/attempt')
+  requireProof(UUID.test(expected.runId) && Number.isSafeInteger(expected.attempt) && expected.attempt >= 1, 'wrong run/attempt')
   requireProof(new RegExp(`^[a-f0-9]{64}:${expected.taskId}$`).test(expected.taskRevision) && SHA.test(expected.testedBase), 'wrong revision/base')
   requireProof(/^docs\/design\/evidence-0143\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(expected.groupPath), 'unsafe evidence group')
   const captures = [...new Set(expected.capturedSourceCommits)].sort()

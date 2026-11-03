@@ -164,6 +164,8 @@ async function pageAt(browser: Browser, testInfo: TestInfo, dpr: number): Promis
     hasTouch: use.hasTouch,
     baseURL: use.baseURL,
     extraHTTPHeaders: use.extraHTTPHeaders,
+    // Reference URLs are fulfilled by page.route, outside the production PWA cache.
+    serviceWorkers: 'block',
     deviceScaleFactor: dpr,
   })
   const page = await context.newPage()

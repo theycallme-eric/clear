@@ -5,8 +5,8 @@
  * action, the workout-selection card and the primary CTA — are captured with
  * Visual effects on and off at the same viewport, render scale, device-pixel
  * ratio, skin, fonts, scroll and UI/focus state, with motion reduced so the
- * atmosphere is still (no CRT field is mounted by this build; the ground is
- * held identical). Every claim is read from those pixel pairs:
+ * atmosphere is still and the new CRT field is explicitly held out of this
+ * Echo-only proof. TASK-006 owns the positive composed-field proof. Every claim is read from those pixel pairs:
  *
  *   - left and bottom of each owner change (a rear image exists), with a
  *     translucent alpha no higher than the shared preset allows (no solid
@@ -228,6 +228,18 @@ async function syntheticApp(page: Page, origin: string, { skin, effects, holdGen
   await page.route('**/rest/v1/**', handler)
   await page.route('**/auth/v1/**', handler)
   await page.route('**/functions/v1/**', handler)
+  // Isolate Echo from TASK-006's independently verified CRT composition. This
+  // preserves every existing pixel/occlusion/color assertion on both sides.
+  await page.addInitScript(() => {
+    const holdCrtOff = () => {
+      const style = document.createElement('style')
+      style.dataset.echoOnlyProof = 'true'
+      style.textContent = '.clr-crt-field { display: none !important; }'
+      document.head.append(style)
+    }
+    if (document.head) holdCrtOff()
+    else document.addEventListener('DOMContentLoaded', holdCrtOff, { once: true })
+  })
   await page.addInitScript(({ authKey, owner, skin, effects }) => {
     if (sessionStorage.getItem('echo-fidelity-seeded')) return
     sessionStorage.setItem('echo-fidelity-seeded', '1')
@@ -261,6 +273,8 @@ async function openGenerate(page: Page) {
   await expect(page.getByRole('heading', { level: 1, name: 'Generate', exact: true })).toBeVisible()
   await expect(page.getByRole('group', { name: 'Anchor' })).toBeVisible()
   await settle(page)
+  const field = page.locator('.clr-crt-field')
+  if (await field.count()) await expect(field).toHaveCSS('display', 'none')
 }
 
 // ---------------------------------------------------------------------------
@@ -574,7 +588,7 @@ test.describe('Phosphor Echo on the actual /generate owners — Echo-only pairs'
         renderScale: 'device',
         skin,
         state,
-        crt: 'no CRT field is mounted by this build; atmosphere held still by reduced motion on both sides',
+        crt: 'CRT field explicitly held off for this Echo-only proof; atmosphere held still by reduced motion on both sides',
         owners: on.owners,
         findings,
       })
