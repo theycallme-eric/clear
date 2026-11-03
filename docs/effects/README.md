@@ -308,6 +308,22 @@ made.
 - Preserved reference hosts (test fixtures, not product): `e2e/fixtures/effects-reference/round-3/`
   and `e2e/fixtures/effects-reference/crt-glass-motion/index.html`. The fidelity specs serve them.
 
+## Manual research diagnostic
+
+`e2e/effects/crt-source-graphic-proof.spec.ts` is **TASK-201**, an unadopted SourceGraphic
+investigation outside the approved nine shipping tasks. Its own report makes no product-fidelity
+or adoption claim. It is opt-in, rather than a release gate. All existing assertions, inputs and
+observations remain intact when explicitly requested:
+
+```sh
+CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC=1 npx playwright test e2e/effects/crt-source-graphic-proof.spec.ts --project=mobile --workers=1
+```
+
+The shipping Echo proofs, TASK-005 CRT-module fidelity proof, TASK-006 composition/front-glass
+checks, TASK-007 comfort journeys and TASK-009 performance comparison stay in the default suite.
+Do not substitute this experimental candidate for the live CRT field or treat its report as
+shipping validation.
+
 ## Changing an effect
 
 Keep one entry per effect here and in `index.json`, and keep one code owner and one preset owner.

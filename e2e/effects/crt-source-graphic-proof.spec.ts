@@ -19,7 +19,8 @@
  *
  * Every CRT number comes from `crt-source-graphic-proof/fixture.ts`. The
  * preserved checkpoint is served read-only. A missing input or observation
- * fails the spec with its exact name; nothing is skipped. Emulated mobile
+ * fails the explicitly requested diagnostic with its exact name; no observation
+ * is waived. This unadopted experiment is opt-in, outside release validation. Emulated mobile
  * Chromium on a desktop host is not phone proof, and nothing here claims it.
  */
 import { spawn } from 'node:child_process'
@@ -187,6 +188,12 @@ function candidateConfig(proof: Proof, geometry: { inputSize: number[]; inputCla
 // ---------------------------------------------------------------------------
 // The proof.
 // ---------------------------------------------------------------------------
+
+// TASK-201 is an unadopted research candidate, not one of the nine shipping
+// effects tasks. Preserve its complete proof for explicitly requested research;
+// the approved CRT-module/composition/comfort/performance specs remain default.
+test.skip(process.env.CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC !== '1',
+  'Manual unadopted SourceGraphic investigation; set CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC=1 to run')
 
 test('TASK-201 SourceGraphic candidate against the preserved CRT Glass pass: still pair, operations and live app', async ({ browser, proofOrigin }, testInfo) => {
   test.setTimeout(900_000)

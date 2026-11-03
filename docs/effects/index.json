@@ -163,5 +163,20 @@
       "docs/effects/scanline-selection-20261103.json"
     ]
   },
-  "mergeAuthorization": "Owner authorized main merge after engineering completion and the required final-head repository checks"
+  "mergeAuthorization": "Owner authorized main merge after engineering completion and the required final-head repository checks",
+  "manualDiagnostics": [
+    {
+      "id": "TASK-201",
+      "owner": "e2e/effects/crt-source-graphic-proof.spec.ts",
+      "status": "Unadopted SourceGraphic research; not product-fidelity proof or a release gate",
+      "optIn": "CLEAR_RUN_SOURCEGRAPHIC_DIAGNOSTIC=1",
+      "shippingChecksRetained": [
+        "Echo standalone/applied fidelity",
+        "TASK-005 CRT module fidelity",
+        "TASK-006 live composition/front glass",
+        "TASK-007 comfort integration",
+        "TASK-009 performance comparison"
+      ]
+    }
+  ]
 }

@@ -47,7 +47,7 @@ jobs:
       github.event.deployment_status.state == 'success' &&
       github.event.deployment.environment == 'Preview'
     runs-on: ubuntu-latest
-    # The existing serial suite includes the preserved raster proof and six-run
+    # The existing serial suite includes approved CRT fidelity and the six-run
     # performance comparison, in addition to setup. Allow it to finish without
     # changing per-test timeouts, assertions, selection or protected check names.
     timeout-minutes: 30
