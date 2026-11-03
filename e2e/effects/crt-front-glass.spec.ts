@@ -56,7 +56,7 @@ for (const width of [390, 1280]) {
     const cta = page.getByRole('button', { name: /generate workout/i })
     await expect(cta).toBeEnabled()
     await expectPaintedOver(page, cta)
-    await opaqueProof.evaluate((node) => node.remove())
+    await opaqueProof.evaluate((node) => (node as Element).remove())
     await checkA11y()
     await keepPng(info, `front-glass-generate-${width}.png`, await page.screenshot())
 

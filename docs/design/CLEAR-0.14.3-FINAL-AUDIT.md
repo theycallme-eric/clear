@@ -1,5 +1,26 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Front-glass correction #624 source reverification — 3 November 2026
+
+The unchanged authenticated Format Preview collector passed **4/4 skin cases / eight genuine PNGs
+in33.1seconds**, on frozen source `ced9357fe075e7746c9212e09763d780584a4fee`. New group:
+`docs/design/evidence-0143/task034-format-preview-front-glass-20261103`. The original1738 evidence files were independently checked byte-identical
+against the build baseline. No prior group, native task identity, attempt counter or receipt was
+rewritten. This is the owner's directly authorized correction, outside a new Runner cycle.
+
+All four records identify current runtime `18b5b80c82f854796423dbc0d5aa1cdd9c0bb8310749f5b57f75ee3746eea739`, driver
+`95d23f483a913174b5ea09468f57e4e72a5b801398dd121262bacaa8c59272dd` and unchanged0.14.3 package `e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`.
+The unchanged record validator checks the complete390×844/390×320 matrix across four skins, real
+authenticated fixture journey, settings/disclosures, Back/direct-entry Back, accessibility, storage,
+layout and PNG bytes/hash/dimensions. The original Task006 native lineage remains asserted against
+its original group. This correction's capture commit is preserved as actual Git ancestry.
+
+The collector used the existing authorized disposable test account fixture, with setup/cleanup
+separate from the read-only preview. Every capture records zero generation and attempted/forwarded
+preview writes. No personal-account data, native Runner receipt, owner UAT approval or production
+release is claimed. Exact-head checks and build-branch delivery remain pending at this checkpoint.
+
+
 ## LIB-002 metadata source reverification — 30 October 2026
 
 The existing authenticated Format Preview collector passed 4/4 skin cases,
