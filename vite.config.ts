@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { availableParallelism } from 'node:os'
 
 import react from '@vitejs/plugin-react'
 import { parse, type Parser, type Root } from 'postcss'
@@ -52,6 +53,8 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // Bound simultaneous JSDOM/Git fixtures without extending any test deadline.
+    maxWorkers: Math.min(4, availableParallelism()),
     include: ['src/**/*.test.{ts,tsx}'],
     exclude: ['src/design-system/_source/**'],
     setupFiles: './src/test/setup.ts',
