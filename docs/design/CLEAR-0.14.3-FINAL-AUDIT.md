@@ -1,5 +1,20 @@
 # CLEAR Design System 0.14.3 — Final Application Audit
 
+## Refinement TASK-001 source checkpoint — 5 November 2026
+
+The unchanged authenticated mobile Format Preview collector passed **4/4 skin cases and eight
+genuine PNGs in 33.2 seconds**, zero skips, on frozen source `477e36ac6e1e2aa0004facace57bc9f920a346b9`.
+New group: `docs/design/evidence-0143/task034-format-preview-refinement-task001-20261105`. All four generated records identify runtime
+`4b7ebb9bc76665fa8ec1991785c51d79174ec805bbc83c70135c943ce0ed4cec`, driver `e6e95c2133aa370ed9dc1cae4b630adbde72bb9d0312c8af62e1ad95ec4f3e62` and unchanged 0.14.3 package
+`e09aa5dfaf7a5e9536e9ffd7b8a00624e38c7702d484dc1e820153e22864a1a8`. The existing validator retains the complete phone/short matrix,
+real disposable-fixture authentication, accessibility, disclosure/navigation/storage, source/session
+and actual PNG byte/hash/dimension checks. Preview generation and writes remain zero.
+
+All 1803 earlier evidence files were independently checked byte-identical against the
+preserved pre-capture inventory. No old capture, native receipt or source identity was rebound.
+This records the current local source only; hosted CI, protected delivery and human UAT remain
+separate. Both previously failing source-freshness assertions are unchanged.
+
 ## Final combined effects source checkpoint — 3 November 2026
 
 The existing authenticated collector passed **4/4 skin cases and eight genuine PNGs in 34.0 seconds**

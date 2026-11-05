@@ -63,3 +63,5 @@ rule and no grouping rail (C04).
 ## Owner-authorized verification recovery — 5 November 2026
 
 The two remaining failures bind current runtime/driver hashes to the last accepted Format Preview capture. They are genuine source-freshness requirements rather than observed UI regressions. Keep the assertions, old captures and historical native receipt unchanged. Freeze this candidate and run the unchanged authenticated mobile collector into a new task-owned evidence group, using the existing namespaced disposable fixture with generation blocked, then rerun ordinary native recovery. No old record is relabelled as current and no check is skipped. Capture/verification results follow below only after actual execution.
+
+The unchanged source-freshness collector passed 4/4 skin cases / eight real PNGs in 33.2s, zero skips, on frozen source `477e36ac6e1e2aa0004facace57bc9f920a346b9`. New group `docs/design/evidence-0143/task034-format-preview-refinement-task001-20261105`; all 1803 previous evidence files match their preserved hashes. Both audit assertions are unchanged. Native full recovery/verification follows on this actual candidate; no delivery or UAT is claimed.
