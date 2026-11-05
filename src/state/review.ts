@@ -242,12 +242,17 @@ export function briefingDuration(effectiveTargetMins: number): string {
  * read the number is shown without a unit rather than in a guessed one: `60`
  * meaning kilograms to someone who trains in pounds is the kind of silent
  * misread this codebase keeps refusing to make.
+ *
+ * A session snapshot may carry no guidance at all (`null`); that is no load to
+ * state, the same as `none`. The active Workout reads its prescribed load here
+ * too, so both contexts state the same target in the same words (R31).
  */
 export function loadText(
-  loadType: Enums<'load_guidance'>,
+  loadType: Enums<'load_guidance'> | null,
   loadValue: number | null,
   weightUnit: BriefingWeightUnit | null,
 ): string | null {
+  if (loadType === null) return null
   switch (loadType) {
     case 'bodyweight':
       return 'Bodyweight'

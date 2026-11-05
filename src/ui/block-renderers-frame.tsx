@@ -34,8 +34,9 @@ import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
-import { Heading, HeadingSection } from './Heading'
+import { HeadingSection } from './Heading'
 import { useSectionLabel } from './section-label-context'
+import { MovementGroupHeader, MovementIdentity, MovementList as PeerList } from './refinements/movement'
 import { StructureBadge } from './workout-chrome'
 
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
@@ -51,62 +52,12 @@ const LABEL_STYLE: CSSProperties = {
 
 const NOTE_STYLE: CSSProperties = { margin: 0 }
 
-const LIST_STYLE: CSSProperties = {
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--spacing-300)',
-}
-
 /**
- * B05-04's selected movement hierarchy, in three tiers (REQ-014). The name is
- * one role whatever level the nesting gives its heading, so a standard,
- * superset and circuit card all lead with the same emphasis; the prescription
- * and the equipment each sit a distinct step below it.
+ * One movement and what its structure draws under it. The hierarchy itself —
+ * name, prescription and load, quiet equipment — is the shared
+ * `MovementIdentity` Review draws too (REQ-001).
  */
 const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE, gap: 'var(--spacing-200)' }
-
-const MOVEMENT_NAME_ROW_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 'var(--spacing-300)',
-}
-
-const MOVEMENT_NAME_STYLE: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
-  margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h3-size)',
-  lineHeight: 'var(--heading-h3-line-height)',
-  fontWeight: 'var(--font-weight-bold)',
-  textTransform: 'uppercase',
-  color: 'var(--ink)',
-  overflowWrap: 'anywhere',
-}
-
-/** The counter keeps its own column: a long name wraps beside it, never over it. */
-const MOVEMENT_COUNTER_STYLE: CSSProperties = { ...LABEL_STYLE, flex: 'none' }
-
-const MOVEMENT_DETAIL_STYLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-md-size)',
-  lineHeight: 'var(--label-md-line-height)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-paragraph)',
-}
-
-const MOVEMENT_CONTEXT_STYLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-secondary)',
-  textTransform: 'capitalize',
-}
 
 const FIELD_ROW_STYLE: CSSProperties = {
   flexWrap: 'wrap',
@@ -166,18 +117,16 @@ export function BlockPanel({
         {/*
           REQ-008: a secondary label on the left and the compact structure
           badge on the right, so the badge never competes with the movement
-          heading below it.
+          heading below it. The shared group header draws no rail (REQ-001).
         */}
-        <div className="clr-row" data-block-top-row="" style={{ justifyContent: 'space-between' }}>
-          <span style={LABEL_STYLE}>
-            {sectionLabel ?? (
-              <>
-                {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-              </>
-            )}
-          </span>
-          <StructureBadge identity={block.identity} />
-        </div>
+        <MovementGroupHeader
+          title={sectionLabel ?? (
+            <>
+              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+            </>
+          )}
+          badge={<StructureBadge identity={block.identity} />}
+        />
         {children}
         <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
       </div>
@@ -247,13 +196,12 @@ export interface BlockMovementListProps {
   children?: ReactNode
 }
 
-/** The block's movements, in prescribed order. Rows, not cards. */
+/**
+ * The block's movements, in prescribed order. Rows, not cards: the shared peer
+ * list, ruled between movements and never after the last (REQ-001, C04).
+ */
 function MovementList({ label, children }: BlockMovementListProps) {
-  return (
-    <ol aria-label={label} style={LIST_STYLE}>
-      {children}
-    </ol>
-  )
+  return <PeerList label={label}>{children}</PeerList>
 }
 
 export type BlockMovementMarker = 'now' | 'next' | null
@@ -292,38 +240,27 @@ export interface BlockMovementProps {
   title: ReactNode
   /** The prescription as read from its columns — `3 × 8 reps`. */
   detail?: ReactNode
+  /** The prescribed load beside it — `60 kg` — never a logged actual (R31). */
+  load?: ReactNode
   /**
    * A subordinate readout beside the heading — the logger's `Set 2/3`. A
    * label, never a second heading.
    */
   counter?: ReactNode
-  /** Equipment context, under the prescription. */
+  /** Quiet equipment context, beside the name. */
   context?: ReactNode
   children?: ReactNode
 }
 
 /**
- * One movement: its name as a heading one level below the block, any counter
- * beside it in the label face, then its prescription in the data face and its
- * equipment context — B05-04's three tiers, the name leading.
+ * One movement: the shared hierarchy, its name a heading one level below the
+ * block, any counter in its own column, then the prescription and load in the
+ * data face — and whatever the structure draws beneath (REQ-001, C01).
  */
-function Movement({ title, detail, counter, context, children }: BlockMovementProps) {
-  const heading = <Heading style={MOVEMENT_NAME_STYLE}>{title}</Heading>
-
+function Movement({ title, detail, load, counter, context, children }: BlockMovementProps) {
   return (
     <HeadingSection className="clr-stack--tight" style={MOVEMENT_STYLE}>
-      {counter === undefined || counter === null ? heading : (
-        <div className="clr-row" data-movement-name-row="" style={MOVEMENT_NAME_ROW_STYLE}>
-          {heading}
-          <span style={MOVEMENT_COUNTER_STYLE}>{counter}</span>
-        </div>
-      )}
-      {detail === undefined || detail === null ? null : (
-        <p data-movement-detail="" style={MOVEMENT_DETAIL_STYLE}>{detail}</p>
-      )}
-      {context === undefined || context === null ? null : (
-        <p data-movement-context="" style={MOVEMENT_CONTEXT_STYLE}>{context}</p>
-      )}
+      <MovementIdentity heading name={title} prescription={detail} load={load} counter={counter} equipment={context} />
       {children}
     </HeadingSection>
   )

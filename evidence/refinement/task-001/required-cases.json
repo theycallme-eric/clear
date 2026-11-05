@@ -1,0 +1,96 @@
+{
+  "schema": "clear-refinement-required-cases-v1",
+  "task": "TASK-001",
+  "body": "clear-refinement-20261103",
+  "requirement": "REQ-001",
+  "journey": "JOURNEY-001",
+  "acceptedReference": {
+    "commit": "eded158cfd928d382c9a9409e2c372270312741d",
+    "state": "/gallery/refinements?state=cards",
+    "owners": ["src/ui/refinements/movement.tsx", "src/ui/refinements/workout-card.tsx"]
+  },
+  "checks": {
+    "check-01": {
+      "runner": "vitest",
+      "files": [
+        "src/ui/movement-list.test.tsx"
+      ],
+      "requiredCases": [
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementIdentity: one hierarchy with separate slots (C01) > leads with the name, keeps equipment quiet beside it and the prescription and load below"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementIdentity: one hierarchy with separate slots (C01) > draws no last-performance row, and no empty slots for readings it was not given"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementIdentity: one hierarchy with separate slots (C01) > keeps the prescribed load unless it only repeats the equipment"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementList and MovementGroupHeader: peers ruled only between one another (C04) > is one ordered list of its peers, named"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementList and MovementGroupHeader: peers ruled only between one another (C04) > rules only between peers, never after the last, and draws no rail"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "MovementList and MovementGroupHeader: peers ruled only between one another (C04) > header holds the label and the badge, and neither is a heading by default"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "Workout standard card adopts the shared owner > draws its movements as one peer list in the shared hierarchy, with the prescribed load"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "Workout superset card adopts the shared owner > draws its movements as one peer list in the shared hierarchy, with the prescribed load"
+        },
+        {
+          "file": "src/ui/movement-list.test.tsx",
+          "name": "Workout circuit card adopts the shared owner > draws its movements as one peer list in the shared hierarchy, with the prescribed load"
+        }
+      ]
+    },
+    "check-02": {
+      "runner": "playwright",
+      "files": [
+        "e2e/refinement/task-001.spec.ts"
+      ],
+      "requiredCases": [
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /review @ phone-390 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: shared hierarchy, peer-only separators, no rail, no Last-performance row, history retained"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /review @ tablet-768 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: shared hierarchy, peer-only separators, no rail, no Last-performance row, history retained"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /review @ desktop-1280 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: shared hierarchy, peer-only separators, no rail, no Last-performance row, history retained"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /workout @ phone-390 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: standard, superset and circuit cards share the hierarchy with peer-only separators and the prescribed load"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /workout @ tablet-768 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: standard, superset and circuit cards share the hierarchy with peer-only separators and the prescribed load"
+        },
+        {
+          "file": "e2e/refinement/task-001.spec.ts",
+          "project": "mobile",
+          "name": "TASK-001 /workout @ desktop-1280 > AC-C01-01 AC-C02-01 AC-C04-01 AC-R001-01 AC-R001-02: standard, superset and circuit cards share the hierarchy with peer-only separators and the prescribed load"
+        }
+      ]
+    }
+  }
+}

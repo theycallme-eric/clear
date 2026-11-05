@@ -38,7 +38,7 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useRef, useState, type CSSProperties } from 'react'
+import { useRef, useState } from 'react'
 
 import { Button } from '../design-system/index'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
@@ -140,12 +140,11 @@ function SupersetRound({ block }: BlockRendererProps) {
       )}
 
       {/*
-        The connector: one rule down the left of the pair, so A1 and A2
-        read as one linked unit. Inset from the card's own accent bar
-        rather than replacing it, and it shifts no text — the padding it
-        sits in is the component's, not the card's.
+        The pair is linked by its alternation line and its ordinals, and the
+        peers are ruled between one another by the shared list. The rail that
+        once ran down its left edge is rejected (REQ-001, C04, R28).
       */}
-      <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
+      <div>
         <BlockPanel.MovementList label="Movements in this superset">
           {movements.map((exercise) => (
             <BlockPanel.MovementItem key={exercise.exerciseId}>
@@ -192,9 +191,4 @@ function SupersetRound({ block }: BlockRendererProps) {
       )}
     </>
   )
-}
-
-const PAIR_STYLE: CSSProperties = {
-  borderLeft: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingLeft: 'var(--spacing-200)',
 }

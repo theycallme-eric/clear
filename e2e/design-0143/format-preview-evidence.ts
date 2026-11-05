@@ -37,7 +37,9 @@ export const FORMAT_FRONT_GLASS_EVIDENCE_DIR = 'docs/design/evidence-0143/task03
 export const FORMAT_PRE_MAIN_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-20261103'
 // Keep the combined-source checkpoint before the final heading-name correction.
 export const FORMAT_PRE_HEADING_MERGE_PREP_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-main-20261103'
-export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103'
+// Preserve the combined effects capture; collect this refinement source separately.
+export const FORMAT_PRE_REFINEMENT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-merge-prep-final-20261103'
+export const FORMAT_EVIDENCE_DIR = 'docs/design/evidence-0143/task034-format-preview-refinement-task001-20261105'
 export const FORMAT_EVIDENCE_CONSUMER = 'task034-format-preview-mobile'
 export const FORMAT_EVIDENCE_SCOPE = 'mobile-only-2026-10-22'
 export const FORMAT_EVIDENCE_SOURCE = 'e2e/design-0143/format-preview.spec.ts'
