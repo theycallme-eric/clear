@@ -6,6 +6,21 @@ This is the active North Star and delivery checklist. The detailed audit remains
 
 Version 2.0 · Updated 30 October 2026, America/Chicago. Eric approved this simplification after considering an external review. The goal is unchanged: consistent real UI, a useful public gallery and a dependable design-to-implementation path.
 
+## Current gallery update — November 4, 2026
+
+Eric authorized updating the gallery directly from the latest accepted workout
+refinements, separately from the paused application build. The isolated branch
+adds `/gallery/refinements`, canonical reusable presentation owners and semantic
+recipe variables. [The versioned handoff](refinements-2026-11-04/REUSE.md) preserves
+all 145 intake notes, the exact 162 criteria, all 16 logging contexts and explicit
+non-gallery obligations. Shared effects released in PR627 and immutable
+Foundation 0.14.3 stay intact. Gallery reference delivery is separate from actual
+application adoption and the later native Builder/DAG reconciliation.
+
+The older delivery records below remain historical evidence. In particular,
+PR611 was subsequently released and PR627 delivered the base effects; do not
+restart those old pilots or treat their earlier draft wording as current status.
+
 # What stays true
 
 Owner clarification, 30 October 2026: the CLEAR repository and executable gallery

@@ -1,0 +1,224 @@
+{
+  "schema": "clear-gallery-reference-source-v1",
+  "baseCommit": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+  "branch": "codex/gallery-final-refinements-20261104",
+  "version": "clear-refinements/2026-11-04.1",
+  "code": [
+    {
+      "path": "src/dev/GalleryRoute.tsx",
+      "sha256": "8eaa04adbe7b6a80e43df0a408a1de22e5f3e44271f8405814fd8964d5b759f8"
+    },
+    {
+      "path": "src/dev/gallery-app.tsx",
+      "sha256": "8e242297b742d27284ad21fb26bacce588c3025548e790ee4ebc5d9972579813"
+    },
+    {
+      "path": "src/dev/gallery-motion.tsx",
+      "sha256": "6702cefdf78b438436c4e27de3f46b79ddefcd84d32e5f73a54c3268bf01b300"
+    },
+    {
+      "path": "src/dev/gallery-refinement-coverage.json",
+      "sha256": "6253aae08c731978308e700e32a32162e5299b1f74fe5a15d02239ac787e772a"
+    },
+    {
+      "path": "src/dev/gallery-refinement-data.ts",
+      "sha256": "754d30d34f420ac92e349910e07bf1e6b0b79483dc704872af484806ddeb87c0"
+    },
+    {
+      "path": "src/dev/gallery-refinement-flow.tsx",
+      "sha256": "dd4f9968699fb3dad80a51cd676d3bde14fa31795353aba77b9ddd91fe92d194"
+    },
+    {
+      "path": "src/dev/gallery-refinement-forms.tsx",
+      "sha256": "4f8fced26a4dbdae7042a73d88d1754610ac8b902bf4cbb0e1bf6236d21c6137"
+    },
+    {
+      "path": "src/dev/gallery-refinement-scenes.tsx",
+      "sha256": "b35bf7af08510d61bc479f70b4a24915d97ecf2aae8a2f2d482b2c0fccf566cb"
+    },
+    {
+      "path": "src/dev/gallery-refinement-states.ts",
+      "sha256": "084ffb292fad99de256bfc49f41e80902b715c123ebc9e226985b1c54e5cf546"
+    },
+    {
+      "path": "src/dev/gallery-refinements.test.tsx",
+      "sha256": "f1d7baa26c82eced7421f976a8130e1a26983d7507cceda1a3045fbb170ab153"
+    },
+    {
+      "path": "src/dev/gallery-refinements.tsx",
+      "sha256": "5bde5caba4584f9031385c54ed118e4009fdee9b04acbb1cfece0d936eb07dfe"
+    },
+    {
+      "path": "src/dev/gallery-registry.tsx",
+      "sha256": "8e40b893c9a724e7e5c00a8eff7d8e7cfd2254fb8e62f14686322373ca7fad40"
+    },
+    {
+      "path": "src/ui/refinements/countdown-warning.test.ts",
+      "sha256": "50cee5cd8357994d5c46a0335771e638564b460116593b8db345ca1418b4e60b"
+    },
+    {
+      "path": "src/ui/refinements/countdown-warning.ts",
+      "sha256": "5d148e53ad7c53d9ca565d12cdb2e987789e9d1f4e159d4055bd583bc3d1193a"
+    },
+    {
+      "path": "src/ui/refinements/deadline-timer.tsx",
+      "sha256": "0518676285b1a871cc71b9e9d16af5ea5ff3fe1794a0196a33cdd4dc52278fe5"
+    },
+    {
+      "path": "src/ui/refinements/ladder.tsx",
+      "sha256": "f6a58760431bb1b90519438d5875a9fdec312fee540bd2e173cbe781b1a622b3"
+    },
+    {
+      "path": "src/ui/refinements/logging-overlay.tsx",
+      "sha256": "2001eb078212b1f9e44a71e96ccdda2487da955ea2610ac9236892e355f9ee2f"
+    },
+    {
+      "path": "src/ui/refinements/movement.tsx",
+      "sha256": "acaddd923be6c1dc2c1ddcfcd58da8d2513df9f93036dd0584dc016516347c45"
+    },
+    {
+      "path": "src/ui/refinements/presentation.css",
+      "sha256": "3de0c248113b66f51d0771a5d3b36ded6fc5bcf8b6e813eb897ddd100cd439b2"
+    },
+    {
+      "path": "src/ui/refinements/quantity.tsx",
+      "sha256": "f100515d3bf72d1d900ae0b08e86920c2ff2e601d00c73c830d20714058043bd"
+    },
+    {
+      "path": "src/ui/refinements/timed-result-log.tsx",
+      "sha256": "a293b6741a7a3e39aaffa5d68c211c19b259c54f7f0d222768b2799d69ed098f"
+    },
+    {
+      "path": "src/ui/refinements/tokens.css",
+      "sha256": "c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d"
+    },
+    {
+      "path": "src/ui/refinements/workout-card.tsx",
+      "sha256": "af52bde796d22a67b976deb78c846ac196984376f3fb8170427edb01596325f9"
+    },
+    {
+      "path": "src/ui/set-effort.tsx",
+      "sha256": "adc58644cd6b2dca32e6bfbb5ba342f5d8adffa0bda83509406b2c48d475d008"
+    },
+    {
+      "path": "src/ui/workout-chrome.tsx",
+      "sha256": "d593d9461587d9e47ddf13957f346d5fad870f559a08627805ba94a42c77f995"
+    }
+  ],
+  "unchangedPresetOwners": [
+    {
+      "path": "src/ui/phosphor-echo-preset.ts",
+      "sha256": "e69d5e61d2e2624a9ef2c89310f8037b896872289c74c77db5c82a7dd68384a8"
+    },
+    {
+      "path": "src/ui/crt-field/config.ts",
+      "sha256": "3b496b905467ecf0ee014dce56a057ebb6941e61c40a74f08127593c172cf0fe"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/README.md",
+      "sha256": "a7212a962f3c3d2e842cc1c129245cc305697263bf8aa61fd29c8cd755fea7f6"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-clock-boundaries.json",
+      "sha256": "a362b0443e6004a7b5f98af76643beb7e5964605274e028cdea7c1b53c429389"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-header-final.json",
+      "sha256": "5aebf1da7d7af123f1d1474ac14928b6ed8f6b3dee300bc1847cf7ed120ae4da"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-logging-final.json",
+      "sha256": "53eeabcf64195d8575043ae07f2b2041f9c22831f5353d0d0a87eac949ad1cca"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-logging.json",
+      "sha256": "9968d540c6e63fdee0d7a01ec0b2c0cac83bd1dee7993c0e7960f6f5cb0ea935"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-motion.json",
+      "sha256": "1ddf92b27596e26ef41ec698004b3096f0396d08e740866b6071f9ac77c7935a"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-multiple-cycles.json",
+      "sha256": "d1b4d2fbadb6c4de4ba7d3a5cf3aa3631fc1f55b7b4b015b7e96c851a56f08f3"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-narrow.json",
+      "sha256": "423f8bd0a1b9496374c06680948670a9ff04072c74848bf5ce10d20f343d5291"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-overview-final.json",
+      "sha256": "015051986caae2e84d4ad41aa061555725c911102a795d5af0a665883f258d39"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-overview.json",
+      "sha256": "71a0f4e884e46cdfb3deae49882d824921c5ef84a30a0b8937e7a0be7fc640ac"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-pulse.json",
+      "sha256": "c0e423556b129c300774a555ebfa20f30e7e222ebfcde87115581cdc36cd435d"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/browser-undo.json",
+      "sha256": "09bc63c708ebb38f67e3c26f8f8ab7772b72e6baf6777cf8a3e09046d866cce0"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/build.log",
+      "sha256": "99a65550d2ee10f2cf3184649ffceb101e0e6a81b27b985d1fa1c61d93900f1a"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/cards-signal-desktop-final.png",
+      "sha256": "1e3577b2bce40004d97e27f606175dfabfe1f69e7c5676de516be146d9f4dd5f"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/cards-signal-desktop.png",
+      "sha256": "7445179f2f0bddec8d25b05bf46100b6c8f2db549a2da0bd42bcf2088e9938b6"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/design-lint.log",
+      "sha256": "97810cf5db9d64388b73625ceae86bbf6ec83230bee712a02794bd3980f0120c"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/ladder-12-320-lower.png",
+      "sha256": "7712b775f9e9738d8f97b949a0a0187b3211cb534ae392a0074372b09837711c"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/ladder-12-320-undo.png",
+      "sha256": "54e838a728b605ae434a771a2c45ee47c832df19b790d45c03ccdcfc84b25e94"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/ladder-12-signal-phone-lower.png",
+      "sha256": "0e97f0de43789d8c70e3a889663fe24dde21a7467784fe9708940b052a1c0270"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/ladder-12-signal-phone-top.png",
+      "sha256": "be06852d0799e6cc3167b5bbfa017d6160de40f2490d6cdb3e0c1936b6906408"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/ladder-undo-signal-phone.png",
+      "sha256": "4d1a19a7654ebf43919c2f340086825474412e0f16996298f7dcf00fd1c8b537"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/lint.log",
+      "sha256": "5b77a9fad6f920f583c8c48adc38e2f57dddf4dbb20cff745002134197d618ae"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/overview-signal-desktop-final.png",
+      "sha256": "95233cf6c8f78861367f51b67f87c3b296d9db71705e5acaf85883c6e2db898c"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/overview-signal-desktop.png",
+      "sha256": "05ffb2b40f342cce3535156329d5537a1c94e499792209fc52232baf31fca7e0"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/tests.log",
+      "sha256": "10edb9ab2800abcd86d32231e287d749c5330ac31d3cab212d3ae8362f4a51c1"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/evidence/urgency-over-dialog.png",
+      "sha256": "6ad7ca1dd02a77c09fe23652e187e5d93e0256fa8d8ce72aec251964034087d0"
+    }
+  ]
+}

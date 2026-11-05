@@ -241,7 +241,7 @@ export function GalleryMotion() {
       <MotionLab />
       <ScrollComparison />
       <MotionRules />
-      <p className="clr-text-data-xs">Sources: pinned 0.14.3 preview/motion-lab.html, preview/motion-rules.html and the current shared component/motion owners. Phosphor Echo is a separate static design input.</p>
+      <p className="clr-text-data-xs">Sources: pinned 0.14.3 preview/motion-lab.html, preview/motion-rules.html and the current shared component/motion owners. Phosphor Echo and CRT Glass are shipped shared app effects; their canonical presets and ownership are in docs/effects/README.md. The accepted soft deadline warning is demonstrated separately under Accepted workout refinements.</p>
     </div>
   )
 }

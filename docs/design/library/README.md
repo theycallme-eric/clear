@@ -17,6 +17,16 @@ in related contexts, not before-and-after design proposals. Initial review asks
 whether those examples are accurate and useful; it is not approval of every
 existing visual choice. Material proposed changes receive their own review.
 
+## Accepted workout refinements
+
+The latest accepted target is `/gallery/refinements`, added by Eric's direct
+November 4 gallery authorization while application execution remains paused.
+Use [the versioned reuse and handoff guide](refinements-2026-11-04/REUSE.md)
+for stable states, canonical shared owners, semantic variables, complete intake,
+exact criterion coverage and explicit integration boundaries. Legacy route
+specimens in All components describe their current baseline; they do not
+override the later accepted refinements.
+
 ## Find and reuse
 
 - `/gallery/motion` (Motion and behavior) restores the pinned Motion Lab's nine
@@ -84,9 +94,9 @@ Use the existing issue/PR for these references; no separate sidecar is required.
 
 ## Examples and limits
 
-The current register has 52 entries and 140 initial examples. It covers 49 app
-UI exports, contextual Input and two related-context comparison groups; important live/session owners still need safe
-fixtures. Use actual implementations with deterministic data/controllers, no
+The current register has 67 entries. The generated index is authoritative for the entry count.
+Accepted workout refinements add 26 named states, including all 16 logging contexts.
+Live production route adoption and persistence still require their application tasks. Use actual implementations with deterministic data/controllers, no
 live account writes and no shipped test harness. Add coverage in useful slices.
 Do not copy a historical pattern merely because it has an example.
 

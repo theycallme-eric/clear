@@ -48,20 +48,22 @@ function isSetEffort(value: string): value is SetEffort {
 
 export interface SetEffortChoiceProps {
   /** The set being entered or corrected — it names the Clear control. */
-  readonly setNumber: number
+  readonly setNumber?: number
+  readonly scopeLabel?: string
+  readonly legend?: string
   /** The set's answer, or `null` for unanswered. */
   readonly value: SetEffort | null
   readonly onChange: (next: SetEffort | null) => void
 }
 
-export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceProps) {
+export function SetEffortChoice({ setNumber, scopeLabel, legend = SET_EFFORT_LEGEND, value, onChange }: SetEffortChoiceProps) {
   const rowRef = useRef<HTMLDivElement>(null)
 
   return (
     <div ref={rowRef} className="clr-set-effort">
       <ChoiceGroup
         className="clr-set-effort__choices"
-        legend={SET_EFFORT_LEGEND}
+        legend={legend}
         options={SET_EFFORT_CHOICES.map(({ value: choice, label, Glyph }) => ({
           value: choice,
           label: (
@@ -83,7 +85,7 @@ export function SetEffortChoice({ setNumber, value, onChange }: SetEffortChoiceP
             type="button"
             variant="quiet"
             size="sm"
-            aria-label={`Clear effort for set ${setNumber}`}
+            aria-label={`Clear effort for ${scopeLabel ?? `set ${setNumber}`}`}
             onClick={() => {
               onChange(null)
               // The pressed control is about to go; the question keeps the caret.

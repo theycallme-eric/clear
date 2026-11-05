@@ -5,7 +5,7 @@
  * frames them. Each state is labelled with the prop that produces it, so a
  * review comment can name what it is about.
  */
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GALLERY_ENTRIES, type GalleryEntry } from './gallery-registry'
@@ -55,11 +55,12 @@ export function AppComposedParts() {
   return (
     <div className="clr-dev-gallery__section">
       <Heading>App-composed</Heading>
+      <p>For the latest accepted target, use <Link to="/gallery/refinements">Accepted workout refinements</Link>. Legacy application specimens below remain baseline references until their route adoption is delivered.</p>
       <p>
         {entries.length} {entries.length === 1 ? 'part' : 'parts'}, {stateCount} states.
         {selectedEntries.length > 0
           ? ` Showing ${component}.`
-          : ' Registered app components and states. Session-dependent surfaces have documented coverage gaps.'}
+          : ' Registered current app components and accepted reference owners. Use Accepted workout refinements for the final decisions; application adoption is tracked separately.'}
       </p>
       {entries.map((entry) => (
         <EntrySection key={`${entry.component}-${entry.module}`} entry={entry} />

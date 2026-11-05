@@ -32,6 +32,7 @@ import { DesignSystemSpecimens } from './gallery-ds'
 import { SPECIMENS } from './specimens'
 import { GALLERY_ENTRIES } from './gallery-registry'
 import { GalleryMotion } from './gallery-motion'
+import { GalleryRefinements } from './gallery-refinements'
 
 import './gallery.css'
 
@@ -107,6 +108,7 @@ const SECTIONS = [
   { to: 'ds', end: false, label: 'Design system' },
   { to: 'app', end: false, label: 'App-composed' },
   { to: 'motion', end: false, label: 'Motion and behavior' },
+  { to: 'refinements', end: false, label: 'Accepted workout refinements' },
 ]
 
 function GalleryNav({ publicView }: { publicView: boolean }) {
@@ -131,6 +133,7 @@ function GalleryNav({ publicView }: { publicView: boolean }) {
             </li>
           ))}
           <li><Link to="/gallery/motion" aria-current={motion ? 'page' : undefined}>Motion and behavior</Link></li>
+          <li><Link to="/gallery/refinements" aria-current={pathname.endsWith('/refinements') ? 'page' : undefined}>Accepted workout refinements</Link></li>
         </ul>
       </Nav>
     )
@@ -219,6 +222,7 @@ export function GalleryRoute({ publicView = false }: { publicView?: boolean }) {
         <Route path="ds" element={publicView ? <Navigate to="/gallery/app" replace /> : <DesignSystemSpecimens />} />
         <Route path="app" element={<AppComposedParts />} />
         <Route path="motion" element={<GalleryMotion />} />
+        <Route path="refinements" element={<GalleryRefinements />} />
         {/* A mistyped section is the overview, not a 404 inside a dev tool. */}
         <Route path="*" element={publicView ? <Navigate to="/gallery/app" replace /> : <GalleryOverview />} />
       </Route>

@@ -370,6 +370,8 @@ function StatusGlyph({ status }: { status: SectionStatus }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface SectionHeaderProps {
+  /** Accepted compact navigation; consumers opt in explicitly. */
+  compact?: boolean
   section: SectionProgress
   /** Position in the session, one-based, for the terse `3 / 6` readout. */
   position: number
@@ -405,6 +407,7 @@ export interface SectionHeaderProps {
  */
 export function SectionHeader({
   section,
+  compact = false,
   position,
   total,
   progress,
@@ -420,6 +423,15 @@ export function SectionHeader({
           setJumping(false)
           onSelect(index)
         }
+
+  if (compact && progress !== undefined) return (
+    <div className="clr-accepted-section-nav" data-section-navigation="">
+      <CollapsibleSection label={<><span>All sections</span><span className="clr-accepted-section-nav__meta">{position} / {total}</span></>} expanded={jumping} onExpandedChange={setJumping}>
+        <SectionJumpList progress={progress} currentIndex={section.index} onSelect={select} inert={!jumping} />
+      </CollapsibleSection>
+      {children}
+    </div>
+  )
 
   return (
     // `Screen` already establishes level two for its top-level content. This
