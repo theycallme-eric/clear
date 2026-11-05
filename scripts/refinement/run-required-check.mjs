@@ -134,6 +134,30 @@ const NODE_REPORTER_FLAG = /^--test-reporter(-destination)?(=|$)/
 const VITEST_REPORTER_FLAG = /^--(reporter|outputFile)(\.|=|$)/
 const PLAYWRIGHT_REPORTER_FLAG = /^--reporter(=|$)/
 
+/** Parse supported Node options before identifying positional files.
+ * Unknown options are refused; operands must never become test identities.
+ * @param {string[]} args
+ */
+export function nodeTestArguments(args) {
+  const options = []
+  const targets = []
+  const problems = []
+  for (let index = 0; index < args.length; index++) {
+    const arg = args[index]
+    if (arg === '--test') options.push(arg)
+    else if (/^--test-(name|skip)-pattern=/.test(arg)) options.push(arg)
+    else if (arg === '--test-name-pattern' || arg === '--test-skip-pattern') {
+      const value = args[++index]
+      if (value === undefined || value === '') problems.push(arg + ' needs a pattern')
+      else options.push(arg, value)
+    } else if (arg.startsWith('-')) problems.push('unsupported Node test option "' + arg + '"; only explicit test targets and name/skip filters are supported')
+    else if (PATH_LIKE.test(arg)) targets.push(arg)
+    else problems.push('Node test target "' + arg + '" is not an explicit test file')
+  }
+  if (targets.length === 0) problems.push('at least one explicit Node test-file target is required; automatic discovery cannot attribute a declared file')
+  return { options, targets, problems }
+}
+
 /**
  * The command as it will be spawned, with the runner's native reporter added,
  * or why it will not be spawned.
@@ -190,6 +214,8 @@ export function planCommand({ argv, runner, root, reportPath, exists = existsSyn
   if (rest.some((arg) => flag.test(arg))) {
     problems.push('the command chooses its own reporter; the guard adds the native one it reads')
   }
+  const nodeArguments = runner === 'node-test' ? nodeTestArguments(rest) : null
+  if (nodeArguments) problems.push(...nodeArguments.problems)
   if (problems.length > 0) return { problems }
 
   /** @type {Record<string, string>} */
@@ -211,7 +237,7 @@ export function planCommand({ argv, runner, root, reportPath, exists = existsSyn
     env.PLAYWRIGHT_JSON_OUTPUT_FILE = reportPath
     env.PLAYWRIGHT_JSON_OUTPUT_NAME = reportPath
   }
-  return { executable, args, env, problems: [] }
+  return { executable, args, env, problems: [], ...(nodeArguments ? { nodeOptions: nodeArguments.options, nodeTargets: nodeArguments.targets } : {}) }
 }
 
 /** Test-file-like positional arguments a command names. */
@@ -429,11 +455,11 @@ export function runRequiredCheck({
     return { path: file, sha256: existsSync(path) ? sha256(readFileSync(path)) : null }
   })
 
-  problems.push(...targetProblems({ argv, files: check.files, root }))
   const extension = check.runner === 'node-test' ? 'tap' : 'json'
   const reportPath = join(resultsDir, `${checkId}.native.${extension}`)
   const plan = planCommand({ argv, runner: check.runner, root, reportPath })
   problems.push(...plan.problems)
+  problems.push(...targetProblems({ argv: 'nodeTargets' in plan ? plan.nodeTargets : argv, files: check.files, root }))
   if (problems.length > 0 || !('executable' in plan)) return finish()
 
   mkdirSync(resultsDir, { recursive: true })
@@ -450,12 +476,11 @@ export function runRequiredCheck({
   if (check.runner === 'node-test') {
     // Native TAP has no passing-case file identity. Execute each explicit target
     // separately so only that target can receive credit from its own report.
-    const isTarget = (arg) => !arg.startsWith('-') && PATH_LIKE.test(arg)
-    const targets = [...new Set(argv.filter(isTarget))]
+    const targets = [...new Set(plan.nodeTargets)]
     paths = targets.map((_, index) => `${reportPath}.${index}.tap`)
     nodeReports = []
     for (const [index, target] of targets.entries()) {
-      const singleArgv = argv.filter((arg) => !isTarget(arg) || arg === target)
+      const singleArgv = [process.execPath, ...plan.nodeOptions, target]
       const single = planCommand({ argv: singleArgv, runner: check.runner, root, reportPath: paths[index] })
       rmSync(paths[index], { force: true })
       if (!('executable' in single)) {

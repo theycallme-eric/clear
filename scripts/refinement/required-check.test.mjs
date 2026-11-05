@@ -165,6 +165,23 @@ describe('required-check guard with installed Node test TAP', () => {
     assert.ok(result.requiredCases.every((c) => c.occurrences === 1))
   })
 
+  test('refuses a loader operand as a test target before automatic discovery', () => {
+    const root = mkdtempSync(join(scratch, 'loader-target-'))
+    writeFileSync(join(root, 'a.test.mjs'), "import { test } from 'node:test'; test('required result', () => {});\n")
+    writeFileSync(join(root, 'loader.mjs'), '// required result\n')
+    const manifestPath = join(root, 'manifest.json')
+    writeFileSync(manifestPath, JSON.stringify({ schema: 'clear-refinement-required-cases-v1', task: 'TASK-900', checks: { c: { runner: 'node-test', files: ['loader.mjs'], requiredCases: [{ file: 'loader.mjs', name: 'required result' }] } } }))
+    const result = runRequiredCheck({ root, task: 'TASK-900', check: 'c', argv: ['node', '--test', '--import', './loader.mjs'], manifestPath, resultsDir: join(root, 'results'), stdio: 'pipe', log: () => {} })
+    assertRefused(result, /unsupported Node test option "--import"/)
+    assert.equal(result.exitCode, null, 'the unhandled option cannot launch automatic discovery')
+  })
+
+  test('keeps file-like filter operands separate from positional targets', () => {
+    const result = rehearse(declare([{ file: NODE_A, name: 'name.like-file.mjs' }], [NODE_A]), ['node', '--test', '--test-name-pattern', 'name.like-file.mjs', NODE_A])
+    assert.deepEqual(result.problems, [])
+    assert.equal(result.status, 'passed')
+  })
+
   test('rejects mixed existing and missing targets', () => {
     const missing = `${FIXTURES}/node-test/missing.fixture.mjs`
     const result = rehearse(

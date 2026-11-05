@@ -17,3 +17,5 @@ test('top level case', () => {})
 test('todo case', { todo: 'synthetic todo' }, () => {})
 
 test('shared name', () => {})
+
+test('name.like-file.mjs', () => {})

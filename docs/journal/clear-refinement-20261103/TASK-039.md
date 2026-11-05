@@ -120,3 +120,12 @@ following the existing release-evidence convention. They retain the executed sou
 locally and in the run evidence rather than creating a self-referential source commit that
 changes on each check. Manifests, definition records and pinned reference bytes stay tracked.
 The initial source checkpoint is 5e93b4e; the final recovery candidate follows this correction.
+
+The first native recovery genuinely passed at 393d2ae on base 81d1da1, including the full suite.
+Independent follow-up then reproduced a further file-attribution defect: a Node --import operand
+could be mistaken for a test target while Node automatically discovered a different file. Delivery
+was held. The guard now parses its supported Node name/skip options explicitly, refuses unhandled
+flags before execution, requires an explicit positional target, and preserves file-like filter
+values as filters. Two further regression cases are added without removing the earlier 28.
+The changed source requires fresh native reconciliation/recovery and exact-candidate acceptance;
+the old verified result remains evidence for its original head only.

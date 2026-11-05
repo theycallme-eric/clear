@@ -120,6 +120,14 @@
         {
           "file": "scripts/refinement/required-check.test.mjs",
           "name": "required-check guard with installed Playwright JSON > rejects a Playwright expected failure as required passing proof"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > refuses a loader operand as a test target before automatic discovery"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > keeps file-like filter operands separate from positional targets"
         }
       ]
     }
