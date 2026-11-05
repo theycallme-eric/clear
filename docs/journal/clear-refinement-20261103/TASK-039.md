@@ -113,3 +113,10 @@ full-suite four-worker diagnostic passed all 6,067 tests without changing assert
 A separate product test-resource readiness correction is being validated; its base must be
 synchronized through native recovery before final acceptance. No attempts, counters or deadline
 were reset. The retained candidate remains on attempt 1 of 2.
+
+
+Generated required-check reports are ignored under `evidence/refinement/task-*/results/`,
+following the existing release-evidence convention. They retain the executed source identity
+locally and in the run evidence rather than creating a self-referential source commit that
+changes on each check. Manifests, definition records and pinned reference bytes stay tracked.
+The initial source checkpoint is 5e93b4e; the final recovery candidate follows this correction.
