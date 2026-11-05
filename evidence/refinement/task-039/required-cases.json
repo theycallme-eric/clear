@@ -1,0 +1,135 @@
+{
+  "schema": "clear-refinement-required-cases-v1",
+  "task": "TASK-039",
+  "body": "clear-refinement-20261103",
+  "checks": {
+    "bootstrap": {
+      "runner": "node-test",
+      "files": [
+        "scripts/refinement/required-check.test.mjs"
+      ],
+      "requiredCases": [
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > passes when every declared required case passes across files"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects a required case that fails"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects a required case that only skipped"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects an all-skipped result"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects a required case absent from the report"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects a passing case its declared file does not contain"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects mixed existing and missing targets"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > ignores unrelated filtered-out cases"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Vitest JSON > passes when the declared Vitest case passes"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Vitest JSON > rejects a failing Vitest required case"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Vitest JSON > rejects an all-skipped Vitest result"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Playwright JSON > passes when the declared Playwright case passes"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Playwright JSON > rejects a failing Playwright required case"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard refusals and report freshness > refuses a launcher asked to download a package"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard refusals and report freshness > refuses a command that runs a different runner or its own reporter"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard refusals and report freshness > rejects absent, stale and zero-execution reports"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard refusals and report freshness > reads suites, skips and todos from TAP without counting suites as cases"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard refusals and report freshness > refuses a manifest without exact required case identities"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > baseline mode passes against the current source without a delivery receipt"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > baseline mode rejects a staged file whose bytes changed"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > reference root resolves by pinned identity, not by path"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > reference exposure names states, shared owners and guides"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > TASK-039 definition and progress records hold"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > definition record rejects claimed authority and a missing disposition"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "staged reference and definition providers > progress record keeps every required part"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > rejects a matching title in another file comment"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > passes equal case names only from each executing file"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Playwright JSON > rejects a Playwright expected failure as required passing proof"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > refuses a loader operand as a test target before automatic discovery"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "required-check guard with installed Node test TAP > keeps file-like filter operands separate from positional targets"
+        }
+      ]
+    }
+  }
+}

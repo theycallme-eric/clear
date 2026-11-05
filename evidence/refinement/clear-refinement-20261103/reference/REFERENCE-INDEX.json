@@ -1,0 +1,172 @@
+{
+  "schema": "clear-refinement-reference-index-v1",
+  "body": "clear-refinement-20261103",
+  "galleryCommit": "eded158cfd928d382c9a9409e2c372270312741d",
+  "galleryReferenceVersion": "clear-refinements/2026-11-04.1",
+  "selectedBaseline": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+  "historicalComparison": {
+    "verifiedMain": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+    "reviewedR7Runtime": "2d48f13",
+    "role": "comparison only; not the implementation baseline"
+  },
+  "foundation": "0.14.3",
+  "sourceIdentity": "sources/source-06-accepted-gallery-reference",
+  "pinnedSource": {
+    "path": "PINNED-SOURCE.json",
+    "bytes": 210975,
+    "sha256": "a1b1f93bda420ba88f5647f9d78e66e0d9b05b16cab7026f9fecd033858f0a18",
+    "files": 1190
+  },
+  "sourceManifest": {
+    "path": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+    "bytes": 9698,
+    "sha256": "6f8a5160a2edfcc581cb0c223135a7ff708f90c5da0f2ba5141e8c48f4386757"
+  },
+  "guides": {
+    "reuse": "docs/design/library/refinements-2026-11-04/REUSE.md",
+    "loggingFields": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+    "provenance": "docs/design/library/refinements-2026-11-04/PROVENANCE.json",
+    "coverage": "src/dev/gallery-refinement-coverage.json",
+    "canonicalTokens": "src/ui/refinements/tokens.css"
+  },
+  "staged": [
+    {
+      "path": "PINNED-SOURCE.json",
+      "bytes": 210975,
+      "sha256": "a1b1f93bda420ba88f5647f9d78e66e0d9b05b16cab7026f9fecd033858f0a18"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+      "bytes": 9698,
+      "sha256": "6f8a5160a2edfcc581cb0c223135a7ff708f90c5da0f2ba5141e8c48f4386757"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/REUSE.md",
+      "bytes": 6356,
+      "sha256": "9f6b702c6daa40626c2ca3c47740be1862b538c72b0edfec18834aac36f8ce46"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+      "bytes": 3253,
+      "sha256": "ab9d7ff1ccb10ec0dd6bb19c351369b0b06dde708c9f54246ae87a4a7a214a7f"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/PROVENANCE.json",
+      "bytes": 1435,
+      "sha256": "357db0731c4d101e8b5ec93909225f35e2eddd07a13f50331eebc6684d54cf0b"
+    },
+    {
+      "path": "src/dev/gallery-refinement-coverage.json",
+      "bytes": 119335,
+      "sha256": "6253aae08c731978308e700e32a32162e5299b1f74fe5a15d02239ac787e772a"
+    },
+    {
+      "path": "src/ui/refinements/tokens.css",
+      "bytes": 899,
+      "sha256": "c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d"
+    }
+  ],
+  "visualReferences": [
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/P01-acceptance-schematic.svg",
+      "bytes": 1397,
+      "sha256": "eb1884dedd24fad6a16c863260c5130aaccb46f0ecabfa74e4827a6010c47ddc"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/P02-acceptance-schematic.svg",
+      "bytes": 1467,
+      "sha256": "11703bd9a89cabd81abdef544cac14febc8350f139b8f48466776ed9e3b9d739"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/P03-acceptance-schematic.svg",
+      "bytes": 1571,
+      "sha256": "5ceee9085fa723983b073189af14872db0bff751c7c22bd1b68b17a93fd61a2d"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/P04-acceptance-schematic.svg",
+      "bytes": 1535,
+      "sha256": "5132dff9a45361a325bc9702fa004f5edab60617f2075538e5838c00de8e61e3"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/P05-acceptance-schematic.svg",
+      "bytes": 1490,
+      "sha256": "0cb056784cc72a75650f431c365e3fba58f5c36d242d11eb93129f89b593a0ea"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V01-P2-generate-ready-current.png",
+      "bytes": 127649,
+      "sha256": "121ac7c522d489f577ce02efb4036eab84e8d5202bea8a90985b6f2005e860b9"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V02-P2-generate-ready-proposed.png",
+      "bytes": 114890,
+      "sha256": "e893562ef58036b6af9e6cd5c410e57fbc010668eeccfadadab6f74042b7f876"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V03-P3-review-ready-current.png",
+      "bytes": 177757,
+      "sha256": "6a8e32659de3fc9f6fb9339597b9788461f17f4f44b8627abfa0b7942a8fe025"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V04-P3-review-ready-proposed.png",
+      "bytes": 185393,
+      "sha256": "9ba5828d6537654ad176bb097c382363f62974a5a65c4bce833cc912bcd7b4c1"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V05-P4-preparation-ready-current.png",
+      "bytes": 160723,
+      "sha256": "ed24d25e6e8ab13230b95ac14179959be5951ec2c1c0a846592747a3b1772a17"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V06-P4-preparation-ready-proposed.png",
+      "bytes": 140651,
+      "sha256": "0a05e41160e7f81407b911d3f89f14618dfebce9afaef604787abc0cfd2b47e3"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V07-P6-history-ready-current.png",
+      "bytes": 159415,
+      "sha256": "4a79cfcf63f5db148854705bcf47b749fa80dc644378403bb818ebf192851f48"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V08-P6-history-ready-proposed.png",
+      "bytes": 159659,
+      "sha256": "3bb3ff1b4a5a3ba532a9b7e3b8c9a0b6e3721b86e94d210d69e93693c47659ab"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V09-anchor.png",
+      "bytes": 274020,
+      "sha256": "54acd9b8271953ac09bd5229543d104a18f911826f48c198755345c1307980d4"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V10-superset.png",
+      "bytes": 210105,
+      "sha256": "773dae74c793cc7d1d1e8920cb98bb2e4b825b61ea2a605b621054fbd7e231c2"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V11-ladder.png",
+      "bytes": 176415,
+      "sha256": "c74cecc04c027d413bba209cba7922b652062bacaaefb4d5869352ebf113550f"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V12-summary.png",
+      "bytes": 335139,
+      "sha256": "a24bef00441a3950d4b3fca817f60547920c098b41ec380e3a78d5200510b432"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V13-circuit.png",
+      "bytes": 349102,
+      "sha256": "f007c6c166ffaddcdc40448cd759696015d1acd1454a901175b6e056989c22c1"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V14-rest-day.png",
+      "bytes": 373319,
+      "sha256": "4252e1c1b72a2f4b4adddee7fa803aa2678157ab046953adb7e5ec6cb2e1fc24"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/references/V15-notes.png",
+      "bytes": 334111,
+      "sha256": "d6a7f9aad6d43b81d732ba8502d090e04c50da8fa1d0bbc37bc7ee2c6733f8d9"
+    }
+  ],
+  "boundary": "Reference appearance only. Preserved gallery proof cannot establish application adoption; real route adoption and persistence remain with each implementation task."
+}

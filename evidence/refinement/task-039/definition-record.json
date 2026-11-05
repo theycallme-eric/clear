@@ -1,0 +1,43 @@
+{
+  "schema": "clear-refinement-definition-record-v1",
+  "body": "clear-refinement-20261103",
+  "task": "TASK-039",
+  "issue": 666,
+  "requirements": ["REQ-040"],
+  "galleryCommit": "eded158cfd928d382c9a9409e2c372270312741d",
+  "disposition": "non-gallery",
+  "nonGalleryReason": "REQ-040 is engineering/definition/operational work: the integration baseline, staged-reference resolver, shared fixtures and required-case checkers. It has no user route or gallery state; the accepted gallery does not close it, and preserved gallery proof establishes reference appearance only, never application adoption.",
+  "selectedBaseline": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+  "historicalComparison": {
+    "verifiedMain": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+    "reviewedR7Runtime": "2d48f13"
+  },
+  "sharedOwners": [
+    "scripts/refinement/run-required-check.mjs",
+    "scripts/refinement/verify-delivery-evidence.mjs",
+    "scripts/refinement/verify-definition-record.mjs",
+    "scripts/refinement/native-results.mjs",
+    "scripts/refinement/reference.mjs",
+    "scripts/refinement/fixtures/"
+  ],
+  "fieldOwnership": "Unchanged. Context-owned logging fields and writers stay with their existing data/controller owners per the staged LOGGING-FIELDS.md; this task adds no product writer.",
+  "canonicalTokens": "src/ui/refinements/tokens.css (layered over Foundation 0.14.3; created by the adopting implementation task, not by TASK-039)",
+  "assumptions": [
+    "Owner-selected task-owned progress records satisfy the older shared-daily-journal requirement for this body only: docs/journal/clear-refinement-20261103/TASK-039.md keeps outcome/task, changes, failures/corrections, exact verification, unresolved assumptions and next action. Frozen older bodies and the checked-in AGENTS.md are not altered.",
+    "94f2c2f and R7 2d48f13 are historical comparison sources. The selected implementation baseline is effects-delivered main 03087f7; the live HEAD must descend from it. The R7 object is not available locally and is not required.",
+    "The full copied gallery source is resolved by the sha-256 of its PINNED-SOURCE.json, never by an owner-machine path, localhost address or unpublished Git object; only the pin, source manifest, guides, coverage map and canonical token file are staged in the repository.",
+    "Dependent tasks own their own evidence/refinement/task-0nn/required-cases.json, results and definition records; they reuse these shared checkers and create no competing checker.",
+    "Implementation tasks take the selected source delta reported by --mode reference, not a blind merge of the preview branch, and serialize edits to shared owners listed under more than one requirement.",
+    "Final aggregate proof belongs to TASK-042 and the journey completion owners; final five polish verification is delegated without another visual-comparison gate."
+  ],
+  "authority": {
+    "runner": false,
+    "selfApproval": false,
+    "productionMerge": false,
+    "deployment": false,
+    "liveMigration": false,
+    "paidGeneration": false
+  },
+  "progressRecord": "docs/journal/clear-refinement-20261103/TASK-039.md",
+  "requiredCases": "evidence/refinement/task-039/required-cases.json"
+}

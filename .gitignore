@@ -24,3 +24,6 @@ supabase/.temp/
 supabase/.branches/
 supabase/logs/
 .vercel
+
+# Generated refinement test reports bind the executed source; retain as run evidence, not source.
+evidence/refinement/task-*/results/
