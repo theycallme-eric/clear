@@ -198,3 +198,4 @@
 .clr-accepted-section-nav__meta { margin-inline-start:auto; color:var(--text-secondary); font-size:var(--label-xs-size); }
 .clr-accepted-workout-header > p { display:flex; align-items:center; min-height:var(--control-height); line-height:var(--control-height); }
 .clr-accepted-metrics > .clr-echo > .clr-bleed { flex:1 1 auto; width:100%; min-width:0; }
+.clr-accepted-form__measure[data-load=false] { grid-template-columns:minmax(0,1fr); }

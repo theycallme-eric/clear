@@ -33,6 +33,8 @@ is separately named behavior: low color at 10 seconds; pulse while running with
 0 < remaining <= 5; count-up caps pass cap minus elapsed; elapsed-only clocks
 never claim an edge cue. One active edge is deduplicated across owners.
 
+See [logging field ownership](LOGGING-FIELDS.md) for the per-context field contracts. Shared styles add no new fields, reasons or data writes.
+
 ## Stable entry points
 
 - `/gallery/refinements?state=cards` — movement/card hierarchy and context slots.

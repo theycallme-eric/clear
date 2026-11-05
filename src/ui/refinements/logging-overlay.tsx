@@ -40,7 +40,8 @@ export function LoggingOverlay({ open, title, onClose, children }: {
       </div>
     </div>
   return <dialog ref={ref} className="clr-dialog clr-accepted-log" aria-labelledby={titleId}
-    onClose={() => { if (open) onClose() }} onCancel={event => { event.preventDefault(); onClose() }}>
+    onClose={event => { if (event.target === event.currentTarget && open) onClose() }}
+    onCancel={event => { if (event.target !== event.currentTarget) return; event.preventDefault(); onClose() }}>
     {effects ? <PhosphorEchoFrame>{frame}</PhosphorEchoFrame> : frame}
   </dialog>
 }

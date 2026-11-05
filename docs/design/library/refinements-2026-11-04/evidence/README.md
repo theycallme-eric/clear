@@ -7,7 +7,7 @@ was used. The native revision-6 approval remains unchanged.
 ## Current checks
 
 - `build.log`: TypeScript and production Vite build pass.
-- `tests.log`: 158 focused tests in nine files pass, including criterion/state
+- `tests.log`: 165 focused tests in nine files pass, including criterion/state
   coverage, all 16 modal contexts, draft-preserving Finish/Undo, explicit failed
   save/retry with zero retained, warning boundaries and existing shared-owner
   regressions. No failures or skipped cases.
@@ -24,7 +24,7 @@ claim of physical-phone touch/keyboard testing or exhaustive route integration.
 
 - `browser-logging-final.json`: final 64-case matrix, 16 logging contexts × four
   skins at 390×844. Native modal, opening focus on X, no structural outline,
-  hidden scrollbar, no horizontal overflow and 2px (actual border) lower clip
+  hidden scrollbar, per-context Notes/Performed ownership, no horizontal overflow and 2px (actual border) lower clip
   boundary all pass. No blank inset strip or secondary crossing frame.
 - `browser-narrow.json`, `ladder-12-320-undo.png`, `ladder-12-320-lower.png`:
   320px 12-rung form, equal Undo/count left start, stationary frame and reachable
@@ -76,3 +76,15 @@ against current main before checks passed.
 The source whitespace check passes. A whole-package whitespace check reports
 extra EOF blank lines in byte-preserved authority/audit inputs and captured
 command logs; those originals are intentionally retained unchanged.
+
+A final field-fidelity pass removed generic Notes/Performed additions from
+contexts that do not own them, reused the native rest-day reason vocabulary
+and select, preserved correction/clear controls and meaningful context titles,
+and omitted load fields for the unloaded timed fixture. The final 64-case
+matrix includes these field checks. A nested-confirmation regression also
+proves Keep set leaves the parent correction modal and recorded values intact.
+
+`superset-fields-final.png`, `rest-day-fields-final.png` and
+`browser-reasons-final.json` show the final context-owned field shapes. Decimal
+actual load is explicitly kept valid with the same native step contract as the
+existing measurement owner.

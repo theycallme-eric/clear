@@ -13,6 +13,7 @@ with explicit non-gallery/integration dispositions. The 145-note intake and
 latest authority, asset handoffs, 15 captures and five diagrams are preserved.
 
 - [Reuse, tokens and ownership](REUSE.md).
+- [Logging field ownership](LOGGING-FIELDS.md).
 - [Requirement reconciliation handoff](BUILDER-RECONCILIATION.md).
 - [Delivered reference crosswalk](DELIVERY-CROSSWALK.md).
 - [Verification and evidence boundaries](evidence/README.md).

@@ -16,7 +16,7 @@ optional scope/legend and SectionHeader an opt-in compact presentation; existing
 consumers retain their defaults. No other application route is opted in.
 
 Local verification and corrections are recorded in the versioned evidence
-README: 158 focused tests, build/typecheck/design lint/index pass; source lint
+README: 165 focused tests, build/typecheck/design lint/index pass; source lint
 zero errors with 137 established Fast Refresh warnings; 64 final phone modal
 checks, 320px long-form/Undo and deadline phase/portal/reduced-motion checks.
 Header and equal Summary frame geometry were corrected after browser inspection.
@@ -27,3 +27,12 @@ No GitHub issue/PR/body mutation, merge, deployment or Runner activation.
 Application data/route/reload acceptance remains pending. Open content/read-model
 definitions remain explicit, not invented. Next: reconcile native requirements
 with this versioned gallery reference before any application execution.
+
+Final field-fidelity verification found the first generic fixture template
+introduced unowned Notes/Performed fields and invented rest-day reasons. Fixed
+before handoff: exact context-specific fields/native reasons, correction
+controls, meaningful titles and unloaded timed shape. Shared appearance now
+preserves those field boundaries; tests and the final four-skin matrix assert
+them. Nested confirmation close/cancel events are guarded so Keep set cannot
+dismiss the parent log. This is a gallery-fixture correction, not a schema or
+application-writer change.
