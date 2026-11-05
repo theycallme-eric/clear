@@ -194,9 +194,10 @@ describe('a selectable section with no catalog rows', () => {
     const stripped = altered((row) => ({
       sections: row.sections.filter((section) => section !== 'skill_power'),
     }))
+    const failed = failures(stripped)
 
     for (const focus of Constants.public.Enums.session_focus) {
-      const retrieval = failures(stripped).find((entry) => entry.name === `retrieval — ${focus}`)
+      const retrieval = failed.find((entry) => entry.name === `retrieval — ${focus}`)
       expect(retrieval?.detail).toContain(`focus "${focus}", tier "full", section "skill_power"`)
       expect(retrieval?.detail).toContain('relaxed 0 (recorded 12)')
     }
