@@ -89,6 +89,7 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
+import { MovementList } from '../ui/refinements/movement'
 import { ReviewExerciseRow } from '../ui/review-exercise-row'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
@@ -630,29 +631,6 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
 }
 
 /**
- * A group is framed down its leading edge in the structure colour, and is
- * named by its badge — the colour is never the only cue.
- */
-const GROUP_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  borderInlineStart: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingInlineStart: 'var(--spacing-300)',
-}
-
-const ORDERED_LIST_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-}
-
-/** A rule between two movements of a group. The last one has nothing below it. */
-const MEMBER_RULE_STYLE: CSSProperties = {
-  borderBlockEnd: 'var(--border-width) solid var(--border-region-rule)',
-  paddingBlockEnd: 'var(--spacing-200)',
-}
-
-/**
  * The group's shared rest, in the interaction blue the timer it starts will
  * wear, and with the rest glyph so the colour is never the only cue.
  */
@@ -664,9 +642,11 @@ const ROUND_REST_STYLE: CSSProperties = {
 }
 
 /**
- * One block. A superset, circuit or timed structure is one group: framed,
- * named by its badge (which carries the structure glyph and the round count or
- * clock once), and its movements numbered `01`, `02` in the order they are
+ * One block. A superset, circuit or timed structure is one group: named by
+ * its badge (which carries the structure glyph and the round count or clock
+ * once) with no rail down its edge, its movements the shared peer list —
+ * ruled between movements, never after the last (REQ-001, C04) — and
+ * numbered `01`, `02` in the order they are
  * performed. A superset or circuit is performed as rounds — each movement
  * once, back to back, then again — so its badge is followed by the one-round
  * sequence line and each row states what one round asks of it, never the
@@ -705,7 +685,11 @@ function ReviewBlockRows({
         {badged && <StructureBadge identity={block.identity} />}
         {block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>}
         {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-        {block.exercises.map((exercise) => row(exercise, null))}
+        {block.exercises.length <= 1 ? block.exercises.map((exercise) => row(exercise, null)) : (
+          <MovementList label="Movements in this block">
+            {block.exercises.map((exercise) => <li key={exercise.key}>{row(exercise, null)}</li>)}
+          </MovementList>
+        )}
       </div>
     )
   }
@@ -717,10 +701,8 @@ function ReviewBlockRows({
     .filter(Boolean)
     .join(', ')
 
-  const last = block.exercises.length - 1
-
   return (
-    <div className="clr-stack--tight" style={GROUP_STYLE}>
+    <div className="clr-stack--tight" data-movement-group="" style={STACK_STYLE}>
       <StructureBadge identity={block.identity} />
       {inRounds ? (
         <p className="clr-text-data-xs">{block.roundSequence}</p>
@@ -728,13 +710,11 @@ function ReviewBlockRows({
         block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>
       )}
       {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-      <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
+      <MovementList label={name}>
         {block.exercises.map((exercise, index) => (
-          <li key={exercise.key} style={index === last ? undefined : MEMBER_RULE_STYLE}>
-            {row(exercise, sequenceOrdinal(index))}
-          </li>
+          <li key={exercise.key}>{row(exercise, sequenceOrdinal(index))}</li>
         ))}
-      </ol>
+      </MovementList>
       {inRounds && block.roundRest !== null && (
         <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
           <Rest size={16} />

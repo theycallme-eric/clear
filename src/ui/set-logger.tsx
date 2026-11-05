@@ -66,7 +66,7 @@ import {
 import { incrementFor } from '../state/progression'
 import { movementCountdownSeconds } from '../state/movement-countdown'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
-import { equipmentName } from '../state/review'
+import { equipmentName, loadText } from '../state/review'
 import {
   prefillFrom,
   useSetLogging,
@@ -81,6 +81,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
 import { MovementCountdown } from './movement-countdown'
+import { distinctLoad } from './refinements/movement'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
 import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
@@ -248,7 +249,9 @@ export function ExerciseSetLogger({
       title={title}
       counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
       detail={prescriptionText(prescription)}
-      context={`Equipment · ${equipment}`}
+      // The prescribed target, by Review's own reading (R31) — never a logged actual.
+      load={distinctLoad(loadText(prescription.load_type, prescription.load_value, weightUnit), equipment)}
+      context={equipment}
     >
       {/*
         Tempo stays in the prescription's structured columns; it is not

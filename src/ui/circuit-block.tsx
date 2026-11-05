@@ -67,7 +67,7 @@ import {
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
-import { equipmentName } from '../state/review'
+import { equipmentName, loadText } from '../state/review'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -78,6 +78,7 @@ import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
+import { distinctLoad } from './refinements/movement'
 import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
 import { useInterfaceLoop } from './motion'
@@ -325,10 +326,11 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
  * how many sets are already logged, so a closed row never hides a record.
  */
 function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
-  const { loggedSets } = useSetLogging()
+  const { loggedSets, weightUnit } = useSetLogging()
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
+  const equipment = equipmentName(prescription.equipment_used)
   const sets = loggedSets(exercise.exerciseId)
   const logged = sets.length
   const taken = new Set(sets.map((set) => set.setNumber))
@@ -368,8 +370,9 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
         <BlockPanel.Movement
           title={`${exercise.position}. ${name}`}
           detail={targetText(prescription)}
-          // The same equipment tier the open logger shows (B05-04).
-          context={`Equipment · ${equipmentName(prescription.equipment_used)}`}
+          // The same prescribed load and equipment the open logger shows (R31).
+          load={distinctLoad(loadText(prescription.load_type, prescription.load_value, weightUnit), equipment)}
+          context={equipment}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

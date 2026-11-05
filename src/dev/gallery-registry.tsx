@@ -118,7 +118,15 @@ import {
 } from '../state/visual-effects'
 import type { AtmosphereLevel } from '../app/atmosphere'
 import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
-import { LiveMovementIdentity, ReviewMovementInRounds, ReviewMovementStandalone } from './gallery-comparisons'
+import {
+  GroupHeaderLong,
+  GroupHeaderShort,
+  LiveMovementIdentity,
+  LivePeerList,
+  ReviewMovementInRounds,
+  ReviewMovementStandalone,
+  ReviewPeerGroup,
+} from './gallery-comparisons'
 
 /** One reviewable state of one part. */
 export interface GallerySpecimen {
@@ -2048,6 +2056,36 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'standalone prescription', Render: ReviewMovementStandalone },
       { state: 'round member', note: 'One-round target; group rest belongs to the surrounding group, not this row.', Render: ReviewMovementInRounds },
+    ],
+  },
+  {
+    component: 'MovementIdentity',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'The one movement hierarchy (accepted reference eded158, state=cards): prominent name with quiet equipment beside it, prescription and prescribed load below, and the consumer’s action or progress in its own slot. No last-performance row.',
+    specimens: [
+      { state: 'Review · Swap in the action slot', Render: ReviewMovementStandalone },
+      { state: 'Workout · progress in the counter slot', Render: LiveMovementIdentity },
+    ],
+  },
+  {
+    component: 'MovementList',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'A block’s peers in order, ruled only between movements — never after the last, and with no rail down the group’s edge. Drawn by the actual Review rows and Workout movements.',
+    specimens: [
+      { state: 'Review · superset peers', Render: ReviewPeerGroup },
+      { state: 'Workout · superset peers', Render: LivePeerList },
+    ],
+  },
+  {
+    component: 'MovementGroupHeader',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'A group’s static label and badge row. It holds no actions or session progress, and draws no rail.',
+    specimens: [
+      { state: 'label and badge', Render: GroupHeaderShort },
+      { state: 'long label wraps', Render: GroupHeaderLong },
     ],
   },
   {

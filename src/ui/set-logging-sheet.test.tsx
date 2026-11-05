@@ -158,17 +158,19 @@ describe('AC-025: the card’s top row', () => {
 })
 
 describe('AC-026: heading, counter, prescription and equipment', () => {
-  it('puts a subordinate Set X/Y counter beside the heading, then prescription and equipment', () => {
+  // REQ-001 (C01): the shared hierarchy puts the equipment quiet beside the
+  // name and the counter in its own slot on that row, then the prescription.
+  it('puts a subordinate Set X/Y counter beside the heading, with equipment beside the name, then prescription', () => {
     mount()
 
     const heading = main().getByRole('heading', { name: 'back squat' })
-    const headRow = heading.parentElement!
+    const headRow = heading.closest<HTMLElement>('[data-movement-name-row]')!
     expect(within(headRow).getByText('Set 1/3')).not.toHaveRole('heading')
 
     const order = [
       heading,
+      within(headRow).getByText('barbell'),
       main().getByText('3 × 8 reps'),
-      main().getByText('Equipment · barbell'),
     ]
     for (let index = 1; index < order.length; index += 1) {
       expect(order[index - 1].compareDocumentPosition(order[index]))
