@@ -247,10 +247,15 @@ describe('SectionHeader', () => {
 
     renderWithProviders(<SectionHeader section={progress.sections[0]} position={1} total={1} />)
 
+    // TASK-003 (AC-C08-01): each block named by its format alone, as its own
+    // card's badge names it; the card states the window, cap and rounds.
     const structures = within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures.getByText('EMOM · 10 MIN')).toBeInTheDocument()
-    expect(structures.getByText('FOR TIME · 15 MIN CAP')).toBeInTheDocument()
-    expect(structures.getByText('CIRCUIT · 3 ROUNDS · LADDER DOWN')).toBeInTheDocument()
+    expect(structures.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'EMOM',
+      'FOR TIME',
+      'CIRCUIT',
+    ])
+    expect(structures.queryByText(/MIN|CAP|ROUNDS/)).toBeNull()
   })
 
   it('is one card: the title, its position and its badges are all inside it', () => {

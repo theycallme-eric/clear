@@ -21,6 +21,7 @@
  * nothing invents a number the block does not carry.
  */
 import type { Enums } from '../data/database.types.ts'
+import { isLadderScheme } from './ladder'
 import { sectionTypeLabel } from './onboarding'
 import type {
   ExerciseSetLogRow,
@@ -270,6 +271,12 @@ export interface StructureColumns {
   readonly rounds: number | null
   readonly timer_seconds: number | null
   readonly rep_scheme: Enums<'rep_scheme'>
+  /**
+   * REQ-018's explicit timing, where the shape carries it. Optional because
+   * a legacy block and a caller that reads no timing both mean "none"; it
+   * decides only whether the block is performed as a ladder (`format`).
+   */
+  readonly ladder_timing?: LadderTiming | null
 }
 
 /**
@@ -284,6 +291,14 @@ export interface StructureColumns {
 export interface StructureIdentity {
   /** `EMOM`, `AMRAP`, `FOR TIME`, `CIRCUIT`, `SUPERSET`, `STANDARD`. */
   readonly label: string
+  /**
+   * C08 (TASK-003; R51, R59, R65): the format badge's words — the block's
+   * format or shape and nothing else. The structure's label, or `LADDER` for
+   * a block the ladder renderer performs (the same rule `blockRendererFor`
+   * dispatches on). Its duration, cap, rounds and rep scheme are read outside
+   * the badge (`structureDetailText`), never dropped.
+   */
+  readonly format: string
   /** `10 MIN`, `3 ROUNDS`, `10 MIN CAP` — null when the block has no number. */
   readonly detail: string | null
   /** `LADDER DOWN`, `PYRAMID` — null for the default `fixed` scheme. */
@@ -347,12 +362,40 @@ function durationLabel(seconds: number): string {
 export function structureIdentity(block: StructureColumns): StructureIdentity {
   return {
     label: STRUCTURE_LABELS[block.structure_type],
+    format: performedAsLadder(block) ? LADDER_FORMAT : STRUCTURE_LABELS[block.structure_type],
     detail: structureDetail(block),
     repScheme: REP_SCHEME_LABELS[block.rep_scheme],
     glyph: block.rep_scheme.startsWith('ladder')
       ? 'Ladder'
       : STRUCTURE_GLYPHS[block.structure_type],
   }
+}
+
+/** The accepted format-only badge for a ladder (G03: "including LADDER"). */
+const LADDER_FORMAT = 'LADDER'
+
+/**
+ * Whether the ladder renderer performs this block: a ladder scheme raced For
+ * Time, or any ladder scheme with an explicit timing. Exactly the dispatch
+ * `blockRendererFor` makes, read from the columns both Review and the shell
+ * hold, so the badge never names a shape the screen does not perform.
+ */
+function performedAsLadder(block: StructureColumns): boolean {
+  return (
+    isLadderScheme(block.rep_scheme) &&
+    (block.structure_type === 'for_time' || (block.ladder_timing ?? null) !== null)
+  )
+}
+
+/**
+ * C08, AC-R003-01 (TASK-003): what the format badge leaves out, as one
+ * readable line beside it — `10 MIN`, `15 MIN CAP · LADDER UP`, `3 ROUNDS`.
+ * The same words the badge used to carry, moved rather than discarded (R51);
+ * null when the block has no clock, count or scheme to state.
+ */
+export function structureDetailText(identity: StructureIdentity): string | null {
+  const parts = [identity.detail, identity.repScheme].filter((part): part is string => part !== null)
+  return parts.length === 0 ? null : parts.join(' · ')
 }
 
 function structureDetail(block: StructureColumns): string | null {

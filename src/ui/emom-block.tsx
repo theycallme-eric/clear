@@ -67,13 +67,12 @@ import {
   type EmomView,
 } from '../state/emom'
 import {
-  exerciseName,
   prescribedTarget,
   prescriptionText,
   targetNumbers,
   targetText,
 } from '../state/prescription'
-import { equipmentName } from '../state/review'
+import { useShellWeightUnit } from '../state/set-logging'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
@@ -81,6 +80,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { useInterfaceLoop } from './motion'
+import { liveMovementReadings } from './refinements/movement-readings'
 
 export interface EmomBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -303,16 +303,21 @@ function EmomMovement({
   const timed = view.phase !== 'untimed'
   const assignment = timed ? minuteAssignment(exercise.position, shape) : null
   const target = prescribedTarget(prescription)
+  // R31, C10 (TASK-003): the same name, compact equipment and prescribed load
+  // Review shows, through its formatters and the profile's unit. A target,
+  // never a performed weight.
+  const readings = liveMovementReadings(prescription, useShellWeightUnit())
 
   return (
     <BlockPanel.MovementItem marker={marker}>
       {assignment !== null && <BlockPanel.Label>{assignment}</BlockPanel.Label>}
 
       <BlockPanel.Movement
-        title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+        title={`${exercise.position}. ${readings.name}`}
         detail={timed ? scheduledTargetText(exercise, shape, view) : prescriptionText(prescription)}
+        load={readings.load}
         // C03, R132: the compact equipment beside the name, as Review shows it.
-        context={equipmentName(prescription.equipment_used)}
+        context={readings.equipment}
       >
         {timed && target?.kind === 'sequence' && (
           <BlockPanel.Note>

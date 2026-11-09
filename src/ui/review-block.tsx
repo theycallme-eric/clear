@@ -2,8 +2,8 @@
  * One section of the Review briefing (REV-01), drawn in the same card the live
  * workout draws a block in (TASK-002; R30, R37, C07): `ReviewSection` gives
  * each block its own `WorkoutCard`, headed by the shared static header — the
- * section's name on the left as a semantic heading and the block's structure
- * badge on the right — with no toggle, chevron, hit area or collapsed state.
+ * section's name as a semantic heading and the block's format badge below it
+ * (TASK-003, C08, C09) — with no toggle, chevron, hit area or collapsed state.
  * The movements are the shared owners (TASK-001, G01): `MovementList` orders
  * the peers with a separator only between two of them, and each row is
  * `ReviewExerciseRow` over `ReviewMovement`, with Swap in its slot (C06).
@@ -28,7 +28,6 @@ import { CollapsibleSection } from './collapsible-section'
 import { MovementList } from './refinements/movement'
 import { WorkoutCard } from './refinements/workout-card'
 import { ReviewExerciseRow } from './review-exercise-row'
-import { StructureBadge } from './workout-chrome'
 
 /** What a section threads down to each prescription row. */
 export interface ReviewSuggestionProps {
@@ -55,8 +54,9 @@ export const STANDARD_MOVEMENTS_LABEL = 'Movements in this block'
 
 /**
  * One block's planned work, under its card's header. A superset, circuit or
- * timed structure is one group, named by the header's badge (which carries the
- * structure glyph and the round count or clock once), and its movements
+ * timed structure is one group, named by the header's format badge (the
+ * structure glyph and format alone), with the round count or clock stated once
+ * on the header's line below it (TASK-003, C08), and its movements
  * numbered `01`, `02` in the order they are performed. A superset or circuit
  * is performed as rounds — each movement once, back to back, then again — so
  * the header is followed by the one-round sequence line and each row states
@@ -133,14 +133,16 @@ function ReviewBlockRows({
 }
 
 /**
- * The header's badge. A superset, circuit or timed structure is named by it. A
- * standard block is a movement done set by set, so it gets no `STANDARD`
- * badge — that badge on every row was metadata that said nothing — unless its
- * rep scheme is one the user needs told.
+ * The structure the header's badge names. A superset, circuit or timed
+ * structure is named by it. A standard block is a movement done set by set, so
+ * it gets no `STANDARD` badge — that badge on every row was metadata that said
+ * nothing — unless its rep scheme is one the user needs told. The card draws
+ * the badge format-only, below the title, and states the rounds, clock, cap or
+ * scheme on the line below it (TASK-003; C08, C09).
  */
-function reviewBadge(block: ReviewBlockView) {
+function reviewStructure(block: ReviewBlockView) {
   const badged = block.grouped || block.identity.detail !== null || block.identity.repScheme !== null
-  return badged ? <StructureBadge identity={block.identity} /> : undefined
+  return badged ? block.identity : null
 }
 
 /**
@@ -168,7 +170,7 @@ export function ReviewSection({
           context="review"
           title={section.title}
           heading={index === 0}
-          badge={reviewBadge(block)}
+          structure={reviewStructure(block)}
         >
           <ReviewBlockRows block={block} {...suggestion} />
           {index === last && section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}

@@ -122,14 +122,19 @@
   border-block-end: var(--border-width) solid var(--border-region-rule);
 }
 
-/* The shared static group header: an optional label and the format badge.
- * It draws no rule or rail of its own. */
+/* The shared static group header: an optional label, the format badge and
+ * the details the badge leaves out. It draws no rule or rail of its own.
+ *
+ * C09 / R51 / R59 (TASK-003): one stacked column in every header — the badge
+ * always below the title, at its start, whatever either label's length — so
+ * the badge never jumps between beside and below, and nothing is truncated to
+ * keep it on the title's line. Accepted reference: the same column direction. */
 .clr-movement-group-header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--spacing-200) var(--spacing-300);
+  flex-direction: column;
+  align-items: flex-start;
+  flex-wrap: nowrap;
+  gap: var(--spacing-200);
   min-width: 0;
 }
 
@@ -148,4 +153,11 @@
   display: flex;
   max-width: 100%;
   min-width: 0;
+}
+
+/* C08 / AC-R003-01 (TASK-003): the duration, cap, rounds and scheme the
+ * format badge no longer carries, as readable quiet data text below it. */
+.clr-movement-group-header__meta {
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }

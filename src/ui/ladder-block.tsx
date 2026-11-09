@@ -66,9 +66,9 @@ import {
   type LadderRoundPlan,
   type LadderRung,
 } from '../state/ladder'
-import { exerciseName, prescribedTarget, targetText } from '../state/prescription'
-import { equipmentName } from '../state/review'
+import { prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
+import { useShellWeightUnit } from '../state/set-logging'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
@@ -76,6 +76,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { LadderRungs } from './ladder-rungs'
 import { useInterfaceLoop } from './motion'
+import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
 
 /**
  * How the block ended, as the user says it.
@@ -294,19 +295,43 @@ function LadderMovement({
   movement: ExerciseProgress
   companions: readonly ExerciseProgress[]
 }) {
+  const weightUnit = useShellWeightUnit()
+  // R31, C10 (TASK-003): the same name, compact equipment and prescribed load
+  // Review shows, through its formatters and the profile's unit.
+  const readings = liveMovementReadings(movement.prescription, weightUnit)
   return (
     <BlockPanel.Movement
-      title={exerciseName(movement.prescription.exercise_id)}
+      title={readings.name}
+      load={readings.load}
       // C03, R132: the compact equipment beside the name, as Review shows it.
-      context={equipmentName(movement.prescription.equipment_used)}
+      context={readings.equipment}
     >
-      {companions.map((companion) => (
-        <BlockPanel.Note key={companion.exerciseId}>
-          {targetText(companion.prescription)}{' '}
-          {exerciseName(companion.prescription.exercise_id)} between each rung
-        </BlockPanel.Note>
-      ))}
+      {companions.map((companion) => {
+        const companionReadings = liveMovementReadings(companion.prescription, weightUnit)
+        return (
+          <BlockPanel.Note key={companion.exerciseId}>
+            {targetText(companion.prescription)} {companionReadings.name}
+            <PrescribedLoad readings={companionReadings} /> between each rung
+          </BlockPanel.Note>
+        )
+      })}
     </BlockPanel.Movement>
+  )
+}
+
+/**
+ * C10 (TASK-003): a movement's prescribed load inside a ladder's target line,
+ * ` · 15 kg`, read through `liveMovementReadings` like every other live
+ * movement — a target, never a performed weight, and nothing when the
+ * prescription carries no load or its `Bodyweight` is said by the equipment.
+ */
+function PrescribedLoad({ readings }: { readings: LiveMovementReadings }) {
+  if (readings.load === null) return null
+  return (
+    <>
+      {' · '}
+      <span data-movement-load="">{readings.load}</span>
+    </>
   )
 }
 
@@ -509,22 +534,33 @@ function LadderRound({
   round: LadderRoundPlan
   laddered: readonly ExerciseProgress[]
 }) {
+  const weightUnit = useShellWeightUnit()
+  // C10 (TASK-003): each target line states the movement's prescribed load
+  // beside it, as Review does, through the same readings.
   return (
     <BlockPanel.Movement
       title={`Round ${round.number}`}
       detail={round.startSeconds === null ? undefined : `Starts at ${formatElapsed(round.startSeconds)}`}
     >
-      {laddered.map((movement) => (
-        <BlockPanel.Note key={movement.exerciseId}>
-          {roundTarget(movement, round.number)} {exerciseName(movement.prescription.exercise_id)}
-        </BlockPanel.Note>
-      ))}
-      {round.companions.map((companion) => (
-        <BlockPanel.Note key={companion.exerciseId}>
-          {targetText(companion.prescription)} {exerciseName(companion.prescription.exercise_id)}
-          {' '}— same every round
-        </BlockPanel.Note>
-      ))}
+      {laddered.map((movement) => {
+        const readings = liveMovementReadings(movement.prescription, weightUnit)
+        return (
+          <BlockPanel.Note key={movement.exerciseId}>
+            {roundTarget(movement, round.number)} {readings.name}
+            <PrescribedLoad readings={readings} />
+          </BlockPanel.Note>
+        )
+      })}
+      {round.companions.map((companion) => {
+        const readings = liveMovementReadings(companion.prescription, weightUnit)
+        return (
+          <BlockPanel.Note key={companion.exerciseId}>
+            {targetText(companion.prescription)} {readings.name}
+            <PrescribedLoad readings={readings} />
+            {' '}— same every round
+          </BlockPanel.Note>
+        )
+      })}
     </BlockPanel.Movement>
   )
 }

@@ -512,7 +512,10 @@ describe('the ladder states its structure identity like every other block', () =
       exercises: [sequence('kettlebell-swing', [15, 12, 9])],
     })
 
-    expect(screen.getByText('FOR TIME · 8 MIN CAP · LADDER DOWN')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01, G03): the badge names the shape the ladder renderer
+    // performs, LADDER; its cap and scheme are read on the line below it.
+    expect(screen.getByText('LADDER')).toBeInTheDocument()
+    expect(screen.getByText('8 MIN CAP · LADDER DOWN')).toBeInTheDocument()
     expect(screen.getByText('1 movement')).toBeInTheDocument()
   })
 

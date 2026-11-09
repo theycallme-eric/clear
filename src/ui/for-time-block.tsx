@@ -48,8 +48,8 @@ import {
   FOR_TIME_START,
   type ForTimeView,
 } from '../state/for-time'
-import { exerciseName, prescriptionText } from '../state/prescription'
-import { equipmentName } from '../state/review'
+import { prescriptionText } from '../state/prescription'
+import { useShellWeightUnit } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedForTime,
@@ -60,6 +60,7 @@ import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
 import { useInterfaceLoop } from './motion'
+import { liveMovementReadings } from './refinements/movement-readings'
 
 export interface ForTimeBlockProps extends BlockRendererProps {
   /** Injected by a test; the shell's own storage otherwise. */
@@ -307,13 +308,18 @@ function PhaseGlyph({ view }: { view: ForTimeView }) {
  */
 function ForTimeMovement({ exercise }: { exercise: ExerciseProgress }) {
   const prescription = exercise.prescription
+  // R31, C10 (TASK-003): the same name, compact equipment and prescribed load
+  // Review shows, through its formatters and the profile's unit. A target,
+  // never a performed weight.
+  const readings = liveMovementReadings(prescription, useShellWeightUnit())
 
   return (
     <BlockPanel.Movement
-      title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+      title={`${exercise.position}. ${readings.name}`}
       detail={prescriptionText(prescription)}
+      load={readings.load}
       // C03, R132: the compact equipment beside the name, as Review shows it.
-      context={equipmentName(prescription.equipment_used)}
+      context={readings.equipment}
     />
   )
 }

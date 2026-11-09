@@ -408,15 +408,20 @@ async function readHeaders(page: Page, context: Context): Promise<HeaderGeometry
     }), [...FACE])
 }
 
-/** C07, R37: the static header — section identity left, badge right, no control. */
+/**
+ * C07, R37: the static header — section identity first, no control. TASK-003
+ * (AC-C09-01; R51, R59) supersedes the right-hand badge: it sits below the
+ * identity, at the header's start, in every header.
+ */
 function expectStaticHeader(header: HeaderGeometry, label: string) {
   expect(header.text, `${label}: section identity`).toBe(CONTEXT_SECTION)
   expect(header.controls, `${label}: no toggle, chevron, link or focus stop`).toBe(0)
   expect(header.cursor, `${label}: no hit area`).not.toBe('pointer')
   expect(header.hitIsTitle, `${label}: the title itself is under a tap, not a control`).toBe(true)
   expect(Math.abs(header.title.left - header.header.left), `${label}: identity on the left`).toBeLessThanOrEqual(TOLERANCE)
-  if (header.badgeBox !== null && header.badgeBox.top < header.title.bottom) {
-    expect(Math.abs(header.badgeBox.right - header.header.right), `${label}: badge on the right`).toBeLessThanOrEqual(TOLERANCE)
+  if (header.badgeBox !== null) {
+    expect(header.badgeBox.top, `${label}: badge below the identity`).toBeGreaterThanOrEqual(header.title.bottom - TOLERANCE)
+    expect(Math.abs(header.badgeBox.left - header.header.left), `${label}: badge at the header's start`).toBeLessThanOrEqual(TOLERANCE)
   }
 }
 
@@ -483,7 +488,10 @@ test.describe('TASK-002 context-specific actions with compact equipment', () => 
       expect(reviewHeaders).toHaveLength(3)
       reviewHeaders.forEach((header, index) => expectStaticHeader(header, `Review header ${index + 1} @${name}`))
       expect(reviewHeaders[0].tag).toBe('H2')
-      expect(reviewHeaders.map((header) => header.badge)).toEqual([null, 'SUPERSET · 3 ROUNDS', 'CIRCUIT · 2 ROUNDS'])
+      // TASK-003 (AC-C08-01): the badge names the format; the rounds are the
+      // header's details line below it.
+      expect(reviewHeaders.map((header) => header.badge)).toEqual([null, 'SUPERSET', 'CIRCUIT'])
+      await expect(page.locator('[data-workout-card="review"] [data-structure-meta]')).toHaveText(['3 ROUNDS', '2 ROUNDS'])
       const main = page.locator('main')
       await expect(main.getByRole('button', { name: /^Rest( for .+)?$/ })).toHaveCount(0)
       await expect(main.getByRole('button', { name: /^Log\b/ })).toHaveCount(0)

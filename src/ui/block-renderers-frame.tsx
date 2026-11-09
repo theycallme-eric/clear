@@ -38,7 +38,6 @@ import { HeadingSection } from './Heading'
 import { MovementList as SharedMovementList } from './refinements/movement'
 import { LiveMovement, WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
-import { StructureBadge } from './workout-chrome'
 
 const STACK_STYLE: CSSProperties = { display: 'flex', flexDirection: 'column' }
 
@@ -117,9 +116,10 @@ export function BlockPanel({
 }: BlockPanelProps) {
   const sectionLabel = useSectionLabel()
   const card = (
-    // REQ-008: a secondary label on the left and the compact structure badge
-    // on the right, so the badge never competes with the movement heading
-    // below it. The same static header Review's cards draw (C07, R37).
+    // REQ-008: a secondary label, then the compact structure badge, so the
+    // badge never competes with the movement heading below it. The same static
+    // header Review's cards draw (C07, R37): the badge names the format alone,
+    // below the label, with its duration, cap or rounds beside it (C08, C09).
     <WorkoutCard
       context="workout"
       role={role}
@@ -127,7 +127,7 @@ export function BlockPanel({
         sectionLabel ??
         `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`
       }
-      badge={<StructureBadge identity={block.identity} />}
+      structure={block.identity}
     >
       {children}
       <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />

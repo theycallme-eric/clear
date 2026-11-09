@@ -78,8 +78,8 @@ import {
 import { useConditioningHistoryQuery } from '../state/conditioning-queries'
 import { QueryClientContext } from '../state/query'
 import { WorkoutClientsContext } from '../state/workout-queries'
-import { exerciseName, targetText } from '../state/prescription'
-import { equipmentName } from '../state/review'
+import { targetText } from '../state/prescription'
+import { useShellWeightUnit } from '../state/set-logging'
 import {
   elapsedSeconds,
   formatElapsed,
@@ -96,7 +96,9 @@ import { Card } from './card'
 import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
 import { useInterfaceLoop } from './motion'
-import { StructureBadge } from './workout-chrome'
+import { liveMovementReadings } from './refinements/movement-readings'
+import { WorkoutCard } from './refinements/workout-card'
+import { useSectionLabel } from './section-label-context'
 import type { BlockRendererProps } from './block-renderers'
 
 export interface AmrapBlockProps extends BlockRendererProps {
@@ -139,6 +141,7 @@ export function AmrapBlock({
     view.remainingSeconds <= 10
   const loop = useInterfaceLoop('urgent', urgent)
   const roundsLabelId = useId()
+  const sectionLabel = useSectionLabel()
   const outcome = shape.size === 0 ? {} : amrapOutcome(view)
 
   return (
@@ -155,107 +158,111 @@ export function AmrapBlock({
       {shape.size > 0 && view.phase === 'running' && view.capSeconds !== null && (
         <TimerDisplay seconds={view.remainingSeconds} size="lg" />
       )}
-      <Card>
-        <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div className="clr-row" style={{ justifyContent: 'space-between' }}>
-            <StructureBadge identity={block.identity} />
-            <span style={labelStyle}>
-              {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-            </span>
-          </div>
+      {/*
+        TASK-003 (C08, C09): the block's card and static header are the shared
+        `WorkoutCard` every other live block and Review draw — the section
+        label, the format-only badge below it and the window beside the badge
+        (`AMRAP`, `8 MIN`) — rather than a header row of its own.
+      */}
+      <WorkoutCard
+        context="workout"
+        title={
+          sectionLabel ??
+          `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`
+        }
+        structure={block.identity}
+      >
+        {shape.size === 0 ? (
+          <p style={{ margin: 0 }}>
+            Nothing left to perform in this block — every movement in it was swapped
+            out.
+          </p>
+        ) : (
+          <>
+            <Window
+              view={view}
+              onStart={() => amrap.update(startAmrap(amrap.state, now()))}
+              // Read from the clock at the moment of the tap rather than from the
+              // rendered countdown: the repaint is throttled to twice a second,
+              // and the time the user stopped at is the time they stopped at.
+              onFinish={() =>
+                amrap.update(
+                  finishAmrap(
+                    amrap.state,
+                    shape,
+                    elapsedSeconds(amrap.state.startedAt, now()),
+                  ),
+                )
+              }
+            />
 
-          {shape.size === 0 ? (
-            <p style={{ margin: 0 }}>
-              Nothing left to perform in this block — every movement in it was swapped
-              out.
-            </p>
-          ) : (
-            <>
-              <Window
-                view={view}
-                onStart={() => amrap.update(startAmrap(amrap.state, now()))}
-                // Read from the clock at the moment of the tap rather than from the
-                // rendered countdown: the repaint is throttled to twice a second,
-                // and the time the user stopped at is the time they stopped at.
-                onFinish={() =>
-                  amrap.update(
-                    finishAmrap(
-                      amrap.state,
-                      shape,
-                      elapsedSeconds(amrap.state.startedAt, now()),
-                    ),
-                  )
-                }
-              />
-
-              {/*
-                After the window and nowhere before it: the result is optional,
-                one tap on the card, with nothing to submit — and blank is a
-                state of its own rather than a zero.
-              */}
-              {view.phase === 'complete' && (
-                <>
-                  <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
-                    <Rounds
-                      labelledBy={roundsLabelId}
-                      rounds={view.roundsCompleted}
-                      onCount={(delta) => amrap.update(countRound(amrap.state, delta))}
-                      onSet={(rounds) =>
-                        amrap.update(setRoundsCompleted(amrap.state, rounds))
-                      }
-                    />
-                  </Card>
-                  <PartialRound
-                    reps={view.partialRoundReps}
-                    onChange={(reps) =>
-                      amrap.update(setPartialRoundReps(amrap.state, reps))
+            {/*
+              After the window and nowhere before it: the result is optional,
+              one tap on the card, with nothing to submit — and blank is a
+              state of its own rather than a zero.
+            */}
+            {view.phase === 'complete' && (
+              <>
+                <Card heading={<span id={roundsLabelId}>Rounds completed</span>}>
+                  <Rounds
+                    labelledBy={roundsLabelId}
+                    rounds={view.roundsCompleted}
+                    onCount={(delta) => amrap.update(countRound(amrap.state, delta))}
+                    onSet={(rounds) =>
+                      amrap.update(setRoundsCompleted(amrap.state, rounds))
                     }
                   />
-                  {conditioningHistory === undefined ? (
-                    <AmrapComparison block={block} outcome={outcome} />
-                  ) : (
-                    <ConditioningScoreLine
-                      {...likeForLike(block, outcome, conditioningHistory)}
-                    />
-                  )}
-                </>
-              )}
+                </Card>
+                <PartialRound
+                  reps={view.partialRoundReps}
+                  onChange={(reps) =>
+                    amrap.update(setPartialRoundReps(amrap.state, reps))
+                  }
+                />
+                {conditioningHistory === undefined ? (
+                  <AmrapComparison block={block} outcome={outcome} />
+                ) : (
+                  <ConditioningScoreLine
+                    {...likeForLike(block, outcome, conditioningHistory)}
+                  />
+                )}
+              </>
+            )}
 
-              {/*
-                The quickfix's label, on its own terms: two or more movements make
-                a round worth naming, and a single-movement AMRAP is already
-                obvious (`quickfix-amrap-round-label.md`).
-              */}
-              <Card heading={shape.size > 1 ? 'Each round:' : undefined}>
-                <ol
-                  aria-label="Movements in this AMRAP"
-                  style={{
-                    listStyle: 'none',
-                    margin: 0,
-                    padding: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 'var(--spacing-300)',
-                  }}
-                >
-                  {block.exercises.map((exercise) => (
-                    <li key={exercise.exerciseId}>
-                      <Movement exercise={exercise} />
-                    </li>
-                  ))}
-                </ol>
-              </Card>
-            </>
-          )}
+            {/*
+              The quickfix's label, on its own terms: two or more movements make
+              a round worth naming, and a single-movement AMRAP is already
+              obvious (`quickfix-amrap-round-label.md`).
+            */}
+            <Card heading={shape.size > 1 ? 'Each round:' : undefined}>
+              <ol
+                aria-label="Movements in this AMRAP"
+                style={{
+                  listStyle: 'none',
+                  margin: 0,
+                  padding: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--spacing-300)',
+                }}
+              >
+                {block.exercises.map((exercise) => (
+                  <li key={exercise.exerciseId}>
+                    <Movement exercise={exercise} />
+                  </li>
+                ))}
+              </ol>
+            </Card>
+          </>
+        )}
 
-          {/*
-            The score, through the one path every structure completes through. An
-            AMRAP nobody started measured nothing — no rounds, no time — and says
-            so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
-          */}
-          <BlockCompletionControl blockId={block.blockId} outcome={outcome} />
-        </div>
-      </Card>
+        {/*
+          The score, through the one path every structure completes through. An
+          AMRAP nobody started measured nothing — no rounds, no time — and says
+          so by supplying nothing rather than a row of zeroes (DATA_MODEL §8).
+        */}
+        <BlockCompletionControl blockId={block.blockId} outcome={outcome} />
+      </WorkoutCard>
     </div>
   )
 }
@@ -548,12 +555,17 @@ function PartialRound({
  */
 function Movement({ exercise }: { exercise: ExerciseProgress }) {
   const prescription = exercise.prescription
+  // R31, C10 (TASK-003): the same name, compact equipment and prescribed load
+  // Review shows, through its formatters and the profile's unit. A target,
+  // never a performed weight.
+  const readings = liveMovementReadings(prescription, useShellWeightUnit())
 
   return (
     <BlockPanel.Movement
-      title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+      title={`${exercise.position}. ${readings.name}`}
       detail={targetText(prescription)}
-      context={equipmentName(prescription.equipment_used)}
+      load={readings.load}
+      context={readings.equipment}
     >
       {prescription.tempo === null ? null : (
         <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

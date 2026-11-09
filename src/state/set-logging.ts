@@ -439,3 +439,14 @@ export function useSetLogging(): SetLoggingApi {
   }
   return api
 }
+
+/**
+ * The profile's weight unit as the workout shell holds it, for a renderer that
+ * only *reads* a prescribed load and logs no set (TASK-003, C10: the EMOM,
+ * AMRAP, For Time and ladder movements). The same unit the set loggers and
+ * Review state a load in. Null outside the shell or before the profile has
+ * answered, and a load is then stated without a unit — never a guessed one.
+ */
+export function useShellWeightUnit(): Enums<'weight_unit'> | null {
+  return use(SetLoggingContext)?.weightUnit ?? null
+}

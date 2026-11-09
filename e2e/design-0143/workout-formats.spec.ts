@@ -48,7 +48,9 @@ function formats([one, two]: Catalogued[]) {
     ['conditioning', 'Conditioning', 'EMOM', block('emom')],
     ['conditioning', 'Conditioning', 'AMRAP', block('amrap')],
     ['conditioning', 'Conditioning', 'FOR TIME', block('for_time')],
-    ['conditioning', 'Conditioning', 'LADDER UP', block('for_time', {
+    // TASK-003 (AC-C08-01): the badge names the shape the ladder renderer
+    // performs, LADDER; `LADDER UP` is read on the block card's details line.
+    ['conditioning', 'Conditioning', 'LADDER', block('for_time', {
       rep_scheme: 'ladder_up',
       exercises: [prescription(one, { target_kind: 'sequence', target_value: null, target_sequence: [2, 4, 6], sets: null })],
     })],

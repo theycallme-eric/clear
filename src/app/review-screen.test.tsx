@@ -239,10 +239,13 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     const list = screen.getByRole('list', { name: 'superset, 4 rounds' })
     const group = list.parentElement!
     // TASK-002 (AC-C07-01): the badge heads the block's card, in the shared
-    // static header beside the section's name, and the sequence leads the group.
+    // static header with the section's name, and the sequence leads the group.
     const badge = cardHeader(group)
     const [sequence] = [...group.children]
-    expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
+    // TASK-003 (AC-C08-01, AC-C09-01): the badge below the name says the
+    // format alone; the round count is the header's line below the badge.
+    expect(badge.querySelector('.clr-movement-group-header__badge')).toHaveTextContent(/^SUPERSET$/)
+    expect(badge.querySelector('[data-structure-meta]')).toHaveTextContent(/^4 ROUNDS$/)
     expect(badge.querySelector('svg')).not.toBeNull()
     expect(precedes(badge, sequence)).toBe(true)
     expect(sequence).toHaveTextContent(/^One round: 01 → 02$/)
@@ -282,7 +285,9 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     const list = screen.getByRole('list', { name: 'circuit, 5 rounds' })
     const group = list.parentElement!
     // TASK-002 (AC-C07-01): the badge is in the card's shared static header.
-    expect(cardHeader(group)).toHaveTextContent('CIRCUIT · 5 ROUNDS')
+    // TASK-003 (AC-C08-01): format alone in the badge, the rounds beside it.
+    expect(cardHeader(group).querySelector('.clr-movement-group-header__badge')).toHaveTextContent(/^CIRCUIT$/)
+    expect(cardHeader(group).querySelector('[data-structure-meta]')).toHaveTextContent(/^5 ROUNDS$/)
     expect(cardHeader(group).querySelector('svg')).not.toBeNull()
     expect(within(group).getByText('One round: 01 → 02 → 03')).toBeInTheDocument()
     expect(within(list).getAllByRole('listitem').map((item) => item.textContent)).toEqual([

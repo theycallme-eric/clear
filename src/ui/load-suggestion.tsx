@@ -177,6 +177,11 @@ export interface LoadSuggestionDialogProps {
  * "Why this number": the sets the rule was read from, the RPE recorded across
  * them, the rule that fired in its own words, and the field that replaces the
  * number for this session.
+ *
+ * TASK-003 (AC-R003-04; R04, G24): a suggestion that is not `adjustable` — a
+ * movement in a circuit, whose actual weight is entered in the live circuit's
+ * optional logger — is explained without that field or its actions. Review
+ * offers no second, redundant way to change the circuit's weight.
  */
 export function LoadSuggestionDialog({
   suggestion,
@@ -213,7 +218,7 @@ export function LoadSuggestionDialog({
           <Button variant="quiet" onClick={onClose}>
             {CLOSE_LABEL}
           </Button>
-          {override !== null && (
+          {suggestion.adjustable && override !== null && (
             <Button
               variant="secondary"
               onClick={() => {
@@ -225,9 +230,11 @@ export function LoadSuggestionDialog({
               {CLEAR_OVERRIDE_LABEL}
             </Button>
           )}
-          <Button variant="primary" onClick={apply}>
-            {APPLY_OVERRIDE_LABEL}
-          </Button>
+          {suggestion.adjustable && (
+            <Button variant="primary" onClick={apply}>
+              {APPLY_OVERRIDE_LABEL}
+            </Button>
+          )}
         </>
       }
     >
@@ -260,18 +267,20 @@ export function LoadSuggestionDialog({
           <p style={{ margin: 0 }}>{suggestion.reason}</p>
         </section>
 
-        <Input
-          label={`${OVERRIDE_LABEL} (${unit})`}
-          type="number"
-          inputMode="decimal"
-          value={draft}
-          onChange={(value) => {
-            setDraft(value)
-            setInvalid(false)
-          }}
-          helperText={OVERRIDE_SCOPE_NOTE}
-          errorText={invalid ? OVERRIDE_INVALID_TEXT : undefined}
-        />
+        {suggestion.adjustable && (
+          <Input
+            label={`${OVERRIDE_LABEL} (${unit})`}
+            type="number"
+            inputMode="decimal"
+            value={draft}
+            onChange={(value) => {
+              setDraft(value)
+              setInvalid(false)
+            }}
+            helperText={OVERRIDE_SCOPE_NOTE}
+            errorText={invalid ? OVERRIDE_INVALID_TEXT : undefined}
+          />
+        )}
       </div>
     </AppDialog>
   )
