@@ -17,7 +17,8 @@ task, change the provider through its owner.
 
 Owner decision, 2026-11-09: staged reference objects are never committed to this repository,
 because GitHub storage growth is not acceptable. Only the small hash manifests above are committed.
-The object bytes live outside Git in the Runner body evidence location, addressed by content:
+The object bytes live outside Git in one project-level reference object store, shared by all
+CLEAR bodies (owner refinement, 2026-11-09), addressed by content:
 
 ```text
 <store>/clear-refinement-20261103/references/<id>/objects/<sha256>
@@ -26,8 +27,11 @@ The object bytes live outside Git in the Runner body evidence location, addresse
 The verifiers find `<store>` like this:
 
 1. `CLEAR_REFINEMENT_EVIDENCE_DIR`, when set (absolute, or relative to the working directory).
-2. Otherwise, the Runner V2 layout. The git worktree root is `<runner body>/worktrees/<task>`, so
-   the store is `<runner body>/evidence`, two levels above the worktree root.
+2. Otherwise, the Runner V2 layout. The git worktree root must be
+   `<project>/runner-v2/<runner body>/worktrees/<task>`, and the store is `<project>/evidence-store`.
+   The resolver checks that shape (`worktrees`, then `runner-v2`). A worktree outside that layout
+   fails closed unless the override is set. There is no body-level fallback: one default location
+   only.
 
 The check fails closed and names the expected location when any of these hold:
 
@@ -36,8 +40,8 @@ The check fails closed and names the expected location when any of these hold:
 - an object is missing;
 - an object's sha256 does not match its manifest.
 
-Nothing falls back to passing. Checks that verify references therefore run only where the body
-folder exists. Pinned gallery files that equal the integration base still resolve from that
+Nothing falls back to passing. Checks that verify references therefore run only where the project
+workspace store exists. Pinned gallery files that equal the integration base still resolve from that
 commit's git blob. Neither an unpublished commit nor an owner-machine path is ever needed.
 
 To restage, use the one-time tool. It checks every byte against the approved requirements manifest

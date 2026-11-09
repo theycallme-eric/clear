@@ -193,15 +193,50 @@ Changes for the decision:
 - `task-039/required-cases.json` was regenerated from the actual TAP run: 49 cases, each with its
   criterion.
 
-## Verification (this tree, repair round 1)
+## Repair round 2 (2026-11-09)
+
+Owner refinement (recorded in the V2 ledger, 2026-11-09, Eric). The earlier "no objects in Git"
+decision stands in full. Its default store is now project-level and shared by all CLEAR bodies:
+`<project>/evidence-store`, beside `runner-v2/`, instead of the body folder `<runner body>/evidence`.
+There is one default location and no body-level fallback.
+
+Changes:
+
+- `lib/references.mjs`: without `CLEAR_REFINEMENT_EVIDENCE_DIR`, the resolver now takes the git
+  worktree root and checks that it is at `<project>/runner-v2/<runner body>/worktrees/<task>`
+  (the parent is `worktrees`, and the parent of the body is `runner-v2`). The store is then
+  `<project>/evidence-store`. Any other worktree fails closed: the message names the expected
+  layout and the override. The internal layout is unchanged:
+  `<store>/<body>/references/<id>/objects/<sha256>`. Absent, missing and tampered cases fail closed
+  as before.
+- The 103 objects were copied to the project store, and each sha256 was checked against its file
+  name (103 checked, 0 bad; `diff -r` identical). The body-level `evidence/` directory was then
+  deleted, so the project store is the single source.
+- `BODY.json`, `stage-references.mjs` (its default and the BODY.json it writes),
+  `verify-delivery-evidence.mjs` comments, `evidence/refinement/README.md` and `PROJECT_MAP.md`
+  now describe the project-level store, without absolute paths.
+- Self-tests:
+  - `finds the object store through the V2 worktree layout` was renamed to `finds the project-level
+    object store through the V2 worktree layout`. It checks that the live worktree resolves to
+    `../../../../evidence-store`. A synthetic `<project>/runner-v2/<body>/worktrees/<task>` repo
+    fails closed until `<project>/evidence-store` exists, and a body-level `evidence/` folder is
+    never used.
+  - New: `fails closed for a worktree outside the runner-v2 layout without the override`. It
+    covers the right depth with the wrong shape, and a plain checkout. The override still
+    resolves from such a worktree.
+  - The override, absent, missing and tampered cases are unchanged and pass.
+  - `task-039/required-cases.json` now declares 50 cases.
+
+## Verification (this tree, repair round 2)
 
 - `npm ci`: dependencies were already installed in this worktree (`node_modules/.bin/vitest`
   present). The controller runs `npm ci` itself.
 - `node scripts/refinement/run-required-check.mjs --task TASK-039 --check bootstrap -- node --test
-  scripts/refinement/required-check.test.mjs`: PASSED, exit 0. 49 total, 49 executed, 49 passed,
+  scripts/refinement/required-check.test.mjs`: PASSED, exit 0. 50 total, 50 executed, 50 passed,
   0 skipped, 0 todo.
 - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode
-  baseline --require-current-source`: PASSED, exit 0. The store was found through the layout.
+  baseline --require-current-source`: PASSED, exit 0. The store was found through the layout at
+  `<project>/evidence-store`.
   1,193 gallery files (94 from the store, 1,099 from the integration base), 5 phosphor-echo files
   and 3 historical files were verified.
 - `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode
@@ -212,8 +247,9 @@ Changes for the decision:
   `[missing] t/a.test.mjs > claimed for a`.
 - `npm run build`: built. `npm run lint:ds`: exit 0. `npx eslint scripts/refinement`: clean.
 - `npm test`: 250 files and 6,067 tests passed.
-- `git ls-files evidence/refinement` lists only the hash manifests, the task-039 manifest and the
-  receipt. No `objects/` path, PINNED-SOURCE.json or GALLERY-DELIVERY.json is tracked.
+- The body-level `evidence/` directory is gone. `git ls-files evidence/refinement` lists only the hash manifests, the task-039 manifest and the
+  receipt. No `objects/` path, PINNED-SOURCE.json or GALLERY-DELIVERY.json is tracked, and no
+  tracked evidence file contains `/Users/`.
 
 ## Open assumptions
 
@@ -228,7 +264,7 @@ Changes for the decision:
   (`sourceRepository`) and GALLERY-DELIVERY.json (fallbacks). They are now store objects outside
   Git, are never committed, and nothing resolves through those paths.
 - Under the owner decision of 2026-11-09, reference checks (baseline `--require-current-source`,
-  references, final and `ref:` definition sources) run only where the Runner body folder exists,
+  references, final and `ref:` definition sources) run only where the project workspace `evidence-store/` exists,
   or where `CLEAR_REFINEMENT_EVIDENCE_DIR` points at a copy of the store. Elsewhere they fail
   closed. Baseline mode without `--require-current-source` needs no store.
 

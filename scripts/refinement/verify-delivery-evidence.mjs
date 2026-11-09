@@ -24,8 +24,9 @@
 // Common options: --body <id> (required), --evidence-root <dir>, --json.
 //
 // Staged reference objects are not in Git (owner decision 2026-11-09). They
-// are read from the body evidence object store: $CLEAR_REFINEMENT_EVIDENCE_DIR,
-// or <runner body>/evidence for a worktree at <runner body>/worktrees/<task>.
+// are read from the project-level reference object store:
+// $CLEAR_REFINEMENT_EVIDENCE_DIR, or <project>/evidence-store for a worktree at
+// <project>/runner-v2/<runner body>/worktrees/<task> (no body-level fallback).
 // Without the store every mode that verifies references fails closed.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'

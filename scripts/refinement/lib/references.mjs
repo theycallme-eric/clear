@@ -4,8 +4,9 @@
 // References are resolved by identity, never by an owner-machine path:
 //   - the repository commits only small hash manifests (BODY.json and
 //     references/<id>/REFERENCE.json);
-//   - staged object bytes live OUTSIDE Git in the body evidence object store
-//     (owner decision 2026-11-09: no reference objects in the product repo),
+//   - staged object bytes live OUTSIDE Git in the project-level reference
+//     object store shared by all CLEAR bodies (owner decisions 2026-11-09:
+//     no reference objects in the product repo; one project-level store),
 //     at <store>/<body>/references/<id>/objects/<sha256>;
 //   - a pinned gallery file whose bytes equal the verified integration base
 //     is resolved from the base commit's git blob instead of being staged.
@@ -13,12 +14,13 @@
 // A missing store, a missing object or a hash mismatch always fails closed.
 //
 // Store location: $CLEAR_REFINEMENT_EVIDENCE_DIR when set, otherwise the
-// Runner V2 layout: the git worktree root is <runner body>/worktrees/<task>,
-// so the store is <runner body>/evidence (two levels above the worktree).
+// Runner V2 layout: the git worktree root must be
+// <project>/runner-v2/<runner body>/worktrees/<task>, and the store is
+// <project>/evidence-store. There is no other (e.g. body-level) fallback.
 
 import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { basename, dirname, join, resolve } from 'node:path'
 
 import { sha256 } from './required-check.mjs'
 
@@ -29,7 +31,20 @@ const HEX64 = /^[0-9a-f]{64}$/
 const OWNER_PATH = /(^|["'\s])(\/Users\/|\/home\/|[A-Za-z]:\\\\)/
 
 export const OBJECT_STORE_ENV = 'CLEAR_REFINEMENT_EVIDENCE_DIR'
-const STORE_LAYOUT = '<runner body>/worktrees/<task> -> <runner body>/evidence'
+const STORE_LAYOUT = '<project>/runner-v2/<runner body>/worktrees/<task> -> <project>/evidence-store'
+export const STORE_DIR_NAME = 'evidence-store'
+
+/**
+ * The project workspace for a Runner V2 worktree root, or null when the root
+ * is not at <project>/runner-v2/<runner body>/worktrees/<task>.
+ */
+export function projectFromWorktree(top) {
+  const worktrees = dirname(top)
+  const runnerBody = dirname(worktrees)
+  const runnerV2 = dirname(runnerBody)
+  if (basename(worktrees) !== 'worktrees' || basename(runnerV2) !== 'runner-v2') return null
+  return dirname(runnerV2)
+}
 
 /**
  * Locate the out-of-Git reference object store. Returns { dir, source } and,
@@ -54,7 +69,15 @@ export function resolveObjectStore({ cwd = process.cwd(), env = process.env } = 
         problem: `reference object store cannot be located: ${cwd} is not inside a git worktree (layout ${STORE_LAYOUT}); set ${OBJECT_STORE_ENV}`,
       }
     }
-    dir = resolve(top, '..', '..', 'evidence')
+    const project = projectFromWorktree(resolve(top))
+    if (!project) {
+      return {
+        dir: null,
+        source: 'layout',
+        problem: `reference object store cannot be located: worktree ${top} is not in the Runner V2 layout (${STORE_LAYOUT}); set ${OBJECT_STORE_ENV}`,
+      }
+    }
+    dir = join(project, STORE_DIR_NAME)
     source = `layout ${STORE_LAYOUT}`
   }
   if (!existsSync(dir)) {

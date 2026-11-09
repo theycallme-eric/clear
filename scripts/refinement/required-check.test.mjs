@@ -484,8 +484,8 @@ describe('TASK-AC-9E8B5D3DDA20 staged references', () => {
     assert.equal(result.report.references[0].files, 5)
   })
 
-  // Owner decision 2026-11-09: staged objects live outside Git in the body
-  // evidence object store. These cases copy the real store so the real one
+  // Owner decisions 2026-11-09: staged objects live outside Git in the
+  // project-level reference object store. These cases copy the real store so the real one
   // is never modified.
   const TOKENS_SHA = 'c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d'
   function storeCopy(name) {
@@ -497,21 +497,46 @@ describe('TASK-AC-9E8B5D3DDA20 staged references', () => {
   }
   const tokensObject = (dir) => join(dir, BODY, 'references/accepted-gallery/objects', TOKENS_SHA)
 
-  test('finds the object store through the V2 worktree layout', () => {
+  test('finds the project-level object store through the V2 worktree layout', () => {
     const live = resolveObjectStore({ cwd: repo, env: {} })
     const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: repo, encoding: 'utf8' }).stdout.trim()
-    assert.equal(live.dir, resolve(top, '../../evidence'))
+    assert.equal(live.dir, resolve(top, '../../../../evidence-store'))
     assert.match(live.source, /^layout /)
-    // A synthetic Runner V2 body: <body>/worktrees/<task> is a git worktree root.
-    const runnerBody = realpathSync(mkdtempSync(join(scratch, 'v2-body-')))
+    // A synthetic project: <project>/runner-v2/<body>/worktrees/<task> is a git worktree root.
+    const project = realpathSync(mkdtempSync(join(scratch, 'v2-project-')))
+    const runnerBody = join(project, 'runner-v2', 'some-body')
     const worktree = join(runnerBody, 'worktrees', 'TASK-999-a1')
     mkdirSync(join(worktree, 'nested'), { recursive: true })
     assert.equal(spawnSync('git', ['init', '-q'], { cwd: worktree }).status, 0)
-    assert.match(resolveObjectStore({ cwd: join(worktree, 'nested'), env: {} }).problem, /object store is absent: expected .*v2-body-.*\/evidence/)
+    assert.match(resolveObjectStore({ cwd: join(worktree, 'nested'), env: {} }).problem, /object store is absent: expected .*v2-project-[^/]*\/evidence-store /)
+    // No body-level fallback: a body evidence/ folder is never used.
     mkdirSync(join(runnerBody, 'evidence'))
+    assert.match(resolveObjectStore({ cwd: worktree, env: {} }).problem, /object store is absent: expected .*\/evidence-store /)
+    mkdirSync(join(project, 'evidence-store'))
     const found = resolveObjectStore({ cwd: join(worktree, 'nested'), env: {} })
     assert.equal(found.problem, undefined)
-    assert.equal(found.dir, join(runnerBody, 'evidence'))
+    assert.equal(found.dir, join(project, 'evidence-store'))
+  })
+
+  test('fails closed for a worktree outside the runner-v2 layout without the override', () => {
+    // Right depth, wrong shape: <x>/not-runner-v2/<body>/worktrees/<task>.
+    const project = realpathSync(mkdtempSync(join(scratch, 'flat-project-')))
+    mkdirSync(join(project, 'evidence-store'))
+    const worktree = join(project, 'not-runner-v2', 'some-body', 'worktrees', 'TASK-999-a1')
+    mkdirSync(worktree, { recursive: true })
+    assert.equal(spawnSync('git', ['init', '-q'], { cwd: worktree }).status, 0)
+    const located = resolveObjectStore({ cwd: worktree, env: {} })
+    assert.equal(located.dir, null)
+    assert.match(located.problem, /is not in the Runner V2 layout \(<project>\/runner-v2\/<runner body>\/worktrees\/<task> -> <project>\/evidence-store\); set CLEAR_REFINEMENT_EVIDENCE_DIR/)
+    // A plain checkout (not under worktrees/) also fails closed.
+    const plain = join(project, 'plain-checkout')
+    mkdirSync(plain)
+    assert.equal(spawnSync('git', ['init', '-q'], { cwd: plain }).status, 0)
+    assert.match(resolveObjectStore({ cwd: plain, env: {} }).problem, /is not in the Runner V2 layout/)
+    // The override still works from such a worktree.
+    const overridden = resolveObjectStore({ cwd: worktree, env: { CLEAR_REFINEMENT_EVIDENCE_DIR: join(project, 'evidence-store') } })
+    assert.equal(overridden.problem, undefined)
+    assert.equal(overridden.dir, join(project, 'evidence-store'))
   })
 
   test('uses the CLEAR_REFINEMENT_EVIDENCE_DIR override', () => {

@@ -6,9 +6,10 @@
 //   node scripts/refinement/stage-references.mjs --approved-run <requirements run dir>
 //
 // Owner decision 2026-11-09: staged reference OBJECTS are never committed to
-// the product repository. Their bytes are written outside Git to the body
-// evidence object store ($CLEAR_REFINEMENT_EVIDENCE_DIR, or <runner body>/evidence
-// for a worktree at <runner body>/worktrees/<task>) as
+// the product repository. Their bytes are written outside Git to the
+// project-level reference object store shared by all CLEAR bodies
+// ($CLEAR_REFINEMENT_EVIDENCE_DIR, or <project>/evidence-store for a worktree
+// at <project>/runner-v2/<runner body>/worktrees/<task>) as
 // <store>/<body>/references/<id>/objects/<sha256>. Only the small hash
 // manifests (BODY.json, references/<id>/REFERENCE.json) go into the repository.
 //
@@ -202,8 +203,8 @@ function main() {
     notesDir: 'docs/journal/clear-refinement-20261103',
     taskEvidence: 'evidence/refinement/task-NNN',
     objectStore: {
-      policy: 'staged reference objects are kept outside Git (owner decision 2026-11-09); only these hash manifests are committed',
-      layout: '<runner body>/worktrees/<task> -> <runner body>/evidence/<body>/references/<id>/objects/<sha256>',
+      policy: 'staged reference objects are kept outside Git in one project-level store shared by all CLEAR bodies (owner decisions 2026-11-09); only these hash manifests are committed; no body-level fallback',
+      layout: '<project>/runner-v2/<runner body>/worktrees/<task> -> <project>/evidence-store/<body>/references/<id>/objects/<sha256>',
       override: OBJECT_STORE_ENV,
     },
     references,

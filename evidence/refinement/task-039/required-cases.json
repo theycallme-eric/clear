@@ -189,7 +189,12 @@
         },
         {
           "file": "scripts/refinement/required-check.test.mjs",
-          "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the object store through the V2 worktree layout",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the project-level object store through the V2 worktree layout",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed for a worktree outside the runner-v2 layout without the override",
           "criterion": "TASK-AC-9E8B5D3DDA20"
         },
         {

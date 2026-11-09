@@ -13,12 +13,12 @@
   ],
   "manifest": {
     "path": "evidence/refinement/task-039/required-cases.json",
-    "sha256": "2bc22de471b90d86fdbba620aca2661ed9fe115817c77a060059534d26c1296b"
+    "sha256": "d6906d2113ffdcb59a8a8291da963e6e54de83d061ce4b93c7aebe1fafef3516"
   },
   "targets": [
     {
       "path": "scripts/refinement/required-check.test.mjs",
-      "sha256": "b137b99d7d1ea28d30e5f14f8d0efab1495498a94192ae46f2f34ae64ec6b9e1"
+      "sha256": "60503b0af3aee517164fe082c8dabe9089c7c6903b9ff22e1b91f6fe86c0f660"
     }
   ],
   "requiredCases": [
@@ -189,7 +189,12 @@
     },
     {
       "file": "scripts/refinement/required-check.test.mjs",
-      "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the object store through the V2 worktree layout",
+      "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the project-level object store through the V2 worktree layout",
+      "status": "passed"
+    },
+    {
+      "file": "scripts/refinement/required-check.test.mjs",
+      "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed for a worktree outside the runner-v2 layout without the override",
       "status": "passed"
     },
     {
@@ -269,12 +274,12 @@
     }
   ],
   "totals": {
-    "total": 49,
-    "passed": 49,
+    "total": 50,
+    "passed": 50,
     "failed": 0,
     "skipped": 0,
     "todo": 0,
-    "executed": 49
+    "executed": 50
   },
   "problems": []
 }

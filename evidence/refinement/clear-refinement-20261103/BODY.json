@@ -32,8 +32,8 @@
   "notesDir": "docs/journal/clear-refinement-20261103",
   "taskEvidence": "evidence/refinement/task-NNN",
   "objectStore": {
-    "policy": "staged reference objects are kept outside Git (owner decision 2026-11-09); only these hash manifests are committed",
-    "layout": "<runner body>/worktrees/<task> -> <runner body>/evidence/<body>/references/<id>/objects/<sha256>",
+    "policy": "staged reference objects are kept outside Git in one project-level store shared by all CLEAR bodies (owner decisions 2026-11-09); only these hash manifests are committed; no body-level fallback",
+    "layout": "<project>/runner-v2/<runner body>/worktrees/<task> -> <project>/evidence-store/<body>/references/<id>/objects/<sha256>",
     "override": "CLEAR_REFINEMENT_EVIDENCE_DIR"
   },
   "references": [
