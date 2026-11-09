@@ -133,9 +133,15 @@
   min-width: 0;
 }
 
+/* C07 / R37 (TASK-002): the title wears the shared compact data label
+ * (`clr-text-data-xs`, uppercase) in both contexts. As a heading (Review's
+ * static section header) it keeps the header's inherited weight and line
+ * height, exactly as the live label does, rather than the heading element's. */
 .clr-movement-group-header__title {
   margin: 0;
   min-width: 0;
+  font-weight: inherit;
+  line-height: inherit;
 }
 
 .clr-movement-group-header__badge {

@@ -79,6 +79,7 @@ import { useConditioningHistoryQuery } from '../state/conditioning-queries'
 import { QueryClientContext } from '../state/query'
 import { WorkoutClientsContext } from '../state/workout-queries'
 import { exerciseName, targetText } from '../state/prescription'
+import { equipmentName } from '../state/review'
 import {
   elapsedSeconds,
   formatElapsed,
@@ -90,11 +91,11 @@ import {
 } from '../state/workout-persistence'
 import type { BlockProgress, ExerciseProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
+import { BlockPanel } from './block-renderers-frame'
 import { Card } from './card'
 import { MetricFrame } from './composition'
 import { ConditioningScoreLine } from './conditioning-score'
 import { useInterfaceLoop } from './motion'
-import { Heading, HeadingSection } from './Heading'
 import { StructureBadge } from './workout-chrome'
 import type { BlockRendererProps } from './block-renderers'
 
@@ -539,31 +540,25 @@ function PartialRound({
  * `targetText` rather than `prescriptionText`: the set count belongs to the
  * block's rounds here, and `3 × 8 reps` under a movement inside an AMRAP would
  * be a second, wrong answer to "how many".
+ *
+ * C03 (TASK-002): drawn as the live movement every other structure draws
+ * (`BlockPanel.Movement`, the shared `LiveMovement`), so its compact equipment
+ * sits beside the name as Review shows it (R132). It is a heading one level
+ * below the round, as before.
  */
 function Movement({ exercise }: { exercise: ExerciseProgress }) {
   const prescription = exercise.prescription
 
   return (
-    <HeadingSection
-      className="clr-stack--tight"
-      style={{ display: 'flex', flexDirection: 'column' }}
+    <BlockPanel.Movement
+      title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
+      detail={targetText(prescription)}
+      context={equipmentName(prescription.equipment_used)}
     >
-      <Heading style={{ margin: 0, textTransform: 'uppercase' }}>
-        {`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
-      </Heading>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: 'var(--font-data)',
-          letterSpacing: 'var(--tracking-data)',
-        }}
-      >
-        {targetText(prescription)}
-      </p>
       {prescription.tempo === null ? null : (
-        <p style={{ margin: 0 }}>Tempo {prescription.tempo}</p>
+        <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>
       )}
-    </HeadingSection>
+    </BlockPanel.Movement>
   )
 }
 

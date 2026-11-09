@@ -180,9 +180,9 @@ export function ExerciseSetLogger({
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
   // R31, G02: the prescribed load through Review's own formatter and the
-  // profile's unit, never a logged weight. A round member's `Bodyweight` beside
-  // bodyweight equipment is said once, by the equipment.
-  const prescribedLoad = liveMovementReadings(prescription, weightUnit, !statesRest).load
+  // profile's unit, never a logged weight. A `Bodyweight` beside bodyweight
+  // equipment is said once, by the equipment (AC-R002-01).
+  const prescribedLoad = liveMovementReadings(prescription, weightUnit).load
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restOnEntry = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,

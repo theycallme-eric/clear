@@ -5,8 +5,10 @@
  * the consumers the routes draw; a state shown here does not by itself close
  * an application criterion, which is proved on the route.
  *
- * TASK-001 delivers `cards`: movement hierarchy and peer grouping in Review and
- * Workout. Later refinement tasks add their own states to `REFINEMENT_STATES`.
+ * `cards`: movement hierarchy and peer grouping (TASK-001), and one card with
+ * context-specific slots and the shared static header, compact equipment beside
+ * each name, in Review and Workout (TASK-002). Later refinement tasks add their
+ * own states to `REFINEMENT_STATES`.
  */
 import { Link, useSearchParams } from 'react-router-dom'
 

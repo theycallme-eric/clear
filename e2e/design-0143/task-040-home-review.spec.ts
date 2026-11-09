@@ -753,8 +753,10 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
 
     await openFavorite(page, visit, title)
     // Labels follow the section types; no generated title reaches the screen.
+    // TASK-002 (AC-R002-02, R37): each is a static section heading, not a toggle.
     for (const label of ['Warm-up', 'Primary lift', 'Conditioning']) {
-      await expect(main.getByRole('button', { name: new RegExp(`^${label}`) })).toBeVisible()
+      await expect(main.getByRole('heading', { level: 2, name: label, exact: true })).toBeVisible()
+      await expect(main.getByRole('button', { name: new RegExp(`^${label}`) })).toHaveCount(0)
     }
     for (const prose of custom) await expect(main.getByText(prose)).toHaveCount(0)
     // Groups are named with their round count; members are numbered in order.
@@ -764,9 +766,10 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     const circuit = main.getByRole('list', { name: 'circuit, 4 rounds', exact: true })
     await expect(circuit.getByRole('listitem')).toHaveText([
       new RegExp(`^01 ${name(second)}`, 'i'), new RegExp(`^02 ${name(first)}`, 'i')])
-    // Shared rest sits with its own group, once each.
+    // Shared rest sits with its own group, once each. TASK-002 (AC-C07-01):
+    // the badge heads the group's own card, in the shared static header.
     const supersetGroup = superset.locator('xpath=..')
-    await expect(supersetGroup).toContainText('SUPERSET · 3 ROUNDS')
+    await expect(superset.locator('xpath=ancestor::*[@data-workout-card][1]')).toContainText('SUPERSET · 3 ROUNDS')
     await expect(supersetGroup.getByText('Rest 75s between rounds', { exact: true })).toBeVisible()
     await expect(circuit.locator('xpath=..').getByText('Rest 60s between rounds', { exact: true })).toBeVisible()
     await expect(main.getByText(/between rounds/)).toHaveCount(2)

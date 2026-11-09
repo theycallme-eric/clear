@@ -73,6 +73,7 @@ import {
   targetNumbers,
   targetText,
 } from '../state/prescription'
+import { equipmentName } from '../state/review'
 import { useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedEmom, type ShellStorage } from '../state/workout-persistence'
 import type { ExerciseProgress } from '../state/workout-progress'
@@ -310,6 +311,8 @@ function EmomMovement({
       <BlockPanel.Movement
         title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
         detail={timed ? scheduledTargetText(exercise, shape, view) : prescriptionText(prescription)}
+        // C03, R132: the compact equipment beside the name, as Review shows it.
+        context={equipmentName(prescription.equipment_used)}
       >
         {timed && target?.kind === 'sequence' && (
           <BlockPanel.Note>

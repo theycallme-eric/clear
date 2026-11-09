@@ -124,12 +124,20 @@ export interface MovementGroupHeaderProps extends Omit<HTMLAttributes<HTMLDivEle
   heading?: boolean
 }
 
-/** Shared static group header. Actions and session progress belong to consumers. */
+/**
+ * Shared static group header. Actions and session progress belong to consumers.
+ *
+ * C07 (TASK-002): the title reads in one face whether it is Review's semantic
+ * heading or the live card's secondary label — the shared compact data label
+ * (`clr-text-data-xs`, uppercase), never the heading element's own size.
+ */
 export function MovementGroupHeader({ title, badge, heading = false, ...rest }: MovementGroupHeaderProps) {
   const Title = heading ? Heading : 'span'
   return (
     <div {...rest} className="clr-movement-group-header" data-movement-group-header="">
-      {present(title) ? <Title className="clr-movement-group-header__title">{title}</Title> : null}
+      {present(title) ? (
+        <Title className="clr-movement-group-header__title clr-text-data-xs clr-text-data-xs--upper">{title}</Title>
+      ) : null}
       {present(badge) ? <div className="clr-movement-group-header__badge">{badge}</div> : null}
     </div>
   )

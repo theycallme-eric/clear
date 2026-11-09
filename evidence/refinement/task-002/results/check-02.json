@@ -1,0 +1,79 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-002",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-002.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-002/required-cases.json",
+    "sha256": "01f085e068b230a7c9a12a451867586aa8c58157b038d3ed0118623fc4c05c09"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-002.spec.ts",
+      "sha256": "9f53c7ed9668270107ab7bd643a0a5590722c14e2d72ce2d77ffe727d6f0f30d"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 phone-320: Review offers Swap under static headers, then Workout offers progress, Rest and logging with equipment beside each name",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 phone-390: Review offers Swap under static headers, then Workout offers progress, Rest and logging with equipment beside each name",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed phone-320: EMOM, AMRAP and For Time keep the same equipment beside each name in Review and Workout",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed phone-390: EMOM, AMRAP and For Time keep the same equipment beside each name in Review and Workout",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keyboard: Review section headers are not focus stops, Swap and the tempo detail are, and Coaching and notes stays a disclosure in Workout",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read and a failed Start keep Review as planned and record no work",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-002.spec.ts",
+      "name": "TASK-002 context-specific actions with compact equipment > gallery cards: the accepted state draws Review and Workout through the same card, static header and context slots",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 7
+  },
+  "problems": []
+}

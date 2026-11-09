@@ -1,0 +1,92 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-002",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/movement-identity.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-002/required-cases.json",
+    "sha256": "01f085e068b230a7c9a12a451867586aa8c58157b038d3ed0118623fc4c05c09"
+  },
+  "targets": [
+    {
+      "path": "src/ui/movement-identity.test.tsx",
+      "sha256": "974028b59808d92f68ec03ab0b635fee72dd36e95b80b7af753a27d78e1a48c7"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-C03-01 shows the compact equipment beside each movement name in Review and Workout, as readable wrapping text",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-C06-01 offers Swap in Review’s movement slot and set progress, Rest and logging in Workout’s, never the other way round",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-C07-01 heads Review’s block cards with the live cards’ static header: the section identity and the badge, in the same face",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-R002-01 says a duplicate Bodyweight once, by the equipment, in both contexts and never hides an actual prescribed load",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-R002-02 keeps Review’s sections open under static semantic headings, with no toggle, chevron or hit area, and keeps the separate disclosures",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > AC-R002-03 keeps planned sets, reps, rounds and rest in Review, keeps live counters and Rest or log controls out of it, and keeps Swap out of Workout",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 opens Review, uses Swap, starts that same workout and uses Rest on Workout without recording work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 timed formats show the same equipment beside each name in Review and in the live EMOM, AMRAP and For Time blocks",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > JOURNEY-002 recovery: a failed alternatives read or a failed Start keeps Review as planned and records no work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > renders the shared owners with each context’s own slot",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/movement-identity.test.tsx",
+      "name": "TASK-002 context-specific actions with compact equipment > renders the accepted gallery state cards through WorkoutCard with static headers and each context’s slot",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 11
+  },
+  "problems": []
+}
