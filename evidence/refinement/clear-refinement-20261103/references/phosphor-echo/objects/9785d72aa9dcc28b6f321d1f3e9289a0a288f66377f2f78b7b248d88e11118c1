@@ -1,0 +1,14 @@
+{
+  "name": "Phosphor Echo \u00b7 preferred",
+  "selected_by": "user",
+  "source": "attached control screenshot",
+  "effect": {
+    "opacity": 0.29,
+    "blur": 3.2,
+    "x": -4.7,
+    "y": 5.64
+  },
+  "displayed_offset": "4.7 left / 5.6 down",
+  "note": "The existing offset control uses y=abs(x)*1.2; 5.64px displays as 5.6px.",
+  "shared_across_all_targets": true
+}

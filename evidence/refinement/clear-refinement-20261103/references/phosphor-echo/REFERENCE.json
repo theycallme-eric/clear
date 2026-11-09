@@ -1,0 +1,47 @@
+{
+  "schema": "clear-refinement-staged-reference/v1",
+  "id": "phosphor-echo",
+  "role": "pinned effects intake and selected preset: supporting input for TASK-033 branch/API reconciliation, not proof of adoption",
+  "identity": {
+    "kind": "approved-source",
+    "root": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo"
+  },
+  "approvedSource": {
+    "inventorySha256": "93cf163b6b79ab3644b653e81ffaba549ea3d0c1550039ff78a4353c0fbe0e9b"
+  },
+  "manifest": {
+    "format": "inline"
+  },
+  "files": [
+    {
+      "path": "intake/phosphor-echo/README.md",
+      "bytes": 5484,
+      "sha256": "4a6b28ad13d2cada656afdcff080927a2bee5996c146746a8a7979d36bd11f32",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo/README.md"
+    },
+    {
+      "path": "intake/phosphor-echo/APPLICATION-RULES.md",
+      "bytes": 2906,
+      "sha256": "4319df1848f8b53c27ac82b4aac5ce92ecf14db8a745d06310eb3a77c892820c",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo/APPLICATION-RULES.md"
+    },
+    {
+      "path": "intake/phosphor-echo/VERIFICATION.json",
+      "bytes": 1838,
+      "sha256": "44821a6b5cf17db8af4ce4406c5abfafe70de49813da63bc32eb96ff26bc3e27",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo/VERIFICATION.json"
+    },
+    {
+      "path": "intake/phosphor-echo/phosphor-echo.mjs",
+      "bytes": 1464,
+      "sha256": "147ce710ec2385c896807439b0ab3e9449d660bb4f0fc7ba9613aedeb95a9082",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo/phosphor-echo.mjs"
+    },
+    {
+      "path": "intake/phosphor-echo/preferred-preset.json",
+      "bytes": 368,
+      "sha256": "9785d72aa9dcc28b6f321d1f3e9289a0a288f66377f2f78b7b248d88e11118c1",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/consolidated-fallback/intake/phosphor-echo/preferred-preset.json"
+    }
+  ]
+}

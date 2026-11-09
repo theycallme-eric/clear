@@ -1,0 +1,51 @@
+{
+  "schema": "clear-refinement-body/v1",
+  "body": "clear-refinement-20261103",
+  "requirementsSet": "93cf163b6b79ab3644b653e81ffaba549ea3d0c1550039ff78a4353c0fbe0e9b",
+  "integrationBase": {
+    "commit": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+    "role": "selected implementation baseline (effects-delivered main)"
+  },
+  "acceptedGallery": {
+    "commit": "eded158cfd928d382c9a9409e2c372270312741d",
+    "reference": "accepted-gallery"
+  },
+  "foundation": {
+    "path": "src/design-system",
+    "version": "0.14.3"
+  },
+  "historicalComparisons": [
+    {
+      "id": "verified-main",
+      "commit": "94f2c2f3bf7e4d0eeb856d3716fd843f188e6fc2",
+      "role": "historical-comparison",
+      "expectAncestorOfBase": true,
+      "reference": "historical-comparisons"
+    },
+    {
+      "id": "reviewed-r7",
+      "commit": "2d48f130ef1d508e032d0bf2ae045601d9d21f26",
+      "role": "historical-comparison",
+      "reference": "historical-comparisons"
+    }
+  ],
+  "notesDir": "docs/journal/clear-refinement-20261103",
+  "taskEvidence": "evidence/refinement/task-NNN",
+  "references": [
+    {
+      "id": "accepted-gallery",
+      "record": "references/accepted-gallery/REFERENCE.json",
+      "sha256": "893aab1366f87386199b269730ce7cef4f1609591faf8455850c4409c8631f43"
+    },
+    {
+      "id": "phosphor-echo",
+      "record": "references/phosphor-echo/REFERENCE.json",
+      "sha256": "551cbb76e4bc79ae352d5f664fc3acd2e205f8dbfc27e5667492672338906a77"
+    },
+    {
+      "id": "historical-comparisons",
+      "record": "references/historical-comparisons/REFERENCE.json",
+      "sha256": "1fe8dd228f907ea2dde40f43e388b18de8e8746da44f77360bd46237ea1809b5"
+    }
+  ]
+}

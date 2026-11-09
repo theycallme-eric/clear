@@ -1,0 +1,35 @@
+{
+  "schema": "clear-refinement-staged-reference/v1",
+  "id": "historical-comparisons",
+  "role": "historical comparison sources (verified main 94f2c2f and reviewed R7 2d48f13): not the implementation baseline",
+  "identity": {
+    "kind": "approved-source",
+    "root": "sources/source-02-source-02-supporting-evidence/code"
+  },
+  "approvedSource": {
+    "inventorySha256": "93cf163b6b79ab3644b653e81ffaba549ea3d0c1550039ff78a4353c0fbe0e9b"
+  },
+  "manifest": {
+    "format": "inline"
+  },
+  "files": [
+    {
+      "path": "verified-main/SOURCE.json",
+      "bytes": 227,
+      "sha256": "734e8e8ec3ec51471a54447d60de5e05d9b38e30a83cde1025f03c57e9769e03",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/code/verified-main/SOURCE.json"
+    },
+    {
+      "path": "reviewed-r7/SOURCE.json",
+      "bytes": 227,
+      "sha256": "c69550d7e05ea6096cbfb1bbb75ceab1da8372fe109c22e537c80b5a94e6031f",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/code/reviewed-r7/SOURCE.json"
+    },
+    {
+      "path": "reviewed-versus-main.diff",
+      "bytes": 226731,
+      "sha256": "179ddff7af9fb09daa0bbe75ce0d62f633cead6ba07c167b3a0a29b4e9203be5",
+      "approvedPath": "sources/source-02-source-02-supporting-evidence/code/reviewed-versus-main.diff"
+    }
+  ]
+}

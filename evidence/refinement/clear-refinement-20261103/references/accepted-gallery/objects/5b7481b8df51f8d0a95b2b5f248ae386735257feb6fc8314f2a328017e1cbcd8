@@ -1,0 +1,44 @@
+
+> clear@0.0.0 build
+> tsc --noEmit && vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 424 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/icons/apple-touch-icon-180.png                          0.60 kB
+dist/icons/icon-192.png                                      0.64 kB
+dist/icons/icon-maskable-512.png                             2.26 kB
+dist/icons/icon-512.png                                      2.47 kB
+dist/index.html                                              3.63 kB │ gzip:   1.62 kB
+dist/assets/oxanium-latin-700-normal-l0hKEjh4.woff2          8.77 kB
+dist/assets/oxanium-latin-400-normal-DcSlRu53.woff2          8.81 kB
+dist/assets/oxanium-latin-600-normal-DW9ldEDP.woff2          8.94 kB
+dist/assets/oxanium-latin-500-normal-tnlOn7Ka.woff2          9.04 kB
+dist/assets/oxanium-latin-400-normal-BnNz-3Mf.woff           9.82 kB
+dist/assets/oxanium-latin-700-normal-b_KP-pae.woff           9.82 kB
+dist/assets/oxanium-latin-600-normal-DNQhW0y0.woff           9.93 kB
+dist/assets/oxanium-latin-500-normal-BsTRBkab.woff           9.99 kB
+dist/assets/rajdhani-latin-500-normal-DfvNI-Td.woff         11.76 kB
+dist/assets/rajdhani-latin-700-normal-e0Uj8ZlN.woff         12.06 kB
+dist/assets/rajdhani-latin-600-normal-Dx02qI2_.woff         12.09 kB
+dist/assets/space-grotesk-latin-700-normal-RjhwGPKo.woff2   12.84 kB
+dist/assets/space-grotesk-latin-500-normal-lFbtlQH6.woff2   13.31 kB
+dist/assets/space-grotesk-latin-400-normal-CJ-V5oYT.woff2   13.38 kB
+dist/assets/rajdhani-latin-500-normal-ByNUCHrt.woff2        15.08 kB
+dist/assets/rajdhani-latin-700-normal-BPDUZo87.woff2        15.68 kB
+dist/assets/rajdhani-latin-600-normal-CXCVEoA9.woff2        15.73 kB
+dist/assets/space-grotesk-latin-700-normal-CwsQ-cCU.woff    16.41 kB
+dist/assets/space-grotesk-latin-500-normal-CNSSEhBt.woff    16.98 kB
+dist/assets/space-grotesk-latin-400-normal-BnQMeOim.woff    17.00 kB
+dist/assets/AppRuntime-DLE1vizf.css                          1.79 kB │ gzip:   0.67 kB
+dist/assets/toast-host-CFD1Nr8a.css                          6.46 kB │ gzip:   1.66 kB
+dist/assets/PublicGalleryApp-B62cL2fE.css                   20.02 kB │ gzip:   3.61 kB
+dist/assets/index-CsvYAuus.css                              68.75 kB │ gzip:  12.15 kB
+dist/assets/AppRuntime-Cm4_je7k.js                         228.41 kB │ gzip:  64.91 kB
+dist/assets/toast-host-z9SMiTJP.js                         248.09 kB │ gzip:  72.83 kB
+dist/assets/index-BELtdqbM.js                              341.21 kB │ gzip: 108.99 kB
+dist/assets/PublicGalleryApp-Cc9yAFxV.js                   389.17 kB │ gzip:  86.14 kB
+
+✓ built in 200ms

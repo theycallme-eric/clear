@@ -1,0 +1,37 @@
+{
+  "schema": "clear-refinement-staged-reference/v1",
+  "id": "accepted-gallery",
+  "role": "accepted gallery reference: presentation authority only; not application adoption or backend proof",
+  "identity": {
+    "kind": "git-commit",
+    "commit": "eded158cfd928d382c9a9409e2c372270312741d",
+    "branch": "codex/gallery-final-refinements-20261104",
+    "base": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+    "availability": "unpublished; resolved from staged bytes and the integration base, never from the commit object"
+  },
+  "approvedSource": {
+    "inventorySha256": "93cf163b6b79ab3644b653e81ffaba549ea3d0c1550039ff78a4353c0fbe0e9b",
+    "root": "sources/source-06-accepted-gallery-reference"
+  },
+  "manifest": {
+    "format": "pinned-source",
+    "file": "PINNED-SOURCE.json",
+    "sha256": "a1b1f93bda420ba88f5647f9d78e66e0d9b05b16cab7026f9fecd033858f0a18"
+  },
+  "sourceManifest": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+  "guides": {
+    "stateMap": "src/dev/gallery-refinement-coverage.json",
+    "sharedOwners": "docs/design/library/refinements-2026-11-04/REUSE.md",
+    "fieldOwnership": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+    "semanticTokens": "src/ui/refinements/tokens.css",
+    "sourceManifest": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+    "builderReconciliation": "docs/design/library/refinements-2026-11-04/BUILDER-RECONCILIATION.md",
+    "deliveryCrosswalk": "docs/design/library/refinements-2026-11-04/DELIVERY-CROSSWALK.md",
+    "galleryCrosswalk": "docs/design/library/refinements-2026-11-04/gallery-crosswalk.json"
+  },
+  "staging": {
+    "pinnedFiles": 1190,
+    "stagedObjects": 94,
+    "resolvedFromBase": 1096
+  }
+}

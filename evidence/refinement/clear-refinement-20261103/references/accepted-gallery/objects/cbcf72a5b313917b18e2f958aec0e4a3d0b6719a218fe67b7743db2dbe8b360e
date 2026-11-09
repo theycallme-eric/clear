@@ -1,0 +1,50 @@
+{
+  "status": "local gallery reference complete; native requirements reconciliation next",
+  "commit": "eded158cfd928d382c9a9409e2c372270312741d",
+  "branch": "codex/gallery-final-refinements-20261104",
+  "base": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+  "preview": "http://127.0.0.1:64465/gallery/refinements",
+  "verification": {
+    "testsPassed": 165,
+    "testFiles": 9,
+    "browserLoggingCasesPassed": 64,
+    "skins": 4,
+    "loggingContexts": 16,
+    "build": "passed",
+    "typecheck": "passed",
+    "designLint": "passed",
+    "sourceLintErrors": 0,
+    "sourceLintWarnings": 137,
+    "indexEntries": 67
+  },
+  "coverage": {
+    "sourceNotes": 145,
+    "requirements": 40,
+    "criteria": 162,
+    "namedGalleryStates": 26
+  },
+  "sourceManifest": "docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json",
+  "guide": "docs/design/library/refinements-2026-11-04/REUSE.md",
+  "handoff": "docs/design/library/refinements-2026-11-04/BUILDER-RECONCILIATION.md",
+  "applicationBuild": "paused",
+  "approvedNativeRevision6": "unchanged",
+  "runnerActivation": "not performed",
+  "githubWrites": "none",
+  "merged": false,
+  "deployed": false,
+  "updatedAtUTC": "2026-11-05T00:32:26.757531+00:00",
+  "sharedVariables": "src/ui/refinements/tokens.css",
+  "fieldOwnership": "docs/design/library/refinements-2026-11-04/LOGGING-FIELDS.md",
+  "fallbacks": [
+    {
+      "path": "/Users/eric/Documents/Codex/2026-10-29/task/output/gallery-refinement-20261104/gallery-reference.bundle",
+      "bytes": 309387621,
+      "sha256": "126d1711f7378cfc7dd12e382c22d43dcb881b5ca33150f440aa1f1efc6794cf"
+    },
+    {
+      "path": "/Users/eric/Documents/Codex/2026-10-29/task/output/gallery-refinement-20261104/gallery-reference-source.zip",
+      "bytes": 371306821,
+      "sha256": "cd4b07345a25b02c184e0faded1fb8173c102a74ba272b440713131eeaad9abe"
+    }
+  ]
+}

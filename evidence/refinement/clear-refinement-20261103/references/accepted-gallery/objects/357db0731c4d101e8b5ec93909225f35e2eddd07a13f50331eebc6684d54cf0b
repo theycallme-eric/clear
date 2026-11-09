@@ -1,0 +1,31 @@
+{
+  "base": "03087f7488bee8d7e927534b1b5e656378fe9cb3",
+  "authority": [
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/CURRENT-REQUIREMENTS-AUTHORITY.md",
+      "sha256": "6916f4a3c2d798807792e7ff80fed684985cd5a7f8e8cb4ef651bb997d3b194c"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/EQUIPMENT-ICON-WANTED-LIST.md",
+      "sha256": "b043ce0e99773d0f8eacbcb6af555d2aa474e2c1d76d1a331fb010993df802cd"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/FINAL-POLISH-ACCEPTANCE.md",
+      "sha256": "f914752e274fb2165ee3fb8ea9fa398ef1548658affdb098fc952cdf557db942"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/INDIVIDUAL-CORRECTION-REGISTER-2026-11-03.md",
+      "sha256": "82b1daa663ff4d8001b78e40cfaef73ecba48f71e65000e397ff34caf9698de5"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/VISUAL-ASSET-HANDOFF-2026-11-03.md",
+      "sha256": "4eb7ecf04a1612ce3b2245053316c5674e5aafc5fda654255d81ff604ab646b7"
+    },
+    {
+      "path": "docs/design/library/refinements-2026-11-04/authority/VISUAL-CONTRACTS.md",
+      "sha256": "63c0e99e914a4fb8d2bda0e5d069c2000f9dd693a907b5c501c52ec61f967632"
+    }
+  ],
+  "authorization": "Eric authorized direct gallery update November 4; product Runner build remains paused; approved native revision6 unchanged.",
+  "referenceCount": 20
+}
