@@ -376,12 +376,16 @@ describe('Workout — navigation and progress', () => {
     const user = userEvent.setup()
     await shell()
 
+    // TASK-003 (AC-C08-01): the section names each block by its format alone,
+    // as the block's own badge does; the window is stated on the block's card.
     const structures = () =>
       within(screen.getByRole('list', { name: 'Structures in this section' }))
-    expect(structures().getByText('EMOM · 10 MIN')).toBeInTheDocument()
+    expect(structures().getByText('EMOM')).toBeInTheDocument()
+    expect(screen.getByText('10 MIN')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Next section' }))
-    expect(structures().getByText('AMRAP · 8 MIN')).toBeInTheDocument()
+    expect(structures().getByText('AMRAP')).toBeInTheDocument()
+    expect(screen.getByText('8 MIN')).toBeInTheDocument()
   })
 })
 
@@ -412,10 +416,9 @@ describe('Workout — the active section header', () => {
         { name: 'Section 2 of 3' },
       ),
     ).toHaveAttribute('aria-valuenow', '1')
+    // TASK-003 (AC-C08-01): the structure identity is the format alone.
     expect(
-      within(header.getByRole('list', { name: 'Structures in this section' })).getByText(
-        'EMOM · 10 MIN',
-      ),
+      within(header.getByRole('list', { name: 'Structures in this section' })).getByText('EMOM'),
     ).toBeInTheDocument()
     expect(header.getByRole('list', { name: 'Sections' })).toBeInTheDocument()
 

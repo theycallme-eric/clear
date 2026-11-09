@@ -89,7 +89,14 @@ export interface ReviewExerciseView {
   readonly equipment: string
   /** `75% 1RM`, `2 RIR`, `Bodyweight` — null when the guidance says nothing. */
   readonly load: string | null
-  /** `Rest 90s`, or null. A zero rest is never rendered as one. */
+  /**
+   * `Rest 90s`, or null. A zero rest is never rendered as one. Null for a
+   * movement in an EMOM, AMRAP or For Time block (TASK-003, C11; R41, R47,
+   * R60): a generic between-set rest does not describe a timed format, whose
+   * clock is its schedule, and the timed renderers honour none. The block's
+   * own rest (`roundRest`) and clock stay, and the prescription still carries
+   * the column — only this reading is dropped.
+   */
   readonly rest: string | null
   /**
    * `3-1-1-0`, display only — never parsed, here or anywhere. Not rendered on
@@ -430,6 +437,12 @@ function reviewSection(
   }
 }
 
+/**
+ * The formats whose clock is the schedule (C11): their movements state no
+ * rest of their own in Review, exactly as their live renderers run none.
+ */
+const TIMED_FORMATS: ReadonlySet<Enums<'structure_type'>> = new Set(['emom', 'amrap', 'for_time'])
+
 function reviewBlock(
   block: WorkoutBlock,
   sectionIndex: number,
@@ -464,6 +477,7 @@ function reviewBlock(
         prescriptionSiteKey(sectionIndex, blockIndex, index),
         weightUnit,
         performedInRounds && rounds !== null,
+        !TIMED_FORMATS.has(block.structure_type),
       ),
     ),
   }
@@ -474,6 +488,7 @@ function reviewExercise(
   key: string,
   weightUnit: BriefingWeightUnit | null,
   inCountedRounds: boolean,
+  ownsRest: boolean,
 ): ReviewExerciseView {
   return {
     key,
@@ -485,7 +500,8 @@ function reviewExercise(
     load: loadText(exercise.load_type, exercise.load_value, weightUnit),
     // `restText` rather than a second sentence about the same column: the rest
     // a briefing promises and the rest the workout screen runs are one fact.
-    rest: restText(exercise.rest_seconds),
+    // A timed format's movement states none (C11): see `rest` above.
+    rest: ownsRest ? restText(exercise.rest_seconds) : null,
     tempo: blankToNull(exercise.tempo),
   }
 }

@@ -448,7 +448,11 @@ export function SectionHeader({
       >
         {section.blocks.map((block) => (
           <li key={block.blockId}>
-            <StructureBadge identity={block.identity} />
+            {/*
+              C08 (TASK-003): the same format-only words as each block's own
+              badge; the block's card states its duration, cap and rounds.
+            */}
+            <StructureBadge identity={block.identity} formatOnly />
           </li>
         ))}
       </ul>
@@ -469,10 +473,18 @@ export function SectionHeader({
 
 export interface StructureBadgeProps {
   identity: StructureIdentity
+  /**
+   * C08 (TASK-003; R51, R59, R65): the format or shape alone — `EMOM`,
+   * `LADDER`. The workout's block header and Review's draw it so, with the
+   * duration, cap, rounds and scheme read beside it (`WorkoutCard`); the
+   * full reading stays the default for a surface that has no such line.
+   */
+  formatOnly?: boolean
 }
 
 /**
- * `EMOM · 10 MIN`, with the glyph the export already ships for it.
+ * `EMOM · 10 MIN`, with the glyph the export already ships for it — or, format
+ * only, `EMOM`.
  *
  * An element frame, not a card: the small chamfer on the structure role, with
  * no accent bar, emitting through its own `.clr-bleed` wrapper. That is what
@@ -484,8 +496,9 @@ export interface StructureBadgeProps {
  * unused group width (B05-04). The wrapper is sized to its frame instead, in
  * every parent, and capped at the parent so a long label wraps inside it.
  */
-export function StructureBadge({ identity }: StructureBadgeProps) {
-  const detail = [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+export function StructureBadge({ identity, formatOnly = false }: StructureBadgeProps) {
+  const detail = formatOnly ? '' : [identity.detail, identity.repScheme].filter(Boolean).join(' · ')
+  const label = formatOnly ? identity.format : identity.label
 
   return (
     <span className="clr-bleed" style={STRUCTURE_BLEED_STYLE}>
@@ -500,7 +513,7 @@ export function StructureBadge({ identity }: StructureBadgeProps) {
         }}
       >
         <StructureGlyphIcon glyph={identity.glyph} />
-        {detail === '' ? identity.label : `${identity.label} · ${detail}`}
+        {detail === '' ? label : `${label} · ${detail}`}
       </span>
     </span>
   )

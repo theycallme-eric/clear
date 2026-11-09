@@ -9,10 +9,15 @@
  *     controller that never queries or writes.
  *   · Workout: the live frame's own card and movement parts (`WorkoutCard`,
  *     `BlockPanel.MovementList` / `.Movement`, which is `LiveMovement`), fed
- *     the same readings the live renderers compute (`liveMovementReadings`,
- *     `equipmentName`). Set progress fills the live slot; Rest, set logging
- *     and completion stay the route's own controllers, so this state draws
- *     none of them and substitutes no synthetic writer.
+ *     the same readings the live renderers compute (`liveMovementReadings`).
+ *     Set progress fills the live slot; Rest, set logging and completion stay
+ *     the route's own controllers, so this state draws none of them and
+ *     substitutes no synthetic writer.
+ *   · TASK-003 (C08, C09, C10): both contexts' cards name the block by its
+ *     format-only badge below the title, with the rounds, clock or cap on the
+ *     line below it — drawn by `WorkoutCard` from the block's identity — and
+ *     the live EMOM, AMRAP and For Time movements state their prescribed load
+ *     as their route renderers now do.
  *
  * Same synthetic composition in both contexts (`gallery-refinement-cards-data.ts`):
  * standard, superset and circuit peers; the timed EMOM, AMRAP and For Time
@@ -22,11 +27,11 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 
 import { Button, ChoiceGroup } from '../design-system/index'
-import { exerciseName, prescriptionText, targetText } from '../state/prescription'
-import { equipmentName, reviewBriefing } from '../state/review'
+import { prescriptionText, targetText } from '../state/prescription'
+import { reviewBriefing } from '../state/review'
 import type { SessionAcceptance } from '../state/schemas'
 import { ExerciseSwapContext, type ExerciseSwapApi } from '../state/swap-context'
-import { structureIdentity } from '../state/workout-progress'
+import { structureDetailText, structureIdentity } from '../state/workout-progress'
 import { BlockPanel } from '../ui/block-renderers-frame'
 import { Heading, HeadingSection } from '../ui/Heading'
 import { MovementGroupHeader, MovementIdentity, MovementList } from '../ui/refinements/movement'
@@ -87,20 +92,21 @@ const TIMED = new Set(['emom', 'amrap', 'for_time'])
  * One live movement, as its route renderer reads it before the block starts:
  * the set loggers' `Set 1/N` progress and prescribed load for a standard or
  * superset movement, a circuit's one-round target, and a timed movement's
- * prescription with its compact equipment (its prescribed load is the
- * renderer's to add, not this gallery's).
+ * prescription with its compact equipment and prescribed load (TASK-003, C10:
+ * the EMOM, AMRAP and For Time renderers read it through the same readings).
  */
 function LiveBlockMovement({ block, prescription, position }: { block: Block; prescription: Block['exercises'][number]; position: number }) {
+  const readings = liveMovementReadings({ ...prescription, equipment_used: prescription.equipment }, GALLERY_UNIT)
   if (TIMED.has(block.structure_type)) {
     return (
       <BlockPanel.Movement
-        title={`${position + 1}. ${exerciseName(prescription.exercise_id)}`}
+        title={`${position + 1}. ${readings.name}`}
         detail={block.structure_type === 'amrap' ? targetText(prescription) : prescriptionText(prescription)}
-        context={equipmentName(prescription.equipment)}
+        load={readings.load}
+        context={readings.equipment}
       />
     )
   }
-  const readings = liveMovementReadings({ ...prescription, equipment_used: prescription.equipment }, GALLERY_UNIT)
   const circuit = block.structure_type === 'circuit'
   return (
     <BlockPanel.Movement
@@ -122,7 +128,7 @@ function LiveBlockMovement({ block, prescription, position }: { block: Block; pr
  */
 function WorkoutBlock({ block, sectionLabel }: { block: Block; sectionLabel: string }) {
   return (
-    <WorkoutCard context="workout" title={sectionLabel} badge={<StructureBadge identity={structureIdentity(block)} />}>
+    <WorkoutCard context="workout" title={sectionLabel} structure={structureIdentity(block)}>
       <BlockPanel.MovementList label={LIST_LABELS[block.structure_type] ?? 'Movements in this block'}>
         {block.exercises.map((prescription, position) => (
           <BlockPanel.MovementItem key={`${prescription.exercise_id}-${position}`}>
@@ -219,13 +225,50 @@ export function MovementListOnePeer() { return <Peers count={1} /> }
 
 const CIRCUIT_IDENTITY = structureIdentity({ structure_type: 'circuit', rounds: 2, timer_seconds: null, rep_scheme: 'fixed' })
 
+/** TASK-003 (C08, C09): the format-only badge below the title, its rounds below it. */
 export function MovementGroupHeaderLabelled() {
-  return <MovementGroupHeader title="3 movements" badge={<StructureBadge identity={CIRCUIT_IDENTITY} />} />
+  return (
+    <MovementGroupHeader
+      title="3 movements"
+      badge={<StructureBadge identity={CIRCUIT_IDENTITY} formatOnly />}
+      meta={structureDetailText(CIRCUIT_IDENTITY)}
+    />
+  )
 }
 
 /** Review's static section header: the same face, as a semantic heading (C07). */
 export function MovementGroupHeaderHeading() {
-  return <MovementGroupHeader heading title="Conditioning" badge={<StructureBadge identity={CIRCUIT_IDENTITY} />} />
+  return (
+    <MovementGroupHeader
+      heading
+      title="Conditioning"
+      badge={<StructureBadge identity={CIRCUIT_IDENTITY} formatOnly />}
+      meta={structureDetailText(CIRCUIT_IDENTITY)}
+    />
+  )
+}
+
+const EMOM_IDENTITY = structureIdentity({ structure_type: 'emom', rounds: null, timer_seconds: 600, rep_scheme: 'fixed' })
+const LADDER_IDENTITY = structureIdentity({ structure_type: 'for_time', rounds: null, timer_seconds: 900, rep_scheme: 'ladder_down' })
+const FOR_TIME_IDENTITY = structureIdentity({ structure_type: 'for_time', rounds: null, timer_seconds: 900, rep_scheme: 'fixed' })
+
+/**
+ * C09 (TASK-003): a long section label and the shortest and longest formats
+ * keep the badge in the same place, below the title, untruncated.
+ */
+export function MovementGroupHeaderLongLabel() {
+  return (
+    <div className="clr-stack" style={{ display: 'flex', flexDirection: 'column' }}>
+      {[EMOM_IDENTITY, LADDER_IDENTITY, FOR_TIME_IDENTITY].map((identity) => (
+        <MovementGroupHeader
+          key={identity.format}
+          title="Strength and conditioning finisher"
+          badge={<StructureBadge identity={identity} formatOnly />}
+          meta={structureDetailText(identity)}
+        />
+      ))}
+    </div>
+  )
 }
 
 export function ReviewSectionStandard() { return <ReviewContextCards blocks={[STANDARD_BLOCK]} /> }
@@ -237,7 +280,7 @@ export function ReviewSectionTimed() { return <ReviewContextCards blocks={[...TI
 export function WorkoutCardReview() {
   return (
     <InertSwap>
-      <WorkoutCard context="review" heading title="Conditioning" badge={<StructureBadge identity={CIRCUIT_IDENTITY} />}>
+      <WorkoutCard context="review" heading title="Conditioning" structure={CIRCUIT_IDENTITY}>
         <MovementList label="circuit, 2 rounds">
           <li><ReviewMovement name="kb swing" ordinal="01" equipment="kettlebell" prescription="15 reps" load="24 kg" swap={<Button variant="quiet" size="sm">Swap</Button>} /></li>
           <li><ReviewMovement name="mountain climber" ordinal="02" equipment="bodyweight" prescription="20 reps" swap={<Button variant="quiet" size="sm">Swap</Button>} /></li>
@@ -250,7 +293,7 @@ export function WorkoutCardReview() {
 /** TASK-002: one card, two contexts — the live label and set progress. */
 export function WorkoutCardWorkout() {
   return (
-    <WorkoutCard context="workout" title="Conditioning" badge={<StructureBadge identity={CIRCUIT_IDENTITY} />}>
+    <WorkoutCard context="workout" title="Conditioning" structure={CIRCUIT_IDENTITY}>
       <MovementList label="Movements in this circuit">
         <li><HeadingSection><LiveMovement name="kb swing" ordinal="1." equipment="kettlebell" prescription="15 reps" load="24 kg" /></HeadingSection></li>
         <li><HeadingSection><LiveMovement name="mountain climber" ordinal="2." equipment="bodyweight" prescription="20 reps" /></HeadingSection></li>

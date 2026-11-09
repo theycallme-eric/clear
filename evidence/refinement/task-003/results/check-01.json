@@ -1,0 +1,97 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-003",
+  "check": "check-01",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "vitest",
+  "runnerVersion": "4.1.11",
+  "command": [
+    "npx",
+    "vitest",
+    "run",
+    "src/ui/block-panel.test.tsx",
+    "--passWithNoTests=false"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-003/required-cases.json",
+    "sha256": "480ac83994d729163fb77b35221cc2525784fcfcee34d3bf29a21f08ca84b4e1"
+  },
+  "targets": [
+    {
+      "path": "src/ui/block-panel.test.tsx",
+      "sha256": "f7b430a30f0e7581d78445748807e07da2736780dff4ed747180bd7e9581be4d"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C08-01 names only the format or shape in every Review and Workout badge, with duration, cap, rounds and prescription outside it",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C09-01 places every badge the same way, directly below its title, and never truncates it by label length",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C10-01 shows each live movement’s prescribed load with the existing formatter, unit and per-hand equipment, and keeps it apart from the weight performed",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-C11-01 drops the generic Rest 60s line from EMOM, AMRAP and For Time movements in Review",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-01 keeps duration, cap, rounds and the target schedule readable outside the badge in both contexts",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-02 reads every load meaning through loadText and the profile unit, and never a performed weight, an inferred unit or a range",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-03 removes only the generic rest: planned rest in standard and grouped blocks, the EMOM rest window and every timed clock stay",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 offers no Review Change weight control on the verified circuit and keeps its actual weight entry in the optional logger",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 opens Review, starts that same workout and shows format-only badges below each title and the prescribed load in each target row",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review as planned and records no work",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > names a block LADDER exactly when the ladder renderer performs it, and states its scheme outside the badge",
+      "status": "passed"
+    },
+    {
+      "file": "src/ui/block-panel.test.tsx",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > renders the accepted gallery state cards with format-only badges, the details beside them and the live prescribed load",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 12,
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 12
+  },
+  "problems": []
+}

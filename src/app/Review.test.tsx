@@ -336,15 +336,18 @@ describe('all generated content renders', () => {
     }
   })
 
-  it('states the round count in the badge, the one-round sequence, and the shared rest after it', async () => {
+  it('states the round count beside the badge, the one-round sequence, and the shared rest after it', async () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const group = screen.getByRole('list', { name: 'superset, 4 rounds' }).parentElement!
     // TASK-002 (AC-C07-01): the badge is in the card's shared static header.
-    const badge = group.closest('[data-workout-card]')!.querySelector('[data-movement-group-header]')!
+    const header = group.closest('[data-workout-card]')!.querySelector('[data-movement-group-header]')!
     const [sequence] = [...group.children]
-    expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
+    // TASK-003 (AC-C08-01, AC-R003-01): the badge names the format alone; the
+    // round count is read on the header's line below it, not inside it.
+    expect(header.querySelector('.clr-movement-group-header__badge')).toHaveTextContent(/^SUPERSET$/)
+    expect(header.querySelector('[data-structure-meta]')).toHaveTextContent(/^4 ROUNDS$/)
     expect(sequence).toHaveTextContent('One round: 01 → 02')
     expect(group.lastElementChild).toHaveTextContent('Rest 90s between rounds')
     expect(group.textContent?.match(/between rounds/g)).toHaveLength(1)
@@ -354,9 +357,13 @@ describe('all generated content renders', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    const text = briefingText()
-    expect(text).not.toMatch(/STANDARD(?! · )/)
-    expect(text).toContain('STANDARD · LADDER UP')
+    // TASK-003 (AC-C08-01): the one STANDARD badge is the block whose scheme
+    // the user needs told, and the scheme is read beside it, not inside it.
+    const headers = [...document.querySelectorAll('[data-workout-card] [data-movement-group-header]')]
+    const standard = headers.filter((header) =>
+      header.querySelector('.clr-movement-group-header__badge')?.textContent === 'STANDARD')
+    expect(standard).toHaveLength(1)
+    expect(standard[0].querySelector('[data-structure-meta]')).toHaveTextContent(/^LADDER UP$/)
   })
 
   it('renders every structure type the database admits', async () => {
@@ -364,9 +371,12 @@ describe('all generated content renders', () => {
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
     const text = briefingText()
-    for (const label of ['STANDARD', 'SUPERSET', 'CIRCUIT', 'EMOM', 'AMRAP', 'FOR TIME']) {
+    // TASK-003 (AC-C08-01): a For Time block raced as a ladder is named by its
+    // shape, LADDER, as the ladder renderer performs it; the cap is beside it.
+    for (const label of ['STANDARD', 'SUPERSET', 'CIRCUIT', 'EMOM', 'AMRAP', 'LADDER']) {
       expect(text).toContain(label)
     }
+    expect(text).toContain('15 MIN CAP')
     // Every structure in the enum reached the screen under some label.
     expect(Constants.public.Enums.structure_type).toHaveLength(6)
   })

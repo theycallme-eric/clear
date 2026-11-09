@@ -601,20 +601,25 @@ async function expectContained(page: Page, where: string) {
 /**
  * TASK-002 (AC-R002-02, AC-C07-01; R30, R37): Review's sections are static and
  * always open. Each block is its own card under the header the live cards
- * share: the section's name as the `h2` on the left of the section's first
- * card, the block's structure badge on the right. No header is a toggle,
- * chevron or hit area, so no section can be collapsed, and the badge is the
- * header's rather than the block body's. The spectrum persists seven sections
- * of one block each, in this order; its plain standard block has no badge.
+ * share: the section's name as the `h2` of the section's first card, then the
+ * block's structure badge. No header is a toggle, chevron or hit area, so no
+ * section can be collapsed, and the badge is the header's rather than the
+ * block body's. The spectrum persists seven sections of one block each, in
+ * this order; its plain standard block has no badge.
+ *
+ * TASK-003 (AC-C08-01, AC-C09-01, AC-R003-01) supersedes the badge's words and
+ * place: the badge, below the heading, names the format or shape alone (a For
+ * Time ladder is LADDER, as the ladder renderer performs it), and its rounds,
+ * clock, cap and scheme are the header's details line below the badge.
  */
 const REVIEW_SECTIONS = [
-  { heading: 'Primary lift', badge: null },
-  { heading: 'Accessory', badge: 'SUPERSET · 2 ROUNDS' },
-  { heading: 'Conditioning', badge: 'CIRCUIT · 2 ROUNDS' },
-  { heading: 'Conditioning', badge: 'EMOM · 2 MIN' },
-  { heading: 'Conditioning', badge: 'AMRAP · 2 MIN' },
-  { heading: 'Conditioning', badge: 'FOR TIME · 2 MIN CAP' },
-  { heading: 'Conditioning', badge: 'FOR TIME · 2 MIN CAP · LADDER UP' },
+  { heading: 'Primary lift', badge: null, details: null },
+  { heading: 'Accessory', badge: 'SUPERSET', details: '2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'CIRCUIT', details: '2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'EMOM', details: '2 MIN' },
+  { heading: 'Conditioning', badge: 'AMRAP', details: '2 MIN' },
+  { heading: 'Conditioning', badge: 'FOR TIME', details: '2 MIN CAP' },
+  { heading: 'Conditioning', badge: 'LADDER', details: '2 MIN CAP · LADDER UP' },
 ] as const
 
 async function expectStaticReviewSections(page: Page) {
@@ -633,6 +638,7 @@ async function expectStaticReviewSections(page: Page) {
       framed: cards.filter((card) => card.closest('.clr-card') !== null).length,
       heading: header?.querySelector(':scope > h2')?.textContent ?? null,
       badge: header?.querySelector(':scope > .clr-movement-group-header__badge')?.textContent ?? null,
+      details: header?.querySelector(':scope > [data-structure-meta]')?.textContent ?? null,
       // No toggle, chevron, hit area or pointer on the header…
       headerControls: header === null ? -1 : header.querySelectorAll(
         'button, a, [tabindex], [role="button"], [aria-expanded], [aria-controls], .clr-hit, .clr-collapsible__glyph',
@@ -647,8 +653,8 @@ async function expectStaticReviewSections(page: Page) {
       bodyBadges: section.querySelectorAll('[data-review-block] .clr-chamfer--structure').length,
     }
   }))
-  expect(sections).toEqual(REVIEW_SECTIONS.map(({ heading, badge }) => ({
-    cards: 1, framed: 1, heading, badge, headerControls: 0, headerPointer: false,
+  expect(sections).toEqual(REVIEW_SECTIONS.map(({ heading, badge, details }) => ({
+    cards: 1, framed: 1, heading, badge, details, headerControls: 0, headerPointer: false,
     blocks: 1, disclosed: 0, bodyBadges: 0,
   })))
   // The spectrum prescribes no tempo, so no section holds even the optional
@@ -986,7 +992,7 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
     // The primary action is pinned below the scroller, not inside it.
     expect(await start.evaluate((el) => el.closest('.clr-scroll-region__foot') !== null &&
       el.closest('.clr-scroll-region__scroller') === null)).toBe(true)
-    evidence.note('containment', 'Review: overview metrics and seven always-open section cards under static headers (the section name an h2 on the left, the structure badge in the header on the right, no toggle, chevron or collapsed state), no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', { ...probe, sections })
+    evidence.note('containment', 'Review: overview metrics and seven always-open section cards under static headers (the section name an h2, the format-only structure badge below it and its rounds, clock or cap on the line below the badge, no toggle, chevron or collapsed state), no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', { ...probe, sections })
   }, { skins: true, short: start })
 
   // The quiet action: public TextAction, chevron, 40px, button semantics, keyboard focus.

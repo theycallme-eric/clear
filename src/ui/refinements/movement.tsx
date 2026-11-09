@@ -12,7 +12,9 @@
  *   · `MovementList` — ordered peers with a separator only between two peers:
  *     no rule after the last, and no inline-start rail (C04, R28, R75).
  *   · `MovementGroupHeader` — the static group header that places the format
- *     badge. It draws no rule or rail of its own.
+ *     badge. It draws no rule or rail of its own. C09 (TASK-003): the badge
+ *     sits below the title in every header, whatever the label's length, and
+ *     the details it no longer carries are read on the line below it (C08).
  *
  * Presentation only. Consumers keep their data, controllers and actions: no
  * field, write or reason is added here (LOGGING-FIELDS.md). There is no
@@ -118,8 +120,13 @@ export function MovementList({ label, children, ...rest }: MovementListProps) {
 export interface MovementGroupHeaderProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title' | 'className'> {
   /** The group's label, where the context has one. */
   title?: ReactNode
-  /** The format badge. */
+  /** The format badge, below the title (C09). */
   badge?: ReactNode
+  /**
+   * What the format badge leaves out — `10 MIN`, `15 MIN CAP`, `3 ROUNDS` —
+   * as readable text below it, never inside it (C08, AC-R003-01).
+   */
+  meta?: ReactNode
   /** The title as a structural heading. Off where the label is a secondary reading. */
   heading?: boolean
 }
@@ -130,8 +137,13 @@ export interface MovementGroupHeaderProps extends Omit<HTMLAttributes<HTMLDivEle
  * C07 (TASK-002): the title reads in one face whether it is Review's semantic
  * heading or the live card's secondary label — the shared compact data label
  * (`clr-text-data-xs`, uppercase), never the heading element's own size.
+ *
+ * C09 (TASK-003; R51, R59): one stacked arrangement — title, then the badge
+ * below it, then the details the badge no longer carries — so the badge never
+ * moves beside or below the title according to its label's length, and is
+ * never truncated to fit beside it.
  */
-export function MovementGroupHeader({ title, badge, heading = false, ...rest }: MovementGroupHeaderProps) {
+export function MovementGroupHeader({ title, badge, meta, heading = false, ...rest }: MovementGroupHeaderProps) {
   const Title = heading ? Heading : 'span'
   return (
     <div {...rest} className="clr-movement-group-header" data-movement-group-header="">
@@ -139,6 +151,14 @@ export function MovementGroupHeader({ title, badge, heading = false, ...rest }: 
         <Title className="clr-movement-group-header__title clr-text-data-xs clr-text-data-xs--upper">{title}</Title>
       ) : null}
       {present(badge) ? <div className="clr-movement-group-header__badge">{badge}</div> : null}
+      {present(meta) ? (
+        <p
+          className="clr-movement-group-header__meta clr-text-data-xs clr-text-data-xs--upper clr-text-data-xs--quiet"
+          data-structure-meta=""
+        >
+          {meta}
+        </p>
+      ) : null}
     </div>
   )
 }

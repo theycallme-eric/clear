@@ -181,6 +181,16 @@ export interface LoadSuggestionView {
   /** The change from the heaviest set logged last time, in `unit`. */
   readonly delta: number | null
   readonly lastSession: LastSessionView | null
+  /**
+   * Whether Review offers to replace the number for this session ("Your
+   * weight"). False for a movement in a circuit (TASK-003, AC-R003-04; R04,
+   * G24): the circuit's actual weight is chosen and recorded in the live
+   * circuit's existing optional logger, so a Review weight change would be a
+   * second, redundant control. The suggestion is still explained. Every other
+   * structure keeps the override: that storage proof is the verified circuit's
+   * alone and is not extrapolated to other formats.
+   */
+  readonly adjustable: boolean
 }
 
 /** A weight the user typed in place of the suggestion, for this session only. */
@@ -320,6 +330,7 @@ export function reviewLoadSuggestions(sources: SuggestionSources): LoadSuggestio
             lastSession,
             read: lastSession === null ? null : readOf(history, lastSession.date),
             recentMax: recentMaxOf(history, acceptance.date, unit),
+            adjustable: block.structure_type !== 'circuit',
           }),
         )
       })
@@ -339,6 +350,7 @@ interface SuggestionArgs {
   readonly lastSession: LastSessionView | null
   readonly read: SessionRead | null
   readonly recentMax: number | null
+  readonly adjustable: boolean
 }
 
 /**
@@ -351,7 +363,7 @@ interface SuggestionArgs {
  * unknown region produces the more conservative upward suggestion.
  */
 function suggestionFor(args: SuggestionArgs): LoadSuggestionView {
-  const { key, acceptance, exercise, anchor, unit, targetReps, lastSession, read, recentMax } =
+  const { key, acceptance, exercise, anchor, unit, targetReps, lastSession, read, recentMax, adjustable } =
     args
 
   const suggestion: LoadSuggestion = suggestLoad({
@@ -396,6 +408,7 @@ function suggestionFor(args: SuggestionArgs): LoadSuggestionView {
     clamped: suggestion.clamped,
     delta: deltaOf(suggestion.weight, lastSession?.topWeight ?? null),
     lastSession,
+    adjustable,
   }
 }
 

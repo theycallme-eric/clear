@@ -66,6 +66,7 @@ import {
   LiveMovementTimed,
   MovementGroupHeaderHeading,
   MovementGroupHeaderLabelled,
+  MovementGroupHeaderLongLabel,
   MovementIdentityLongName,
   MovementIdentityReviewSlot,
   MovementIdentityWorkoutSlot,
@@ -837,6 +838,7 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
   id: 'gallery-detail-block',
   identity: {
     label: 'CIRCUIT',
+    format: 'CIRCUIT',
     detail: '4 ROUNDS',
     repScheme: null,
     glyph: 'Circuit',
@@ -1104,6 +1106,7 @@ const SAMPLE_LOAD_SUGGESTION: LoadSuggestionView = {
     medianRpe: 7.5,
     topWeight: 85,
   },
+  adjustable: true,
 }
 
 const SAMPLE_LOAD_SUGGESTION_LOW: LoadSuggestionView = {
@@ -1212,6 +1215,20 @@ function LoadSuggestionDialogNoSets() {
     <LoadSuggestionDialogSpecimen
       label="Why this number, no sets on record"
       suggestion={{ ...SAMPLE_LOAD_SUGGESTION_LOW, lastSession: null }}
+      override={null}
+    />
+  )
+}
+
+/**
+ * TASK-003 (AC-R003-04): a circuit movement's suggestion is explained without
+ * a Review weight change; its actual weight is the live circuit logger's.
+ */
+function LoadSuggestionDialogCircuit() {
+  return (
+    <LoadSuggestionDialogSpecimen
+      label="Why this number, circuit movement"
+      suggestion={{ ...SAMPLE_LOAD_SUGGESTION, exerciseId: 'kb-swing', name: 'kb swing', equipment: 'kettlebell', adjustable: false }}
       override={null}
     />
   )
@@ -2094,17 +2111,18 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'MovementGroupHeader',
     requirement: 'REQ-001',
     module: 'src/ui/refinements/movement.tsx',
-    summary: 'The shared static group header: the section identity and the format badge, in one compact data label face whether it is a label or a heading. It draws no rule, rail, toggle or chevron; actions and progress stay with consumers.',
+    summary: 'The shared static group header: the section identity, the format-only badge below it and the rounds, clock or cap it leaves out on the line below (TASK-003, C08, C09), in one compact data label face whether the title is a label or a heading. It draws no rule, rail, toggle or chevron; actions and progress stay with consumers.',
     specimens: [
       { state: 'label and format badge', note: 'Workout’s block top row.', Render: MovementGroupHeaderLabelled },
       { state: 'heading and format badge', note: 'Review’s static section header (C07).', Render: MovementGroupHeaderHeading },
+      { state: 'long label, short and long formats', note: 'The badge stays below the title, untruncated, whatever either label’s length (C09).', Render: MovementGroupHeaderLongLabel },
     ],
   },
   {
     component: 'WorkoutCard',
     requirement: 'REQ-002',
     module: 'src/ui/refinements/workout-card.tsx',
-    summary: 'TASK-002 one block card for Review and the live workout: the shared static header (section identity left, badge right; a semantic heading in Review, never a toggle), then the block. Only the movement slot differs by context.',
+    summary: 'TASK-002 one block card for Review and the live workout: the shared static header (the section identity, a semantic heading in Review and never a toggle; then the format-only badge below it and the rounds, clock or cap below that, TASK-003), then the block. Only the movement slot differs by context.',
     specimens: [
       { state: 'Review · static heading and Swap', Render: WorkoutCardReview },
       { state: 'Workout · section label and set progress', Render: WorkoutCardWorkout },
@@ -2423,7 +2441,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'OVR-01c',
     module: 'src/ui/load-suggestion.tsx',
     summary:
-      'Why this number: last session’s sets, the RPE recorded, the rule that fired, and an override that changes this session only.',
+      'Why this number: last session’s sets, the RPE recorded, the rule that fired, and an override that changes this session only — except in a circuit, whose actual weight is entered in the live circuit logger (TASK-003).',
     specimens: [
       { state: 'explained', Render: LoadSuggestionDialogExplained },
       {
@@ -2432,6 +2450,11 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
         Render: LoadSuggestionDialogOverridden,
       },
       { state: 'no previous sets', Render: LoadSuggestionDialogNoSets },
+      {
+        state: 'circuit movement',
+        note: 'TASK-003 (AC-R003-04): explained without a Review weight change; the live circuit logger records the actual weight.',
+        Render: LoadSuggestionDialogCircuit,
+      },
     ],
   },
   {

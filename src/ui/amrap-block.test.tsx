@@ -137,7 +137,10 @@ describe('what the AMRAP reads from the block', () => {
   it('states the window it prescribes, before it is opened, with no round goal', () => {
     renderAmrap(amrapBlock(), fakeStorage(), completionDouble().api)
 
-    expect(screen.getByText('AMRAP · 8 MIN')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01, AC-R003-01): the format badge, and the window
+    // stated on the header's line below it.
+    expect(screen.getByText('AMRAP')).toBeInTheDocument()
+    expect(screen.getByText('8 MIN')).toBeInTheDocument()
     expect(
       screen.getByText('As many rounds as possible in 08:00.'),
     ).toBeInTheDocument()

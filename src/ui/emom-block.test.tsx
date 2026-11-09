@@ -457,8 +457,8 @@ describe('an alternating EMOM says which minutes each movement covers', () => {
     // Every minute is the same movement; a label would say nothing.
     mount({ block: { exercises: [PAIR[0]] } })
 
-    // Looked for inside the movement's own row: the structure badge above says
-    // `EMOM · 10 MIN`, which is the window rather than an assignment, and the
+    // Looked for inside the movement's own row: the header above says `EMOM`
+    // and `10 MIN`, which is the window rather than an assignment, and the
     // target line names the scheduled minute rather than a pattern.
     expect(movement('1. hollow body hold').queryByText(/^(ODD|EVEN) MIN$|^MIN \d+, /)).not.toBeInTheDocument()
     expect(screen.queryByText('ODD MIN')).not.toBeInTheDocument()
@@ -644,7 +644,9 @@ describe('the EMOM draws with the shared block frame', () => {
 
     const blockCard = cards()[0]
     const inside = within(blockCard)
-    expect(inside.getByText('EMOM · 10 MIN')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01): the format badge, and the window on the line below it.
+    expect(inside.getByText('EMOM')).toBeInTheDocument()
+    expect(inside.getByText('10 MIN')).toBeInTheDocument()
     expect(inside.getByText('2 movements')).toBeInTheDocument()
 
     // Rows of one list, each headed by its movement — never cards of their own.

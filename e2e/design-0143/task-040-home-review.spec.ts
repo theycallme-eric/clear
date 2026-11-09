@@ -769,7 +769,11 @@ test.describe('TASK-040 — Home and Review additive before-state artifacts', ()
     // Shared rest sits with its own group, once each. TASK-002 (AC-C07-01):
     // the badge heads the group's own card, in the shared static header.
     const supersetGroup = superset.locator('xpath=..')
-    await expect(superset.locator('xpath=ancestor::*[@data-workout-card][1]')).toContainText('SUPERSET · 3 ROUNDS')
+    // TASK-003 (AC-C08-01): the badge names the format; its rounds are read
+    // on the header's line below it.
+    const supersetCard = superset.locator('xpath=ancestor::*[@data-workout-card][1]')
+    await expect(supersetCard.locator('.clr-movement-group-header__badge')).toHaveText('SUPERSET')
+    await expect(supersetCard.locator('[data-structure-meta]')).toHaveText('3 ROUNDS')
     await expect(supersetGroup.getByText('Rest 75s between rounds', { exact: true })).toBeVisible()
     await expect(circuit.locator('xpath=..').getByText('Rest 60s between rounds', { exact: true })).toBeVisible()
     await expect(main.getByText(/between rounds/)).toHaveCount(2)

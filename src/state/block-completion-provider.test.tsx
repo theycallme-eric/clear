@@ -444,7 +444,7 @@ describe('the seams outside the shell', () => {
             blockId: '70000001-0000-4000-8000-000000000000',
             structureType: 'emom',
             repScheme: 'fixed',
-            identity: { label: 'EMOM', detail: null, repScheme: null, glyph: 'Stopwatch' },
+            identity: { label: 'EMOM', format: 'EMOM', detail: null, repScheme: null, glyph: 'Stopwatch' },
             status: 'not_started',
             exerciseCount: 1,
             exercises: [],

@@ -329,7 +329,11 @@ describe('the complete ordered circuit', () => {
   it('states the total rounds and the shared rest the block prescribes, once each', () => {
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
-    expect(screen.getByText('CIRCUIT · 3 ROUNDS')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01, AC-R003-01): the badge names the format; the total
+    // rounds are read once, on the header's line below it.
+    expect(screen.getByText('CIRCUIT')).toBeInTheDocument()
+    expect(screen.getAllByText('3 ROUNDS')).toHaveLength(1)
+    expect(screen.queryByText('CIRCUIT · 3 ROUNDS')).toBeNull()
     expect(screen.getAllByText('60s rest between rounds')).toHaveLength(1)
     // Rest is the block's: no movement states one of its own.
     for (const row of movementRows()) expect(within(row).queryByText(/^Rest \d|\d+s rest/i)).toBeNull()
@@ -666,7 +670,9 @@ describe('the circuit draws with the shared block frame', () => {
     renderCircuit(circuitBlock(), fakeStorage(), completionDouble().api)
 
     const inside = within(blockCard())
-    expect(inside.getByText('CIRCUIT · 3 ROUNDS')).toBeInTheDocument()
+    // TASK-003 (AC-C08-01): the format badge, and the rounds beside it.
+    expect(inside.getByText('CIRCUIT')).toBeInTheDocument()
+    expect(inside.getByText('3 ROUNDS')).toBeInTheDocument()
     expect(inside.getByText('3 movements')).toBeInTheDocument()
     expect(inside.getByText('Each round:')).toBeInTheDocument()
     expect(inside.getByText('60s rest between rounds')).toBeInTheDocument()

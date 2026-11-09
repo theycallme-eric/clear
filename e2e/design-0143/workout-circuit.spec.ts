@@ -605,7 +605,10 @@ test('JOURNEY-025: the full ordered circuit runs hands-off, records only observe
     await expect(row.getByText(`${REPS[index]} reps`, { exact: true })).toBeVisible()
   }
   const card = page.locator('.clr-card').filter({ has: list })
-  await expect(card.getByText('CIRCUIT · 3 ROUNDS', { exact: true })).toBeVisible()
+  // TASK-003 (AC-C08-01, AC-R003-01): the badge names the format; the total
+  // rounds are read once, on the header's line below it.
+  await expect(card.locator('.clr-movement-group-header__badge')).toHaveText('CIRCUIT')
+  await expect(card.getByText('3 ROUNDS', { exact: true })).toBeVisible()
   await expect(page.getByText('30s rest between rounds', { exact: true })).toHaveCount(1)
   await expect(record).toHaveText('No rounds recorded')
   await expectHandsOff(page)

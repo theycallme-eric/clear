@@ -35,6 +35,7 @@ function blockFixture(
     repScheme: 'fixed',
     identity: {
       label: structureType.toUpperCase(),
+      format: structureType.toUpperCase(),
       detail: null,
       repScheme: null,
       glyph: 'Stopwatch',

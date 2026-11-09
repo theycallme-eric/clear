@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-003",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-003.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-003/required-cases.json",
+    "sha256": "480ac83994d729163fb77b35221cc2525784fcfcee34d3bf29a21f08ca84b4e1"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-003.spec.ts",
+      "sha256": "d66a9a2548aa6c9cf51a53bde3ce6d500f3ae781f5bd3ab013bb19563d4c32ae"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 phone-320: Review then Workout show format-only badges below each title, their details beside them and each prescribed load in its target row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 phone-390: Review then Workout show format-only badges below each title, their details beside them and each prescribed load in its target row",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > AC-R003-04 keyboard and touch: the verified circuit explains its suggestion without a Review weight change, and its optional logger takes the actual weight",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > JOURNEY-003 recovery: a failed Start keeps Review’s badges, details and loads as planned and records no work",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-003.spec.ts",
+      "name": "TASK-003 consistent format badges and truthful prescribed load > gallery cards: the accepted state draws format-only badges below each title, the details beside them and the live prescribed load",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

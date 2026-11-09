@@ -267,9 +267,13 @@ describe('TASK-002 context-specific actions with compact equipment', () => {
       expect(title).toHaveTextContent(SECTION)
       expect(header.querySelector('button, [aria-expanded], .clr-collapsible__glyph')).toBeNull()
     }
-    // The grouped blocks are named by their badge, on the header's far side.
-    expect(reviewHeaders[1].badge).toHaveTextContent('SUPERSET · 3 ROUNDS')
-    expect(reviewHeaders[2].badge).toHaveTextContent('CIRCUIT · 2 ROUNDS')
+    // The grouped blocks are named by their badge. TASK-003 (AC-C08-01,
+    // AC-C09-01) supersedes the right-hand, rounds-in-badge reading: the badge
+    // names the format below the title, and the rounds are read below it.
+    expect(reviewHeaders[1].badge).toHaveTextContent(/^SUPERSET$/)
+    expect(reviewHeaders[2].badge).toHaveTextContent(/^CIRCUIT$/)
+    expect(reviewHeaders[1].header.querySelector('[data-structure-meta]')).toHaveTextContent(/^3 ROUNDS$/)
+    expect(reviewHeaders[2].header.querySelector('[data-structure-meta]')).toHaveTextContent(/^2 ROUNDS$/)
     const reviewTitle = reviewHeaders[0].title!
     expect(reviewTitle.tagName).toBe('H2')
 
@@ -357,10 +361,12 @@ describe('TASK-002 context-specific actions with compact equipment', () => {
     const main = screen.getByRole('main')
     const text = main.textContent ?? ''
     // Planned work stays: sets × reps, the movement's own rest, the rounds,
-    // the one-round sequence and the group's rest.
-    for (const planned of ['3 × 5 reps', 'Rest 120s', '2 × 15 reps', 'Rest 45s', 'SUPERSET · 3 ROUNDS', 'One round: 01 → 02', 'Rest 90s between rounds', 'CIRCUIT · 2 ROUNDS', 'Rest 60s between rounds', '15 reps']) {
+    // the one-round sequence and the group's rest. TASK-003 (AC-C08-01): the
+    // rounds are read beside the format badge rather than inside it.
+    for (const planned of ['3 × 5 reps', 'Rest 120s', '2 × 15 reps', 'Rest 45s', '3 ROUNDS', 'One round: 01 → 02', 'Rest 90s between rounds', '2 ROUNDS', 'Rest 60s between rounds', '15 reps']) {
       expect(text, planned).toContain(planned)
     }
+    expect([...main.querySelectorAll('[data-structure-meta]')].map((meta) => meta.textContent)).toEqual(['3 ROUNDS', '2 ROUNDS'])
     // Nothing live leaks in.
     expect(main.querySelectorAll('.clr-movement-identity__counter')).toHaveLength(0)
     expect(within(main).queryAllByText(LIVE_PROGRESS)).toEqual([])
