@@ -31,6 +31,7 @@ import { ATMOSPHERE_LABELS, ATMOSPHERE_LEVELS } from './gallery-atmosphere'
 import { DesignSystemSpecimens } from './gallery-ds'
 import { SPECIMENS } from './specimens'
 import { GALLERY_ENTRIES } from './gallery-registry'
+import { GalleryRefinements } from './gallery-refinements'
 import { GalleryMotion } from './gallery-motion'
 
 import './gallery.css'
@@ -107,11 +108,13 @@ const SECTIONS = [
   { to: 'ds', end: false, label: 'Design system' },
   { to: 'app', end: false, label: 'App-composed' },
   { to: 'motion', end: false, label: 'Motion and behavior' },
+  { to: 'refinements', end: false, label: 'Accepted workout refinements' },
 ]
 
 function GalleryNav({ publicView }: { publicView: boolean }) {
   const { pathname, search } = useLocation()
   const motion = pathname.endsWith('/motion')
+  const refinements = pathname.endsWith('/refinements')
   const component = new URLSearchParams(search).get('component')
   const comparisons = GALLERY_ENTRIES.filter(entry =>
     entry.component === 'WorkoutEntryComparison' || entry.component === 'MovementIdentityComparison',
@@ -121,16 +124,17 @@ function GalleryNav({ publicView }: { publicView: boolean }) {
       <Nav label="Gallery sections">
         <ul className="clr-dev-gallery__nav-list">
           <li>
-            <Link to="/gallery/app" aria-current={motion || comparisons.some(entry => entry.component === component) ? undefined : 'page'}>All components</Link>
+            <Link to="/gallery/app" aria-current={motion || refinements || comparisons.some(entry => entry.component === component) ? undefined : 'page'}>All components</Link>
           </li>
           {comparisons.map(entry => (
             <li key={entry.component}>
-              <Link to={`/gallery/app?component=${entry.component}`} aria-current={!motion && component === entry.component ? 'page' : undefined}>
+              <Link to={`/gallery/app?component=${entry.component}`} aria-current={!motion && !refinements && component === entry.component ? 'page' : undefined}>
                 {entry.title}
               </Link>
             </li>
           ))}
           <li><Link to="/gallery/motion" aria-current={motion ? 'page' : undefined}>Motion and behavior</Link></li>
+          <li><Link to="/gallery/refinements" aria-current={refinements ? 'page' : undefined}>Accepted workout refinements</Link></li>
         </ul>
       </Nav>
     )
@@ -219,6 +223,7 @@ export function GalleryRoute({ publicView = false }: { publicView?: boolean }) {
         <Route path="ds" element={publicView ? <Navigate to="/gallery/app" replace /> : <DesignSystemSpecimens />} />
         <Route path="app" element={<AppComposedParts />} />
         <Route path="motion" element={<GalleryMotion />} />
+        <Route path="refinements" element={<GalleryRefinements />} />
         {/* A mistyped section is the overview, not a 404 inside a dev tool. */}
         <Route path="*" element={publicView ? <Navigate to="/gallery/app" replace /> : <GalleryOverview />} />
       </Route>

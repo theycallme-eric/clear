@@ -158,18 +158,17 @@ describe('AC-025: the card’s top row', () => {
 })
 
 describe('AC-026: heading, counter, prescription and equipment', () => {
-  it('puts a subordinate Set X/Y counter beside the heading, then prescription and equipment', () => {
+  // TASK-001 (R132, C01): the shared MovementIdentity sets the compact
+  // equipment beside the name and the counter in its own slot of the name row.
+  it('puts a subordinate Set X/Y counter in the name row beside the heading and equipment, then prescription', () => {
     mount()
 
     const heading = main().getByRole('heading', { name: 'back squat' })
-    const headRow = heading.parentElement!
+    const headRow = heading.closest('[data-movement-name-row]') as HTMLElement
     expect(within(headRow).getByText('Set 1/3')).not.toHaveRole('heading')
+    const equipment = within(headRow).getByText('barbell')
 
-    const order = [
-      heading,
-      main().getByText('3 × 8 reps'),
-      main().getByText('Equipment · barbell'),
-    ]
+    const order = [heading, equipment, main().getByText('3 × 8 reps')]
     for (let index = 1; index < order.length; index += 1) {
       expect(order[index - 1].compareDocumentPosition(order[index]))
         .toBe(Node.DOCUMENT_POSITION_FOLLOWING)

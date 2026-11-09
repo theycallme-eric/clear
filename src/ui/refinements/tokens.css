@@ -1,0 +1,15 @@
+/* App-owned accepted refinement recipes, layered over immutable Foundation 0.14.3.
+ * Existing DS tokens stay canonical. Only repeated composition decisions receive
+ * a semantic variable here; every value resolves to an existing Foundation token.
+ *
+ * Accepted gallery reference eded158cfd928d382c9a9409e2c372270312741d,
+ * /gallery/refinements?state=cards (REUSE.md). Later refinement tasks add their
+ * own semantic variables to this one file rather than to a route stylesheet. */
+:root {
+  /* G01 / R111: the space between two complete peer movements, split evenly
+   * either side of the one separator between them. Slightly wider than the
+   * tier gap inside a movement, so each movement still reads as one group. */
+  --movement-peer-gap: var(--spacing-400);
+  /* G01: name row, prescription and attached content inside one movement. */
+  --movement-tier-gap: var(--spacing-200);
+}

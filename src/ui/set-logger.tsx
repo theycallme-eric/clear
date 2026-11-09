@@ -81,6 +81,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { ActionGroup } from './composition'
 import { ExerciseCoaching } from './exercise-coaching'
 import { MovementCountdown } from './movement-countdown'
+import { liveMovementReadings } from './refinements/movement-readings'
 import { Select } from './select'
 import { SetEffortChoice, SetEffortReading, type SetEffort } from './set-effort'
 import { SetLoggingSheet, SetMeasurementRow } from './set-logging-sheet'
@@ -178,6 +179,10 @@ export function ExerciseSetLogger({
   const name = exerciseName(prescription.exercise_id)
   const title = ordinal === undefined ? name : `${ordinal} ${name}`
   const equipment = equipmentName(prescription.equipment_used)
+  // R31, G02: the prescribed load through Review's own formatter and the
+  // profile's unit, never a logged weight. A round member's `Bodyweight` beside
+  // bodyweight equipment is said once, by the equipment.
+  const prescribedLoad = liveMovementReadings(prescription, weightUnit, !statesRest).load
   const unloaded = incrementFor(prescription.equipment_used, 'kg') === null
   const restOnEntry = prescribedRestSeconds(
     restSeconds !== undefined ? restSeconds : statesRest ? prescription.rest_seconds : null,
@@ -245,10 +250,13 @@ export function ExerciseSetLogger({
 
   return (
     <BlockPanel.Movement
-      title={title}
+      title={name}
+      ordinal={ordinal}
       counter={setNumber > prescribed ? `Extra set ${setNumber}` : `Set ${setNumber}/${prescribed}`}
       detail={prescriptionText(prescription)}
-      context={`Equipment · ${equipment}`}
+      // R31: the prescribed target load, in the same reading Review gives it.
+      load={prescribedLoad}
+      context={equipment}
     >
       {/*
         Tempo stays in the prescription's structured columns; it is not

@@ -34,7 +34,12 @@ import type { BlockProgress } from '../state/workout-progress'
 import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
-import { Heading, HeadingSection } from './Heading'
+import { HeadingSection } from './Heading'
+import {
+  MovementGroupHeader,
+  MovementIdentity,
+  MovementList as SharedMovementList,
+} from './refinements/movement'
 import { useSectionLabel } from './section-label-context'
 import { StructureBadge } from './workout-chrome'
 
@@ -51,63 +56,15 @@ const LABEL_STYLE: CSSProperties = {
 
 const NOTE_STYLE: CSSProperties = { margin: 0 }
 
-const LIST_STYLE: CSSProperties = {
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 'var(--spacing-300)',
-}
+const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE }
 
 /**
- * B05-04's selected movement hierarchy, in three tiers (REQ-014). The name is
- * one role whatever level the nesting gives its heading, so a standard,
- * superset and circuit card all lead with the same emphasis; the prescription
- * and the equipment each sit a distinct step below it.
+ * B05-04's movement hierarchy is now the shared owner's (TASK-001, G01):
+ * `MovementIdentity`, `MovementList` and `MovementGroupHeader` in
+ * `src/ui/refinements/movement.tsx`. Review draws the same owners, so a
+ * standard, superset and circuit card lead with the same emphasis in both
+ * contexts, and the peers are separated only between two of them.
  */
-const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE, gap: 'var(--spacing-200)' }
-
-const MOVEMENT_NAME_ROW_STYLE: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 'var(--spacing-300)',
-}
-
-const MOVEMENT_NAME_STYLE: CSSProperties = {
-  flex: '1 1 0',
-  minWidth: 0,
-  margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h3-size)',
-  lineHeight: 'var(--heading-h3-line-height)',
-  fontWeight: 'var(--font-weight-bold)',
-  textTransform: 'uppercase',
-  color: 'var(--ink)',
-  overflowWrap: 'anywhere',
-}
-
-/** The counter keeps its own column: a long name wraps beside it, never over it. */
-const MOVEMENT_COUNTER_STYLE: CSSProperties = { ...LABEL_STYLE, flex: 'none' }
-
-const MOVEMENT_DETAIL_STYLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-md-size)',
-  lineHeight: 'var(--label-md-line-height)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-paragraph)',
-}
-
-const MOVEMENT_CONTEXT_STYLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-xs-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-secondary)',
-  textTransform: 'capitalize',
-}
-
 const FIELD_ROW_STYLE: CSSProperties = {
   flexWrap: 'wrap',
   gap: 'var(--spacing-200)',
@@ -168,16 +125,19 @@ export function BlockPanel({
           badge on the right, so the badge never competes with the movement
           heading below it.
         */}
-        <div className="clr-row" data-block-top-row="" style={{ justifyContent: 'space-between' }}>
-          <span style={LABEL_STYLE}>
-            {sectionLabel ?? (
-              <>
-                {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-              </>
-            )}
-          </span>
-          <StructureBadge identity={block.identity} />
-        </div>
+        <MovementGroupHeader
+          data-block-top-row=""
+          title={
+            <span style={LABEL_STYLE}>
+              {sectionLabel ?? (
+                <>
+                  {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
+                </>
+              )}
+            </span>
+          }
+          badge={<StructureBadge identity={block.identity} />}
+        />
         {children}
         <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
       </div>
@@ -247,13 +207,12 @@ export interface BlockMovementListProps {
   children?: ReactNode
 }
 
-/** The block's movements, in prescribed order. Rows, not cards. */
+/**
+ * The block's movements, in prescribed order. Rows, not cards: the shared
+ * `MovementList`, with a separator only between two peers and no rail (C04).
+ */
 function MovementList({ label, children }: BlockMovementListProps) {
-  return (
-    <ol aria-label={label} style={LIST_STYLE}>
-      {children}
-    </ol>
-  )
+  return <SharedMovementList label={label}>{children}</SharedMovementList>
 }
 
 export type BlockMovementMarker = 'now' | 'next' | null
@@ -288,43 +247,43 @@ function MovementItem({ marker = null, children }: BlockMovementItemProps) {
 }
 
 export interface BlockMovementProps {
-  /** The movement's name, with its ordinal where the structure gives it one. */
+  /** The movement's name. */
   title: ReactNode
+  /** Its position in the block — `A1`, `1.` — where the structure gives one. */
+  ordinal?: ReactNode
   /** The prescription as read from its columns — `3 × 8 reps`. */
   detail?: ReactNode
+  /** The prescribed load beside it (R31) — a target, never a performed weight. */
+  load?: ReactNode
   /**
    * A subordinate readout beside the heading — the logger's `Set 2/3`. A
    * label, never a second heading.
    */
   counter?: ReactNode
-  /** Equipment context, under the prescription. */
+  /** Compact equipment context, beside the name (R132). */
   context?: ReactNode
   children?: ReactNode
 }
 
 /**
- * One movement: its name as a heading one level below the block, any counter
- * beside it in the label face, then its prescription in the data face and its
- * equipment context — B05-04's three tiers, the name leading.
+ * One movement: its name as a heading one level below the block with its
+ * ordinal and compact equipment, any counter in its own slot, then its
+ * prescription and prescribed load — the shared `MovementIdentity`.
  */
-function Movement({ title, detail, counter, context, children }: BlockMovementProps) {
-  const heading = <Heading style={MOVEMENT_NAME_STYLE}>{title}</Heading>
-
+function Movement({ title, ordinal, detail, load, counter, context, children }: BlockMovementProps) {
   return (
     <HeadingSection className="clr-stack--tight" style={MOVEMENT_STYLE}>
-      {counter === undefined || counter === null ? heading : (
-        <div className="clr-row" data-movement-name-row="" style={MOVEMENT_NAME_ROW_STYLE}>
-          {heading}
-          <span style={MOVEMENT_COUNTER_STYLE}>{counter}</span>
-        </div>
-      )}
-      {detail === undefined || detail === null ? null : (
-        <p data-movement-detail="" style={MOVEMENT_DETAIL_STYLE}>{detail}</p>
-      )}
-      {context === undefined || context === null ? null : (
-        <p data-movement-context="" style={MOVEMENT_CONTEXT_STYLE}>{context}</p>
-      )}
-      {children}
+      <MovementIdentity
+        heading
+        name={title}
+        ordinal={ordinal}
+        prescription={detail}
+        load={load}
+        counter={counter}
+        equipment={context}
+      >
+        {children}
+      </MovementIdentity>
     </HeadingSection>
   )
 }
