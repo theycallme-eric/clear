@@ -61,6 +61,18 @@ import {
   viewReady,
   type ViewState,
 } from '../state/view-state'
+import {
+  MovementGroupHeaderBadgeOnly,
+  MovementGroupHeaderLabelled,
+  MovementIdentityLongName,
+  MovementIdentityReviewSlot,
+  MovementIdentityWorkoutSlot,
+  MovementListOnePeer,
+  MovementListThreePeers,
+  ReviewBlockCircuit,
+  ReviewBlockStandard,
+  ReviewBlockSuperset,
+} from './gallery-refinement-cards'
 import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
@@ -2048,6 +2060,48 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     specimens: [
       { state: 'standalone prescription', Render: ReviewMovementStandalone },
       { state: 'round member', note: 'One-round target; group rest belongs to the surrounding group, not this row.', Render: ReviewMovementInRounds },
+    ],
+  },
+  {
+    component: 'MovementIdentity',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'TASK-001 shared movement hierarchy: prominent name with ordinal and quiet equipment beside it, readable prescription and prescribed load, and a separate slot for Review’s Swap or Workout’s set progress. No last-performance row.',
+    specimens: [
+      { state: 'Review slot · Swap', Render: MovementIdentityReviewSlot },
+      { state: 'Workout slot · set progress', Render: MovementIdentityWorkoutSlot },
+      { state: 'long name and multi-digit ordinal', Render: MovementIdentityLongName },
+    ],
+  },
+  {
+    component: 'MovementList',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'Ordered peers with one separator between two movements, none after the last, and no inner grouping rail.',
+    specimens: [
+      { state: 'three peers', Render: MovementListThreePeers },
+      { state: 'one peer', note: 'A lone movement has no peer, so no separator.', Render: MovementListOnePeer },
+    ],
+  },
+  {
+    component: 'MovementGroupHeader',
+    requirement: 'REQ-001',
+    module: 'src/ui/refinements/movement.tsx',
+    summary: 'The shared static group header: an optional label and the format badge. It draws no rule or rail of its own; actions and progress stay with consumers.',
+    specimens: [
+      { state: 'label and format badge', note: 'Workout’s block top row.', Render: MovementGroupHeaderLabelled },
+      { state: 'format badge only', note: 'Review’s grouped block.', Render: MovementGroupHeaderBadgeOnly },
+    ],
+  },
+  {
+    component: 'ReviewBlockRows',
+    requirement: 'REV-01',
+    module: 'src/ui/review-block.tsx',
+    summary: 'The actual Review block the /review route renders, over the real briefing derivation, with an inert in-memory swap controller.',
+    specimens: [
+      { state: 'standard', Render: ReviewBlockStandard },
+      { state: 'superset', Render: ReviewBlockSuperset },
+      { state: 'circuit', Render: ReviewBlockCircuit },
     ],
   },
   {

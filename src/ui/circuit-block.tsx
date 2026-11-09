@@ -67,7 +67,6 @@ import {
 } from '../state/circuit'
 import { exerciseName, targetText } from '../state/prescription'
 import { movementCountdownSeconds, useMovementCountdown } from '../state/movement-countdown'
-import { equipmentName } from '../state/review'
 import { useSetLogging } from '../state/set-logging'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
@@ -80,6 +79,7 @@ import { BlockPanel } from './block-renderers-frame'
 import { ExerciseCoaching } from './exercise-coaching'
 import { ExerciseSetLogger } from './set-logger'
 import { MovementCountdownView } from './movement-countdown'
+import { liveMovementReadings } from './refinements/movement-readings'
 import { useInterfaceLoop } from './motion'
 import { TimerFrame } from './workout-chrome'
 
@@ -325,7 +325,7 @@ function RoundHistory({ history }: { history: readonly RoundTiming[] }) {
  * how many sets are already logged, so a closed row never hides a record.
  */
 function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
-  const { loggedSets } = useSetLogging()
+  const { loggedSets, weightUnit } = useSetLogging()
   const [open, setOpen] = useState(false)
   const prescription = exercise.prescription
   const name = exerciseName(prescription.exercise_id)
@@ -335,6 +335,9 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
   let nextSet = 1
   while (taken.has(nextSet)) nextSet += 1
   const countdownSeconds = movementCountdownSeconds(prescription, nextSet)
+  // R31, R132: the same name, compact equipment and prescribed load the open
+  // logger and Review show.
+  const { equipment, load: prescribedLoad } = liveMovementReadings(prescription, weightUnit, true)
   // The row holds the movement's one clock, armed for the set it times, so
   // load entry opening or closing swaps the card it is drawn in without
   // replacing the clock or losing its deadline (B05-06).
@@ -366,10 +369,13 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
         />
       ) : (
         <BlockPanel.Movement
-          title={`${exercise.position}. ${name}`}
+          title={name}
+          ordinal={`${exercise.position}.`}
           detail={targetText(prescription)}
-          // The same equipment tier the open logger shows (B05-04).
-          context={`Equipment · ${equipmentName(prescription.equipment_used)}`}
+          // R31: the same prescribed load the open logger and Review show.
+          load={prescribedLoad}
+          // The same compact equipment the open logger shows (R132).
+          context={equipment}
         >
           {prescription.tempo === null ? null : (
             <BlockPanel.Note>Tempo {prescription.tempo}</BlockPanel.Note>

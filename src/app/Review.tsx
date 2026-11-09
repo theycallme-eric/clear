@@ -55,7 +55,6 @@ import {
   Info,
   Play,
   RefreshCw,
-  Rest,
   Target,
 } from '../design-system/index'
 import { useAnchorEvidenceQuery, useLoadAnchorsQuery } from '../state/anchor-queries'
@@ -67,10 +66,7 @@ import {
   GOAL_LABEL,
   INTENSITY_LABEL,
   reviewBriefing,
-  sequenceOrdinal,
-  type ReviewBlockView,
   type ReviewCadence,
-  type ReviewExerciseView,
   type ReviewFact,
   type ReviewSectionView,
 } from '../state/review'
@@ -89,13 +85,12 @@ import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queri
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
 import { CollapsibleSection } from '../ui/collapsible-section'
-import { ReviewExerciseRow } from '../ui/review-exercise-row'
+import { ReviewBlockRows, type ReviewSuggestionProps } from '../ui/review-block'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionDialog,
   LoadSuggestionsStatus,
 } from '../ui/load-suggestion'
-import { StructureBadge } from '../ui/workout-chrome'
 import { WORKOUT_ROUTE } from './ActiveSessionPrompt'
 import { Screen } from './Screen'
 
@@ -395,11 +390,7 @@ const NO_SUGGESTIONS: LoadSuggestions = new Map()
 const NO_OVERRIDES: LoadOverrides = new Map()
 
 /** What a section threads down to each prescription row. */
-interface SuggestionProps {
-  suggestions: LoadSuggestions
-  overrides: LoadOverrides
-  onExplain: (key: string) => void
-}
+type SuggestionProps = ReviewSuggestionProps
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The overview
@@ -626,122 +617,6 @@ function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
         ))}
       </ul>
     </CollapsibleSection>
-  )
-}
-
-/**
- * A group is framed down its leading edge in the structure colour, and is
- * named by its badge — the colour is never the only cue.
- */
-const GROUP_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  borderInlineStart: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingInlineStart: 'var(--spacing-300)',
-}
-
-const ORDERED_LIST_STYLE: CSSProperties = {
-  ...STACK_STYLE,
-  listStyle: 'none',
-  margin: 0,
-  padding: 0,
-}
-
-/** A rule between two movements of a group. The last one has nothing below it. */
-const MEMBER_RULE_STYLE: CSSProperties = {
-  borderBlockEnd: 'var(--border-width) solid var(--border-region-rule)',
-  paddingBlockEnd: 'var(--spacing-200)',
-}
-
-/**
- * The group's shared rest, in the interaction blue the timer it starts will
- * wear, and with the rest glyph so the colour is never the only cue.
- */
-const ROUND_REST_STYLE: CSSProperties = {
-  color: 'var(--text-card-header)',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 'var(--spacing-100)',
-}
-
-/**
- * One block. A superset, circuit or timed structure is one group: framed,
- * named by its badge (which carries the structure glyph and the round count or
- * clock once), and its movements numbered `01`, `02` in the order they are
- * performed. A superset or circuit is performed as rounds — each movement
- * once, back to back, then again — so its badge is followed by the one-round
- * sequence line and each row states what one round asks of it, never the
- * `4 × 8` that reads as all four sets before the next movement. Its shared rest
- * closes the group, after the round it follows.
- *
- * Necessary `block_notes` stay visible; the derivation removes only the known
- * redundant repeat sentence that the numbered sequence already states.
- * A standard block is a movement done set by set, so it gets no
- * frame and no `STANDARD` badge — that badge on every row was metadata that
- * said nothing — unless its rep scheme is one the user needs told.
- */
-function ReviewBlockRows({
-  block,
-  suggestions,
-  overrides,
-  onExplain,
-}: { block: ReviewBlockView } & SuggestionProps) {
-  const inRounds = block.roundSequence !== null
-  const row = (exercise: ReviewExerciseView, ordinal: string | null) => (
-    <ReviewExerciseRow
-      key={exercise.key}
-      ordinal={ordinal}
-      inRounds={inRounds}
-      exercise={exercise}
-      suggestion={suggestions.get(exercise.key) ?? null}
-      override={overrides.get(exercise.key) ?? null}
-      onExplain={() => onExplain(exercise.key)}
-    />
-  )
-
-  if (!block.grouped) {
-    const badged = block.identity.detail !== null || block.identity.repScheme !== null
-    return (
-      <div className="clr-stack--tight" style={STACK_STYLE}>
-        {badged && <StructureBadge identity={block.identity} />}
-        {block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>}
-        {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-        {block.exercises.map((exercise) => row(exercise, null))}
-      </div>
-    )
-  }
-
-  const name = [
-    block.identity.label.toLowerCase(),
-    block.rounds === null ? null : `${block.rounds} ${block.rounds === 1 ? 'round' : 'rounds'}`,
-  ]
-    .filter(Boolean)
-    .join(', ')
-
-  const last = block.exercises.length - 1
-
-  return (
-    <div className="clr-stack--tight" style={GROUP_STYLE}>
-      <StructureBadge identity={block.identity} />
-      {inRounds ? (
-        <p className="clr-text-data-xs">{block.roundSequence}</p>
-      ) : (
-        block.roundRest !== null && <span className="clr-text-data-xs">{block.roundRest}</span>
-      )}
-      {block.notes !== null && <p style={{ margin: 0 }}>{block.notes}</p>}
-      <ol aria-label={name} className="clr-stack--tight" style={ORDERED_LIST_STYLE}>
-        {block.exercises.map((exercise, index) => (
-          <li key={exercise.key} style={index === last ? undefined : MEMBER_RULE_STYLE}>
-            {row(exercise, sequenceOrdinal(index))}
-          </li>
-        ))}
-      </ol>
-      {inRounds && block.roundRest !== null && (
-        <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
-          <Rest size={16} />
-          {block.roundRest}
-        </p>
-      )}
-    </div>
   )
 }
 

@@ -19,10 +19,10 @@
  *     the clock lives, once, so the two members cannot disagree about it
  *     (DATA-01c §5) — and a block with no rest renders no rest line at all,
  *     never `Rest: 0s`.
- *   · **The pair is one unit.** The movements are connected by a rule down
- *     their left edge rather than separated by a divider (§4), and the
- *     alternation is stated in words above them, because a line is a colour cue
- *     and colour is never the only cue.
+ *   · **The pair is one unit.** The alternation is stated in words above the
+ *     movements and the shared `MovementList` separates the peers only between
+ *     two of them. The owner rejected the inner grouping rail that once ran
+ *     down their left edge (TASK-001: C04, R28, R75), so none is drawn.
  *
  *   · **The round is logged once** (REQ-016). The block's Rest action opens one
  *     sheet with each movement's own fields and effort (`SupersetRoundSheet`)
@@ -38,7 +38,7 @@
  * card, the identity row and the single completion are `BlockPanel`'s, and the
  * pair are rows of its list — never a card inside the card.
  */
-import { useRef, useState, type CSSProperties } from 'react'
+import { useRef, useState } from 'react'
 
 import { Button } from '../design-system/index'
 import { prescribedRestSeconds, useRestTimer } from '../state/rest'
@@ -139,31 +139,23 @@ function SupersetRound({ block }: BlockRendererProps) {
         </BlockPanel.Label>
       )}
 
-      {/*
-        The connector: one rule down the left of the pair, so A1 and A2
-        read as one linked unit. Inset from the card's own accent bar
-        rather than replacing it, and it shifts no text — the padding it
-        sits in is the component's, not the card's.
-      */}
-      <div style={movements.length > 1 ? PAIR_STYLE : undefined}>
-        <BlockPanel.MovementList label="Movements in this superset">
-          {movements.map((exercise) => (
-            <BlockPanel.MovementItem key={exercise.exerciseId}>
-              <ExerciseSetLogger
-                exercise={exercise}
-                ordinal={supersetOrdinal(exercise.position)}
-                // Rest here is the block's, stated once below the pair,
-                // and started once per round, by the block's Rest (EXE-05).
-                statesRest={false}
-                restSeconds={null}
-                // REQ-016: entered together, by the block's one action.
-                logging={{ round }}
-                onReturnToRound={() => logButton.current?.focus()}
-              />
-            </BlockPanel.MovementItem>
-          ))}
-        </BlockPanel.MovementList>
-      </div>
+      <BlockPanel.MovementList label="Movements in this superset">
+        {movements.map((exercise) => (
+          <BlockPanel.MovementItem key={exercise.exerciseId}>
+            <ExerciseSetLogger
+              exercise={exercise}
+              ordinal={supersetOrdinal(exercise.position)}
+              // Rest here is the block's, stated once below the pair,
+              // and started once per round, by the block's Rest (EXE-05).
+              statesRest={false}
+              restSeconds={null}
+              // REQ-016: entered together, by the block's one action.
+              logging={{ round }}
+              onReturnToRound={() => logButton.current?.focus()}
+            />
+          </BlockPanel.MovementItem>
+        ))}
+      </BlockPanel.MovementList>
 
       {rest === null ? null : <BlockPanel.Note>{rest}</BlockPanel.Note>}
 
@@ -192,9 +184,4 @@ function SupersetRound({ block }: BlockRendererProps) {
       )}
     </>
   )
-}
-
-const PAIR_STYLE: CSSProperties = {
-  borderLeft: 'var(--border-width) solid var(--border-frame-structure)',
-  paddingLeft: 'var(--spacing-200)',
 }

@@ -495,15 +495,20 @@ describe('the superset draws with the shared block frame', () => {
     expect(inside.queryByRole('button', { name: /^Complete/ })).not.toBeInTheDocument()
   })
 
-  it('links the pair with one rule drawn from tokens, not one per row', () => {
+  // TASK-001 (C04, R28, R75): the owner rejected the inner grouping rail this
+  // case used to require. The pair is the shared peer list instead: a
+  // separator only between two peers, and no rail on the list, its container
+  // or its rows.
+  it('draws the pair as the shared peer list, with no inner grouping rail', () => {
     mount()
 
-    const connector = movementList().parentElement as HTMLElement
-    expect(connector.style.borderLeft).toBe(
-      'var(--border-width) solid var(--border-frame-structure)',
-    )
-    expect(connector.style.paddingLeft).toBe('var(--spacing-200)')
-    for (const row of movementRows()) expect(row.style.borderLeft).toBe('')
+    const list = movementList()
+    expect(list).toHaveClass('clr-movement-list')
+    for (const element of [list, list.parentElement as HTMLElement, ...movementRows()]) {
+      expect(element.style.borderLeft).toBe('')
+      expect(element.style.borderInlineStart).toBe('')
+      expect(element.style.paddingLeft).toBe('')
+    }
   })
 
   it('sets each movement’s fields in one compact row of current element frames', () => {

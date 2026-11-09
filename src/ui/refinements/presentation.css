@@ -1,0 +1,145 @@
+/* Accepted refinement presentation recipes (REUSE.md). Tokens only; the
+ * semantic variables live once in ./tokens.css.
+ *
+ * Movement hierarchy and peer grouping — MovementIdentity / MovementList /
+ * MovementGroupHeader (TASK-001: C01, C02, C04, G01, R02, R28, R30, R31, R132).
+ * Review and Workout both draw these; neither route restates them. */
+
+.clr-movement-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--movement-tier-gap);
+  min-width: 0;
+}
+
+/* The name row: name (with its ordinal and compact equipment) in a column of
+ * its own, then the consumer's counter or action. A long name wraps inside its
+ * column and never under the action. */
+.clr-movement-identity__top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-300);
+  min-width: 0;
+}
+
+/* The name and its compact equipment share one wrapping row: equipment sits
+ * on the name's baseline, and moves under it as one unit when it does not fit. */
+.clr-movement-identity__title {
+  flex: 1 1 0%;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--spacing-200);
+  font-family: var(--font-display);
+  font-size: var(--heading-h5-size);
+  line-height: var(--heading-h5-line-height);
+  overflow-wrap: anywhere;
+}
+
+/* Prominent name: the heading ink, never the action colour. */
+.clr-movement-identity__name {
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--heading-h5-size);
+  line-height: var(--heading-h5-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.clr-movement-identity__ordinal {
+  margin-inline-end: var(--spacing-100);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* R132 / C03 selected A: quiet equipment beside the name, readable text that
+ * moves to the next line as one unit when it does not fit. */
+.clr-movement-identity__equipment {
+  max-width: 100%;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  letter-spacing: var(--tracking-data);
+  font-weight: var(--font-weight-medium);
+  text-transform: capitalize;
+  color: var(--text-secondary);
+}
+
+/* Live progress (Set 2/3): a subordinate label in its own column. */
+.clr-movement-identity__counter {
+  flex: none;
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  letter-spacing: var(--tracking-data);
+  text-transform: uppercase;
+  color: var(--text-card-label);
+}
+
+/* Review's Swap: its control-height target centred on the name's first line. */
+.clr-movement-identity__action {
+  flex: 0 1 auto;
+  max-width: 45%;
+  margin-block: calc((var(--heading-h5-line-height) - var(--control-height)) / 2);
+}
+
+/* Readable prescription and its prescribed load, as separate readings. */
+.clr-movement-identity__prescription {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-100) var(--spacing-300);
+  margin: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-md-size);
+  line-height: var(--label-md-line-height);
+  letter-spacing: var(--tracking-data);
+  color: var(--text-paragraph);
+}
+
+/* C04: ordered peers, with one separator between two peers and none after the
+ * last. No inline-start rail on the list, its items or its container. */
+.clr-movement-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--movement-peer-gap);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.clr-movement-list > li {
+  min-width: 0;
+}
+
+.clr-movement-list > li:not(:last-child) {
+  padding-block-end: var(--movement-peer-gap);
+  border-block-end: var(--border-width) solid var(--border-region-rule);
+}
+
+/* The shared static group header: an optional label and the format badge.
+ * It draws no rule or rail of its own. */
+.clr-movement-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-200) var(--spacing-300);
+  min-width: 0;
+}
+
+.clr-movement-group-header__title {
+  margin: 0;
+  min-width: 0;
+}
+
+.clr-movement-group-header__badge {
+  display: flex;
+  max-width: 100%;
+  min-width: 0;
+}

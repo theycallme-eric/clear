@@ -231,7 +231,9 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     ])
   })
 
-  it('states movement, then prescription, then equipment on each numbered row', async () => {
+  // R132 (Section 4 A) supersedes the dedicated equipment line: the compact
+  // equipment sits beside the name, and the prescription follows the name row.
+  it('states movement with its equipment beside it, then the prescription, on each numbered row', async () => {
     renderReview()
     await ready()
 
@@ -241,8 +243,12 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
     const name = within(first).getByText('bench press')
     const prescription = within(first).getByText('8 reps')
     const equipment = within(first).getByText('barbell')
-    expect(precedes(name, prescription)).toBe(true)
-    expect(precedes(prescription, equipment)).toBe(true)
+    const nameRow = first.querySelector('[data-movement-name-row]')!
+    expect(nameRow).toContainElement(name)
+    expect(nameRow).toContainElement(equipment)
+    expect(precedes(name, equipment)).toBe(true)
+    expect(precedes(equipment, prescription)).toBe(true)
+    expect(nameRow).not.toContainElement(prescription)
   })
 
   it('follows the group’s own movement and round count rather than a fixed layout', async () => {
@@ -322,12 +328,18 @@ describe('AC-024: no trailing divider, the rest beside its group, no repeat desc
     const items = within(screen.getByRole('list', { name: 'circuit, 5 rounds' })).getAllByRole(
       'listitem',
     )
-    for (const item of items.slice(0, -1)) {
-      expect(item.style.borderBlockEnd).toContain('var(--border-region-rule)')
+    // TASK-001: the separator is the shared peer list's (`MovementList`), drawn
+    // only between two peers by its stylesheet — proved with the stylesheet
+    // applied in `src/ui/movement-list.test.tsx` and on the route in
+    // `e2e/refinement/task-001.spec.ts`. No row draws a rule of its own.
+    const list = screen.getByRole('list', { name: 'circuit, 5 rounds' })
+    expect(list).toHaveClass('clr-movement-list')
+    for (const item of items) {
+      expect(item.style.borderBlockEnd).toBe('')
+      expect(item.style.borderBottom).toBe('')
     }
-    const last = items.at(-1)!
-    expect(last.style.borderBlockEnd).toBe('')
-    expect(last.style.borderBottom).toBe('')
+    // C04: no inner grouping rail on the group either.
+    expect(list.parentElement!.style.borderInlineStart).toBe('')
   })
 
   it('keeps the blue rest reading, with its glyph, inside the group it follows', async () => {
@@ -492,19 +504,22 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
   it.each([
     ['superset, 4 rounds', undefined],
     ['circuit, 2 rounds', BODYWEIGHT_CIRCUIT],
-  ] as const)('%s: name row with Swap at its end, then prescription, then equipment', async (name, block) => {
+  ] as const)('%s: name row with equipment beside the name and Swap at its end, then prescription', async (name, block) => {
     renderReview(block === undefined ? ACCEPTANCE : withBlocks([block]))
     await ready()
 
     for (const item of within(screen.getByRole('list', { name })).getAllByRole('listitem')) {
-      const [row, prescription, equipment] = [...item.firstElementChild!.children] as HTMLElement[]
+      // TASK-001: the shared MovementIdentity; R132 places equipment beside the name.
+      const [row, prescription] = [...item.firstElementChild!.children] as HTMLElement[]
       const [title, swapSlot] = [...row.children] as HTMLElement[]
-      expect(title.textContent).toMatch(/^\d\d [a-z ]+$/)
-      expect(title.style.fontFamily).toBe('var(--font-display)')
+      const nameText = title.querySelector('.clr-movement-identity__name')!
+      const equipment = title.querySelector('[data-movement-context]')!
+      expect(nameText.textContent).toMatch(/^\d\d [a-z ]+$/)
+      expect(nameText).toHaveClass('clr-movement-identity__name')
+      expect(equipment).toHaveClass('clr-movement-identity__equipment')
       expect(within(swapSlot).getByRole('button', { name: /^Swap / })).toBeInTheDocument()
       expect(prescription.tagName).toBe('P')
-      expect(prescription.style.fontSize).toBe('var(--label-md-size)')
-      expect(equipment).toHaveClass('clr-text-data-xs', 'clr-text-data-xs--quiet')
+      expect(prescription).toHaveClass('clr-movement-identity__prescription')
     }
   })
 
@@ -549,7 +564,8 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     await ready()
     const list = screen.getByRole('list', { name: 'circuit, 2 rounds' })
     const first = within(list).getAllByRole('listitem')[0]
-    const [nameRow, prescription, equipment] = [...first.firstElementChild!.children]
+    const [nameRow, prescription] = [...first.firstElementChild!.children]
+    const equipment = nameRow.querySelector('[data-movement-context]')!
     await user.click(within(first).getByRole('button', { name: 'Swap mountain climber' }))
     await user.click(await screen.findByRole('button', { name: /Synthetic replacement\s*BODYWEIGHT/ }))
 
@@ -559,8 +575,8 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     const undo = within(first).getByRole('button', { name: 'Undo swap — back to mountain climber' })
     expect(nameRow).toContainElement(swap)
     expect(nameRow).not.toContainElement(undo)
-    expect(precedes(prescription, equipment)).toBe(true)
-    expect(precedes(equipment, undo)).toBe(true)
+    expect(precedes(equipment, prescription)).toBe(true)
+    expect(precedes(prescription, undo)).toBe(true)
     expect(undo).toHaveTextContent('Undo swap')
     await user.click(undo)
     expect(within(first).getByRole('button', { name: 'Swap mountain climber' })).toBeInTheDocument()
