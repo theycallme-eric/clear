@@ -1,0 +1,278 @@
+{
+  "schema": "clear-refinement-required-cases/v1",
+  "task": "TASK-039",
+  "description": "Bootstrap self-tests of the shared required-check, delivery-evidence and definition-record providers. Every case executes; none may be skipped. This is a setup check: it is not delivery evidence for any journey.",
+  "checks": {
+    "bootstrap": {
+      "runner": "node-test",
+      "purpose": "setup",
+      "command": "node scripts/refinement/run-required-check.mjs --task TASK-039 --check bootstrap -- node --test scripts/refinement/required-check.test.mjs",
+      "criteria": [
+        "AC-R040-01",
+        "AC-R040-02",
+        "AC-R040-03",
+        "AC-R040-04",
+        "TASK-AC-6E9AFC30F960",
+        "TASK-AC-BB6BBF630DDC",
+        "TASK-AC-A50DB04A159A",
+        "TASK-AC-9E8B5D3DDA20",
+        "AC-GAL-BASE-01"
+      ],
+      "files": [
+        "scripts/refinement/required-check.test.mjs"
+      ],
+      "cases": [
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > accepts when every requested file exists and every required case passes",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > ignores unrelated cases filtered out by --testNamePattern",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects a failing required case",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects skipped and todo required cases",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects an all-skipped run even when the runner exits 0",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects zero execution when a name filter matches nothing",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects mixed existing and missing targets before running",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects an existing target that the runner never collected",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects an absent native report",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > rejects stale native reports by path, file time and runner start time",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC vitest JSON > parses the installed Vitest JSON shape with nested titles and todo status",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > accepts required cases that pass in the selected project",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > rejects a runtime-skipped required case even though Playwright marks it ok",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > rejects a failing required case",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > rejects a required case declared for a project that did not run",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > rejects an existing target that Playwright never collected",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC playwright JSON > parses flaky and expected-failure outcomes as failures",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > accepts nested and hash-escaped required cases",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects skipped, todo and failing required cases",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects the synthetic pass node reports for a file with no tests",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects a missing file that node --test would silently ignore",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects a required case claimed for one file that only ran in another file",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > attributes node:test cases per file when several targets are requested",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects a multi-target TAP report that cannot attribute cases to files",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > parses TAP directives, escapes and suite types",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC command and manifest rules > rejects commands that could download a package or bypass the guard reporter",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC command and manifest rules > rejects manifests without exact required case identities",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC command and manifest rules > writes identical deterministic receipts for identical runs and exits by verdict",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-A50DB04A159A bootstrap self-check > declares exact bootstrap cases for this self-test file and only setup purpose",
+          "criterion": "TASK-AC-A50DB04A159A"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-A50DB04A159A bootstrap self-check > rejects an empty or all-skipped bootstrap result",
+          "criterion": "TASK-AC-A50DB04A159A"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-A50DB04A159A bootstrap self-check > accepts a synthetic bootstrap result only when every declared case passed",
+          "criterion": "TASK-AC-A50DB04A159A"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > resolves the accepted gallery by identity with every pinned hash verified",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > resolves the phosphor-echo intake reference used by PRE-002",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the project-level object store through the V2 worktree layout",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed for a worktree outside the runner-v2 layout without the override",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > uses the CLEAR_REFINEMENT_EVIDENCE_DIR override",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed when the object store is absent",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed on a missing staged object",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed on a tampered staged object",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > rejects unknown references and drifted reference records",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > keeps staged reference objects out of the repository",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > rejects an owner-machine absolute path in the body record",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "AC-GAL-BASE-01 integration baseline > baseline mode passes against the live integration base without any delivery receipt",
+          "criterion": "AC-GAL-BASE-01"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "AC-GAL-BASE-01 integration baseline > records 94f2c2f and R7 2d48f13 as historical comparisons, never the baseline",
+          "criterion": "AC-GAL-BASE-01"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "AC-GAL-BASE-01 integration baseline > rejects an integration base that is not available",
+          "criterion": "AC-GAL-BASE-01"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-6E9AFC30F960 final aggregate mode > accepts a current passing receipt and rejects a missing one",
+          "criterion": "TASK-AC-6E9AFC30F960"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-6E9AFC30F960 final aggregate mode > rejects stale receipts after the manifest or a target changes",
+          "criterion": "TASK-AC-6E9AFC30F960"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-6E9AFC30F960 final aggregate mode > does not accept a setup receipt as delivery evidence",
+          "criterion": "TASK-AC-6E9AFC30F960"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-6E9AFC30F960 definition records > accepts a sourced definition-only record",
+          "criterion": "TASK-AC-6E9AFC30F960"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-6E9AFC30F960 definition records > rejects implementation claims, placeholders, missing decisions and unverified sources",
+          "criterion": "TASK-AC-6E9AFC30F960"
+        }
+      ]
+    }
+  }
+}
