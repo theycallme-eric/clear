@@ -598,6 +598,65 @@ async function expectContained(page: Page, where: string) {
   return probe
 }
 
+/**
+ * TASK-002 (AC-R002-02, AC-C07-01; R30, R37): Review's sections are static and
+ * always open. Each block is its own card under the header the live cards
+ * share: the section's name as the `h2` on the left of the section's first
+ * card, the block's structure badge on the right. No header is a toggle,
+ * chevron or hit area, so no section can be collapsed, and the badge is the
+ * header's rather than the block body's. The spectrum persists seven sections
+ * of one block each, in this order; its plain standard block has no badge.
+ */
+const REVIEW_SECTIONS = [
+  { heading: 'Primary lift', badge: null },
+  { heading: 'Accessory', badge: 'SUPERSET · 2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'CIRCUIT · 2 ROUNDS' },
+  { heading: 'Conditioning', badge: 'EMOM · 2 MIN' },
+  { heading: 'Conditioning', badge: 'AMRAP · 2 MIN' },
+  { heading: 'Conditioning', badge: 'FOR TIME · 2 MIN CAP' },
+  { heading: 'Conditioning', badge: 'FOR TIME · 2 MIN CAP · LADDER UP' },
+] as const
+
+async function expectStaticReviewSections(page: Page) {
+  const main = page.locator('main')
+  for (const name of new Set(REVIEW_SECTIONS.map((section) => section.heading))) {
+    await expect(main.getByRole('heading', { level: 2, name, exact: true }))
+      .toHaveCount(REVIEW_SECTIONS.filter((section) => section.heading === name).length)
+    // A section's name is never a control's name.
+    await expect(main.getByRole('button', { name: new RegExp(`^${name}`) })).toHaveCount(0)
+  }
+  const sections = await main.locator('[data-review-section]').evaluateAll((all) => all.map((section) => {
+    const cards = [...section.querySelectorAll<HTMLElement>('[data-workout-card="review"]')]
+    const header = cards[0]?.querySelector<HTMLElement>(':scope > [data-movement-group-header]') ?? null
+    return {
+      cards: cards.length,
+      framed: cards.filter((card) => card.closest('.clr-card') !== null).length,
+      heading: header?.querySelector(':scope > h2')?.textContent ?? null,
+      badge: header?.querySelector(':scope > .clr-movement-group-header__badge')?.textContent ?? null,
+      // No toggle, chevron, hit area or pointer on the header…
+      headerControls: header === null ? -1 : header.querySelectorAll(
+        'button, a, [tabindex], [role="button"], [aria-expanded], [aria-controls], .clr-hit, .clr-collapsible__glyph',
+      ).length,
+      headerPointer: header !== null && getComputedStyle(header).cursor === 'pointer',
+      // …the block's work is never inside a disclosure or collapsed…
+      blocks: section.querySelectorAll('[data-review-block]').length,
+      disclosed: section.querySelectorAll(
+        '.clr-collapsible [data-review-block], [data-expanded] [data-review-block], [hidden] [data-review-block]',
+      ).length,
+      // …and the block's body carries no badge of its own.
+      bodyBadges: section.querySelectorAll('[data-review-block] .clr-chamfer--structure').length,
+    }
+  }))
+  expect(sections).toEqual(REVIEW_SECTIONS.map(({ heading, badge }) => ({
+    cards: 1, framed: 1, heading, badge, headerControls: 0, headerPointer: false,
+    blocks: 1, disclosed: 0, bodyBadges: 0,
+  })))
+  // The spectrum prescribes no tempo, so no section holds even the optional
+  // tempo disclosure: nothing in a section card toggles.
+  await expect(main.locator('[data-review-section] [aria-expanded]')).toHaveCount(0)
+  return sections
+}
+
 /** One timer: its name, liveness, card depth, stepped crossing, low pulse and glow. */
 function timerProbe(timer: Locator) {
   return timer.evaluate((el) => {
@@ -909,20 +968,25 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
   }
   await restart()
 
-  const suggestion = page.locator('main .clr-text-action').first()
+  // The load suggestion is the movement's own attached TextAction. Swap is the
+  // other TextAction on a Review row, in the movement's slot beside its name
+  // (TASK-002 AC-C06-01), so the first TextAction on the screen is a Swap.
+  const suggestion = page.locator('main [data-movement-identity] > .clr-text-action').first()
   await evidence.shot('Review', '/review', 'validated-workout', at, TITLE, async () => {
     await expect(start).toBeEnabled()
     await expect(regenerate).toBeEnabled()
     await expect(suggestion).toBeVisible()
     const probe = await expectContained(page, 'Review')
-    // Overview card, then one card per section: no frame inside either.
-    const sections = await page.locator('main .clr-card [aria-expanded]').count()
-    expect(sections).toBe(7)
+    // Overview card, then one card per block — seven sections of one block
+    // each — under the static header the live cards share (TASK-002,
+    // AC-R002-02, AC-C07-01): no frame inside either, and no section toggle.
+    const sections = await expectStaticReviewSections(page)
+    expect(sections).toHaveLength(7)
     expect(probe.cards).toBeGreaterThanOrEqual(8)
     // The primary action is pinned below the scroller, not inside it.
     expect(await start.evaluate((el) => el.closest('.clr-scroll-region__foot') !== null &&
       el.closest('.clr-scroll-region__scroller') === null)).toBe(true)
-    evidence.note('containment', 'Review: overview metrics and seven section cards, no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', probe)
+    evidence.note('containment', 'Review: overview metrics and seven always-open section cards under static headers (the section name an h2 on the left, the structure badge in the header on the right, no toggle, chevron or collapsed state), no card nested in another, every field and label inside its card, Start pinned in the footer and Regenerate at the end of the scrolling content.', { ...probe, sections })
   }, { skins: true, short: start })
 
   // The quiet action: public TextAction, chevron, 40px, button semantics, keyboard focus.
@@ -953,13 +1017,34 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
   await page.keyboard.press('Escape')
   await expect(explain).toHaveCount(0)
 
-  const standard = page.locator('main [aria-expanded]').first()
-  await standard.click()
+  // TASK-002 (AC-R002-02, R37): a section's header is not a control, so no
+  // section can be collapsed. Tapping the first section's heading leaves its
+  // block open and the section at its size, with every header still static.
+  const firstSection = page.locator('main [data-review-section]').first()
+  const firstHeading = firstSection.getByRole('heading', { level: 2, name: REVIEW_SECTIONS[0].heading, exact: true })
+  const openHeight = (await firstSection.boundingBox())!.height
+  await firstHeading.click()
   await evidence.shot('Review', '/review', 'validated-workout', at, TITLE, async () => {
-    await expect(standard).toHaveAttribute('aria-expanded', 'false')
-    await expectContained(page, 'Review collapsed')
-  }, { variant: 'section-collapsed' })
-  await standard.click()
+    await expect(firstSection.locator('[data-review-block]')).toBeVisible()
+    expect((await firstSection.boundingBox())!.height).toBeCloseTo(openHeight, 0)
+    await expectStaticReviewSections(page)
+    await expectContained(page, 'Review after a section heading tap')
+  }, { variant: 'section-static' })
+  evidence.note('contract', 'Review sections are static (TASK-002, R37): a tap on a section heading collapses nothing, and the block stays open at the same size.')
+
+  // TASK-002 (AC-C06-01; U37): Swap is Review's contextual action. Its list
+  // opens for that slot and is left unchanged; the live workout never offers it.
+  const swap = page.locator('main').getByRole('button', { name: /^Swap / }).first()
+  await swap.click()
+  const swapDialog = page.getByRole('dialog')
+  await evidence.shot('Review', '/review', 'swap-confirmation', at, TITLE, async () => {
+    await expect(swapDialog).toBeVisible()
+    await expect(swapDialog.getByRole('list', { name: 'Alternatives' })
+      .or(swapDialog.getByText('Nothing else fits this slot'))).toBeVisible()
+  }, { variant: 'swap-options' })
+  await page.keyboard.press('Escape')
+  await expect(swapDialog).toHaveCount(0)
+  await expect(swap).toBeEnabled()
 
   await regenerate.click()
   const discard = page.getByRole('dialog', { name: 'Discard this workout?' })
@@ -1029,8 +1114,7 @@ backendTest('review: briefing geometry, load suggestion, regenerate, start busy,
 
   evidence.disposition('Review', '/review', 'favorite-progression-loading', 'Reached only from a favorite\'s repeat surface; this lane restarts from History. The panel\'s four states are proved in src/ui/favorite-progression.test.tsx and src/app/ReviewRoute.test.tsx.', ['src/app/ReviewRoute.tsx', 'src/ui/favorite-progression.tsx'])
   evidence.disposition('Review', '/review', 'favorite-progression-error-retry', 'As favorite-progression-loading.', ['src/app/ReviewRoute.tsx', 'src/ui/favorite-progression.tsx'])
-  evidence.disposition('Review', '/review', 'swap-confirmation', 'Review renders no swap control in the current source; Swap lives on the Workout exercise card and is pictured there (active-standard-superset-circuit, variant swap-options).', ['src/app/Review.tsx', 'src/ui/exercise-swap.tsx'])
-  evidence.disposition('Review', '/review', 'swap-failure', 'As swap-confirmation; the swap list\'s failure state is proved in src/ui/exercise-swap.test.tsx and e2e/d6-swap-persistence.spec.ts.', ['src/ui/exercise-swap.tsx'])
+  evidence.disposition('Review', '/review', 'swap-failure', 'Swap is Review\'s action (TASK-002 AC-C06-01) and its options are pictured in this case (swap-confirmation, variant swap-options); this lane does not fail the real alternatives read. The swap list\'s failure state is proved in src/ui/exercise-swap.test.tsx, e2e/d6-swap-persistence.spec.ts and the TASK-002 recovery cases (src/ui/movement-identity.test.tsx, e2e/refinement/task-002.spec.ts).', ['src/ui/exercise-swap.tsx'])
   expect(evidence.modelAttempts()).toBe(1)
 })
 
@@ -1059,17 +1143,12 @@ backendTest('structures: seven renderers, rest urgency, timers, coaching, effort
     evidence.note('containment', 'Standard: shell, section, block and set form are sibling cards; fields and labels inside; Session time is a labelled non-live timer card.', probe)
   }, { variant: 'standard', skins: true, short: logSet })
 
-  // Swap is the exercise card's action; its list is opened and left unchanged.
-  const swap = page.getByRole('button', { name: /^Swap / }).first()
-  await swap.click()
-  const swapDialog = page.getByRole('dialog')
-  await evidence.shot(...key('active-standard-superset-circuit'), at, 'Workout', async () => {
-    await expect(swapDialog).toBeVisible()
-    await expect(swapDialog.getByRole('list', { name: 'Alternatives' })
-      .or(swapDialog.getByText('Nothing else fits this slot'))).toBeVisible()
-  }, { variant: 'swap-options' })
-  await page.keyboard.press('Escape')
-  await expect(swapDialog).toHaveCount(0)
+  // TASK-002 (AC-C06-01, AC-R002-03; U37): Swap is Review's action, and its
+  // options are pictured in the review case (swap-confirmation, swap-options).
+  // The live workout offers set progress, Rest and logging, never Swap.
+  await expect(page.getByRole('button', { name: /^Swap / })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /^Undo swap/ })).toHaveCount(0)
+  evidence.note('contract', 'Workout offers set progress, Rest and set logging and no Swap or Undo swap: Swap is Review\'s contextual action (TASK-002 C06) and is pictured in the review case.')
 
   // A real set, through the real table.
   await form.getByLabel(/^Weight/).fill('40')

@@ -132,6 +132,146 @@ Rest and set logging and never Swap. Accepted gallery reference
   are excluded from non-local targets, as TASK-001 recorded. Not run or rewritten.
 - `docs/design/library/README.md` still states an older register count; not updated here.
 
+## Repair round 1 (2026-11-09)
+
+Reviewer verdict `TASK-002-a1-pending.json`: all six criteria and JOURNEY-002 met; rejected on one
+defect. No product code, check-01/check-02 test or receipt definition changed in this round; only
+existing specs that the approved criteria supersede.
+
+### Defect
+
+`e2e/design-0143/workout-lifecycle.spec.ts`, case `review: briefing geometry, load suggestion, …`
+(backend lane, default mobile selection, not excluded for 0.14.3). It counted
+`main .clr-card [aria-expanded]` and expected 7, then clicked the first one expecting a
+`section-collapsed` state. With AC-R002-02's static Review headers that count is 0 for its
+fixture (no tempo prescribed), so the case would fail every time the trusted lane runs it.
+
+### Fix (each change cites its criterion in a comment)
+
+- `review` case, `validated-workout` shot: the count is replaced by `expectStaticReviewSections`
+  (AC-R002-02, AC-C07-01). The fixture's seven sections are read in order: one
+  `[data-workout-card="review"]` card each, inside a `.clr-card`, the section name as the header's
+  `h2` by exact name (`Primary lift` ×1, `Accessory` ×1, `Conditioning` ×5), no button named for a
+  section, no button/link/tabindex/role=button/aria-expanded/aria-controls/`.clr-hit`/chevron glyph
+  in any header, no pointer cursor, the block never inside `.clr-collapsible`/`[data-expanded]`/
+  `[hidden]`, and no `[aria-expanded]` anywhere in a section. Badges are read from the card header:
+  none on the plain standard block, then `SUPERSET · 2 ROUNDS`, `CIRCUIT · 2 ROUNDS`, `EMOM · 2 MIN`,
+  `AMRAP · 2 MIN`, `FOR TIME · 2 MIN CAP`, `FOR TIME · 2 MIN CAP · LADDER UP`, with no badge in a
+  block body. Containment (`probe.cards >= 8`), the pinned Start and the skins/short-phone repeats are
+  unchanged. The containment note now describes the static headers.
+- `review` case, `section-collapsed` variant: replaced by `section-static` (AC-R002-02, R37). A tap
+  on the first section's `h2` leaves its block visible, the section's height unchanged and every
+  header static, and the screen still contained.
+- `review` case, load suggestion locator: `main .clr-text-action` `.first()` now resolves to a Swap
+  `TextAction`, because Swap sits in the Review movement's slot before the attached suggestion
+  (AC-C06-01). It is now `main [data-movement-identity] > .clr-text-action`, the suggestion itself, so
+  its existing button/chevron/40px/`aria-haspopup=dialog`/kg-or-lb/keyboard/Enter assertions stay
+  binding. This had already been wrong at base `e22e36b`.
+- `review` case, Swap: the `swap-confirmation` disposition ("Review renders no swap control; Swap
+  lives on the Workout exercise card") contradicts AC-C06-01. It is now an actual shot: Review's first
+  Swap opens its dialog, shows `Alternatives` or `Nothing else fits this slot` (variant
+  `swap-options`), Escape closes it, and Swap stays enabled. The `swap-failure` disposition text is
+  corrected to point at Review and the existing failure proofs.
+- `structures` case: it clicked `Swap` on `/workout` and pictured `swap-options` there. AC-C06-01 and
+  AC-R002-03 (and U37 since TASK-028 #501) put Swap only in Review. The case now asserts zero `Swap`
+  and zero `Undo swap` buttons on the live workout and notes where the options are pictured.
+- Committed 0.14.3 evidence records under `docs/design/evidence-0143/workout-lifecycle/` are
+  untouched. The fixture writes a record only when none exists, so the historical record stays as
+  taken.
+
+### Sweep (every spec and test under `e2e/` and `src/`)
+
+Searched for `aria-expanded`, `clr-collapsible`/`collapsible__trigger`, chevrons, `data-review-section`/
+`data-review-block`, `ReviewSectionCard`/`ReviewBlockRows`, `section-collapsed`, `N movement(s)` and
+`movementCount`, `.clr-card` counts, section-label button lookups, `firstElementChild` badge reads and
+`data-block-top-row`/`movement-group-header`. All 70 `e2e/**/*.spec.ts` files were scanned. Files that
+touch Review or the shared card were read in context:
+
+- Fixed: `e2e/design-0143/workout-lifecycle.spec.ts` (above).
+- Fixed: `e2e/ui-polish-b05-swap.spec.ts` (local-only, loads). `groupReadings` read the badge as the
+  group's first child and the equipment as a third row child. Both were superseded: the badge is in
+  the card header (AC-C07-01) and the equipment sits beside the name (AC-C03-01). The old read threw
+  `TypeError … reading 'textContent'` in the grouped case. It now reads the header badge and the
+  `[data-movement-ordinal]`/`[data-movement-detail]`/`[data-movement-context]` readings, and new
+  assertions keep the before/after equality from being vacuous: badge `SUPERSET · 3 ROUNDS`, ordinals,
+  prescription and equipment present.
+- Already updated in round 0, re-read and left as is: `e2e/core-loop.spec.ts`,
+  `e2e/design-0143/task-040-home-review.spec.ts` (its Tempo `aria-expanded` is the retained optional
+  disclosure), `src/app/Review.test.tsx`, `src/app/review-screen.test.tsx`.
+- Checked, not superseded:
+  - Session Detail disclosures (History, not Review): `e2e/design-0143/collections-settings.spec.ts`,
+    `e2e/design-0143/task-040-lifecycle.spec.ts` (historical), `e2e/history-detail.spec.ts`,
+    `src/app/SessionDetail.test.tsx`, and `e2e/design-0143/format-preview.spec.ts`, which uses the
+    `SessionSectionCard` disclosures.
+  - Live section navigator, sheet, menu and coaching disclosures: `e2e/design-0143/accessibility.spec.ts`
+    (its outline/heading-in-span probes hold for the `h2` headers), `e2e/design-0143/workout-circuit.spec.ts`,
+    `e2e/design-0143/workout-formats.spec.ts`, `e2e/ui-polish-integrated.spec.ts`,
+    `e2e/ui-polish-b05-header-back.spec.ts`, `e2e/ui-polish-b05-scroll-boundaries.spec.ts`,
+    `e2e/ui-polish-b05-sheet-surface.spec.ts`, `src/app/Workout.test.tsx`, `src/ui/workout-chrome.test.tsx`.
+  - Generate, Home and gallery disclosures: `e2e/design-0143/entry-forms.spec.ts`,
+    `e2e/design-0143/task-040-entry-settings.spec.ts`, `e2e/ui-polish-b05-generate.spec.ts`,
+    `e2e/public-gallery.spec.ts`, `src/app/Generate.test.tsx`, `src/app/Home.test.tsx`.
+  - `N movements` in the live `BlockPanel` label: `src/ui/{block-renderers,standard-block,superset-block,circuit-block,emom-block,for-time-block}.test.tsx`.
+  - Generic component tests: `src/ui/collapsible-section.test.tsx`.
+  - Review entry without section probes: `e2e/d6-swap-persistence.spec.ts`,
+    `e2e/ui-polish-swap-selection.spec.ts`, `e2e/ui-polish-pwa-viewport.spec.ts`,
+    `e2e/design-0143/optional-feedback.spec.ts`, the `e2e/generation-*.spec.ts` files,
+    `e2e/session-continuity.spec.ts`, `e2e/uat-batch-01.spec.ts`, and `e2e/ui-polish-b05-shell.spec.ts`
+    (empty Review only).
+  - Other src tests that render Review: `src/app/ReviewRoute.test.tsx`, `src/app/swap-selection.test.tsx`,
+    `src/test/goal-focus-journeys.test.tsx`, `src/ui/movement-list.test.tsx`, `src/ui/exercise-swap.test.tsx`.
+- Left as is, local-only B05 (they cannot load here: each reads an absent `.evidence` reference
+  image at module load, so `playwright test --list` fails on them at base and with this candidate):
+  - `e2e/ui-polish-b05-review-groups.spec.ts` and `e2e/ui-polish-b05-active-hierarchy.spec.ts`:
+    TASK-001's recorded follow-up. Review-groups also reads the badge from the group (line ~357),
+    which AC-C07-01 supersedes.
+  - `e2e/ui-polish-b05-structure-badges.spec.ts`: the Review case expects Review badges in a
+    `column` parent named "ReviewBlockRows group/stack" (lines ~572-580), superseded by AC-C07-01's
+    header row.
+  - `e2e/ui-polish-b05-summary-facts.spec.ts`: uses `.clr-collapsible__trigger` `.first()` as "the first
+    Review section" (line ~623), superseded by AC-R002-02.
+  - These were not edited, because an edited spec must load under `--list` and these cannot without the
+    reference images. Follow-up: rebase them on R132/C04/C07/R37 where the `.evidence` references exist.
+
+### Pre-existing staleness in workout-lifecycle.spec.ts that TASK-002 does not supersede (not fixed)
+
+These predate this task (present at base `e22e36b`) and come from other requirements, so they are
+out of TASK-002's scope:
+
+- Live section tabs are looked up by stored section title (`^Standard, `, `^EMOM, `, `^Ladder, `,
+  `^Superset, `, `^${name}, `; lines ~825, 851, 875, 1260-1261, 1438, 1469). Since REQ-011 (#484) the
+  navigator names sections by type (`Primary lift, …`, `Conditioning, …`).
+- A `Log set 1 of …` form is expected to be visible on landing in `/workout` (lines ~835, 848, 1111,
+  1132, 1395, 1441). A standard set's form now opens in the set sheet only from its Rest/Log action
+  (`openSheetOnMount` is the circuit's alone).
+
+So the `responsive`, `structures` and `recovery` cases, and the `review` case's last step (`start-workout`),
+will still fail in the trusted lane at those points, with or without this candidate. Refreshing them
+needs its own approved task.
+
+### Verification (this worktree, uncommitted, 2026-11-09)
+
+- Temporary scratch vitest (created, run, deleted; not part of the candidate): rendered the real
+  `Review` with a copy of the lifecycle spectrum fixture and the exact `expectStaticReviewSections`
+  evaluation. It passed: seven sections, headings and badges exactly as listed, `.clr-card
+  [aria-expanded]` 0, 8 cards. It also confirmed that `main .clr-text-action` first is a Swap and that
+  `[data-movement-identity] > .clr-text-action` is the load suggestion (`aria-haspopup=dialog`, kg).
+- `npx tsc --noEmit`: exit 0 (tsconfig includes `e2e`). `npx eslint` on both edited specs: exit 0.
+- `npx playwright test e2e/design-0143/workout-lifecycle.spec.ts e2e/ui-polish-b05-swap.spec.ts e2e/core-loop.spec.ts e2e/design-0143/task-040-home-review.spec.ts --list --project=mobile`:
+  31 tests in 4 files, exit 0. The backend-lane cases are listed but not run (no credentials).
+- `npx playwright test e2e/ui-polish-b05-swap.spec.ts --project=mobile --grep "Superset and Circuit selections …"`.
+  Before the fix it failed in `groupReadings` (TypeError). After the fix it passes `groupReadings` and the
+  new readings assertions, then stops at the absent B05-05 reference image (environment, as at base).
+- check-01 (exact brief command): PASSED, 11/11 executed and passed, 0 skipped.
+- check-02 (exact brief command): PASSED, 7/7 executed and passed, 0 skipped.
+- `npm run build`: exit 0. `npm run lint:ds`: exit 0.
+- `npm test`: 252 files, 6090 tests passed, 0 failed.
+- `node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-20261103 --mode final --tasks TASK-001,TASK-002`:
+  passed. Both tasks have current passing receipts.
+
 ## Next action
 
-Controller verification and commit.
+Controller verification and commit. The trusted backend lane should run the edited workout-lifecycle
+`review` case, which passes through its section, suggestion and Swap steps by reading, plus
+`core-loop` and `task-040-home-review`. A separate task is needed for the pre-existing
+workout-lifecycle staleness and the unloadable B05 specs listed above.

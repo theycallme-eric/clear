@@ -449,19 +449,23 @@ function expectRoomyRows(state: Composition) {
   expect(state.scroller!.right).toBeCloseTo(state.list!.right, 0)
 }
 
-/** The real grouped row readings, excluding only the movement that a pick replaces. */
+/**
+ * The real grouped row readings, excluding only the movement that a pick replaces.
+ *
+ * TASK-002: the structure badge is read from the group's card header (AC-C07-01,
+ * the static header Review shares with the live cards), and each member's
+ * compact equipment from beside its name (AC-C03-01), not from a separate line.
+ */
 async function groupReadings(list: Locator) {
   return list.evaluate((ol) => ({
-    badge: ol.parentElement!.firstElementChild!.textContent,
+    badge: ol.closest('[data-workout-card]')
+      ?.querySelector(':scope > [data-movement-group-header] .clr-movement-group-header__badge')?.textContent ?? null,
     rest: ol.parentElement!.lastElementChild!.textContent,
-    members: [...ol.children].map((item) => {
-      const [nameRow, prescription, equipment] = [...item.firstElementChild!.children]
-      return {
-        ordinal: nameRow!.firstElementChild!.firstElementChild!.textContent,
-        prescription: prescription!.textContent,
-        equipment: equipment!.textContent,
-      }
-    }),
+    members: [...ol.children].map((item) => ({
+      ordinal: item.querySelector('[data-movement-ordinal]')?.textContent ?? null,
+      prescription: item.querySelector('[data-movement-detail]')?.textContent ?? null,
+      equipment: item.querySelector('[data-movement-context]')?.textContent ?? null,
+    })),
   }))
 }
 
@@ -848,6 +852,16 @@ test.describe('B05 REQ-010 roomy swap selection', () => {
         await expect(original).toBeEnabled()
         const beforeText = await owner.innerText()
         const beforeReadings = await groupReadings(group)
+        // The readings are real, so their equality after a pick and Undo is not
+        // vacuous: the header's badge names this group (TASK-002 AC-C07-01) and
+        // every member reads its ordinal, prescription and equipment (AC-C03-01).
+        expect(beforeReadings.badge).toBe(invocation.list.toUpperCase().replace(', ', ' · '))
+        expect(beforeReadings.members.length).toBeGreaterThan(1)
+        for (const member of beforeReadings.members) {
+          expect(member.ordinal).toMatch(/^\d{2}$/)
+          expect(member.prescription).toBeTruthy()
+          expect(member.equipment).toBeTruthy()
+        }
         const otherText = await other.innerText()
         const siblingLabels = await group.getByRole('button', { name: /^Swap / })
           .evaluateAll((buttons) => buttons.slice(1).map((button) => button.getAttribute('aria-label')))
