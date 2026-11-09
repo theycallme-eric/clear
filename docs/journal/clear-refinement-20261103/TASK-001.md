@@ -85,6 +85,32 @@ real `/review` and `/workout` routes (JOURNEY-001), with the stable gallery stat
 - Section/block spacing between complete groups (C05/R111 multi-movement rhythm) is only the shared
   peer gap; no separate inter-block spacing change was made.
 
+## Repair round 1 (2026-11-09)
+
+Documentation-only repair from the reviewer verdict. No product code, test or evidence changed.
+
+- Shared owner `src/ui/refinements/workout-card.tsx`: deliberately deferred, not adopted or
+  consolidated in TASK-001. The file does not exist at base `931c3e7` and this candidate does not
+  create or import it. In the accepted gallery reference (`eded158`), REUSE.md assigns it "Review
+  versus Workout actions, preparation and format-card composition". Its reference content
+  (`RefinementWorkoutCard`, `RefinementWorkoutHeader`, `RefinementPreparation`) is a timed-format card
+  (EMOM/AMRAP/For Time meta line, `DeadlineTimer` session header, per-movement notes, warm-up card)
+  composed over `MovementIdentity` / `MovementList` / `MovementGroupHeader`. TASK-001's movement
+  hierarchy and peer grouping (C01, C02, C04, AC-R001-01/02, JOURNEY-001) is fully carried by the
+  shared `src/ui/refinements/movement.tsx` owner, adopted on real `/review` and `/workout`. The card
+  composition belongs to the later timed-format/card tasks. This brief does not name which task IDs
+  own them, so none are assigned here. Those tasks should create `workout-card.tsx` on top of
+  `movement.tsx` rather than adding a look-alike in a route.
+- Follow-up (not TASK-001 scope): `e2e/ui-polish-b05-review-groups.spec.ts` and
+  `e2e/ui-polish-b05-active-hierarchy.spec.ts` still assert B05-04 decisions (separate equipment
+  line, superset rail / context tiers) that R132/C04 supersede. They read reference images from an
+  absent `.evidence` folder and are local-only (excluded in `playwright.config.ts` for non-local
+  targets). They are not in CI or in this task's verification commands, and they were not run or
+  rewritten. A follow-up should rebase them on R132/C04, or retire the superseded cases, where the
+  reference assets exist.
+- Re-verification after this note: see the controller report for this repair round
+  (`npm test`, check-01, check-02).
+
 ## Next action
 
 Controller verification and commit.
