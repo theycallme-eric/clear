@@ -337,7 +337,7 @@ function CircuitMovement({ exercise }: { exercise: ExerciseProgress }) {
   const countdownSeconds = movementCountdownSeconds(prescription, nextSet)
   // R31, R132: the same name, compact equipment and prescribed load the open
   // logger and Review show.
-  const { equipment, load: prescribedLoad } = liveMovementReadings(prescription, weightUnit, true)
+  const { equipment, load: prescribedLoad } = liveMovementReadings(prescription, weightUnit)
   // The row holds the movement's one clock, armed for the set it times, so
   // load entry opening or closing swaps the card it is drawn in without
   // replacing the clock or losing its deadline (B05-06).

@@ -62,16 +62,23 @@ import {
   type ViewState,
 } from '../state/view-state'
 import {
-  MovementGroupHeaderBadgeOnly,
+  LiveMovementProgress,
+  LiveMovementTimed,
+  MovementGroupHeaderHeading,
   MovementGroupHeaderLabelled,
   MovementIdentityLongName,
   MovementIdentityReviewSlot,
   MovementIdentityWorkoutSlot,
   MovementListOnePeer,
   MovementListThreePeers,
-  ReviewBlockCircuit,
-  ReviewBlockStandard,
-  ReviewBlockSuperset,
+  ReviewMovementLongName,
+  ReviewMovementSwap,
+  ReviewSectionCircuit,
+  ReviewSectionStandard,
+  ReviewSectionSuperset,
+  ReviewSectionTimed,
+  WorkoutCardReview,
+  WorkoutCardWorkout,
 } from './gallery-refinement-cards'
 import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
@@ -2087,21 +2094,52 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'MovementGroupHeader',
     requirement: 'REQ-001',
     module: 'src/ui/refinements/movement.tsx',
-    summary: 'The shared static group header: an optional label and the format badge. It draws no rule or rail of its own; actions and progress stay with consumers.',
+    summary: 'The shared static group header: the section identity and the format badge, in one compact data label face whether it is a label or a heading. It draws no rule, rail, toggle or chevron; actions and progress stay with consumers.',
     specimens: [
       { state: 'label and format badge', note: 'Workout’s block top row.', Render: MovementGroupHeaderLabelled },
-      { state: 'format badge only', note: 'Review’s grouped block.', Render: MovementGroupHeaderBadgeOnly },
+      { state: 'heading and format badge', note: 'Review’s static section header (C07).', Render: MovementGroupHeaderHeading },
     ],
   },
   {
-    component: 'ReviewBlockRows',
+    component: 'WorkoutCard',
+    requirement: 'REQ-002',
+    module: 'src/ui/refinements/workout-card.tsx',
+    summary: 'TASK-002 one block card for Review and the live workout: the shared static header (section identity left, badge right; a semantic heading in Review, never a toggle), then the block. Only the movement slot differs by context.',
+    specimens: [
+      { state: 'Review · static heading and Swap', Render: WorkoutCardReview },
+      { state: 'Workout · section label and set progress', Render: WorkoutCardWorkout },
+    ],
+  },
+  {
+    component: 'ReviewMovement',
+    requirement: 'REQ-002',
+    module: 'src/ui/refinements/workout-card.tsx',
+    summary: 'A planned movement in Review: the shared hierarchy with compact equipment beside the name and Swap in its slot. It accepts no progress counter.',
+    specimens: [
+      { state: 'Swap in the slot', Render: ReviewMovementSwap },
+      { state: 'long name and equipment wrap', Render: ReviewMovementLongName },
+    ],
+  },
+  {
+    component: 'LiveMovement',
+    requirement: 'REQ-002',
+    module: 'src/ui/refinements/workout-card.tsx',
+    summary: 'A movement in the live workout: the shared hierarchy as a heading with compact equipment beside the name and set progress in its slot. It accepts no Swap; Rest and logging stay the live loggers’ own actions.',
+    specimens: [
+      { state: 'set progress', Render: LiveMovementProgress },
+      { state: 'timed movement', note: 'No counter: a timed format is counted by its clock.', Render: LiveMovementTimed },
+    ],
+  },
+  {
+    component: 'ReviewSection',
     requirement: 'REV-01',
     module: 'src/ui/review-block.tsx',
-    summary: 'The actual Review block the /review route renders, over the real briefing derivation, with an inert in-memory swap controller.',
+    summary: 'The actual Review section the /review route renders, over the real briefing derivation: one WorkoutCard per block under the static header, always open, with an inert in-memory swap controller.',
     specimens: [
-      { state: 'standard', Render: ReviewBlockStandard },
-      { state: 'superset', Render: ReviewBlockSuperset },
-      { state: 'circuit', Render: ReviewBlockCircuit },
+      { state: 'standard', Render: ReviewSectionStandard },
+      { state: 'superset', Render: ReviewSectionSuperset },
+      { state: 'circuit', Render: ReviewSectionCircuit },
+      { state: 'EMOM, AMRAP and For Time', note: 'Three cards in one section: the heading names the section once.', Render: ReviewSectionTimed },
     ],
   },
   {

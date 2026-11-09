@@ -66,9 +66,7 @@ import {
   GOAL_LABEL,
   INTENSITY_LABEL,
   reviewBriefing,
-  type ReviewCadence,
   type ReviewFact,
-  type ReviewSectionView,
 } from '../state/review'
 import {
   applyLoadOverrides,
@@ -84,8 +82,7 @@ import { useProfileQuery } from '../state/user-queries'
 import { activeSessionQueryKey, useWorkoutClients } from '../state/workout-queries'
 import { ErrorDialog, ConfirmDialog } from '../ui/blocking-dialog'
 import { Card } from '../ui/card'
-import { CollapsibleSection } from '../ui/collapsible-section'
-import { ReviewBlockRows, type ReviewSuggestionProps } from '../ui/review-block'
+import { ReviewSection } from '../ui/review-block'
 import { ActionRow, PhoneFooter, SummaryFact, SummaryFacts } from '../ui/composition'
 import {
   LoadSuggestionDialog,
@@ -324,7 +321,7 @@ export function Review({
         ) : null}
 
         {briefing.sections.map((section) => (
-          <ReviewSectionCard
+          <ReviewSection
             key={section.key}
             section={section}
             suggestions={suggestions}
@@ -388,9 +385,6 @@ export function Review({
 /** One stable empty map, for a briefing whose anchor reads have not answered. */
 const NO_SUGGESTIONS: LoadSuggestions = new Map()
 const NO_OVERRIDES: LoadOverrides = new Map()
-
-/** What a section threads down to each prescription row. */
-type SuggestionProps = ReviewSuggestionProps
 
 // ─────────────────────────────────────────────────────────────────────────────
 // The overview
@@ -547,78 +541,13 @@ function RequiredEquipment({ equipment }: { equipment: readonly string[] }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * One section of the briefing, disclosed and open.
- *
- * Open by default because this is a screen the user reads before agreeing to
- * it — a briefing that hid its own contents behind five taps would be asking
- * them to start a workout they have not seen. `CollapsibleSection` keeps
- * collapsed content in the accessibility tree either way, so closing one is
- * visual economy on a long session rather than removal.
+ * A section of the briefing is `ReviewSection` (`src/ui/review-block.tsx`,
+ * TASK-002): one card per block under the static header the live workout's
+ * cards share, the section's name its semantic heading, always open (R37, C07).
+ * Its optional tempo detail keeps its own disclosure; the label is re-exported
+ * here for the screen's existing readers.
  */
-const SECTION_META_STYLE: CSSProperties = {
-  marginInlineStart: 'auto',
-  color: 'var(--text-secondary)',
-}
-
-function ReviewSectionCard({
-  section,
-  ...suggestion
-}: { section: ReviewSectionView } & SuggestionProps) {
-  return (
-    <Card>
-      <CollapsibleSection
-        // A plain label rather than a `Heading`: the trigger *is* a button, and
-        // a heading nested inside one is read as part of the control's name
-        // instead of as an outline entry. The trigger already speaks the card
-        // heading's label face, so the title inherits it and the count sits
-        // where a card's `meta` does: the same row, at its far end.
-        label={
-          <>
-            <span>{section.title}</span>
-            <span style={SECTION_META_STYLE}>
-              {section.movementCount}{' '}
-              {section.movementCount === 1 ? 'movement' : 'movements'}
-            </span>
-          </>
-        }
-        defaultExpanded
-      >
-        <div className="clr-stack--tight" style={STACK_STYLE}>
-          {section.blocks.map((block) => (
-            <ReviewBlockRows key={block.key} block={block} {...suggestion} />
-          ))}
-          {section.cadence.length > 0 && <CadenceDetail cadence={section.cadence} />}
-        </div>
-      </CollapsibleSection>
-    </Card>
-  )
-}
-
-/** The optional tempo detail's trigger, and the region it names. */
-export const TEMPO_DETAIL_LABEL = 'Tempo'
-
-/**
- * Every prescribed tempo in the section, behind one collapsed disclosure
- * (REQ-011, U33). A `Tempo 3-1-1-0` on each row repeated the same string down
- * the briefing; nothing is dropped by moving it here — each movement that
- * prescribes a cadence is listed with it, in the order it is performed — and a
- * timed prescription (`45 sec`, an EMOM's minutes) stays on its own line,
- * because that is the work rather than a detail of it.
- */
-function CadenceDetail({ cadence }: { cadence: readonly ReviewCadence[] }) {
-  return (
-    <CollapsibleSection label={TEMPO_DETAIL_LABEL}>
-      <ul style={{ ...STACK_STYLE, listStyle: 'none', margin: 0, padding: 0 }}>
-        {cadence.map((entry) => (
-          <li key={entry.key} className="clr-row" style={{ gap: 'var(--spacing-200)' }}>
-            <span style={{ textTransform: 'capitalize' }}>{entry.name}</span>
-            <span className="clr-text-data-xs">{entry.tempo}</span>
-          </li>
-        ))}
-      </ul>
-    </CollapsibleSection>
-  )
-}
+export { TEMPO_DETAIL_LABEL } from '../ui/review-block'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Discarding

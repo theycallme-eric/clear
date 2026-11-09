@@ -35,11 +35,8 @@ import { BlockCompletionControl } from './block-completion-control'
 import { Card, type CardRole } from './card'
 import { CardContainmentContext } from './card-context'
 import { HeadingSection } from './Heading'
-import {
-  MovementGroupHeader,
-  MovementIdentity,
-  MovementList as SharedMovementList,
-} from './refinements/movement'
+import { MovementList as SharedMovementList } from './refinements/movement'
+import { LiveMovement, WorkoutCard } from './refinements/workout-card'
 import { useSectionLabel } from './section-label-context'
 import { StructureBadge } from './workout-chrome'
 
@@ -61,9 +58,11 @@ const MOVEMENT_STYLE: CSSProperties = { ...STACK_STYLE }
 /**
  * B05-04's movement hierarchy is now the shared owner's (TASK-001, G01):
  * `MovementIdentity`, `MovementList` and `MovementGroupHeader` in
- * `src/ui/refinements/movement.tsx`. Review draws the same owners, so a
- * standard, superset and circuit card lead with the same emphasis in both
- * contexts, and the peers are separated only between two of them.
+ * `src/ui/refinements/movement.tsx`. The block's card and the live slot are
+ * `WorkoutCard` and `LiveMovement` (`src/ui/refinements/workout-card.tsx`,
+ * TASK-002): Review draws the same card and header, so both contexts lead
+ * with the same emphasis and header vocabulary (R30, C07), and only the slot
+ * differs — progress here, Swap there (C06).
  */
 const FIELD_ROW_STYLE: CSSProperties = {
   flexWrap: 'wrap',
@@ -118,30 +117,21 @@ export function BlockPanel({
 }: BlockPanelProps) {
   const sectionLabel = useSectionLabel()
   const card = (
-    <Card role={role}>
-      <div className="clr-stack" style={STACK_STYLE}>
-        {/*
-          REQ-008: a secondary label on the left and the compact structure
-          badge on the right, so the badge never competes with the movement
-          heading below it.
-        */}
-        <MovementGroupHeader
-          data-block-top-row=""
-          title={
-            <span style={LABEL_STYLE}>
-              {sectionLabel ?? (
-                <>
-                  {block.exerciseCount} {block.exerciseCount === 1 ? 'movement' : 'movements'}
-                </>
-              )}
-            </span>
-          }
-          badge={<StructureBadge identity={block.identity} />}
-        />
-        {children}
-        <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
-      </div>
-    </Card>
+    // REQ-008: a secondary label on the left and the compact structure badge
+    // on the right, so the badge never competes with the movement heading
+    // below it. The same static header Review's cards draw (C07, R37).
+    <WorkoutCard
+      context="workout"
+      role={role}
+      title={
+        sectionLabel ??
+        `${block.exerciseCount} ${block.exerciseCount === 1 ? 'movement' : 'movements'}`
+      }
+      badge={<StructureBadge identity={block.identity} />}
+    >
+      {children}
+      <BlockCompletionControl blockId={block.blockId} outcome={completion.outcome} />
+    </WorkoutCard>
   )
 
   return (
@@ -267,23 +257,23 @@ export interface BlockMovementProps {
 
 /**
  * One movement: its name as a heading one level below the block with its
- * ordinal and compact equipment, any counter in its own slot, then its
- * prescription and prescribed load — the shared `MovementIdentity`.
+ * ordinal and compact equipment beside it, any counter in the live slot, then
+ * its prescription and prescribed load — the shared `LiveMovement`. Rest and
+ * logging are the renderer's children, below the readings; no Swap (C06).
  */
 function Movement({ title, ordinal, detail, load, counter, context, children }: BlockMovementProps) {
   return (
     <HeadingSection className="clr-stack--tight" style={MOVEMENT_STYLE}>
-      <MovementIdentity
-        heading
+      <LiveMovement
         name={title}
         ordinal={ordinal}
         prescription={detail}
         load={load}
-        counter={counter}
+        progress={counter}
         equipment={context}
       >
         {children}
-      </MovementIdentity>
+      </LiveMovement>
     </HeadingSection>
   )
 }

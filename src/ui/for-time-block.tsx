@@ -49,6 +49,7 @@ import {
   type ForTimeView,
 } from '../state/for-time'
 import { exerciseName, prescriptionText } from '../state/prescription'
+import { equipmentName } from '../state/review'
 import { formatElapsed, spokenElapsed, useElapsedSeconds } from '../state/workout-clock'
 import {
   usePersistedForTime,
@@ -311,6 +312,8 @@ function ForTimeMovement({ exercise }: { exercise: ExerciseProgress }) {
     <BlockPanel.Movement
       title={`${exercise.position}. ${exerciseName(prescription.exercise_id)}`}
       detail={prescriptionText(prescription)}
+      // C03, R132: the compact equipment beside the name, as Review shows it.
+      context={equipmentName(prescription.equipment_used)}
     />
   )
 }

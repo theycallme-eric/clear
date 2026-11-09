@@ -440,21 +440,20 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
     expect(display.overviewSuppressed, 'Review contains unexpected overview prose').toBe(true)
     for (const section of workout.sections) {
       // Review intentionally labels sections by their canonical type, not the
-      // retired model-generated title/introduction fields.
-      const trigger = page.locator('main .clr-collapsible__trigger').filter({
-        has: page.getByText(sectionTypeLabel(section.section_type), { exact: true }),
+      // retired model-generated title/introduction fields. TASK-002
+      // (AC-R002-02, R37): the label is the section's static heading, always
+      // open, on its first block card; it is not a toggle.
+      const label = sectionTypeLabel(section.section_type)
+      const content = page.locator('main [data-review-section]').filter({
+        has: page.getByRole('heading', { level: 2, name: label, exact: true }),
       })
-      await expect(trigger).toHaveCount(1)
-      await expect(trigger).toBeVisible()
-      await expect(trigger).toHaveAttribute('aria-expanded', 'true')
-      const regionId = await trigger.getAttribute('aria-controls')
-      if (!regionId) throw new Error('A Review section has no controlled region.')
-      const content = page.locator(`[id="${regionId}"]`)
-        .locator(':scope > .clr-collapsible__content')
+      await expect(content).toHaveCount(1)
       await expect(content).toBeVisible()
+      await expect(content.getByRole('button', { name: label, exact: true })).toHaveCount(0)
+      await expect(content.locator('[data-movement-group-header] [aria-expanded]')).toHaveCount(0)
       // Section introductions used these direct prose slots; movement notes
       // deeper inside their real block rows are deliberately not prohibited.
-      await expect(content.locator(':scope > p, :scope > .clr-stack--tight > p')).toHaveCount(0)
+      await expect(content.locator(':scope > p, [data-workout-card] > p')).toHaveCount(0)
     }
     display.sectionNotesSuppressed = true
     await expectPinnedAction(page, 'Start workout')

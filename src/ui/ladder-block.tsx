@@ -67,6 +67,7 @@ import {
   type LadderRung,
 } from '../state/ladder'
 import { exerciseName, prescribedTarget, targetText } from '../state/prescription'
+import { equipmentName } from '../state/review'
 import type { LadderTiming } from '../state/schemas'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
@@ -294,7 +295,11 @@ function LadderMovement({
   companions: readonly ExerciseProgress[]
 }) {
   return (
-    <BlockPanel.Movement title={exerciseName(movement.prescription.exercise_id)}>
+    <BlockPanel.Movement
+      title={exerciseName(movement.prescription.exercise_id)}
+      // C03, R132: the compact equipment beside the name, as Review shows it.
+      context={equipmentName(movement.prescription.equipment_used)}
+    >
       {companions.map((companion) => (
         <BlockPanel.Note key={companion.exerciseId}>
           {targetText(companion.prescription)}{' '}

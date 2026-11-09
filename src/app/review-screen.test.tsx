@@ -83,6 +83,25 @@ function precedes(a: Node, b: Node): boolean {
   return (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0
 }
 
+/**
+ * The sections' static headings, in order. TASK-002 (AC-R002-02, R37): a
+ * section's header is a semantic heading on its first card, never an expanded
+ * toggle, so the sections are found by their headings.
+ */
+function sectionHeadings(): HTMLElement[] {
+  return screen
+    .getAllByRole('heading', { level: 2 })
+    .filter((heading) => heading.closest('[data-workout-card="review"]') !== null)
+}
+
+/**
+ * A block's card header: the section identity and the structure badge
+ * (TASK-002, AC-C07-01 — the live cards' header vocabulary).
+ */
+function cardHeader(group: HTMLElement): HTMLElement {
+  return group.closest<HTMLElement>('[data-workout-card="review"]')!.querySelector<HTMLElement>('[data-movement-group-header]')!
+}
+
 /** A workout of one section holding the given blocks. */
 function withBlocks(blocks: ReturnType<typeof makeWorkoutBlock>[]): SessionAcceptance {
   return makeSessionAcceptance({
@@ -127,7 +146,7 @@ describe('AC-019: required equipment near the top, before Start, without prose',
       .getByRole('heading', { level: 2, name: OVERVIEW_LABEL })
       .closest<HTMLElement>('.clr-card')!
     expect(overview).toContainElement(list)
-    const firstSection = screen.getAllByRole('button', { expanded: true })[0]
+    const firstSection = sectionHeadings()[0]
     expect(precedes(list, firstSection)).toBe(true)
     expect(precedes(list, screen.getByRole('button', { name: START_LABEL }))).toBe(true)
   })
@@ -193,7 +212,8 @@ describe('AC-021: Regenerate sits at the end of the scrolling content', () => {
 
     const buttons = within(region).getAllByRole('button')
     expect(buttons.at(-1)).toBe(regenerate)
-    for (const section of screen.getAllByRole('button', { expanded: true })) {
+    expect(sectionHeadings()).toHaveLength(SPECTRUM.sections.length)
+    for (const section of sectionHeadings()) {
       expect(precedes(section, regenerate)).toBe(true)
     }
   })
@@ -218,9 +238,13 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
 
     const list = screen.getByRole('list', { name: 'superset, 4 rounds' })
     const group = list.parentElement!
-    const [badge, sequence] = [...group.children]
+    // TASK-002 (AC-C07-01): the badge heads the block's card, in the shared
+    // static header beside the section's name, and the sequence leads the group.
+    const badge = cardHeader(group)
+    const [sequence] = [...group.children]
     expect(badge).toHaveTextContent('SUPERSET · 4 ROUNDS')
     expect(badge.querySelector('svg')).not.toBeNull()
+    expect(precedes(badge, sequence)).toBe(true)
     expect(sequence).toHaveTextContent(/^One round: 01 → 02$/)
     expect(precedes(sequence, list)).toBe(true)
 
@@ -257,8 +281,9 @@ describe('AC-022: numbered one-round sequences under a heading with the round co
 
     const list = screen.getByRole('list', { name: 'circuit, 5 rounds' })
     const group = list.parentElement!
-    expect(group.children[0]).toHaveTextContent('CIRCUIT · 5 ROUNDS')
-    expect(group.children[0].querySelector('svg')).not.toBeNull()
+    // TASK-002 (AC-C07-01): the badge is in the card's shared static header.
+    expect(cardHeader(group)).toHaveTextContent('CIRCUIT · 5 ROUNDS')
+    expect(cardHeader(group).querySelector('svg')).not.toBeNull()
     expect(within(group).getByText('One round: 01 → 02 → 03')).toBeInTheDocument()
     expect(within(list).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
       expect.stringMatching(/^01 kb swing/),
@@ -463,7 +488,7 @@ describe('REQ-008: the compact workout-facts row under the workout title', () =>
     const row = factsRow()
     const equipment = screen.getByRole('list', { name: EQUIPMENT_LABEL })
     expect(precedes(row, equipment)).toBe(true)
-    expect(precedes(equipment, screen.getAllByRole('button', { expanded: true })[0])).toBe(true)
+    expect(precedes(equipment, sectionHeadings()[0])).toBe(true)
   })
 
   it('never renders the excluded bodyweight sentence, and leaves equipment as it was', async () => {
@@ -583,7 +608,10 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
     expect(within(first).queryByRole('button', { name: /Undo swap/ })).not.toBeInTheDocument()
   })
 
-  it('leaves a standard movement’s own rest and load where they were', async () => {
+  // TASK-002 (AC-R002-01): with the compact equipment beside the name, a
+  // standard movement's `Bodyweight` beside its `bodyweight` equipment is said
+  // once, by the equipment, as it already was in a round. Its own rest stays.
+  it('leaves a standard movement’s own rest where it was and says its Bodyweight once', async () => {
     renderReview(
       withBlocks([
         makeWorkoutBlock({
@@ -595,7 +623,24 @@ describe('REQ-009: grouped Review movement hierarchy and one group rest', () => 
 
     const main = screen.getByRole('main')
     expect(within(main).getByText('Rest 45s')).toBeInTheDocument()
-    expect(within(main).getByText('Bodyweight')).toBeInTheDocument()
+    const [row] = within(screen.getByRole('list', { name: 'Movements in this block' })).getAllByRole('listitem')
+    expect(row.textContent?.match(/bodyweight/gi)).toHaveLength(1)
+    expect(within(row).getByText('bodyweight')).toHaveAttribute('data-movement-context')
     expect(within(main).getByRole('button', { name: 'Swap air squat' })).toBeInTheDocument()
+  })
+
+  it('keeps an actual Bodyweight load beside other equipment', async () => {
+    renderReview(
+      withBlocks([
+        makeWorkoutBlock({
+          exercises: [makePrescription({ exercise_id: 'pull-up', equipment: 'pull-up-bar', load_type: 'bodyweight', load_value: null })],
+        }),
+      ]),
+    )
+    await ready()
+
+    const [row] = within(screen.getByRole('list', { name: 'Movements in this block' })).getAllByRole('listitem')
+    expect(within(row).getByText('Bodyweight')).toHaveAttribute('data-movement-load')
+    expect(within(row).getByText('pull up bar')).toHaveAttribute('data-movement-context')
   })
 })

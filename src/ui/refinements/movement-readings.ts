@@ -9,18 +9,17 @@ import { exerciseName } from '../../state/prescription'
 import { equipmentName, loadText } from '../../state/review'
 
 /**
- * The prescribed load to show beside a prescription, in either context: a
- * `Bodyweight` load beside `bodyweight` equipment inside a round says the same
- * thing twice, so there the equipment carries it alone (G02). Anywhere else the
- * load is the consumer's formatted reading (`loadText`), unchanged.
+ * The prescribed load to show beside a prescription, in either context. With
+ * the compact equipment beside the name (R132), a `Bodyweight` load beside
+ * `bodyweight` equipment says the same thing twice on one card, so the
+ * equipment carries it alone — in a standard block as in a round (G02, R31,
+ * AC-R002-01; TASK-002 widened TASK-001's round-only rule). Any other load is
+ * the consumer's formatted reading (`loadText`), unchanged: a `Bodyweight` load
+ * on a pull-up bar, a percentage or a weight is never hidden.
  */
-export function prescribedLoadReading(
-  load: string | null,
-  equipment: string,
-  inRounds: boolean,
-): string | null {
+export function prescribedLoadReading(load: string | null, equipment: string): string | null {
   if (load === null) return null
-  return inRounds && load.toLowerCase() === equipment.toLowerCase() ? null : load
+  return load.toLowerCase() === equipment.toLowerCase() ? null : load
 }
 
 /** The persisted prescription columns a live movement reads its identity from. */
@@ -46,7 +45,6 @@ export interface LiveMovementReadings {
 export function liveMovementReadings(
   prescription: LiveMovementColumns,
   weightUnit: Enums<'weight_unit'> | null,
-  inRounds: boolean,
 ): LiveMovementReadings {
   const equipment = equipmentName(prescription.equipment_used)
   const load = prescription.load_type === null
@@ -55,6 +53,6 @@ export function liveMovementReadings(
   return {
     name: exerciseName(prescription.exercise_id),
     equipment,
-    load: prescribedLoadReading(load, equipment, inRounds),
+    load: prescribedLoadReading(load, equipment),
   }
 }

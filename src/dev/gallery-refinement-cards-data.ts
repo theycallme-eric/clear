@@ -1,6 +1,7 @@
 /**
  * TASK-001 / JOURNEY-001 — one synthetic composition with standard, superset
- * and circuit peers, used by the accepted gallery state
+ * and circuit peers (and, for TASK-002 / JOURNEY-002, the timed formats), used
+ * by the accepted gallery state
  * (`/gallery/refinements?state=cards`), the focused component check
  * (`src/ui/movement-list.test.tsx`) and the real-route proof
  * (`e2e/refinement/task-001.spec.ts`). Every movement carries the same
@@ -99,6 +100,48 @@ export const TEN_STATION_CIRCUIT_BLOCK = block({
     rest_seconds: null,
   })),
 })
+
+/**
+ * TASK-002 / JOURNEY-002 — timed formats with the accepted reference's
+ * movements (`/gallery/refinements?state=cards`): equipment beside the name in
+ * Review and in the live block, a loaded kettlebell and medicine ball, and a
+ * bodyweight movement whose `Bodyweight` is said once, by its equipment.
+ */
+const timed = { sets: null, rest_seconds: null, session_function: 'conditioning' as const }
+
+/** EMOM: two movements alternating minutes, ten minutes. */
+export const EMOM_BLOCK = block({
+  structure_type: 'emom',
+  timer_type: 'per_minute',
+  timer_seconds: 600,
+  exercises: [
+    prescription({ exercise_id: 'kb-swing', equipment: 'kettlebell', ...timed, target_value: 12, load_value: 24, is_interval_exercise: true }),
+    prescription({ exercise_id: 'burpee', ...bodyweight, ...timed, target_value: 10, is_interval_exercise: true }),
+  ],
+})
+
+/** AMRAP: the same two movements as one round, eight minutes. */
+export const AMRAP_BLOCK = block({
+  structure_type: 'amrap',
+  timer_type: 'countdown',
+  timer_seconds: 480,
+  exercises: [
+    prescription({ exercise_id: 'kb-swing', equipment: 'kettlebell', ...timed, target_value: 12, load_value: 24 }),
+    prescription({ exercise_id: 'burpee', ...bodyweight, ...timed, target_value: 10 }),
+  ],
+})
+
+/** For Time: one loaded medicine-ball movement under a fifteen-minute cap. */
+export const FOR_TIME_BLOCK = block({
+  structure_type: 'for_time',
+  timer_type: 'count_up',
+  timer_seconds: 900,
+  exercises: [
+    prescription({ exercise_id: 'wall-ball', equipment: 'medicine-ball', ...timed, target_value: 40, load_value: 9 }),
+  ],
+})
+
+export const TIMED_BLOCKS = [EMOM_BLOCK, AMRAP_BLOCK, FOR_TIME_BLOCK] as const
 
 export const JOURNEY_TITLE = 'Synthetic peer grouping workout'
 export const JOURNEY_SECTION_TITLE = 'Strength and conditioning'
