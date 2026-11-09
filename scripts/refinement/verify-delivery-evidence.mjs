@@ -22,12 +22,17 @@
 //       Setup-purpose checks never count as delivery.
 //
 // Common options: --body <id> (required), --evidence-root <dir>, --json.
+//
+// Staged reference objects are not in Git (owner decision 2026-11-09). They
+// are read from the body evidence object store: $CLEAR_REFINEMENT_EVIDENCE_DIR,
+// or <runner body>/evidence for a worktree at <runner body>/worktrees/<task>.
+// Without the store every mode that verifies references fails closed.
 
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
-import { loadBody, verifyBaseline, verifyReferences } from './lib/references.mjs'
+import { loadBody, OBJECT_STORE_ENV, resolveObjectStore, verifyBaseline, verifyReferences } from './lib/references.mjs'
 import { manifestPathFor, validateManifest, verifyReceipt } from './lib/required-check.mjs'
 
 export function parseArgs(argv) {
@@ -72,7 +77,7 @@ function checkManifest(evidenceRoot, task) {
 }
 
 /** Run one mode. Pure apart from reading files and git. */
-export function verifyDeliveryEvidence({ cwd = process.cwd(), evidenceRoot, body, mode, requireCurrentSource = false, reference, tasks, allTasks }) {
+export function verifyDeliveryEvidence({ cwd = process.cwd(), evidenceRoot, body, mode, requireCurrentSource = false, reference, tasks, allTasks, env = process.env, store }) {
   const root = evidenceRoot ?? resolve(cwd, 'evidence/refinement')
   const problems = []
   const report = { body, mode }
@@ -90,7 +95,9 @@ export function verifyDeliveryEvidence({ cwd = process.cwd(), evidenceRoot, body
   }
 
   if (mode === 'references' || mode === 'final' || (mode === 'baseline' && requireCurrentSource)) {
-    const verified = verifyReferences({ cwd, evidenceRoot: root, body, only: mode === 'references' ? reference : undefined })
+    const objectStore = store ?? resolveObjectStore({ cwd, env })
+    report.objectStore = { source: objectStore.source, dir: objectStore.dir, available: !objectStore.problem }
+    const verified = verifyReferences({ cwd, evidenceRoot: root, body, only: mode === 'references' ? reference : undefined, store: objectStore })
     problems.push(...verified.problems.filter((problem) => !loaded.problems.includes(problem)))
     report.acceptedGallery = loaded.record.acceptedGallery
     report.references = verified.references.map(({ id, result }) => ({
@@ -188,6 +195,10 @@ function main() {
       if (baseline.foundation) lines.push(`  Foundation ${baseline.foundation.path} ${baseline.foundation.version}, unchanged from base: ${baseline.foundation.unchangedFromBase}`)
       for (const historical of baseline.historicalComparisons ?? []) lines.push(`  historical ${historical.id} ${historical.commit}: ${historical.relation}`)
       lines.push(`  task manifests: ${result.report.taskManifests.join(', ') || 'none'}`)
+    }
+    if (result.report.objectStore) {
+      const store = result.report.objectStore
+      lines.push(`  reference object store (${store.source}): ${store.dir ?? 'not located'}${store.available ? '' : ` [ABSENT; set ${OBJECT_STORE_ENV}]`}`)
     }
     if (result.report.acceptedGallery) lines.push(`  accepted gallery commit: ${result.report.acceptedGallery.commit}`)
     for (const ref of result.report.references ?? []) {

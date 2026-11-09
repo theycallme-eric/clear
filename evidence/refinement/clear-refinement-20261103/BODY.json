@@ -31,11 +31,16 @@
   ],
   "notesDir": "docs/journal/clear-refinement-20261103",
   "taskEvidence": "evidence/refinement/task-NNN",
+  "objectStore": {
+    "policy": "staged reference objects are kept outside Git (owner decision 2026-11-09); only these hash manifests are committed",
+    "layout": "<runner body>/worktrees/<task> -> <runner body>/evidence/<body>/references/<id>/objects/<sha256>",
+    "override": "CLEAR_REFINEMENT_EVIDENCE_DIR"
+  },
   "references": [
     {
       "id": "accepted-gallery",
       "record": "references/accepted-gallery/REFERENCE.json",
-      "sha256": "893aab1366f87386199b269730ce7cef4f1609591faf8455850c4409c8631f43"
+      "sha256": "1380e1d5d5be856e0bc937ff4e03c29ef3ce9eebf07982c02b19101093ef36e2"
     },
     {
       "id": "phosphor-echo",

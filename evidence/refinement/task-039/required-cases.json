@@ -129,6 +129,21 @@
         },
         {
           "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects a required case claimed for one file that only ran in another file",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > attributes node:test cases per file when several targets are requested",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-BB6BBF630DDC node-test TAP > rejects a multi-target TAP report that cannot attribute cases to files",
+          "criterion": "TASK-AC-BB6BBF630DDC"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
           "name": "TASK-AC-BB6BBF630DDC node-test TAP > parses TAP directives, escapes and suite types",
           "criterion": "TASK-AC-BB6BBF630DDC"
         },
@@ -174,7 +189,37 @@
         },
         {
           "file": "scripts/refinement/required-check.test.mjs",
-          "name": "TASK-AC-9E8B5D3DDA20 staged references > rejects tampered, missing and unknown staged references",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > finds the object store through the V2 worktree layout",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > uses the CLEAR_REFINEMENT_EVIDENCE_DIR override",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed when the object store is absent",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed on a missing staged object",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > fails closed on a tampered staged object",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > rejects unknown references and drifted reference records",
+          "criterion": "TASK-AC-9E8B5D3DDA20"
+        },
+        {
+          "file": "scripts/refinement/required-check.test.mjs",
+          "name": "TASK-AC-9E8B5D3DDA20 staged references > keeps staged reference objects out of the repository",
           "criterion": "TASK-AC-9E8B5D3DDA20"
         },
         {

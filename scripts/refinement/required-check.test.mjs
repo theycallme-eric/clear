@@ -11,13 +11,13 @@
 
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { after, describe, test } from 'node:test'
 
 import { parseNodeTap, parsePlaywrightJson, parseVitestJson } from './lib/native-results.mjs'
-import { verifyReference } from './lib/references.mjs'
+import { resolveObjectStore, verifyReference } from './lib/references.mjs'
 import {
   analyseCommand,
   evaluateResults,
@@ -275,6 +275,65 @@ describe('TASK-AC-BB6BBF630DDC node-test TAP', () => {
     assertRejected(result, /mixed existing\/missing targets/)
   })
 
+  // Reviewer reproduction (repair round 1): t/a.test.mjs runs only 'a only';
+  // t/b.test.mjs runs 'b case' and 'claimed for a'. A required case declared
+  // for t/a.test.mjs must never pass because a same-named case ran in b.
+  function twoFileProject() {
+    const cwd = join(scratch, `two-file-${++counter}`)
+    mkdirSync(join(cwd, 't'), { recursive: true })
+    writeFileSync(join(cwd, 't/a.test.mjs'), "import { test } from 'node:test'\ntest('a only', () => {})\n")
+    writeFileSync(join(cwd, 't/b.test.mjs'), "import { test } from 'node:test'\ntest('b case', () => {})\ntest('claimed for a', () => {})\n")
+    return cwd
+  }
+  function twoFileGuard(cases) {
+    const cwd = twoFileProject()
+    const evidenceRoot = join(cwd, 'evidence')
+    const manifest = {
+      schema: 'clear-refinement-required-cases/v1',
+      task: 'TASK-901',
+      checks: { 'check-01': nodeCheck(['t/a.test.mjs', 't/b.test.mjs'], cases) },
+    }
+    mkdirSync(join(evidenceRoot, 'task-901'), { recursive: true })
+    writeFileSync(join(evidenceRoot, 'task-901/required-cases.json'), JSON.stringify(manifest, null, 2))
+    return runRequiredCheck({
+      cwd, evidenceRoot, task: 'TASK-901', check: 'check-01',
+      command: ['node', '--test', 't/a.test.mjs', 't/b.test.mjs'], stdio: 'pipe',
+    })
+  }
+
+  test('rejects a required case claimed for one file that only ran in another file', () => {
+    const result = twoFileGuard([
+      { file: 't/a.test.mjs', name: 'claimed for a' },
+      { file: 't/b.test.mjs', name: 'b case' },
+    ])
+    assertRejected(result, /required case did not run: t\/a\.test\.mjs > claimed for a/)
+    const byKey = Object.fromEntries(result.receipt.requiredCases.map((c) => [`${c.file} > ${c.name}`, c.status]))
+    assert.equal(byKey['t/a.test.mjs > claimed for a'], 'missing', 'the receipt never records it as passed for a')
+    assert.equal(byKey['t/b.test.mjs > b case'], 'passed')
+  })
+
+  test('attributes node:test cases per file when several targets are requested', () => {
+    const result = twoFileGuard([
+      { file: 't/a.test.mjs', name: 'a only' },
+      { file: 't/b.test.mjs', name: 'b case' },
+      { file: 't/b.test.mjs', name: 'claimed for a' },
+    ])
+    assert.equal(result.ok, true, result.problems.join('\n'))
+    assert.equal(result.receipt.totals.executed, 3)
+    assert.deepEqual(result.receipt.targets.map((t) => t.path), ['t/a.test.mjs', 't/b.test.mjs'])
+  })
+
+  test('rejects a multi-target TAP report that cannot attribute cases to files', () => {
+    const tap = ['TAP version 13', '# Subtest: claimed for a', 'ok 1 - claimed for a', '1..1'].join('\n')
+    const targets = ['t/a.test.mjs', 't/b.test.mjs']
+    const parsed = parseNodeTap(tap, { targets })
+    const check = nodeCheck(targets, [{ file: 't/a.test.mjs', name: 'claimed for a' }, { file: 't/b.test.mjs', name: 'claimed for a' }])
+    const verdict = evaluateResults({ check, parsed, targets, exitCode: 0 })
+    assert.equal(verdict.ok, false)
+    assert.ok(verdict.problems.some((p) => /cannot be attributed to a file/.test(p)), verdict.problems.join('\n'))
+    assert.ok(verdict.requiredCases.every((c) => c.status === 'missing'))
+  })
+
   test('parses TAP directives, escapes and suite types', () => {
     const tap = [
       'TAP version 13',
@@ -414,7 +473,8 @@ describe('TASK-AC-9E8B5D3DDA20 staged references', () => {
     assert.equal(gallery.files, 1193)
     for (const guide of ['stateMap', 'sharedOwners', 'fieldOwnership', 'semanticTokens', 'sourceManifest']) {
       assert.ok(gallery.guides[guide], `guide ${guide} is exposed`)
-      assert.doesNotMatch(gallery.guides[guide].location, /^\/|\/Users\//, 'locations are repository-relative or git identities')
+      assert.match(gallery.guides[guide].location, /^(store:|git:)/, 'locations are store or git identities')
+      assert.doesNotMatch(gallery.guides[guide].location, /\/Users\//, 'no owner-machine path')
     }
   })
 
@@ -424,25 +484,108 @@ describe('TASK-AC-9E8B5D3DDA20 staged references', () => {
     assert.equal(result.report.references[0].files, 5)
   })
 
-  test('rejects tampered, missing and unknown staged references', () => {
-    const root = join(scratch, 'tamper')
+  // Owner decision 2026-11-09: staged objects live outside Git in the body
+  // evidence object store. These cases copy the real store so the real one
+  // is never modified.
+  const TOKENS_SHA = 'c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d'
+  function storeCopy(name) {
+    const live = resolveObjectStore({ cwd: repo, env: {} })
+    assert.equal(live.problem, undefined, live.problem)
+    const dir = join(scratch, name)
+    cpSync(join(live.dir, BODY), join(dir, BODY), { recursive: true })
+    return dir
+  }
+  const tokensObject = (dir) => join(dir, BODY, 'references/accepted-gallery/objects', TOKENS_SHA)
+
+  test('finds the object store through the V2 worktree layout', () => {
+    const live = resolveObjectStore({ cwd: repo, env: {} })
+    const top = spawnSync('git', ['rev-parse', '--show-toplevel'], { cwd: repo, encoding: 'utf8' }).stdout.trim()
+    assert.equal(live.dir, resolve(top, '../../evidence'))
+    assert.match(live.source, /^layout /)
+    // A synthetic Runner V2 body: <body>/worktrees/<task> is a git worktree root.
+    const runnerBody = realpathSync(mkdtempSync(join(scratch, 'v2-body-')))
+    const worktree = join(runnerBody, 'worktrees', 'TASK-999-a1')
+    mkdirSync(join(worktree, 'nested'), { recursive: true })
+    assert.equal(spawnSync('git', ['init', '-q'], { cwd: worktree }).status, 0)
+    assert.match(resolveObjectStore({ cwd: join(worktree, 'nested'), env: {} }).problem, /object store is absent: expected .*v2-body-.*\/evidence/)
+    mkdirSync(join(runnerBody, 'evidence'))
+    const found = resolveObjectStore({ cwd: join(worktree, 'nested'), env: {} })
+    assert.equal(found.problem, undefined)
+    assert.equal(found.dir, join(runnerBody, 'evidence'))
+  })
+
+  test('uses the CLEAR_REFINEMENT_EVIDENCE_DIR override', () => {
+    const dir = storeCopy('store-override')
+    const env = { CLEAR_REFINEMENT_EVIDENCE_DIR: dir }
+    assert.equal(resolveObjectStore({ cwd: repo, env }).dir, dir)
+    const result = verifyDeliveryEvidence({ cwd: repo, body: BODY, mode: 'baseline', requireCurrentSource: true, env })
+    assert.equal(result.ok, true, result.problems.join('\n'))
+    assert.equal(result.report.objectStore.dir, dir)
+    assert.match(result.report.objectStore.source, /CLEAR_REFINEMENT_EVIDENCE_DIR override/)
+  })
+
+  test('fails closed when the object store is absent', () => {
+    const absent = join(scratch, 'no-such-store')
+    const env = { CLEAR_REFINEMENT_EVIDENCE_DIR: absent }
+    for (const options of [
+      { mode: 'baseline', requireCurrentSource: true },
+      { mode: 'references', reference: 'accepted-gallery' },
+    ]) {
+      const result = verifyDeliveryEvidence({ cwd: repo, body: BODY, env, ...options })
+      assert.equal(result.ok, false, 'never passes without the store')
+      assert.ok(result.problems.some((p) => p.includes(`object store is absent: expected ${absent}`)), result.problems.join('\n'))
+    }
+    // An existing store without this body's objects also fails closed.
+    const emptyStore = join(scratch, 'empty-store')
+    mkdirSync(emptyStore, { recursive: true })
+    const empty = verifyDeliveryEvidence({ cwd: repo, body: BODY, mode: 'references', env: { CLEAR_REFINEMENT_EVIDENCE_DIR: emptyStore } })
+    assert.equal(empty.ok, false)
+    assert.ok(empty.problems.some((p) => /staged objects are absent from the reference object store: expected/.test(p)), empty.problems.join('\n'))
+  })
+
+  test('fails closed on a missing staged object', () => {
+    const dir = storeCopy('store-missing')
+    rmSync(tokensObject(dir))
+    const result = verifyDeliveryEvidence({ cwd: repo, body: BODY, mode: 'references', reference: 'accepted-gallery', env: { CLEAR_REFINEMENT_EVIDENCE_DIR: dir } })
+    assert.equal(result.ok, false)
+    assert.ok(result.problems.some((p) => p.includes(`staged object for src/ui/refinements/tokens.css is missing from the reference object store: expected ${tokensObject(dir)}`)), result.problems.join('\n'))
+    // The pinned manifest is itself a store object.
+    const manifestDir = storeCopy('store-missing-manifest')
+    rmSync(join(manifestDir, BODY, 'references/accepted-gallery/objects/a1b1f93bda420ba88f5647f9d78e66e0d9b05b16cab7026f9fecd033858f0a18'))
+    const noManifest = verifyDeliveryEvidence({ cwd: repo, body: BODY, mode: 'references', reference: 'accepted-gallery', env: { CLEAR_REFINEMENT_EVIDENCE_DIR: manifestDir } })
+    assert.equal(noManifest.ok, false)
+    assert.ok(noManifest.problems.some((p) => /PINNED-SOURCE\.json is missing from the reference object store/.test(p)), noManifest.problems.join('\n'))
+  })
+
+  test('fails closed on a tampered staged object', () => {
+    const dir = storeCopy('store-tampered')
+    const path = tokensObject(dir)
+    writeFileSync(path, Buffer.concat([readFileSync(path), Buffer.from('\n')]))
+    const result = verifyDeliveryEvidence({ cwd: repo, body: BODY, mode: 'baseline', requireCurrentSource: true, env: { CLEAR_REFINEMENT_EVIDENCE_DIR: dir } })
+    assert.equal(result.ok, false)
+    assert.ok(result.problems.some((p) => /src\/ui\/refinements\/tokens\.css bytes do not match the pinned hash \(store:/.test(p)), result.problems.join('\n'))
+  })
+
+  test('rejects unknown references and drifted reference records', () => {
+    const root = join(scratch, 'drift')
     cpSync(join(repo, 'evidence/refinement', BODY), join(root, BODY), { recursive: true })
     const body = JSON.parse(readFileSync(join(root, BODY, 'BODY.json'), 'utf8'))
     const entry = body.references.find((ref) => ref.id === 'accepted-gallery')
-    const tokens = 'c09e5f7c2f728eb6052eb4f1e83386e59d2d7abc50d3380d818e5e258427811d'
-    const objectPath = join(root, BODY, 'references/accepted-gallery/objects', tokens)
-    const original = readFileSync(objectPath)
-    writeFileSync(objectPath, Buffer.concat([original, Buffer.from('\n')]))
-    let result = verifyReference({ cwd: repo, dir: join(root, BODY), record: body, entry })
-    assert.ok(result.problems.some((p) => /src\/ui\/refinements\/tokens\.css bytes do not match/.test(p)), result.problems.join('\n'))
-    rmSync(objectPath)
-    result = verifyReference({ cwd: repo, dir: join(root, BODY), record: body, entry })
-    assert.ok(result.problems.some((p) => /tokens\.css is not staged and not resolvable/.test(p)), result.problems.join('\n'))
     const unknown = verifyDeliveryEvidence({ cwd: repo, evidenceRoot: root, body: BODY, mode: 'references', reference: 'no-such-ref' })
     assert.equal(unknown.ok, false)
     writeFileSync(join(root, BODY, 'references/accepted-gallery/REFERENCE.json'), '{"schema":"x"}')
-    result = verifyReference({ cwd: repo, dir: join(root, BODY), record: body, entry })
+    const result = verifyReference({ cwd: repo, dir: join(root, BODY), record: body, entry })
     assert.ok(result.problems.some((p) => /record bytes do not match the body record hash/.test(p)))
+  })
+
+  test('keeps staged reference objects out of the repository', () => {
+    const tracked = spawnSync('git', ['ls-files', '-z', 'evidence/refinement'], { cwd: repo, encoding: 'utf8' }).stdout.split('\0').filter(Boolean)
+    assert.ok(tracked.includes(`evidence/refinement/${BODY}/BODY.json`), 'the hash manifests are committed')
+    const objects = tracked.filter((path) => /\/objects\/|PINNED-SOURCE\.json$|GALLERY-DELIVERY\.json$/.test(path))
+    assert.deepEqual(objects, [], 'no staged object is tracked by Git')
+    for (const path of tracked) {
+      assert.doesNotMatch(readFileSync(join(repo, path), 'utf8'), /\/Users\//, `${path} carries no owner-machine path`)
+    }
   })
 
   test('rejects an owner-machine absolute path in the body record', () => {

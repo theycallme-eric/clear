@@ -5,16 +5,23 @@
 //
 //   node scripts/refinement/stage-references.mjs --approved-run <requirements run dir>
 //
+// Owner decision 2026-11-09: staged reference OBJECTS are never committed to
+// the product repository. Their bytes are written outside Git to the body
+// evidence object store ($CLEAR_REFINEMENT_EVIDENCE_DIR, or <runner body>/evidence
+// for a worktree at <runner body>/worktrees/<task>) as
+// <store>/<body>/references/<id>/objects/<sha256>. Only the small hash
+// manifests (BODY.json, references/<id>/REFERENCE.json) go into the repository.
+//
 // The approved run directory holds SOURCE_MANIFEST.json (whose
 // inventorySha256 is the approved requirements set) and sources/. Every
 // staged byte string is checked against that approved manifest first. Pinned
 // gallery files whose bytes equal the integration base are not copied; they
 // resolve from the base commit's git blob. No absolute path is written.
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
-import { readBaseBlobs } from './lib/references.mjs'
+import { OBJECT_STORE_ENV, readBaseBlobs, resolveObjectStore } from './lib/references.mjs'
 import { sha256 } from './lib/required-check.mjs'
 
 const BODY = 'clear-refinement-20261103'
@@ -56,14 +63,21 @@ function main() {
     return { bytes, entry }
   }
   const bodyDir = resolve(cwd, options.evidenceRoot, BODY)
+  const store = resolveObjectStore({ cwd })
+  if (!store.dir) throw new Error(`${store.problem}`)
   const references = []
+  let objectCount = 0
 
   const writeReference = (id, record, objects) => {
     const dir = join(bodyDir, 'references', id)
-    mkdirSync(join(dir, 'objects'), { recursive: true })
+    mkdirSync(dir, { recursive: true })
+    const objectsDir = join(store.dir, BODY, 'references', id, 'objects')
+    mkdirSync(objectsDir, { recursive: true })
     for (const [hash, bytes] of objects) {
-      const target = join(dir, 'objects', hash)
+      const target = join(objectsDir, hash)
+      if (existsSync(target) && sha256(readFileSync(target)) !== hash) throw new Error(`store object ${target} is corrupt; remove it and restage`)
       if (!existsSync(target)) writeFileSync(target, bytes)
+      objectCount += 1
     }
     const text = json(record)
     writeFileSync(join(dir, 'REFERENCE.json'), text)
@@ -77,14 +91,19 @@ function main() {
     const pinned = JSON.parse(pinnedBytes.toString('utf8'))
     if (pinned.galleryCommit !== GALLERY_COMMIT || pinned.productBase !== BASE) throw new Error('pinned gallery identity mismatch')
     const blobs = readBaseBlobs(cwd, BASE, pinned.files.map((file) => file.path))
-    const objects = new Map()
+    const objects = new Map([[entry.sha256, pinnedBytes]])
+    const stagedObjects = []
     let fromBase = 0
     for (const file of pinned.files) {
       const { bytes } = approvedBytes(`${GALLERY_ROOT}/${file.path}`)
       if (sha256(bytes) !== file.sha256 || bytes.length !== file.bytes) throw new Error(`pinned hash mismatch ${file.path}`)
       const base = blobs.get(file.path)
-      if (base && sha256(base) === file.sha256) fromBase += 1
-      else objects.set(file.sha256, bytes)
+      if (base && sha256(base) === file.sha256) {
+        fromBase += 1
+      } else {
+        objects.set(file.sha256, bytes)
+        stagedObjects.push({ path: file.path, bytes: file.bytes, sha256: file.sha256 })
+      }
     }
     const record = {
       schema: 'clear-refinement-staged-reference/v1',
@@ -98,7 +117,8 @@ function main() {
         availability: 'unpublished; resolved from staged bytes and the integration base, never from the commit object',
       },
       approvedSource: { inventorySha256: approved.inventorySha256, root: GALLERY_ROOT },
-      manifest: { format: 'pinned-source', file: 'PINNED-SOURCE.json', sha256: entry.sha256 },
+      // PINNED-SOURCE.json is itself a store object, identified by this hash.
+      manifest: { format: 'pinned-source', name: 'PINNED-SOURCE.json', bytes: entry.sizeBytes, sha256: entry.sha256 },
       sourceManifest: 'docs/design/library/refinements-2026-11-04/SOURCE-MANIFEST.json',
       guides: {
         stateMap: 'src/dev/gallery-refinement-coverage.json',
@@ -110,10 +130,12 @@ function main() {
         deliveryCrosswalk: 'docs/design/library/refinements-2026-11-04/DELIVERY-CROSSWALK.md',
         galleryCrosswalk: 'docs/design/library/refinements-2026-11-04/gallery-crosswalk.json',
       },
-      staging: { pinnedFiles: pinned.files.length, stagedObjects: objects.size, resolvedFromBase: fromBase },
+      staging: { pinnedFiles: pinned.files.length, stagedObjects: stagedObjects.length, resolvedFromBase: fromBase },
+      // Pinned files whose bytes differ from the integration base; each is a
+      // store object. Every other pinned file resolves from the base blob.
+      stagedObjects,
     }
-    const dir = writeReference('accepted-gallery', record, objects)
-    writeFileSync(join(dir, 'PINNED-SOURCE.json'), pinnedBytes)
+    writeReference('accepted-gallery', record, objects)
   }
 
   // 2. Inline references: Phosphor Echo intake and historical comparisons.
@@ -179,10 +201,15 @@ function main() {
     ],
     notesDir: 'docs/journal/clear-refinement-20261103',
     taskEvidence: 'evidence/refinement/task-NNN',
+    objectStore: {
+      policy: 'staged reference objects are kept outside Git (owner decision 2026-11-09); only these hash manifests are committed',
+      layout: '<runner body>/worktrees/<task> -> <runner body>/evidence/<body>/references/<id>/objects/<sha256>',
+      override: OBJECT_STORE_ENV,
+    },
     references,
   }
   writeFileSync(join(bodyDir, 'BODY.json'), json(body))
-  process.stdout.write(`staged ${references.length} references into ${options.evidenceRoot}/${BODY}\n`)
+  process.stdout.write(`staged ${references.length} reference manifests into ${options.evidenceRoot}/${BODY} and ${objectCount} objects into the object store ${store.dir} (${store.source})\n`)
 }
 
 main()

@@ -9,13 +9,47 @@ task, change the provider through its owner.
 | Path | Owner | Contents |
 | --- | --- | --- |
 | `clear-refinement-20261103/BODY.json` | TASK-039 | Body identity. It records the integration base `03087f7` (the selected baseline), Foundation 0.14.3, historical comparisons (`94f2c2f`, R7 `2d48f13`; never the baseline) and the hash of each staged-reference record. |
-| `clear-refinement-20261103/references/<id>/` | TASK-039 | Staged references. `REFERENCE.json` gives the identity. `objects/<sha256>` holds the bytes, addressed by content. |
+| `clear-refinement-20261103/references/<id>/REFERENCE.json` | TASK-039 | Staged-reference hash manifest: identity, the pinned manifest hash, and `path -> sha256` for every staged object. No object bytes are committed. |
 | `task-NNN/required-cases.json` | that task | The exact required case identities for each verification check. |
 | `task-NNN/results/<check>.json` | generated | Deterministic receipt written by the guard. Never edit it by hand. |
 
+## Reference object store (outside Git)
+
+Owner decision, 2026-11-09: staged reference objects are never committed to this repository,
+because GitHub storage growth is not acceptable. Only the small hash manifests above are committed.
+The object bytes live outside Git in the Runner body evidence location, addressed by content:
+
+```text
+<store>/clear-refinement-20261103/references/<id>/objects/<sha256>
+```
+
+The verifiers find `<store>` like this:
+
+1. `CLEAR_REFINEMENT_EVIDENCE_DIR`, when set (absolute, or relative to the working directory).
+2. Otherwise, the Runner V2 layout. The git worktree root is `<runner body>/worktrees/<task>`, so
+   the store is `<runner body>/evidence`, two levels above the worktree root.
+
+The check fails closed and names the expected location when any of these hold:
+
+- the store is absent;
+- this body's objects are absent;
+- an object is missing;
+- an object's sha256 does not match its manifest.
+
+Nothing falls back to passing. Checks that verify references therefore run only where the body
+folder exists. Pinned gallery files that equal the integration base still resolve from that
+commit's git blob. Neither an unpublished commit nor an owner-machine path is ever needed.
+
+To restage, use the one-time tool. It checks every byte against the approved requirements manifest
+and writes objects to the store and manifests to this directory:
+
+```sh
+node scripts/refinement/stage-references.mjs --approved-run <requirements run dir>
+```
+
 ## Staged references (resolved by identity)
 
-- `accepted-gallery`: gallery commit `eded158cfd928d382c9a9409e2c372270312741d` on base `03087f7`. `PINNED-SOURCE.json` is staged verbatim and its hash matches the approved requirements source manifest. 1,190 pinned files and 3 excluded archived templates are verified. The 94 files that differ from the base are staged objects. Every other file resolves from the integration base's git blob. The unpublished gallery commit object is never needed.
+- `accepted-gallery`: gallery commit `eded158cfd928d382c9a9409e2c372270312741d` on base `03087f7`. `PINNED-SOURCE.json` is a store object. Its hash `a1b1f93b…` is committed in `REFERENCE.json` and matches the approved requirements source manifest. 1,190 pinned files and 3 excluded archived templates are verified. The 94 files that differ from the base are store objects, listed in `stagedObjects`. Every other file resolves from the integration base's git blob. The unpublished gallery commit object is never needed.
 - `phosphor-echo`: the pinned effects intake and selected preset (PRE-002 / TASK-033 supporting input).
 - `historical-comparisons`: `SOURCE.json` for verified main and reviewed R7, plus the reviewed-versus-main source delta.
 
@@ -27,9 +61,11 @@ node scripts/refinement/verify-delivery-evidence.mjs --body clear-refinement-202
   --reference accepted-gallery --show docs/design/library/refinements-2026-11-04/REUSE.md
 ```
 
-`--show` prints a file only after every pinned hash of that reference has been verified. Some
-supplied documents mention owner-machine paths as provenance text. Nothing resolves through those
-paths.
+`--show` prints a file only after every pinned hash of that reference has been verified. Guide
+locations are identities: `store:<body>/references/<id>/objects/<sha256>` or `git:<base>:<path>`.
+Some supplied documents (for example PINNED-SOURCE.json and GALLERY-DELIVERY.json) mention
+owner-machine paths as provenance text. They are store objects, never committed, and nothing
+resolves through those paths.
 
 ## Required-case manifest
 
@@ -57,8 +93,10 @@ paths.
 - Every target needs at least one required case. Cases outside the declared set are counted but
   not required, for example cases skipped by `--testNamePattern` or `--grep`.
 - `purpose: "setup"` marks bootstrap/baseline checks. Final mode never accepts them as delivery.
-- With node:test and several targets, TAP cannot attribute a passing case to a file. Cases then
-  match by name, so keep names unique.
+- A required case matches only by its exact identity: file, name and (Playwright) project, never
+  by name alone. node:test TAP carries no file for a passing case. The guard therefore runs each
+  node:test target as its own `node --test` invocation and attributes its cases to that file. A
+  case declared for `a.test.mjs` cannot pass because a same-named case ran in `b.test.mjs`.
 
 ## Guard
 
@@ -77,6 +115,7 @@ The guard rejects the run when any of these hold:
 - the run executes zero cases or only skipped cases (this includes node's synthetic pass for a file
   with no tests);
 - a requested file was never collected;
+- a native case cannot be attributed to a file;
 - a required case is missing, skipped, todo, failed, flaky or an expected failure.
 
 These rules were rehearsed against the installed Vitest 4.1 JSON, Playwright 1.63 JSON and Node 24
@@ -86,8 +125,9 @@ TAP formats.
 
 - `baseline`: checks that the integration base exists and is an ancestor of HEAD, that Foundation
   0.14.3 is unchanged from the base, how the historical comparisons relate to the base, and that
-  task manifests are valid. It needs no delivery receipt. `--require-current-source` also verifies
-  every staged reference byte for byte.
+  task manifests are valid. It needs no delivery receipt and no object store.
+  `--require-current-source` also verifies every staged reference byte for byte, so it needs the
+  object store.
 - `references [--reference <id>]`: verifies the staged references and prints their guides.
 - `final --tasks TASK-001,... | --all-tasks`: runs baseline and every reference, then requires each
   delivery check's receipt to pass and be current. The manifest and target hashes must be unchanged

@@ -73,7 +73,7 @@ function substantive(lines) {
   return lines.map((line) => line.replace(/^[-*>\s]+/, '').trim()).filter((line) => line.length >= 12)
 }
 
-export function verifyDefinitionRecord({ cwd = process.cwd(), task, record, requireSections = [], body = DEFAULT_BODY, evidenceRoot }) {
+export function verifyDefinitionRecord({ cwd = process.cwd(), task, record, requireSections = [], body = DEFAULT_BODY, evidenceRoot, store }) {
   const problems = []
   const recordPath = record ?? defaultRecordPath(task, body)
   const absolute = resolve(cwd, recordPath)
@@ -131,10 +131,12 @@ export function verifyDefinitionRecord({ cwd = process.cwd(), task, record, requ
         baseRecord ??= loadBody({ evidenceRoot: root, body }).record
         if (baseRecord) bytes = readBaseBlobs(cwd, baseRecord.integrationBase.commit, [path]).get(path) ?? null
       } else {
-        references ??= verifyReferences({ cwd, evidenceRoot: root, body })
+        // ref: sources resolve through the out-of-Git object store (fails closed).
+        references ??= verifyReferences({ cwd, evidenceRoot: root, body, store })
         const [id, ...rest] = path.split('/')
         const ref = references.references.find((candidate) => candidate.id === id)
         if (ref && ref.result.problems.length === 0) bytes = ref.result.files.get(rest.join('/'))?.bytes ?? null
+        else if (bytes === null && references.problems.length) problems.push(...references.problems.filter((p) => !problems.includes(p)))
       }
     }
     if (bytes === null) {

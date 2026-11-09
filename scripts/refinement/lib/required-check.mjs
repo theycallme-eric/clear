@@ -212,6 +212,9 @@ export function analyseCommand(argv, { cwd }) {
 
   const problems = []
   const targets = []
+  // Index of each target inside runnerArgs (for node:test, runnerArgs is
+  // `args`), so the guard can run one node:test target per invocation.
+  const targetIndices = []
   const valueFlags = VALUE_FLAGS[runner]
   for (let index = 0; index < runnerArgs.length; index += 1) {
     const arg = runnerArgs[index]
@@ -228,10 +231,11 @@ export function analyseCommand(argv, { cwd }) {
     }
     if (runner === 'node-test' && arg === '--test') continue
     targets.push(arg)
+    targetIndices.push(index)
   }
   if (targets.length === 0) problems.push('the command names no target files; name every required file explicitly')
   if (problems.length) throw new GuardError(problems)
-  return { runner, executable, args: args, runnerArgs, targets }
+  return { runner, executable, args: args, runnerArgs, targets, targetIndices }
 }
 
 /** Repository-relative form of a command target (drops a Playwright :line suffix). */
@@ -325,21 +329,28 @@ export function evaluateResults({ check, parsed, targets, exitCode, startedAt })
   if (totals.total === 0) problems.push('zero execution: the native report contains no cases')
   else if (totals.executed === 0) problems.push('all skipped: no case executed')
 
+  // A case without a file cannot prove anything about a declared target.
+  // (node:test TAP carries no file for a passing case; the guard therefore
+  // runs each node:test target separately and attributes its cases.)
+  const unattributed = parsed.cases.filter((testCase) => testCase.file === null || testCase.file === undefined)
+  if (unattributed.length) {
+    problems.push(`${unattributed.length} native case(s) cannot be attributed to a file; required cases match only within their own file`)
+  }
+
   // Every requested target must have produced native results.
-  if (parsed.format !== 'node-tap' || targets.length === 1) {
-    for (const target of targets) {
-      const forTarget = parsed.cases.filter((testCase) => testCase.file === target)
-      if (forTarget.length === 0) problems.push(`requested target produced no native results: ${target}`)
-      else if (!forTarget.some((testCase) => testCase.status === 'passed')) {
-        problems.push(`requested target executed no passing case: ${target}`)
-      }
+  for (const target of targets) {
+    const forTarget = parsed.cases.filter((testCase) => testCase.file === target)
+    if (forTarget.length === 0) problems.push(`requested target produced no native results: ${target}`)
+    else if (!forTarget.some((testCase) => testCase.status === 'passed')) {
+      problems.push(`requested target executed no passing case: ${target}`)
     }
   }
 
+  // Exact identity: name, file and (Playwright) project. Never by name alone.
   const requiredCases = check.cases.map((required) => {
     const matches = parsed.cases.filter((actual) =>
       actual.name === required.name &&
-      (parsed.format === 'node-tap' && actual.file === null ? true : actual.file === required.file) &&
+      actual.file === required.file &&
       (required.project === undefined || actual.project === required.project))
     let status
     if (matches.length === 0) status = 'missing'
@@ -414,37 +425,79 @@ export function runRequiredCheck({
   }
   if (problems.length) return finish({ problems })
 
-  const reportDir = mkdtempSync(join(tmpdir(), 'required-check-'))
-  const reportPath = join(reportDir, analysis.runner === 'node-test' ? 'report.tap' : 'report.json')
-  const existedBefore = existsSync(reportPath)
-  const { args, env: extraEnv } = instrument(analysis, reportPath)
-  const childEnv = { ...env }
-  // A guard started inside a node:test process inherits NODE_TEST_CONTEXT,
-  // which makes a nested `node --test` stream to the parent instead of
-  // writing its own reporter output. Each guarded run is a top-level run.
-  delete childEnv.NODE_TEST_CONTEXT
-  for (const [key, value] of Object.entries(extraEnv)) {
-    if (value === undefined) delete childEnv[key]
-    else childEnv[key] = value
+  let runStartedAt
+  // node:test TAP gives no file for a passing case, so each node:test target
+  // runs as its own invocation and its cases are attributed to that file.
+  // Vitest and Playwright report files natively and run once.
+  const runs = analysis.runner === 'node-test' && targets.length > 1
+    ? targets.map((target, position) => ({
+      args: analysis.args.filter((_, index) =>
+        !analysis.targetIndices.some((targetIndex, other) => other !== position && targetIndex === index)),
+      targets: [target],
+    }))
+    : [{ args: analysis.args, targets }]
+  const merged = { format: null, cases: [], syntheticFileCases: [], fileErrors: [], startTime: null }
+  const outputs = { stdout: '', stderr: '' }
+  let exitCode = 0
+  let parsedAll = true
+  for (const run of runs) {
+    const once = runOnce(run)
+    outputs.stdout += once.stdout
+    outputs.stderr += once.stderr
+    if (once.exitCode !== 0 && exitCode === 0) exitCode = once.exitCode
+    if (!once.parsed) {
+      parsedAll = false
+      continue
+    }
+    merged.format = once.parsed.format
+    merged.cases.push(...once.parsed.cases)
+    merged.syntheticFileCases.push(...(once.parsed.syntheticFileCases ?? []))
+    merged.fileErrors.push(...(once.parsed.fileErrors ?? []))
+    if (once.parsed.startTime !== null && once.parsed.startTime !== undefined) {
+      merged.startTime = merged.startTime === null ? once.parsed.startTime : Math.min(merged.startTime, once.parsed.startTime)
+    }
   }
-  const startedAt = Date.now()
-  const child = spawnSync(analysis.executable, args, { cwd, env: childEnv, stdio, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
-  const exitCode = child.error ? -1 : child.status ?? -1
-  if (child.error) problems.push(`runner could not start: ${child.error.message}`)
   let evaluation = null
-  try {
-    const text = readFreshReport(reportPath, { startedAt, existedBefore })
-    const parsed = parseReport(analysis.runner, text, { cwd, targets })
-    evaluation = evaluateResults({ check, parsed, targets, exitCode, startedAt })
+  if (parsedAll) {
+    evaluation = evaluateResults({ check, parsed: merged, targets, exitCode, startedAt: runStartedAt })
     problems.push(...evaluation.problems)
-  } catch (error) {
-    if (!(error instanceof GuardError)) throw error
-    if (exitCode !== 0) problems.push(`runner exited with code ${exitCode}`)
-    problems.push(...error.problems)
-  } finally {
-    rmSync(reportDir, { recursive: true, force: true })
+  } else if (exitCode !== 0 && !problems.includes(`runner exited with code ${exitCode}`)) {
+    problems.push(`runner exited with code ${exitCode}`)
   }
+  const child = outputs
   return finish({ problems, evaluation, targets, child })
+
+  function runOnce({ args: runArgs, targets: runTargets }) {
+    const reportDir = mkdtempSync(join(tmpdir(), 'required-check-'))
+    const reportPath = join(reportDir, analysis.runner === 'node-test' ? 'report.tap' : 'report.json')
+    const existedBefore = existsSync(reportPath)
+    const { args: instrumented, env: extraEnv } = instrument({ ...analysis, args: runArgs }, reportPath)
+    const childEnv = { ...env }
+    // A guard started inside a node:test process inherits NODE_TEST_CONTEXT,
+    // which makes a nested `node --test` stream to the parent instead of
+    // writing its own reporter output. Each guarded run is a top-level run.
+    delete childEnv.NODE_TEST_CONTEXT
+    for (const [key, value] of Object.entries(extraEnv)) {
+      if (value === undefined) delete childEnv[key]
+      else childEnv[key] = value
+    }
+    const startedAt = Date.now()
+    runStartedAt ??= startedAt
+    const spawned = spawnSync(analysis.executable, instrumented, { cwd, env: childEnv, stdio, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 })
+    const code = spawned.error ? -1 : spawned.status ?? -1
+    if (spawned.error) problems.push(`runner could not start: ${spawned.error.message}`)
+    let parsed = null
+    try {
+      const text = readFreshReport(reportPath, { startedAt, existedBefore })
+      parsed = parseReport(analysis.runner, text, { cwd, targets: runTargets })
+    } catch (error) {
+      if (!(error instanceof GuardError)) throw error
+      problems.push(...error.problems.map((problem) => (runs.length > 1 ? `${problem} (${runTargets[0]})` : problem)))
+    } finally {
+      rmSync(reportDir, { recursive: true, force: true })
+    }
+    return { exitCode: code, parsed, stdout: spawned.stdout ?? '', stderr: spawned.stderr ?? '' }
+  }
 
   function finish({ problems: found, evaluation: judged = null, targets: requested = [], child: spawned = null }) {
     const ok = found.length === 0

@@ -2,14 +2,23 @@
 // for the clear-refinement-20261103 body (TASK-039).
 //
 // References are resolved by identity, never by an owner-machine path:
-//   - a staged object is stored once under references/<id>/objects/<sha256>;
+//   - the repository commits only small hash manifests (BODY.json and
+//     references/<id>/REFERENCE.json);
+//   - staged object bytes live OUTSIDE Git in the body evidence object store
+//     (owner decision 2026-11-09: no reference objects in the product repo),
+//     at <store>/<body>/references/<id>/objects/<sha256>;
 //   - a pinned gallery file whose bytes equal the verified integration base
-//     is resolved from the base commit's git blob instead of being copied.
+//     is resolved from the base commit's git blob instead of being staged.
 // Every resolved byte string is hashed and compared with the pinned hash.
+// A missing store, a missing object or a hash mismatch always fails closed.
+//
+// Store location: $CLEAR_REFINEMENT_EVIDENCE_DIR when set, otherwise the
+// Runner V2 layout: the git worktree root is <runner body>/worktrees/<task>,
+// so the store is <runner body>/evidence (two levels above the worktree).
 
 import { execFileSync, spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { join, relative, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 
 import { sha256 } from './required-check.mjs'
 
@@ -18,6 +27,45 @@ export const REFERENCE_SCHEMA = 'clear-refinement-staged-reference/v1'
 const HEX40 = /^[0-9a-f]{40}$/
 const HEX64 = /^[0-9a-f]{64}$/
 const OWNER_PATH = /(^|["'\s])(\/Users\/|\/home\/|[A-Za-z]:\\\\)/
+
+export const OBJECT_STORE_ENV = 'CLEAR_REFINEMENT_EVIDENCE_DIR'
+const STORE_LAYOUT = '<runner body>/worktrees/<task> -> <runner body>/evidence'
+
+/**
+ * Locate the out-of-Git reference object store. Returns { dir, source } and,
+ * when it cannot be located or does not exist, a `problem` explaining where
+ * it was expected. Never falls back to any other location.
+ */
+export function resolveObjectStore({ cwd = process.cwd(), env = process.env } = {}) {
+  const override = env[OBJECT_STORE_ENV]
+  let dir
+  let source
+  if (override) {
+    dir = resolve(cwd, override)
+    source = `${OBJECT_STORE_ENV} override`
+  } else {
+    let top
+    try {
+      top = git(cwd, ['rev-parse', '--show-toplevel'])
+    } catch {
+      return {
+        dir: null,
+        source: 'layout',
+        problem: `reference object store cannot be located: ${cwd} is not inside a git worktree (layout ${STORE_LAYOUT}); set ${OBJECT_STORE_ENV}`,
+      }
+    }
+    dir = resolve(top, '..', '..', 'evidence')
+    source = `layout ${STORE_LAYOUT}`
+  }
+  if (!existsSync(dir)) {
+    return {
+      dir,
+      source,
+      problem: `reference object store is absent: expected ${dir} (${override ? source : `${source}; or set ${OBJECT_STORE_ENV}`}). Staged objects are not committed to the repository, so references cannot verify without it`,
+    }
+  }
+  return { dir, source }
+}
 
 export function bodyDir(evidenceRoot, body) {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(body)) throw new Error(`invalid body id "${body}"`)
@@ -140,56 +188,79 @@ export function verifyBaseline({ cwd, record }) {
 /**
  * Verify one staged reference. Returns { problems, files, guides } where
  * `files` maps logical path → { sha256, location } and location is either a
- * repository-relative object path or `git:<base>:<path>`.
+ * `store:<body>/references/<id>/objects/<sha256>` (out-of-Git object store)
+ * or `git:<base>:<path>` (integration base blob).
  */
-export function verifyReference({ cwd, dir, record: body, entry }) {
+export function verifyReference({ cwd, dir, record: body, entry, store }) {
   const problems = []
   const where = `reference ${entry.id}`
+  const empty = (found) => ({ problems: found, files: new Map(), guides: {} })
   const recordPath = join(dir, entry.record)
-  if (!existsSync(recordPath)) return { problems: [`${where}: record is absent (${entry.record})`], files: new Map(), guides: {} }
+  if (!existsSync(recordPath)) return empty([`${where}: record is absent (${entry.record})`])
   const recordBytes = readFileSync(recordPath)
   if (sha256(recordBytes) !== entry.sha256) problems.push(`${where}: record bytes do not match the body record hash`)
   if (OWNER_PATH.test(recordBytes.toString('utf8'))) problems.push(`${where}: record contains an owner-machine absolute path`)
   const record = JSON.parse(recordBytes.toString('utf8'))
   if (record.schema !== REFERENCE_SCHEMA) problems.push(`${where}: schema must be ${REFERENCE_SCHEMA}`)
   if (record.id !== entry.id) problems.push(`${where}: record identifies ${record.id}`)
-  const refDir = join(dir, 'references', entry.id)
-  const objectPath = (hash) => join(refDir, 'objects', hash)
+
+  // Fail closed: no store, no verification.
+  const objectStore = store ?? resolveObjectStore({ cwd })
+  if (objectStore.problem) return empty([...problems, `${where}: ${objectStore.problem}`])
+  const objectsRel = `${body.body}/references/${entry.id}/objects`
+  const objectsDir = join(objectStore.dir, objectsRel)
+  if (!existsSync(objectsDir)) {
+    return empty([...problems, `${where}: staged objects are absent from the reference object store: expected ${objectsDir} (${objectStore.source})`])
+  }
+  const objectPath = (hash) => join(objectsDir, hash)
+  const objectLocation = (hash) => `store:${objectsRel}/${hash}`
+  /** Read one staged object by hash; null (with a problem) when absent. */
+  const readObject = (path, hash) => {
+    if (!existsSync(objectPath(hash))) {
+      problems.push(`${where}: staged object for ${path} is missing from the reference object store: expected ${objectPath(hash)}`)
+      return null
+    }
+    return readFileSync(objectPath(hash))
+  }
   const base = body.integrationBase.commit
 
-  // Expected files: [{ path, sha256, bytes?, allowBase }]
+  // Expected files: [{ path, sha256, bytes?, staged }]
   let expected = []
   let pinned = null
   if (record.manifest?.format === 'pinned-source') {
-    const manifestPath = join(refDir, record.manifest.file)
-    if (!existsSync(manifestPath)) {
-      problems.push(`${where}: pinned manifest ${record.manifest.file} is absent`)
-    } else {
-      const manifestBytes = readFileSync(manifestPath)
+    const manifestName = record.manifest.name ?? 'pinned manifest'
+    const manifestBytes = HEX64.test(record.manifest.sha256 ?? '') ? readObject(manifestName, record.manifest.sha256) : null
+    if (!HEX64.test(record.manifest.sha256 ?? '')) problems.push(`${where}: pinned manifest has no sha256 identity`)
+    if (manifestBytes) {
       if (sha256(manifestBytes) !== record.manifest.sha256) {
-        problems.push(`${where}: ${record.manifest.file} bytes do not match the approved hash ${record.manifest.sha256}`)
+        problems.push(`${where}: ${manifestName} bytes do not match the approved hash ${record.manifest.sha256} (${objectLocation(record.manifest.sha256)})`)
+      } else {
+        pinned = JSON.parse(manifestBytes.toString('utf8'))
       }
-      pinned = JSON.parse(manifestBytes.toString('utf8'))
+    }
+    if (pinned) {
       if (pinned.galleryCommit !== record.identity?.commit) problems.push(`${where}: pinned gallery commit ${pinned.galleryCommit} is not ${record.identity?.commit}`)
       if (pinned.productBase !== base) problems.push(`${where}: pinned product base ${pinned.productBase} is not the integration base ${base}`)
-      expected = (pinned.files ?? []).map((file) => ({ ...file, allowBase: true }))
-      for (const excluded of pinned.excludedArchivedTemplates ?? []) {
-        expected.push({ ...excluded, allowBase: true, baseOnly: true })
+      const staged = new Map((record.stagedObjects ?? []).map((object) => [object.path, object.sha256]))
+      const pinnedByPath = new Map((pinned.files ?? []).map((file) => [file.path, file.sha256]))
+      for (const [path, hash] of staged) {
+        if (pinnedByPath.get(path) !== hash) problems.push(`${where}: staged object ${path} is not pinned with hash ${hash}`)
       }
+      expected = (pinned.files ?? []).map((file) => ({ ...file, staged: staged.has(file.path) }))
+      for (const excluded of pinned.excludedArchivedTemplates ?? []) expected.push({ ...excluded, staged: false })
       if (expected.length === 0) problems.push(`${where}: pinned manifest lists no files`)
     }
   } else if (record.manifest?.format === 'inline') {
-    expected = (record.files ?? []).map((file) => ({ ...file, allowBase: false }))
+    expected = (record.files ?? []).map((file) => ({ ...file, staged: true }))
     if (expected.length === 0) problems.push(`${where}: inline reference lists no files`)
   } else {
     problems.push(`${where}: unknown manifest format ${record.manifest?.format}`)
   }
 
   const files = new Map()
-  const needBase = expected.filter((file) => file.baseOnly || (file.allowBase && !existsSync(objectPath(file.sha256))))
   let blobs = new Map()
   try {
-    blobs = readBaseBlobs(cwd, base, needBase.map((file) => file.path))
+    blobs = readBaseBlobs(cwd, base, expected.filter((file) => !file.staged).map((file) => file.path))
   } catch (error) {
     problems.push(`${where}: cannot read integration base blobs: ${error.message}`)
   }
@@ -198,18 +269,19 @@ export function verifyReference({ cwd, dir, record: body, entry }) {
       problems.push(`${where}: ${file.path} has no sha256 pin`)
       continue
     }
-    let bytes = null
-    let location = null
-    if (!file.baseOnly && existsSync(objectPath(file.sha256))) {
-      bytes = readFileSync(objectPath(file.sha256))
-      location = relative(cwd, objectPath(file.sha256)).split('\\').join('/')
-    } else if (file.allowBase) {
+    let bytes
+    let location
+    if (file.staged) {
+      bytes = readObject(file.path, file.sha256)
+      location = objectLocation(file.sha256)
+      if (bytes === null) continue
+    } else {
       bytes = blobs.get(file.path) ?? null
       location = `git:${base}:${file.path}`
-    }
-    if (bytes === null) {
-      problems.push(`${where}: ${file.path} is not staged and not resolvable from the integration base`)
-      continue
+      if (bytes === null) {
+        problems.push(`${where}: ${file.path} is not resolvable from the integration base`)
+        continue
+      }
     }
     const actual = sha256(bytes)
     if (actual !== file.sha256 || (file.bytes !== undefined && bytes.length !== file.bytes)) {
@@ -251,18 +323,23 @@ export function verifyReference({ cwd, dir, record: body, entry }) {
 }
 
 /** Verify every (or the selected) staged reference of a body. */
-export function verifyReferences({ cwd, evidenceRoot, body, only }) {
+export function verifyReferences({ cwd, evidenceRoot, body, only, store }) {
   const loaded = loadBody({ evidenceRoot, body })
   const problems = [...loaded.problems]
   const references = []
   if (!loaded.record) return { problems, references, body: loaded }
   const entries = loaded.record.references ?? []
   const selected = only ? entries.filter((entry) => entry.id === only) : entries
+  const objectStore = store ?? resolveObjectStore({ cwd })
   if (only && selected.length === 0) problems.push(`body ${body} has no staged reference "${only}"`)
+  if (objectStore.problem) {
+    problems.push(objectStore.problem)
+    return { problems, references, body: loaded, store: objectStore }
+  }
   for (const entry of selected) {
-    const result = verifyReference({ cwd, dir: loaded.dir, record: loaded.record, entry })
+    const result = verifyReference({ cwd, dir: loaded.dir, record: loaded.record, entry, store: objectStore })
     problems.push(...result.problems)
     references.push({ id: entry.id, result })
   }
-  return { problems, references, body: loaded }
+  return { problems, references, body: loaded, store: objectStore }
 }
