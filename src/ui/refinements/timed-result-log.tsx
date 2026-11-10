@@ -71,6 +71,13 @@
  * offered. The AMRAP's "Reps into the next round" stays beside them: neither
  * is derived from the other.
  *
+ * TASK-017 (C05, C42; R108, R109, R111) gives the form the shared logging
+ * rhythm (`presentation.css` over `tokens.css`): each per-movement group is a
+ * complete movement group, a little further from the next than the log's other
+ * sections; every choice legend (Work completed, Effort) stands at the label
+ * gap a labelled field keeps; the ladder's count stands at the count gap after
+ * its tiles. Presentation only: no field, answer or saved value changes.
+ *
  * Shaped to be extended by the later owners of the same form rather than
  * replaced: the family is the `format` discriminant, and each later family or
  * group joins this form under the same title and group recipe — the EMOM's
@@ -249,11 +256,15 @@ function ResultGroup({ children }: { children: ReactNode }) {
 /**
  * TASK-015: one movement's group — the accepted per-movement group, titled by
  * the movement's name (the one title the simple hierarchy keeps, because a
- * movement's fields are that movement's), its fields at the movement gap.
+ * movement's fields are that movement's), its fields at the movement field gap.
+ * TASK-017 (C05, R111): it is one complete movement group of the shared
+ * logging rhythm (`.clr-logging-movement`), so a second movement's group sits
+ * slightly further from the first than the log's other sections do, while the
+ * fields inside one stay together.
  */
 function MovementGroup({ exerciseId, name, children }: { exerciseId: string; name: string; children: ReactNode }) {
   return (
-    <HeadingSection className="clr-timed-log__group clr-timed-log__group--movement" data-timed-movement={exerciseId}>
+    <HeadingSection className="clr-timed-log__group clr-timed-log__group--movement clr-logging-movement" data-timed-movement={exerciseId}>
       <Heading className="clr-timed-log__group-title">{name}</Heading>
       {children}
     </HeadingSection>

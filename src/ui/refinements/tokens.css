@@ -27,11 +27,26 @@
   --countdown-warning-opacity-min: .2;
   --countdown-warning-opacity-max: .8;
   --countdown-warning-opacity-still: .5;
-  /* TASK-015 (C37; REUSE.md "separate movement groups"): the gap between the
-   * fields of one movement's group in a timed log — its completed amount and
-   * its load — tighter than the result group's field gap, so the two read as
-   * one movement. The accepted reference's value. */
+  /* TASK-015 (C37): the gap between the fields of one movement's group in a
+   * timed log — its completed amount and its load — tighter than the result
+   * group's field gap, so the two read as one movement. (TASK-015 introduced
+   * the value under `--logging-movement-gap`; TASK-017 gives that name back to
+   * the reference's meaning below and keeps this value, unchanged.) */
+  --logging-movement-field-gap: var(--spacing-300);
+  /* TASK-017 (C05, C42; R108, R109, R111; REUSE.md "label/control rhythm,
+   * separate movement groups and completion count"): the accepted reference's
+   * logging rhythm.
+   *   · movement gap — the extra space between two complete movement-entry
+   *     groups (identity, Performed, measurements and effort stay together),
+   *     added to the form's own gap between them, never between the fields of
+   *     one movement;
+   *   · label gap — a choice group's legend to its controls, the same rhythm a
+   *     labelled field keeps between its label and its control;
+   *   · count gap — the ladder log's rung tiles to their dynamic completion
+   *     count: supporting status after a control, wider than a label gap. */
   --logging-movement-gap: var(--spacing-300);
+  --logging-label-gap: var(--spacing-200);
+  --logging-count-gap: var(--spacing-400);
   /* TASK-018 (C44, C57; R16; REUSE.md "one stationary frame and inner
    * scroll"): the focused logging frame's width cap, the space it leaves
    * around itself in the visible viewport (its height is the rest, never a

@@ -11,8 +11,9 @@
  *   · a `Log set N` / `Edit set N` title — `Log round N` for a superset's
  *     round (REQ-016) — with the top collapse chevron, the sheet's one
  *     minimise control;
- *   · the movement's context, then the running rest if there is one, drawn
- *     with the shared timer card rather than by recolouring the sheet;
+ *   · the movement's context (none on a superset's round), then the running
+ *     rest if there is one, drawn with the shared timer card rather than by
+ *     recolouring the sheet;
  *   · the measurement row and the set's optional effort (`set-effort.tsx`),
  *     both supplied by the logger that owns the draft;
  *   · one full-width Log set, or Cancel / Save correction as a pair — and,
@@ -119,8 +120,13 @@ export interface SetLoggingSheetProps {
   entryName?: string
   /** The form's accessible name — `Log set 2 of back squat`. */
   formLabel: string
-  /** The movement, its prescription and its equipment, in one line. */
-  context: ReactNode
+  /**
+   * The movement, its prescription and its equipment, in one line. Omitted
+   * where the form names its movements itself — a superset's round, whose
+   * groups each carry their own line (TASK-017: C47, R112, no instruction in
+   * its place).
+   */
+  context?: ReactNode
   /** The compact measurement row — see `SetMeasurementRow`. */
   measures: ReactNode
   /** The per-set effort, inserted between the measures and the action. */
@@ -222,7 +228,7 @@ export function SetLoggingSheet({
             />
           </div>
 
-          <p style={CONTEXT_STYLE}>{context}</p>
+          {context === undefined || context === null ? null : <p style={CONTEXT_STYLE}>{context}</p>}
 
           {rest === undefined ? <RestTimerBar /> : rest}
 
