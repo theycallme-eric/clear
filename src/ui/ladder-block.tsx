@@ -5,9 +5,20 @@
  * `ladder-for-time.md` opens with the defect this renderer exists to end: the
  * old card repeated `"2-4-6-8-10-8-6-4-2 each reps"` on *every* movement line,
  * which is both unreadable and a second source of truth for a pattern that
- * belongs to the block. So the hierarchy here is the spec's three tiers —
- * **LADDER** (the pattern, once) · **EACH RUNG** (what is performed at each of
- * those numbers) · the movements, named and nothing more.
+ * belongs to the block.
+ *
+ * **The compact prescription** (TASK-012; C35; R70, R71, R72, R94, R95, R117).
+ * Every ladder — legacy or explicitly timed — states its prescription through
+ * the one shared owner, `LadderPrescription` (`refinements/ladder.tsx`): one
+ * concise line per movement for the whole progression (`2 → 24 reps · +2 per
+ * round`, the fixed companion's `4 reps`), then every round as a compact tile
+ * in the ×/· notation, the fixed companion in each. It replaces the read-only
+ * rung row, the "Each rung" caption, the movement rows with their "between
+ * each rung" annotation and the long per-round list with its "— same every
+ * round" suffix, which all said the same pattern again (R70, R95). The rung
+ * row is drawn only once the athlete's answer needs it — the reached reading
+ * of a Complete, and the "How far did you get?" question of an Incomplete —
+ * until TASK-013 moves both into the result log.
  *
  * The rungs come from `target_sequence`, an `int[]`, through `state/ladder.ts`.
  * Nothing in this file splits a string, because the schema holds no string to
@@ -87,7 +98,6 @@ import {
 import {
   explicitLadderTiming,
   ladderCapSeconds,
-  ladderMovements,
   ladderRoundPlan,
   ladderRungs,
   ladderUnit,
@@ -96,20 +106,18 @@ import {
   type LadderRung,
 } from '../state/ladder'
 import { scheduleIntervalDeadline } from '../state/countdown-urgency'
-import { prescribedTarget, targetText } from '../state/prescription'
 import type { LadderTiming } from '../state/schemas'
 import { useShellWeightUnit } from '../state/set-logging'
 import { formatCountdownReading } from '../state/timed-clock'
 import { finishLabel, pauseClock, resumeClock } from '../state/timed-lifecycle'
 import { formatElapsed, useElapsedSeconds } from '../state/workout-clock'
 import { usePersistedForTime, type ShellStorage } from '../state/workout-persistence'
-import type { ExerciseProgress } from '../state/workout-progress'
 import type { BlockRendererProps } from './block-renderers'
 import { BlockPanel, type BlockMovementMarker } from './block-renderers-frame'
 import { ForTimeClock } from './for-time-block'
 import { LadderRungs } from './ladder-rungs'
 import { DeadlineTimer } from './refinements/deadline-timer'
-import { liveMovementReadings, type LiveMovementReadings } from './refinements/movement-readings'
+import { LadderPrescription, type LadderRoundContext } from './refinements/ladder'
 import { TimedResultLog } from './refinements/timed-result-log'
 import type { SetEffort } from './set-effort'
 import { TimedWorkoutActions } from './timed-workout-flow'
@@ -317,9 +325,9 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
   const result = useLadderResult(block, race.ended)
   const { ending, reached, setReached } = result
 
+  const weightUnit = useShellWeightUnit()
   const rungs = ladderRungs(block.exercises)
   const unit = ladderUnit(block.exercises)
-  const { laddered, interval } = ladderMovements(block.exercises)
 
   return (
     <BlockPanel
@@ -336,7 +344,7 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
 
           {rungs.length === 0 ? (
             // A ladder scheme with no sequence on any movement: the block is
-            // malformed, and saying so is better than drawing an empty rail.
+            // malformed, and saying so is better than drawing an empty grid.
             <BlockPanel.Note>
               This ladder prescribes no rungs — perform the movements as written.
             </BlockPanel.Note>
@@ -345,29 +353,12 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
           )}
 
           {/*
-            "Do all of these at each of those numbers." One movement needs no
-            such line — the rungs already imply it (quickfix spec §1).
+            TASK-012 (C35): the whole prescription, once — each movement's
+            progression or fixed target, then every rung as a round. With no
+            explicit timing the rounds are the ladder's own rungs; a block whose
+            movements carry no sequence still names them, with no rounds.
           */}
-          {laddered.length > 1 && <BlockPanel.Label>Each rung</BlockPanel.Label>}
-
-          <BlockPanel.MovementList label="Movements in this ladder">
-            {laddered.map((movement) => (
-              <BlockPanel.MovementItem key={movement.exerciseId}>
-                <LadderMovement movement={movement} companions={interval} />
-              </BlockPanel.MovementItem>
-            ))}
-            {/*
-              A block whose scheme is a ladder but whose movements carry no
-              sequence still has movements to name. They are listed plainly
-              rather than as companions to a ladder that does not exist.
-            */}
-            {laddered.length === 0 &&
-              interval.map((movement) => (
-                <BlockPanel.MovementItem key={movement.exerciseId}>
-                  <LadderMovement movement={movement} companions={[]} />
-                </BlockPanel.MovementItem>
-              ))}
-          </BlockPanel.MovementList>
+          <LadderPrescription exercises={block.exercises} weightUnit={weightUnit} />
 
           {/* TASK-010 (C29, C30): the ladder's result log, after its work. */}
           {result.log}
@@ -378,9 +369,15 @@ function LegacyLadder({ block, storage, now = Date.now }: ClockedLadderProps) {
 }
 
 /**
- * The rung row: the pattern while it is performed, the question once the user
- * says it stopped short (`ladder-for-time.md` §3, Path B). One row, two modes —
- * never both at once.
+ * The rung row, once the athlete's answer needs it: the question once they say
+ * it stopped short (`ladder-for-time.md` §3, Path B), and the climbed rungs once
+ * they say it was completed. One row, two modes — never both at once.
+ *
+ * TASK-012 (C35, R95): while the ladder is performed and unanswered nothing is
+ * drawn here — the compact prescription below already states every rung, and a
+ * second, scrolling row of the same numbers was the duplicate R95 rejects.
+ * Moving the question and the reached reading into the result log, as rep-first
+ * tiles, is TASK-013 (C33, C34, C36).
  */
 function RungsRow({
   rungs,
@@ -395,6 +392,8 @@ function RungsRow({
   reached: number | null
   onReach: (rung: number) => void
 }) {
+  if (ending === 'unanswered') return null
+
   if (ending === 'incomplete') {
     return (
       <LadderRungs
@@ -412,66 +411,9 @@ function RungsRow({
       rungs={rungs}
       unit={unit}
       label="Ladder"
-      // Read-only while the block is being performed, and still read-only once
-      // it is complete — with every rung climbed.
-      reached={ending === 'complete' ? rungs.length : null}
+      // Read-only once it is complete — with every rung climbed.
+      reached={rungs.length}
     />
-  )
-}
-
-/**
- * One movement of the ladder: its name, and nothing that repeats the pattern.
- *
- * The companions are the `ladder_fixed_interval` case — a fixed target
- * performed between each rung, which the spec says is an annotation under the
- * primary movement rather than a peer card of its own. Stated under every
- * laddered movement because it is performed between the rungs of the ladder,
- * which all of them share.
- */
-function LadderMovement({
-  movement,
-  companions,
-}: {
-  movement: ExerciseProgress
-  companions: readonly ExerciseProgress[]
-}) {
-  const weightUnit = useShellWeightUnit()
-  // R31, C10 (TASK-003): the same name, compact equipment and prescribed load
-  // Review shows, through its formatters and the profile's unit.
-  const readings = liveMovementReadings(movement.prescription, weightUnit)
-  return (
-    <BlockPanel.Movement
-      title={readings.name}
-      load={readings.load}
-      // C03, R132: the compact equipment beside the name, as Review shows it.
-      context={readings.equipment}
-    >
-      {companions.map((companion) => {
-        const companionReadings = liveMovementReadings(companion.prescription, weightUnit)
-        return (
-          <BlockPanel.Note key={companion.exerciseId}>
-            {targetText(companion.prescription)} {companionReadings.name}
-            <PrescribedLoad readings={companionReadings} /> between each rung
-          </BlockPanel.Note>
-        )
-      })}
-    </BlockPanel.Movement>
-  )
-}
-
-/**
- * C10 (TASK-003): a movement's prescribed load inside a ladder's target line,
- * ` · 15 kg`, read through `liveMovementReadings` like every other live
- * movement — a target, never a performed weight, and nothing when the
- * prescription carries no load or its `Bodyweight` is said by the equipment.
- */
-function PrescribedLoad({ readings }: { readings: LiveMovementReadings }) {
-  if (readings.load === null) return null
-  return (
-    <>
-      {' · '}
-      <span data-movement-load="">{readings.load}</span>
-    </>
   )
 }
 
@@ -585,11 +527,12 @@ function TimedLadder({
 }) {
   const result = useLadderResult(block, ended)
   const { ending, reached, setReached } = result
+  const weightUnit = useShellWeightUnit()
 
   const rungs = ladderRungs(block.exercises)
   const unit = ladderUnit(block.exercises)
-  const { laddered } = ladderMovements(block.exercises)
   const plan = ladderRoundPlan(block.exercises, timing)
+  const pacing = PACING_NOTES[timing.mode]
 
   return (
     <BlockPanel
@@ -616,15 +559,20 @@ function TimedLadder({
             <RungsRow rungs={rungs} unit={unit} ending={ending} reached={reached} onReach={setReached} />
           )}
 
-          <BlockPanel.MovementList label="Rounds in this ladder">
-            {plan.map((round) => (
-              <BlockPanel.MovementItem key={round.number} marker={roundMarker(round, live)}>
-                <LadderRound round={round} laddered={laddered} />
-              </BlockPanel.MovementItem>
-            ))}
-          </BlockPanel.MovementList>
+          {/*
+            TASK-012 (C35, R95): every round as a compact tile — its rung
+            target and the fixed companion work, the round count the timing's
+            own — instead of the long per-round list. A schedule's start and
+            its live round are still each tile's, from the block's own clock.
+          */}
+          <LadderPrescription
+            exercises={block.exercises}
+            rounds={timing.rounds}
+            weightUnit={weightUnit}
+            roundContext={(number) => roundContext(plan[number - 1], live)}
+          />
 
-          <BlockPanel.Note>{PACING_NOTES[timing.mode]}</BlockPanel.Note>
+          {pacing !== null && <BlockPanel.Note>{pacing}</BlockPanel.Note>}
 
           {live?.phase === 'complete' && (
             // The schedule is over, which is all the clock can say — not a
@@ -660,13 +608,22 @@ export function timingSummary(timing: LadderTiming, blockTimerSeconds: number | 
   }
 }
 
-export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string>> = {
+/**
+ * The one line of pacing a mode needs beyond its timing line, or none.
+ *
+ * TASK-012 (AC-R012-02; R71): the capped window's paragraph — "Move through the
+ * rounds at your own pace inside the cap. Nothing here moves on by itself — you
+ * say how far you got." — was crossed out and is removed, with nothing
+ * written in its place: the timing line already states the one cap, and the
+ * result log asks how far. The other modes' lines were not part of that
+ * removal and are unchanged.
+ */
+export const PACING_NOTES: Readonly<Record<LadderTiming['mode'], string | null>> = {
   scheduled_starts:
     'Each round starts on the clock. Whatever is left of its interval is your rest.',
   for_time:
     'Start each round when you finish the last. Nothing here moves on by itself — you say how far you got.',
-  capped_window:
-    'Move through the rounds at your own pace inside the cap. Nothing here moves on by itself — you say how far you got.',
+  capped_window: null,
 }
 
 /** The live round is `Now` and the one after it `Next`; only a schedule has either. */
@@ -678,56 +635,16 @@ function roundMarker(round: LadderRoundPlan, live: ScheduleView | null): BlockMo
 }
 
 /**
- * One round, precomputed: its start (scheduled only), each laddered movement's
- * target at this rung, and the companion work, unchanged every round.
+ * What a round's tile adds to its prescription: a schedule's own start for it
+ * and the live round's marker (`Now`, or `Next` before the schedule starts),
+ * both read from the block's clock. Free-paced and capped rounds have neither.
  */
-function LadderRound({
-  round,
-  laddered,
-}: {
-  round: LadderRoundPlan
-  laddered: readonly ExerciseProgress[]
-}) {
-  const weightUnit = useShellWeightUnit()
-  // C10 (TASK-003): each target line states the movement's prescribed load
-  // beside it, as Review does, through the same readings.
-  return (
-    <BlockPanel.Movement
-      title={`Round ${round.number}`}
-      detail={round.startSeconds === null ? undefined : `Starts at ${formatElapsed(round.startSeconds)}`}
-    >
-      {laddered.map((movement) => {
-        const readings = liveMovementReadings(movement.prescription, weightUnit)
-        return (
-          <BlockPanel.Note key={movement.exerciseId}>
-            {roundTarget(movement, round.number)} {readings.name}
-            <PrescribedLoad readings={readings} />
-          </BlockPanel.Note>
-        )
-      })}
-      {round.companions.map((companion) => {
-        const readings = liveMovementReadings(companion.prescription, weightUnit)
-        return (
-          <BlockPanel.Note key={companion.exerciseId}>
-            {targetText(companion.prescription)} {readings.name}
-            <PrescribedLoad readings={readings} />
-            {' '}— same every round
-          </BlockPanel.Note>
-        )
-      })}
-    </BlockPanel.Movement>
-  )
-}
-
-/** A movement's target at one rung, in its own unit and per-side wording. */
-function roundTarget(movement: ExerciseProgress, roundNumber: number): string {
-  const target = prescribedTarget(movement.prescription)
-  if (target?.kind !== 'sequence') return targetText(movement.prescription, target)
-
-  const value = target.rungs[roundNumber - 1]
-  return value === undefined
-    ? 'No target'
-    : targetText(movement.prescription, { kind: 'fixed', value })
+function roundContext(round: LadderRoundPlan | undefined, live: ScheduleView | null): LadderRoundContext | null {
+  if (round === undefined) return null
+  return {
+    marker: roundMarker(round, live),
+    detail: round.startSeconds === null ? null : `Starts at ${formatElapsed(round.startSeconds)}`,
+  }
 }
 
 /**

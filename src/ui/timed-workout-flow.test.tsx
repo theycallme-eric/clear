@@ -280,7 +280,10 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
     const rounds = within(card).getByRole('list', { name: TIMED_LISTS.ladder })
     expect(within(rounds).getAllByRole('listitem')).toHaveLength(LONG_LADDER_ROUNDS)
     expect(follows(rounds, row)).toBe(true)
-    expect(follows(within(card).getByRole('list', { name: 'Ladder' }), row)).toBe(true)
+    // TASK-012 (C35, R95): the prescription is the compact one — its summary,
+    // then the rounds — and no read-only rung row repeats it before an answer.
+    expect(follows(within(card).getByRole('list', { name: 'Movements in this ladder' }), row)).toBe(true)
+    expect(within(card).queryByRole('list', { name: 'Ladder' })).toBeNull()
     // Nothing of the work sits between the cap and the Start.
     const before = [...card.querySelectorAll('ul, ol, [data-movement-identity]')].filter((node) => follows(row, node))
     expect(before).toEqual([])
@@ -604,7 +607,8 @@ describe('TASK-006 timed Start/Pause/Resume/Finish action hierarchy', () => {
       const list = within(card).getByRole('list', { name: TIMED_LISTS.ladder })
       const items = within(list).getAllByRole('listitem')
       expect(items).toHaveLength(rounds)
-      expect(within(items[rounds - 1]).getByText(`${pushUpRungs(rounds)[rounds - 1]} reps push up`)).toBeInTheDocument()
+      // TASK-012 (R72, AC-R012-02): the round's target in the ×/· notation.
+      expect(within(items[rounds - 1]).getByText(`${pushUpRungs(rounds)[rounds - 1]} × push up`)).toBeInTheDocument()
 
       const row = card.querySelector<HTMLElement>('[data-timed-actions]')!
       expect(row).toHaveClass('clr-timed-actions')

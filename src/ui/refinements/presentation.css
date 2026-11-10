@@ -490,3 +490,104 @@ html[data-reduce-motion] .clr-deadline-edge {
     padding-inline: var(--spacing-200);
   }
 }
+
+/* The compact truthful ladder prescription — LadderPrescription /
+ * LadderRounds (TASK-012: C35; R70, R71, R72, R94, R95, R117; V11). The
+ * accepted R6 recipe (`?state=ladder-4`, `ladder-12`): one concise data line
+ * per movement, then every round as a read-only structure-framed tile in a
+ * grid that wraps into as many columns as fit — four rounds and twelve alike,
+ * never a horizontal scroller. A tile's lines wrap inside it rather than
+ * widening it. Tokens only. */
+.clr-ladder-prescription {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  min-width: 0;
+}
+
+.clr-ladder-prescription__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clr-ladder-prescription__summary > li {
+  min-width: 0;
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  color: var(--text-paragraph);
+  overflow-wrap: anywhere;
+}
+
+/* The movement's name leads its line, in the heading ink. */
+.clr-ladder-prescription__name {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* R132 / C03: the quiet compact equipment beside the name. */
+.clr-ladder-prescription__equipment {
+  font-weight: var(--font-weight-medium);
+  text-transform: capitalize;
+  color: var(--text-secondary);
+}
+
+.clr-ladder-prescription__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--control-height) * 2), 1fr));
+  gap: var(--spacing-200);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clr-ladder-prescription__grid > li {
+  display: flex;
+  min-width: 0;
+}
+
+.clr-ladder-prescription__round {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-100);
+  width: 100%;
+  min-width: 0;
+  padding: var(--spacing-200);
+  font-family: var(--font-data);
+  font-size: var(--label-xs-size);
+  line-height: var(--label-xs-line-height);
+  color: var(--text-paragraph);
+}
+
+/* The round's position and a schedule's Now / Next share one line. */
+.clr-ladder-prescription__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--spacing-200);
+  max-width: 100%;
+}
+
+/* The round's position, and a schedule's Now / Next: the DS label face. */
+.clr-ladder-prescription__label,
+.clr-ladder-prescription__marker {
+  font-size: var(--label-sm-size);
+  line-height: var(--label-sm-line-height);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  color: var(--text-card-label);
+}
+
+.clr-ladder-prescription__detail,
+.clr-ladder-prescription__entry {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

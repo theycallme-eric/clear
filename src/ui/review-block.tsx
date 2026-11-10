@@ -25,6 +25,7 @@ import {
   type ReviewSectionView,
 } from '../state/review'
 import { CollapsibleSection } from './collapsible-section'
+import { LadderRounds } from './refinements/ladder'
 import { MovementList } from './refinements/movement'
 import { WorkoutCard } from './refinements/workout-card'
 import { ReviewExerciseRow } from './review-exercise-row'
@@ -122,6 +123,12 @@ function ReviewBlockRows({
           <li key={exercise.key}>{row(exercise, sequenceOrdinal(index))}</li>
         ))}
       </MovementList>
+      {/*
+        TASK-012 (C35, JOURNEY-012): a ladder's rounds, read-only, under its
+        accepted movement rows — the same tiles and notation the live ladder
+        draws, so the athlete reads every round before starting.
+      */}
+      {block.ladderRounds !== null && <LadderRounds rounds={block.ladderRounds} />}
       {inRounds && block.roundRest !== null && (
         <p className="clr-text-data-xs" style={ROUND_REST_STYLE}>
           <Rest size={16} />

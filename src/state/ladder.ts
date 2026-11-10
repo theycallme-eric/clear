@@ -32,7 +32,16 @@
  * it.
  */
 import type { Enums } from '../data/database.types.ts'
-import { modalityUnit, prescribedTarget } from './prescription.ts'
+import {
+  exerciseName,
+  measuredText,
+  modalityUnit,
+  prescribedTarget,
+  targetNumbers,
+  targetText,
+  type PrescribedColumns,
+  type PrescribedTarget,
+} from './prescription.ts'
 import type { LadderTiming } from './schemas.ts'
 import type { BlockProgress, ExerciseProgress } from './workout-progress.ts'
 
@@ -92,16 +101,25 @@ export interface LadderRung {
  * whether a movement carries a sequence is what makes it part of the ladder,
  * not its position in the block.
  */
-export interface LadderMovements {
-  readonly laddered: readonly ExerciseProgress[]
-  readonly interval: readonly ExerciseProgress[]
+export interface LadderMovements<T extends LadderMember = ExerciseProgress> {
+  readonly laddered: readonly T[]
+  readonly interval: readonly T[]
 }
 
-export function ladderMovements(
-  exercises: readonly ExerciseProgress[],
-): LadderMovements {
-  const laddered: ExerciseProgress[] = []
-  const interval: ExerciseProgress[] = []
+/**
+ * Anything that carries a prescription's columns: the live shell's
+ * `ExerciseProgress`, or a composed `Prescription` Review reads before it is
+ * persisted (TASK-012) — one reader for both, as `prescription.ts` has.
+ */
+export interface LadderMember {
+  readonly prescription: PrescribedColumns
+}
+
+export function ladderMovements<T extends LadderMember>(
+  exercises: readonly T[],
+): LadderMovements<T> {
+  const laddered: T[] = []
+  const interval: T[] = []
 
   for (const exercise of exercises) {
     const target = prescribedTarget(exercise.prescription)
@@ -122,7 +140,7 @@ export function ladderMovements(
  * to them, which is a shorter ladder rather than a crash.
  */
 export function ladderRungs(
-  exercises: readonly ExerciseProgress[],
+  exercises: readonly LadderMember[],
 ): readonly LadderRung[] {
   const sequences = ladderMovements(exercises).laddered.flatMap((exercise) => {
     const target = prescribedTarget(exercise.prescription)
@@ -155,7 +173,7 @@ export function ladderRungs(
  * seconds, which the generation contract does not produce — no unit is
  * claimed, and the rungs are shown as the bare numbers they are.
  */
-export function ladderUnit(exercises: readonly ExerciseProgress[]): string {
+export function ladderUnit(exercises: readonly LadderMember[]): string {
   const units = new Set(
     ladderMovements(exercises).laddered.map((exercise) =>
       modalityUnit(exercise.prescription),
@@ -177,6 +195,123 @@ export function rungNumbers(rung: LadderRung): string {
 export function rungLabel(rung: LadderRung, unit: string): string {
   const numbers = rungNumbers(rung)
   return unit === '' ? numbers : `${numbers} ${unit}`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The compact prescription — TASK-012 (C35; R70, R71, R72, R94, R95, R117)
+// ─────────────────────────────────────────────────────────────────────────────
+//
+// The accepted R6 composition (`/gallery/refinements?state=ladder-4` and
+// `ladder-12`, eded158c…): one concise line per movement for the whole
+// progression, then every round as a compact tile naming each movement's
+// target in that round, the fixed companion included. Every number, unit and
+// name below is read from the prescription's own columns — the sequence by
+// index, never a template — so a descending, pyramid or inverse ladder is
+// stated as itself rather than as the screenshot's rising push up (R94).
+
+/** The minus sign, so a falling step reads as one, not as a dash. */
+const MINUS = '−'
+
+/**
+ * A movement's whole prescription in one concise reading (C35, R94).
+ *
+ *   · a sequence that rises or falls by one constant step: its ends and that
+ *     step — `2 → 24 reps · +2 per round`, `15 → 3 reps · −3 per round`;
+ *   · any other sequence (a pyramid, an uneven ladder): the actual sequence,
+ *     in the order performed — `20-40-60-40-20 sec`, never a step it does not
+ *     have;
+ *   · a fixed companion, a band or no target: its own target — `4 reps`,
+ *     `250 m`, `8 reps each side` — which is the same in every round, so it is
+ *     said once and not once per round (R70).
+ */
+export function ladderProgressionText(prescription: PrescribedColumns): string {
+  const target = prescribedTarget(prescription)
+  if (target?.kind !== 'sequence' || target.rungs.length < 2) return targetText(prescription, target)
+
+  const { rungs } = target
+  const step = rungs[1] - rungs[0]
+  const constant = step !== 0 && rungs.every((value, index) => index === 0 || value - rungs[index - 1] === step)
+  if (!constant) return targetText(prescription, target)
+
+  const ends = measuredText(prescription, `${rungs[0]} → ${rungs[rungs.length - 1]}`)
+  return `${ends} · ${step > 0 ? '+' : MINUS}${Math.abs(step)} per round`
+}
+
+/** One movement's work in one round of the compact grid. */
+export interface LadderRoundEntry {
+  /** The movement's place in prescribed order, 0-based: the order performed. */
+  readonly movement: number
+  /** `push up` — the movement's own name. */
+  readonly name: string
+  /**
+   * R72's concise notation: `2 × push up` for reps (the `×` replaces the word
+   * "reps" between quantity and movement), `30 sec plank` and `250 m row`
+   * where the unit is the meaning, and `each side` kept where it is part of
+   * the target.
+   */
+  readonly text: string
+  /** The same target in words for a screen reader: `push up, 2 reps`. */
+  readonly spoken: string
+}
+
+/** One round of the compact grid: its number, and each movement's work in it. */
+export interface LadderRoundReading {
+  /** 1-based — the rung number `highest_rung` records. */
+  readonly number: number
+  readonly entries: readonly LadderRoundEntry[]
+}
+
+/** The quantity a movement asks for in one round, or null for none. */
+function roundTarget(prescription: PrescribedColumns, roundNumber: number): PrescribedTarget | null {
+  const target = prescribedTarget(prescription)
+  if (target?.kind !== 'sequence') return target
+  const value = target.rungs[roundNumber - 1]
+  return value === undefined ? null : { kind: 'fixed', value }
+}
+
+function roundEntry(member: LadderMember, movement: number, roundNumber: number): LadderRoundEntry | null {
+  const { prescription } = member
+  const name = exerciseName(prescription.exercise_id)
+  const declared = prescribedTarget(prescription)
+  const target = roundTarget(prescription, roundNumber)
+
+  // A sequence that has run out before this round contributes nothing to it,
+  // exactly as `ladderRungs` reads a shorter sequence — a shorter ladder for
+  // that movement, never an invented number.
+  if (declared?.kind === 'sequence' && target === null) return null
+  if (target === null) return { movement, name, text: name, spoken: name }
+
+  const numbers = targetNumbers(target)
+  const side = prescription.per_side ? ' each side' : ''
+  const unit = modalityUnit(prescription)
+  const text =
+    prescription.modality === 'reps'
+      ? `${numbers} × ${name}${side}`
+      : `${unit === '' ? numbers : `${numbers} ${unit}`} ${name}${side}`
+
+  return { movement, name, text, spoken: `${name}, ${targetText(prescription, target)}` }
+}
+
+/**
+ * Every round of the ladder as the compact grid states it: `rounds` entries
+ * (the explicit timing's own count; the ladder's rungs when it has none), each
+ * listing every movement's work in that round in prescribed order — the
+ * laddered movements at this round's rung, and the fixed companion work at its
+ * own target in every round (C35, R95). Nothing is summed, inferred or
+ * repeated from a template.
+ */
+export function ladderRoundReadings(
+  members: readonly LadderMember[],
+  rounds: number | null = null,
+): readonly LadderRoundReading[] {
+  const count = rounds ?? ladderRungs(members).length
+  return Array.from({ length: Math.max(0, count) }, (_, index): LadderRoundReading => ({
+    number: index + 1,
+    entries: members.flatMap((member, movement) => {
+      const entry = roundEntry(member, movement, index + 1)
+      return entry === null ? [] : [entry]
+    }),
+  }))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

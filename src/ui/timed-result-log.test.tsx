@@ -848,7 +848,10 @@ describe('TASK-010 completion choices and existing effort faces', () => {
     // Before the attempt ends: the question is there to answer, unanswered.
     const before = completionOf(log(ladderCard()))
     expect(chosen(before)).toEqual([])
-    expect(within(ladderCard()).getByRole('list', { name: 'Ladder' })).toBeInTheDocument()
+    // TASK-012 (C35, R95): the pattern is the compact prescription's rounds;
+    // no read-only rung row repeats it before the attempt is answered.
+    expect(within(ladderCard()).getByRole('list', { name: LADDER_WORK_LIST })).toBeInTheDocument()
+    expect(within(ladderCard()).queryByRole('list', { name: 'Ladder' })).toBeNull()
 
     // Finish with nothing tracked rung by rung: Incomplete, and how far is asked.
     await finishLadderAfter(user, 200)

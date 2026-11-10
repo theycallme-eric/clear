@@ -16,8 +16,11 @@
  *
  * `ladder-4`, `ladder-12`: the live ladder's Start/Pause/Resume/Finish
  * hierarchy (TASK-006) — the route's own `LadderBlock`, Start ladder in its
- * top slot, then a secondary Pause beside the primary Finish — over memory-only
- * storage (`gallery-refinement-flow.tsx`).
+ * top slot, then a secondary Pause beside the primary Finish — and its compact
+ * truthful prescription (TASK-012: C35): one concise line per movement, then
+ * every round as a wrapping tile with the fixed companion in each, through the
+ * shared `LadderPrescription` — over memory-only storage
+ * (`gallery-refinement-flow.tsx`).
  *
  * `urgency`: the whole timer body (TASK-007, C19, C21) drawn by each clock's
  * actual consumer — a movement countdown, the race clock toward its cap, the

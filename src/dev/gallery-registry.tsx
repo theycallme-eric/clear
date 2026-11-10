@@ -86,6 +86,11 @@ import {
   GroupExerciseCoachingSuperset,
 } from './gallery-refinement-coaching'
 import {
+  LadderPrescriptionFour,
+  LadderPrescriptionLoaded,
+  LadderPrescriptionTwelve,
+  LadderRoundsReview,
+  LadderRoundsScheduled,
   TimedActionsLifecycle,
   TimedActionsPaused,
   TimedActionsReady,
@@ -2209,6 +2214,27 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     ],
   },
   {
+    component: 'LadderPrescription',
+    requirement: 'REQ-012',
+    module: 'src/ui/refinements/ladder.tsx',
+    summary: 'TASK-012 the compact truthful ladder prescription every live ladder draws (C35; R70, R71, R72, R94, R95, R117; V11): one concise line per movement in prescribed order — its name, compact equipment, the whole progression (a constant step as its ends and step, any other sequence as itself) or the fixed companion’s target, and its prescribed load — then every round as a wrapping read-only tile in the ×/· notation with the fixed companion in each. Every name, sequence, unit, load and round count is the block’s own data (ladderProgressionText, ladderRoundReadings); no “same every round” suffix and no long per-round list. Live check-off of whole rounds is TASK-013. The live ladder is /gallery/refinements?state=ladder-4 and ladder-12.',
+    specimens: [
+      { state: 'accepted · 4 rounds', note: 'Push up 2 → 8, +2 per round; the fixed 4-rep burpee in every tile.', Render: LadderPrescriptionFour },
+      { state: 'accepted · 12 rounds', note: 'The same owner wrapping twelve tiles into rows; no horizontal scroll.', Render: LadderPrescriptionTwelve },
+      { state: 'loaded, descending, distance companion', note: '24 kg kettlebell swing 15 → 3, −3 per round, and a fixed 250 m row: read from its own columns.', Render: LadderPrescriptionLoaded },
+    ],
+  },
+  {
+    component: 'LadderRounds',
+    requirement: 'REQ-012',
+    module: 'src/ui/refinements/ladder.tsx',
+    summary: 'TASK-012 the round grid alone (C35, R95): R1 onward, each movement’s work in that round — 2 × push up, 30 sec plank, 250 m row, each side kept — with the same work in words for a screen reader. Review draws it read-only under its accepted movement rows (R65, R72), so Review and Workout state a round in the same words; a schedule adds each round’s start and the live round’s Now from its own clock.',
+    specimens: [
+      { state: 'Review · the planned rounds', note: 'Read from the composed prescriptions; nothing to tap.', Render: LadderRoundsReview },
+      { state: 'schedule · starts and the live round', note: 'Each round’s start, and Now on the live round with aria-current. Memory only, no clock.', Render: LadderRoundsScheduled },
+    ],
+  },
+  {
     component: 'DeadlineTimer',
     requirement: 'REQ-007',
     module: 'src/ui/refinements/deadline-timer.tsx',
@@ -2950,7 +2976,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'EXE-04a',
     module: 'src/ui/ladder-rungs.tsx',
     summary:
-      'The block’s rep pattern, stated once. Read-only it is data — quiet, square, nothing to tap; once the cap is hit the same rungs become a radio group, named by their target rather than their index, with the choice ticked and said in words.',
+      'The block’s rep pattern, stated once. Read-only it is data — quiet, square, nothing to tap; once the cap is hit the same rungs become a radio group, named by their target rather than their index, with the choice ticked and said in words. Since TASK-012 the live ladder states its prescription through LadderPrescription, and draws this row only once answered — the reached reading of a Complete and the How far question of an Incomplete — until TASK-013 moves both into its result log.',
     specimens: [
       { state: 'read-only', Render: LadderRungsReadOnly },
       {

@@ -214,9 +214,17 @@ export function targetText(
   target: PrescribedTarget | null = prescribedTarget(exercise),
 ): string {
   if (target === null) return 'No target'
+  return measuredText(exercise, targetNumbers(target))
+}
 
+/**
+ * Numbers already written out — `8`, `2 → 24` — in the unit the modality
+ * names, with `each side` when the prescription is per side: the one place a
+ * target's unit and side are added, for `targetText` and for the ladder's
+ * concise progression (TASK-012), so the two never word a unit differently.
+ */
+export function measuredText(exercise: PrescribedColumns, numbers: string): string {
   const unit = modalityUnit(exercise)
-  const numbers = targetNumbers(target)
   const measured = unit === '' ? numbers : `${numbers} ${unit}`
 
   return exercise.per_side ? `${measured} each side` : measured

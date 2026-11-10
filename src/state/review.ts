@@ -51,6 +51,7 @@
  */
 import type { Enums } from '../data/database.types'
 import { formatFocus } from './history'
+import { ladderRoundReadings, type LadderRoundReading } from './ladder'
 import { prescriptionSiteKey } from './load-suggestions'
 import { sectionTypeLabel } from './onboarding'
 import { exerciseName, prescriptionText, restText, targetText } from './prescription'
@@ -132,6 +133,16 @@ export interface ReviewBlockView {
   readonly roundSequence: string | null
   /** In prescribed order: the order the array holds is the order performed. */
   readonly exercises: readonly ReviewExerciseView[]
+  /**
+   * TASK-012 (C35, JOURNEY-012): a block the ladder renderer performs is also
+   * read as its rounds — each round's work for every movement, the fixed
+   * companion included — through the same `ladderRoundReadings` the live
+   * ladder draws, so Review and Workout state a round in the same words. The
+   * round count is the explicit timing's, or the ladder's own rungs. Null for
+   * every other block. Read-only: the accepted Review rows above it (R65, R72)
+   * are unchanged.
+   */
+  readonly ladderRounds: readonly LadderRoundReading[] | null
 }
 
 /** One movement's prescribed cadence, for the optional tempo detail. */
@@ -516,6 +527,16 @@ function reviewBlock(
         !TIMED_FORMATS.has(block.structure_type),
       ),
     ),
+    // `identity.format` is LADDER exactly when the ladder renderer performs
+    // the block (`performedAsLadder`), so Review shows the rounds the workout
+    // will.
+    ladderRounds:
+      identity.format === 'LADDER'
+        ? ladderRoundReadings(
+            block.exercises.map((exercise) => ({ prescription: exercise })),
+            block.ladder_timing?.rounds ?? null,
+          )
+        : null,
   }
 }
 
