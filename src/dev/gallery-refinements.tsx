@@ -86,11 +86,17 @@
  * (`gallery-refinement-scenes.tsx`). Since TASK-025 (C52; R24) it also draws
  * Setup's equipment step as `/onboarding` pins it: the title, the route's own
  * `SetupProgress` and one divider above its scrolling `SetupStepView`.
+ *
+ * `errors`: the released semantic error treatment (TASK-028: C55; R22) — the
+ * one shared `ErrorView` every application error screen renders, its frame,
+ * accent bar, emission and glyph on the one error role in every skin, with
+ * its Retry; a regression reference, unchanged (`gallery-refinement-errors.tsx`).
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
+import { GalleryErrors } from './gallery-refinement-errors'
 import { GalleryLadderFlow } from './gallery-refinement-flow'
 import {
   GalleryAmrapResults,
@@ -123,6 +129,7 @@ const REFINEMENT_STATES = [
   { id: 'emom', title: 'EMOM results', Render: GalleryEmomResults },
   { id: 'preparation', title: 'Warm-up and Cooldown · concise guides and preparation clocks', Render: GalleryPreparation },
   { id: 'screens', title: 'Generate · Goal and Focus, focus choices with Recovery, and fields · Setup · pinned title, step and progress', Render: GalleryScreens },
+  { id: 'errors', title: 'Released error semantics', Render: GalleryErrors },
 ] as const
 
 export function GalleryRefinements() {
