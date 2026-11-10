@@ -417,7 +417,9 @@ test.describe('core loop: a new user, sign-up to Home (REQ-010)', () => {
       return (await value.innerText()).trim()
     }
     const display = {
-      intensity: await displayedFact('Intensity', '3 of 10'),
+      // TASK-004 (AC-C12-01, AC-R004-01, R32): the Overview reads the effective
+      // intensity as its value alone — still 3, not the requested 9.
+      intensity: await displayedFact('Intensity', '3'),
       goal: await displayedFact('Goal', 'Active recovery'),
       focus: await displayedFact('Anchor', 'Full body'),
       duration: await displayedFact('Duration', '15 min'),

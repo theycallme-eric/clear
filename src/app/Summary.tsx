@@ -39,7 +39,7 @@
  * re-renders in place and replays no entrance, which is the IA's rule for this
  * screen ("save retries do not replay the entrance").
  */
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
 
 import type { CompletedSession } from '../data/summary'
@@ -74,6 +74,7 @@ import { Heading } from '../ui/Heading'
 import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
 import { useInvalidFocus } from '../ui/formFocus'
 import { FeelingRow } from '../ui/feeling-row'
+import { SummaryMetric } from '../ui/refinements/overview'
 import { ErrorView, LoadingView, ViewStateSwitch } from '../ui/view-state'
 import { WeekStrip } from '../ui/week-strip'
 import { FavoriteToggle } from './FavoriteToggle'
@@ -237,14 +238,10 @@ function Debrief({ completed }: { completed: CompletedSession }) {
           </Card>
           {/* U41: two readouts, one size. The week is its own card under them
               rather than squeezed into half of one. */}
+          {/* TASK-004 (C15, R107): each readout is its cell's one frame and
+              fills the equal-height row, so Duration ends where Streak does. */}
           <MetricGrid>
-            <Stat label={DURATION_LABEL}>
-              {durationMins === null ? (
-                <NotRecorded />
-              ) : (
-                `${durationMins} min`
-              )}
-            </Stat>
+            <DurationMetric minutes={durationMins} />
             <StreakStat />
           </MetricGrid>
           <SummaryWeek />
@@ -304,45 +301,30 @@ const SESSION_TITLE_STYLE: CSSProperties = {
 }
 
 /**
- * U41: every key number is drawn at this one size, so the duration and the
- * streak read as a pair rather than as a number beside a sentence.
+ * The completed session's duration (U41), in the shared summary metric card
+ * (`SummaryMetric`, `refinements/overview`): the measured minutes, or a dash
+ * with words when nothing could measure it.
  */
-const METRIC_VALUE_STYLE: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-display)',
-  fontSize: 'var(--heading-h4-size)',
-  lineHeight: 'var(--heading-h4-line-height)',
-  color: 'var(--text-card-header)',
-}
-
-const METRIC_NOTE_STYLE: CSSProperties = {
-  margin: 0,
-  color: 'var(--text-secondary)',
+export function DurationMetric({ minutes }: { minutes: number | null }) {
+  return (
+    <SummaryMetric label={DURATION_LABEL}>
+      {minutes === null ? <NotRecorded /> : `${minutes} min`}
+    </SummaryMetric>
+  )
 }
 
 /**
- * One key number in its own small card, its label the card's heading. The
- * readout inside drops its own frame, so there is never a frame in a frame.
+ * A streak with a run to show, in the same card at the same size as the
+ * duration, qualified when the run has not reached today.
  */
-function Stat({
-  label,
-  note,
-  children,
-}: {
-  label: string
-  /** A qualifier under the number, in the secondary role. */
-  note?: string
-  children: ReactNode
-}) {
+export function StreakMetric({ streak }: { streak: Pick<Streak, 'days' | 'includesToday'> }) {
   return (
-    <Card heading={label} padding="sm">
-      <MetricFrame>
-        <p data-metric-value="" style={METRIC_VALUE_STYLE}>
-          {children}
-        </p>
-        {note === undefined ? null : <p style={METRIC_NOTE_STYLE}>{note}</p>}
-      </MetricFrame>
-    </Card>
+    <SummaryMetric
+      label={STREAK_LABEL}
+      note={streak.includesToday ? undefined : STREAK_THROUGH_YESTERDAY}
+    >
+      {streak.days} {streak.days === 1 ? 'day' : 'days'}
+    </SummaryMetric>
   )
 }
 
@@ -377,17 +359,7 @@ function StreakStat() {
           ? viewEmpty()
           : viewReady(query.state.data)
 
-  if (state.status === 'ready') {
-    const streak = state.data
-    return (
-      <Stat
-        label={STREAK_LABEL}
-        note={streak.includesToday ? undefined : STREAK_THROUGH_YESTERDAY}
-      >
-        {streak.days} {streak.days === 1 ? 'day' : 'days'}
-      </Stat>
-    )
-  }
+  if (state.status === 'ready') return <StreakMetric streak={state.data} />
 
   if (state.status === 'empty') {
     return (

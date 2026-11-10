@@ -610,7 +610,9 @@ describe('the intensity / anchor / goal header', () => {
     renderReview()
     await screen.findByRole('heading', { level: 1, name: 'Full spectrum' })
 
-    expect(screen.getByText('Intensity').closest('dt')?.nextElementSibling?.textContent).toBe('7 of 10')
+    // TASK-004 (AC-C12-01, AC-R004-01, R32) supersedes `7 of 10`: the Overview
+    // reads the value alone, on the unchanged ten-point scale.
+    expect(screen.getByText('Intensity').closest('dt')?.nextElementSibling?.textContent).toBe('7')
     expect(screen.getByText('Anchor').closest('dt')?.nextElementSibling?.textContent).toBe('Lower body')
     expect(screen.getByText('Goal').closest('dt')?.nextElementSibling?.textContent).toBe('Strength')
     expect(screen.getByText('Duration').closest('dt')?.nextElementSibling?.textContent).toBe('45 min')

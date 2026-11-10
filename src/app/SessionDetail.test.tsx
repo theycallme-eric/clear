@@ -353,20 +353,27 @@ describe('Session Detail containment', () => {
     const card = overviewCard()
     expect(card.querySelectorAll('.clr-card__bar')).toHaveLength(1)
 
-    // A description list of terms and values; each fact keeps its readout and
-    // none of them draws a second frame inside the card.
+    // A description list of terms and values; none of them draws a second
+    // frame inside the card. TASK-004 (AC-C14-01, R20) supersedes the framed
+    // MetricGrid readouts and their order: the saved Overview is the Review
+    // Overview's own compact fact composition — the readings it shares with
+    // the plan first, in the plan's order, then the record's own date and
+    // status — over this record's values (AC-R004-03), intensity without `/10`.
     const facts = card.querySelector<HTMLElement>('dl')!
     expect(facts).toHaveAttribute('aria-label', SESSION_DETAIL_FACTS_LABEL)
+    expect(facts).toHaveClass('clr-summary-facts')
     expect([...facts.querySelectorAll('dt')].map((term) => term.textContent)).toEqual([
-      'Date',
-      'Focus',
-      'Status',
       'Duration',
+      'Focus',
       'Intensity',
+      'Date',
+      'Status',
     ])
     expect(within(facts).getByText('Completed', { selector: 'dd' })).toBeInTheDocument()
     expect(within(facts).getByText('47 min', { selector: 'dd' })).toBeInTheDocument()
-    expect(facts.querySelectorAll('.clr-metric-frame')).toHaveLength(5)
+    expect(within(facts).getByText('6', { selector: 'dd' })).toBeInTheDocument()
+    expect(facts.querySelectorAll('.clr-summary-fact')).toHaveLength(5)
+    expect(card.querySelectorAll('.clr-metric-grid, .clr-metric-frame')).toHaveLength(0)
     expect(facts.querySelector('.clr-chamfer')).toBeNull()
 
     expect(within(card).getByText(/As performed · read at .*2026/)).toBeInTheDocument()

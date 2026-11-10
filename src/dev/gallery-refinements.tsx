@@ -9,14 +9,20 @@
  * context-specific slots and the shared static header, compact equipment beside
  * each name, in Review and Workout (TASK-002). Later refinement tasks add their
  * own states to `REFINEMENT_STATES`.
+ *
+ * `overview`: the accepted Overview facts, Required equipment group and
+ * Summary frames (TASK-004), drawn by the Review, Session Detail and Summary
+ * consumers over the shared owners in `src/ui/refinements/overview.tsx`.
  */
 import { Link, useSearchParams } from 'react-router-dom'
 
 import { Heading, HeadingSection } from '../ui/Heading'
 import { GalleryMovementCards } from './gallery-refinement-cards'
+import { GalleryOverviewSummary } from './gallery-refinement-scenes'
 
 const REFINEMENT_STATES = [
   { id: 'cards', title: 'Movement cards and shared header', Render: GalleryMovementCards },
+  { id: 'overview', title: 'Overview and Summary frames', Render: GalleryOverviewSummary },
 ] as const
 
 export function GalleryRefinements() {

@@ -40,6 +40,7 @@ import {
 import { ErrorCode, isErr, type AppError } from '../state/errors'
 import { todayLocal } from '../state/favorites'
 import { useSessionDetailQuery } from '../state/history-queries'
+import { briefingIntensity } from '../state/review'
 import { reviewHandoff } from '../state/review-handoff'
 import type { SessionReconstruction } from '../state/schemas'
 import { sessionDetail, type SessionDetailView } from '../state/session-detail'
@@ -51,9 +52,10 @@ import {
 } from '../state/session-restart'
 import { useWorkoutClients } from '../state/workout-queries'
 import { Card } from '../ui/card'
-import { ActionRow, MetricFrame, MetricGrid, PhoneFooter } from '../ui/composition'
+import { ActionRow, PhoneFooter } from '../ui/composition'
 import { HeadingSection } from '../ui/Heading'
 import { MoodReading } from '../ui/mood'
+import { EquipmentSummary, OverviewFacts, type OverviewFact } from '../ui/refinements/overview'
 import { SessionProvenance, SessionSectionCard } from '../ui/session-detail'
 import { ErrorView, LoadingView } from '../ui/view-state'
 import { FavoriteToggle } from './FavoriteToggle'
@@ -87,14 +89,6 @@ const LABEL_STYLE: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--text-card-label)',
   margin: 0,
-}
-
-const VALUE_STYLE: CSSProperties = {
-  fontFamily: 'var(--font-data)',
-  fontSize: 'var(--label-sm-size)',
-  letterSpacing: 'var(--tracking-data)',
-  color: 'var(--text-card-body)',
-  marginInlineStart: 0,
 }
 
 const BODY_STYLE: CSSProperties = {
@@ -215,47 +209,9 @@ function SessionDetailBody({
 }: {
   view: SessionDetailView
 }) {
-  const facts: readonly (readonly [string, string])[] = [
-    ['Date', view.day],
-    ['Focus', view.focus],
-    ['Status', view.stateLabel],
-    // A session nobody timed has no duration, and no term for one.
-    ...(view.duration === null ? [] : [['Duration', view.duration] as const]),
-    ['Intensity', `${view.intensity}/10`],
-  ]
-
   return (
     <div className="clr-stack">
-      <Card heading={SESSION_DETAIL_OVERVIEW_LABEL}>
-        {/* Inside the card `MetricFrame` is a bare readout, so the card is the
-            only frame around the facts. */}
-        <MetricGrid as="dl" aria-label={SESSION_DETAIL_FACTS_LABEL} style={{ margin: 0 }}>
-          {facts.map(([label, value]) => (
-            <MetricFrame key={label}>
-              <dt style={LABEL_STYLE}>{label}</dt>
-              <dd style={VALUE_STYLE}>{value}</dd>
-            </MetricFrame>
-          ))}
-        </MetricGrid>
-        <SessionProvenance provenance={view.provenance} />
-
-        {/* The debrief's two answers are ruled sub-groups one level down,
-            never a second frame. */}
-        <HeadingSection>
-          <Card heading={SESSION_DETAIL_MOOD_LABEL}>
-            <MoodReading step={view.mood} />
-          </Card>
-        </HeadingSection>
-        <HeadingSection>
-          <Card heading={SESSION_DETAIL_NOTES_LABEL}>
-            {/* An unwritten note is said, not left blank: an empty panel reads
-                as a note that failed to load. */}
-            <p style={view.notes === null ? LABEL_STYLE : BODY_STYLE}>
-              {view.notes ?? SESSION_DETAIL_NO_NOTES}
-            </p>
-          </Card>
-        </HeadingSection>
-      </Card>
+      <SessionOverview view={view} />
 
       <section aria-label={SESSION_DETAIL_SECTIONS_LABEL} className="clr-stack">
         {view.sections.map((section) => (
@@ -263,6 +219,57 @@ function SessionDetailBody({
         ))}
       </section>
     </div>
+  )
+}
+
+/**
+ * The saved workout's Overview card.
+ *
+ * TASK-004 (C14, R20, G04): its upper portion is the Review Overview's own
+ * composition, not a second version of it — the shared `OverviewFacts` (the
+ * same glyphs, order, term visibility and wrapping row, no carousel) and the
+ * same Required equipment group — fed this record's recorded values: the
+ * session's own day, focus and state, the duration it measured (or the length
+ * it was composed to, where nothing was measured), its recorded effective
+ * intensity on the same 1–10 scale without `of 10`, and the equipment its own
+ * rows name. Nothing here reads today's request or recommendation. The
+ * provenance and the debrief's answers stay below, as before.
+ */
+export function SessionOverview({ view }: { view: SessionDetailView }) {
+  const facts: OverviewFact[] = [
+    { kind: 'date', term: 'Date', value: view.day },
+    { kind: 'focus', term: 'Focus', value: view.focus },
+    { kind: 'status', term: 'Status', value: view.stateLabel },
+    // A session nobody timed has no duration, and no term for one.
+    ...(view.duration === null ? [] : [{ kind: 'duration', term: 'Duration', value: view.duration } as const]),
+    { kind: 'intensity', term: 'Intensity', value: briefingIntensity(view.intensity) },
+  ]
+
+  return (
+    <Card heading={SESSION_DETAIL_OVERVIEW_LABEL}>
+      {/* Inside the card the facts are bare readings, so the card is the only
+          frame around them. */}
+      <OverviewFacts label={SESSION_DETAIL_FACTS_LABEL} facts={facts} />
+      <EquipmentSummary equipment={view.equipment} />
+      <SessionProvenance provenance={view.provenance} />
+
+      {/* The debrief's two answers are ruled sub-groups one level down,
+          never a second frame. */}
+      <HeadingSection>
+        <Card heading={SESSION_DETAIL_MOOD_LABEL}>
+          <MoodReading step={view.mood} />
+        </Card>
+      </HeadingSection>
+      <HeadingSection>
+        <Card heading={SESSION_DETAIL_NOTES_LABEL}>
+          {/* An unwritten note is said, not left blank: an empty panel reads
+              as a note that failed to load. */}
+          <p style={view.notes === null ? LABEL_STYLE : BODY_STYLE}>
+            {view.notes ?? SESSION_DETAIL_NO_NOTES}
+          </p>
+        </Card>
+      </HeadingSection>
+    </Card>
   )
 }
 

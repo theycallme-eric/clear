@@ -1,0 +1,67 @@
+{
+  "schema": "clear-refinement-required-check-result/v1",
+  "task": "TASK-004",
+  "check": "check-02",
+  "verdict": "passed",
+  "purpose": "delivery",
+  "runner": "playwright",
+  "runnerVersion": "1.63.0",
+  "command": [
+    "npx",
+    "playwright",
+    "test",
+    "e2e/refinement/task-004.spec.ts",
+    "--project=mobile"
+  ],
+  "manifest": {
+    "path": "evidence/refinement/task-004/required-cases.json",
+    "sha256": "048d3d5e8e1c5a2dcf3c96e5734ff6ac1c5269ad04db60ce23d545bdeb320941"
+  },
+  "targets": [
+    {
+      "path": "e2e/refinement/task-004.spec.ts",
+      "sha256": "80e9da1d22cdd04be86c4d5d275934eebc96bc948b213fc0fc1ef362e3e8bac9"
+    }
+  ],
+  "requiredCases": [
+    {
+      "file": "e2e/refinement/task-004.spec.ts",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 phone-320: Review, the saved workout and Summary read wrapping glyph facts, one equipment group and filled metric frames",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-004.spec.ts",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 phone-390: Review, the saved workout and Summary read wrapping glyph facts, one equipment group and filled metric frames",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-004.spec.ts",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > AC-R004-02 phone-320: None — bodyweight only appears for an all-bodyweight workout, in Review and the saved Overview, and only there",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-004.spec.ts",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > JOURNEY-004 recovery phone-390: a failed saved read and a failed streak read keep their meanings, retry by touch and reopen the same record",
+      "project": "mobile",
+      "status": "passed"
+    },
+    {
+      "file": "e2e/refinement/task-004.spec.ts",
+      "name": "TASK-004 accepted Overview facts, equipment and summary frames > gallery overview phone-320: the accepted state draws the Review, saved and Summary consumers with the same facts, equipment and frames",
+      "project": "mobile",
+      "status": "passed"
+    }
+  ],
+  "totals": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "todo": 0,
+    "executed": 5
+  },
+  "problems": []
+}

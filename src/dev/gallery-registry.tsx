@@ -81,6 +81,15 @@ import {
   WorkoutCardReview,
   WorkoutCardWorkout,
 } from './gallery-refinement-cards'
+import {
+  EquipmentSummaryBodyweight,
+  EquipmentSummaryLoaded,
+  OverviewFactsPlanned,
+  OverviewFactsSaved,
+  OverviewFactsWidest,
+  SummaryFrames,
+  SummaryFramesUnmeasured,
+} from './gallery-refinement-scenes'
 import { ActionGlow } from '../ui/action-glow'
 import { AppDialog } from '../ui/app-dialog'
 import { AppearancePicker } from '../ui/appearance-picker'
@@ -357,7 +366,7 @@ function summaryFactsExample(widest: boolean) {
         {widest ? 'Full body' : 'Power'}
       </SummaryFact>
       <SummaryFact glyph={<Gauge size={16} />} term="Intensity">
-        {widest ? '10 of 10' : '7 of 10'}
+        {widest ? '10' : '7'}
       </SummaryFact>
       {widest && (
         <>
@@ -2161,6 +2170,37 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     ],
   },
   {
+    component: 'OverviewFacts',
+    requirement: 'REQ-004',
+    module: 'src/ui/refinements/overview.tsx',
+    summary: 'TASK-004 the accepted Overview facts (C12, C14): one composition for Review and a saved workout — the same glyph, order and term visibility per kind of reading, wrapping with no carousel, intensity without “of 10” — each view feeding its own recorded values and terms.',
+    specimens: [
+      { state: 'planned workout · Review', Render: OverviewFactsPlanned },
+      { state: 'saved workout · recorded values', note: 'The record’s own measured duration, day and state.', Render: OverviewFactsSaved },
+      { state: 'widest real facts', Render: OverviewFactsWidest },
+    ],
+  },
+  {
+    component: 'EquipmentSummary',
+    requirement: 'REQ-004',
+    module: 'src/ui/refinements/overview.tsx',
+    summary: 'TASK-004 the accepted Required equipment group (C13, R27, R34, R74): set off by a rule under the facts, the label beside the one shipped equipment glyph, each name an uppercase element. “None — bodyweight only” only when no movement names equipment.',
+    specimens: [
+      { state: 'grouped names', Render: EquipmentSummaryLoaded },
+      { state: 'bodyweight only', Render: EquipmentSummaryBodyweight },
+    ],
+  },
+  {
+    component: 'SummaryMetric',
+    requirement: 'REQ-004',
+    module: 'src/ui/refinements/overview.tsx',
+    summary: 'TASK-004 one key number in its own small card, as the completed Summary draws Duration and Streak. In a MetricGrid row the card fills its equal-height cell, so the frames end at one bottom edge (C15, R107).',
+    specimens: [
+      { state: 'Duration beside Streak · through yesterday', Render: SummaryFrames },
+      { state: 'unmeasured duration', Render: SummaryFramesUnmeasured },
+    ],
+  },
+  {
     component: 'MovementIdentityComparison',
     title: 'Movement across workout screens',
     requirement: 'LIB-002',
@@ -2617,7 +2657,7 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     component: 'MetricGrid',
     requirement: 'DS-097-C',
     module: 'src/ui/composition.tsx',
-    summary: 'The shared responsive grid for terse workout facts and completed-result readouts.',
+    summary: 'The shared responsive grid for terse workout facts and completed-result readouts. A card in a cell is that cell’s one frame and fills the equal-height row (TASK-004, C15).',
     specimens: [
       { state: 'two framed facts', Render: MetricGridFacts },
       { state: 'odd fact count', Render: MetricGridOddCount },
@@ -2628,10 +2668,10 @@ export const GALLERY_ENTRIES: readonly GalleryEntry[] = [
     requirement: 'REQ-008',
     module: 'src/ui/composition.tsx',
     summary:
-      'The compact workout-facts row: every glyph-led reading on one line, with public horizontal containment and keyboard reachability.',
+      'The compact workout-facts row: whole glyph-led readings that wrap onto further rows, every fact visible — no carousel, rail or tab stop (TASK-004, C12, R26). Intensity reads its value alone. The accepted Overview composition of these readings is OverviewFacts.',
     specimens: [
       { state: 'pictured facts', Render: () => summaryFactsExample(false) },
-      { state: 'widest real facts', Render: () => summaryFactsExample(true) },
+      { state: 'widest real facts', note: 'Wraps onto a second row at phone widths.', Render: () => summaryFactsExample(true) },
     ],
   },
   {

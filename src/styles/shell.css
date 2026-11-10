@@ -321,23 +321,28 @@ body,
   overflow-wrap: anywhere;
 }
 
-/* The compact workout-facts row (B05-03): every reading stays whole on one
-   aligned line. The public OverflowRail owns containment and reachability
-   under width pressure; result and score metric grids keep their own layout. */
-.clr-summary-facts-rail:has(:focus-visible) {
-  /* The focused track is wider than its viewport. Keep the system's focus
-     ring on the visible app-owned boundary while that track is scrolled. */
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
+/* C15 / R107 (TASK-004): a card in a metric cell is that cell's one frame. The
+   grid row gives its cells one height, and the cell's bleed wrapper lays its
+   one card out as a stretched grid item, so the card — accent bar and
+   chamfered body — fills the cell: neighbouring frames (Summary's Duration
+   beside Streak) end at the same bottom edge and no short frame sits inside a
+   taller cell. The card itself is not restyled; its content keeps its natural
+   wrapping. The echoed cell's pass-through is in src/ui/foreground-echo.css. */
+.clr-metric-grid > .clr-bleed--block {
+  display: grid;
 }
 
+/* The compact workout-facts row (B05-03; TASK-004 C12, R26, R74): every
+   reading stays whole — glyph, term and value — and the readings wrap onto
+   further rows, so every fact is visible at once. No carousel, rail or hidden
+   overflow; a reading longer than the whole row wraps inside itself rather
+   than leaving the card. Result and score metric grids keep their own layout. */
 .clr-summary-facts {
   display: flex;
-  flex-wrap: nowrap;
-  flex: none;
-  width: max-content;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--spacing-300);
+  min-width: 0;
   margin: 0;
   font-family: var(--font-data);
   font-size: var(--label-xs-size);
@@ -353,6 +358,7 @@ body,
   align-items: center;
   gap: var(--spacing-100);
   min-width: 0;
+  max-width: 100%;
 }
 
 .clr-summary-fact > dt,
@@ -362,13 +368,18 @@ body,
 
 .clr-summary-fact > dt {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: var(--spacing-100);
+  white-space: nowrap;
 }
 
-.clr-summary-fact > dt,
+/* A reading is as wide as its content, so its value stays on one line and the
+   whole reading moves to the next row. Only a reading wider than the row is
+   held to the row's width, and then its value wraps inside it. */
 .clr-summary-fact > dd {
-  white-space: nowrap;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .clr-summary-fact__glyph {
