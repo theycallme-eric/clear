@@ -97,3 +97,22 @@ Interfaces:
 | TASK-014 (Undo Finish) | `ladderAttemptView` (`undo`), `usePersistedLadder` (`undoFinish`, `markRecorded`) | Offer the quiet Undo only while `undo.available`, and call `undoFinish`. It already clears the ending answer and restores the pause and progress. Never resume past the cap or grant time. **Done (TASK-014):** the route's ladder log offers `Undo finish · Resume ladder` only while `undo.available`, re-deriving the read model each second while a running Finish's Undo can still run out at the original cap, and returns the focus to the race's lead control. A successful save ends it durably: the shell's `onBlockRecorded` (`BlockCompletionApi`) calls the hook's `markRecorded` (`ladderRecorded`) in the same act as the row is known, before the section can be left, so a reload never finds a saved attempt open. `saveSucceeded` / `saveFailed` stay TASK-048's. |
 | TASK-046 (shared timed logging) | `ladderAttemptView` (`draft`, `editable`), `usePersistedLadder` (`editDraft`), `EMPTY_LADDER_DRAFT` | Read and write the ladder's log through the durable draft, never a second draft. Write effort, notes and movement entries only through TASK-015 / TASK-031's writers. `ladderDraftOutcome` stays `highest_rung` only. |
 | TASK-048 (visible reload, reconnect, Undo and save recovery) | `usePersistedLadder` (`source`, `discarded`, `durable`, `saveSucceeded`, `saveFailed`), `ladderAttemptView` (`authority`, `saveFailed`, `undo`), `restoreLadderAttempt`, `readLadderAttempt` | Call `saveSucceeded(attemptId)` or `saveFailed(attemptId)` with the attempt id captured when the forward action began, and pass `isBlockRecorded` as `recorded`. Make `discarded`, `durable: false` and `saveFailed` explicit on screen. Read the saved row back when `authority` is `saved-elsewhere`, and prefer it over the local echo. Prove it on the real lane. |
+
+## Preparation guide content and approximate duration (TASK-034)
+
+`src/state/preparation-guide.ts` is the authoritative reading of a Warm-up or Cooldown guide (REQ-034).
+It is pure and writes nothing. The contract is `docs/specs/PREPARATION_GUIDE_CONTRACT.md`, and its
+typed source record is `PREPARATION_GUIDE_SOURCES`. Each field reads one owner:
+
+- the title from `sectionTypeLabel`, never `section_title` or `section_notes`;
+- every prescribed movement in composed order (the active rows after a swap), named by `exerciseName`;
+- the count of those movements;
+- the approximate time, which is GEN-06's `estimateDuration` of the section alone, read as `~N minutes`.
+
+`preparationGuideReading` follows the consumer's source through `loading`, `error`, `missing`
+(`no-workout`, `not-composed`, `no-movements`) and `ready`.
+
+| Task | Consumes | What it must do |
+| --- | --- | --- |
+| TASK-022 (concise Warm-up and Cooldown) | `composedPreparationGuide` (Review), `persistedPreparationGuide` / `preparationGuideReading` (Workout), `PreparationGuide` (`title`, `durationText`, `movements[].name`) | Draw these readings on `/review`, `/workout` and the gallery `preparation` state. Never draw a fixed duration, a count or a sample list. |
+| TASK-023 (Regenerate after the workout) | — | Keep the guide's section in Review's section order. Regenerate comes after the Cooldown. |
