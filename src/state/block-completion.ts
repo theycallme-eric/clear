@@ -23,7 +23,7 @@
  */
 import { createContext, use } from 'react'
 
-import type { TablesInsert } from '../data/database.types.ts'
+import type { Enums, TablesInsert, TablesUpdate } from '../data/database.types.ts'
 import type { Result } from './errors'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,6 +53,13 @@ export interface BlockOutcome {
   readonly highestRung?: number
   /** The user's own words, when a renderer collected any. */
   readonly notes?: string
+  /**
+   * TASK-031 (MIG-A): the optional categorical effort for the whole block —
+   * the set's three categories (`set_effort`), never a number. Absent is
+   * unanswered. It is written to `block_results.effort`, never to
+   * `perceived_effort`, and nothing converts one into the other.
+   */
+  readonly effort?: Enums<'set_effort'>
 }
 
 /** An outcome plus the one thing the shell adds to every structure type. */
@@ -83,10 +90,43 @@ function recorded<T>(value: T | undefined): T | null {
 export function blockResultInsert(
   completion: BlockCompletion,
 ): TablesInsert<'block_results'> {
-  const { outcome } = completion
-
   return {
     block_id: completion.blockId,
+    ...outcomeColumns(completion),
+    // TASK-031 (MIG-A). Written by omission when unanswered, as the set log's
+    // effort is (`setLogInsert`): the column defaults to NULL, and a request
+    // that never names it is one a project MIG-A has not reached (LIVE-PRE-1)
+    // still accepts — so every completion the shipped renderers report today,
+    // none of which carries an effort, saves exactly as it did.
+    ...(completion.outcome.effort === undefined ? {} : { effort: completion.outcome.effort }),
+  }
+}
+
+/**
+ * TASK-031 (`block-result-correction`): the `block_results` UPDATE that
+ * corrects a saved row, from the same completion shape.
+ *
+ * A correction restates the whole outcome — every outcome column, the notes
+ * and the categorical effort — so a value the athlete cleared is cleared
+ * (`null`) rather than left over from the first save. `block_id`, `id` and
+ * `created_at` are the row's identity and history and are never sent.
+ * `perceived_effort` is the legacy 1–10 number and is restated only as the
+ * completion carries it (the shell writes `null`).
+ *
+ * Because it names `effort`, a correction needs MIG-A on the project it is
+ * sent to; the writer turns that schema gap into an explicit refusal rather
+ * than dropping the field (`src/data/workout.ts`).
+ */
+export function blockResultCorrection(
+  completion: BlockCompletion,
+): TablesUpdate<'block_results'> {
+  return { ...outcomeColumns(completion), effort: completion.outcome.effort ?? null }
+}
+
+/** Every outcome column a completion states; an absent field is `null`. */
+function outcomeColumns(completion: BlockCompletion) {
+  const { outcome } = completion
+  return {
     elapsed_seconds: recorded(outcome.elapsedSeconds),
     completed_under_cap: recorded(outcome.completedUnderCap),
     rounds_completed: recorded(outcome.roundsCompleted),
@@ -96,6 +136,52 @@ export function blockResultInsert(
     perceived_effort: recorded(completion.perceivedEffort),
     notes: recorded(outcome.notes),
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TASK-031 — per-movement timed actuals (MIG-B)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * One movement's write in a timed block attempt: the row it should hold, or
+ * `null` when nothing is recorded for it — in which case a row saved by an
+ * earlier attempt of this same save is removed, never zeroed (zero is a
+ * measurement). The row is built by `movementActualFromDraft`
+ * (`src/data/refinement-logging-contract.ts`) with a client-minted id.
+ */
+export interface MovementResultWrite {
+  /** `workout_exercises.id` — the movement as performed in the block. */
+  readonly workoutExerciseId: string
+  readonly row: TablesInsert<'block_movement_results'> | null
+}
+
+const nonNegativeOrNull = (value: number | null | undefined, integer: boolean) =>
+  value === null || value === undefined || (Number.isFinite(value) && value >= 0 && (!integer || Number.isInteger(value)))
+
+/**
+ * The field a movement write would be refused on by MIG-B's CHECKs, or null.
+ * Checked by the writer before anything is sent, so a refusal names the field
+ * in the caller's vocabulary rather than as a constraint name.
+ */
+export function movementResultViolation(write: MovementResultWrite): string | null {
+  const { row } = write
+  if (row === null) return null
+  if (row.workout_exercise_id !== write.workoutExerciseId) return 'workout_exercise_id'
+  const round = row.round_number ?? null
+  if (round !== null && !(Number.isInteger(round) && round > 0)) return 'round_number'
+  const amount = [row.actual_reps, row.actual_duration_seconds, row.actual_distance].some(
+    (value) => value !== null && value !== undefined,
+  )
+  if (amount && round === null) return 'round_number'
+  if (!nonNegativeOrNull(row.actual_reps, true)) return 'actual_reps'
+  if (!nonNegativeOrNull(row.actual_duration_seconds, true)) return 'actual_duration_seconds'
+  if (!nonNegativeOrNull(row.actual_distance, false)) return 'actual_distance'
+  if (row.actual_distance !== null && row.actual_distance !== undefined && (row.actual_distance_unit ?? null) === null) {
+    return 'actual_distance_unit'
+  }
+  if (!nonNegativeOrNull(row.weight, false)) return 'weight'
+  if (!amount && (row.weight === null || row.weight === undefined)) return 'weight'
+  return null
 }
 
 /** True for an effort the CHECK constraint would accept. */

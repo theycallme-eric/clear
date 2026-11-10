@@ -5,6 +5,9 @@ Requirement: REQ-030 (AC-R030-01, AC-R030-02, AC-R030-03)
 Body: clear-refinement-20261103 (Runner body `clear-refinement-v2-20261109b`)
 Status: engineering definition with a typed contract and deterministic tests
 Implementation claim: none — no user-facing feature, writer, migration or live-service change
+Amended by: TASK-031 (#658) — landed MIG-A and MIG-B as repository migrations (not applied), the
+schemas, the correction and movement writers, the timed save provider and the History read model;
+no entry UI, no route adoption, no live-service change (see §7 and §12)
 
 This is the field-to-contract matrix every logging task builds against. It describes the current
 source at integration base `b24ccfe` (after TASK-001 to TASK-012) truthfully, separates what exists
@@ -229,10 +232,12 @@ Moments 13–16 write one `block_results` row each through the shell's one write
   (`completeSection`) writes it with `perceivedEffort: null` through `blockResults.record`.
 - **Identity:** one row per block (UNIQUE `block_id`); a repeated insert answers 409 / 23505 and
   counts as already recorded.
-- **Update:** insert-once today. The table grants UPDATE and has `block_results_update_own`, but no
-  client corrects a saved row; that writer is TASK-031's (`block-result-correction`). A retry whose
-  values changed after a lost answer is absorbed by the 409 rule — TASK-031 must correct, not
-  re-insert.
+- **Update:** insert-once on the shipped path. TASK-031 added the correction writer
+  (`createWorkoutClients().blockResults.correct`: an UPDATE of the row by `block_id`, restating every
+  outcome column, the notes and the categorical effort) and the save provider that uses it on the
+  insert's 23505 (`saveTimedResult`), so a changed retry after a lost answer is corrected, not
+  re-inserted. No shipped path calls either yet (TASK-047 wires them); until then the shipped
+  section save still absorbs a changed retry by the 409 rule.
 - **Readback:** History `blockOutcome` (per structure) plus block notes; `perceived_effort` as
   `N of 10` for older rows.
 
@@ -293,7 +298,10 @@ TASK-013, TASK-015, TASK-031, TASK-032, TASK-046, TASK-047, TASK-048, TASK-019.
 ## 3. Field matrix
 
 Status: `existing` (written today), `legacy` (kept for history; the current UI writes null),
-`prescription` (read by logging, never written by it), `proposed-migration` (needs MIG-A or MIG-B).
+`prescription` (read by logging, never written by it), `proposed-migration` (needs MIG-A or MIG-B),
+`pending-live-migration` (TASK-031: declared by a repository migration and in the generated types,
+with a client writer and History reader, but no shipped path calls the writer yet and the migration
+is not applied to the hosted project until `LIVE-PRE-1`).
 Writers: S = `setLogs.mutate`, B = `blockResults.record`, N = `exercises.saveNotes`,
 D = `saveDebrief`, R = `mark`. History: H = `sessionDetail` (`loggedSet` / `blockOutcome`),
 W = Workout set row (`loggedSetFromRow`); conditioning = `conditioning_history` (20260921000012) read
@@ -309,22 +317,22 @@ by `timedOutcome` / `conditioningScore` / `conditioningTrend` (like-for-like sco
 | `exercise_set_logs.weight_unit` | `existing` | weight_unit NOT NULL | stamped at write time | never null | — | restated by correct | S | `setLogViolation` | W, H | — | TASK-043, TASK-044 |
 | `exercise_set_logs.effort` | `existing` | set_effort | per-set category, never a number, never rpe | unanswered (every older set) | — | another category or null by correct | S | `isRecordedEffort`, `setEffortSchema` | W (`SetEffortReading`); not History | — | TASK-043, TASK-044 |
 | `exercise_set_logs.rpe` | `legacy` | numeric(3,1), 1–10 | historical per-set RPE; the UI writes null; older queued entries replay theirs | not recorded | refused | immutable | none | `exerciseSetLogRowSchema` | H (`RPE N`), anchors | — | — |
-| `block_results.elapsed_seconds` | `existing` | int ≥ 0 | For Time / AMRAP clock actually run | not observed | measured | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Elapsed`, conditioning | — | TASK-031, TASK-047 |
-| `block_results.completed_under_cap` | `existing` | boolean | For Time Complete (true) / Incomplete (false); older rows: before the cap | no answer (not ended, no cap, mid-race) | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Cap`, conditioning | — | TASK-031, TASK-047 |
-| `block_results.rounds_completed` | `existing` | int ≥ 0 | AMRAP and circuit rounds recorded; conditioning also scores a capped For Time from it, which the current For Time card never writes | not recorded | AMRAP explicit 0 (circuit never writes 0) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Rounds`, conditioning | — | TASK-031, TASK-047 |
-| `block_results.partial_round_reps` | `existing` | int ≥ 0 | AMRAP reps into the next round, one count; conditioning also reads it for a capped For Time (never written by For Time today) | not recorded | explicit 0 | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Partial round`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.elapsed_seconds` | `existing` | int ≥ 0 | For Time / AMRAP clock actually run | not observed | measured | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H `Elapsed`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.completed_under_cap` | `existing` | boolean | For Time Complete (true) / Incomplete (false); older rows: before the cap | no answer (not ended, no cap, mid-race) | — | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H `Cap`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.rounds_completed` | `existing` | int ≥ 0 | AMRAP and circuit rounds recorded; conditioning also scores a capped For Time from it, which the current For Time card never writes | not recorded | AMRAP explicit 0 (circuit never writes 0) | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H `Rounds`, conditioning | — | TASK-031, TASK-047 |
+| `block_results.partial_round_reps` | `existing` | int ≥ 0 | AMRAP reps into the next round, one count; conditioning also reads it for a capped For Time (never written by For Time today) | not recorded | explicit 0 | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H `Partial round`, conditioning | — | TASK-031, TASK-047 |
 | `block_results.minutes_completed` | `legacy` | int ≥ 0 | older EMOM minutes tally; no current EMOM writes it | every current ending | older 0 of M | insert-once | none | `blockResultRowSchema` | H `Minutes`, conditioning | — | — |
-| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (stated by the athlete, TASK-013) | insert-once; correction TASK-031 | B | `blockResultInsert` | H `Highest rung`, conditioning | — | TASK-013, TASK-031, TASK-032, TASK-047 |
+| `block_results.highest_rung` | `existing` | int ≥ 0 | ladder: last completed rung, 1-based | unanswered or no rung chosen | no rung completed (stated by the athlete, TASK-013) | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H `Highest rung`, conditioning | — | TASK-013, TASK-031, TASK-032, TASK-047 |
 | `block_results.perceived_effort` | `legacy` | smallint, 1–10 | historical block RPE; every current row null; `conditioningTrend` reads ≤ 7 as easy | not answered, never low | refused | insert-once | none | `isPerceivedEffort` | H `N of 10`, conditioning | — | — |
-| `block_results.notes` | `existing` | text | the athlete's words about the block; EMOM writes it; AMRAP / For Time / ladder reuse it | nothing written | — | insert-once; correction TASK-031 | B | `blockResultInsert` | H block notes | — | TASK-015, TASK-031, TASK-046, TASK-047 |
-| `block_results.effort` | `proposed-migration` | set_effort | optional categorical effort for the whole timed block | unanswered (every older row) | — | with the row; corrected with it; null clears | B (extended) | `isRecordedEffort`, `setEffortSchema` | H category word (TASK-031) | MIG-A | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.round_number` | `proposed-migration` | int > 0 | round the amounts belong to (`partialRoundFor`; For Time: 1 only for a single pass, else after a recorded rounds count) | no amount (load-only row) | — | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.actual_reps` | `proposed-migration` | int ≥ 0 | reps of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.actual_duration_seconds` | `proposed-migration` | int ≥ 0 | seconds of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.actual_distance` | `proposed-migration` | numeric ≥ 0 | distance of this movement in that round | not recorded; needs its unit | measured | restated whole; cleared when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.actual_distance_unit` | `proposed-migration` | distance_unit | the prescription's unit, only with a distance | no distance | — | restated whole | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.weight` | `proposed-migration` | numeric ≥ 0 | actual load for this movement in the attempt, only where `loadApplies` | not recorded | measured load | restated whole; kept when progress changes | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
-| `block_movement_results.weight_unit` | `proposed-migration` | weight_unit NOT NULL | stamped at write time, as on a set | never null | — | restated whole | proposed (TASK-031) | `movementActualFromDraft` | H (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_results.notes` | `existing` | text | the athlete's words about the block; EMOM writes it; AMRAP / For Time / ladder reuse it | nothing written | — | insert-once (shipped); `correct` (TASK-031, unwired) | B | `blockResultInsert` | H block notes | — | TASK-015, TASK-031, TASK-046, TASK-047 |
+| `block_results.effort` | `pending-live-migration` | set_effort | optional categorical effort for the whole timed block | unanswered (every older row) | — | written with the row by omission when unanswered; restated by `correct`; null clears | B (`BlockOutcome.effort`) | `isRecordedEffort`, `setEffortSchema`, `blockResultRowSchema` | H `BlockDetailView.effort` (the category, never 1–10) | MIG-A | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.round_number` | `pending-live-migration` | int > 0 | round the amounts belong to (`partialRoundFor`; For Time: 1 only for a single pass, else after a recorded rounds count) | no amount (load-only row) | — | restated whole; cleared when progress changes | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.actual_reps` | `pending-live-migration` | int ≥ 0 | reps of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.actual_duration_seconds` | `pending-live-migration` | int ≥ 0 | seconds of this movement in that round | not recorded | measured | restated whole; cleared when progress changes | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.actual_distance` | `pending-live-migration` | numeric ≥ 0 | distance of this movement in that round | not recorded; needs its unit | measured | restated whole; cleared when progress changes | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.actual_distance_unit` | `pending-live-migration` | distance_unit | the prescription's unit, only with a distance | no distance | — | restated whole | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.weight` | `pending-live-migration` | numeric ≥ 0 | actual load for this movement in the attempt, only where `loadApplies` | not recorded | measured load | restated whole; kept when progress changes | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
+| `block_movement_results.weight_unit` | `pending-live-migration` | weight_unit NOT NULL | stamped at write time, as on a set | never null | — | restated whole | `blockResults.recordMovements` (TASK-031) | `movementActualFromDraft`, `movementResultViolation`, `blockMovementResultRowSchema` | H `movementActualReadings` (TASK-031) | MIG-B | TASK-031, TASK-015, TASK-046, TASK-047 |
 | `workout_sessions.mood` | `existing` | int, 1–5 | the session's five-step feeling | not answered | refused | restated by each save | D | `sessionDebriefSchema` | H mood, Summary | — | TASK-045 |
 | `workout_sessions.session_notes` | `existing` | text (≤ 2000 at the boundary) | session notes | nothing written | — | restated by each save | D | `sessionDebriefSchema` | H notes, Summary | — | TASK-045 |
 | `workout_exercises.exercise_notes` | `existing` | text | the note on one prescription | no note | — | replaced by each save | N | `workoutExerciseRowSchema` | Coaching and notes panel; not History | — | TASK-045 |
@@ -429,10 +437,15 @@ Implemented as pure functions in the typed contract and proven in check-02.
   identity changes every amount is cleared (never carried to the new round) and every load kept (the
   accepted owner's rule).
 - **Identity in storage.** One MIG-B row per movement per block attempt (UNIQUE
-  `workout_exercise_id`, client-minted `id`), only when an amount or a load was entered.
+  `workout_exercise_id`, client-minted `id`), only when an amount or a load was entered. TASK-031's
+  writer inserts it once, restates it by an UPDATE addressed to the movement on a 23505 (retry or
+  correction), and removes it when the movement is cleared — never a zeroed row.
 - **Readback.** History reads each movement's `round_number` partial and load with its movement and
-  round, and the block effort as its category word — never on the 1–10 scale (`timed-read-model`,
-  TASK-031); TASK-047 proves Workout → Summary → History save, retry and reload.
+  round (`movementActualReadings` → `BlockDetailView.movementActuals`: `Round 4` / `Rung 3`,
+  `5 reps`, `24 kg`), and the block effort as its category (`BlockDetailView.effort`) — never on the
+  1–10 scale (`timed-read-model`, TASK-031). The reconstruction carries each exercise's
+  `movement_result` (MIG-B redefines `session_reconstruction`). TASK-047 proves Workout → Summary →
+  History save, retry and reload.
 - **Open, for TASK-015 (not decided here):** whether the AMRAP keeps its single "Reps into the next
   round" count (`partial_round_reps`) once per-movement next-round amounts exist. Neither may be
   derived from the other; `conditioning`'s like-for-like score reads only `partial_round_reps`.
@@ -448,18 +461,20 @@ Implemented as pure functions in the typed contract and proven in check-02.
 
 ## 7. Isolated prerequisites (AC-R030-03)
 
-Nothing below is applied by TASK-030. No file is added to `supabase/migrations/`, no hosted database
-is touched, and no writer is added.
+TASK-030 applied nothing. TASK-031 (#658) landed both migrations as repository files. They are
+**Not applied** to any hosted project: no hosted database is touched, and nothing in the repository
+applies a migration.
 
 | Id | Kind | What | Basis | Owner |
 | --- | --- | --- | --- | --- |
-| `MIG-A` | migration | `block_results.effort public.set_effort` | reuses the enum; table-level grants and `to_jsonb(br)` reconstructions need no change | TASK-031 |
-| `MIG-B` | migration | `block_movement_results` table, RLS, grants, reconstructions | §5 | TASK-031 |
-| `block-effort-schema` | schema | `blockResultRowSchema` gains `effort: setEffortSchema.nullable().default(null)`; `blockResultInsert` writes effort by omission when unanswered (as `setLogInsert` does) | MIG-A | TASK-031 |
-| `movement-actual-schema` | schema | a `blockMovementResultRowSchema` in `src/state/schemas.ts` and the reconstruction's per-exercise movement result | MIG-B | TASK-031 |
-| `block-result-correction` | writer | correct a saved block row by UPDATE, answered with the stored row | reuse (§5) | TASK-031 |
-| `movement-actuals-writer` | writer | write and correct the block's movement rows idempotently, with or after the block row, keeping the draft on failure | MIG-B | TASK-031 |
-| `timed-read-model` | read model | History readings for block effort and movement actuals | MIG-A, MIG-B | TASK-031 |
+| `MIG-A` | migration | `block_results.effort public.set_effort` — landed as `supabase/migrations/20261110000029_block_result_effort.sql` | reuses the enum; table-level grants and `to_jsonb(br)` reconstructions need no change | TASK-031 |
+| `MIG-B` | migration | `block_movement_results` table, RLS, grants, reconstruction — landed as `supabase/migrations/20261110000030_block_movement_results.sql` | §5 | TASK-031 |
+| `block-effort-schema` | schema | landed: `blockResultRowSchema.effort` (`setEffortSchema.nullable().default(null)`); `blockResultInsert` writes `BlockOutcome.effort` by omission when unanswered | MIG-A | TASK-031 |
+| `movement-actual-schema` | schema | landed: `blockMovementResultRowSchema` (mirrors MIG-B's CHECKs) and the reconstruction's `movement_result` (default null) | MIG-B | TASK-031 |
+| `block-result-correction` | writer | landed: `createWorkoutClients().blockResults.correct` (`blockResultCorrection`), an UPDATE by `block_id` answered with the stored row; unwired | reuse (§5) | TASK-031 |
+| `movement-actuals-writer` | writer | landed: `createWorkoutClients().blockResults.recordMovements` — insert, restate on 23505, delete when cleared, in order; unwired | MIG-B | TASK-031 |
+| `timed-result-save` | writer | landed: `src/state/timed-results.ts` — `timedResultDraft`, `timedResultRequest`, `saveTimedResult` (record → correct on 23505 → recordMovements), `timedSaveSettled` (draft kept on failure); the data provider for TASK-015/019/026/047; imported by no shipped path | the writers above | TASK-031 |
+| `timed-read-model` | read model | landed: `sessionDetail` → `BlockDetailView.effort` and `movementActuals` (`movementActualReadings`) | MIG-A, MIG-B | TASK-031 |
 | `timed-entry` | draft | per-movement partial and load entry, effort and notes, truthful across edit and retry | §6 | TASK-015 |
 | `ladder-durable-draft` | draft | landed: durable ladder progress, draft, Finish checkpoint and original cap — `usePersistedLadder` (`clear.workout-ladders`) over `src/state/ladder-recovery.ts`; adopted by TASK-013/014/046/048 | `workout-persistence.ts` | TASK-032 |
 | `visible-proof` | read model | Workout → Summary → History save, retry and reload proof on the real test lane (disposable namespaced users) | PRE-001 + `LIVE-PRE-1` | TASK-047 |
@@ -468,103 +483,36 @@ is touched, and no writer is added.
 `LIVE-PRE-1` is not covered by PRE-001 (which checks only Auth health and REST availability).
 Without it TASK-047 cannot prove a real write of these fields.
 
-What applying MIG-A/MIG-B for TASK-047 would touch, as the repository documents it (stated for the
-owner's decision; not resolved here):
+### Exact live authority still required (TASK-031; not taken)
 
-- The repository documents **one** hosted Supabase project: the backend target is the reused live
-  project `qxckevxniacktaqecypl` (`docs/process/IMPLEMENTATION_PLAN.md`), and "the rebuild runs on
-  the same project" (`docs/process/CATALOG_MIGRATION_SCOPE.md`; `docs/process/HUMAN_GATES.md`).
-- The "disposable" test lane is disposable **users and data inside that project**, not a separate
-  database: the e2e harness creates and deletes namespaced `clear-e2e-<namespace>-*` users through
-  the admin API (`e2e/README.md`), and the overnight envelope allows "disposable Supabase test users
-  and test data in the existing project" (`docs/process/CLEAR-OVERNIGHT-VIBE-PREFLIGHT.md`).
-- So, unless the owner names a separate project, applying MIG-A/MIG-B so that TASK-047 can prove a
-  real write **is a schema change to the live production project**, not test-lane setup. TASK-030
-  reads no private configuration (no `.env*` file), so which project PRE-001's private configuration
-  points at is for the owner to confirm.
-- Nothing applies a migration automatically: no repository workflow pushes migrations (CI only
-  checks `database.types.ts` against the migration files, `npm run gen:types -- --check`).
-  TASK-031 can therefore land the migration files, schemas, writers and double-based tests without
-  applying anything; only TASK-047's real lane waits on `LIVE-PRE-1`.
+- **What:** exactly two migrations, in order — `20261110000029_block_result_effort.sql` (MIG-A) then
+  `20261110000030_block_movement_results.sql` (MIG-B). Both are additive: one nullable column, one
+  new table with its policies and grants, and a `create or replace` of `session_reconstruction`
+  with the same signature and privileges. No existing row is rewritten or backfilled.
+- **Where:** the hosted Supabase project the app and TASK-047's lane use. The repository documents
+  one: the reused live project `qxckevxniacktaqecypl`
+  (`docs/process/IMPLEMENTATION_PLAN.md`), where the "disposable" lane is namespaced test users, not
+  a separate database. Unless the owner names another project, this is a **production schema
+  change**.
+- **Who:** the owner, or someone the owner explicitly authorises for that release step. No
+  task in this body — TASK-031 included — is authorised to run `supabase db push`, `supabase link`,
+  `psql` or any write against a hosted project.
+- **How (documented release step, for the owner):** `docs/process/generation-reliability/release-checklist.md`
+  §3.1 — a tracked push dry run that must list only these two files, then the push; then fresh hosted
+  Standing RLS.
+- **What waits on it:** TASK-047's real write/readback proof. The shipped app does not: every
+  shipped save omits `effort` and never touches `block_movement_results`, and the hosted
+  reconstruction without `movement_result` reads as "nothing recorded".
+- **Known consequence until it is applied:** the hosted Standing RLS matrix
+  (`.github/workflows/rls-standing.yml`, gated by `E2E_LIVE_SCHEMA_READY`) now includes
+  `block_movement_results` (the disposition audit requires every migrated table) and will report the
+  table missing on the hosted project — as it reported migration 28's table before the 2026-10-28
+  release. The disposition is `seeded: false` so the shared fixture seed (and the D6 and appearance
+  specs that use it) keeps working on the current hosted schema; seed a row and flip it to
+  `seeded: true` in the change that applies MIG-B.
 
-```sql
--- DRAFT MIG-A — not a migration. Owner: TASK-031. Never applied by TASK-030.
--- Categorical effort for a whole timed block, stored beside — never inside —
--- the historical 1–10 perceived_effort.
-alter table public.block_results
-  add column if not exists effort public.set_effort;
-
-comment on column public.block_results.effort is
-  'REQ-030/REQ-031: the optional categorical effort for the whole block (too hard, '
-  'about right, too easy). NULL is unanswered, including every row written before '
-  'this column. Independent of perceived_effort, which keeps its 1–10 meaning.';
-
--- No grant: block_results is granted at table level (select, insert, update, delete).
--- No reader SQL: the session_as_* reconstructions return to_jsonb(br) (session_snapshot
--- carries no block result).
--- Nothing downstream reads it: no RPE conversion, conditioning, progression or prompt input.
-```
-
-```sql
--- DRAFT MIG-B — not a migration. Owner: TASK-031. Never applied by TASK-030.
--- One row per movement per timed block attempt: the round its partial amount belongs
--- to, the set log's measurement vocabulary, and a stamped unit.
-create table if not exists public.block_movement_results (
-  id uuid primary key,                       -- client-minted; a retry collides
-  workout_exercise_id uuid not null,
-  prescription_revision_status public.revision_status not null default 'active',
-  round_number int,
-  actual_reps int,
-  actual_duration_seconds int,
-  actual_distance numeric,
-  actual_distance_unit public.distance_unit,
-  weight numeric,
-  weight_unit public.weight_unit not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-
-  -- The movement as performed, active when written (as exercise_set_logs, D6).
-  constraint block_movement_results_prescription_fkey
-    foreign key (workout_exercise_id, prescription_revision_status)
-    references public.workout_exercises (id, revision_status)
-    on update cascade on delete cascade,
-  -- One per movement per block attempt (a block is attempted once per session).
-  constraint block_movement_results_one_per_movement unique (workout_exercise_id),
-  constraint block_movement_results_round_positive check (round_number is null or round_number > 0),
-  constraint block_movement_results_amount_needs_round check (
-    round_number is not null
-    or (actual_reps is null and actual_duration_seconds is null and actual_distance is null)),
-  constraint block_movement_results_observed check (
-    actual_reps is not null or actual_duration_seconds is not null
-    or actual_distance is not null or weight is not null),
-  constraint block_movement_results_reps_non_negative check (actual_reps is null or actual_reps >= 0),
-  constraint block_movement_results_duration_non_negative
-    check (actual_duration_seconds is null or actual_duration_seconds >= 0),
-  constraint block_movement_results_distance_non_negative
-    check (actual_distance is null or actual_distance >= 0),
-  constraint block_movement_results_distance_has_unit
-    check (actual_distance is null or actual_distance_unit is not null),
-  constraint block_movement_results_weight_non_negative check (weight is null or weight >= 0)
-);
-
-alter table public.block_movement_results enable row level security;
--- Owner-only through exercise → block → section → session, exactly as the
--- exercise_set_logs_*_own policies in 20260921000004 (select, insert, update, delete).
-revoke all on public.block_movement_results from anon, authenticated;
-grant select, delete on public.block_movement_results to authenticated;
-grant insert (id, workout_exercise_id, round_number, actual_reps, actual_duration_seconds,
-  actual_distance, actual_distance_unit, weight, weight_unit)
-  on public.block_movement_results to authenticated;
-grant update (round_number, actual_reps, actual_duration_seconds, actual_distance,
-  actual_distance_unit, weight, weight_unit, updated_at)
-  on public.block_movement_results to authenticated;
-grant all on public.block_movement_results to service_role;
-
--- Readers: extend session_reconstruction (20260921000010) so each exercise object
--- also carries 'movement_result', (select to_jsonb(m) from public.block_movement_results m
--- where m.workout_exercise_id = we.id), and leave anchor_evidence untouched: these rows
--- are not working sets.
-```
+Nothing applies a migration automatically: no repository workflow pushes migrations (CI only checks
+`database.types.ts` against the migration files, `npm run gen:types -- --check`).
 
 ## 8. Validation (what the checks prove, and what they do not)
 
@@ -585,6 +533,12 @@ grant all on public.block_movement_results to service_role;
   3-round race stopped in round 3 has no round without a recorded count, and round 3 with a count
   of 2), beside `conditioningScore`'s reading of a capped For Time; and the isolation of the
   drafts.
+- **TASK-031 check-01** (`src/data/refinement-timed-actuals.test.ts`): the landed MIG-A/MIG-B
+  mappings, writers and read model over the same double (now also answering as the hosted project
+  before `LIVE-PRE-1`): per-movement/round/block identity, category versus legacy numeric effort,
+  notes, null versus zero versus unreported, correction identity, retained errors with the draft
+  kept, idempotent retry without duplicate rows (23505 and lost answers), the hosted-schema
+  degradation, and History reading actual entries rather than planned values.
 - **Not proven here:** that Postgres agrees with the double (the real lane is TASK-047's, behind
   `LIVE-PRE-1`), any proposed write (no table exists), or any route behaviour.
 
@@ -596,12 +550,19 @@ needs consumer adoption; the existing `/gallery/refinements` logging states (`am
 `ladder`, `emom`) render the route's own blocks over refusing clients and save nothing. No synthetic
 writer is added to the gallery or anywhere else.
 
+TASK-031 keeps the same disposition: an explicit non-gallery data and operational obligation. It
+adds no consumer of the new writers or read-model fields, so no gallery state adopts them; the two
+gallery/preview literals that build a `BlockDetailView` (`src/dev/gallery-registry.tsx`,
+`src/app/FormatPreview.tsx`) only state the new fields as unanswered/empty, which changes nothing
+they render. No synthetic production writer is added.
+
 ## 10. Observations recorded, not changed
 
 - History has no reader for the per-set effort category or for movement notes. No task in this body
   is assigned either; they are recorded for the owner.
-- A block result is insert-once: a retry with changed values after a lost answer is absorbed by the
-  409 rule. Corrections need TASK-031's writer, not a re-insert.
+- A block result is insert-once on the shipped path: a retry with changed values after a lost answer
+  is absorbed by the 409 rule. TASK-031's correction writer and `saveTimedResult` fix this for timed
+  results once TASK-047 wires them.
 - `src/ui/block-renderers.tsx`, `block-completion-control.tsx` and `block-completion.ts` still say an
   EMOM supplies `minutes_completed`; none has since REQ-014/E01 (first recorded by TASK-011). Those
   comments are left; `DATA_MODEL.md` §8's timer-contract line said the same and is corrected by this
@@ -631,3 +592,18 @@ writer is added to the gallery or anywhere else.
 | AC-R030-02 effort, reuse versus migration | §4, §5; check-01 effort cases; check-02 AC-R030-02 cases |
 | AC-R030-03 validation and isolation | §6, §7, §8; check-02 AC-R030-03 cases |
 | JOURNEY-015, -019, -026, -031, -032 (foundation provider) | §2 owners, §6, §7 |
+
+## 12. TASK-031 landing (amendment)
+
+- Migrations: §7 (landed, **not applied**; `LIVE-PRE-1` is the owner's).
+- Statuses: `block_results.effort` and every `block_movement_results.*` field are now
+  `pending-live-migration`; the moments still list them as proposed, because no shipped entry
+  writes them (TASK-015 entry, TASK-047 wiring and proof).
+- Changes from the TASK-030 draft: `updated_at` is stamped by the existing `set_updated_at()`
+  trigger instead of being granted to the client; the `performed` reconstruction keeps a superseded
+  prescription that carries a movement result (as it keeps one with set logs, D6); the correction
+  is an UPDATE addressed to the movement (`workout_exercise_id`), so the first id stays.
+- Explicit degradation: a writer refused by a project without MIG-A/MIG-B answers its error with
+  `details.reason: 'migration-not-applied'` and `details.migration`; nothing is dropped to make it
+  pass, and the caller keeps its draft.
+- JOURNEY-031 is **not** claimed complete; TASK-047 owns it.

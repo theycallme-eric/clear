@@ -33,6 +33,7 @@ import { moodStep, type MoodStep } from './mood'
 import { prescriptionText, exerciseName } from './prescription'
 import { requiredEquipment } from './review'
 import type {
+  BlockMovementResultRow,
   BlockResultRow,
   ExerciseSetLogRow,
   ReconstructionKind,
@@ -115,8 +116,38 @@ export interface BlockDetailView {
   readonly outcome: readonly OutcomeMeasurement[]
   /** `7 of 10`, the shell's one question for every structure, or null. */
   readonly perceivedEffort: string | null
+  /**
+   * TASK-031 (MIG-A): the block's categorical effort as recorded — one of the
+   * set's three categories, or null when unanswered. A category, never a
+   * number: it is not read onto the 1–10 scale above and nothing converts it.
+   * Its words are the existing effort owner's (`SET_EFFORT_CHOICES`).
+   */
+  readonly effort: Enums<'set_effort'> | null
   readonly notes: string | null
+  /**
+   * TASK-031 (MIG-B): each movement's recorded timed actuals — the partial
+   * amount with the round it belongs to, and the actual load — in the block's
+   * movement order. Only movements with a recorded row appear; nothing here is
+   * read from the plan.
+   */
+  readonly movementActuals: readonly MovementActualView[]
   readonly exercises: readonly ExerciseDetailView[]
+}
+
+/** TASK-031: one movement's recorded actuals in a timed block attempt. */
+export interface MovementActualView {
+  readonly key: string
+  /** `workout_exercises.id` — the movement as performed. */
+  readonly exerciseId: string
+  readonly name: string
+  /** The round the amount belongs to, or null on a load-only row. */
+  readonly round: number | null
+  /** `Rung 3` for a ladder, `Round 4` otherwise; null without a round. */
+  readonly roundLabel: string | null
+  /** `5 reps`, `20s` or `30 m`, the measurement of the prescription's modality. */
+  readonly amount: string | null
+  /** `24 kg` — the row carries its own stamped unit. */
+  readonly weight: string | null
 }
 
 export interface SectionDetailView {
@@ -262,7 +293,9 @@ function blockDetail(
       result === null || result.perceived_effort === null
         ? null
         : `${result.perceived_effort} of 10`,
+    effort: result === null ? null : result.effort,
     notes: result === null ? null : blankToNull(result.notes),
+    movementActuals: movementActualReadings(entry.block, entry.exercises),
     exercises: entry.exercises.map(({ exercise, set_logs }) =>
       exerciseDetail(exercise, set_logs),
     ),
@@ -342,6 +375,49 @@ export function blockOutcome(
   }
 
   return readings.filter((reading): reading is OutcomeMeasurement => reading !== null)
+}
+
+/**
+ * TASK-031 (`timed-read-model`): the recorded per-movement actuals of a timed
+ * block, read from each movement's `block_movement_results` row as the
+ * reconstruction returns it — with its movement and round identity, and only
+ * what was recorded. A null column has no reading (never `0`), and a movement
+ * with no row has no entry; no amount or load is ever taken from the
+ * prescription's targets or `load_value`.
+ */
+export function movementActualReadings(
+  block: WorkoutBlockRow,
+  exercises: readonly {
+    readonly exercise: WorkoutExerciseRow
+    readonly movement_result: BlockMovementResultRow | null
+  }[],
+): readonly MovementActualView[] {
+  const unit = isLadderScheme(block.rep_scheme) ? 'Rung' : 'Round'
+  return exercises.flatMap(({ exercise, movement_result: row }) =>
+    row === null || row.workout_exercise_id !== exercise.id
+      ? []
+      : [
+          {
+            key: row.id,
+            exerciseId: exercise.id,
+            name: exerciseName(exercise.exercise_id),
+            round: row.round_number,
+            roundLabel: row.round_number === null ? null : `${unit} ${row.round_number}`,
+            amount: movementAmount(row),
+            weight: row.weight === null ? null : `${formatNumber(row.weight)} ${row.weight_unit}`,
+          },
+        ],
+  )
+}
+
+/** The one measurement a movement row records, formatted as a set's would be. */
+function movementAmount(row: BlockMovementResultRow): string | null {
+  if (row.actual_reps !== null) return `${row.actual_reps} ${row.actual_reps === 1 ? 'rep' : 'reps'}`
+  if (row.actual_duration_seconds !== null) return `${row.actual_duration_seconds}s`
+  if (row.actual_distance !== null) {
+    return `${formatNumber(row.actual_distance)} ${row.actual_distance_unit ?? ''}`.trim()
+  }
+  return null
 }
 
 function exerciseDetail(

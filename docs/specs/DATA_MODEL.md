@@ -395,7 +395,7 @@ Collapsing revision and execution into one column loses information: replacing a
 
 ## 8. Execution
 
-Per-logging-moment field ownership (writer, validator, identity, null/zero/update meaning, readback), the proposed richer timed fields and their isolated migrations: [`LOGGING_FIELD_CONTRACT.md`](LOGGING_FIELD_CONTRACT.md).
+Per-logging-moment field ownership (writer, validator, identity, null/zero/update meaning, readback), the proposed richer timed fields and their isolated migrations: [`LOGGING_FIELD_CONTRACT.md`](LOGGING_FIELD_CONTRACT.md). TASK-031 declares `block_results.effort` (MIG-A) and `block_movement_results` (MIG-B) in the repository's migrations; neither is applied to the hosted project until the owner's LIVE-PRE-1 (§7 there).
 
 ### `exercise_set_logs`
 

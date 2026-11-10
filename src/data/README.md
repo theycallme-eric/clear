@@ -64,3 +64,11 @@ Catalog access, Supabase clients, repositories, and persistence adapters belong 
   `movementActualFromDraft`). It writes nothing and calls nothing; the prose, the reuse-versus-
   migration reasoning and the draft SQL (MIG-A, MIG-B — owned by TASK-031, not applied) are
   `docs/specs/LOGGING_FIELD_CONTRACT.md`. A task that lands a proposed field updates both.
+  TASK-031 landed MIG-A/MIG-B as repository migrations (status `pending-live-migration`: not
+  applied to the hosted project until the owner's LIVE-PRE-1).
+- `workout.ts` `blockResults.correct` / `blockResults.recordMovements` (TASK-031, REQ-031) — the
+  timed-result correction (UPDATE of the saved `block_results` row) and the per-movement writer
+  (`block_movement_results`: insert, restate on 23505, remove when cleared). No shipped path calls
+  them yet; `src/state/timed-results.ts` (`saveTimedResult`) is the provider TASK-015/TASK-047 wire
+  through the shell's one completion path. A project without the migrations refuses them with
+  `details.migration`.

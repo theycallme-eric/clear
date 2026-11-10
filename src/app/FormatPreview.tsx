@@ -353,7 +353,10 @@ function blockView(block: PreviewBlock): BlockDetailView {
     scored: block.outcome !== null,
     outcome: block.outcome ?? [],
     perceivedEffort: null,
+    // A preview records nothing: no effort and no movement actuals (TASK-031).
+    effort: null,
     notes: null,
+    movementActuals: [],
     exercises: block.movements.map(movementView),
   }
 }

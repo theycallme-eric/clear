@@ -54,6 +54,7 @@ import { setObservationMutation } from '../state/set-observation-mutation'
 import { sessionProgress } from '../state/workout-progress'
 import { isRecordedEffort, loggedSetFromRow, setLogViolation, type SetLogEntry } from '../state/set-logging'
 import {
+  BLOCK_MOVEMENT_RESULT_COLUMNS,
   BLOCK_RESULT_COLUMNS,
   LOGGING_DOUBLE_ANON_KEY,
   LOGGING_DOUBLE_TOKEN,
@@ -345,9 +346,12 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
       expect(contract.update.trim(), contract.id).not.toBe('')
       expect(contract.readers.length, contract.id).toBeGreaterThan(0)
       expect(contract.validators.length, contract.id).toBeGreaterThan(0)
-      expect(contract.migration !== null, contract.id).toBe(contract.status === 'proposed-migration')
+      // TASK-031 landed MIG-A/MIG-B in the repository (`pending-live-migration`):
+      // the migration stays named until the owner applies it (LIVE-PRE-1).
+      const migrated = contract.status === 'proposed-migration' || contract.status === 'pending-live-migration'
+      expect(contract.migration !== null, contract.id).toBe(migrated)
       expect(contract.writer === null, contract.id).toBe(contract.status === 'legacy' || contract.status === 'prescription')
-      if (contract.status === 'proposed-migration') expect(contract.owners, contract.id).toContain('TASK-031')
+      if (migrated) expect(contract.owners, contract.id).toContain('TASK-031')
     }
   })
 
@@ -381,9 +385,14 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
         expect(columns, contract.id).toContain(contract.column)
       }
     }
-    // MIG-B's whole table is absent; MIG-A adds one column to an existing table.
-    expect(generatedColumns('block_movement_results')).toBeNull()
-    expect(generatedColumns('block_results')).not.toContain('effort')
+    // TASK-031 landed both: MIG-B's whole table and MIG-A's one column are in
+    // the generated types (and so in the repository's migrations), each still
+    // marked pending the owner's live application.
+    expect(generatedColumns('block_movement_results')).toEqual([...BLOCK_MOVEMENT_RESULT_COLUMNS])
+    expect(generatedColumns('block_results')).toContain('effort')
+    expect(LOGGING_FIELDS.filter((contract) => contract.migration !== null).map((contract) => contract.status)).toEqual(
+      LOGGING_FIELDS.filter((contract) => contract.migration !== null).map(() => 'pending-live-migration'),
+    )
     // MIG-A reuses the existing categorical vocabulary, exactly.
     expect(Constants.public.Enums.set_effort).toEqual(['too_hard', 'about_right', 'too_easy'])
 
@@ -421,8 +430,10 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
 
     // The isolated prerequisites, each with its owner, and the drafts marked as such.
     for (const path of PROPOSED_PATHS) expect(spec, path.id).toContain(`\`${path.id}\``)
-    expect(spec).toMatch(/```sql\n-- DRAFT MIG-A — not a migration/)
-    expect(spec).toMatch(/```sql\n-- DRAFT MIG-B — not a migration/)
+    // TASK-031 replaced the drafts with the landed files, still unapplied.
+    expect(spec).toContain('supabase/migrations/20261110000029_block_result_effort.sql')
+    expect(spec).toContain('supabase/migrations/20261110000030_block_movement_results.sql')
+    expect(spec).not.toMatch(/-- DRAFT MIG-[AB] — not a migration/)
     expect(spec).toContain('Gallery disposition: not applicable')
   })
 
@@ -671,14 +682,16 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     })
     expect(raw.status).toBe(400)
 
-    // A category handed to today's writer is dropped, never coerced: the row
-    // mapping has no categorical column (MIG-A is TASK-031's).
-    const withCategory = { blockId: at.amrap.block.id, outcome: {}, perceivedEffort: null, effort: 'too_easy' } as BlockCompletion
-    expect(Object.keys(blockResultInsert(withCategory))).not.toContain('effort')
-    expect(blockResultInsert(withCategory).perceived_effort).toBeNull()
+    // TASK-031 (MIG-A): a category travels in the outcome to its own column,
+    // `effort`, and never becomes the number; a category anywhere else in the
+    // completion is no field at all and is not coerced.
+    const misplaced = { blockId: at.amrap.block.id, outcome: {}, perceivedEffort: null, effort: 'too_easy' } as BlockCompletion
+    expect(Object.keys(blockResultInsert(misplaced))).not.toContain('effort')
+    const withCategory: BlockCompletion = { blockId: at.amrap.block.id, outcome: { effort: 'too_easy' }, perceivedEffort: null }
+    expect(blockResultInsert(withCategory)).toMatchObject({ effort: 'too_easy', perceived_effort: null })
     expect((await workout.blockResults.record(withCategory)).ok).toBe(true)
-    expect(double.blockResults()[0]).toMatchObject({ perceived_effort: null })
-    expect(Object.keys(double.blockResults()[0])).not.toContain('effort')
+    expect(double.blockResults()[0]).toMatchObject({ perceived_effort: null, effort: 'too_easy' })
+    expect(blockView(await performed(double), at.amrap.block.id)).toMatchObject({ perceivedEffort: null, effort: 'too_easy' })
 
     // The legacy number keeps its meaning: History reads it on the 1–10 scale…
     const legacy = createLoggingDouble({ snapshot })
@@ -709,7 +722,7 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     }
     // The session's five-step mood is a different question again.
     expect(sessionDebriefSchema.safeParse({ mood: 'too_easy', session_notes: null }).success).toBe(false)
-    expect(field('block_results.effort')).toMatchObject({ status: 'proposed-migration', migration: 'MIG-A', type: 'set_effort (the existing enum)' })
+    expect(field('block_results.effort')).toMatchObject({ status: 'pending-live-migration', migration: 'MIG-A', type: 'set_effort (the existing enum)' })
     expect(field('block_results.perceived_effort')).toMatchObject({ status: 'legacy', writer: null })
   }, REHEARSAL_TIMEOUT_MS)
 
@@ -749,8 +762,12 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
     expect((await clients.setLogs.mutate(setObservationMutation(loadOnly))).ok).toBe(true)
     expect(exerciseView(await performed(reused), at.wallBall.id).sets.map((set) => [set.setNumber, set.reps, set.weight])).toEqual([[1, null, '9 kg']])
 
-    // So MIG-B is a table of its own — absent today, as PostgREST would say.
-    const missing = await reused.fetch(`${LOGGING_DOUBLE_URL}/rest/v1/block_movement_results`, {
+    // So MIG-B is a table of its own: TASK-031 declares it in the repository,
+    // and the hosted project — until the owner applies it (LIVE-PRE-1) — still
+    // answers as PostgREST does for a table it does not have.
+    expect(generatedColumns('block_movement_results')).not.toBeNull()
+    const hosted = createLoggingDouble({ snapshot, schema: 'hosted-before-timed-actuals' })
+    const missing = await hosted.fetch(`${LOGGING_DOUBLE_URL}/rest/v1/block_movement_results`, {
       method: 'POST',
       headers: { apikey: LOGGING_DOUBLE_ANON_KEY, Authorization: `Bearer ${LOGGING_DOUBLE_TOKEN}` },
       body: JSON.stringify([{ workout_exercise_id: at.amrapSwing.id, round_number: 4, actual_reps: 5 }]),
@@ -923,35 +940,50 @@ describe('TASK-030 logging field ownership before dependent writes', () => {
   })
 
   it('AC-R030-03 the proposed fields are isolated: no migration, live call or synthetic writer is added, and the current writers still cannot send them', async () => {
-    // No migration defines the proposed column or table; the contract still calls them proposed.
+    // As amended by TASK-031, which owns MIG-A and MIG-B: each is defined by
+    // exactly its own repository migration and by nothing else, and nothing in
+    // the repository applies a migration (no db push, link or psql in any
+    // workflow or script) — applying them is the owner's LIVE-PRE-1.
     const migrations = readdirSync(join(REPO_ROOT, 'supabase', 'migrations')).filter((file) => file.endsWith('.sql'))
     expect(migrations.length).toBeGreaterThan(0)
     for (const file of migrations) {
       const sql = read(`supabase/migrations/${file}`)
-      expect(sql, file).not.toMatch(/block_movement_results/)
-      expect(sql, file).not.toMatch(/alter table (?:if exists )?public\.block_results\s+add column(?: if not exists)?\s+effort\b/i)
+      expect(/create table (?:if not exists )?public\.block_movement_results\b/i.test(sql), file).toBe(file === '20261110000030_block_movement_results.sql')
+      expect(/alter table (?:if exists )?public\.block_results\s+add column(?: if not exists)?\s+effort\b/i.test(sql), file).toBe(
+        file === '20261110000029_block_result_effort.sql',
+      )
     }
-    expect(LOGGING_FIELDS.filter((contract) => contract.migration !== null).every((contract) => contract.status === 'proposed-migration')).toBe(true)
+    for (const dir of ['.github/workflows', 'scripts']) {
+      const files = readdirSync(join(REPO_ROOT, dir), { recursive: true, encoding: 'utf8' })
+        .filter((file) => /\.(ya?ml|m?js|sh|py)$/.test(file))
+      for (const file of files) expect(read(`${dir}/${file}`), `${dir}/${file}`).not.toMatch(/supabase db push|supabase link\b/)
+    }
+    expect(LOGGING_FIELDS.filter((contract) => contract.migration !== null).every((contract) => contract.status === 'pending-live-migration')).toBe(true)
 
     // The contract module is data and pure functions: no client, transport or schema of its own.
     const contract = read('src/data/refinement-logging-contract.ts')
     expect(contract).not.toMatch(/\bfetch\(|createSupabaseClient|\.from\(|\.rpc\(|createWorkoutClients\(|from 'zod'/)
 
-    // The drafts are drafts: only the specification carries their SQL, owned by
-    // TASK-031, and applying them anywhere is the owner's separate authority.
     const spec = read('docs/specs/LOGGING_FIELD_CONTRACT.md')
-    expect(spec).toMatch(/DRAFT MIG-A — not a migration/)
+    expect(spec).toMatch(/Not applied/)
     expect(PROPOSED_PATHS.find((path) => path.id === 'MIG-A')).toMatchObject({ owner: 'TASK-031' })
     expect(PROPOSED_PATHS.find((path) => path.id === 'LIVE-PRE-1')).toMatchObject({ kind: 'live-authority', owner: 'owner' })
-    for (const id of ['block-result-correction', 'movement-actuals-writer', 'timed-read-model']) {
-      expect(PROPOSED_PATHS.find((path) => path.id === id)?.ref?.proposedBy, id).toBe('TASK-031')
+    for (const id of ['block-result-correction', 'movement-actuals-writer', 'timed-read-model', 'timed-result-save']) {
+      expect(PROPOSED_PATHS.find((path) => path.id === id), id).toMatchObject({ owner: 'TASK-031' })
     }
 
-    // Today's clients have no path for them: no correction, no movement rows.
-    const double = createLoggingDouble({ snapshot: session() })
+    // The shipped writers still cannot send them: the shell's one completion
+    // path never names the correction or the movement writer, and a completion
+    // with no effort (every renderer's today) names no new column.
+    const runtime = readdirSync(join(REPO_ROOT, 'src'), { recursive: true, encoding: 'utf8' })
+      .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file) && !file.startsWith('test/') && !file.startsWith('test\\'))
+    const callers = runtime.filter((file) => /blockResults\.(?:correct|recordMovements)\(|from '[./]*state\/timed-results'|from '\.\/timed-results'/.test(read(`src/${file}`)))
+    expect(callers).toEqual([])
+    const double = createLoggingDouble({ snapshot: session(), schema: 'hosted-before-timed-actuals' })
     const { workout } = clientsFor(double)
-    expect(member(workout, 'blockResults.correct')).toBeUndefined()
-    expect(member(workout, 'blockResults.recordMovements')).toBeUndefined()
-    expect(double.requests).toHaveLength(0)
+    const at = layout(session())
+    expect((await workout.blockResults.record({ blockId: at.amrap.block.id, outcome: { roundsCompleted: 3 }, perceivedEffort: null })).ok).toBe(true)
+    const [sent] = double.requests[0].body as Record<string, unknown>[]
+    expect(Object.keys(sent)).not.toContain('effort')
   })
 })

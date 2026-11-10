@@ -897,7 +897,10 @@ const SAMPLE_DETAIL_BLOCK: BlockDetailView = {
     { label: 'Elapsed', value: '08:12' },
   ],
   perceivedEffort: '8 of 10',
+  // TASK-031's fields, unanswered and unrecorded: this reading is unchanged.
+  effort: null,
   notes: 'Moved cleanly through the final round.',
+  movementActuals: [],
   exercises: [
     {
       id: 'gallery-detail-exercise',

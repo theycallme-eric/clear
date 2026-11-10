@@ -22,20 +22,25 @@
  * rather than replace it, which is why the row is minted by the caller: an id
  * that exists before the request does is what makes a retry idempotent.
  */
-import { isErr, ok, err, createError, ErrorCode, type Result } from '../state/errors'
+import { isErr, ok, err, createError, ErrorCode, type AppError, type Result } from '../state/errors'
 import {
+  blockResultCorrection,
   blockResultInsert,
   isPerceivedEffort,
+  movementResultViolation,
   PERCEIVED_EFFORT_MAX,
   PERCEIVED_EFFORT_MIN,
   type BlockCompletion,
+  type MovementResultWrite,
 } from '../state/block-completion'
 import { setLogInsert, setLogViolation, type SetLogEntry } from '../state/set-logging'
 import { parseSetObservationAck, type SetObservationMutation, type SetObservationAck } from '../state/set-observation-mutation'
 import {
+  blockMovementResultRowSchema,
   blockResultRowSchema,
   exerciseSetLogRowSchema,
   parseBoundary,
+  type BlockMovementResultRow,
   type BlockResultRow,
   type ExerciseSetLogRow,
 } from '../state/schemas'
@@ -56,6 +61,36 @@ export interface BlockResultsClient {
    * absent one is written as `null`.
    */
   record(completion: BlockCompletion): Promise<Result<BlockResultRow>>
+  /**
+   * TASK-031 (`block-result-correction`): corrects the block's saved row by an
+   * UPDATE addressed to its `block_id`, restating every outcome column, the
+   * notes and the categorical effort, and answers the row as stored. A row
+   * that is not there (or not the caller's) is `PERSISTENCE_NOT_FOUND`;
+   * nothing is inserted. This is what absorbs a changed retry after a lost
+   * answer: the insert's 23505 says the row exists, and the correction makes
+   * it say what the athlete last confirmed.
+   *
+   * Not called by any shipped path yet (TASK-047 wires it). It names
+   * `effort`, so it needs MIG-A on the project it is sent to; without it the
+   * refusal says so (`details.migration: 'MIG-A'`).
+   */
+  correct(completion: BlockCompletion): Promise<Result<BlockResultRow>>
+  /**
+   * TASK-031 (`movement-actuals-writer`): writes the block's per-movement
+   * actuals (MIG-B), one movement at a time, in order, and answers the rows
+   * as stored. Idempotent: a row is inserted under its client-minted id; a
+   * 23505 (the row is already there — a retry after a lost answer, or a
+   * correction) restates it by an UPDATE addressed to its movement; a `null`
+   * row removes what an earlier attempt saved. Repeating the same writes
+   * leaves exactly the same rows and never a second one for a movement.
+   * A failure stops at that movement with the earlier ones written, so the
+   * retry resumes rather than repeats; the caller keeps its draft.
+   *
+   * Not called by any shipped path yet (TASK-047 wires it). It needs MIG-B on
+   * the project it is sent to; without it the refusal says so
+   * (`details.migration: 'MIG-B'`).
+   */
+  recordMovements(writes: readonly MovementResultWrite[]): Promise<Result<BlockMovementResultRow[]>>
 }
 
 export interface SetLogsClient {
@@ -272,6 +307,12 @@ export function createWorkoutClients({
     },
   }
 
+  const dbFor = async (): Promise<Result<ReturnType<typeof createSupabaseClient>>> => {
+    const accessToken = await token()
+    if (isErr(accessToken)) return accessToken
+    return ok(createSupabaseClient({ ...supabase, accessToken: accessToken.value }))
+  }
+
   const blockResults: BlockResultsClient = {
     async record(completion) {
       // The range is the database's (`block_results_perceived_effort_range`),
@@ -298,7 +339,11 @@ export function createWorkoutClients({
 
       const db = createSupabaseClient({ ...supabase, accessToken: accessToken.value })
       const rows = await db.from('block_results').insert(blockResultInsert(completion))
-      if (isErr(rows)) return rows
+      if (isErr(rows)) {
+        // Only an answered effort names the MIG-A column; an unanswered one is
+        // omitted, so every save the shipped renderers make is unaffected.
+        return completion.outcome.effort === undefined ? rows : err(schemaGap(rows.error, 'MIG-A'))
+      }
 
       const [row] = rows.value
       if (row === undefined) {
@@ -315,6 +360,93 @@ export function createWorkoutClients({
       return parseBoundary(blockResultRowSchema, row, {
         code: ErrorCode.PERSISTENCE_READ_FAILED,
       })
+    },
+    async correct(completion) {
+      const effort = completion.perceivedEffort
+      if (effort !== undefined && effort !== null && !isPerceivedEffort(effort)) {
+        return err(
+          createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+            details: { field: 'perceived_effort', min: PERCEIVED_EFFORT_MIN, max: PERCEIVED_EFFORT_MAX },
+          }),
+        )
+      }
+
+      const db = await dbFor()
+      if (isErr(db)) return db
+
+      const rows = await db.value
+        .from('block_results')
+        .update(blockResultCorrection(completion), { block_id: completion.blockId })
+      if (isErr(rows)) return err(schemaGap(rows.error, 'MIG-A'))
+
+      const [row] = rows.value
+      if (row === undefined) {
+        // Nothing matched: no saved row to correct, or one RLS hides. A
+        // correction never becomes an insert.
+        return err(
+          createError(ErrorCode.PERSISTENCE_NOT_FOUND, {
+            details: { table: 'block_results', blockId: completion.blockId },
+          }),
+        )
+      }
+
+      return parseBoundary(blockResultRowSchema, row, { code: ErrorCode.PERSISTENCE_READ_FAILED })
+    },
+    async recordMovements(writes) {
+      for (const write of writes) {
+        const field = movementResultViolation(write)
+        if (field !== null) {
+          return err(
+            createError(ErrorCode.VALIDATION_OUT_OF_RANGE, {
+              details: { field, workoutExerciseId: write.workoutExerciseId },
+            }),
+          )
+        }
+      }
+
+      const db = await dbFor()
+      if (isErr(db)) return db
+      const table = db.value.from('block_movement_results')
+
+      const stored: BlockMovementResultRow[] = []
+      for (const [index, write] of writes.entries()) {
+        const where = { workout_exercise_id: write.workoutExerciseId }
+        const failed = (error: AppError) =>
+          err(
+            schemaGap(
+              { ...error, details: { ...error.details, workoutExerciseId: write.workoutExerciseId, written: index } },
+              'MIG-B',
+            ),
+          )
+
+        if (write.row === null) {
+          const removed = await table.delete(where)
+          if (isErr(removed)) return failed(removed.error)
+          continue
+        }
+
+        let rows = await table.insert(write.row)
+        if (isErr(rows) && isUniqueViolation(rows.error)) {
+          // Already there: restate it. The movement and the first id stay; the
+          // values become what this write says.
+          const { id: _id, workout_exercise_id: _movement, ...values } = write.row
+          void _id
+          void _movement
+          rows = await table.update(values, where)
+        }
+        if (isErr(rows)) return failed(rows.error)
+
+        const [row] = rows.value
+        if (row === undefined) {
+          return failed(
+            createError(ErrorCode.PERSISTENCE_WRITE_FAILED, { details: { table: 'block_movement_results' } }),
+          )
+        }
+        const parsed = parseBoundary(blockMovementResultRowSchema, row, { code: ErrorCode.PERSISTENCE_READ_FAILED })
+        if (isErr(parsed)) return parsed
+        stored.push(parsed.value)
+      }
+      return ok(stored)
     },
   }
 
@@ -436,6 +568,24 @@ export function createWorkoutClients({
   }
 }
 
+/** Postgres' unique_violation: the row is already there. */
+function isUniqueViolation(error: AppError): boolean {
+  return error.code === ErrorCode.PERSISTENCE_CONFLICT && error.details?.pgCode === '23505'
+}
+
+/**
+ * PostgREST's answer for a column (PGRST204) or table (PGRST205) its schema
+ * cache does not hold: the project has not had the migration applied
+ * (LIVE-PRE-1). Said explicitly, so a caller keeps its draft and can tell a
+ * schema gap from a refused value; nothing is dropped to make the write pass.
+ */
+const SCHEMA_GAP_CODES = new Set(['PGRST204', 'PGRST205', '42703', '42P01'])
+
+function schemaGap(error: AppError, migration: 'MIG-A' | 'MIG-B'): AppError {
+  if (!SCHEMA_GAP_CODES.has(String(error.details?.pgCode))) return error
+  return { ...error, details: { ...error.details, reason: 'migration-not-applied', migration } }
+}
+
 /**
  * The clients for a build with no Supabase configuration. Every call answers
  * the same typed refusal, so the shell shows its error state rather than the
@@ -465,7 +615,7 @@ export function unconfiguredWorkoutClients(): WorkoutClients {
       asIntendedAtStart: refusal,
       asPerformed: refusal,
     },
-    blockResults: { record: refusal },
+    blockResults: { record: refusal, correct: refusal, recordMovements: refusal },
     history: { page: refusal },
     setLogs: { log: refusal, mutate: refusal },
     exercises: { definition: refusal, saveNotes: refusal },

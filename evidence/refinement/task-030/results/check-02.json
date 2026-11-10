@@ -20,7 +20,7 @@
   "targets": [
     {
       "path": "src/data/refinement-logging-contract.test.ts",
-      "sha256": "30cc79a548b0d8ca950bc79873fac006f60ef59f983c7e457032c8be5ec16011"
+      "sha256": "78d8394cab2a936b869afca14ac7900bdea7933d147a7b88ebaa3dcfc5c8cd86"
     }
   ],
   "requiredCases": [

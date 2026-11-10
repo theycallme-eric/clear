@@ -1075,10 +1075,17 @@ describe('TASK-030 logging field ownership at the schema boundary', () => {
       expect(column, String(value)).toBe(value === 1 || value === 10)
     }
 
-    // No categorical block column exists to read yet (MIG-A is TASK-031's):
-    // a category beside the row is not carried into what the app reads.
+    // TASK-031 landed MIG-A: the categorical block column is read as a
+    // category, beside — never into — the number. A row without the key (a
+    // project MIG-A has not reached) reads as unanswered, and a number or an
+    // unknown word is refused there.
     const parsed = blockResultRowSchema.safeParse({ ...blockResult, effort: 'too_easy' })
-    expect(parsed.success && Object.keys(parsed.data)).not.toContain('effort')
+    expect(parsed.success && [parsed.data.effort, parsed.data.perceived_effort]).toEqual(['too_easy', blockResult.perceived_effort])
+    const unanswered = blockResultRowSchema.safeParse(blockResult)
+    expect(unanswered.success && unanswered.data.effort).toBeNull()
+    for (const invalid of [7, 'hard']) {
+      expect(blockResultRowSchema.safeParse({ ...blockResult, effort: invalid }).success, String(invalid)).toBe(false)
+    }
   })
 
   it('AC-R030-02 per-set effort is exactly the three categories, unanswered is null, and the historical rpe beside it is never rewritten', () => {
@@ -1161,8 +1168,12 @@ describe('TASK-030 logging field ownership at the schema boundary', () => {
     const named = LOGGING_FIELDS.filter((field) => field.table in shapes && field.status !== 'proposed-migration')
     expect(named.length).toBeGreaterThan(10)
     for (const field of named) expect(Object.keys(shapes[field.table]), field.id).toContain(field.column)
-    // …and the proposed categorical block column is not read yet.
-    expect(Object.keys(blockResultRowSchema.shape)).not.toContain('effort')
+    // …including the categorical block column TASK-031 landed (MIG-A), and no
+    // column the contract still calls proposed.
+    expect(Object.keys(blockResultRowSchema.shape)).toContain('effort')
+    for (const field of LOGGING_FIELDS.filter((candidate) => candidate.table in shapes && candidate.status === 'proposed-migration')) {
+      expect(Object.keys(shapes[field.table]), field.id).not.toContain(field.column)
+    }
   })
 
   it('AC-R030-01 the rest-day mark and the debrief validate their reasons and notes as their columns do', () => {

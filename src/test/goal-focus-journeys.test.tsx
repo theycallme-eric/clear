@@ -532,7 +532,10 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
     // (GR-04), save-time viability evaluation (REQ-010), the Settings
     // viability guard (REQ-012), and the onboarding commit that asks it
     // (REQ-011), followed by the location writes that enforce it (REQ-013),
-    // then the ladder timing column (REQ-018, TASK-039) —
+    // then the ladder timing column (REQ-018, TASK-039), the per-set effort and
+    // ordered observation mutations (TASK-007, TASK-011 of the UI polish), and
+    // the richer timed actuals (TASK-031: MIG-A block effort, MIG-B movement
+    // results) —
     // each is named here so a migration nobody accounted for still fails.
     const inspected = migrations.indexOf('20260927000018_generation_goal_scope.sql')
     expect(inspected).toBeGreaterThan(-1)
@@ -547,6 +550,8 @@ describe('REQ-015 — the recovery stayed inside its scope', () => {
       '20261024000026_v3_hinge_warmup.sql',
       '20261027000027_set_effort.sql',
       '20261027000028_set_observation_mutations.sql',
+      '20261110000029_block_result_effort.sql',
+      '20261110000030_block_movement_results.sql',
     ])
   })
 })

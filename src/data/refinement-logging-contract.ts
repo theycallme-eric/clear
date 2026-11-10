@@ -14,7 +14,10 @@
  *   · `LOGGING_FIELDS` — every measurement, load, effort and note field a
  *     moment writes today, plus every field proposed for the richer timed
  *     results, each with its status: `existing`, `legacy` (kept, never written
- *     by the current UI), or `proposed-migration` (needs `MIG-A` / `MIG-B`).
+ *     by the current UI), `proposed-migration` (needs `MIG-A` / `MIG-B`), or —
+ *     since TASK-031 landed them — `pending-live-migration` (declared by a
+ *     repository migration, typed and written by a client writer no shipped
+ *     path calls yet, and not applied to the hosted project: LIVE-PRE-1).
  *   · `PROPOSED_PATHS` — the proposed writers and read models, each with the
  *     dependent task that owns it.
  *   · Three pure contract functions for the proposed timed fields:
@@ -29,13 +32,14 @@
  *     database. Nothing in `src/` imports it at runtime; dependent tasks
  *     (TASK-015, TASK-031, TASK-032, TASK-036, TASK-043–TASK-047) import it to
  *     build against the same contract.
- *   · Not a migration. `MIG-A` and `MIG-B` are drafts in the specification,
- *     owned by TASK-031, and applying either to any hosted project needs the
- *     owner's separate live authority.
+ *   · Not a migration. `MIG-A` and `MIG-B` are TASK-031's repository
+ *     migrations (`supabase/migrations/20261110000029_block_result_effort.sql`,
+ *     `20261110000030_block_movement_results.sql`); applying either to any
+ *     hosted project needs the owner's separate live authority (LIVE-PRE-1).
  *   · Not a second schema. The proposed values are validated by the existing
  *     validators (`isRecordedEffort`, `setLogViolation`); the zod row schemas
- *     for `MIG-A` / `MIG-B` belong in `src/state/schemas.ts` once the columns
- *     exist, which is TASK-031's.
+ *     for `MIG-A` / `MIG-B` are `blockResultRowSchema.effort` and
+ *     `blockMovementResultRowSchema` in `src/state/schemas.ts` (TASK-031).
  */
 import type { Enums } from './database.types'
 import type { BlockOutcome } from '../state/block-completion'
@@ -100,8 +104,13 @@ export type DependentTask =
  *     current UI never writes (it writes `null`).
  *   · `prescription` — read by logging, never written by it.
  *   · `proposed-migration` — needs a column or table that does not exist.
+ *   · `pending-live-migration` — TASK-031: the column or table is declared by
+ *     a repository migration (MIG-A / MIG-B) and is in the generated types, and
+ *     a client writer and History reader exist; but no shipped path calls the
+ *     writer yet (TASK-015 / TASK-047 wire it), and the migration is not
+ *     applied to the hosted project until the owner's LIVE-PRE-1.
  */
-export type FieldStatus = 'existing' | 'legacy' | 'prescription' | 'proposed-migration'
+export type FieldStatus = 'existing' | 'legacy' | 'prescription' | 'proposed-migration' | 'pending-live-migration'
 
 /** The two isolated schema prerequisites, drafted in the specification. */
 export type MigrationId = 'MIG-A' | 'MIG-B'
@@ -260,7 +269,8 @@ const SET_HISTORY =
 const BLOCK_IDENTITY =
   'block_results: one row per block (UNIQUE block_id), written once by the section forward action; a repeated insert answers 409 (23505) and counts as already recorded'
 const BLOCK_UPDATE =
-  'insert-once today: no client corrects a saved row (the UPDATE grant and block_results_update_own policy exist; the writer is TASK-031’s)'
+  'insert-once on the shipped path; TASK-031’s correction writer (blockResults.correct: an UPDATE of the row, restating every outcome column, notes and effort) ' +
+  'exists but no shipped path calls it yet (TASK-047 wires it); a changed retry after a lost answer is still absorbed by the 409 rule until then'
 
 const SET_OWNERS: readonly DependentTask[] = ['TASK-043', 'TASK-019']
 
@@ -641,11 +651,11 @@ function blockField(
   }
 }
 
-/** MIG-B's draft columns: the set log's measurement vocabulary, keyed to the block attempt. */
+/** MIG-B's columns: the set log's measurement vocabulary, keyed to the block attempt (landed by TASK-031). */
 function movementField(column: string, type: string, meaning: string, zeroMeans: string | null, nullMeans: string): FieldContract {
   return {
     id: `block_movement_results.${column}`,
-    status: 'proposed-migration',
+    status: 'pending-live-migration',
     table: 'block_movement_results',
     column,
     type,
@@ -653,14 +663,17 @@ function movementField(column: string, type: string, meaning: string, zeroMeans:
     nullMeans,
     zeroMeans,
     update:
-      'one row per movement per block attempt, restated whole by a correction; when the block’s recorded progress changes, ' +
+      'one row per movement per block attempt (UNIQUE workout_exercise_id, client-minted id): inserted once, restated whole by an UPDATE ' +
+      'on the 23505 of a retry or correction, removed when the movement is cleared; when the block’s recorded progress changes, ' +
       'the amounts are cleared rather than moved to the new round, and the load is kept',
     validators: [
       { module: 'src/data/refinement-logging-contract.ts', name: 'movementActualFromDraft' },
       { module: SET_LOGGING, name: 'setLogViolation' },
+      { module: BLOCK_COMPLETION, name: 'movementResultViolation' },
+      schema('blockMovementResultRowSchema'),
     ],
-    writer: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.recordMovements', proposedBy: 'TASK-031' },
-    readers: [{ module: SESSION_DETAIL, name: 'movementActualReadings', proposedBy: 'TASK-031' }],
+    writer: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.recordMovements' },
+    readers: [{ module: SESSION_DETAIL, name: 'movementActualReadings' }],
     migration: 'MIG-B',
     owners: ['TASK-031', 'TASK-015', 'TASK-046', 'TASK-047'],
   }
@@ -776,17 +789,19 @@ export const LOGGING_FIELDS: readonly FieldContract[] = [
   // ── MIG-A — categorical block effort ──
   {
     id: 'block_results.effort',
-    status: 'proposed-migration',
+    status: 'pending-live-migration',
     table: 'block_results',
     column: 'effort',
     type: 'set_effort (the existing enum)',
     meaning: 'the optional categorical effort for the whole timed block (the existing three faces); never perceived_effort, never mood',
     nullMeans: 'unanswered, including every row written before the column existed',
     zeroMeans: null,
-    update: 'set with the block row; corrected with the row (TASK-031’s correction writer); null clears it',
-    validators: [{ module: SET_LOGGING, name: 'isRecordedEffort' }, schema('setEffortSchema')],
-    writer: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.record', extendedBy: 'TASK-031' },
-    readers: [{ module: SESSION_DETAIL, name: 'blockOutcome', extendedBy: 'TASK-031' }],
+    update:
+      'written with the block row from BlockOutcome.effort, by omission when unanswered (so the shipped saves never name it); ' +
+      'restated by blockResults.correct, where null clears it',
+    validators: [{ module: SET_LOGGING, name: 'isRecordedEffort' }, schema('setEffortSchema'), schema('blockResultRowSchema')],
+    writer: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.record' },
+    readers: [HISTORY_READER],
     migration: 'MIG-A',
     owners: ['TASK-031', 'TASK-015', 'TASK-046', 'TASK-047'],
   },
@@ -914,7 +929,9 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
   {
     id: 'MIG-A',
     kind: 'migration',
-    summary: 'add block_results.effort public.set_effort (nullable, no default, no backfill)',
+    summary:
+      'add block_results.effort public.set_effort (nullable, no default, no backfill): landed by TASK-031 as ' +
+      'supabase/migrations/20261110000029_block_result_effort.sql; not applied to any hosted project (LIVE-PRE-1)',
     basis: 'reuses the set_effort enum (20261027000027); block_results is granted at table level and reconstructions use to_jsonb(br), so no grant or reader SQL changes',
     ref: null,
     owner: 'TASK-031',
@@ -922,7 +939,10 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
   {
     id: 'MIG-B',
     kind: 'migration',
-    summary: 'create block_movement_results: one row per movement per block attempt with round_number, the set log’s measurement columns and a stamped weight_unit, owner-only RLS, and the reconstructions extended to return it',
+    summary:
+      'create block_movement_results: one row per movement per block attempt with round_number, the set log’s measurement columns and a ' +
+      'stamped weight_unit, owner-only RLS, and the reconstructions extended to return it: landed by TASK-031 as ' +
+      'supabase/migrations/20261110000030_block_movement_results.sql; not applied to any hosted project (LIVE-PRE-1)',
     basis: 'exercise_set_logs cannot carry it: anchor_evidence reads every set log, so a partial round would read as a short working set (deload D5, e1RM), and a load-only observation has no set identity',
     ref: null,
     owner: 'TASK-031',
@@ -932,7 +952,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'schema',
     summary: 'blockResultRowSchema gains effort: setEffortSchema.nullable().default(null); blockResultInsert writes effort by omission when unanswered, as setLogInsert does',
     basis: 'MIG-A; the existing per-set effort read rule',
-    ref: { module: SCHEMAS, name: 'blockResultRowSchema', extendedBy: 'TASK-031' },
+    ref: { module: SCHEMAS, name: 'blockResultRowSchema' },
     owner: 'TASK-031',
   },
   {
@@ -940,7 +960,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'schema',
     summary: 'a blockMovementResultRowSchema in src/state/schemas.ts mirroring MIG-B’s CHECKs, and the reconstruction’s per-exercise movement result',
     basis: 'MIG-B',
-    ref: { module: SCHEMAS, name: 'blockMovementResultRowSchema', proposedBy: 'TASK-031' },
+    ref: { module: SCHEMAS, name: 'blockMovementResultRowSchema' },
     owner: 'TASK-031',
   },
   {
@@ -948,7 +968,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'writer',
     summary: 'correct a saved block row (completion, counts, notes, effort) by UPDATE of that row, answered with the stored row',
     basis: 'reuse: the UPDATE grant and block_results_update_own policy (20260921000004); no migration',
-    ref: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.correct', proposedBy: 'TASK-031' },
+    ref: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.correct' },
     owner: 'TASK-031',
   },
   {
@@ -956,7 +976,18 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'writer',
     summary: 'write and correct the block’s movement rows idempotently (client-minted ids, one row per movement), after or with the block row, retaining the draft on failure',
     basis: 'MIG-B',
-    ref: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.recordMovements', proposedBy: 'TASK-031' },
+    ref: { module: WORKOUT_DATA, name: 'createWorkoutClients', member: 'blockResults.recordMovements' },
+    owner: 'TASK-031',
+  },
+  {
+    id: 'timed-result-save',
+    kind: 'writer',
+    summary:
+      'the data provider for TASK-015/TASK-019/TASK-026/TASK-047: a timed draft (outcome, categorical effort, notes, per-movement text) → ' +
+      'the completion and movement writes (timedResultRequest), saved through record → correct on 23505 → recordMovements ' +
+      '(saveTimedResult), idempotent on retry, the draft kept on failure (timedSaveSettled); imported by no shipped path yet',
+    basis: 'block-result-correction, movement-actuals-writer, partialRoundFor and movementActualFromDraft',
+    ref: { module: 'src/state/timed-results.ts', name: 'saveTimedResult' },
     owner: 'TASK-031',
   },
   {
@@ -964,7 +995,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     kind: 'read-model',
     summary: 'History reads the block effort as its category word (never on the 1–10 scale) and each movement’s round partial and load with movement and round identity',
     basis: 'MIG-A, MIG-B; the existing sessionDetail derivation',
-    ref: { module: SESSION_DETAIL, name: 'movementActualReadings', proposedBy: 'TASK-031' },
+    ref: { module: SESSION_DETAIL, name: 'movementActualReadings' },
     owner: 'TASK-031',
   },
   {
@@ -992,7 +1023,7 @@ export const PROPOSED_PATHS: readonly ProposedPath[] = [
     id: 'visible-proof',
     kind: 'read-model',
     summary: 'Workout → Summary → History save, retry and reload proof of the richer timed results on the real test lane (disposable namespaced users)',
-    basis: 'PRE-001 plus MIG-A/MIG-B applied to the project that lane writes to (LIVE-PRE-1)',
+    basis: 'PRE-001 plus MIG-A/MIG-B applied to the project that lane writes to (LIVE-PRE-1); the timed-result-save provider',
     ref: null,
     owner: 'TASK-047',
   },
